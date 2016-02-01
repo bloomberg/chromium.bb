@@ -115,6 +115,7 @@ InputTool.LanguageCodeThreeTwoMap = goog.object.create(
     'dan', 'da',
     'eng', 'en',
     'est', 'et',
+    'fao', 'fo',
     'fin', 'fi',
     'fra', 'fr',
     'geo', 'ka',
@@ -126,6 +127,7 @@ InputTool.LanguageCodeThreeTwoMap = goog.object.create(
     'ind', 'id',
     'ita', 'it',
     'jpn', 'ja',
+    'kaz', 'kk',
     'lav', 'lv',
     'lit', 'lt',
     'mlt', 'mt',
@@ -303,9 +305,11 @@ InputTool.SpecialLayoutCodes_ = goog.object.create(
     InputToolCode.KEYBOARD_ITALIAN_INTL, 'us_intl',
     InputToolCode.KEYBOARD_JAVANESE, 'latn_002',
     InputToolCode.KEYBOARD_MARATHI, 'deva_phone',
+    InputToolCode.KEYBOARD_MARATHI_INSCRIPT, 'hi',
     InputToolCode.KEYBOARD_MALAY, 'latn_002',
     InputToolCode.KEYBOARD_PORTUGUESE_BRAZIL_INTL, 'us_intl',
     InputToolCode.KEYBOARD_PORTUGUESE_PORTUGAL_INTL, 'us_intl',
+    InputToolCode.KEYBOARD_SANSKRIT_INSCRIPT, 'hi',
     InputToolCode.KEYBOARD_SPANISH_INTL, 'us_intl',
     InputToolCode.KEYBOARD_SWAHILI, 'latn_002',
     InputToolCode.KEYBOARD_TAGALOG, 'latn_002',
@@ -434,7 +438,7 @@ InputTool.prototype.parseLayoutCode_ = function() {
       var matches = inputToolType.match(/k0-(.*)/);
       if (matches[1]) {
         this.layoutCode = countryCode + '_' + matches[1].replace(
-            'qwerty', 'phone');
+            'qwerty', 'phone').replace('-', '_');
       }
     }
   }

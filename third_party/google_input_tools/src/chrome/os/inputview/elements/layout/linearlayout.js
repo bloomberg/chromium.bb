@@ -15,9 +15,9 @@ goog.provide('i18n.input.chrome.inputview.elements.layout.LinearLayout');
 
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
 goog.require('i18n.input.chrome.inputview.util');
 
@@ -38,7 +38,7 @@ goog.scope(function() {
  */
 i18n.input.chrome.inputview.elements.layout.LinearLayout = function(id,
     opt_eventTarget, opt_iconCssClass) {
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       LINEAR_LAYOUT, opt_eventTarget);
 
   /**

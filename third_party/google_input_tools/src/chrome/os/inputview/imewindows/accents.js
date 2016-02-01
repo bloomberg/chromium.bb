@@ -37,17 +37,16 @@ var TagName = goog.dom.TagName;
  */
 i18n.input.chrome.inputview.Accents = function(parentWindow) {
   i18n.input.chrome.inputview.Accents.base(this, 'constructor',
-      parentWindow, undefined, Accents.CSS_FILE);
+      parentWindow, undefined, Accents.CSS_FILE_);
 };
 var Accents = i18n.input.chrome.inputview.Accents;
 goog.inherits(Accents, FloatingWindow);
 
 
-
 /**
- * @const {string} The css file name for accents component.
+ * @private @const {string} The css file name for accents component.
  */
-Accents.CSS_FILE = 'accents_css.css'
+Accents.CSS_FILE_ = 'accents_css.css';
 
 
 /**

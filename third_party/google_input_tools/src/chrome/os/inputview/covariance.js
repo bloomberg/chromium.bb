@@ -13,11 +13,12 @@
 //
 goog.provide('i18n.input.chrome.inputview.Covariance');
 
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('goog.object');
+goog.require('i18n.input.chrome.ElementType');
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 
@@ -53,7 +54,7 @@ Covariance.BreakDown = {
 Covariance.ElementTypeMap = goog.object.create(
     ElementType.CHARACTER_KEY, 0,
     ElementType.COMPACT_KEY, 1
-);
+    );
 
 
 /**
@@ -101,11 +102,12 @@ Covariance.prototype.update = function(isWideScreen, isHorizontal, isA11y) {
  * Gets the covariance value.
  *
  * @param {ElementType} type .
+ * @return {number} The value.
  */
 Covariance.prototype.getValue = function(type) {
   var index = Covariance.ElementTypeMap[type];
   return Covariance.VALUE_[this.breakDown_][index];
 };
 
-}); // goog.scope
+});  // goog.scope
 

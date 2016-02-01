@@ -14,9 +14,9 @@
 goog.provide('i18n.input.chrome.inputview.elements.layout.SoftKeyView');
 
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
 
 
@@ -43,7 +43,7 @@ goog.scope(function() {
 i18n.input.chrome.inputview.elements.layout.SoftKeyView = function(id,
     opt_widthInWeight, opt_heightInWeight, opt_condition,
     opt_giveWeightTo, opt_eventTarget) {
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       SOFT_KEY_VIEW, opt_eventTarget);
 
   /**

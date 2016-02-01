@@ -43,6 +43,7 @@ i18n.input.chrome.MessageKey = {
   MIN_SCORE: 'min_score',
   MULTI: 'multi',
   MULTI_APPEND: 'multi_append',
+  PRECEDING_TEXT: 'preceding_text',
   PREDICT: 'predict',
   REVERT: 'revert',
   SELECT: 'select',

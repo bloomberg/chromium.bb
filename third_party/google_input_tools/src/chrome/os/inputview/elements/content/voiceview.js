@@ -19,9 +19,9 @@ goog.require('goog.async.Delay');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.SpanElement');
 goog.require('i18n.input.chrome.message.Name');
 goog.require('i18n.input.chrome.message.Type');
@@ -30,7 +30,7 @@ goog.require('i18n.input.chrome.sounds.Sounds');
 
 goog.scope(function() {
 var Css = i18n.input.chrome.inputview.Css;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var FunctionalKey = i18n.input.chrome.inputview.elements.content.FunctionalKey;
 var Name = i18n.input.chrome.message.Name;
 var Sounds = i18n.input.chrome.sounds.Sounds;
@@ -267,7 +267,6 @@ VoiceView.prototype.onConfirmPrivacyInfo_ = function() {
   goog.dom.classlist.add(this.privacyDiv_, Css.HANDWRITING_PRIVACY_INFO_HIDDEN);
   goog.dom.classlist.remove(this.maskElem_, Css.VOICE_OPACITY_NONE);
 };
-
 
 
 /** @override */

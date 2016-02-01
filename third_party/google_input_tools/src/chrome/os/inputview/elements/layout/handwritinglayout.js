@@ -14,8 +14,8 @@
 goog.provide('i18n.input.chrome.inputview.elements.layout.HandwritingLayout');
 
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.layout.LinearLayout');
 
 goog.scope(function() {
@@ -35,7 +35,7 @@ i18n.input.chrome.inputview.elements.layout.HandwritingLayout = function(id,
   goog.base(this, id, opt_eventTarget);
 
   /** @override */
-  this.type = i18n.input.chrome.inputview.elements.ElementType.
+  this.type = i18n.input.chrome.ElementType.
       HANDWRITING_LAYOUT;
 };
 goog.inherits(i18n.input.chrome.inputview.elements.layout.HandwritingLayout,

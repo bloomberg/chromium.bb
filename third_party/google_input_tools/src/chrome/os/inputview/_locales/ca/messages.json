@@ -29,10 +29,10 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat fon\u00e8tic armeni"
   },
   "appnamejpkeyboard": {
-    "message": "M\u00e8tode d'introducci\u00f3 japon\u00e8s de Google (per a teclat japon\u00e8s)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "M\u00e8tode d'introducci\u00f3 japon\u00e8s de Google (per a teclat nord-americ\u00e0)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "Correcci\u00f3 autom\u00e0tica"
@@ -41,7 +41,7 @@
     "message": "tecla de retroc\u00e9s"
   },
   "basic": {
-    "message": "Informaci\u00f3 b\u00e0sica"
+    "message": "B\u00e0sica"
   },
   "be_fra_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat belga (franc\u00e8s)"
@@ -92,76 +92,76 @@
     "message": "Eines d'introducci\u00f3 de text de Google"
   },
   "compositionmodedirect": {
-    "message": "Introducci\u00f3 directa"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "Llat\u00ed ample"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "Llat\u00ed"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Katakana d'amplada mitjana"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "Informaci\u00f3 b\u00e0sica"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Esborra les dades de personalitzaci\u00f3..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Cancel\u00b7la"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "Historial de conversions"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "Suprimeix els elements seg\u00fcents:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Esborra les dades de personalitzaci\u00f3"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Historial de suggeriments"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Esborra les dades de personalitzaci\u00f3"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2013 Google Inc. Tots els drets reservats."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Cancel\u00b7la"
+    "message": "Cancel"
   },
   "configdialogok": {
-    "message": "D'acord"
+    "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Gestiona el diccionari de l'usuari..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Afegiu paraules pr\u00f2pies al diccionari de l'usuari per personalitzar els candidats de la conversi\u00f3."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Diccionaris de l'usuari"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Desactiva les conversions i els suggeriments personalitzats i el diccionari de l'usuari"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Assist\u00e8ncia per a la introducci\u00f3"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
     "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Mode d'introducci\u00f3:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,19 +170,19 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Privadesa"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Estil de puntuaci\u00f3:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Drecera de selecci\u00f3:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Sense drecera"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Estil de mapes de teclat:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Mapa de teclat personalitzat"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,52 +200,52 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Configuraci\u00f3 de la introducci\u00f3 en japon\u00e8s"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Canvi de mode amb la tecla Maj:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Alfanum\u00e8ric"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "Desactivat"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Estil d'introducci\u00f3 d'espais:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Segueix el mode d'introducci\u00f3"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "Amplada completa"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Amplada mitjana"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Nombre de suggeriments:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Suggereix"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Estil de s\u00edmbols:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Envia autom\u00e0ticament estad\u00edstiques d'\u00fas i informes d'error a Google"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Canvia autom\u00e0ticament a amplada mitjana"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Utilitza el diccionari del sistema"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Utilitza l'historial d'introducci\u00f3"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "ctrl"
@@ -269,343 +269,343 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat Qwerty txec"
   },
   "d83c_dc04": {
-    "message": "fitxa de Mahjong"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "carta de j\u00f2quer"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "grup sanguini A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "grup sanguini B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "grup sanguini O"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "aparcament"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "grup sanguini AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "fred"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "gratu\u00eft"
+    "message": "free"
   },
   "d83c_dd94": {
-    "message": "identificador"
+    "message": "ID"
   },
   "d83c_dd95": {
-    "message": "Nou"
+    "message": "New"
   },
   "d83c_dd96": {
-    "message": "gu\u00e0rdia nacional"
+    "message": "NG"
   },
   "d83c_dd97": {
-    "message": "d'acord"
+    "message": "OK"
   },
   "d83c_dd98": {
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "amunt"
+    "message": "UP!"
   },
   "d83c_dd9a": {
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "paraula japonesa \u00e2\u20ac\u02dcaqu\u00ed\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "paraula japonesa \u00e2\u20ac\u02dcservei\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "paraula japonesa \"gratu\u00eft\""
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "paraula japonesa \"reservat\""
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "paraula japonesa \u00e2\u20ac\u02dcprohibit\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "paraula xinesa \"espai disponible\""
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "paraula xinesa \"aprovat\""
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "paraula xinesa \"ple\""
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "paraula japonesa \"taxes\""
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "paraula japonesa \"mensualment\""
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "paraula xinesa \"aplicaci\u00f3\""
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "paraula japonesa \"descompte\""
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "paraula xinesa \"treballant\""
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "paraula japonesa \"avantatge\""
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "paraula xinesa \"aprovat\""
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "cicl\u00f3"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "boira"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "paraigua"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "nit estrellada"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "sortida del sol a les muntanyes"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "sortida del sol"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "ciutat en fosquejar"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "posta de sol"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "arc de Sant Mart\u00ed"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "pont de nit"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "onada"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "volc\u00e0"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "Via L\u00e0ctia"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "mapa d'Europa i \u00c0frica"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "mapa de les Am\u00e8riques"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "mapa d'\u00c0sia i Austr\u00e0lia"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "mapa amb els meridians"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "lluna nova"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "quart creixent"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "quart creixent"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "quart minvant"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "lluna plena"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "lluna minvant"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "lluna minvant"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "lluna creixent"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "lluna creixent"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "lluna nova amb cara"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "quart creixent amb cara"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "quart minvant amb cara"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "lluna plena amb cara"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "sol amb cara"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "estrella que brilla"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "estel fuga\u00e7"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "castanya"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "planta jove"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "arbre de fulla perenne"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "arbre de fulla caduca"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "palmera"
+    "message": "palm tree"
   },
   "d83c_df35": {
     "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulipa"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "flor de cirerer"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "rosa"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "hibisc"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "gira-sol"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "flor"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "blat de moro"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "planta d'arr\u00f2s"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "herba"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "tr\u00e8vol de quatre fulles"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "fulla d'aur\u00f3"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "fulles que cauen"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "fulla al vent"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "bolet"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "tom\u00e0quet"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "alberg\u00ednia"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "ra\u00efm"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "mel\u00f3"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "s\u00edndria"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "mandarina"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "llimona"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "pl\u00e0tan"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "pinya"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "poma vermella"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "poma verda"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "pera"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "pr\u00e9ssec"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "cirera"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "maduixa"
+    "message": "strawberry"
   },
   "d83c_df54": {
-    "message": "hamburguesa"
+    "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "tall de pizza"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "carn"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "cuixa de pollastre"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "coqueta d'arr\u00f2s"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "pastisset d'arr\u00f2s"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "bol d'arr\u00f2s"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "arr\u00f2s al curri"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
     "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "espaguetis"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "pa"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "patates rosses"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "patata al forn"
+    "message": "roasted potato"
   },
   "d83c_df61": {
     "message": "mochi"
@@ -617,880 +617,880 @@
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "gamba fregida"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "past\u00eds de peix"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "gelat crem\u00f3s"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "granissat"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "gelat"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "d\u00f2nut"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "galeta"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "xocolata"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "caramel"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "piruleta"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "flam"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "pot de mel"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "past\u00eds de fruites"
+    "message": "shortcake"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "estofat"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "paella"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "forquilla i ganivet"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "tassa de te"
+    "message": "teacup"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "vi"
+    "message": "wine"
   },
   "d83c_df78": {
-    "message": "c\u00f2ctel"
+    "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "beguda tropical"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "cervesa"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "gerres de cervesa"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "biber\u00f3"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "cinta"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "regal"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "past\u00eds d'aniversari"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "carabassa amb llum"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "arbre de Nadal"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "Pare Noel"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "focs artificials"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "bengala"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "globus"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "llan\u00e7ador de serpentines i paperets"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "paperets"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "arbre i tires de paper"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "banderes creuades"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "decoraci\u00f3 de pi"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "nines"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "banderins de carpes"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "sonalles e\u00f2liques"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "mirar la lluna"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "motxilla"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "birret"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "cavallets"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "roda de fira"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "muntanyes russes"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "pesca"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "micr\u00f2fon"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "c\u00e0mera de cine"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "pel\u00b7l\u00edcula"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "auricular"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "paleta de pintor"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "barret de copa"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "circ"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "entrada"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "claqueta"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "m\u00e0scara"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "videojoc"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "diana"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "escurabutxaques"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "billar"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "dau"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "bitlles"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "carta de joc"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "nota musical"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "notes musicals"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "saxofon"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "guitarra"
+    "message": "guitar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trompeta"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "viol\u00ed"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "partitura"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "samarreta de c\u00f3rrer"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
     "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "esqu\u00ed"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "b\u00e0squet"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "bandera de quadres"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "surfista de neu"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "corredor"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "surf"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trofeu"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "cursa de cavalls"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "futbol americ\u00e0"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "futbol"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "nedador"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "casa"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "llar"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "edifici d'oficines"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "oficina de correus japonesa"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "oficina de correus europea"
+    "message": "European post office"
   },
   "d83c_dfe5": {
     "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "banc"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "caixer autom\u00e0tic"
+    "message": "ATM"
   },
   "d83c_dfe8": {
     "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "hotel de cites"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "botiga de queviures"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "escola"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "grans magatzems"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "f\u00e0brica"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "llanterna vermella"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "castell japon\u00e8s"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "castell europeu"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "rata"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "ratol\u00ed"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "bou"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "b\u00fafal d'aigua"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "vaca"
+    "message": "cow"
   },
   "d83d_dc06": {
-    "message": "lleopard"
+    "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "conill"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "gat"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "drac"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "cocodril"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "balena"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "serp"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "serp"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "cavall"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "xai"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "cabra"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "ovella"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "mico"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "gall"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "gallina"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "gos"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "porc"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "senglar"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "elefant"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "pop"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "cargol de mar"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "cuc"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "formiga"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "abella"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "marieta"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "peix"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "peix tropical"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "peix globus"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "tortuga"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "pollet que surt de l'ou"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "cara de pollet"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "pollet"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "ocell"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "ping\u00fc\u00ed"
+    "message": "penguin"
   },
   "d83d_dc28": {
-    "message": "coala"
+    "message": "koala"
   },
   "d83d_dc29": {
-    "message": "caniche"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "dromedari"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "camell"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "dof\u00ed"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "cara de ratol\u00ed"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "cara de vaca"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "cara de tigre"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "cara de conill"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "cara de gat"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "cara de drac"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "balena que tira aigua"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "cara de cavall"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "cara de mico"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "cara de gos"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "cara de porc"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "cara de granota"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "cara de h\u00e0mster"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "cara de llop"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "cara d'\u00f3s"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "cara de panda"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "morro de porc"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "petjades d'animal"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "ulls"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "orella"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "nas"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "boca"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "llengua"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "dit amunt"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "dit avall"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "assenyalar cap a l'esquerra"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "assenyalar cap a la dreta"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "cop de puny"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "salutaci\u00f3 amb la m\u00e0"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "signe d'OK amb la m\u00e0"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "m'agrada"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "dit polze avall"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "aplaudiment"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "mans obertes"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "corona"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "barret de dona"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "ulleres de sol"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "corbata"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "samarreta"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "pantalons"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "vestit"
+    "message": "dress"
   },
   "d83d_dc58": {
-    "message": "quimono"
+    "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "biquini"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "roba de dona"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "moneder"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "bossa"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "bossa de m\u00e0"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "sabata d'home"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "sabata esportiva"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "talons alts"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "sand\u00e0lia de dona"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "bota de dona"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "petjada"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "silueta d'un bust"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "silueta de dos bustos"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "nen"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "nena"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "home"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "dona"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "fam\u00edlia"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "home i dona"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "dos homes"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "dues dones"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "policia"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "conilleta"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "n\u00favia"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "persona rossa"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "home amb solideu"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "home amb turbant"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "senyor gran"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "senyora gran"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "beb\u00e8"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "obrer de la construcci\u00f3"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "princesa"
+    "message": "princess"
   },
   "d83d_dc79": {
     "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "follet"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "fantasma"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "angelet"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "extraterrestre"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "marci\u00e0"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "dimoniet"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "calavera"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "taulell d'informaci\u00f3"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "gu\u00e0rdia brit\u00e0nic"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "ballarina"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "pintallavis"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "manicura"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "massatge"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "tallat de cabells"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "barberia"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "xeringa"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "c\u00e0psula"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "marca de pet\u00f3"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "carta d'amor"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "anell"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "gemma"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "pet\u00f3"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "ram"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "parella"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "capella per a casaments"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "cor que batega"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "cor trencat"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "dos cors"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "cor que centelleja"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "cor que creix"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "cor amb fletxa"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "cor blau"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "cor verd"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "cor groc"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "cor lila"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "cor amb lla\u00e7"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "cors que giren"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "cor decoratiu"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "p\u00e8tal de flor"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "bombeta"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "ira"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bomba"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "s\u00edmbol de dormir"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "col\u00b7lisi\u00f3"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "esquitxar amb suor"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "gota"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "rastre de c\u00f3rrer"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "caca"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "b\u00edceps"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "euf\u00f2ria"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "globus de parla"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "globus de pensament"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "segell de flor"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "m\u00e0xima puntuaci\u00f3"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "bossa de diners"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "canvi de moneda"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "signe de d\u00f2lar"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "targeta de cr\u00e8dit"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "bitllet de ien"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "bitllet de d\u00f2lar"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "bitllet d'euro"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "bitllet de lliura"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "bitllets amb ales"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "mercat emergent"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "seient"
+    "message": "seat"
   },
   "d83d_dcbb": {
-    "message": "ordinador"
+    "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "maleta"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "minidisc"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "disquet"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1499,763 +1499,763 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "portacarpetes"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "carpeta oberta"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "calendari"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "calendari per arrencar p\u00e0gines"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "fitxer"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "tend\u00e8ncia a l'al\u00e7a"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "tend\u00e8ncia a la baixa"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "gr\u00e0fic de barres"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "portapapers"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "xinxeta"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "xinxeta rodona"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "clip"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "regla"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "escaire"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "marcadors de p\u00e0gina"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "llibre de comptabilitat"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "llibreta"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "llibreta decorada"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "llibre tancat"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "llibre obert"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "llibre verd"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "llibre"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "llibre taronja"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "llibres"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "placa de nom"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "pergam\u00ed"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "nota"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "tel\u00e8fon"
+    "message": "phone"
   },
   "d83d_dcdf": {
-    "message": "cercapersones"
+    "message": "pager"
   },
   "d83d_dce0": {
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "antena de sat\u00e8l\u00b7lit"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "altaveu"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "meg\u00e0fon"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "correu enviat"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "safata d'entrada"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "paquet"
+    "message": "package"
   },
   "d83d_dce7": {
-    "message": "correu electr\u00f2nic"
+    "message": "email"
   },
   "d83d_dce8": {
-    "message": "correu entrant"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "correu sortint"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "b\u00fastia tancada amb la bandera abaixada"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "b\u00fastia tancada amb la bandera aixecada"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "b\u00fastia oberta amb la bandera aixecada"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "b\u00fastia oberta amb la bandera abaixada"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "b\u00fastia"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "banya de correus"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "diari"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "tel\u00e8fon m\u00f2bil"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "tel\u00e8fon m\u00f2bil amb fletxa"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "mode de vibraci\u00f3"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "tel\u00e8fon desconnectat"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "tel\u00e8fons m\u00f2bils prohibits"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "senyals de connexi\u00f3 m\u00f2bil"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "c\u00e0mera"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "c\u00e0mera de v\u00eddeo"
+    "message": "video cam"
   },
   "d83d_dcfa": {
-    "message": "televisor"
+    "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "r\u00e0dio"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "videocasset"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "fletxes creuades"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "fletxes en sentit horari"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "fletxes en sentit horari"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "torna a carregar"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "fletxes en sentit antihorari"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "brillantor baixa"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "brillantor alta"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "sense veu"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "altaveu"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "altaveu amb volum baix"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "altaveu amb volum alt"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "pila"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "endoll"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "lupa cap a l'esquerra"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "lupa cap a la dreta"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "cadenat i ploma"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "cadenat tancat amb clau"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "clau"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "cadenat tancat"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "cadenat obert"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "campana"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "campana barrada"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "punt de llibre"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "signe d'uni\u00f3"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "bot\u00f3 d'opci\u00f3"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "enrere"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "fi"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "fletxa ON"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "signe de pr\u00f2ximament"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "signe TOP"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "prohibit a menors de 18 anys"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "lletres en maj\u00fascula"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "lletres en min\u00fascula"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "n\u00fameros"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "s\u00edmbols"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "alfabet llat\u00ed"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "foc"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "llanterna"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "clau anglesa"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "martell"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "cargol i rosca"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "ganivet de cuina"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "pistola"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "microscopi"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "telescopi"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "bola de vidre"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "estrella de sis puntes"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "fulla groga i verda"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "signe de trident"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "bot\u00f3 de quadrat amb les vores s\u00f2lides"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "bot\u00f3 de quadrat amb les vores remarcades"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "cercle vermell gran"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "cercle blau gran"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "diamant taronja gran"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "diamant blau gran"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "diamant taronja petit"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "diamant blau petit"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "triangle amunt"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "triangle avall"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "bot\u00f3 de triangle amunt"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "bot\u00f3 de triangle avall"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "una en punt"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "dues en punt"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "tres en punt"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "quatre en punt"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "cinc en punt"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "sis en punt"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "set en punt"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "vuit en punt"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "nou en punt"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "deu en punt"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "onze en punt"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "dotze en punt"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "dos quarts de dues"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "dos quarts de tres"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "dos quarts de quatre"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "dos quarts de cinc"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "dos quarts de sis"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "dos quarts de set"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "dos quarts de vuit"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "dos quarts de nou"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "dos quarts de deu"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "dos quarts d'onze"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "dos quarts de dotze"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "dos quarts d'una"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "mont Fuji"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "torre de T\u00f2quio"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "Est\u00e0tua de la Llibertat"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "Mapa del Jap\u00f3"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "est\u00e0tua moai"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "somriure"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " somriure amb ulls contents"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "ll\u00e0grimes d'alegria"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "riure amb la boca oberta"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "riure amb la boca oberta i amb ulls contents"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "somriure amb suor freda"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " somriure amb la boca oberta i els ulls tancats"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "somriure amb aur\u00e8ola"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "somriure amb banyes"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "picar l'ullet"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "somriure"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "delici\u00f3s"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "cara d'alleujament"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "cara somrient"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "interessant"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "somriure satisfet"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "cara inexpressiva"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "sense expressi\u00f3"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "avorrit"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "suor freda"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "cara pensativa"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "cara de confusi\u00f3"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "cara de confusi\u00f3"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "cara que fa un pet\u00f3"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "enviar petons"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "pet\u00f3 i somriure"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "pet\u00f3"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "treure la llengua"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "treure la llengua i picar l'ullet"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "ecs"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "decebut"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "preocupat"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "enfadat"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "enfadat"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "plorar"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "quin f\u00e0stic"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "cara de triomf"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "uf!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "cara sorruda"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "angoixat"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "temor\u00f3s"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "cansat"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "endormiscat"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "cansat"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "ganyota"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "plorar amargament"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "cara amb la boca oberta"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "cara tranquil\u00b7la"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "cara avergonyida"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "cara de por"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "al\u00b7lucinat"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "ruboritzat"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "dormir"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "marejat"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "cara sense boca"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "cara amb m\u00e0scara"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "cara de gat somrient \u00e0mpliament"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "cara de gat amb ll\u00e0grimes d'alegria"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "cara de gat somrient"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "cara de gat somrient"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "cara de gat ir\u00f2nic"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "cara de gat que fa un pet\u00f3"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "cara de gat enfadat"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "cara de gat que plora"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "cara de gat cansat"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "malament"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "gest d'acceptaci\u00f3"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "em sap greu"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "mico que es tapa els ulls"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "mico que es tapa les orelles"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "mico que es tapa la boca"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "persona feli\u00e7"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "visca"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "persona sorruda"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "enfadat"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "mans juntes"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "coet"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "helic\u00f2pter"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "tren de vapor"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "tren"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "tren d'alta velocitat"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "tren d'alta velocitat amb llums vermells"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "tren"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "metro"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "tren lleuger"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "estaci\u00f3 de tren"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "tramvia"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "vag\u00f3 de tramvia"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "autob\u00fas"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "autob\u00fas que arriba"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "troleib\u00fas"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "parada d'autob\u00fas"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "minib\u00fas"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "ambul\u00e0ncia"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "cami\u00f3 de bombers"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "cotxe de policia"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "cotxe de policia que arriba"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "taxi que arriba"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "cotxe"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "cotxe que arriba"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "caravana"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "cami\u00f3 de repartiment"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "cami\u00f3"
+    "message": "lorry"
   },
   "d83d_de9c": {
     "message": "tractor"
@@ -2264,124 +2264,124 @@
     "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "cremallera"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "funicular"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "telef\u00e8ric de muntanya"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "telef\u00e8ric"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "vaixell"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "bot de rems"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "llanxa motora"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "sem\u00e0for horitzontal"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "sem\u00e0for vertical"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "en construcci\u00f3"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "llum giratori"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "bandera d'ubicaci\u00f3"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "porta"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "signe de prohibit entrar"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "s\u00edmbol de fumar"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "signe de prohibit fumar"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "signe de paperera"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "signe de no abocar residus"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "aigua potable"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "aigua no potable"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "bicicleta"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "prohibides les bicicletes"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "ciclista"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "ciclista de muntanya"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "vianant"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "prohibit el pas als vianants"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "pas de nens"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "signe d'home"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "signe de dona"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "signe de lavabos"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "signe de beb\u00e8"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "lavabo"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "serveis"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "dutxa"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "bany"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "banyera"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "control de passaports"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "duana"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "recollida d'equipatge"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "equipatge perdut"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat alemany"
@@ -2390,136 +2390,136 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat Neo 2 alemany"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Categoria"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Comentari"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Comentari"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Voleu suprimir [object Object]?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "Suprimeix el diccionari"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "Diccionaris"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "Nom del diccionari"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Fet"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Exporta"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Importa..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "Gesti\u00f3 de diccionaris"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Diccionari nou"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Diccionaris de l'usuari"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Lectura nova"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Lectura"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "El nom cont\u00e9 car\u00e0cters que no s\u00f3n v\u00e0lids."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "El nom ja existeix."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Escriviu un nom de diccionari."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "El nom \u00e9s massa llarg."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "No es pot crear cap m\u00e9s diccionari."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "El fitxer est\u00e0 buit."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "No es pot crear cap m\u00e9s entrada en aquest diccionari."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "No s'ha pogut obrir el fitxer."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "La mida de les dades supera el l\u00edmit de la mida del fitxer."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "S'ha produ\u00eft un error amb l'operaci\u00f3."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "Hi ha paraules que no s'han pogut importar."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "La font de la importaci\u00f3 cont\u00e9 massa paraules."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "No s'ha pogut llegir el fitxer."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "No hi ha cap m\u00e9s operaci\u00f3 per desfer."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "La lectura cont\u00e9 car\u00e0cters que no s\u00f3n v\u00e0lids. Hi podeu utilitzar car\u00e0cters ASCII, Hiragana, marques de so sonores (\u309b), marques de so semisonores (\u309c), punts volats (\u30fb), marques de so prolongat (\u30fc), comes japoneses (\u3001), punts japonesos (\u3002), par\u00e8ntesis japonesos (\u300c\u300d\u300e\u300f) i guions ondulats japonesos (\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Escriviu la lectura."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "La lectura \u00e9s massa llarga."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Error en afegir l'entrada"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Error en crear el diccionari"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Error en suprimir el diccionari"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Error en suprimir l'entrada"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Error en editar l'entrada"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Error d'importaci\u00f3"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "Error en canviar el nom del diccionari"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "La paraula cont\u00e9 car\u00e0cters que no s\u00f3n v\u00e0lids."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Escriviu la paraula."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "La paraula \u00e9s massa llarga."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Paraula nova"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "Paraula"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "ignora el men\u00fa del teclat"
@@ -2534,7 +2534,7 @@
     "message": "fletxa avall"
   },
   "drag_button": {
-    "message": "Arrossegueu per moure el teclat virtual"
+    "message": "Arrossega per moure el teclat virtual"
   },
   "ee_est_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat estoni\u00e0"
@@ -2570,10 +2570,16 @@
     "message": "Activa la compleci\u00f3"
   },
   "enable_gesture_editing": {
-    "message": "Feu lliscar el dit des de les vores del teclat per moure el cursor, o des de la tecla de retroc\u00e9s per suprimir paraules senceres."
+    "message": "Activeu els gestos de lliscar"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Feu lliscar el dit des les vores del teclat per moure el cursor o des de la tecla de retroc\u00e9s per suprimir paraules senceres"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Activeu l'escriptura gestual"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Escriviu una paraula fent lliscar el dit per les lletres"
   },
   "enable_prediction": {
     "message": "Activa la predicci\u00f3 de paraula seg\u00fcent"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat fin\u00e8s"
   },
+  "fo_fao_settings_page": {
+    "message": "P\u00e0gina de configuraci\u00f3 del teclat fero\u00e8s"
+  },
   "footer_docking_button": {
     "message": "fixeu el teclat virtual"
   },
@@ -2606,10 +2615,13 @@
     "message": "fa que el teclat virtual es pugui moure"
   },
   "footer_handwriting_button": {
-    "message": "canvia a escriptura t\u00e0ctil"
+    "message": "canvia a l'escriptura a m\u00e0"
   },
   "footer_settings_button": {
     "message": "obre la configuraci\u00f3 del m\u00e8tode d'introducci\u00f3"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "P\u00e0gina de configuraci\u00f3 del teclat B\u00c9PO franc\u00e8s (franc\u00e8s)"
   },
   "fr_fra_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat franc\u00e8s"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat hongar\u00e8s"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "P\u00e0gina de configuraci\u00f3 del teclat QWERTY hongar\u00e8s"
+  },
   "ie_ga_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat irland\u00e8s"
   },
@@ -2666,10 +2681,10 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat hebreu"
   },
   "init_lang": {
-    "message": "L'idioma inicial d'introducci\u00f3 \u00e9s el xin\u00e8s"
+    "message": "L'idioma d'introducci\u00f3 inicial \u00e9s el xin\u00e8s"
   },
   "init_punc": {
-    "message": "L'amplada inicial de la puntuaci\u00f3 \u00e9s completa"
+    "message": "L'amplada inicial de puntuaci\u00f3 \u00e9s completa"
   },
   "init_sbc": {
     "message": "L'amplada inicial dels car\u00e0cters \u00e9s completa"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "M\u00e8tode d'introducci\u00f3 de cangjie"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "M\u00e8tode d'introducci\u00f3 de dayi"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Teclat et\u00edop"
   },
+  "keyboard_faroese": {
+    "message": "Teclat fero\u00e8s"
+  },
   "keyboard_finnish": {
     "message": "Teclat fin\u00e8s"
   },
   "keyboard_french": {
     "message": "Teclat franc\u00e8s"
+  },
+  "keyboard_french_bepo": {
+    "message": "Teclat B\u00c9PO franc\u00e8s"
   },
   "keyboard_georgian": {
     "message": "Teclat georgi\u00e0"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "Teclat hongar\u00e8s"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "Teclat QWERTY hongar\u00e8s"
+  },
   "keyboard_icelandic": {
     "message": "Teclat island\u00e8s"
   },
@@ -2821,14 +2848,20 @@
   "keyboard_kannada_phonetic": {
     "message": "Teclat kannada (fon\u00e8tic)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Teclat (kedmanee)"
   },
   "keyboard_khmer": {
-    "message": "Teclat de khmer"
+    "message": "Teclat khmer"
   },
   "keyboard_lao": {
-    "message": "Teclat de lao"
+    "message": "Teclat lao"
+  },
+  "keyboard_laothian": {
+    "message": "Teclat laosi\u00e0"
   },
   "keyboard_latin_american": {
     "message": "Teclat llatinoameric\u00e0"
@@ -2840,7 +2873,7 @@
     "message": "Teclat litu\u00e0"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Teclat macedoni"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Teclat malai\u00e0lam (fon\u00e8tic)"
@@ -2858,10 +2891,10 @@
     "message": "Teclat myansan de Myanmar"
   },
   "keyboard_nepali_inscript": {
-    "message": "Teclat de nepal\u00e8s (InScript)"
+    "message": "Teclat nepal\u00e8s (InScript)"
   },
   "keyboard_nepali_phonetic": {
-    "message": "Teclat de nepal\u00e8s (fon\u00e8tic)"
+    "message": "Teclat nepal\u00e8s (fon\u00e8tic)"
   },
   "keyboard_netherlands": {
     "message": "Teclat per als Pa\u00efsos Baixos"
@@ -2909,7 +2942,10 @@
     "message": "Teclat serbi"
   },
   "keyboard_sinhala": {
-    "message": "Teclat de singal\u00e8s"
+    "message": "Teclat singal\u00e8s"
+  },
+  "keyboard_slovak": {
+    "message": "Teclat eslovac"
   },
   "keyboard_slovakian": {
     "message": "Teclat eslovac"
@@ -2918,10 +2954,10 @@
     "message": "Teclat eslov\u00e8"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Teclat de kurd basat en l'\u00e0rab"
+    "message": "Teclat kurd basat en l'\u00e0rab"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Teclat de kurd basat en l'angl\u00e8s"
+    "message": "Teclat kurd basat en l'angl\u00e8s"
   },
   "keyboard_spanish": {
     "message": "Teclat espanyol"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Teclat turc"
   },
+  "keyboard_turkish_f": {
+    "message": "Teclat turc F"
+  },
   "keyboard_typewriter": {
     "message": "Teclat (m\u00e0quina d'escriure)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "Teclat Dvorak nord-americ\u00e0"
+  },
+  "keyboard_us_dvp": {
+    "message": "Teclat Dvorak nord-americ\u00e0 per a programadors"
   },
   "keyboard_us_extended": {
     "message": "Teclat nord-americ\u00e0 ampliat"
@@ -3068,7 +3110,7 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat noruec"
   },
   "pause": {
-    "message": "Atura"
+    "message": "Posa en pausa"
   },
   "physical_auto_correction_level": {
     "message": "Correcci\u00f3 autom\u00e0tica"
@@ -3110,7 +3152,7 @@
     "message": "Configuraci\u00f3"
   },
   "shift": {
-    "message": "maj"
+    "message": "maj\u00fascules"
   },
   "shift_lock": {
     "message": "Tecla maj activada"
@@ -3134,7 +3176,7 @@
     "message": "Mostra el men\u00fa desplegable de suggeriments amb la tecla de retroc\u00e9s"
   },
   "show_hangul_candidate": {
-    "message": "Mostrar els candidats en mode hangul"
+    "message": "Mostra els candidats en mode hangul"
   },
   "shrink_candidates": {
     "message": "redueix la llista de candidats"
@@ -3146,10 +3188,10 @@
     "message": "P\u00e0gina de configuraci\u00f3 del teclat eslovac"
   },
   "smiley": {
-    "message": "emoticona"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
-    "message": "Modest"
+    "message": "Moderat"
   },
   "sound_on_keypress": {
     "message": "So en pr\u00e9mer una tecla"
@@ -3158,13 +3200,13 @@
     "message": "espai"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Llisqueu cap a l'esquerra per suprimir paraules senceres."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "Llisqueu cap a la dreta per restaurar paraules."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Llisqueu cap a l'esquerra o cap a la dreta per moure el cursor."
   },
   "switch_to": {
     "message": "canvia per "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "Teclat en pantalla"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "P\u00e0gina de configuraci\u00f3 del teclat turc F"
   },
   "tr_tur_settings_page": {
     "message": "P\u00e0gina de configuraci\u00f3 del teclat turc"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "Esborra-ho tot"
   },
+  "user_dict_edit": {
+    "message": "Edita les entrades del diccionari"
+  },
   "user_dict_manage": {
     "message": "Gestiona el diccionari personal..."
   },
@@ -3329,7 +3377,7 @@
     "message": "Desa"
   },
   "user_dict_sync": {
-    "message": "Sincronitza el diccionari personal."
+    "message": "Sincronitza el diccionari personal"
   },
   "user_dict_title": {
     "message": "Diccionari personal"
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Espera"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Tipus de teclat"

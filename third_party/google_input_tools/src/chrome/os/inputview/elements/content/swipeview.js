@@ -16,33 +16,32 @@ goog.provide('i18n.input.chrome.inputview.elements.content.SwipeView');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.events');
-goog.require('goog.fx.Animation');
+goog.require('goog.fx.Transition');
 goog.require('goog.fx.dom.FadeOut');
 goog.require('goog.fx.dom.PredefinedEffect');
 goog.require('goog.fx.easing');
+goog.require('goog.log');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.Statistics');
+goog.require('i18n.input.chrome.events.KeyCodes');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.events.EventType');
-goog.require('i18n.input.chrome.inputview.events.KeyCodes');
 goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
 
 goog.scope(function() {
 var CandidateView = i18n.input.chrome.inputview.elements.content.CandidateView;
-var Container = i18n.input.chrome.inputview.KeyboardContainer;
 var ContextType = i18n.input.chrome.message.ContextType;
 var Css = i18n.input.chrome.inputview.Css;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var EventType = i18n.input.chrome.inputview.events.EventType;
-var KeyCodes = i18n.input.chrome.inputview.events.KeyCodes;
+var KeyCodes = i18n.input.chrome.events.KeyCodes;
 var SwipeDirection = i18n.input.chrome.inputview.SwipeDirection;
 var content = i18n.input.chrome.inputview.elements.content;
-var util = i18n.input.chrome.inputview.util;
 
 
 
@@ -89,20 +88,12 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
   this.surroundingText_ = '';
 
   /**
-   * The ending position of the selection in the surrounding text. This value
-   * indicates caret position if there is no selection.
+   * The offset position of the surrounding text. This value
+   * indicates the absolute position of the first character of surrounding text.
    *
    * @private {number}
    */
-  this.surroundingTextFocus_ = 0;
-
-  /**
-   * The beginning position of the selection in the surrounding text. This value
-   * indicates current caret position if there is no selection.
-   *
-   * @private {number}
-   */
-  this.surroundingTextAnchor_ = 0;
+  this.surroundingTextOffset_ = 0;
 
   /**
    * List of recent words that have been deleted in the order that they
@@ -225,7 +216,6 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
    */
   this.backwardMoves_ = 0;
 
-
   /**
    * Whether the current track is selection or deletion.
    *
@@ -233,13 +223,41 @@ i18n.input.chrome.inputview.elements.content.SwipeView = function(
    */
   this.isSelection_ = true;
 
-
   /**
    * Triggering event identifier.
    *
    * @private {number|undefined}
    */
   this.eventIdentifier_;
+
+
+  /**
+   * Relative surrounding text when the deletion track first shows.
+   *
+   * @private {!string}
+   */
+  this.initialSurroundingText_ = '';
+
+  /**
+   * Total surrounding text length when the deletion track first shows.
+   *
+   * @private {!number}
+   */
+  this.initialSurroundingTextLength_ = 0;
+
+  /**
+   * Number of deletion noops.
+   *
+   * @private {!number}
+   */
+  this.noopCount_ = 0;
+
+  /**
+   * Logger for SwipeView.
+   * @private {goog.log.Logger}
+   */
+  this.logger_ = goog.log.getLogger(
+      'i18n.input.chrome.inputview.elements.content.SwipeView');
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.SwipeView,
     i18n.input.chrome.inputview.elements.Element);
@@ -281,15 +299,6 @@ SwipeView.FINGER_DISTANCE_TO_CANCEL_SWIPE_ = 100;
  * @const
  */
 SwipeView.SEGMENT_WIDTH_ = 40;
-
-
-/**
- * The maximum surrounding text length that's provided.
- *
- * @private {number}
- * @const
- */
-SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ = 100;
 
 
 /**
@@ -379,50 +388,60 @@ SwipeView.prototype.isArmed = function() {
 SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
   if (this.adapter_.isPasswordBox()) {
     this.surroundingText_ = '';
-    this.surroundingTextAnchor_ = 0;
-    this.surroundingTextFocus_ = 0;
+    this.surroundingTextOffset_ = 0;
     return;
   }
-  this.surroundingTextAnchor_ = e.anchor;
-  this.surroundingTextFocus_ = e.focus;
-  var text = e.text || '';
+  // Extract text before the cursor.
+  var text = e.textBeforeCursor || '';
+  if (this.surroundingText_ == text &&
+      this.surroundingTextOffset_ == e.offset) {
+    // Duplicate event.
+    return;
+  }
+  // Cache old values.
   var oldText = this.surroundingText_;
-  var diff = '';
-  if (oldText == text) {
-    console.error('Duplicate surrounding text event.');
+  var oldOffset = this.surroundingTextOffset_;
+  // Update stored values.
+  this.surroundingTextOffset_ = e.offset;
+  this.surroundingText_ = text;
+  // Check for selection in progress.
+  if (e.anchor != e.focus) {
     return;
   }
-  if (util.isLetterDelete(oldText, text)) {
-    diff = oldText.slice(-1);
-  // Check if the transformation from oldtext to text was a single letter being
-  // restored.
-  } else if (util.isLetterRestore(oldText, text)) {
+  var diff = '';
+  var delta = (oldText.length + oldOffset) -
+      (text.length + e.offset);
+  if (delta > 0) {
+    // Deletion occurred.
+    if (delta <= oldText.length) {
+      diff = oldText.slice(-delta);
+    } else {
+      // First OSTC event, ignore.
+      return;
+    }
+  } else if (delta < 0) {
+    // Text inserted.
     // Handle blink bug where ctrl+delete deletes a space and inserts
     // a &nbsp.
     // Convert &nbsp to ' ' and remove from delete words since blink
     // did a minirestore for us.
-    var letter = text[text.length - 1];
-    if (letter == SwipeView.NBSP_CHAR_ ||
-        letter == ' ') {
+    var restored = text.slice(delta);
+    var letter = restored[0];
+    if (letter == SwipeView.NBSP_CHAR_) {
       var lastDelete = this.deletedWords_.pop();
-      var firstChar = (lastDelete && lastDelete[0]) || '';
-      if (firstChar == SwipeView.NBSP_CHAR_ ||
-          firstChar == ' ') {
-        this.deletedWords_.push(lastDelete.slice(1));
+      if (lastDelete) {
+        var firstChar = lastDelete[0] || '';
+        if (firstChar != ' ') {
+          // Not in the edge case mentioned, restore the deletion.
+          this.deletedWords_.push(lastDelete);
+        } else {
+          // First character was the extra ' '.
+          this.deletedWords_.push(lastDelete.slice(1));
+        }
       }
     }
-  // The current surrounding text may have been cut off since it exceeds
-  // the maximum surrounding text length.
-  } else if (e.text.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_ ||
-      oldText.length == SwipeView.MAX_SURROUNDING_TEXT_LENGTH_) {
-    // Check if a word was deleted from oldText.
-    var candidate = oldText.trim().split(' ').pop();
-    if (util.isPossibleDelete(oldText, text, candidate)) {
-      var location = oldText.lastIndexOf(candidate);
-      diff = oldText.slice(location);
-    }
   } else {
-    diff = oldText.substring(text.length);
+    goog.log.warning(this.logger_, 'Unexpected OSTC event.');
   }
   if (diff) {
     this.deletedWords_.push(diff);
@@ -430,7 +449,31 @@ SwipeView.prototype.onSurroundingTextChanged_ = function(e) {
   } else if (!this.isVisible()) {
     this.deletedWords_ = [];
   }
-  this.surroundingText_ = text;
+};
+
+
+/**
+ * Attempts to restore the original text input.
+ *
+ * @private
+ * @return {boolean} Whether it was successful.
+ */
+SwipeView.prototype.restoreOriginalText_ = function() {
+  var restoreLength = (this.initialSurroundingTextLength_) -
+      (this.surroundingText_.length + this.surroundingTextOffset_);
+  // Native undo does not work well with composition text. First try to
+  // compute the delta between what the text was when gesture deletion was
+  // triggered, and what it is now.
+  if (restoreLength > 0 &&
+      restoreLength <= this.initialSurroundingText_.length) {
+    this.adapter_.commitText(
+        this.initialSurroundingText_.slice(-restoreLength));
+    // Prevent using this again.
+    this.initialSurroundingText_ = '';
+    this.initialSurroundingTextLength_ = 0;
+    return true;
+  }
+  return false;
 };
 
 
@@ -474,31 +517,47 @@ SwipeView.prototype.swipeToDelete_ = function(e) {
   if (direction & SwipeDirection.LEFT) {
     this.forwardMoves_ += delta;
     for (var i = 0; i < delta; i++) {
-      this.adapter_.sendKeyDownAndUpEvent(
-          '\u0008', KeyCodes.BACKSPACE, undefined, undefined, {
-            ctrl: true,
-            shift: false
-          });
+      if (this.surroundingText_ == '') {
+        // Empty text, nothing to delete.
+        this.noopCount_++;
+      } else {
+        this.adapter_.sendKeyDownAndUpEvent(
+            '\u0008', KeyCodes.BACKSPACE, undefined, undefined, {
+              ctrl: true,
+              shift: false
+            });
+      }
     }
   } else if (direction & SwipeDirection.RIGHT) {
     this.backwardMoves_ += delta;
     for (var i = 0; i < delta; i++) {
-      var word = this.deletedWords_.pop();
-      if (word) {
-        this.adapter_.commitText(word);
-      }
       // Restore text we deleted before the track came up, but part of the
       // same gesture.
       if (this.isAtOrigin()) {
-        word = this.deletedWords_.pop();
-        if (word) {
-          this.adapter_.commitText(word);
+        if (!this.restoreOriginalText_() && this.noopCount_ == 0) {
+          // Unable to use onSurroundingText, as long as there are no noop undos
+          // use a native undo for the final undo.
+          this.adapter_.sendKeyDownAndUpEvent(
+              '\u007a', KeyCodes.KEY_Z, undefined, undefined, {
+                ctrl: true,
+                shift: false
+              });
         }
+        this.noopCount_ = 0;
         break;
+      }
+      if (this.noopCount_ > 0) {
+        this.noopCount_--;
+      } else {
+        this.adapter_.sendKeyDownAndUpEvent(
+            '\u007a', KeyCodes.KEY_Z, undefined, undefined, {
+              ctrl: true,
+              shift: false
+            });
       }
     }
   } else {
-    console.error('Unexpected swipe direction: ' + direction);
+    goog.log.warning(this.logger_, 'Unexpected swipe direction: ' + direction);
   }
 };
 
@@ -521,8 +580,6 @@ SwipeView.prototype.setKeysetSupported = function(supported) {
  * @private
  */
 SwipeView.prototype.swipeToSelect_ = function(e) {
-  // Cache whether we were tracking as highlight may change this.
-  var alreadyTracking = this.tracking_;
   var previousIndex = this.getHighlightedIndex();
   var direction = this.swipeOnTrack(e.x, e.y);
   // Swipe did not change track index, ignore.
@@ -531,7 +588,7 @@ SwipeView.prototype.swipeToSelect_ = function(e) {
   }
   var index = this.getHighlightedIndex();
   if (index == -1) {
-    console.error('Invalid track index.');
+    goog.log.warning(this.logger_, 'Invalid track index.');
     return;
   }
   // TODO: Set selectWord to true if the shift key is currently pressed.
@@ -542,14 +599,14 @@ SwipeView.prototype.swipeToSelect_ = function(e) {
   } else if (direction & SwipeDirection.RIGHT) {
     code = KeyCodes.ARROW_RIGHT;
   } else {
-    console.error('Unexpected swipe direction: ' + direction);
+    goog.log.warning(this.logger_, 'Unexpected swipe direction: ' + direction);
     return;
   }
   // Finger swipes sometimes go over multiple tracks. Complete the action for
   // each.
   var delta = Math.abs(index - previousIndex);
   if (delta < 0) {
-    console.error('Swipe index did not change.');
+    goog.log.warning(this.logger_, 'Swipe index did not change.');
   }
   if (this.ltr && code == KeyCodes.ARROW_LEFT ||
       !this.ltr && code == KeyCodes.ARROW_RIGHT) {
@@ -598,12 +655,15 @@ SwipeView.prototype.handleSwipeAction_ = function(e) {
       // finger movement.
       return;
     }
-    if (e.direction & i18n.input.chrome.inputview.SwipeDirection.LEFT) {
+    if (e.direction & SwipeDirection.LEFT) {
       var key = /** @type {!content.FunctionalKey} */ (e.view);
       // Equivalent to a longpress.
       if (this.isDeletionEnabled()) {
         this.showDeletionTrack(key, e.identifier, true);
       }
+    } else if (e.direction & SwipeDirection.RIGHT) {
+      this.restoreOriginalText_();
+      this.armed_ = false;
     }
     return;
   }
@@ -630,6 +690,9 @@ SwipeView.prototype.handlePointerAction_ = function(e) {
       if (e.type == EventType.POINTER_DOWN) {
         if (this.adapter_.contextType != ContextType.URL) {
           this.armed_ = true;
+          this.initialSurroundingText_ = this.surroundingText_;
+          this.initialSurroundingTextLength_ =
+              this.surroundingText_.length + this.surroundingTextOffset_;
         }
         this.deletedWords_ = [];
       } else if (e.type == EventType.POINTER_UP ||
@@ -749,7 +812,6 @@ SwipeView.prototype.showDeletionTrack_ = function(x, y, width, height) {
   if (this.ltr) {
     goog.dom.classlist.add(this.getElement(), Css.LEFT_TO_RIGHT);
   }
-  var ltr = this.ltr;
   for (var i = 0; i < SwipeView.LENGTH_; i++) {
     var keyElem = this.addKey_();
     goog.style.setSize(keyElem, width, height);
@@ -778,6 +840,12 @@ SwipeView.prototype.showDeletionTrack_ = function(x, y, width, height) {
   if (this.highlightIndex_ != SwipeView.INVALID_INDEX_) {
     var elem = this.trackElements_[this.highlightIndex_];
     this.setElementBackground_(elem, true);
+  }
+  if (this.adapter_.contextType == ContextType.NUMBER ||
+      this.adapter_.contextType == ContextType.PHONE) {
+    goog.dom.classlist.add(this.coverElement_, Css.NUMERIC_LAYOUT);
+  } else {
+    goog.dom.classlist.remove(this.coverElement_, Css.NUMERIC_LAYOUT);
   }
   goog.style.setElementShown(this.coverElement_, true);
   this.triggeredBy && this.triggeredBy.setHighlighted(true);
@@ -839,7 +907,7 @@ SwipeView.prototype.showSelectionTrack_ = function(x, y, width, height) {
 
     keyElem = this.addSeparator_(width, height);
     goog.style.setSize(keyElem, width, height);
-    this.trackElements_.push(keyElem);
+    this.trackElements_.push(keyElem || undefined);
 
     if (this.ltr) {
       keyElem = this.addKey_();
@@ -861,6 +929,12 @@ SwipeView.prototype.showSelectionTrack_ = function(x, y, width, height) {
       'right': 0,
       'top': y
     });
+  }
+  if (this.adapter_.contextType == ContextType.NUMBER ||
+      this.adapter_.contextType == ContextType.PHONE) {
+    goog.dom.classlist.add(this.coverElement_, Css.NUMERIC_LAYOUT);
+  } else {
+    goog.dom.classlist.remove(this.coverElement_, Css.NUMERIC_LAYOUT);
   }
   goog.style.setElementShown(this.coverElement_, true);
   this.triggeredBy && this.triggeredBy.setHighlighted(true);
@@ -973,7 +1047,7 @@ ScaleAtPoint.prototype.updateStyle = function() {
  */
 SwipeView.prototype.onFadeStarted_ = function() {
   goog.events.unlisten(this.fadeAnimation_,
-      goog.fx.Animation.EventType.BEGIN,
+      goog.fx.Transition.EventType.BEGIN,
       this.onFadeStarted_);
   this.scaleAnimation_.play();
 };
@@ -990,7 +1064,7 @@ SwipeView.prototype.animateRipple_ = function(x, y) {
   goog.style.setPosition(this.ripple_, x, y);
   goog.style.setStyle(this.ripple_, 'transform', '');
   goog.style.setElementShown(this.ripple_, true);
-  goog.events.listen(this.fadeAnimation_, goog.fx.Animation.EventType.BEGIN,
+  goog.events.listen(this.fadeAnimation_, goog.fx.Transition.EventType.BEGIN,
       this.onFadeStarted_.bind(this));
   this.fadeAnimation_.play();
 };
@@ -1020,6 +1094,9 @@ SwipeView.prototype.hide_ = function() {
   this.trackElements_ = [];
   this.tracking_ = false;
   this.eventIdentifier_ = undefined;
+  this.noopCount_ = 0;
+  this.initialSurroundingText_ = '';
+  this.initialSurroundingTextLength_ = 0;
   if (this.triggeredBy) {
     this.triggeredBy.setHighlighted(false);
   }
@@ -1217,6 +1294,13 @@ SwipeView.prototype.isDeletionEnabled = function() {
   // TODO: Omni bar sends wrong anchor/focus when autocompleting
   // URLs. Re-enable when that is fixed.
   if (this.adapter_.contextType == ContextType.URL) {
+    return false;
+  }
+  // TODO(rsadam): Re-enable when ctrl+z is fixed on gmail.
+  if (this.adapter_.isGoogleMail()) {
+    return false;
+  }
+  if (this.adapter_.isPasswordBox()) {
     return false;
   }
   if (this.adapter_.isA11yMode) {

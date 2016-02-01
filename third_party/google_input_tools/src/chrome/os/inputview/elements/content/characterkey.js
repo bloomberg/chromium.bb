@@ -16,9 +16,9 @@ goog.provide('i18n.input.chrome.inputview.elements.content.CharacterKey');
 goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.State');
 goog.require('goog.array');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Character');
 goog.require('i18n.input.chrome.inputview.elements.content.CharacterModel');
 goog.require('i18n.input.chrome.inputview.elements.content.SoftKey');
@@ -59,7 +59,7 @@ i18n.input.chrome.inputview.elements.content.CharacterKey = function(id,
     keyCode, characters, isLetterKey, hasAltGrCharacterInTheKeyset,
     alwaysRenderAltGrCharacter, stateManager, isRTL,
     enableShiftRendering, opt_eventTarget) {
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       CHARACTER_KEY, opt_eventTarget);
 
   /**
@@ -213,6 +213,7 @@ CharacterKey.prototype.getAltCharacters =
       goog.array.insert(altCharacters, ch);
     }
   }
+  goog.array.removeDuplicates(altCharacters);
   return altCharacters;
 };
 

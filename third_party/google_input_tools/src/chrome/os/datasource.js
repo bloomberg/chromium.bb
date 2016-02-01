@@ -30,7 +30,7 @@ var EventTarget = goog.events.EventTarget;
  *
  * @param {number} numOfCanddiate The number of canddiate to fetch.
  * @param {function(string, !Array.<!Object>)} candidatesCallback .
- * @param {function(!Array.<string>)} gestureCallback .
+ * @param {function(!Object)} gestureCallback .
  * @constructor
  * @extends {EventTarget}
  */
@@ -48,7 +48,7 @@ i18n.input.chrome.DataSource = function(numOfCanddiate, candidatesCallback,
   /** @protected {function(string, !Array.<!Object>)} */
   this.candidatesCallback = candidatesCallback;
 
-  /** @protected {function(!Array.<string>)} */
+  /** @protected {function(!Object)} */
   this.gestureCallback = gestureCallback;
 };
 var DataSource = i18n.input.chrome.DataSource;
@@ -234,22 +234,23 @@ goog.inherits(DataSource.CandidatesBackEvent, Event);
 
 
 /**
- * The gesture results are fetched back.
+ * The gesture response is fetched back.
  *
- * @param {!Array.<!string>} results The gesture results.
+ * @param {!{results: !Array<string>, commit: boolean}} response The response
+ *     from the gesture decoder.
  * @constructor
  * @extends {Event}
  */
-DataSource.GesturesBackEvent = function(results) {
+DataSource.GesturesBackEvent = function(response) {
   DataSource.GesturesBackEvent.base(
       this, 'constructor', DataSource.EventType.GESTURES_BACK);
 
   /**
-   * The gesture results list.
+   * The gesture response.
    *
-   * @type {!Array.<!string>}
+   * @type {!{results: !Array<string>, commit: boolean}}
    */
-  this.results = results;
+  this.response = response;
 };
 goog.inherits(DataSource.GesturesBackEvent, Event);
 

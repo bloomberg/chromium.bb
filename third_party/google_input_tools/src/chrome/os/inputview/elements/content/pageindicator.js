@@ -21,7 +21,7 @@ goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 
@@ -29,7 +29,7 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
  * The indicator of the current page index.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor

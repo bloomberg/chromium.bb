@@ -15,6 +15,7 @@ goog.provide('i18n.input.chrome.FloatingWindow');
 
 goog.require('goog.dom.DomHelper');
 goog.require('goog.dom.TagName');
+goog.require('goog.math.Coordinate');
 goog.require('goog.style');
 goog.require('goog.ui.Container');
 goog.require('i18n.input.chrome.Env');
@@ -124,6 +125,17 @@ FloatingWindow.prototype.reposition = function(position) {
   if (outerBounds.left != position.x || outerBounds.top != position.y) {
     outerBounds.setPosition(position.x, position.y);
   }
+};
+
+
+/**
+ * Gets the position of the floating window.
+ *
+ * @return {!goog.math.Coordinate} The top teft coordinate of the screen.
+ */
+FloatingWindow.prototype.getPosition = function() {
+  var outerBounds = this.parentWindow.outerBounds;
+  return new goog.math.Coordinate(outerBounds.left, outerBounds.top);
 };
 
 

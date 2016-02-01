@@ -52,7 +52,7 @@ Statistics.LayoutTypes = {
  * The commit type for stats.
  * Keep this in sync with the enum IMECommitType2 in histograms.xml file in
  * chromium.
- * For adding new items, please append it at the end.
+ * Please append new items at the end.
  *
  * @enum {number}
  */
@@ -68,6 +68,33 @@ Statistics.CommitTypes = {
   VOICE: 8,
   MAX: 9
 };
+
+
+/**
+ * The event type for gestures typing actions.
+ * Keep this in sync with the enum IMEGestureEventType in histograms.xml file in
+ * chromium.
+ * Please append new items at the end.
+ *
+ * @enum {number}
+ */
+Statistics.GestureTypingEvent = {
+  TYPED: 0,
+  DELETED: 1,
+  REPLACED_0: 2, // User chooses 1st suggestion.
+  REPLACED_1: 3, // User chooses 2nd suggestion.
+  REPLACED_2: 4, // User chooses 3rd suggestion.
+  MAX: 5
+};
+
+
+/**
+ * Name to use when logging gesture typing metrics.
+ *
+ * @const {string}
+ */
+Statistics.GESTURE_TYPING_METRIC_NAME =
+    'InputMethod.VirtualKeyboard.GestureTypingEvent';
 
 
 /**

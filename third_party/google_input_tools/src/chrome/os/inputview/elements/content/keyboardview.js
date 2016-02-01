@@ -17,9 +17,10 @@ goog.require('goog.Timer');
 goog.require('goog.dom.classlist');
 goog.require('goog.math.Coordinate');
 goog.require('goog.object');
+goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Covariance');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.GaussianEstimator');
 goog.require('i18n.input.chrome.inputview.elements.layout.VerticalLayout');
 
@@ -27,7 +28,7 @@ goog.require('i18n.input.chrome.inputview.elements.layout.VerticalLayout');
 goog.scope(function() {
 var layout = i18n.input.chrome.inputview.elements.layout;
 var content = i18n.input.chrome.inputview.elements.content;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 

@@ -15,9 +15,9 @@ goog.provide('i18n.input.chrome.inputview.elements.content.ModifierKey');
 
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.StateType');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 
 
@@ -45,7 +45,7 @@ var Css = i18n.input.chrome.inputview.Css;
 i18n.input.chrome.inputview.elements.content.ModifierKey = function(id, name,
     iconCssClass, toState, stateManager, supportSticky, opt_eventTarget) {
   goog.base(this, id,
-      i18n.input.chrome.inputview.elements.ElementType.MODIFIER_KEY,
+      i18n.input.chrome.ElementType.MODIFIER_KEY,
       name, iconCssClass, opt_eventTarget);
 
   /**

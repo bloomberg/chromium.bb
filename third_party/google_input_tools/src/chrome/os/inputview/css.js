@@ -111,6 +111,10 @@ i18n.input.chrome.inputview.Css = {
   GESTURE_CANVAS_VIEW: goog.getCssName('inputview-gesture-canvas-view'),
   GESTURE_EDITING_FINGER_TRACKER:
       goog.getCssName('inputview-gesture-editing-finger-tracker'),
+  GESTURE_PREVIEW_CONTAINER:
+      goog.getCssName('inputview-gesture-preview-container'),
+  GESTURE_PREVIEW_TEXT:
+      goog.getCssName('inputview-gesture-preview-text'),
   GESTURE_RIPPLE: goog.getCssName('inputview-gesture-ripple'),
   GLOBE_ICON: goog.getCssName('inputview-globe-icon'),
   HANDWRITING: goog.getCssName('inputview-handwriting'),
@@ -151,10 +155,6 @@ i18n.input.chrome.inputview.Css = {
   MENU_FOOTER_ITEM: goog.getCssName('inputview-menu-footer-item'),
   MENU_FOOTER_SETTING_BUTTON:
       goog.getCssName('inputview-menu-footer-setting-button'),
-  MENU_FOOTER_FLOATING_BUTTON:
-      goog.getCssName('inputview-menu-footer-floating-button'),
-  MENU_FOOTER_DOCKING_BUTTON:
-      goog.getCssName('inputview-menu-footer-docking-button'),
   MENU_ICON: goog.getCssName('inputview-menu-icon'),
   MENU_LIST_INDICATOR: goog.getCssName('inputview-menu-list-indicator'),
   MENU_LIST_INDICATOR_NAME:
@@ -165,6 +165,7 @@ i18n.input.chrome.inputview.Css = {
   MODIFIER: goog.getCssName('inputview-modifier'),
   MODIFIER_ON: goog.getCssName('inputview-modifier-on'),
   MODIFIER_STATE_ICON: goog.getCssName('inputview-modifier-state-icon'),
+  NUMERIC_LAYOUT: goog.getCssName('inputview-numeric'),
   PAGE_DOWN_ICON: goog.getCssName('inputview-page-down-icon'),
   PAGE_UP_ICON: goog.getCssName('inputview-page-up-icon'),
   PAGE_NAVI_INACTIVE: goog.getCssName('inputview-page-navi-inactive'),
@@ -173,7 +174,6 @@ i18n.input.chrome.inputview.Css = {
   PORTRAIT: goog.getCssName('inputview-portrait'),
   REDO_ICON: goog.getCssName('inputview-redo-icon'),
   REGULAR_SWITCHER: goog.getCssName('inputview-regular-switcher'),
-  RESIZE_BUTTON: goog.getCssName('inputview-resize-button'),
   RIGHT_KEY: goog.getCssName('inputview-right-key'),
   SELECT_ALL_ICON: goog.getCssName('inputview-select-all-icon'),
   SELECT_KNOB_LEFT: goog.getCssName('inputview-select-knob-left'),
@@ -181,7 +181,6 @@ i18n.input.chrome.inputview.Css = {
   SELECTION_TRACK: goog.getCssName('inputview-selection-track'),
   SHIFT_ICON: goog.getCssName('inputview-shift-icon'),
   SHRINK_CANDIDATES_ICON: goog.getCssName('inputview-shrink-candidates-icon'),
-  SMALL: goog.getCssName('inputview-small-keyboard'),
   SOFT_KEY: goog.getCssName('inputview-sk'),
   SOFT_KEY_VIEW: goog.getCssName('inputview-skv'),
   SPACE_ICON: goog.getCssName('inputview-space-icon'),

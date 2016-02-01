@@ -29,7 +29,7 @@ goog.scope(function() {
  * The abstract class for element in input view keyboard.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor
@@ -50,7 +50,7 @@ i18n.input.chrome.inputview.elements.Element = function(id, type,
   /**
    * The type of the element.
    *
-   * @type {!i18n.input.chrome.inputview.elements.ElementType}
+   * @type {!i18n.input.chrome.ElementType}
    */
   this.type = type;
 

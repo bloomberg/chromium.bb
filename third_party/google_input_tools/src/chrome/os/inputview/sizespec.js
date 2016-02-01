@@ -53,33 +53,6 @@ SizeSpec.NON_A11Y_CANDIDATE_VIEW_HEIGHT = 45;
 
 
 /**
- * The height of the candidate view for small size virtual keyboard.
- *
- * @const {number}
- */
-/** @const {number} */
-SizeSpec.SMALL_SIZE_CANDIDATE_VIEW_HEIGHT = 30;
-
-
-/**
- * The height of the small size virtual keyboard.
- *
- * @const {number}
- */
-/** @const {number} */
-SizeSpec.SMALL_SIZE_HEIGHT = 230;
-
-
-/**
- * The width of the small size virtual keyboard.
- *
- * @const {number}
- */
-/** @const {number} */
-SizeSpec.SMALL_SIZE_WIDTH = 350;
-
-
-/**
  * The width percent of a11y keyboard in landscape mode or portrait mode.
  *
  * @enum {number}

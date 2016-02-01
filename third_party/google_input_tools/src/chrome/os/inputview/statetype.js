@@ -27,4 +27,3 @@ i18n.input.chrome.inputview.StateType = {
   CTRL: 8,
   ALT: 16
 };
-

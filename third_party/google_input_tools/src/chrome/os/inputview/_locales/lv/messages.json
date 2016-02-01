@@ -6,7 +6,7 @@
     "message": "Pievienot personiskajai v\u0101rdn\u012bcai"
   },
   "add_word_to_dictionary": {
-    "message": "Pievienot \u201c$1\u201d v\u0101rdn\u012bcai",
+    "message": "Pievienot v\u0101rdu \u201c$1\u201d v\u0101rdn\u012bcai",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -17,25 +17,25 @@
     "message": "Papildu"
   },
   "alt": {
-    "message": "tausti\u0146\u0161 Alt"
+    "message": "altern\u0113\u0161anas tausti\u0146\u0161"
   },
   "altgr": {
-    "message": "Tausti\u0146\u0161 AltGr"
+    "message": "tausti\u0146\u0161 AltGr"
   },
   "always_auto_correct": {
-    "message": "Agres\u012bvs"
+    "message": "Agres\u012bvi"
   },
   "am_phonetic_arm_settings_page": {
     "message": "Arm\u0113\u0146u fon\u0113tisk\u0101s tastat\u016bras iestat\u012bjumu lapa"
   },
   "appnamejpkeyboard": {
-    "message": "Google jap\u0101\u0146u valodas ievade (jap\u0101\u0146u valodas tastat\u016brai)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Google jap\u0101\u0146u valodas ievade (ASV tastat\u016brai)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
-    "message": "Autom\u0101tisk\u0101 labo\u0161ana"
+    "message": "Autom\u0101tiska labo\u0161ana"
   },
   "backspace": {
     "message": "atpaka\u013catk\u0101pes tausti\u0146\u0161"
@@ -59,28 +59,28 @@
     "message": "Bulg\u0101ru fon\u0113tisk\u0101s tastat\u016bras iestat\u012bjumu lapa"
   },
   "br_por_settings_page": {
-    "message": "Braz\u012b\u013cu tastat\u016bras (Braz\u012blijas portug\u0101\u013cu valodas) iestat\u012bjumu lapa"
+    "message": "Braz\u012blie\u0161u tastat\u016bras (Braz\u012blijas portug\u0101\u013cu valodas) iestat\u012bjumu lapa"
   },
   "by_bel_settings_page": {
     "message": "Baltkrievu tastat\u016bras iestat\u012bjumu lapa"
   },
   "ca_eng_eng_settings_page": {
-    "message": "Kan\u0101das ang\u013cu valodas tastat\u016bras (ang\u013cu valodas) iestat\u012bjumu lapa"
+    "message": "Kan\u0101das ang\u013cu valodas tastat\u016bras (ang\u013cu) iestat\u012bjumu lapa"
   },
   "ca_fra_settings_page": {
-    "message": "Kan\u0101das fran\u010du valodas tastat\u016bras (fran\u010du valodas) iestat\u012bjumu lapa"
+    "message": "Kan\u0101das fran\u010du valodas tastat\u016bras (fran\u010du) iestat\u012bjumu lapa"
   },
   "ca_multix_fra_settings_page": {
-    "message": "Kan\u0101das daudzvalodu tastat\u016bras (fran\u010du valodas) iestat\u012bjumu lapa"
+    "message": "Kan\u0101das daudzvalodu tastat\u016bras (fran\u010du) iestat\u012bjumu lapa"
   },
   "capital": {
     "message": "lielais burts"
   },
   "capslock": {
-    "message": "tausti\u0146\u0161 CapsLock"
+    "message": "burtsl\u0113ga tausti\u0146\u0161"
   },
   "ch_fr_fra_settings_page": {
-    "message": "\u0160veices fran\u010du valodas tastat\u016bras (fran\u010du valodas) iestat\u012bjumu lapa"
+    "message": "\u0160veices fran\u010du valodas tastat\u016bras (fran\u010du) iestat\u012bjumu lapa"
   },
   "ch_ger_settings_page": {
     "message": "\u0160veicie\u0161u tastat\u016bras (v\u0101cu valodas) iestat\u012bjumu lapa"
@@ -89,79 +89,79 @@
     "message": "Izmantojot oper\u0113t\u0101jsist\u0113mai Chrome\u00a0OS paredz\u0113tos Google ievades r\u012bkus, Chrome\u00a0OS ier\u012bc\u0113 varat rakst\u012bt vajadz\u012bgaj\u0101 valod\u0101."
   },
   "chos_inputtool_title": {
-    "message": "Google ievades\u00a0r\u012bki"
+    "message": "Google ievades r\u012bki"
   },
   "compositionmodedirect": {
-    "message": "Tie\u0161\u0101 ievade"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "Plats lat\u012b\u0146u"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "Lat\u012b\u0146u valoda"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Pusplatuma katakana"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "Pamata"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Not\u012br\u012bt personaliz\u0101cijas datus..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Atcelt"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "P\u0101rv\u0113r\u0161anas v\u0113sture"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "Dz\u0113st \u0161\u0101dus vienumus:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Not\u012br\u012bt personaliz\u0101cijas datus"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Ieteikumu v\u0113sture"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Not\u012br\u012bt personaliz\u0101cijas datus"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Autorties\u012bbas\u00a0\u00a9\u00a02013 Google Inc. Visas ties\u012bbas patur\u0113tas."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Atcelt"
+    "message": "Cancel"
   },
   "configdialogok": {
-    "message": "Labi"
+    "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "P\u0101rvald\u012bt lietot\u0101ja v\u0101rdn\u012bcu..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Pievienojiet pats savus v\u0101rdus lietot\u0101ja v\u0101rdn\u012bcai, lai piel\u0101gotu p\u0101rv\u0113r\u0161anas kandid\u0101tus."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Lietot\u0101ja v\u0101rdn\u012bcas"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Atsp\u0113jot personaliz\u0113tu p\u0101rv\u0113r\u0161anu un ierosin\u0101jumus, k\u0101 ar\u012b lietot\u0101ja v\u0101rdn\u012bcu"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Ievades pal\u012bdz\u012bba"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "\u0160\u012bs programmat\u016bras darb\u012bbu nodro\u0161ina <a href=\"./credits_en.html\"> atkl\u0101t\u0101 pirmkoda programmat\u016bra</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Ievades re\u017e\u012bms:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,28 +170,28 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Konfidencialit\u0101te"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Interpunkcijas stils:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Atlases sa\u012bsne:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Nav sa\u012bsnes"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Tausti\u0146u piesaistes stils:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
   },
   "configsessionkeymapchromeos": {
-    "message": "Chrome\u00a0OS"
+    "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Piel\u0101gota tausti\u0146u piesaiste"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,58 +200,58 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Jap\u0101\u0146u valodas ievades iestat\u012bjumi"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Shift tausti\u0146a re\u017e\u012bma sl\u0113dzis:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Burtciparu"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "Izsl\u0113gts"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Atstarpes ievades stils:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Sekot ievades re\u017e\u012bmam"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "Pilna platuma"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Pusplatuma"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Ierosin\u0101jumu skaits"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Ieteikt"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Simbolu stils:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Autom\u0101tiski s\u016bt\u012bt lietojuma statistiku un av\u0101riju p\u0101rskatus Google serveriem"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Autom\u0101tiski p\u0101rsl\u0113gt uz pusplatumu"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Lietot sist\u0113mas v\u0101rdn\u012bcu"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Lietot ievades v\u0113sturi"
+    "message": "Use input history"
   },
   "ctrl": {
-    "message": "tausti\u0146\u0161 Ctrl"
+    "message": "vad\u012b\u0161anas tausti\u0146\u0161"
   },
   "current_keyboard_prefix": {
-    "message": "pa\u0161laik atlas\u012btais atsl\u0113gv\u0101rds "
+    "message": "pa\u0161laik atlas\u012bt\u0101 tastat\u016bra "
   },
   "current_lang": {
     "message": "Ievades valoda ir \u0137\u012bnie\u0161u valoda."
@@ -269,919 +269,919 @@
     "message": "\u010cehu QWERTY tastat\u016bras iestat\u012bjumu lapa"
   },
   "d83c_dc04": {
-    "message": "Mad\u017eonga sp\u0113les kauli\u0146\u0161"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "D\u017eokera k\u0101rts"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "asinsgrupa\u00a0A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "asinsgrupa\u00a0B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "asinsgrupa\u00a0O"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "autost\u0101vvieta"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "asinsgrupa\u00a0AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
-    "message": "z\u012bme\u00a0CL"
+    "message": "CL"
   },
   "d83c_dd92": {
-    "message": "for\u0161i"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "bez maksas"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "jaunums"
+    "message": "New"
   },
   "d83c_dd96": {
-    "message": "z\u012bme\u00a0NG"
+    "message": "NG"
   },
   "d83c_dd97": {
-    "message": "labi"
+    "message": "OK"
   },
   "d83c_dd98": {
-    "message": "z\u012bme\u00a0SOS"
+    "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "z\u012bme\u00a0UP!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
-    "message": "pret"
+    "message": "versus"
   },
   "d83c_de01": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201c\u0161eit\u201d"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201cpakalpojums\u201d"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201cbr\u012bvs\u201d"
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201crezerv\u0113ts\u201d"
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201caizliegts\u201d"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201cbr\u012bva vieta\u201d"
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201ccaurlaide\u201d"
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201cpilns\u201d"
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201cmaksa\u201d"
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201cikm\u0113ne\u0161a\u201d"
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201cpieteikums\u201d"
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201catlaide\u201d"
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201cbizness\u201d"
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "jap\u0101\u0146u v\u0101rds \u201cpriek\u0161roc\u012bba\u201d"
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "\u0137\u012bnie\u0161u v\u0101rds \u201capstiprin\u0101ts\u201d"
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "ciklons"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "miglains"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "lietussargs"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "zvaigznes nakt\u012b"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "saull\u0113kts virs kalniem"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "saull\u0113kts"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "pils\u0113ta mijkr\u0113sl\u012b"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "saulriets"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "varav\u012bksne"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "tilts nakt\u012b"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "vilnis"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "vulk\u0101ns"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "Piena ce\u013c\u0161"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "Eiropa un \u0100frika uz globusa"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "Dienvidamerika un Zieme\u013camerika uz globusa"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "\u0100zija un Austr\u0101lija uz globusa"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "globuss ar meridi\u0101niem"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "jauns m\u0113ness"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "augo\u0161s m\u0113ness (sirpis)"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "pirmais m\u0113ness ceturksnis"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "augo\u0161s m\u0113ness"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "pilnm\u0113ness"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "dilsto\u0161s m\u0113ness"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "p\u0113d\u0113jais m\u0113ness ceturksnis"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "dilsto\u0161s m\u0113ness (sirpis)"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "m\u0113ness sirpis"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "jauns m\u0113ness ar seju"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "augo\u0161s m\u0113ness ar seju"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "dilsto\u0161s m\u0113ness ar seju"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "pilnm\u0113ness ar seju"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "saule ar seju"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "mirdzo\u0161a zvaigzne"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "kr\u012bto\u0161a zvaigzne"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "kastanis"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "st\u0101di\u0146\u0161"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "skuju koks"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "lapu koks"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "palma"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "kaktuss"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulpe"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "\u0137ir\u0161u zieds"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "roze"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "hibiska zieds"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "saulespu\u0137e"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "pu\u0137e"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "kukur\u016bza"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "r\u012bss"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "augs"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "\u010detrlapu \u0101boli\u0146\u0161"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "k\u013cavas lapa"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "kr\u012bto\u0161as lapas"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "v\u0113ja p\u016bsta lapa"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "s\u0113ne"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "tom\u0101ts"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "bakla\u017e\u0101ns"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "v\u012bnogas"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "melone"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "arb\u016bzs"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "mandar\u012bns"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "citrons"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "ban\u0101ns"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "ananass"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "sarkans \u0101bols"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "za\u013c\u0161 \u0101bols"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "bumbieris"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "persiks"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "\u0137irsis"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "zemene"
+    "message": "strawberry"
   },
   "d83c_df54": {
-    "message": "hamburgers"
+    "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "picas \u0161\u0137\u0113le"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "ga\u013ca"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "vistas stilbi\u0146\u0161"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "r\u012bsu cepums"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "r\u012bsu bumba"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "v\u0101r\u012bti r\u012bsi"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "r\u012bsi ar kariju"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
-    "message": "n\u016bde\u013cu zupa"
+    "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "spageti"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "maize"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "fr\u012b kartupe\u013ci"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "cepts kartupelis"
+    "message": "roasted potato"
   },
   "d83c_df61": {
-    "message": "r\u012bsi uz koci\u0146a"
+    "message": "mochi"
   },
   "d83c_df62": {
-    "message": "uzkoda uz irbul\u012b\u0161a"
+    "message": "oden"
   },
   "d83c_df63": {
-    "message": "su\u0161i"
+    "message": "sushi"
   },
   "d83c_df64": {
-    "message": "cepta garnele"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "zivju k\u016bka"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "m\u012bksts sald\u0113jums"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "sorberts"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "sald\u0113jums"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "virtulis"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "cepums"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "\u0161okol\u0101de"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "konfekte"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "ledene uz koci\u0146a"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "olu kr\u0113ms"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "medus pods"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "k\u016bkas gabals"
+    "message": "shortcake"
   },
   "d83c_df71": {
-    "message": "pusdienu k\u0101rba"
+    "message": "bento"
   },
   "d83c_df72": {
-    "message": "saut\u0113jums"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "panna"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "dak\u0161a ar nazi"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "tas\u012bte"
+    "message": "teacup"
   },
   "d83c_df76": {
-    "message": "sak\u0113"
+    "message": "sake"
   },
   "d83c_df77": {
-    "message": "v\u012bns"
+    "message": "wine"
   },
   "d83c_df78": {
-    "message": "kokteilis"
+    "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "tropisks dz\u0113riens"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "alus"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "alus kausi"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "z\u012bdai\u0146a pudel\u012bte"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "lente"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "d\u0101vana"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "dzim\u0161anas dienas k\u016bka"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "Halov\u012bnu \u0137irbis"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "Ziemassv\u0113tku egl\u012bte"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "Ziemassv\u0113tku vec\u012btis"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "ugu\u0146o\u0161ana"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "br\u012bnumsvec\u012bte"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "balons"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "svin\u012bbu plauk\u0161\u0137ene"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "konfeti"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "koks ar pap\u012bra str\u0113mel\u0113m"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "sakrustoti karogi"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "prie\u017eu dekors"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "lelles"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "vimpelis ar ziv\u012bm"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "v\u0113ja zvani"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "l\u016bko\u0161an\u0101s uz m\u0113nesi"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "skolas soma"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "absolventa cepure"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "karuselis"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "panor\u0101mas rats"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "amerik\u0101\u0146u kalni\u0146i"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "mak\u0161\u0137er\u0113\u0161ana"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "mikrofons"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "kinokamera"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "kino"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "austi\u0146a"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "kr\u0101su palete"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "cilindrs"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "cirks"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "bi\u013cete"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "klap\u012bte"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "sejas maska"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "videosp\u0113le"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "tie\u0161s tr\u0101p\u012bjums"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "mon\u0113tu autom\u0101ts"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "biljards"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "metamais kauli\u0146\u0161"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "boulings"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "sp\u0113\u013cu k\u0101rts"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "nots"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "notis"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "saksofons"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "\u0123it\u0101ra"
+    "message": "guitar"
   },
   "d83c_dfb9": {
-    "message": "klavieres"
+    "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trompete"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "vijole"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "no\u0161u atsl\u0113ga"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "sporta krekls"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
-    "message": "teniss"
+    "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "sl\u0113pe"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "basketbols"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "r\u016btains karogs"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "snovbordists"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "skr\u0113j\u0113js"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "s\u0113rfo\u0161ana"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trofeja"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "zirgu skrie\u0161an\u0101s sac\u012bkstes"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "amerik\u0101\u0146u futbols"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "futbols"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "peld\u0113t\u0101js"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "m\u0101ja"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "m\u0101ja ar d\u0101rzu"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "biroju \u0113ka"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "pasta noda\u013ca Jap\u0101n\u0101"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "pasta noda\u013ca Eirop\u0101"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "slimn\u012bca"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "banka"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "bankom\u0101ts"
+    "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "viesn\u012bca"
+    "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "m\u012blas viesn\u012bca"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "p\u0101rtikas veikals"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "skola"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "univers\u0101lveikals"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "r\u016bpn\u012bca"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "sarkana laterna"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "jap\u0101\u0146u pils"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "eiropie\u0161u pils"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "\u017eurka"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "pele"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "v\u0113rsis"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "\u016bdens bifelis"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "govs"
+    "message": "cow"
   },
   "d83d_dc06": {
-    "message": "leopards"
+    "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "trusis"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "ka\u0137is"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "p\u016b\u0137is"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "krokodils"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "valis"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "gliemezis"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "\u010d\u016bska"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "zirgs"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "auns"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "kaza"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "aita"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "p\u0113rti\u0137is"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "gailis"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "c\u0101lis"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "suns"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "c\u016bka"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "kuilis"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "zilonis"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "asto\u0146k\u0101jis"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "glieme\u017ev\u0101ks"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "kukainis"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "skudra"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "bite"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "m\u0101r\u012bte"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "zivs"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "tropiska zivs"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "fugu zivs"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "bru\u0146urupucis"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "iz\u0161\u0137\u012blies c\u0101lis"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "maza c\u0101\u013ca seja"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "mazs c\u0101lis"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "putns"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "pingv\u012bns"
+    "message": "penguin"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "p\u016bdelis"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "vienkupra kamielis"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "divkupru kamielis"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "delf\u012bns"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "peles seja"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "govs seja"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "t\u012b\u0123era seja"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "tru\u0161a seja"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "ka\u0137a seja"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "p\u016b\u0137a seja"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "valis, kas iz\u0161\u013c\u0101c \u016bdeni"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "zirga seja"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "p\u0113rti\u0137a seja"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "su\u0146a seja"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "c\u016bkas seja"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "vardes seja"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "k\u0101mja seja"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "vilka seja"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "l\u0101\u010da seja"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "pandas seja"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "c\u016bkas deguns"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "\u0137epa"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "acis"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "auss"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "deguns"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "mute"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "m\u0113le"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "pirksts uz aug\u0161u"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "pirksts uz leju"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "pirksts pa kreisi"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "pirksts pa labi"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "savilkta d\u016bre"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "sveiciens"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "rokas \u017eests\u00a0OK"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "\u012bk\u0161\u0137is uz aug\u0161u"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "\u012bk\u0161\u0137is uz leju"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "aplausi"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "atv\u0113rtas plaukstas"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "kronis"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "sievie\u0161u cepure"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "brilles"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "kaklasaite"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "T\u00a0krekls"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "bikses"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "kleita"
+    "message": "dress"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1190,1198 +1190,1198 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "sievie\u0161u ap\u0123\u0113rbs"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "maks"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "rokassoma"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "maci\u0146\u0161"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "v\u012brie\u0161u kurpe"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "sporta kurpe"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "augstpap\u0113\u017eu kurpe"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "sievie\u0161u sandale"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "sievie\u0161u z\u0101baks"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "p\u0113das nospiedums"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "\u0137erme\u0146a aug\u0161da\u013cas siluets"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "\u0137erme\u0146a aug\u0161da\u013cu silueti"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "z\u0113ns"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "meitene"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "v\u012brietis"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "sieviete"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "\u0123imene"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "v\u012brietis un sieviete"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "divi v\u012brie\u0161i"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "divas sievietes"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "policists"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "za\u0137enes"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "l\u012bgava"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "gai\u0161matains cilv\u0113ks"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "\u0137\u012bnietis"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "v\u012brietis ar turb\u0101nu"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "pavec\u0101ks v\u012brietis"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "pavec\u0101ka sieviete"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "mazulis"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "celtnieks"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "princese"
+    "message": "princess"
   },
   "d83d_dc79": {
-    "message": "milzis"
+    "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "r\u016b\u0137is"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "spoks"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "e\u0146\u0123el\u012btis"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "citplan\u0113tietis"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "kosmosa briesmonis"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "veln\u0113ns"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "galvaskauss"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "inform\u0101cijas punkts"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "sargs"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "dejot\u0101js"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "l\u016bpukr\u0101sa"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "nagu lako\u0161ana"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "sejas mas\u0101\u017ea"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "matu grie\u0161ana"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "friz\u0113tava"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "\u0161\u013circe"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "tablete"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "sk\u016bpsta nospiedums"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "m\u012blest\u012bbas v\u0113stule"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "gredzens"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "d\u0101rgakmens"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "sk\u016bpsts"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "pu\u0161\u0137is"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "p\u0101ris"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "k\u0101zu kapela"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "puls\u0113jo\u0161a sirds"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "salauzta sirds"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "divas sirdis"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "dzirksto\u0161a sirds"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "sirds, kas palielin\u0101s"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "sirds ar bultu"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "zila sirds"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "za\u013ca sirds"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "dzeltena sirds"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "violeta sirds"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "sirds ar lent\u012bti"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "sirdis, kas grie\u017eas"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "ornaments ar sirdi"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "ziedlapi\u0146a"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "spuldz\u012bte"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "dusmas"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bumba ar laika degli"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "miega simbols"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "sadursme"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "\u0161lakatas"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "\u016bdens pile"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "strauja p\u0101rvieto\u0161an\u0101s"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "kaka"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "bicepss"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "apreibis"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "runas balons"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "domu balons"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "zieda z\u012bmogs"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "visaugst\u0101kais rezult\u0101ts"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "naudas maiss"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "val\u016btas mai\u0146a"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "dol\u0101ra z\u012bme"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "kred\u012btkarte"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "jenu banknotes"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "dol\u0101ru banknotes"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "eiro banknotes"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "m\u0101rci\u0146u banknotes"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "lidojo\u0161a nauda"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "akciju cenu pieaugums"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "s\u0113deklis"
+    "message": "seat"
   },
   "d83d_dcbb": {
-    "message": "person\u0101lais dators"
+    "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "portfelis"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "minidisks"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "diskete"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
-    "message": "disks"
+    "message": "blu-ray"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "failu mape"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "atv\u0113rta mape"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "dokuments"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "dokuments"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "kalend\u0101rs"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "nopl\u0113\u0161amais kalend\u0101rs"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "viz\u012btkar\u0161u tur\u0113t\u0101js"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "aug\u0161upejo\u0161a l\u012bkne"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "lejupejo\u0161a l\u012bkne"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "joslu diagramma"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "dokumentu tur\u0113t\u0101js"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "spraud\u012bte"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "spraud\u012bte ar apa\u013cu galu"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "saspraude"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "taisns line\u0101ls"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "tr\u012bsst\u016bra line\u0101ls"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "piez\u012bmju l\u012bmlapi\u0146as"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "virsgr\u0101mata"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "piez\u012bmju gr\u0101mati\u0146a"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "piez\u012bmju gr\u0101mati\u0146a ar ornamentiem"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "aizv\u0113rta gr\u0101mata"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "atv\u0113rta gr\u0101mata"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "za\u013ca gr\u0101mata"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "gr\u0101mata"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "oran\u017ea gr\u0101mata"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "gr\u0101matas"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "v\u0101rda lapi\u0146a"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "pergamenta rullis"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "piez\u012bme"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "t\u0101lrunis"
+    "message": "phone"
   },
   "d83d_dcdf": {
-    "message": "peid\u017eeris"
+    "message": "pager"
   },
   "d83d_dce0": {
-    "message": "fakss"
+    "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satel\u012bt\u0161\u0137\u012bvis"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "ska\u013crunis"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "megafons"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "nos\u016btne"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "ies\u016btne"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "d\u0101vanas paci\u0146a"
+    "message": "package"
   },
   "d83d_dce7": {
-    "message": "e-pasts"
+    "message": "email"
   },
   "d83d_dce8": {
-    "message": "ien\u0101ko\u0161a v\u0113stule"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "izejo\u0161a v\u0113stule"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "aizv\u0113rta pastkast\u012bte ar nolaistu karodzi\u0146u"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "aizv\u0113rta pastkast\u012bte ar paceltu karodzi\u0146u"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "atv\u0113rta pastkast\u012bte ar paceltu karodzi\u0146u"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "atv\u0113rta pastkast\u012bte ar nolaistu karodzi\u0146u"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "pastkast\u012bte"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "med\u012bbu rags"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "laikraksts"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "mobilais t\u0101lrunis"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "mobilais t\u0101lrunis ar bulti\u0146u"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "vibr\u0101cijas re\u017e\u012bms"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "t\u0101lrunis izsl\u0113gts"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "nedr\u012bkst izmantot mobilo t\u0101lruni"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "mobilais sign\u0101ls"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "kamera"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "videokamera"
+    "message": "video cam"
   },
   "d83d_dcfa": {
-    "message": "televizors"
+    "message": "TV"
   },
   "d83d_dcfb": {
     "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "videokasete"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "p\u0101rkrustotas bultas"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "bulti\u0146as pulkste\u0146r\u0101d\u012bt\u0101ja virzien\u0101"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "bulti\u0146as pulkste\u0146r\u0101d\u012bt\u0101ja virzien\u0101"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "atk\u0101rtoti iel\u0101d\u0113t"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "bulti\u0146as pret\u0113ji pulkste\u0146r\u0101d\u012bt\u0101ja virzienam"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "mazs spilgtums"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "liels spilgtums"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "izsl\u0113gt ska\u0146u"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "ska\u013crunis"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "ska\u013crunis ar mazu ska\u013cumu"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "ska\u013crunis ar lielu ska\u013cumu"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "baterija"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "kontaktdak\u0161a"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "uz kreiso pusi pav\u0113rsta lupa"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "uz labo pusi pav\u0113rsta lupa"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "sl\u0113dzene ar tintes pildspalvu"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "aizv\u0113rta sl\u0113dzene ar atsl\u0113gu"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "atsl\u0113ga"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "aizv\u0113rta sl\u0113dzene"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "atv\u0113rta sl\u0113dzene"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "zvans"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "p\u0101rsv\u012btrots zvans"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "gr\u0101matz\u012bme"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "\u0137\u0113des z\u012bme"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "poga"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "atpaka\u013c"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "beigas"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "Bulti\u0146a\u00a0ON"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "z\u012bme SOON"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "z\u012bme\u00a0TOP"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "Nepilngad\u012bg\u0101m person\u0101m nav at\u013cauts"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "lielie burti"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "mazie burti"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "cipari"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "simboli"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "lat\u012b\u0146u alfab\u0113ts"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "uguns"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "kabatas luktur\u012btis"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "uzgrie\u017e\u0146u atsl\u0113ga"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "\u0101murs"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "skr\u016bve ar uzmavu"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "pav\u0101ra nazis"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "pistole"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "mikroskops"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "teleskops"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "krist\u0101la bumba"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "se\u0161st\u016bru zvaigzne"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "za\u013ci dzeltena lapa"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "trij\u017euburis"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "aizpild\u012bta kvadr\u0101ta poga"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "tuk\u0161a kvadr\u0101ta poga"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "liels sarkans aplis"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "liels zils aplis"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "liels oran\u017es rombs"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "liels zils rombs"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "mazs oran\u017es rombs"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "mazs zils rombs"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "aug\u0161upv\u0113rsts tr\u012bsst\u016bris"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "lejupv\u0113rsts tr\u012bsst\u016bris"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "aug\u0161upv\u0113rsta tr\u012bsst\u016bra poga"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "lejupv\u0113rsta tr\u012bsst\u016bra poga"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "1:00"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "2:00"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "3:00"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "4:00"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "5:00"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "6:00"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "7:00"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "8:00"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "9:00"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "10:00"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "11:00"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "00:00"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "1:30"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "2:30"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "3:30"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "4:30"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "5:30"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "6:30"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "7:30"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "8:30"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "9:30"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "10:30"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "11:30"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "00:30"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "Fud\u017ei kalns"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "Tokijas tornis"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "Br\u012bv\u012bbas statuja"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "Jap\u0101nas karte"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "Moijai statuja"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "smejo\u0161a seji\u0146a"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " plats smaids"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "prieka asaras"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "plats smaids"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "plats smaids un smaido\u0161as acis"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "smaidi\u0146\u0161 un auksti sviedri"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " plats smaids ar aizv\u0113rt\u0101m ac\u012bm"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "smaido\u0161a seji\u0146a ar nimbu"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "smaido\u0161a seji\u0146a ar ragiem"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "piemiegta acs"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "smaidi\u0146\u0161"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "seji\u0146a ar izb\u0101ztu m\u0113li"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "atvieglots"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "smaido\u0161a seji\u0146a"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "for\u0161\u0101 seji\u0146a"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "sm\u012bns"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "neitr\u0101la seji\u0146a"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "bez emocij\u0101m"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "b\u0113d\u012bga seji\u0146a"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "auksti sviedri"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "dom\u012bga seji\u0146a"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "apmulsis"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "sagruvu\u0161as cer\u012bbas"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "sk\u016bpsts"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "gaisa sk\u016bpsts"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "sk\u016bpsts un smaids"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "sk\u016bpsti"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "izb\u0101zta m\u0113le"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "izb\u0101zta m\u0113le un piemiegta acs"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "fui"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "v\u012blies"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "noraiz\u0113jies"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "dusm\u012bgs"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "sabozies"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "raudo\u0161a seji\u0146a"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "zaud\u0113ta iesp\u0113ja"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "uzvara"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "atvieglota nop\u016bta"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "sadr\u016bmusi seji\u0146a"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "cie\u0161anas"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "nobijies"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "apnic\u012bgs"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "miegains"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "noguris"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "grimase"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "ska\u013ca raud\u0101\u0161ana"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "seji\u0146a ar atv\u0113rtu muti"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "apklusis"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "noskr\u0113jies"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "nobijusies seji\u0146a"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "p\u0101rsteigta seji\u0146a"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "nosarcis"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "miegaina seji\u0146a"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "apreibis"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "seji\u0146a bez mutes"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "seji\u0146a ar masku"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "plati smaido\u0161a ka\u0137a seji\u0146a"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "ka\u0137a seji\u0146a ar prieka asar\u0101m"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "smaido\u0161a ka\u0137a seji\u0146a"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "smaido\u0161a ka\u0137a seji\u0146a"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "ka\u0137a seji\u0146a ar greizu smaidu"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "ka\u0137a bu\u010da"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "sabozusies ka\u0137a seji\u0146a"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "raudo\u0161a ka\u0137a seji\u0146a"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "noguru\u0161a ka\u0137a seji\u0146a"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "slikts \u017eests"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "\u017eests\u00a0OK"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "man \u017e\u0113l"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "neredz\u0113t \u013cauno"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "nedzird\u0113t \u013cauno"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "nerun\u0101t \u013cauno"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "laim\u012bgs cilv\u0113ks"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "saj\u016bsma"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "sadr\u016bmis cilv\u0113ks"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "sabozies"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "rokas saliktas kop\u0101 l\u016bg\u0161anai"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "ra\u0137ete"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "helikopters"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "tvaika lokomot\u012bve"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "vilciens"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "\u0101trgaitas vilciens"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "\u0101trgaitas vilciens ar noapa\u013cotu priek\u0161galu"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "vilciens"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "metro"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "pils\u0113tas vilciens"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "dzelzce\u013ca pietura"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "tramvajs"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "tramvaja vagons"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "autobuss"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "autobusa priek\u0161gals"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "trolejbuss"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "autobusu pietura"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "mikroautobuss"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "\u0101tr\u0101s neatliekam\u0101s pal\u012bdz\u012bbas ma\u0161\u012bna"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "ugunsdz\u0113s\u0113ju ma\u0161\u012bna"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "policijas ma\u0161\u012bna"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "policijas ma\u0161\u012bnas priek\u0161gals"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
-    "message": "taksometrs"
+    "message": "taxi"
   },
   "d83d_de96": {
-    "message": "taksometra priek\u0161gals"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "automa\u0161\u012bna"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "automa\u0161\u012bnas priek\u0161gals"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "izbraukumu ma\u0161\u012bna"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "pieg\u0101des ma\u0161\u012bna"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "kravas automa\u0161\u012bna"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "traktors"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "vienslie\u017eu dzelzce\u013c\u0161"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "kalnu dzelzce\u013c\u0161"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "gaisa tramvajs"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "kalnu tro\u0161u ce\u013c\u0161"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "gaisa vagoni\u0146\u0161"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "ku\u0123is"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "airu laiva"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "\u0101trgaitas laiva"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "horizont\u0101ls luksofors"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "vertik\u0101ls luksofors"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "notiek remonts"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "b\u0101kuguns"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "atra\u0161an\u0101s vietas karodzi\u0146\u0161"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "durvis"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "z\u012bme Aizliegts"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "dego\u0161a cigarete"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "z\u012bme Nesm\u0113\u0137\u0113t"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "z\u012bme Miskaste"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "z\u012bme Nem\u0113slot"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "dzeramais \u016bdens"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "nav dzeramais \u016bdens"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "velosip\u0113ds"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "nedr\u012bkst braukt ar riteni"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "rite\u0146brauc\u0113js"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "kalnu rite\u0146brauc\u0113js"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "g\u0101j\u0113js"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "nedr\u012bkst iet"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "ielu \u0161\u0137\u0113rso b\u0113rni"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "z\u012bme V\u012brie\u0161i"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "z\u012bme Sievietes"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "z\u012bme Tualete"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "z\u012bme B\u0113rns"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "tualete"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "tualetes pods"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "du\u0161a"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "vanna"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "vanna"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "pasu p\u0101rbaude"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "muita"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "bag\u0101\u017eas sa\u0146em\u0161anas zona"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "bag\u0101\u017eas glab\u0101tuve"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "V\u0101cu valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -2390,136 +2390,136 @@
     "message": "V\u0101cu valodas Neo\u00a02 tastat\u016bras iestat\u012bjumu lapa"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Kategorija"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Koment\u0101rs"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Koment\u0101rs"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Vai v\u0113laties dz\u0113st v\u0101rdn\u012bcu [object Object]?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "Dz\u0113st v\u0101rdn\u012bcu"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "V\u0101rdn\u012bcas"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "V\u0101rdn\u012bcas nosaukums"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Gatavs"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Eksport\u0113t"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Import\u0113t..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "V\u0101rdn\u012bcas p\u0101rvald\u012bba"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Jauna v\u0101rdn\u012bca"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Lietot\u0101ja v\u0101rdn\u012bcas"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Jauns las\u012bjums"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Las\u012bjums"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "Nosaukum\u0101 ir neder\u012bga(-as) rakstz\u012bme(-es)."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "\u0160\u0101ds nosaukums jau past\u0101v."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "L\u016bdzu, ierakstiet v\u0101rdn\u012bcas nosaukumu."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "Nosaukums ir p\u0101r\u0101k gar\u0161."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Nevar izveidot citas v\u0101rdn\u012bcas."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "Fails ir tuk\u0161s."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "\u0160aj\u0101 v\u0101rdn\u012bc\u0101 vairs nevar izveidot jaunus ierakstus."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Nevar\u0113ja atv\u0113rt failu."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "Datu apjoms p\u0101rsniedz faila lieluma ierobe\u017eojumu."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Darb\u012bba neizdev\u0101s."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "Da\u017eus v\u0101rdus nevar\u0113ja import\u0113t."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Importa avot\u0101 ir p\u0101r\u0101k daudz v\u0101rdu."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Nevar\u0113ja nolas\u012bt failu."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Vairs nav nevienas atsaucamas darb\u012bbas."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "Las\u012bjum\u0101 ir neder\u012bga(-as) rakstz\u012bme(-es). Las\u012bjum\u0101 var izmantot ASCII\u00a0rakstz\u012bmes, hiragana, bals\u012bgas ska\u0146as z\u012bmes\u00a0(\u309b), da\u013c\u0113ji bals\u012bgas ska\u0146as z\u012bmes\u00a0(\u309c), viduspunktus\u00a0(\u30fb), pagarin\u0101tas ska\u0146as z\u012bmes\u00a0(\u30fc), jap\u0101\u0146u valodas komatus\u00a0(\u3001), jap\u0101\u0146u valodas punktus\u00a0(\u3002), jap\u0101\u0146u valodas iekavas\u00a0(\u300c\u300d\u300e\u300f) un jap\u0101\u0146u valodas vi\u013c\u0146ot\u0101s atdal\u0101m\u0101s z\u012bmes\u00a0(\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "L\u016bdzu, ierakstiet las\u012bjumu."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "Las\u012bjums ir p\u0101r\u0101k gar\u0161."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Pievienojot ierakstu, rad\u0101s k\u013c\u016bda."
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Izveidojot v\u0101rdn\u012bcu, rad\u0101s k\u013c\u016bda."
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Dz\u0113\u0161ot v\u0101rdn\u012bcu, rad\u0101s k\u013c\u016bda."
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Dz\u0113\u0161ot ierakstu, rad\u0101s k\u013c\u016bda."
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Redi\u0123\u0113jot ierakstu, rad\u0101s k\u013c\u016bda."
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Veicot import\u0113\u0161anu, rad\u0101s k\u013c\u016bda."
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "P\u0101rd\u0113v\u0113jot v\u0101rdn\u012bcu, rad\u0101s k\u013c\u016bda."
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "V\u0101rds satur neder\u012bgu(-as) rakstz\u012bmi(-es)."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "L\u016bdzu, ierakstiet v\u0101rdu."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "V\u0101rds ir p\u0101r\u0101k gar\u0161."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Jauns v\u0101rds"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "V\u0101rds"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "ner\u0101d\u012bt tastat\u016bras izv\u0113lni"
@@ -2528,10 +2528,10 @@
     "message": "D\u0101\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "double_space_period": {
-    "message": "Punkta ievade, divreiz nospie\u017eot atstarpes tausti\u0146u"
+    "message": "Ievad\u012bt punktu, divreiz nospie\u017eot atstarpes tausti\u0146u"
   },
   "down_arrow": {
-    "message": "lejupv\u0113rst\u0101 bulti\u0146a"
+    "message": "lejupv\u0113rstais bulttausti\u0146\u0161"
   },
   "drag_button": {
     "message": "Vilkt virtu\u0101lo tastat\u016bru, lai to p\u0101rvietotu"
@@ -2570,16 +2570,22 @@
     "message": "Iesp\u0113jot pabeig\u0161anu"
   },
   "enable_gesture_editing": {
-    "message": "Velciet no tastat\u016bras mal\u0101m, lai p\u0101rvietotu kursoru, vai velciet no atpaka\u013catk\u0101pes tausti\u0146a, lai dz\u0113stu visu v\u0101rdu."
+    "message": "Vilk\u0161anas \u017eestu iesp\u0113jo\u0161ana"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Velciet no tastat\u016bras mal\u0101m, lai p\u0101rvietotu kursoru, vai velciet no Backspace tausti\u0146a, lai dz\u0113stu visu v\u0101rdu."
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Ievade ar \u017eestiem: iesp\u0113jo\u0161ana"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Ievadiet v\u0101rdu, velkot pa burtiem."
   },
   "enable_prediction": {
     "message": "Iesp\u0113jot n\u0101kam\u0101 v\u0101rda paredz\u0113\u0161anu"
   },
   "enter": {
-    "message": "tausti\u0146\u0161 Enter"
+    "message": "ievad\u012b\u0161anas tausti\u0146\u0161"
   },
   "es_cat_cat_settings_page": {
     "message": "Katal\u0101\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -2591,10 +2597,13 @@
     "message": "Izv\u0113rst"
   },
   "expand_candidates": {
-    "message": "papla\u0161in\u0101t kandid\u0101tu sarakstu"
+    "message": "izv\u0113rst kandid\u0101tu sarakstu"
   },
   "fi_fin_settings_page": {
     "message": "Somu valodas tastat\u016bras iestat\u012bjumu lapa"
+  },
+  "fo_fao_settings_page": {
+    "message": "F\u0113ru valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "footer_docking_button": {
     "message": "dokot virtu\u0101lo tastat\u016bru"
@@ -2603,13 +2612,16 @@
     "message": "p\u0101rsl\u0113gties uz emocijz\u012bm\u0113m"
   },
   "footer_floating_button": {
-    "message": "padara virtu\u0101lo tastat\u016bru p\u0101rvietojamu"
+    "message": "padar\u012bt virtu\u0101lo tastat\u016bru p\u0101rvietojamu"
   },
   "footer_handwriting_button": {
     "message": "p\u0101rsl\u0113gties uz rokrakstu"
   },
   "footer_settings_button": {
     "message": "atv\u0113rt ievades metodes iestat\u012bjumus"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "Fran\u010du valodas B\u00c9PO tastat\u016bras (fran\u010du valoda) iestat\u012bjumu lapa"
   },
   "fr_fra_settings_page": {
     "message": "Fran\u010du valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -2630,7 +2642,7 @@
     "message": "p\u0101riet uz iepriek\u0161\u0113jo tastat\u016bru"
   },
   "got_it": {
-    "message": "Sapratu!"
+    "message": "Labi"
   },
   "gr_gre_settings_page": {
     "message": "Grie\u0137u valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "Ung\u0101ru valodas tastat\u016bras iestat\u012bjumu lapa"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Ung\u0101ru valodas Qwerty tastat\u016bras iestat\u012bjumu lapa"
+  },
   "ie_ga_settings_page": {
     "message": "\u012aru valodas tastat\u016bras iestat\u012bjumu lapa"
   },
@@ -2663,16 +2678,16 @@
     "message": "Ignor\u0113t labojumu"
   },
   "il_heb_settings_page": {
-    "message": "Ebreju valodas tastat\u016bras iestat\u012bjumu lapa"
+    "message": "Ivrita tastat\u016bras iestat\u012bjumu lapa"
   },
   "init_lang": {
-    "message": "S\u0101kotn\u0113j\u0101 ievades valoda ir \u0137\u012bnie\u0161u valoda"
+    "message": "S\u0101kotn\u0113j\u0101 ievades valoda ir \u0137\u012bnie\u0161u valoda."
   },
   "init_punc": {
-    "message": "S\u0101kotn\u0113jais pieturz\u012bmju platums ir pilns"
+    "message": "S\u0101kotn\u0113jais pieturz\u012bmju platums ir pilns."
   },
   "init_sbc": {
-    "message": "S\u0101kotn\u0113jais rakstz\u012bmju platums ir pilns"
+    "message": "S\u0101kotn\u0113jais rakstz\u012bmju platums ir pilns."
   },
   "input_hangul": {
     "message": "Korejie\u0161u valodas re\u017e\u012bms"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "Cand\u017ee ievades metode"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Dayi ievades metode"
@@ -2699,7 +2717,7 @@
     "message": "\u0100tr\u0101 ievades metode"
   },
   "inputmethod_traditional_pinyin": {
-    "message": "Pi\u0146ji\u0146a tradicion\u0101l\u0101s \u0137\u012bnie\u0161u rakst\u012bbas ievades metode"
+    "message": "Pi\u0146ji\u0146a tradicion\u0101l\u0101s \u0137\u012bnie\u0161u valodas rakst\u012bbas ievades metode"
   },
   "inputmethod_wubi": {
     "message": "Vubi ievades metode"
@@ -2717,7 +2735,7 @@
     "message": "Jap\u0101\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "keyboard_arabic": {
-    "message": "Ar\u0101bu tastat\u016bra"
+    "message": "Ar\u0101bu valodas tastat\u016bra"
   },
   "keyboard_armenian_phonetic": {
     "message": "Arm\u0113\u0146u fon\u0113tisk\u0101 tastat\u016bra"
@@ -2732,7 +2750,7 @@
     "message": "Beng\u0101\u013cu valodas tastat\u016bra (fon\u0113tisk\u0101)"
   },
   "keyboard_brazilian": {
-    "message": "Braz\u012b\u013cu tastat\u016bra"
+    "message": "Braz\u012blie\u0161u tastat\u016bra"
   },
   "keyboard_bulgarian": {
     "message": "Bulg\u0101ru valodas tastat\u016bra"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "G\u0113zu rakst\u012bbas tastat\u016bra"
   },
+  "keyboard_faroese": {
+    "message": "F\u0113ru valodas tastat\u016bra"
+  },
   "keyboard_finnish": {
     "message": "Somu valodas tastat\u016bra"
   },
   "keyboard_french": {
     "message": "Fran\u010du valodas tastat\u016bra"
+  },
+  "keyboard_french_bepo": {
+    "message": "Fran\u010du valodas B\u00c9PO tastat\u016bra"
   },
   "keyboard_georgian": {
     "message": "Gruz\u012bnu valodas tastat\u016bra"
@@ -2795,10 +2819,13 @@
     "message": "Gud\u017earatu valodas tastat\u016bra (fon\u0113tisk\u0101)"
   },
   "keyboard_hebrew": {
-    "message": "Ebreju valodas tastat\u016bra"
+    "message": "Ivrita tastat\u016bra"
   },
   "keyboard_hungarian": {
     "message": "Ung\u0101ru valodas tastat\u016bra"
+  },
+  "keyboard_hungarian_qwerty": {
+    "message": "Ung\u0101ru valodas Qwerty tastat\u016bra"
   },
   "keyboard_icelandic": {
     "message": "\u012aslandie\u0161u valodas tastat\u016bra"
@@ -2821,13 +2848,19 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannadu valodas tastat\u016bra (fon\u0113tisk\u0101)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Tastat\u016bra (Kedmanee)"
   },
   "keyboard_khmer": {
-    "message": "Khmeru tastat\u016bra"
+    "message": "Khmeru valodas tastat\u016bra"
   },
   "keyboard_lao": {
+    "message": "Laosie\u0161u valodas tastat\u016bra"
+  },
+  "keyboard_laothian": {
     "message": "Laosie\u0161u tastat\u016bra"
   },
   "keyboard_latin_american": {
@@ -2840,7 +2873,7 @@
     "message": "Lietuvie\u0161u valodas tastat\u016bra"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Ma\u0137edonie\u0161u tastat\u016bra"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Malajalu valodas tastat\u016bra (fon\u0113tisk\u0101)"
@@ -2858,10 +2891,10 @@
     "message": "Birmie\u0161u Myansan tastat\u016bra"
   },
   "keyboard_nepali_inscript": {
-    "message": "Nep\u0101lie\u0161u tastat\u016bra (InScript)"
+    "message": "Nep\u0101lie\u0161u valodas tastat\u016bra (InScript)"
   },
   "keyboard_nepali_phonetic": {
-    "message": "Nep\u0101lie\u0161u tastat\u016bra (fon\u0113tisk\u0101)"
+    "message": "Nep\u0101lie\u0161u valodas tastat\u016bra (fon\u0113tisk\u0101)"
   },
   "keyboard_netherlands": {
     "message": "Holandie\u0161u valodas tastat\u016bra"
@@ -2909,7 +2942,10 @@
     "message": "Serbu valodas tastat\u016bra"
   },
   "keyboard_sinhala": {
-    "message": "Sing\u0101\u013cu tastat\u016bra"
+    "message": "Sing\u0101\u013cu valodas tastat\u016bra"
+  },
+  "keyboard_slovak": {
+    "message": "Slov\u0101ku valodas tastat\u016bra"
   },
   "keyboard_slovakian": {
     "message": "Slov\u0101ku valodas tastat\u016bra"
@@ -2918,10 +2954,10 @@
     "message": "Slov\u0113\u0146u valodas tastat\u016bra"
   },
   "keyboard_soranikurdish_ar": {
-    "message": "Uz ar\u0101bu valodu balst\u012bta kurdu tastat\u016bra"
+    "message": "Uz ar\u0101bu valodas balst\u012bta kurdu tastat\u016bra"
   },
   "keyboard_soranikurdish_en": {
-    "message": "Uz ang\u013cu valodu balst\u012bta kurdu tastat\u016bra"
+    "message": "Uz ang\u013cu valodas balst\u012bta kurdu tastat\u016bra"
   },
   "keyboard_spanish": {
     "message": "Sp\u0101\u0146u valodas tastat\u016bra"
@@ -2942,7 +2978,7 @@
     "message": "Tamilu valodas tastat\u016bra (InScript)"
   },
   "keyboard_tamil_itrans": {
-    "message": "Tamilu valodas tastat\u016bra (itrans)"
+    "message": "Tamilu valodas tastat\u016bra (iTrans)"
   },
   "keyboard_tamil_phonetic": {
     "message": "Tamilu valodas tastat\u016bra (fon\u0113tisk\u0101)"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Turku valodas tastat\u016bra"
   },
+  "keyboard_turkish_f": {
+    "message": "Turku-F tastat\u016bra"
+  },
   "keyboard_typewriter": {
     "message": "Tastat\u016bra (rakst\u0101mma\u0161\u012bna)"
   },
@@ -2998,6 +3037,9 @@
   "keyboard_us_dvorak": {
     "message": "ASV Dvoraka tastat\u016bra"
   },
+  "keyboard_us_dvp": {
+    "message": "ASV Dvoraka tastat\u016bra programm\u0113t\u0101jiem"
+  },
   "keyboard_us_extended": {
     "message": "ASV papla\u0161in\u0101t\u0101 tastat\u016bra"
   },
@@ -3014,13 +3056,13 @@
     "message": "Vjetnamie\u0161u valodas tastat\u016bra (VIQR)"
   },
   "keyboard_vietnamese_vni": {
-    "message": "Vjetnamie\u0161u valodas tastat\u016bra\u00a0(VNI)"
+    "message": "Vjetnamie\u0161u valodas tastat\u016bra (VNI)"
   },
   "keyboard_viqr": {
     "message": "Tastat\u016bra (VIQR)"
   },
   "keyboard_vni": {
-    "message": "Tastat\u016bra\u00a0(VNI)"
+    "message": "Tastat\u016bra (VNI)"
   },
   "korean_hanja_display": {
     "message": "\u0136\u012bnie\u0161u valodas kandid\u0101tre\u017e\u012bms"
@@ -3041,13 +3083,13 @@
     "message": "Iestat\u012bjumi"
   },
   "left_arrow": {
-    "message": "kreis\u0101 bulti\u0146a"
+    "message": "kreisais bulttausti\u0146\u0161"
   },
   "lt_lit_settings_page": {
     "message": "Lietuvie\u0161u valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "lv_apostrophe_lav_settings_page": {
-    "message": "Latvie\u0161u valodas tastat\u016bras (latvie\u0161u valodas) iestat\u012bjumu lapa"
+    "message": "Latvie\u0161u valodas tastat\u016bras (latvie\u0161u) iestat\u012bjumu lapa"
   },
   "menu_key": {
     "message": "atv\u0113rt tastat\u016bras izv\u0113lni"
@@ -3071,7 +3113,7 @@
     "message": "Pauz\u0113t"
   },
   "physical_auto_correction_level": {
-    "message": "Autom\u0101tisk\u0101 labo\u0161ana"
+    "message": "Autom\u0101tiska labo\u0161ana"
   },
   "physical_enable_capitalization": {
     "message": "Autom\u0101tisks lielo burtu lietojums"
@@ -3089,7 +3131,7 @@
     "message": "Portug\u0101\u013cu valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "right_arrow": {
-    "message": "lab\u0101 bulti\u0146a"
+    "message": "labais bulttausti\u0146\u0161"
   },
   "ro_rum_settings_page": {
     "message": "Rum\u0101\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -3110,10 +3152,10 @@
     "message": "Iestat\u012bjumi"
   },
   "shift": {
-    "message": "tausti\u0146\u0161 Shift"
+    "message": "p\u0101rsl\u0113g\u0161anas tausti\u0146\u0161"
   },
   "shift_lock": {
-    "message": "tausti\u0146\u0161 Shift ir blo\u0137\u0113ts"
+    "message": "P\u0101rsl\u0113g\u0161anas tausti\u0146\u0161 ir blo\u0137\u0113ts."
   },
   "show_candidate_mode": {
     "message": "Nolai\u017eam\u0101s ierosin\u0101jumu izv\u0113lnes par\u0101d\u012b\u0161anas aizkave"
@@ -3137,7 +3179,7 @@
     "message": "R\u0101d\u012bt kandid\u0101tus korejie\u0161u valodas re\u017e\u012bm\u0101"
   },
   "shrink_candidates": {
-    "message": "sa\u0161aurin\u0101t kandid\u0101tu sarakstu"
+    "message": "sak\u013caut kandid\u0101tu sarakstu"
   },
   "si_slv_settings_page": {
     "message": "Slov\u0113\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -3146,10 +3188,10 @@
     "message": "Slov\u0101ku valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "smiley": {
-    "message": "smaidi\u0146\u0161"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
-    "message": "M\u0113rens"
+    "message": "M\u0113reni"
   },
   "sound_on_keypress": {
     "message": "Tausti\u0146a nospie\u0161anas ska\u0146a"
@@ -3158,13 +3200,13 @@
     "message": "atstarpes tausti\u0146\u0161"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Lai dz\u0113stu v\u0101rdus, velciet pa kreisi."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "Lai atjaunotu v\u0101rdus, velciet pa labi."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Lai p\u0101rvietotu kursoru, velciet pa labi vai pa kreisi."
   },
   "switch_to": {
     "message": "p\u0101rsl\u0113gt uz \u0161o izk\u0101rtojumu: "
@@ -3176,7 +3218,7 @@
     "message": "P\u0101rsl\u0113gt uz pilnu izk\u0101rtojumu"
   },
   "switch_to_keyboard_prefix": {
-    "message": "p\u0101rsl\u0113gt uz \u0161o izk\u0101rtojumu: "
+    "message": "p\u0101rsl\u0113gt uz \u0161o tastat\u016bru: "
   },
   "switched_to": {
     "message": "p\u0101rsl\u0113gts uz \u0161o izk\u0101rtojumu: "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "Ekr\u0101na tastat\u016bra"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "Turku-F tastat\u016bras iestat\u012bjumu lapa"
   },
   "tr_tur_settings_page": {
     "message": "Turku valodas tastat\u016bras iestat\u012bjumu lapa"
@@ -3272,7 +3317,7 @@
     "message": "Ukrai\u0146u valodas tastat\u016bras iestat\u012bjumu lapa"
   },
   "up_arrow": {
-    "message": "aug\u0161upv\u0113rst\u0101 bulti\u0146a"
+    "message": "aug\u0161upv\u0113rstais bulttausti\u0146\u0161"
   },
   "us_altgr_intl_eng_settings_page": {
     "message": "ASV papla\u0161in\u0101t\u0101s tastat\u016bras (ang\u013cu valodas) iestat\u012bjumu lapa"
@@ -3305,13 +3350,16 @@
     "message": "ASV tastat\u016bras (malajie\u0161u valodas) iestat\u012bjumu lapa"
   },
   "user_dict": {
-    "message": "Iesp\u0113jot person\u012bgo v\u0101rdn\u012bcu"
+    "message": "Iesp\u0113jot personisko v\u0101rdn\u012bcu"
   },
   "user_dict_add": {
     "message": "Pievienot"
   },
   "user_dict_clear": {
-    "message": "Not\u012br\u012bt visu"
+    "message": "Not\u012br\u012bt visus"
+  },
+  "user_dict_edit": {
+    "message": "Redi\u0123\u0113t v\u0101rdn\u012bcas \u0161\u0137irk\u013cus"
   },
   "user_dict_manage": {
     "message": "P\u0101rvald\u012bt personisko v\u0101rdn\u012bcu..."
@@ -3349,14 +3397,17 @@
   "wait": {
     "message": "Gaid\u012bt"
   },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
+  },
   "zhuyin_keyboard_layout": {
     "message": "Tastat\u016bras veids"
   },
   "zhuyin_page_size": {
-    "message": "Vien\u0101 lap\u0101 att\u0113lojamo kandid\u0101tu skaits"
+    "message": "Vien\u0101 lap\u0101 att\u0113lojamo kandid\u0101tu skaits."
   },
   "zhuyin_select_keys": {
-    "message": "Izv\u0113les tausti\u0146i"
+    "message": "Atlas\u012b\u0161anas tausti\u0146i"
   },
   "zhuyin_settings_page": {
     "message": "\u017duji\u0146a iestat\u012bjumu lapa"

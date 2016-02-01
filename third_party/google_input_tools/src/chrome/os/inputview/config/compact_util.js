@@ -15,10 +15,10 @@ goog.provide('i18n.input.chrome.inputview.content.compact.util');
 goog.provide('i18n.input.chrome.inputview.content.compact.util.CompactKeysetSpec');
 
 goog.require('goog.object');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.content.Constants');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 goog.scope(function() {
 var util = i18n.input.chrome.inputview.content.compact.util;
@@ -125,9 +125,10 @@ util.createCompactData = function(keysetSpec, viewIdPrefix, keyIdPrefix) {
 util.createCompactKey = function(id, keySpec) {
   var spec = keySpec;
   spec[SpecNodeName.ID] = id;
-  if (!spec[SpecNodeName.TYPE])
+  if (!spec[SpecNodeName.TYPE]) {
     spec[SpecNodeName.TYPE] =
-        i18n.input.chrome.inputview.elements.ElementType.COMPACT_KEY;
+        i18n.input.chrome.ElementType.COMPACT_KEY;
+  }
 
   var newSpec = {};
   for (var key in spec) {

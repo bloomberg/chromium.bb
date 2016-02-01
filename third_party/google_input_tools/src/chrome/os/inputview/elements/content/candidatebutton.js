@@ -16,13 +16,14 @@ goog.provide('i18n.input.chrome.inputview.elements.content.CandidateButton');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var Css = i18n.input.chrome.inputview.Css;
 
 
@@ -95,6 +96,7 @@ CandidateButton.prototype.createDom = function() {
 /**
  * Creates a separator.
  *
+ * @return {!Element} The table cell element.
  * @private
  */
 CandidateButton.prototype.createSeparator_ = function() {
@@ -126,8 +128,10 @@ CandidateButton.prototype.setVisible = function(visible) {
   var ret = CandidateButton.base(this, 'setVisible', visible);
   if (this.type == ElementType.VOICE_BTN) {
     var elem = this.getElement();
-    elem.style.webkitAnimation = (visible ? 'visible' : 'invisible') +
-        '-animation .4s ease';
+    if (!elem) {
+      elem.style.webkitAnimation = (visible ? 'visible' : 'invisible') +
+          '-animation .4s ease';
+    }
   }
   return ret;
 };

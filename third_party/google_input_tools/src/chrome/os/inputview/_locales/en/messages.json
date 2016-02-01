@@ -293,7 +293,7 @@
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "cool sign"
   },
   "d83c_dd93": {
     "message": "free"
@@ -320,10 +320,10 @@
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "Japanese word \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "Japanese word \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
     "message": "Japanese word 'free'"
@@ -332,7 +332,7 @@
     "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "Japanese word \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
     "message": "Chinese word 'space available'"
@@ -1421,7 +1421,7 @@
     "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "cold sweat"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
     "message": "running dash"
@@ -1433,7 +1433,7 @@
     "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "dizzy"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
     "message": "speech balloon"
@@ -1505,10 +1505,10 @@
     "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "document"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "document"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
     "message": "calendar"
@@ -1682,7 +1682,7 @@
     "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "clockwise arrows"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
     "message": "reload"
@@ -1988,7 +1988,7 @@
     "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
     "message": "smirk"
@@ -2003,7 +2003,7 @@
     "message": "unamused"
   },
   "d83d_de13": {
-    "message": "cold sweat"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
     "message": "pensive face"
@@ -2045,7 +2045,7 @@
     "message": "angry"
   },
   "d83d_de21": {
-    "message": "pouting"
+    "message": "pouting face"
   },
   "d83d_de22": {
     "message": "crying"
@@ -2105,7 +2105,7 @@
     "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "dizzy"
+    "message": "dizzy face"
   },
   "d83d_de36": {
     "message": "no mouth face"
@@ -2120,10 +2120,10 @@
     "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "smiling cat face"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "smiling cat face"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
     "message": "wry cat face"
@@ -2168,7 +2168,7 @@
     "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "pouting"
+    "message": "pouting person"
   },
   "d83d_de4f": {
     "message": "folded hands"
@@ -2183,7 +2183,7 @@
     "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "train"
+    "message": "electric train"
   },
   "d83d_de84": {
     "message": "high-speed train"
@@ -2192,7 +2192,7 @@
     "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "train"
+    "message": "front view of train"
   },
   "d83d_de87": {
     "message": "subway"
@@ -2303,7 +2303,7 @@
     "message": "door"
   },
   "d83d_deab": {
-    "message": "No entry sign"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
     "message": "smoking sign"
@@ -2570,10 +2570,16 @@
     "message": "Enable completion"
   },
   "enable_gesture_editing": {
-    "message": "Swipe from the edges of the keyboard to move the cursor, or from the backspace key to delete whole words."
+    "message": "Enable swipe gestures"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Swipe from the edges of the keyboard to move the cursor, or from the backspace key to delete whole words"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Enable gesture typing"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Input a word by sliding through the letters"
   },
   "enable_prediction": {
     "message": "Enable next word prediction"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "Finnish Keyboard Settings Page"
   },
+  "fo_fao_settings_page": {
+    "message": "Faroese Keyboard Settings Page"
+  },
   "footer_docking_button": {
     "message": "dock virtual keyboard"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "open input method settings"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "French B\u00c9PO Keyboard (French) Settings Page"
   },
   "fr_fra_settings_page": {
     "message": "French Keyboard Settings Page"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "Hungarian Keyboard Settings Page"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Hungarian Qwerty Keyboard Settings Page"
+  },
   "ie_ga_settings_page": {
     "message": "Irish Keyboard Settings Page"
   },
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "Cangjie input method"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Dayi input method"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Ethiopic keyboard"
   },
+  "keyboard_faroese": {
+    "message": "Faroese keyboard"
+  },
   "keyboard_finnish": {
     "message": "Finnish keyboard"
   },
   "keyboard_french": {
     "message": "French keyboard"
+  },
+  "keyboard_french_bepo": {
+    "message": "French B\u00c9PO keyboard"
   },
   "keyboard_georgian": {
     "message": "Georgian keyboard"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "Hungarian keyboard"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "Hungarian Qwerty keyboard"
+  },
   "keyboard_icelandic": {
     "message": "Icelandic keyboard"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannada keyboard (Phonetic)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Keyboard (Kedmanee)"
   },
@@ -2829,6 +2859,9 @@
   },
   "keyboard_lao": {
     "message": "Lao keyboard"
+  },
+  "keyboard_laothian": {
+    "message": "Laothian keyboard"
   },
   "keyboard_latin_american": {
     "message": "Latin American keyboard"
@@ -2911,8 +2944,11 @@
   "keyboard_sinhala": {
     "message": "Sinhala keyboard"
   },
+  "keyboard_slovak": {
+    "message": "Slovak keyboard"
+  },
   "keyboard_slovakian": {
-    "message": "Slovakian keyboard"
+    "message": "Slovak keyboard"
   },
   "keyboard_slovenian": {
     "message": "Slovenian keyboard"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Turkish keyboard"
   },
+  "keyboard_turkish_f": {
+    "message": "Turkish-F keyboard"
+  },
   "keyboard_typewriter": {
     "message": "Keyboard (Typewriter)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "US Dvorak keyboard"
+  },
+  "keyboard_us_dvp": {
+    "message": "US programmer Dvorak keyboard"
   },
   "keyboard_us_extended": {
     "message": "US extended keyboard"
@@ -3187,6 +3229,9 @@
   "touch_keyboard": {
     "message": "On-screen keyboard"
   },
+  "tr_f_tur_settings_page": {
+    "message": "Turkish-F Keyboard Settings Page"
+  },
   "tr_tur_settings_page": {
     "message": "Turkish Keyboard Settings Page"
   },
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "Clear All"
   },
+  "user_dict_edit": {
+    "message": "Edit Dictionary Entries"
+  },
   "user_dict_manage": {
     "message": "Manage personal dictionary..."
   },
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Wait"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Keyboard type"

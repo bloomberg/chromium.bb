@@ -255,21 +255,25 @@ goog.inherits(events.DragEvent, events.PointerEvent);
 /**
  * The event when the surrounding text is changed.
  *
- * @param {string} text The surrounding text.
+ * @param {string} textBeforeCursor The surrounding text before the cursor.
  * @param {number} anchor .
  * @param {number} focus .
+ * @param {number} offset .
  * @constructor
  * @extends {goog.events.Event}
  */
-events.SurroundingTextChangedEvent = function(text, anchor, focus) {
+events.SurroundingTextChangedEvent = function(textBeforeCursor,
+    anchor, focus, offset) {
   goog.base(this, events.EventType.SURROUNDING_TEXT_CHANGED);
 
   /** @type {string} */
-  this.text = text;
+  this.textBeforeCursor = textBeforeCursor;
   /** @type {number} */
   this.anchor = anchor;
   /** @type {number} */
   this.focus = focus;
+  /** @type {number} */
+  this.offset = offset;
 };
 goog.inherits(events.SurroundingTextChangedEvent, goog.events.Event);
 

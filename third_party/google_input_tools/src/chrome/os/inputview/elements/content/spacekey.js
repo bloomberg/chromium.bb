@@ -17,9 +17,9 @@ goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.StateType');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.SoftKey');
 
 
@@ -47,7 +47,7 @@ var content = i18n.input.chrome.inputview.elements.content;
  */
 content.SpaceKey = function(id, stateManager, title, opt_characters,
     opt_eventTarget, opt_iconCss, opt_toKeyset) {
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       SPACE_KEY, opt_eventTarget);
 
   /**

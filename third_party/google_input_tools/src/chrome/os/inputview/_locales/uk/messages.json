@@ -6,7 +6,7 @@
     "message": "\u0414\u043e\u0434\u0430\u0442\u0438 \u0432 \u043e\u0441\u043e\u0431\u0438\u0441\u0442\u0438\u0439 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
   },
   "add_word_to_dictionary": {
-    "message": "\u0414\u043e\u0434\u0430\u0442\u0438 \u0441\u043b\u043e\u0432\u043e \"$1\" \u0443 \u0441\u043b\u043e\u0432\u043d\u0438\u043a",
+    "message": "\u0414\u043e\u0434\u0430\u0442\u0438 \"$1\" \u0432 \u0441\u043b\u043e\u0432\u043d\u0438\u043a",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -14,7 +14,7 @@
     }
   },
   "advanced": {
-    "message": "\u0420\u043e\u0437\u0448\u0438\u0440\u0435\u043d\u0456"
+    "message": "\u0420\u043e\u0437\u0448\u0438\u0440\u0435\u043d\u0456 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f"
   },
   "alt": {
     "message": "Alt"
@@ -29,10 +29,10 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0432\u0456\u0440\u043c\u0435\u043d\u0441\u044c\u043a\u043e\u0457 \u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "appnamejpkeyboard": {
-    "message": "\u0421\u043f\u043e\u0441\u0456\u0431 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f Google \u0434\u043b\u044f \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u043e\u0457 \u043c\u043e\u0432\u0438 (\u044f\u043f\u043e\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "\u0421\u043f\u043e\u0441\u0456\u0431 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f Google \u0434\u043b\u044f \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u043e\u0457 \u043c\u043e\u0432\u0438 (\u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0421\u0428\u0410)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u0435 \u0432\u0438\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043d\u044f"
@@ -41,7 +41,7 @@
     "message": "Backspace"
   },
   "basic": {
-    "message": "\u041e\u0441\u043d\u043e\u0432\u043d\u0456"
+    "message": "\u041e\u0441\u043d\u043e\u0432\u043d\u0456 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f"
   },
   "be_fra_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0435\u043b\u044c\u0433\u0456\u0439\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
@@ -50,13 +50,13 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0435\u043b\u044c\u0433\u0456\u0439\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u043d\u0456\u043c\u0435\u0446\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "be_nld_settings_page": {
-    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0435\u043b\u044c\u0433\u0456\u0439\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0433\u043e\u043b\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0435\u043b\u044c\u0433\u0456\u0439\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u043d\u0456\u0434\u0435\u0440\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "bg_bul_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u043e\u043b\u0433\u0430\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "bg_phonetic_bul_settings_page": {
-    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u043e\u043b\u0433\u0430\u0440\u0441\u044c\u043a\u043e\u0457 \u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u043e\u0457\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u043e\u043b\u0433\u0430\u0440\u0441\u044c\u043a\u043e\u0457 \u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "br_por_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0440\u0430\u0437\u0438\u043b\u044c\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0431\u0440\u0430\u0437\u0438\u043b\u044c\u0441\u044c\u043a\u0438\u0439 \u0432\u0430\u0440\u0456\u0430\u043d\u0442 \u043f\u043e\u0440\u0442\u0443\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u043e\u0457 \u043c\u043e\u0432\u0438)"
@@ -74,10 +74,10 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u043a\u0430\u043d\u0430\u0434\u0441\u044c\u043a\u043e\u0457 \u0431\u0430\u0433\u0430\u0442\u043e\u043c\u043e\u0432\u043d\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "capital": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0430"
+    "message": "\u0432\u0435\u043b\u0438\u043a\u0430 \u043b\u0456\u0442\u0435\u0440\u0430"
   },
   "capslock": {
-    "message": "CapsLock"
+    "message": "Caps Lock"
   },
   "ch_fr_fra_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0448\u0432\u0435\u0439\u0446\u0430\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
@@ -86,172 +86,172 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0448\u0432\u0435\u0439\u0446\u0430\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u043d\u0456\u043c\u0435\u0446\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "chos_inputtool_description": {
-    "message": "Google \u0422\u0440\u0430\u043d\u0441\u043b\u0456\u0442\u0435\u0440\u0430\u0446\u0456\u044f \u0434\u043b\u044f \u041e\u0421 Chrome \u0434\u043e\u0437\u0432\u043e\u043b\u044f\u0454 \u0432\u0432\u043e\u0434\u0438\u0442\u0438 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e\u044e \u043c\u043e\u0432\u043e\u044e \u0432 \u041e\u0421 Chrome."
+    "message": "\u0417\u0430\u0432\u0434\u044f\u043a\u0438 \u0440\u043e\u0437\u0448\u0438\u0440\u0435\u043d\u043d\u044e Google \u0421\u043f\u043e\u0441\u043e\u0431\u0438 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u0432\u0438 \u043c\u043e\u0436\u0435\u0442\u0435 \u0432\u0432\u043e\u0434\u0438\u0442\u0438 \u0442\u0435\u043a\u0441\u0442 \u043f\u043e\u0442\u0440\u0456\u0431\u043d\u043e\u044e \u043c\u043e\u0432\u043e\u044e \u043d\u0430 \u043f\u0440\u0438\u0441\u0442\u0440\u043e\u044f\u0445 \u0437 \u041e\u0421 Chrome."
   },
   "chos_inputtool_title": {
     "message": "Google \u0421\u043f\u043e\u0441\u043e\u0431\u0438 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
   },
   "compositionmodedirect": {
-    "message": "\u041f\u0440\u044f\u043c\u0435 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "\u0420\u043e\u0437\u0448\u0438\u0440\u0435\u043d\u0430 \u043b\u0430\u0442\u0438\u043d\u0438\u0446\u044f"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
-    "message": "\u041a\u0430\u0442\u0430\u043a\u0430\u043d\u0430"
+    "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "\u041b\u0430\u0442\u0438\u043d\u0438\u0446\u044f"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "\u041a\u0430\u0442\u0430\u043a\u0430\u043d\u0430 \u043f\u043e\u043b\u043e\u0432\u0438\u043d\u043d\u043e\u0457 \u0448\u0438\u0440\u0438\u043d\u0438"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
-    "message": "\u0425\u0456\u0440\u0430\u0433\u0430\u043d\u0430"
+    "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "\u041e\u0441\u043d\u043e\u0432\u043d\u0456"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u0438 \u0434\u0430\u043d\u0456 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457\u2026"
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "\u0421\u043a\u0430\u0441\u0443\u0432\u0430\u0442\u0438"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "\u0406\u0441\u0442\u043e\u0440\u0456\u044f \u043a\u043e\u043d\u0432\u0435\u0440\u0441\u0456\u0439"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "\u0410\u043d\u0443\u043b\u044e\u0432\u0430\u0442\u0438 \u0442\u0430\u043a\u0456 \u0435\u043b\u0435\u043c\u0435\u043d\u0442\u0438:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u0438 \u0434\u0430\u043d\u0456 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "\u0406\u0441\u0442\u043e\u0440\u0456\u044f \u043f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u0439"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u0438 \u0434\u0430\u043d\u0456 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0457"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "\u00a9 Google Inc., 2013. \u0423\u0441\u0456 \u043f\u0440\u0430\u0432\u0430 \u0437\u0430\u0445\u0438\u0449\u0435\u043d\u043e."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "\u0421\u043a\u0430\u0441\u0443\u0432\u0430\u0442\u0438"
+    "message": "Cancel"
   },
   "configdialogok": {
-    "message": "\u041e\u041a"
+    "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "\u041a\u0435\u0440\u0443\u0432\u0430\u0442\u0438 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u043e\u043c \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430\u2026"
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "\u0414\u043e\u0434\u0430\u0439\u0442\u0435 \u0432\u043b\u0430\u0441\u043d\u0456 \u0441\u043b\u043e\u0432\u0430 \u0432 \u0441\u043b\u043e\u0432\u043d\u0438\u043a \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430, \u0449\u043e\u0431 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u0442\u0438 \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0438 \u043a\u043e\u043d\u0432\u0435\u0440\u0441\u0456\u0457."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "\u0421\u043b\u043e\u0432\u043d\u0438\u043a\u0438 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "\u0412\u0438\u043c\u043a\u043d\u0443\u0442\u0438 \u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u0456\u0437\u043e\u0432\u0430\u043d\u0456 \u043a\u043e\u043d\u0432\u0435\u0440\u0441\u0456\u0457, \u043f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u0457 \u0442\u0430 \u0441\u043b\u043e\u0432\u043d\u0438\u043a \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "\u0414\u043e\u043f\u043e\u043c\u043e\u0433\u0430 \u043f\u0456\u0434 \u0447\u0430\u0441 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
     "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "\u0420\u0435\u0436\u0438\u043c \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
-    "message": "\u041a\u0430\u043d\u0430"
+    "message": "Kana"
   },
   "configpreeditmethodromaji": {
-    "message": "\u0420\u043e\u043c\u0430\u0434\u0437\u0456"
+    "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "\u041a\u043e\u043d\u0444\u0456\u0434\u0435\u043d\u0446\u0456\u0439\u043d\u0456\u0441\u0442\u044c"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "\u0421\u0442\u0438\u043b\u044c \u0440\u043e\u0437\u0434\u0456\u043b\u043e\u0432\u0438\u0445 \u0437\u043d\u0430\u043a\u0456\u0432:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "\u0421\u043f\u043e\u043b\u0443\u0447\u0435\u043d\u043d\u044f \u043a\u043b\u0430\u0432\u0456\u0448 \u0434\u043b\u044f \u0432\u0438\u0431\u043e\u0440\u0443:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "\u041d\u0435\u043c\u0430\u0454 \u043a\u043e\u043c\u0431\u0456\u043d\u0430\u0446\u0456\u0457 \u043a\u043b\u0430\u0432\u0456\u0448"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "\u0421\u0442\u0438\u043b\u044c \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0438 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
   },
   "configsessionkeymapchromeos": {
-    "message": "\u041e\u0421 Chrome"
+    "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "\u041a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0446\u044c\u043a\u0430 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
-    "message": "\u041a\u043e\u0442\u043e\u0435\u0440\u0456"
+    "message": "Kotoeri"
   },
   "configsessionkeymapmsime": {
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "\u041d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u0441\u043f\u043e\u0441\u043e\u0431\u0443 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u0434\u043b\u044f \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u043e\u0457 \u043c\u043e\u0432\u0438"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "\u041f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u0447 \u0440\u0435\u0436\u0438\u043c\u0443 \u043a\u043b\u0430\u0432\u0456\u0448\u0456 Shift:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "\u0411\u0443\u043a\u0432\u0435\u043d\u043d\u043e-\u0446\u0438\u0444\u0440\u043e\u0432\u0438\u0439"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
-    "message": "\u041a\u0430\u0442\u0430\u043a\u0430\u043d\u0430"
+    "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "\u0412\u0438\u043c\u043a\u043d\u0435\u043d\u043e"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "\u0421\u0442\u0438\u043b\u044c \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u043f\u0440\u043e\u0431\u0456\u043b\u0456\u0432:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "\u042f\u043a \u0443 \u0440\u0435\u0436\u0438\u043c\u0456 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "\u041f\u043e\u0432\u043d\u0430 \u0448\u0438\u0440\u0438\u043d\u0430"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "\u041f\u043e\u043b\u043e\u0432\u0438\u043d\u043d\u0430 \u0448\u0438\u0440\u0438\u043d\u0430"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u043f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u0439:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "\u0417\u0430\u043f\u0440\u043e\u043f\u043e\u043d\u0443\u0432\u0430\u0442\u0438"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "\u0421\u0442\u0438\u043b\u044c \u0441\u0438\u043c\u0432\u043e\u043b\u0456\u0432:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e \u043d\u0430\u0434\u0441\u0438\u043b\u0430\u0442\u0438 \u0432 Google \u0441\u0442\u0430\u0442\u0438\u0441\u0442\u0438\u043a\u0443 \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u0430\u043d\u043d\u044f \u0442\u0430 \u0437\u0432\u0456\u0442\u0438 \u043f\u0440\u043e \u0430\u0432\u0430\u0440\u0456\u0439\u043d\u0435 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f \u0440\u043e\u0431\u043e\u0442\u0438"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u0438\u0441\u044f \u043d\u0430 \u043f\u043e\u043b\u043e\u0432\u0438\u043d\u043d\u0443 \u0448\u0438\u0440\u0438\u043d\u0443"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "\u0412\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u0441\u0438\u0441\u0442\u0435\u043c\u043d\u0438\u0439 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "\u0412\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u0456\u0441\u0442\u043e\u0440\u0456\u044e \u0432\u0432\u0435\u0434\u0435\u043d\u044c"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "Ctrl"
   },
   "current_keyboard_prefix": {
-    "message": "\u043f\u043e\u0442\u043e\u0447\u043d\u0430 \u0432\u0438\u0431\u0440\u0430\u043d\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 "
+    "message": "\u043f\u043e\u0442\u043e\u0447\u043d\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 "
   },
   "current_lang": {
     "message": "\u041c\u043e\u0432\u0430 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u2013 \u043a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0430"
@@ -269,2119 +269,2119 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0447\u0435\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (Qwerty)"
   },
   "d83c_dc04": {
-    "message": "\u043f\u043b\u0438\u0442\u043a\u0430 \u0432 \u0433\u0440\u0456 \u0432 \u043c\u0430\u0434\u0436\u043e\u043d\u0433"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "\u043a\u0430\u0440\u0442\u0430 \"\u0414\u0436\u043e\u043a\u0435\u0440\""
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "\u0434\u0440\u0443\u0433\u0430 \u0433\u0440\u0443\u043f\u0430 \u043a\u0440\u043e\u0432\u0456"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "\u0442\u0440\u0435\u0442\u044f \u0433\u0440\u0443\u043f\u0430 \u043a\u0440\u043e\u0432\u0456"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "\u043f\u0435\u0440\u0448\u0430 \u0433\u0440\u0443\u043f\u0430 \u043a\u0440\u043e\u0432\u0456"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "\u043f\u0430\u0440\u043a\u0443\u0432\u0430\u043b\u044c\u043d\u0438\u0439 \u043c\u0430\u0439\u0434\u0430\u043d\u0447\u0438\u043a"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "\u0447\u0435\u0442\u0432\u0435\u0440\u0442\u0430 \u0433\u0440\u0443\u043f\u0430 \u043a\u0440\u043e\u0432\u0456"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
-    "message": "\u0437\u043d\u0430\u0447\u043e\u043a \u043e\u0447\u0438\u0449\u0435\u043d\u043d\u044f"
+    "message": "CL"
   },
   "d83c_dd92": {
-    "message": "\u043a\u0440\u0443\u0442\u043e"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "\u0431\u0435\u0437\u043a\u043e\u0448\u0442\u043e\u0432\u043d\u043e"
+    "message": "free"
   },
   "d83c_dd94": {
-    "message": "\u0406\u0414\u0415\u041d\u0422\u0418\u0424\u0406\u041a\u0410\u0422\u041e\u0420"
+    "message": "ID"
   },
   "d83c_dd95": {
-    "message": "\u041d\u043e\u0432\u0438\u0439"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
   },
   "d83c_dd97": {
-    "message": "\u041e\u041a"
+    "message": "OK"
   },
   "d83c_dd98": {
-    "message": "\u0421\u041e\u0421"
+    "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "\u0423\u0433\u043e\u0440\u0443!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
-    "message": "\u043f\u0440\u043e\u0442\u0438"
+    "message": "versus"
   },
   "d83c_de01": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0431\u0435\u0437\u043a\u043e\u0448\u0442\u043e\u0432\u043d\u043e\""
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0437\u0430\u0445\u0438\u0449\u0435\u043d\u043e\""
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0432\u0456\u043b\u044c\u043d\u0435 \u043c\u0456\u0441\u0446\u0435\""
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u043f\u0435\u0440\u0435\u0434\u0430\u0442\u0438\""
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u043f\u043e\u0432\u043d\u0438\u0439\""
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u043a\u043e\u043c\u0456\u0441\u0456\u0457\""
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0449\u043e\u043c\u0456\u0441\u044f\u0446\u044f\""
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0434\u043e\u0434\u0430\u0442\u043e\u043a\""
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0437\u043d\u0438\u0436\u043a\u0430\""
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0443 \u043a\u043e\u043c\u043f\u0430\u043d\u0456\u0457\""
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u043f\u0435\u0440\u0435\u0432\u0430\u0433\u0430\""
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "\u041a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0435 \u0441\u043b\u043e\u0432\u043e \"\u0441\u0445\u0432\u0430\u043b\u0435\u043d\u043e\""
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "\u0446\u0438\u043a\u043b\u043e\u043d"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "\u0422\u0443\u043c\u0430\u043d"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "\u043f\u0430\u0440\u0430\u0441\u043e\u043b\u044c\u043a\u0430"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "\u043d\u0456\u0447\u043d\u0456 \u0437\u043e\u0440\u0456"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "\u0441\u0445\u0456\u0434 \u0441\u043e\u043d\u0446\u044f \u043d\u0430\u0434 \u0433\u043e\u0440\u0430\u043c\u0438"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "\u0441\u0445\u0456\u0434 \u0441\u043e\u043d\u0446\u044f"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "\u043c\u0456\u0441\u0442\u043e \u0432 \u0441\u0443\u0442\u0456\u043d\u043a\u0430\u0445"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "\u0437\u0430\u0445\u0456\u0434 \u0441\u043e\u043d\u0446\u044f"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "\u0432\u0435\u0441\u0435\u043b\u043a\u0430"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "\u043c\u0456\u0441\u0442 \u0443\u043d\u043e\u0447\u0456"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "\u0445\u0432\u0438\u043b\u044f"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "\u0432\u0443\u043b\u043a\u0430\u043d"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "\u0427\u0443\u043c\u0430\u0446\u044c\u043a\u0438\u0439 \u0448\u043b\u044f\u0445"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "\u0433\u043b\u043e\u0431\u0443\u0441, \u0404\u0432\u0440\u043e\u043f\u0430 \u0439 \u0410\u0444\u0440\u0438\u043a\u0430"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "\u0433\u043b\u043e\u0431\u0443\u0441, \u0410\u043c\u0435\u0440\u0438\u043a\u0430"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "\u0433\u043b\u043e\u0431\u0443\u0441, \u0410\u0437\u0456\u044f \u0442\u0430 \u0410\u0432\u0441\u0442\u0440\u0430\u043b\u0456\u044f"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "\u0433\u043b\u043e\u0431\u0443\u0441 \u0456\u0437 \u043c\u0435\u0440\u0438\u0434\u0456\u0430\u043d\u0430\u043c\u0438"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "\u043d\u043e\u0432\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "\u043c\u043e\u043b\u043e\u0434\u0438\u0439 \u043f\u0456\u0432\u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "\u043c\u0456\u0441\u044f\u0446\u044c \u0443 \u043f\u0435\u0440\u0448\u0456\u0439 \u0447\u0432\u0435\u0440\u0442\u0456"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "\u0437\u0440\u043e\u0441\u0442\u0430\u044e\u0447\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "\u043f\u043e\u0432\u043d\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "\u0441\u043f\u0430\u0434\u0430\u044e\u0447\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "\u043c\u0456\u0441\u044f\u0446\u044c \u0432 \u043e\u0441\u0442\u0430\u043d\u043d\u0456\u0439 \u0447\u0432\u0435\u0440\u0442\u0456"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "\u0441\u0442\u0430\u0440\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "\u043f\u0456\u0432\u043c\u0456\u0441\u044f\u0446\u044c"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "\u043d\u043e\u0432\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c \u0437 \u043e\u0431\u043b\u0438\u0447\u0447\u044f\u043c"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "\u043c\u0456\u0441\u044f\u0446\u044c \u0443 \u043f\u0435\u0440\u0448\u0456\u0439 \u0447\u0432\u0435\u0440\u0442\u0456 \u0437 \u043e\u0431\u043b\u0438\u0447\u0447\u044f\u043c"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "\u043c\u0456\u0441\u044f\u0446\u044c \u0432 \u043e\u0441\u0442\u0430\u043d\u043d\u0456\u0439 \u0447\u0432\u0435\u0440\u0442\u0456 \u0437 \u043e\u0431\u043b\u0438\u0447\u0447\u044f\u043c"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "\u043f\u043e\u0432\u043d\u0438\u0439 \u043c\u0456\u0441\u044f\u0446\u044c \u0437 \u043e\u0431\u043b\u0438\u0447\u0447\u044f\u043c"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "\u0441\u043e\u043d\u0446\u0435 \u0437 \u043e\u0431\u043b\u0438\u0447\u0447\u044f\u043c"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "\u0437\u0456\u0440\u043a\u0430, \u0449\u043e \u0441\u044f\u0454"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "\u043c\u0435\u0442\u0435\u043e\u0440"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "\u043a\u0430\u0448\u0442\u0430\u043d"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "\u043c\u043e\u043b\u043e\u0434\u0435 \u0434\u0435\u0440\u0435\u0432\u0446\u0435"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "\u0432\u0456\u0447\u043d\u043e\u0437\u0435\u043b\u0435\u043d\u0435 \u0434\u0435\u0440\u0435\u0432\u043e"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "\u0434\u0435\u0440\u0435\u0432\u043e, \u0437 \u044f\u043a\u043e\u0433\u043e \u043e\u043f\u0430\u0434\u0430\u0454 \u043b\u0438\u0441\u0442\u044f"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "\u043f\u0430\u043b\u044c\u043c\u0430"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "\u043a\u0430\u043a\u0442\u0443\u0441"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "\u0442\u044e\u043b\u044c\u043f\u0430\u043d"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "\u0446\u0432\u0456\u0442 \u0432\u0438\u0448\u043d\u0456"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "\u0442\u0440\u043e\u044f\u043d\u0434\u0430"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "\u0433\u0456\u0431\u0456\u0441\u043a\u0443\u0441"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "\u0441\u043e\u043d\u044f\u0448\u043d\u0438\u043a"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "\u0446\u0432\u0456\u0442"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "\u043a\u0443\u043a\u0443\u0440\u0443\u0434\u0437\u0430"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "\u043a\u043e\u043b\u043e\u0441\u0441\u044f \u0440\u0438\u0441\u0443"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "\u0442\u0440\u0430\u0432\u0430"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "\u0447\u043e\u0442\u0438\u0440\u0438\u043b\u0438\u0441\u0442\u0430 \u043a\u043e\u043d\u044e\u0448\u0438\u043d\u0430"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "\u043a\u043b\u0435\u043d\u043e\u0432\u0438\u0439 \u043b\u0438\u0441\u0442\u043e\u043a"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "\u043f\u0430\u0434\u0430\u044e\u0447\u0456 \u043b\u0438\u0441\u0442\u044f"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "\u043b\u0438\u0441\u0442\u043e\u043a \u043d\u0430 \u0432\u0456\u0442\u0440\u0456"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "\u0433\u0440\u0438\u0431"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "\u043f\u043e\u043c\u0456\u0434\u043e\u0440"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "\u0431\u0430\u043a\u043b\u0430\u0436\u0430\u043d"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "\u0432\u0438\u043d\u043e\u0433\u0440\u0430\u0434"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "\u0434\u0438\u043d\u044f"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "\u043a\u0430\u0432\u0443\u043d"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "\u043f\u043e\u043c\u0430\u0440\u0430\u043d\u0447"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "\u043b\u0438\u043c\u043e\u043d"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "\u0431\u0430\u043d\u0430\u043d"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "\u0430\u043d\u0430\u043d\u0430\u0441"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "\u0447\u0435\u0440\u0432\u043e\u043d\u0435 \u044f\u0431\u043b\u0443\u043a\u043e"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "\u0437\u0435\u043b\u0435\u043d\u0435 \u044f\u0431\u043b\u0443\u043a\u043e"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "\u0433\u0440\u0443\u0448\u0430"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "\u043f\u0435\u0440\u0441\u0438\u043a"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "\u0432\u0438\u0448\u043d\u044f"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "\u043f\u043e\u043b\u0443\u043d\u0438\u0446\u044f"
+    "message": "strawberry"
   },
   "d83c_df54": {
-    "message": "\u0433\u0430\u043c\u0431\u0443\u0440\u0433\u0435\u0440"
+    "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "\u0448\u043c\u0430\u0442\u043e\u043a \u043f\u0456\u0446\u0438"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "\u043c\u2019\u044f\u0441\u043e"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "\u043a\u0443\u0440\u044f\u0447\u0430 \u043d\u0456\u0436\u043a\u0430"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "\u0440\u0438\u0441\u043e\u0432\u0438\u0439 \u043a\u0440\u0435\u043a\u0435\u0440"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "\u0440\u0438\u0441\u043e\u0432\u0430 \u043a\u0443\u043b\u044c\u043a\u0430"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "\u0432\u0430\u0440\u0435\u043d\u0438\u0439 \u0440\u0438\u0441"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "\u0440\u0438\u0441 \u0456\u0437 \u043a\u0430\u0440\u0456"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
-    "message": "\u0440\u0430\u043c\u0435\u043d"
+    "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "\u0441\u043f\u0430\u0433\u0435\u0442\u0456"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "\u0445\u043b\u0456\u0431"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "\u043a\u0430\u0440\u0442\u043e\u043f\u043b\u044f \u0444\u0440\u0456"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "\u0441\u043c\u0430\u0436\u0435\u043d\u0430 \u043a\u0430\u0440\u0442\u043e\u043f\u043b\u044f"
+    "message": "roasted potato"
   },
   "d83c_df61": {
-    "message": "\u043c\u043e\u0447\u0456"
+    "message": "mochi"
   },
   "d83c_df62": {
-    "message": "\u043e\u0434\u0435\u043d"
+    "message": "oden"
   },
   "d83c_df63": {
-    "message": "\u0441\u0443\u0448\u0456"
+    "message": "sushi"
   },
   "d83c_df64": {
-    "message": "\u0441\u043c\u0430\u0436\u0435\u043d\u0456 \u043a\u0440\u0435\u0432\u0435\u0442\u043a\u0438"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "\u0440\u0438\u0431\u043d\u0430 \u043a\u043e\u0442\u043b\u0435\u0442\u0430"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "\u043c\u2019\u044f\u043a\u0435 \u043c\u043e\u0440\u043e\u0437\u0438\u0432\u043e"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "\u043b\u044c\u043e\u0434\u043e\u0432\u0430 \u0441\u0442\u0440\u0443\u0436\u043a\u0430"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "\u043c\u043e\u0440\u043e\u0437\u0438\u0432\u043e"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "\u043f\u043e\u043d\u0447\u0438\u043a"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "\u043f\u0435\u0447\u0438\u0432\u043e"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "\u0448\u043e\u043a\u043e\u043b\u0430\u0434"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "\u0446\u0443\u043a\u0435\u0440\u043a\u0430"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "\u043b\u044c\u043e\u0434\u044f\u043d\u0438\u043a"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "\u0437\u0430\u0432\u0430\u0440\u043d\u0438\u0439 \u043a\u0440\u0435\u043c"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "\u0433\u043e\u0440\u0449\u0438\u043a \u0456\u0437 \u043c\u0435\u0434\u043e\u043c"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "\u0442\u0456\u0441\u0442\u0435\u0447\u043a\u043e"
+    "message": "shortcake"
   },
   "d83c_df71": {
-    "message": "\u0431\u0435\u043d\u0442\u043e"
+    "message": "bento"
   },
   "d83c_df72": {
-    "message": "\u0442\u0443\u0448\u043a\u043e\u0432\u0430\u043d\u0435 \u043c\u2019\u044f\u0441\u043e"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "\u0441\u043a\u043e\u0432\u043e\u0440\u0456\u0434\u043a\u0430 \u0437 \u0440\u0443\u0447\u043a\u043e\u044e"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "\u0432\u0438\u0434\u0435\u043b\u043a\u0430 \u0442\u0430 \u043d\u0456\u0436"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "\u0447\u0430\u0439\u043d\u0430 \u0447\u0430\u0448\u043a\u0430"
+    "message": "teacup"
   },
   "d83c_df76": {
-    "message": "\u0441\u0430\u043a\u0435"
+    "message": "sake"
   },
   "d83c_df77": {
-    "message": "\u0432\u0438\u043d\u043e"
+    "message": "wine"
   },
   "d83c_df78": {
-    "message": "\u043a\u043e\u043a\u0442\u0435\u0439\u043b\u044c"
+    "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "\u0442\u0440\u043e\u043f\u0456\u0447\u043d\u0438\u0439 \u043d\u0430\u043f\u0456\u0439"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "\u043f\u0438\u0432\u043e"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "\u043a\u0443\u0445\u043b\u0456 \u0434\u043b\u044f \u043f\u0438\u0432\u0430"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "\u043f\u043b\u044f\u0448\u0435\u0447\u043a\u0430 \u0434\u043b\u044f \u043d\u0435\u043c\u043e\u0432\u043b\u044f\u0442\u0438"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "\u0441\u0442\u0440\u0456\u0447\u043a\u0430"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "\u043f\u043e\u0434\u0430\u0440\u0443\u043d\u043e\u043a"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "\u0442\u043e\u0440\u0442 \u043d\u0430 \u0434\u0435\u043d\u044c \u043d\u0430\u0440\u043e\u0434\u0436\u0435\u043d\u043d\u044f"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "\u043b\u0456\u0445\u0442\u0430\u0440-\u0433\u0430\u0440\u0431\u0443\u0437"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "\u044f\u043b\u0438\u043d\u043a\u0430"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "\u0441\u0430\u043d\u0442\u0430"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "\u0444\u0435\u0454\u0440\u0432\u0435\u0440\u043a"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "\u0431\u0435\u043d\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u0438\u0439 \u0432\u043e\u0433\u043e\u043d\u044c"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "\u043f\u043e\u0432\u0456\u0442\u0440\u044f\u043d\u0430 \u043a\u0443\u043b\u044c\u043a\u0430"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "\u0445\u043b\u043e\u043f\u0430\u0432\u043a\u0430"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "\u043a\u043e\u043d\u0444\u0435\u0442\u0456"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "\u0434\u0435\u0440\u0435\u0432\u043e \u0456 \u043f\u0430\u043f\u0435\u0440\u043e\u0432\u0456 \u0441\u043c\u0443\u0436\u043a\u0438"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "\u0441\u0445\u0440\u0435\u0449\u0435\u043d\u0456 \u043f\u0440\u0430\u043f\u043e\u0440\u0446\u0456"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "\u043f\u0440\u0438\u043a\u0440\u0430\u0441\u0438 \u043d\u0430 \u044f\u043b\u0438\u043d\u043a\u0443"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "\u043b\u044f\u043b\u044c\u043a\u0438"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "\u0442\u0440\u0430\u043d\u0441\u043f\u0430\u0440\u0430\u043d\u0442 \u0456\u0437 \u043a\u0430\u0440\u043f\u0430\u043c\u0438"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "\u043a\u0438\u0442\u0430\u0439\u0441\u044c\u043a\u0456 \u0434\u0437\u0432\u0456\u043d\u043e\u0447\u043a\u0438"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "\u0432\u0448\u0430\u043d\u0443\u0432\u0430\u043d\u043d\u044f \u043c\u0456\u0441\u044f\u0446\u044f"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "\u0448\u043a\u0456\u043b\u044c\u043d\u0438\u0439 \u043f\u043e\u0440\u0442\u0444\u0435\u043b\u044c"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "\u0430\u043a\u0430\u0434\u0435\u043c\u0456\u0447\u043d\u0430 \u0448\u0430\u043f\u043e\u0447\u043a\u0430"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "\u043a\u0430\u0440\u0443\u0441\u0435\u043b\u044c"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "\u043a\u043e\u043b\u0435\u0441\u043e \u043e\u0433\u043b\u044f\u0434\u0443"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "\u0430\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u0456 \u0433\u0456\u0440\u043a\u0438"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "\u0440\u0438\u0431\u043e\u043b\u043e\u0432\u043b\u044f"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "\u043c\u0456\u043a\u0440\u043e\u0444\u043e\u043d"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "\u043a\u0456\u043d\u043e\u043a\u0430\u043c\u0435\u0440\u0430"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "\u0444\u0456\u043b\u044c\u043c"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "\u043d\u0430\u0432\u0443\u0448\u043d\u0438\u043a\u0438"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "\u043f\u0430\u043b\u0456\u0442\u0440\u0430 \u0434\u043b\u044f \u043c\u0430\u043b\u044e\u0432\u0430\u043d\u043d\u044f"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "\u0446\u0438\u043b\u0456\u043d\u0434\u0440"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "\u0446\u0438\u0440\u043a"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "\u043a\u0432\u0438\u0442\u043e\u043a"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "\u043d\u0443\u043c\u0435\u0440\u0430\u0442\u043e\u0440 \u0456\u0437 \u0445\u043b\u043e\u043f\u0430\u0432\u043a\u043e\u044e"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "\u043c\u0430\u0441\u043a\u0430 \u0434\u043b\u044f \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "\u0432\u0456\u0434\u0435\u043e\u0433\u0440\u0430"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "\u0432 \u044f\u0431\u043b\u0443\u0447\u043a\u043e"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "\u0456\u0433\u0440\u043e\u0432\u0438\u0439 \u0430\u0432\u0442\u043e\u043c\u0430\u0442"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "\u0431\u0456\u043b\u044c\u044f\u0440\u0434"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "\u0433\u0440\u0430\u043b\u044c\u043d\u0438\u0439 \u043a\u0443\u0431\u0438\u043a"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "\u0431\u043e\u0443\u043b\u0456\u043d\u0433"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "\u0433\u0440\u0430\u043b\u044c\u043d\u0430 \u043a\u0430\u0440\u0442\u0430"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "\u043c\u0443\u0437\u0438\u0447\u043d\u0430 \u043d\u043e\u0442\u0430"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "\u043c\u0443\u0437\u0438\u0447\u043d\u0456 \u043d\u043e\u0442\u0438"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "\u0441\u0430\u043a\u0441\u043e\u0444\u043e\u043d"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "\u0433\u0456\u0442\u0430\u0440\u0430"
+    "message": "guitar"
   },
   "d83c_dfb9": {
-    "message": "\u043f\u0456\u0430\u043d\u0456\u043d\u043e"
+    "message": "piano"
   },
   "d83c_dfba": {
-    "message": "\u0442\u0440\u0443\u0431\u0430"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "\u0441\u043a\u0440\u0438\u043f\u043a\u0430"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "\u043f\u0430\u0440\u0442\u0438\u0442\u0443\u0440\u0430"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "\u0444\u0443\u0442\u0431\u043e\u043b\u043a\u0430"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
-    "message": "\u0442\u0435\u043d\u0456\u0441"
+    "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "\u043b\u0438\u0436\u0456"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "\u0431\u0430\u0441\u043a\u0435\u0442\u0431\u043e\u043b"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "\u043a\u0430\u0440\u0442\u0430\u0442\u0438\u0439 \u043f\u0440\u0430\u043f\u043e\u0440\u0435\u0446\u044c"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "\u0441\u043d\u043e\u0443\u0431\u043e\u0440\u0434\u0438\u0441\u0442"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "\u0431\u0456\u0433\u0443\u043d"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "\u0441\u0435\u0440\u0444\u0456\u043d\u0433"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "\u0442\u0440\u043e\u0444\u0435\u0439"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "\u043a\u0456\u043d\u043d\u0456 \u043f\u0435\u0440\u0435\u0433\u043e\u043d\u0438"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "\u0410\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u0438\u0439 \u0444\u0443\u0442\u0431\u043e\u043b"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "\u0444\u0443\u0442\u0431\u043e\u043b"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "\u043f\u043b\u0430\u0432\u0435\u0446\u044c"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "\u0431\u0443\u0434\u0438\u043d\u043e\u043a"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "\u0414\u043e\u043c\u0430\u0448\u043d\u044f \u0441\u0442\u043e\u0440\u0456\u043d\u043a\u0430"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "\u043e\u0444\u0456\u0441\u043d\u0430 \u0431\u0443\u0434\u0456\u0432\u043b\u044f"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0430 \u043f\u043e\u0448\u0442\u0430"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "\u0404\u0432\u0440\u043e\u043f\u0435\u0439\u0441\u044c\u043a\u0430 \u043f\u043e\u0448\u0442\u0430"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "\u043b\u0456\u043a\u0430\u0440\u043d\u044f"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "\u0431\u0430\u043d\u043a"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "\u0411\u0430\u043d\u043a\u043e\u043c\u0430\u0442"
+    "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "\u0433\u043e\u0442\u0435\u043b\u044c"
+    "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "\u0433\u043e\u0442\u0435\u043b\u044c \u0434\u043b\u044f \u0437\u0430\u043a\u043e\u0445\u0430\u043d\u0438\u0445"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "\u0446\u0456\u043b\u043e\u0434\u043e\u0431\u043e\u0432\u0438\u0439 \u043c\u0430\u0433\u0430\u0437\u0438\u043d"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "\u0448\u043a\u043e\u043b\u0430"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "\u0443\u043d\u0456\u0432\u0435\u0440\u043c\u0430\u0433"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "\u0437\u0430\u0432\u043e\u0434"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "\u0447\u0435\u0440\u0432\u043e\u043d\u0438\u0439 \u043b\u0456\u0445\u0442\u0430\u0440"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0438\u0439 \u0437\u0430\u043c\u043e\u043a"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "\u0404\u0432\u0440\u043e\u043f\u0435\u0439\u0441\u044c\u043a\u0438\u0439 \u0437\u0430\u043c\u043e\u043a"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "\u0449\u0443\u0440"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "\u041c\u0438\u0448\u0430"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "\u0431\u0438\u043a"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "\u0431\u0443\u0439\u0432\u043e\u043b"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "\u043a\u043e\u0440\u043e\u0432\u0430"
+    "message": "cow"
   },
   "d83d_dc06": {
-    "message": "\u043b\u0435\u043e\u043f\u0430\u0440\u0434"
+    "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "\u043a\u0440\u043e\u043b\u0438\u043a"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "\u043a\u0456\u0442"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "\u0434\u0440\u0430\u043a\u043e\u043d"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "\u043a\u0440\u043e\u043a\u043e\u0434\u0438\u043b"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "\u043a\u0438\u0442"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "\u0440\u0430\u0432\u043b\u0438\u043a"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "\u0437\u043c\u0456\u044f"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "\u043a\u0456\u043d\u044c"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "\u0431\u0430\u0440\u0430\u043d"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "\u043a\u043e\u0437\u0430"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "\u0432\u0456\u0432\u0446\u0456"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "\u043c\u0430\u0432\u043f\u0430"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "\u043f\u0456\u0432\u0435\u043d\u044c"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "\u043a\u0443\u0440\u043a\u0430"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "\u0441\u043e\u0431\u0430\u043a\u0430"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "\u0441\u0432\u0438\u043d\u044f"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "\u043a\u0430\u0431\u0430\u043d"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "\u0441\u043b\u043e\u043d"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "\u0432\u043e\u0441\u044c\u043c\u0438\u043d\u0456\u0433"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "\u043c\u0443\u0448\u043b\u044f"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "\u0436\u0443\u043a"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "\u043c\u0443\u0440\u0430\u0445\u0430"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "\u0431\u0434\u0436\u043e\u043b\u0430"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "\u0441\u043e\u043d\u0435\u0447\u043a\u043e"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "\u0440\u0438\u0431\u0430"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "\u0442\u0440\u043e\u043f\u0456\u0447\u043d\u0430 \u0440\u0438\u0431\u0430"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "\u0440\u0438\u0431\u0430-\u0441\u043e\u0431\u0430\u043a\u0430"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "\u0447\u0435\u0440\u0435\u043f\u0430\u0445\u0430"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "\u043a\u0443\u0440\u0447\u0430, \u044f\u043a\u0435 \u043f\u0440\u043e\u043a\u043b\u044c\u043e\u0432\u0443\u0454\u0442\u044c\u0441\u044f \u0437 \u044f\u0439\u0446\u044f"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "\u0433\u043e\u043b\u043e\u0432\u0430 \u043a\u0443\u0440\u0447\u0430\u0442\u0438"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "\u043a\u0443\u0440\u0447\u0430"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "\u043f\u0442\u0430\u0445"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "\u043f\u0456\u043d\u0433\u0432\u0456\u043d"
+    "message": "penguin"
   },
   "d83d_dc28": {
-    "message": "\u043a\u043e\u0430\u043b\u0430"
+    "message": "koala"
   },
   "d83d_dc29": {
-    "message": "\u043f\u0443\u0434\u0435\u043b\u044c"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "\u043e\u0434\u043d\u043e\u0433\u043e\u0440\u0431\u0438\u0439 \u0432\u0435\u0440\u0431\u043b\u044e\u0434"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "\u0434\u0432\u043e\u0433\u043e\u0440\u0431\u0438\u0439 \u0432\u0435\u0440\u0431\u043b\u044e\u0434"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "\u0434\u0435\u043b\u044c\u0444\u0456\u043d"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "\u043c\u0438\u0448\u0430\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "\u043a\u043e\u0440\u043e\u0432\u2019\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "\u0442\u0438\u0433\u0440"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "\u043a\u0440\u043e\u043b\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "\u043a\u043e\u0442\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "\u0433\u043e\u043b\u043e\u0432\u0430 \u0434\u0440\u0430\u043a\u043e\u043d"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "\u043a\u0438\u0442 \u0456\u0437 \u0444\u043e\u043d\u0442\u0430\u043d\u043e\u043c"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "\u043a\u0456\u043d\u044c"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "\u043c\u0430\u0432\u043f\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "\u0441\u043e\u0431\u0430\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "\u0441\u0432\u0438\u043d\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "\u0436\u0430\u0431\u0430"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "\u0445\u043e\u043c\u2019\u044f\u043a"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "\u0432\u043e\u0432\u043a"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "\u0432\u0435\u0434\u043c\u0456\u0434\u044c"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "\u043f\u0430\u043d\u0434\u0430"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "\u0441\u0432\u0438\u043d\u044f\u0447\u0435 \u0440\u0438\u043b\u044c\u0446\u0435"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "\u043b\u0430\u043f\u0430"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "\u043e\u0447\u0456"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "\u0432\u0443\u0445\u043e"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "\u043d\u0456\u0441"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "\u0440\u043e\u0442"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "\u044f\u0437\u0438\u043a"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "\u043f\u0430\u043b\u0435\u0446\u044c \u0443\u0433\u043e\u0440\u0443"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "\u043f\u0430\u043b\u0435\u0446\u044c \u0432\u043d\u0438\u0437"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "\u043f\u0430\u043b\u0435\u0446\u044c \u043b\u0456\u0432\u043e\u0440\u0443\u0447"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "\u043f\u0430\u043b\u0435\u0446\u044c \u043f\u0440\u0430\u0432\u043e\u0440\u0443\u0447"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "\u0441\u0442\u0438\u0441\u043d\u0443\u0442\u0438\u0439 \u043a\u0443\u043b\u0430\u043a"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "\u043c\u0430\u0445\u0430\u0454 \u0440\u0443\u043a\u043e\u044e"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "\u0437\u043d\u0430\u043a \u0440\u0443\u043a\u0438, \u044f\u043a\u0430 \u043f\u043e\u043a\u0430\u0437\u0443\u0454 \"\u041e\u041a\""
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "\u043f\u043e\u0434\u043e\u0431\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "\u043d\u0435 \u043f\u043e\u0434\u043e\u0431\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "\u043e\u043f\u043b\u0435\u0441\u043a\u0438"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0456 \u0440\u0443\u043a\u0438"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "\u043a\u043e\u0440\u043e\u043d\u0430"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "\u0436\u0456\u043d\u043e\u0447\u0438\u0439 \u043a\u0430\u043f\u0435\u043b\u044e\u0448\u043e\u043a"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "\u043e\u043a\u0443\u043b\u044f\u0440\u0438"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "\u043a\u0440\u0430\u0432\u0430\u0442\u043a\u0430"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "\u0444\u0443\u0442\u0431\u043e\u043b\u043a\u0430"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "\u0448\u0442\u0430\u043d\u0438"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "\u0441\u0443\u043a\u043d\u044f"
+    "message": "dress"
   },
   "d83d_dc58": {
-    "message": "\u043a\u0456\u043c\u043e\u043d\u043e"
+    "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "\u0431\u0456\u043a\u0456\u043d\u0456"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "\u0436\u0456\u043d\u043e\u0447\u0438\u0439 \u043e\u0434\u044f\u0433"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "\u0433\u0430\u043c\u0430\u043d\u0435\u0446\u044c"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "\u0436\u0456\u043d\u043e\u0447\u0430 \u0441\u0443\u043c\u043a\u0430"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "\u0447\u043e\u0445\u043e\u043b"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u0447\u0435 \u0432\u0437\u0443\u0442\u0442\u044f"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "\u0441\u043f\u043e\u0440\u0442\u0438\u0432\u043d\u0435 \u0432\u0437\u0443\u0442\u0442\u044f"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "\u0432\u0438\u0441\u043e\u043a\u0456 \u043f\u0456\u0434\u0431\u043e\u0440\u0438"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "\u0436\u0456\u043d\u043e\u0447\u0456 \u0441\u0430\u043d\u0434\u0430\u043b\u0456"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "\u0436\u0456\u043d\u043e\u0447\u0456 \u0447\u043e\u0431\u043e\u0442\u0438"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "\u0441\u043b\u0456\u0434 \u043d\u043e\u0433\u0438"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "\u0441\u0438\u043b\u0443\u0435\u0442 \u0431\u044e\u0441\u0442\u0443"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "\u0441\u0438\u043b\u0443\u0435\u0442\u0438 \u0431\u044e\u0441\u0442\u0456\u0432"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "\u0445\u043b\u043e\u043f\u0435\u0446\u044c"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "\u0434\u0456\u0432\u0447\u0438\u043d\u0430"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u043a"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "\u0436\u0456\u043d\u043a\u0430"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "\u0440\u043e\u0434\u0438\u043d\u0430"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u043a \u0456 \u0436\u0456\u043d\u043a\u0430"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "\u0434\u0432\u043e\u0454 \u0447\u043e\u043b\u043e\u0432\u0456\u043a\u0456\u0432"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "\u0434\u0432\u0456 \u0436\u0456\u043d\u043a\u0438"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "\u043e\u0444\u0456\u0446\u0435\u0440 \u043f\u043e\u043b\u0456\u0446\u0456\u0457"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "\u0434\u0456\u0432\u0447\u0438\u043d\u0430 \u0437 \u043a\u0440\u043e\u043b\u044f\u0447\u0438\u043c\u0438 \u0432\u0443\u0445\u0430\u043c\u0438"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "\u043d\u0430\u0440\u0435\u0447\u0435\u043d\u0430"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "\u043b\u044e\u0434\u0438\u043d\u0430 \u0437\u0456 \u0441\u0432\u0456\u0442\u043b\u0438\u043c \u0432\u043e\u043b\u043e\u0441\u0441\u044f\u043c"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u043a \u0443 \u043a\u0440\u0443\u0433\u043b\u0456\u0439 \u0448\u0430\u043f\u043e\u0447\u0446\u0456"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u043a \u0443 \u0442\u044e\u0440\u0431\u0430\u043d\u0456"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "\u043b\u0456\u0442\u043d\u0456\u0439 \u0447\u043e\u043b\u043e\u0432\u0456\u043a"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "\u043b\u0456\u0442\u043d\u044f \u0436\u0456\u043d\u043a\u0430"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "\u043d\u0435\u043c\u043e\u0432\u043b\u044f"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "\u0431\u0443\u0434\u0456\u0432\u0435\u043b\u044c\u043d\u0438\u043a"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "\u043f\u0440\u0438\u043d\u0446\u0435\u0441\u0430"
+    "message": "princess"
   },
   "d83d_dc79": {
-    "message": "\u043b\u044e\u0434\u043e\u0436\u0435\u0440"
+    "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "\u0433\u043e\u0431\u043b\u0456\u043d"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "\u043f\u0440\u0438\u0432\u0438\u0434"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "\u044f\u043d\u0433\u043e\u043b\u044f\u0442\u043a\u043e"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "\u043f\u0440\u0438\u0431\u0443\u043b\u0435\u0446\u044c"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "\u043f\u0440\u0438\u0431\u0443\u043b\u0435\u0446\u044c-\u043c\u043e\u043d\u0441\u0442\u0440"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "\u0447\u043e\u0440\u0442\u0435\u043d\u044f"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "\u0447\u0435\u0440\u0435\u043f"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "\u0434\u043e\u0432\u0456\u0434\u043a\u043e\u0432\u0435 \u0431\u044e\u0440\u043e"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "\u043e\u0445\u043e\u0440\u043e\u043d\u0435\u0446\u044c"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "\u0442\u0430\u043d\u0446\u0456\u0432\u043d\u0438\u043a"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "\u0433\u0443\u0431\u043d\u0430 \u043f\u043e\u043c\u0430\u0434\u0430"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "\u0434\u043e\u0433\u043b\u044f\u0434 \u0437\u0430 \u043d\u0456\u0433\u0442\u044f\u043c\u0438"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "\u043c\u0430\u0441\u0430\u0436 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "\u0441\u0442\u0440\u0438\u0436\u043a\u0430"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "\u0447\u043e\u043b\u043e\u0432\u0456\u0447\u0430 \u043f\u0435\u0440\u0443\u043a\u0430\u0440\u043d\u044f"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "\u0447\u0430\u0440\u043a\u0430"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "\u0442\u0430\u0431\u043b\u0435\u0442\u043a\u0430"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "\u0432\u0456\u0434\u0431\u0438\u0442\u043e\u043a \u0433\u0443\u0431"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "\u043b\u044e\u0431\u043e\u0432\u043d\u0438\u0439 \u043b\u0438\u0441\u0442"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "\u043f\u0435\u0440\u0441\u0442\u0435\u043d\u044c"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "\u0434\u043e\u0440\u043e\u0433\u043e\u0446\u0456\u043d\u043d\u0438\u0439 \u043a\u0430\u043c\u0456\u043d\u044c"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "\u043f\u043e\u0446\u0456\u043b\u0443\u043d\u043e\u043a"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "\u0431\u0443\u043a\u0435\u0442"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "\u043f\u0430\u0440\u0430"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "\u0432\u0435\u0441\u0456\u043b\u044c\u043d\u0430 \u043a\u0430\u043f\u043b\u0438\u0446\u044f"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "\u0441\u0435\u0440\u0446\u0435, \u0449\u043e \u043f\u0443\u043b\u044c\u0441\u0443\u0454"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "\u0440\u043e\u0437\u0431\u0438\u0442\u0435 \u0441\u0435\u0440\u0446\u0435"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "\u0434\u0432\u0430 \u0441\u0435\u0440\u0446\u044f"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "\u0441\u0435\u0440\u0446\u0435, \u0449\u043e \u0431\u043b\u0438\u0449\u0438\u0442\u044c"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "\u0441\u0435\u0440\u0446\u0435, \u0449\u043e \u0437\u0431\u0456\u043b\u044c\u0448\u0443\u0454\u0442\u044c\u0441\u044f"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "\u0441\u0435\u0440\u0446\u0435 \u0437\u0456 \u0441\u0442\u0440\u0456\u043b\u043e\u044e"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "\u0441\u0438\u043d\u0454 \u0441\u0435\u0440\u0446\u0435"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "\u0437\u0435\u043b\u0435\u043d\u0435 \u0441\u0435\u0440\u0446\u0435"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "\u0436\u043e\u0432\u0442\u0435 \u0441\u0435\u0440\u0446\u0435"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "\u0444\u0456\u043e\u043b\u0435\u0442\u043e\u0432\u0435 \u0441\u0435\u0440\u0446\u0435"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "\u0441\u0435\u0440\u0446\u0435 \u0437\u0456 \u0441\u0442\u0440\u0456\u0447\u043a\u043e\u044e"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "\u0441\u0435\u0440\u0446\u044f, \u0449\u043e \u043e\u0431\u0435\u0440\u0442\u0430\u044e\u0442\u044c\u0441\u044f"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "\u0434\u0435\u043a\u043e\u0440 \u0443 \u0432\u0438\u0433\u043b\u044f\u0434\u0456 \u0441\u0435\u0440\u0446\u044f"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "\u043f\u0435\u043b\u044e\u0441\u0442\u043a\u0430 \u043a\u0432\u0456\u0442\u043a\u0438"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "\u043b\u0430\u043c\u043f\u043e\u0447\u043a\u0430"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "\u0433\u043d\u0456\u0432"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "\u0431\u043e\u043c\u0431\u0430"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "\u0441\u0438\u043c\u0432\u043e\u043b \u0441\u043d\u0443"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "\u0437\u0456\u0442\u043a\u043d\u0435\u043d\u043d\u044f"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "\u043a\u0440\u0430\u043f\u043b\u0456 \u043f\u043e\u0442\u0443"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "\u0445\u043e\u043b\u043e\u0434\u043d\u0438\u0439 \u043f\u0456\u0442"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "\u0440\u0438\u0432\u043e\u043a"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "\u043b\u0430\u0439\u043d\u043e"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "\u0431\u0456\u0446\u0435\u043f\u0441"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "\u0437\u0430\u043f\u0430\u043c\u043e\u0440\u043e\u0447\u0435\u043d\u043d\u044f"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "\u0445\u043c\u0430\u0440\u0438\u043d\u043a\u0430 \u0437 \u0442\u0435\u043a\u0441\u0442\u043e\u043c"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "\u0445\u043c\u0430\u0440\u0438\u043d\u043a\u0430 \u0437 \u0434\u0443\u043c\u043a\u0430\u043c\u0438"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "\u043c\u0430\u0440\u043a\u0430 \u0437 \u043a\u0432\u0456\u0442\u043a\u043e\u044e"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "\u043e\u0440\u043a\u0435\u0441\u0442\u0440\u043e\u0432\u0430 \u043f\u0430\u0440\u0442\u0438\u0442\u0443\u0440\u0430"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "\u043c\u0456\u0448\u043e\u043a \u0456\u0437 \u0433\u0440\u043e\u0448\u0438\u043c\u0430"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "\u043e\u0431\u043c\u0456\u043d \u0432\u0430\u043b\u044e\u0442"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "\u0441\u0438\u043c\u0432\u043e\u043b \u0434\u043e\u043b\u0430\u0440\u0430"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "\u043a\u0440\u0435\u0434\u0438\u0442\u043d\u0430 \u043a\u0430\u0440\u0442\u043a\u0430"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "\u0431\u0430\u043d\u043a\u043d\u043e\u0442\u0430 \u0456\u0437 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u043c \u0454\u043d\u0438"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "\u0431\u0430\u043d\u043a\u043d\u043e\u0442\u0430 \u0456\u0437 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u043c \u0434\u043e\u043b\u0430\u0440\u0430"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "\u0431\u0430\u043d\u043a\u043d\u043e\u0442\u0430 \u0456\u0437 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u043c \u0454\u0432\u0440\u043e"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "\u0431\u0430\u043d\u043a\u043d\u043e\u0442\u0430 \u0456\u0437 \u0441\u0438\u043c\u0432\u043e\u043b\u043e\u043c \u0444\u0443\u043d\u0442\u0430"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "\u0433\u0440\u043e\u0448\u0456, \u0449\u043e \u043b\u0456\u0442\u0430\u044e\u0442\u044c"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "\u0432\u0438\u0441\u0445\u0456\u0434\u043d\u0438\u0439 \u0440\u0438\u043d\u043e\u043a"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "\u0441\u0438\u0434\u0456\u043d\u043d\u044f"
+    "message": "seat"
   },
   "d83d_dcbb": {
-    "message": "\u041f\u041a"
+    "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "\u043f\u043e\u0440\u0442\u0444\u0435\u043b\u044c"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "\u043c\u0456\u043d\u0456-\u0434\u0438\u0441\u043a"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "\u0434\u0438\u0441\u043a\u0435\u0442\u0430"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
-    "message": "Blu-ray"
+    "message": "blu-ray"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "\u043f\u0430\u043f\u043a\u0430 \u0437 \u0444\u0430\u0439\u043b\u0430\u043c\u0438"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0430 \u043f\u0430\u043f\u043a\u0430"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "\u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "\u0441\u0432\u043e\u0433\u043e \u0441\u0438\u043d\u0430"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "\u0432\u0456\u0434\u0440\u0438\u0432\u043d\u0438\u0439 \u043a\u0430\u043b\u0435\u043d\u0434\u0430\u0440"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "\u043a\u0430\u0440\u0442\u043e\u0442\u0435\u043a\u0430"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "\u0432\u0438\u0441\u0445\u0456\u0434\u043d\u0438\u0439 \u0433\u0440\u0430\u0444\u0456\u043a"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "\u043d\u0438\u0437\u0445\u0456\u0434\u043d\u0438\u0439 \u0433\u0440\u0430\u0444\u0456\u043a"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "\u0433\u0456\u0441\u0442\u043e\u0433\u0440\u0430\u043c\u0430"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "\u043f\u0430\u043f\u043a\u0430 \u0456\u0437 \u0437\u0430\u0436\u0438\u043c\u043e\u043c \u0434\u043b\u044f \u043f\u0430\u043f\u0435\u0440\u0443"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "\u043a\u0430\u043d\u0446\u0435\u043b\u044f\u0440\u0441\u044c\u043a\u0430 \u043a\u043d\u043e\u043f\u043a\u0430"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "\u043a\u0440\u0443\u0433\u043b\u0430 \u043a\u0430\u043d\u0446\u0435\u043b\u044f\u0440\u0441\u044c\u043a\u0430 \u043a\u043d\u043e\u043f\u043a\u0430"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "\u0441\u043a\u0440\u0456\u043f\u043a\u0430"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "\u043f\u0440\u044f\u043c\u0430 \u043b\u0456\u043d\u0456\u0439\u043a\u0430"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "\u043a\u043e\u0441\u0438\u043d\u0435\u0446\u044c"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "\u0437\u0430\u043a\u043b\u0430\u0434\u043a\u0438"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "\u0440\u0435\u0454\u0441\u0442\u0440"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "\u0437\u0430\u043f\u0438\u0441\u043d\u0438\u043a, notebook"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "\u0437\u0430\u043f\u0438\u0441\u043d\u0438\u043a \u0456\u0437 \u0434\u0435\u043a\u043e\u0440\u043e\u043c"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0430 \u043a\u043d\u0438\u0433\u0430"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0430 \u043a\u043d\u0438\u0433\u0430"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "\u0437\u0435\u043b\u0435\u043d\u0430 \u043a\u043d\u0438\u0433\u0430"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "\u043a\u043d\u0438\u0433\u0430"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "\u043e\u0440\u0430\u043d\u0436\u0435\u0432\u0430 \u043a\u043d\u0438\u0433\u0430"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "\u043a\u043d\u0438\u0433\u0438"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "\u0431\u0435\u0439\u0434\u0436 \u0437 \u0456\u043c\u0435\u043d\u0435\u043c"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "\u043f\u0440\u043e\u043a\u0440\u0443\u0447\u0443\u0432\u0430\u043d\u043d\u044f"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "\u0437\u0430\u043f\u0438\u0441\u043a\u0430"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "\u0442\u0435\u043b\u0435\u0444\u043e\u043d"
+    "message": "phone"
   },
   "d83d_dcdf": {
-    "message": "\u043f\u0435\u0439\u0434\u0436\u0435\u0440"
+    "message": "pager"
   },
   "d83d_dce0": {
-    "message": "\u0444\u0430\u043a\u0441"
+    "message": "fax"
   },
   "d83d_dce1": {
-    "message": "\u0441\u0443\u043f\u0443\u0442\u043d\u0438\u043a\u043e\u0432\u0430 \u0430\u043d\u0442\u0435\u043d\u0430"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "\u0433\u0443\u0447\u043d\u043e\u043c\u043e\u0432\u0435\u0446\u044c"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "\u0440\u0443\u043f\u043e\u0440"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "\u043d\u0430\u0434\u0456\u0441\u043b\u0430\u043d\u0438\u0439 \u043b\u0438\u0441\u0442"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "\u0412\u0445\u0456\u0434\u043d\u0456"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "\u043f\u0430\u043a\u0443\u043d\u043e\u043a"
+    "message": "package"
   },
   "d83d_dce7": {
-    "message": "\u0435\u043b\u0435\u043a\u0442\u0440\u043e\u043d\u043d\u0430 \u0430\u0434\u0440\u0435\u0441\u0430"
+    "message": "email"
   },
   "d83d_dce8": {
-    "message": "\u0432\u0445\u0456\u0434\u043d\u0438\u0439 \u043b\u0438\u0441\u0442"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "\u0432\u0438\u0445\u0456\u0434\u043d\u0438\u0439 \u043b\u0438\u0441\u0442"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0430 \u043f\u043e\u0448\u0442\u043e\u0432\u0430 \u0441\u043a\u0440\u0438\u043d\u044c\u043a\u0430 \u0437 \u043e\u043f\u0443\u0449\u0435\u043d\u0438\u043c \u043f\u0440\u0430\u043f\u043e\u0440\u0446\u0435\u043c"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0430 \u043f\u043e\u0448\u0442\u043e\u0432\u0430 \u0441\u043a\u0440\u0438\u043d\u044c\u043a\u0430 \u0437 \u043f\u0456\u0434\u043d\u044f\u0442\u0438\u043c \u043f\u0440\u0430\u043f\u043e\u0440\u0446\u0435\u043c"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0430 \u043f\u043e\u0448\u0442\u043e\u0432\u0430 \u0441\u043a\u0440\u0438\u043d\u044c\u043a\u0430 \u0437 \u043f\u0456\u0434\u043d\u044f\u0442\u0438\u043c \u043f\u0440\u0430\u043f\u043e\u0440\u0446\u0435\u043c"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0430 \u043f\u043e\u0448\u0442\u043e\u0432\u0430 \u0441\u043a\u0440\u0438\u043d\u044c\u043a\u0430 \u0437 \u043e\u043f\u0443\u0449\u0435\u043d\u0438\u043c \u043f\u0440\u0430\u043f\u043e\u0440\u0446\u0435\u043c"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "\u043f\u043e\u0448\u0442\u043e\u0432\u0430 \u0441\u043a\u0440\u0438\u043d\u044c\u043a\u0430"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "\u043f\u043e\u0448\u0442\u043e\u0432\u0438\u0439 \u0440\u0456\u0436\u043e\u043a"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "\u0433\u0430\u0437\u0435\u0442\u0430"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "\u043c\u043e\u0431\u0456\u043b\u044c\u043d\u0438\u0439 \u0442\u0435\u043b\u0435\u0444\u043e\u043d"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "\u043c\u043e\u0431\u0456\u043b\u044c\u043d\u0438\u0439 \u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0437\u0456 \u0441\u0442\u0440\u0456\u043b\u043a\u043e\u044e"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "\u0440\u0435\u0436\u0438\u043c \u0432\u0456\u0431\u0440\u0430\u0446\u0456\u0457"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "\u0442\u0435\u043b\u0435\u0444\u043e\u043d \u0432\u0438\u043c\u043a\u043d\u0435\u043d\u043e"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "\u043c\u043e\u0431\u0456\u043b\u044c\u043d\u0456 \u0442\u0435\u043b\u0435\u0444\u043e\u043d\u0438 \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "\u043c\u043e\u0431\u0456\u043b\u044c\u043d\u0456 \u0441\u0438\u0433\u043d\u0430\u043b\u0438"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "\u043a\u0430\u043c\u0435\u0440\u0430"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "\u0432\u0456\u0434\u0435\u043e\u043a\u0430\u043c\u0435\u0440\u0430"
+    "message": "video cam"
   },
   "d83d_dcfa": {
-    "message": "\u0422\u0435\u043b\u0435\u0431\u0430\u0447\u0435\u043d\u043d\u044f"
+    "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "\u0440\u0430\u0434\u0456\u043e"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "\u0432\u0456\u0434\u0435\u043e\u043a\u0430\u0441\u0435\u0442\u0430"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "\u0441\u0445\u0440\u0435\u0449\u0435\u043d\u0456 \u0441\u0442\u0440\u0456\u043b\u043a\u0438"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "\u0441\u0442\u0440\u0456\u043b\u043a\u0438, \u043d\u0430\u043f\u0440\u044f\u043c\u043b\u0435\u043d\u0456 \u0437\u0430 \u0433\u043e\u0434\u0438\u043d\u043d\u0438\u043a\u043e\u0432\u043e\u044e \u0441\u0442\u0440\u0456\u043b\u043a\u043e\u044e"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "\u0441\u0442\u0440\u0456\u043b\u043a\u0438, \u043d\u0430\u043f\u0440\u044f\u043c\u043b\u0435\u043d\u0456 \u0437\u0430 \u0433\u043e\u0434\u0438\u043d\u043d\u0438\u043a\u043e\u0432\u043e\u044e \u0441\u0442\u0440\u0456\u043b\u043a\u043e\u044e"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "\u043e\u043d\u043e\u0432\u0438\u0442\u0438"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "\u0441\u0442\u0440\u0456\u043b\u043a\u0438, \u043d\u0430\u043f\u0440\u044f\u043c\u043b\u0435\u043d\u0456 \u043f\u0440\u043e\u0442\u0438 \u0433\u043e\u0434\u0438\u043d\u043d\u0438\u043a\u043e\u0432\u043e\u0457 \u0441\u0442\u0440\u0456\u043b\u043a\u0438"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "\u043c\u0430\u043b\u0430 \u044f\u0441\u043a\u0440\u0430\u0432\u0456\u0441\u0442\u044c"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0430 \u044f\u0441\u043a\u0440\u0430\u0432\u0456\u0441\u0442\u044c"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "\u043d\u0435 \u0433\u043e\u0432\u043e\u0440\u0438\u0442\u0438"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "\u0434\u0438\u043d\u0430\u043c\u0456\u043a"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "\u0434\u0438\u043d\u0430\u043c\u0456\u043a \u0437 \u043d\u0438\u0437\u044c\u043a\u0438\u043c \u0440\u0456\u0432\u043d\u0435\u043c \u0433\u0443\u0447\u043d\u043e\u0441\u0442\u0456"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "\u0434\u0438\u043d\u0430\u043c\u0456\u043a \u0437 \u0432\u0438\u0441\u043e\u043a\u0438\u043c \u0440\u0456\u0432\u043d\u0435\u043c \u0433\u0443\u0447\u043d\u043e\u0441\u0442\u0456"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "\u0430\u043a\u0443\u043c\u0443\u043b\u044f\u0442\u043e\u0440"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "\u0432\u0438\u043b\u043a\u0430 \u0435\u043b\u0435\u043a\u0442\u0440\u043e\u043f\u0440\u0438\u043b\u0430\u0434\u0443"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "\u043b\u0443\u043f\u0430, \u043f\u043e\u0432\u0435\u0440\u043d\u0443\u0442\u0430 \u043b\u0456\u0432\u043e\u0440\u0443\u0447"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "\u043b\u0443\u043f\u0430, \u043f\u043e\u0432\u0435\u0440\u043d\u0443\u0442\u0430 \u043f\u0440\u0430\u0432\u043e\u0440\u0443\u0447"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "\u0437\u0430\u043c\u043e\u043a \u0456\u0437 \u0447\u043e\u0440\u043d\u0438\u043b\u044c\u043d\u0438\u043c \u043f\u0435\u0440\u043e\u043c"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0438\u0439 \u0437\u0430\u043c\u043e\u043a \u0456\u0437 \u043a\u043b\u044e\u0447\u0435\u043c"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "\u043a\u043b\u044e\u0447"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0438\u0439 \u0437\u0430\u043c\u043e\u043a"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u0439 \u0437\u0430\u043c\u043e\u043a"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "\u0434\u0437\u0432\u043e\u043d\u0438\u043a"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "\u043f\u0435\u0440\u0435\u043a\u0440\u0435\u0441\u043b\u0435\u043d\u0438\u0439 \u0434\u0437\u0432\u043e\u043d\u0438\u043a"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "\u0437\u0430\u043a\u043b\u0430\u0434\u043a\u0430"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "\u0437\u043d\u0430\u043a \u043f\u043e\u0441\u0438\u043b\u0430\u043d\u043d\u044f"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "\u043f\u0435\u0440\u0435\u043c\u0438\u043a\u0430\u0447"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "\u043d\u0430\u0437\u0430\u0434"
+    "message": "back"
   },
   "d83d_dd1a": {
     "message": "end"
   },
   "d83d_dd1b": {
-    "message": "\u0421\u0442\u0440\u0456\u043b\u043a\u0430 \"\u0423\u0432\u0456\u043c\u043a\u043d\u0435\u043d\u043e\""
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "\u0417\u043d\u0430\u043a \"\u041d\u0435\u0437\u0430\u0431\u0430\u0440\u043e\u043c\""
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "\u0417\u043d\u0430\u043a \"\u0423\u0433\u043e\u0440\u0443\""
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "\u0412\u0445\u0456\u0434 \u0434\u043e 18 \u0440\u043e\u043a\u0456\u0432 \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0456 \u043b\u0456\u0442\u0435\u0440\u0438"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "\u043c\u0430\u043b\u0456 \u043b\u0456\u0442\u0435\u0440\u0438"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "\u0446\u0438\u0444\u0440\u0438"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "\u0441\u0438\u043c\u0432\u043e\u043b\u0438"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "\u041b\u0430\u0442\u0438\u043d\u0441\u044c\u043a\u0438\u0439 \u0430\u043b\u0444\u0430\u0432\u0456\u0442"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "\u0432\u043e\u0433\u043e\u043d\u044c"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "\u043b\u0456\u0445\u0442\u0430\u0440\u0438\u043a"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "\u0433\u0430\u0439\u043a\u043e\u0432\u0438\u0439 \u043a\u043b\u044e\u0447"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "\u043c\u043e\u043b\u043e\u0442\u043e\u043a"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "\u0433\u0430\u0439\u043a\u0430 \u0442\u0430 \u0431\u043e\u043b\u0442"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "\u043a\u0443\u0445\u043e\u043d\u043d\u0438\u0439 \u043d\u0456\u0436"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "\u043f\u0456\u0441\u0442\u043e\u043b\u0435\u0442"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "\u043c\u0456\u043a\u0440\u043e\u0441\u043a\u043e\u043f"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "\u0442\u0435\u043b\u0435\u0441\u043a\u043e\u043f"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "\u043a\u0440\u0438\u0448\u0442\u0430\u043b\u0435\u0432\u0430 \u043a\u0443\u043b\u044f"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "\u0448\u0435\u0441\u0442\u0438\u043a\u0443\u0442\u043d\u0430 \u0437\u0456\u0440\u043a\u0430"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "\u0436\u043e\u0432\u0442\u0456 \u0442\u0430 \u0437\u0435\u043b\u0435\u043d\u0456 \u043b\u0438\u0441\u0442\u044f"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0422\u0440\u0438\u0437\u0443\u0431\""
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "\u043a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u0430 \u043a\u043d\u043e\u043f\u043a\u0430 \u0432 \u0441\u0443\u0446\u0456\u043b\u044c\u043d\u0456\u0439 \u0440\u0430\u043c\u0446\u0456"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "\u043a\u0432\u0430\u0434\u0440\u0430\u0442\u043d\u0430 \u043a\u043d\u043e\u043f\u043a\u0430 \u0437 \u0432\u0437\u044f\u0442\u0430 \u0432 \u0440\u0430\u043c\u043a\u0443"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0435 \u0447\u0435\u0440\u0432\u043e\u043d\u0435 \u043a\u043e\u043b\u043e"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0435 \u0441\u0438\u043d\u0454 \u043a\u043e\u043b\u043e"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0438\u0439 \u043e\u0440\u0430\u043d\u0436\u0435\u0432\u0438\u0439 \u0434\u0456\u0430\u043c\u0430\u043d\u0442"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "\u0432\u0435\u043b\u0438\u043a\u0438\u0439 \u0441\u0438\u043d\u0456\u0439 \u0434\u0456\u0430\u043c\u0430\u043d\u0442"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "\u043c\u0430\u043b\u0438\u0439 \u043e\u0440\u0430\u043d\u0436\u0435\u0432\u0438\u0439 \u0434\u0456\u0430\u043c\u0430\u043d\u0442"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "\u043c\u0430\u043b\u0438\u0439 \u0441\u0438\u043d\u0456\u0439 \u0434\u0456\u0430\u043c\u0430\u043d\u0442"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "\u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u043a, \u0441\u043f\u0440\u044f\u043c\u043e\u0432\u0430\u043d\u0438\u0439 \u0443\u0433\u043e\u0440\u0443"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "\u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u043a, \u0441\u043f\u0440\u044f\u043c\u043e\u0432\u0430\u043d\u0438\u0439 \u0443\u043d\u0438\u0437"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "\u043a\u043d\u043e\u043f\u043a\u0430 \u0437 \u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u043a\u043e\u043c, \u0441\u043f\u0440\u044f\u043c\u043e\u0432\u0430\u043d\u0438\u043c \u0443\u0433\u043e\u0440\u0443"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "\u043a\u043d\u043e\u043f\u043a\u0430 \u0437 \u0442\u0440\u0438\u043a\u0443\u0442\u043d\u0438\u043a\u043e\u043c, \u0441\u043f\u0440\u044f\u043c\u043e\u0432\u0430\u043d\u0438\u043c \u0443\u043d\u0438\u0437"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "1 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "2 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "3 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "4 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "5 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "6 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "7 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "8 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "9 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "10 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "11 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "12 \u0433\u043e\u0434\u0438\u043d\u0430"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "\u043f\u0435\u0440\u0448\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "\u0434\u0440\u0443\u0433\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "\u0442\u0440\u0435\u0442\u044f \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "\u0447\u0435\u0442\u0432\u0435\u0440\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "\u043f\u2019\u044f\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "\u0448\u043e\u0441\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "\u0441\u044c\u043e\u043c\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "\u0432\u043e\u0441\u044c\u043c\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "\u0434\u0435\u0432\u2019\u044f\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "\u0434\u0435\u0441\u044f\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "\u043e\u0434\u0438\u043d\u0430\u0434\u0446\u044f\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "\u0434\u0432\u0430\u043d\u0430\u0434\u0446\u044f\u0442\u0430 \u0433\u043e\u0434\u0438\u043d\u0430 \u0442\u0440\u0438\u0434\u0446\u044f\u0442\u044c \u0445\u0432\u0438\u043b\u0438\u043d"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "\u0413\u043e\u0440\u0430 \u0424\u0443\u0434\u0437\u0456"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "\u0422\u043e\u043a\u0456\u0439\u0441\u044c\u043a\u0430 \u0432\u0435\u0436\u0430"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "\u0421\u0442\u0430\u0442\u0443\u044f \u0421\u0432\u043e\u0431\u043e\u0434\u0438."
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "\u041a\u0430\u0440\u0442\u0430 \u042f\u043f\u043e\u043d\u0456\u0457"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "\u041a\u0430\u043c\u2019\u044f\u043d\u0430 \u0441\u0442\u0430\u0442\u0443\u044f \u043c\u043e\u0430\u0457"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "\u0443\u0441\u043c\u0456\u0448\u043a\u0430"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " \u0443\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u043f\u0440\u0438\u043c\u0440\u0443\u0436\u0435\u043d\u0438\u043c\u0438 \u043e\u0447\u0438\u043c\u0430"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "\u0441\u043b\u044c\u043e\u0437\u0438 \u0440\u0430\u0434\u043e\u0441\u0442\u0456"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u043c \u0440\u043e\u0442\u043e\u043c"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u043c \u0440\u043e\u0442\u043e\u043c \u0456 \u043f\u0440\u0438\u043c\u0440\u0443\u0436\u0435\u043d\u0438\u043c\u0438 \u043e\u0447\u0438\u043c\u0430"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u0445\u043e\u043b\u043e\u0434\u043d\u0438\u043c \u043f\u043e\u0442\u043e\u043c"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " \u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u043c \u0440\u043e\u0442\u043e\u043c \u0456 \u0437\u0430\u043f\u043b\u044e\u0449\u0435\u043d\u0438\u043c\u0438 \u043e\u0447\u0438\u043c\u0430"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u043d\u0456\u043c\u0431\u043e\u043c"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430 \u0437 \u0440\u0456\u0436\u043a\u0430\u043c\u0438"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f, \u044f\u043a\u0435 \u043f\u0456\u0434\u043c\u043e\u0440\u0433\u0443\u0454"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "\u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f, \u0449\u043e \u043e\u0431\u043b\u0438\u0437\u0443\u0454\u0442\u044c\u0441\u044f"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f \u0437 \u0432\u0438\u0440\u0430\u0437\u043e\u043c \u043f\u043e\u043b\u0435\u0433\u0448\u0435\u043d\u043d\u044f"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "\u0443\u0441\u043c\u0456\u0445\u043d\u0435\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "\u043a\u0440\u0443\u0442\u043e"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "\u0441\u0430\u043c\u043e\u0432\u0434\u043e\u0432\u043e\u043b\u0435\u043d\u0430 \u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "\u043d\u0435\u0437\u0432\u043e\u0440\u0443\u0448\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "\u0431\u0435\u0437 \u0435\u043c\u043e\u0446\u0456\u0439"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "\u043d\u0435\u0437\u0430\u0434\u043e\u0432\u043e\u043b\u0435\u043d\u0438\u0439"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "\u0445\u043e\u043b\u043e\u0434\u043d\u0438\u0439 \u043f\u0456\u0442"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "\u0437\u0430\u0434\u0443\u043c\u043b\u0438\u0432\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "\u0441\u043f\u0430\u043d\u0442\u0435\u043b\u0438\u0447\u0435\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "\u0437\u0431\u0435\u043d\u0442\u0435\u0436\u0435\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f, \u0449\u043e \u0446\u0456\u043b\u0443\u0454"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "\u043d\u0430\u0434\u0441\u0438\u043b\u0430\u0454 \u043f\u043e\u0432\u0456\u0442\u0440\u044f\u043d\u0456 \u043f\u043e\u0446\u0456\u043b\u0443\u043d\u043a\u0438"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "\u043f\u043e\u0446\u0456\u043b\u0443\u043d\u043e\u043a \u0456 \u043f\u043e\u0441\u043c\u0456\u0448\u043a\u0430"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "\u043f\u043e\u0446\u0456\u043b\u0443\u043d\u043a\u0438"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "\u0432\u0438\u0441\u0443\u043d\u0443\u0442\u0438\u0439 \u044f\u0437\u0438\u043a"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "\u043f\u0456\u0434\u043c\u043e\u0440\u0433\u0443\u0454 \u0437 \u0432\u0438\u0441\u0443\u043d\u0443\u0442\u0438\u043c \u044f\u0437\u0438\u043a\u043e\u043c"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "\u0433\u0438\u0434\u043e\u0442\u0430"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "\u0440\u043e\u0437\u0447\u0430\u0440\u043e\u0432\u0430\u043d\u0438\u0439"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "\u0441\u0442\u0443\u0440\u0431\u043e\u0432\u0430\u043d\u0438\u0439"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "\u0437\u043b\u0438\u0439"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "\u043d\u0430\u0441\u0443\u043f\u043b\u0435\u043d\u0438\u0439"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "\u0440\u0438\u0434\u0430\u0454"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "\u043d\u0435\u0432\u0434\u0430\u0447\u0430"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "\u0432\u0438\u0440\u0430\u0437 \u0442\u0440\u0456\u0443\u043c\u0444\u0443"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "\u0444\u0443\u0445!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "\u043d\u0430\u0441\u0443\u043f\u043b\u0435\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "\u0441\u0442\u0440\u0430\u0436\u0434\u0430\u043b\u044c\u043d\u0438\u0439"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "\u043d\u0430\u043b\u044f\u043a\u0430\u043d\u0438\u0439"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "\u0437\u043c\u043e\u0440\u0435\u043d\u0438\u0439"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "\u0441\u043e\u043d\u043d\u0438\u0439"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "\u0441\u0442\u043e\u043c\u043b\u0435\u043d\u0438\u0439"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "\u043a\u0440\u0438\u0432\u043b\u044f\u0454\u0442\u044c\u0441\u044f"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "\u0433\u0456\u0440\u043a\u043e \u0440\u0438\u0434\u0430\u0454"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f \u0437 \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438\u043c \u0440\u043e\u0442\u043e\u043c"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f, \u044f\u043a\u0435 \u043f\u0440\u0438\u043d\u0438\u0448\u043a\u043b\u043e"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f, \u0449\u043e \u043f\u043e\u0441\u043f\u0456\u0448\u0430\u0454"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "\u043d\u0430\u043b\u044f\u043a\u0430\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "\u0437\u0434\u0438\u0432\u043e\u0432\u0430\u043d\u0435 \u043e\u0431\u043b\u0438\u0447\u0447\u044f"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "\u0437 \u0440\u0443\u043c\u2019\u044f\u043d\u0446\u0435\u043c"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "\u0441\u043f\u0438\u0442\u044c"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "\u0437\u0430\u043f\u0430\u043c\u043e\u0440\u043e\u0447\u0435\u043d\u043d\u044f"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f \u0431\u0435\u0437 \u0440\u043e\u0442\u0430"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "\u043e\u0431\u043b\u0438\u0447\u0447\u044f \u0437 \u043f\u043e\u0432\u2019\u044f\u0437\u043a\u043e\u044e"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "\u043a\u043e\u0442\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430, \u0449\u043e \u0441\u043c\u0456\u0454\u0442\u044c\u0441\u044f"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "\u043a\u0456\u0442 \u0437\u0456 \u0441\u043b\u044c\u043e\u0437\u0430\u043c\u0438 \u0440\u0430\u0434\u043e\u0441\u0442\u0456"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "\u043a\u043e\u0442\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430 \u0437 \u043f\u043e\u0441\u043c\u0456\u0448\u043a\u043e\u044e"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "\u043a\u043e\u0442\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430 \u0437 \u043f\u043e\u0441\u043c\u0456\u0448\u043a\u043e\u044e"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "\u043a\u043e\u0442\u044f\u0447\u0430 \u043c\u043e\u0440\u0434\u0430 \u0437 \u043a\u0440\u0438\u0432\u043e\u044e \u0443\u0441\u043c\u0456\u0448\u043a\u043e\u044e"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "\u043a\u0456\u0442, \u044f\u043a\u0438\u0439 \u0446\u0456\u043b\u0443\u0454"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "\u043d\u0430\u0441\u0443\u043f\u043b\u0435\u043d\u0438\u0439 \u043a\u0456\u0442"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "\u043a\u0456\u0442, \u044f\u043a\u0438\u0439 \u043f\u043b\u0430\u0447\u0435"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "\u0441\u0442\u043e\u043c\u043b\u0435\u043d\u0438\u0439 \u043a\u0456\u0442"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "\u0436\u0435\u0441\u0442 \"\u041f\u043e\u0433\u0430\u043d\u043e\""
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "\u0436\u0435\u0441\u0442 \"O\u2019\u043a\u0435\u0439\""
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "\u043c\u0435\u043d\u0456 \u0448\u043a\u043e\u0434\u0430"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0432\u0430\u0454 \u043e\u0447\u0456"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0432\u0430\u0454 \u0432\u0443\u0445\u0430"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "\u0437\u0430\u043a\u0440\u0438\u0432\u0430\u0454 \u0440\u043e\u0442"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "\u0449\u0430\u0441\u043b\u0438\u0432\u0430 \u043b\u044e\u0434\u0438\u043d\u0430"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "\u0443\u0440\u0430"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "\u043d\u0430\u0441\u0443\u043f\u043b\u0435\u043d\u0430 \u043b\u044e\u0434\u0438\u043d\u0430"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "\u043d\u0430\u0441\u0443\u043f\u043b\u0435\u043d\u0438\u0439"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "\u0441\u043a\u043b\u0430\u0434\u0435\u043d\u0456 \u0440\u0443\u043a\u0438"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "\u0440\u0430\u043a\u0435\u0442\u0430"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "\u0432\u0435\u0440\u0442\u043e\u043b\u0456\u0442"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "\u043f\u0430\u0440\u043e\u0442\u044f\u0433"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "\u043f\u043e\u0457\u0437\u0434"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "\u0448\u0432\u0438\u0434\u043a\u0456\u0441\u043d\u0438\u0439 \u043f\u043e\u0442\u044f\u0433"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "\u0448\u0432\u0438\u0434\u043a\u0456\u0441\u043d\u0438\u0439 \u043f\u043e\u0442\u044f\u0433 \u0456\u0437 \u043a\u0443\u043b\u0435\u043f\u043e\u0434\u0456\u0431\u043d\u0438\u043c \u043d\u043e\u0441\u043e\u043c"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "\u043f\u043e\u0457\u0437\u0434"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "\u043c\u0435\u0442\u0440\u043e"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "\u0435\u043b\u0435\u043a\u0442\u0440\u043e\u043f\u043e\u0457\u0437\u0434"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "\u0437\u0430\u043b\u0456\u0437\u043d\u0438\u0447\u043d\u0430 \u0441\u0442\u0430\u043d\u0446\u0456\u044f"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "\u0442\u0440\u0430\u043c\u0432\u0430\u0439"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "\u0432\u0430\u0433\u043e\u043d \u0442\u0440\u0430\u043c\u0432\u0430\u044f"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "\u0430\u0432\u0442\u043e\u0431\u0443\u0441"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "\u0430\u0432\u0442\u043e\u0431\u0443\u0441, \u044f\u043a\u0438\u0439 \u043d\u0430\u0431\u043b\u0438\u0436\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "\u0442\u0440\u043e\u043b\u0435\u0439\u0431\u0443\u0441"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "\u0430\u0432\u0442\u043e\u0431\u0443\u0441\u043d\u0430 \u0437\u0443\u043f\u0438\u043d\u043a\u0430"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "\u043c\u0456\u043a\u0440\u043e\u0430\u0432\u0442\u043e\u0431\u0443\u0441"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c \u0448\u0432\u0438\u0434\u043a\u043e\u0457 \u0434\u043e\u043f\u043e\u043c\u043e\u0433\u0438"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "\u043f\u043e\u0436\u0435\u0436\u043d\u0438\u0439 \u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "\u043f\u0430\u0442\u0440\u0443\u043b\u044c\u043d\u0438\u0439 \u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "\u043f\u0430\u0442\u0440\u0443\u043b\u044c\u043d\u0438\u0439 \u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c, \u0449\u043e \u043d\u0430\u0431\u043b\u0438\u0436\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
-    "message": "\u0442\u0430\u043a\u0441\u0456"
+    "message": "taxi"
   },
   "d83d_de96": {
-    "message": "\u0442\u0430\u043a\u0441\u0456, \u0449\u043e \u043d\u0430\u0431\u043b\u0438\u0436\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "\u0430\u0432\u0442\u043e\u043c\u043e\u0431\u0456\u043b\u044c, \u0449\u043e \u043d\u0430\u0431\u043b\u0438\u0436\u0430\u0454\u0442\u044c\u0441\u044f"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "\u0436\u0438\u0442\u043b\u043e\u0432\u0438\u0439 \u0442\u0440\u0435\u0439\u043b\u0435\u0440"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "\u0430\u0432\u0442\u043e\u0444\u0443\u0440\u0433\u043e\u043d"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "\u0432\u0430\u043d\u0442\u0430\u0436\u0456\u0432\u043a\u0430"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "\u0442\u0440\u0430\u043a\u0442\u043e\u0440"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "\u043c\u043e\u043d\u043e\u0440\u0435\u0439\u043a\u043e\u0432\u0430 \u0437\u0430\u043b\u0456\u0437\u043d\u0438\u0446\u044f"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "\u0433\u0456\u0440\u0441\u044c\u043a\u0430 \u0437\u0430\u043b\u0456\u0437\u043d\u0438\u0446\u044f"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "\u043f\u0456\u0434\u0432\u0456\u0441\u043d\u0430 \u0437\u0430\u043b\u0456\u0437\u043d\u0438\u0446\u044f"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "\u0433\u0456\u0440\u0441\u044c\u043a\u0438\u0439 \u0444\u0443\u043d\u0456\u043a\u0443\u043b\u0435\u0440"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "\u0444\u0443\u043d\u0456\u043a\u0443\u043b\u0435\u0440"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "\u043a\u043e\u0440\u0430\u0431\u0435\u043b\u044c"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "\u0432\u0435\u0441\u043b\u043e\u0432\u0438\u0439 \u0447\u043e\u0432\u0435\u043d"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "\u0448\u0432\u0438\u0434\u043a\u043e\u0445\u0456\u0434\u043d\u0438\u0439 \u043a\u0430\u0442\u0435\u0440"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "\u0433\u043e\u0440\u0438\u0437\u043e\u043d\u0442\u0430\u043b\u044c\u043d\u0438\u0439 \u0441\u0432\u0456\u0442\u043b\u043e\u0444\u043e\u0440"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "\u0432\u0435\u0440\u0442\u0438\u043a\u0430\u043b\u044c\u043d\u0438\u0439 \u0441\u0432\u0456\u0442\u043b\u043e\u0444\u043e\u0440"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "\u043d\u0430 \u0441\u0442\u0430\u0434\u0456\u0457 \u0431\u0443\u0434\u0456\u0432\u043d\u0438\u0446\u0442\u0432\u0430"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "\u043f\u0440\u043e\u0431\u043b\u0438\u0441\u043a\u043e\u0432\u0456 \u0432\u043e\u0433\u043d\u0456"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "\u043f\u0440\u0430\u043f\u043e\u0440\u0435\u0446\u044c \u0440\u043e\u0437\u0442\u0430\u0448\u0443\u0432\u0430\u043d\u043d\u044f"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "\u0434\u0432\u0435\u0440\u0456"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "\u0417\u043d\u0430\u043a \"\u0412\u2019\u0457\u0437\u0434 \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e\""
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "\u0437\u043d\u0430\u043a \u043a\u0443\u0440\u0456\u043d\u043d\u044f"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "\u0437\u043d\u0430\u043a \"\u041f\u0430\u043b\u0456\u043d\u043d\u044f \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e\""
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0423\u0440\u043d\u0430 \u0434\u043b\u044f \u0441\u043c\u0456\u0442\u0442\u044f\""
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "\u0437\u043d\u0430\u043a \"\u041d\u0435 \u0441\u043c\u0456\u0442\u0438\u0442\u0438\""
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "\u043f\u0438\u0442\u043d\u0430 \u0432\u043e\u0434\u0430"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "\u043d\u0435\u043f\u0440\u0438\u0434\u0430\u0442\u043d\u0430 \u0434\u043b\u044f \u043f\u0438\u0442\u0442\u044f \u0432\u043e\u0434\u0430"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "\u0432\u0435\u043b\u043e\u0441\u0438\u043f\u0435\u0434"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "\u0432\u0435\u043b\u043e\u0441\u0438\u043f\u0435\u0434\u0438 \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "\u0432\u0435\u043b\u043e\u0441\u0438\u043f\u0435\u0434\u0438\u0441\u0442"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "\u0433\u0456\u0440\u0441\u044c\u043a\u0438\u0439 \u0432\u0435\u043b\u043e\u0441\u0438\u043f\u0435\u0434\u0438\u0441\u0442"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "\u043f\u0456\u0448\u043e\u0445\u0456\u0434"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "\u0440\u0443\u0445 \u043f\u0456\u0448\u043e\u0445\u043e\u0434\u0456\u0432 \u0437\u0430\u0431\u043e\u0440\u043e\u043d\u0435\u043d\u043e"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "\u0434\u0456\u0442\u0438 \u043d\u0430 \u0434\u043e\u0440\u043e\u0437\u0456"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0427\u043e\u043b\u043e\u0432\u0456\u043a\""
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0416\u0456\u043d\u043a\u0430\""
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0422\u0443\u0430\u043b\u0435\u0442\u043d\u0430 \u043a\u0456\u043c\u043d\u0430\u0442\u0430\""
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "\u0437\u043d\u0430\u043a \"\u0414\u0438\u0442\u0438\u043d\u0430\""
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "\u0442\u0443\u0430\u043b\u0435\u0442"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "\u0441\u0430\u043d\u0432\u0443\u0437\u043e\u043b"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "\u0434\u0443\u0448"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "\u043f\u0440\u0438\u0439\u043c\u0430\u0442\u0438 \u0432\u0430\u043d\u043d\u0443"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "\u0432\u0430\u043d\u043d\u0430"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "\u043f\u0430\u0441\u043f\u043e\u0440\u0442\u043d\u0438\u0439 \u043a\u043e\u043d\u0442\u0440\u043e\u043b\u044c"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "\u043c\u0438\u0442\u043d\u0438\u0446\u044f"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "\u043f\u0443\u043d\u043a\u0442 \u043e\u0442\u0440\u0438\u043c\u0430\u043d\u043d\u044f \u0431\u0430\u0433\u0430\u0436\u0443"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "\u043a\u0430\u043c\u0435\u0440\u0430 \u0437\u0431\u0435\u0440\u0456\u0433\u0430\u043d\u043d\u044f"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u043d\u0456\u043c\u0435\u0446\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
@@ -2390,136 +2390,136 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u043d\u0456\u043c\u0435\u0446\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 Neo 2"
   },
   "dictionarytoolcategorytitle": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "\u041a\u043e\u043c\u0435\u043d\u0442\u0430\u0440"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "\u041a\u043e\u043c\u0435\u043d\u0442\u0430\u0440"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0441\u043b\u043e\u0432\u043d\u0438\u043a \"[object Object]\"?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "\u0421\u043b\u043e\u0432\u043d\u0438\u043a\u0438"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "\u041d\u0430\u0437\u0432\u0430 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0430"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "\u0412\u0438\u043a\u043e\u043d\u0430\u043d\u043e"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "\u0415\u043a\u0441\u043f\u043e\u0440\u0442\u0443\u0432\u0430\u0442\u0438"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "\u0406\u043c\u043f\u043e\u0440\u0442\u0443\u0432\u0430\u0442\u0438\u2026"
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "\u041a\u0435\u0440\u0443\u0432\u0430\u043d\u043d\u044f \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u043e\u043c"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "\u041d\u043e\u0432\u0438\u0439 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "\u0421\u043b\u043e\u0432\u043d\u0438\u043a\u0438 \u043a\u043e\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0430"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "\u041d\u043e\u0432\u0438\u0439 \u0442\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0447\u0438\u0442\u0430\u043d\u043d\u044f"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "\u0422\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0447\u0438\u0442\u0430\u043d\u043d\u044f"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "\u041d\u0430\u0437\u0432\u0430 \u043c\u0456\u0441\u0442\u0438\u0442\u044c \u043d\u0435\u0434\u0456\u0439\u0441\u043d\u0456 \u0441\u0438\u043c\u0432\u043e\u043b\u0438."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "\u041d\u0430\u0437\u0432\u0430 \u0432\u0436\u0435 \u0456\u0441\u043d\u0443\u0454."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "\u0412\u0432\u0435\u0434\u0456\u0442\u044c \u043d\u0430\u0437\u0432\u0443 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0430."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "\u041d\u0430\u0437\u0432\u0430 \u0437\u0430\u0434\u043e\u0432\u0433\u0430."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0443 \u043a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0456\u0432."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "\u0424\u0430\u0439\u043b \u043f\u043e\u0440\u043e\u0436\u043d\u0456\u0439."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "\u0421\u0442\u0432\u043e\u0440\u0435\u043d\u043e \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u0443 \u043a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u0437\u0430\u043f\u0438\u0441\u0456\u0432 \u0443 \u0446\u044c\u043e\u043c\u0443 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0443."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "\u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044f \u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438 \u0444\u0430\u0439\u043b."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "\u041e\u0431\u0441\u044f\u0433 \u0434\u0430\u043d\u0438\u0445 \u043f\u0435\u0440\u0435\u0432\u0438\u0449\u0443\u0454 \u043c\u0430\u043a\u0441\u0438\u043c\u0430\u043b\u044c\u043d\u043e \u0434\u043e\u0437\u0432\u043e\u043b\u0435\u043d\u0438\u0439 \u0440\u043e\u0437\u043c\u0456\u0440 \u0444\u0430\u0439\u043b\u0443."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "\u041f\u043e\u043c\u0438\u043b\u043a\u0430 \u043e\u043f\u0435\u0440\u0430\u0446\u0456\u0457."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "\u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044c \u0456\u043c\u043f\u043e\u0440\u0442\u0443\u0432\u0430\u0442\u0438 \u0434\u0435\u044f\u043a\u0456 \u0441\u043b\u043e\u0432\u0430."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "\u0414\u0436\u0435\u0440\u0435\u043b\u043e \u0456\u043c\u043f\u043e\u0440\u0442\u0443 \u043c\u0456\u0441\u0442\u0438\u0442\u044c \u0437\u0430\u0431\u0430\u0433\u0430\u0442\u043e \u0441\u043b\u0456\u0432."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "\u041d\u0435 \u0432\u0434\u0430\u043b\u043e\u0441\u044f \u043f\u0440\u043e\u0447\u0438\u0442\u0430\u0442\u0438 \u0444\u0430\u0439\u043b."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "\u0411\u0456\u043b\u044c\u0448\u0435 \u043d\u0435\u043c\u0430\u0454 \u043e\u043f\u0435\u0440\u0430\u0446\u0456\u0439, \u044f\u043a\u0456 \u043c\u043e\u0436\u043d\u0430 \u0441\u043a\u0430\u0441\u0443\u0432\u0430\u0442\u0438."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "\u0422\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0447\u0438\u0442\u0430\u043d\u043d\u044f \u043c\u0456\u0441\u0442\u0438\u0442\u044c \u043d\u0435\u0434\u0456\u0439\u0441\u043d\u0456 \u0441\u0438\u043c\u0432\u043e\u043b\u0438. \u041c\u043e\u0436\u043d\u0430 \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u0441\u0438\u043c\u0432\u043e\u043b\u0438 ASCII, \u0445\u0456\u0440\u0430\u0433\u0430\u043d\u0430, \u0437\u043d\u0430\u043a \u0432\u043e\u043a\u0430\u043b\u0456\u0437\u043e\u0432\u0430\u043d\u043e\u0433\u043e \u0437\u0432\u0443\u043a\u0443 (\u309b), \u0437\u043d\u0430\u043a \u0437\u0432\u0443\u043a\u0443 \u0437 \u043f\u043e\u043b\u043e\u0432\u0438\u043d\u043d\u043e\u044e \u0432\u043e\u043a\u0430\u043b\u0456\u0437\u0430\u0446\u0456\u0454\u044e (\u309c), \u0456\u043d\u0442\u0435\u0440\u043f\u0443\u043d\u043a\u0442 (\u30fb), \u0437\u043d\u0430\u043a \u043f\u043e\u0434\u043e\u0432\u0436\u0435\u043d\u043d\u044f \u0437\u0432\u0443\u043a\u0443 (\u30fc), \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u0443 \u043a\u043e\u043c\u0443 (\u3001), \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u0443 \u043a\u0440\u0430\u043f\u043a\u0443 (\u3002), \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u0456 \u0434\u0443\u0436\u043a\u0438 (\u300c\u300d\u300e\u300f) \u0442\u0430 \u044f\u043f\u043e\u043d\u0441\u044c\u043a\u0435 \u0445\u0432\u0438\u043b\u044f\u0441\u0442\u0435 \u0442\u0438\u0440\u0435 (\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "\u0412\u0432\u0435\u0434\u0456\u0442\u044c \u0442\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0447\u0438\u0442\u0430\u043d\u043d\u044f."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "\u0422\u0435\u043a\u0441\u0442 \u0434\u043b\u044f \u0447\u0438\u0442\u0430\u043d\u043d\u044f \u0437\u0430\u0434\u043e\u0432\u0433\u0438\u0439."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "\u0414\u043e\u0434\u0430\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0432 \u0437\u0430\u043f\u0438\u0441"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "\u0421\u0442\u0432\u043e\u0440\u0438\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0432 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0443"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0437\u0456 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0430"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "\u0412\u0438\u0434\u0430\u043b\u0438\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0456\u0437 \u0437\u0430\u043f\u0438\u0441\u0443"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "\u0420\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0432 \u0437\u0430\u043f\u0438\u0441\u0456"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "\u041f\u043e\u043c\u0438\u043b\u043a\u0430 \u0456\u043c\u043f\u043e\u0440\u0442\u0443"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "\u041f\u0435\u0440\u0435\u0439\u043c\u0435\u043d\u0443\u0432\u0430\u0442\u0438 \u043f\u043e\u043c\u0438\u043b\u043a\u0443 \u0432 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0443"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "\u0421\u043b\u043e\u0432\u043e \u043c\u0456\u0441\u0442\u0438\u0442\u044c \u043d\u0435\u0434\u0456\u0439\u0441\u043d\u0456 \u0441\u0438\u043c\u0432\u043e\u043b\u0438."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "\u0412\u0432\u0435\u0434\u0456\u0442\u044c \u0441\u043b\u043e\u0432\u043e."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "\u0421\u043b\u043e\u0432\u043e \u0437\u0430\u0434\u043e\u0432\u0433\u0435."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "\u041d\u043e\u0432\u0435 \u0441\u043b\u043e\u0432\u043e"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "\u0421\u043b\u043e\u0432\u043e"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "\u0437\u0430\u043a\u0440\u0438\u0442\u0438 \u043c\u0435\u043d\u044e \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
@@ -2528,7 +2528,7 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0434\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "double_space_period": {
-    "message": "\u041a\u0440\u0430\u043f\u043a\u0430 \u0437 \u043f\u0440\u043e\u0431\u0456\u043b\u043e\u043c \u0437\u0430\u043c\u0456\u0441\u0442\u044c \u043f\u043e\u0434\u0432\u0456\u0439\u043d\u043e\u0433\u043e \u043f\u0440\u043e\u0431\u0456\u043b\u0443"
+    "message": "\u0417\u0430\u043c\u0456\u043d\u044e\u0432\u0430\u0442\u0438 \u043f\u043e\u0434\u0432\u0456\u0439\u043d\u0438\u0439 \u043f\u0440\u043e\u0431\u0456\u043b \u043a\u0440\u0430\u043f\u043a\u043e\u044e \u0437 \u043f\u0440\u043e\u0431\u0456\u043b\u043e\u043c"
   },
   "down_arrow": {
     "message": "\u0441\u0442\u0440\u0456\u043b\u043a\u0430 \u0432\u043d\u0438\u0437"
@@ -2540,40 +2540,46 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0435\u0441\u0442\u043e\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "emoji_tab_emoticon": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u0421\u043c\u0430\u0439\u043b\u0438\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041f\u043e\u0447\u0443\u0442\u0442\u044f\""
   },
   "emoji_tab_face": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041e\u0431\u043b\u0438\u0447\u0447\u044f\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041e\u0431\u043b\u0438\u0447\u0447\u044f\""
   },
   "emoji_tab_hot": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041d\u0430\u0439\u043a\u0440\u0430\u0449\u0456\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041d\u0430\u0439\u043a\u0440\u0430\u0449\u0456\""
   },
   "emoji_tab_nature": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041f\u0440\u0438\u0440\u043e\u0434\u0430\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041f\u0440\u0438\u0440\u043e\u0434\u0430\""
   },
   "emoji_tab_object": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041e\u0431\u2019\u0454\u043a\u0442\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041e\u0431\u2019\u0454\u043a\u0442\""
   },
   "emoji_tab_place": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041c\u0456\u0441\u0446\u0435\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041c\u0456\u0441\u0446\u0435\""
   },
   "emoji_tab_recent": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u041e\u0441\u0442\u0430\u043d\u043d\u0456\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u041e\u0441\u0442\u0430\u043d\u043d\u0456\""
   },
   "emoji_tab_symbol": {
-    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji \"\u0421\u0438\u043c\u0432\u043e\u043b\""
+    "message": "\u041a\u0430\u0442\u0435\u0433\u043e\u0440\u0456\u044f \u0441\u043c\u0430\u0439\u043b\u0456\u0432 \"\u0421\u0438\u043c\u0432\u043e\u043b\""
   },
   "enable_capitalization": {
-    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u0435 \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u0430\u043d\u043d\u044f \u0432\u0435\u043b\u0438\u043a\u0438\u0445 \u043b\u0456\u0442\u0435\u0440"
+    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u0432\u0435\u043b\u0438\u043a\u0456 \u043b\u0456\u0442\u0435\u0440\u0438"
   },
   "enable_completion": {
     "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0443\u0442\u0438 \u0430\u0432\u0442\u043e\u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u043d\u044f"
   },
   "enable_gesture_editing": {
-    "message": "\u041f\u0440\u043e\u0432\u043e\u0434\u044c\u0442\u0435 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u0432\u0456\u0434 \u043a\u0440\u0430\u0457\u0432 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438, \u0449\u043e\u0431 \u043f\u0435\u0440\u0435\u043c\u0456\u0449\u0430\u0442\u0438 \u043a\u0443\u0440\u0441\u043e\u0440, \u0430\u0431\u043e \u0432\u0456\u0434 \u043a\u043b\u0430\u0432\u0456\u0448\u0456 Backspace, \u0449\u043e\u0431 \u0432\u0438\u0434\u0430\u043b\u044f\u0442\u0438 \u0446\u0456\u043b\u0456 \u0441\u043b\u043e\u0432\u0430."
+    "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0435\u043d\u043d\u044f \u0440\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u043d\u043d\u044f \u0436\u0435\u0441\u0442\u0430\u043c\u0438"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "\u041f\u0440\u043e\u0432\u043e\u0434\u044c\u0442\u0435 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u0432\u0456\u0434 \u043a\u0440\u0430\u0457\u0432 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438, \u0449\u043e\u0431 \u043f\u0435\u0440\u0435\u043c\u0456\u0449\u0430\u0442\u0438 \u043a\u0443\u0440\u0441\u043e\u0440, \u0430\u0431\u043e \u0432\u0456\u0434 \u043a\u043b\u0430\u0432\u0456\u0448\u0456 Backspace, \u0449\u043e\u0431 \u0432\u0438\u0434\u0430\u043b\u044f\u0442\u0438 \u0446\u0456\u043b\u0456 \u0441\u043b\u043e\u0432\u0430"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0435\u043d\u043d\u044f \u0432\u0432\u043e\u0434\u0443 \u0436\u0435\u0441\u0442\u0430\u043c\u0438"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "\u0412\u0432\u043e\u0434\u044c\u0442\u0435 \u0441\u043b\u043e\u0432\u0430, \u043f\u0440\u043e\u0432\u043e\u0434\u044f\u0447\u0438 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u043f\u043e \u043b\u0456\u0442\u0435\u0440\u0430\u0445"
   },
   "enable_prediction": {
     "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0443\u0442\u0438 \u043f\u0435\u0440\u0435\u0434\u0431\u0430\u0447\u0435\u043d\u043d\u044f \u043d\u0430\u0441\u0442\u0443\u043f\u043d\u043e\u0433\u043e \u0441\u043b\u043e\u0432\u0430"
@@ -2596,26 +2602,32 @@
   "fi_fin_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0444\u0456\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
+  "fo_fao_settings_page": {
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0444\u0430\u0440\u0435\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
+  },
   "footer_docking_button": {
     "message": "\u0437\u0430\u043a\u0440\u0456\u043f\u0438\u0442\u0438 \u0432\u0456\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u0443 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0443"
   },
   "footer_emoji_button": {
-    "message": "\u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0454 \u043d\u0430 \u043f\u0430\u043d\u0435\u043b\u044c \u0441\u043c\u0430\u0439\u043b\u0456\u0432 Emoji"
+    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438 \u043f\u0430\u043d\u0435\u043b\u044c \u0441\u043c\u0430\u0439\u043b\u0456\u0432"
   },
   "footer_floating_button": {
-    "message": "\u0432\u0456\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0441\u0442\u0430\u043d\u0435 \u0440\u0443\u0445\u043e\u043c\u043e\u044e"
+    "message": "\u0437\u0440\u043e\u0431\u0438\u0442\u0438 \u0432\u0456\u0440\u0442\u0443\u0430\u043b\u044c\u043d\u0443 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0443 \u0440\u0443\u0445\u043e\u043c\u043e\u044e"
   },
   "footer_handwriting_button": {
-    "message": "\u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0454 \u043d\u0430 \u0440\u0443\u043a\u043e\u043f\u0438\u0441\u043d\u0435 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+    "message": "\u043f\u0435\u0440\u0435\u0439\u0442\u0438 \u0434\u043e \u0440\u0443\u043a\u043e\u043f\u0438\u0441\u043d\u043e\u0433\u043e \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
   },
   "footer_settings_button": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0432\u0430\u0454 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u043c\u0435\u0442\u043e\u0434\u0443 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u043d\u044f \u043c\u0435\u0442\u043e\u0434\u0443 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 B\u00c9PO (\u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "fr_fra_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0444\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "fuzzy_pinyin": {
-    "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0443\u0442\u0438 \u0440\u0435\u0436\u0438\u043c \u043f\u0440\u0438\u0431\u043b\u0438\u0437\u043d\u0438\u0445 \u0437\u0431\u0456\u0433\u0456\u0432 \u0434\u043b\u044f \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0443 \u043f\u0456\u043d\u044c\u0457\u043d\u044c"
+    "message": "\u0423\u0432\u0456\u043c\u043a\u043d\u0443\u0442\u0438 \u0440\u0435\u0436\u0438\u043c \u0447\u0430\u0441\u0442\u043a\u043e\u0432\u0438\u0445 \u0437\u0431\u0456\u0433\u0456\u0432 \u0434\u043b\u044f \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0443 \u043f\u0456\u043d\u044c\u0457\u043d\u044c"
   },
   "gb_dvorak_eng_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0431\u0440\u0438\u0442\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0430\u043d\u0433\u043b\u0456\u0439\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430, \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u0414\u0432\u043e\u0440\u0430\u043a\u0430)"
@@ -2639,7 +2651,7 @@
     "message": "\u041d\u0430\u0437\u0430\u0434"
   },
   "handwriting_netowrk_error": {
-    "message": "\u041d\u0430 \u0436\u0430\u043b\u044c, \u043d\u0435 \u0432\u0434\u0430\u0454\u0442\u044c\u0441\u044f \u0441\u043a\u043e\u0440\u0438\u0441\u0442\u0430\u0442\u0438\u0441\u044f \u0440\u0443\u043a\u043e\u043f\u0438\u0441\u043d\u0438\u043c \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f\u043c, \u043e\u0441\u043a\u0456\u043b\u044c\u043a\u0438 \u043c\u0435\u0440\u0435\u0436\u0430 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430."
+    "message": "\u041d\u0435 \u0432\u0434\u0430\u0454\u0442\u044c\u0441\u044f \u0441\u043a\u043e\u0440\u0438\u0441\u0442\u0430\u0442\u0438\u0441\u044f \u0440\u0443\u043a\u043e\u043f\u0438\u0441\u043d\u0438\u043c \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f\u043c, \u043e\u0441\u043a\u0456\u043b\u044c\u043a\u0438 \u043c\u0435\u0440\u0435\u0436\u0430 \u043d\u0435\u0434\u043e\u0441\u0442\u0443\u043f\u043d\u0430."
   },
   "handwriting_privacy_info": {
     "message": "\u0412\u0432\u0435\u0434\u0435\u043d\u0456 \u0434\u0430\u043d\u0456 \u0431\u0443\u0434\u0435 \u043d\u0430\u0434\u0456\u0441\u043b\u0430\u043d\u043e \u043d\u0430 \u0441\u0435\u0440\u0432\u0435\u0440\u0438 Google \u0434\u043b\u044f \u0440\u043e\u0437\u043f\u0456\u0437\u043d\u0430\u0432\u0430\u043d\u043d\u044f \u0442\u0435\u043a\u0441\u0442\u0443."
@@ -2652,6 +2664,9 @@
   },
   "hu_hun_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0443\u0433\u043e\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
+  },
+  "hu_qwerty_hun_settings_page": {
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0443\u0433\u043e\u0440\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 Qwerty"
   },
   "ie_ga_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0456\u0440\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "\u041c\u0435\u0442\u043e\u0434 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u0434\u043b\u044f \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0443 \u0446\u0430\u043d\u0446\u0437\u0454"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "\u041c\u0435\u0442\u043e\u0434 \u0432\u0432\u0435\u0434\u0435\u043d\u043d\u044f \u0434\u043b\u044f \u0441\u0442\u0430\u043d\u0434\u0430\u0440\u0442\u0443 \u0434\u0430\u0457"
@@ -2729,7 +2747,7 @@
     "message": "\u0411\u0435\u043b\u044c\u0433\u0456\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_bengali_phonetic": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0431\u0435\u043d\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
+    "message": "\u0411\u0435\u043d\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
   },
   "keyboard_brazilian": {
     "message": "\u0411\u0440\u0430\u0437\u0438\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -2771,13 +2789,19 @@
     "message": "\u0415\u0441\u0442\u043e\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_ethiopic": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0435\u0444\u0456\u043e\u043f\u0441\u044c\u043a\u0430"
+    "message": "\u0415\u0444\u0456\u043e\u043f\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
+  "keyboard_faroese": {
+    "message": "\u0424\u0430\u0440\u0435\u0440\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_finnish": {
     "message": "\u0424\u0456\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_french": {
     "message": "\u0424\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
+  "keyboard_french_bepo": {
+    "message": "\u0424\u0440\u0430\u043d\u0446\u0443\u0437\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 B\u00c9PO"
   },
   "keyboard_georgian": {
     "message": "\u0413\u0440\u0443\u0437\u0438\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -2800,11 +2824,14 @@
   "keyboard_hungarian": {
     "message": "\u0423\u0433\u043e\u0440\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "\u0423\u0433\u043e\u0440\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 Qwerty"
+  },
   "keyboard_icelandic": {
     "message": "\u0406\u0441\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_inscript": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0456\u043d\u0434\u0456\u0439\u0441\u044c\u043a\u0456 \u0448\u0440\u0438\u0444\u0442\u0438)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (InScript)"
   },
   "keyboard_irish": {
     "message": "\u0406\u0440\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -2813,7 +2840,7 @@
     "message": "\u0406\u0442\u0430\u043b\u0456\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_itrans": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0456\u043d\u0434\u0456\u0439\u0441\u044c\u043a\u0430 \u0442\u0440\u0430\u043d\u0441\u043b\u0456\u0442\u0435\u0440\u0430\u0446\u0456\u044f)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (ITRANS)"
   },
   "keyboard_japanese": {
     "message": "\u042f\u043f\u043e\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -2821,13 +2848,19 @@
   "keyboard_kannada_phonetic": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u043a\u0430\u043d\u043d\u0430\u0434\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u041a\u0435\u0434\u043c\u0430\u043d\u0456)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Kedmanee)"
   },
   "keyboard_khmer": {
     "message": "\u041a\u0445\u043c\u0435\u0440\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_lao": {
+    "message": "\u041b\u0430\u043e\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
+  "keyboard_laothian": {
     "message": "\u041b\u0430\u043e\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_latin_american": {
@@ -2840,10 +2873,10 @@
     "message": "\u041b\u0438\u0442\u043e\u0432\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "\u041c\u0430\u043a\u0435\u0434\u043e\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_malayalam_phonetic": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u043c\u0430\u043b\u0430\u044f\u043b\u0430\u043c\u0441\u044c\u043a\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u043c\u0430\u043b\u0430\u044f\u043b\u0430\u043c (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
   },
   "keyboard_maltese": {
     "message": "\u041c\u0430\u043b\u044c\u0442\u0456\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -2858,7 +2891,7 @@
     "message": "\u041c\u02bc\u044f\u043d\u043c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u043c\u02bc\u044f\u043d\u0441\u0430\u043d"
   },
   "keyboard_nepali_inscript": {
-    "message": "\u041d\u0435\u043f\u0430\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0456\u043d\u0434\u0456\u0439\u0441\u044c\u043a\u0456 \u0448\u0440\u0438\u0444\u0442\u0438)"
+    "message": "\u041d\u0435\u043f\u0430\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (InScript)"
   },
   "keyboard_nepali_phonetic": {
     "message": "\u041d\u0435\u043f\u0430\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
@@ -2873,10 +2906,10 @@
     "message": "\u041d\u043e\u0440\u0432\u0435\u0437\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_pattachote": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u041f\u0430\u0442\u0442\u0430\u0447\u043e\u0442\u0430)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Pattachote)"
   },
   "keyboard_persian": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u043f\u0435\u0440\u0441\u044c\u043a\u0430"
+    "message": "\u041f\u0435\u0440\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
   "keyboard_phonetic": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
@@ -2911,6 +2944,9 @@
   "keyboard_sinhala": {
     "message": "\u0421\u0438\u043d\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
+  "keyboard_slovak": {
+    "message": "\u0421\u043b\u043e\u0432\u0430\u0446\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
   "keyboard_slovakian": {
     "message": "\u0421\u043b\u043e\u0432\u0430\u0446\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
   },
@@ -2939,43 +2975,46 @@
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Tamil99)"
   },
   "keyboard_tamil_inscript": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 (\u0456\u043d\u0434\u0456\u0439\u0441\u044c\u043a\u0456 \u0448\u0440\u0438\u0444\u0442\u0438)"
+    "message": "\u0422\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (InScript)"
   },
   "keyboard_tamil_itrans": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 (itrans)"
+    "message": "\u0422\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (ITRANS)"
   },
   "keyboard_tamil_phonetic": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
+    "message": "\u0422\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
   },
   "keyboard_tamil_tamil99": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 (Tamil99)"
+    "message": "\u0422\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Tamil99)"
   },
   "keyboard_tamil_typewriter": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 (\u0434\u0440\u0443\u043a\u0430\u0440\u0441\u044c\u043a\u0430 \u043c\u0430\u0448\u0438\u043d\u043a\u0430)"
+    "message": "\u0422\u0430\u043c\u0456\u043b\u044c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0434\u0440\u0443\u043a\u0430\u0440\u0441\u044c\u043a\u0430 \u043c\u0430\u0448\u0438\u043d\u043a\u0430)"
   },
   "keyboard_tcvn": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (TCVN)"
   },
   "keyboard_telex": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Telex)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0442\u0435\u043b\u0435\u043a\u0441)"
   },
   "keyboard_telugu_phonetic": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0435\u043b\u0443\u0433\u0443 (\u0444\u043e\u043d\u0435\u0442\u0438\u0447\u043d\u0430)"
   },
   "keyboard_thai_kedmanee": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u0439\u0441\u044c\u043a\u0430 (\u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u041a\u0435\u0434\u043c\u0430\u043d\u0456)"
+    "message": "\u0422\u0430\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Kedmanee)"
   },
   "keyboard_thai_pattachote": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u0439\u0441\u044c\u043a\u0430 (\u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u041f\u0430\u0442\u0442\u0430\u0447\u043e\u0442\u0430)"
+    "message": "\u0422\u0430\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (Pattachote)"
   },
   "keyboard_thai_tis": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0442\u0430\u0439\u0441\u044c\u043a\u0430 (TIS 820-2531)"
+    "message": "\u0422\u0430\u0439\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (TIS 820-2531)"
   },
   "keyboard_tis": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0442\u0430\u0439\u0441\u044c\u043a\u0430 TIS 820-2531)"
+    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (TIS 820-2531)"
   },
   "keyboard_turkish": {
     "message": "\u0422\u0443\u0440\u0435\u0446\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
+  "keyboard_turkish_f": {
+    "message": "\u0422\u0443\u0440\u0435\u0446\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 F"
   },
   "keyboard_typewriter": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0434\u0440\u0443\u043a\u0430\u0440\u0441\u044c\u043a\u0430 \u043c\u0430\u0448\u0438\u043d\u043a\u0430)"
@@ -2998,6 +3037,9 @@
   "keyboard_us_dvorak": {
     "message": "\u0410\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u0414\u0432\u043e\u0440\u0430\u043a\u0430)"
   },
+  "keyboard_us_dvp": {
+    "message": "\u0420\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430 \u0414\u0432\u043e\u0440\u0430\u043a\u0430 \u0434\u043b\u044f \u043f\u0440\u043e\u0433\u0440\u0430\u043c\u0456\u0441\u0442\u0456\u0432 (\u0421\u0428\u0410)"
+  },
   "keyboard_us_extended": {
     "message": "\u0410\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0440\u043e\u0437\u0448\u0438\u0440\u0435\u043d\u0430)"
   },
@@ -3005,16 +3047,16 @@
     "message": "\u0410\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u043c\u0456\u0436\u043d\u0430\u0440\u043e\u0434\u043d\u0430)"
   },
   "keyboard_vietnamese_tcvn": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0432\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 (TCVN)"
+    "message": "\u0412\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (TCVN)"
   },
   "keyboard_vietnamese_telex": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0432\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 (Telex)"
+    "message": "\u0412\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (\u0442\u0435\u043b\u0435\u043a\u0441)"
   },
   "keyboard_vietnamese_viqr": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0432\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 (VIQR)"
+    "message": "\u0412\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (VIQR)"
   },
   "keyboard_vietnamese_vni": {
-    "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 \u0432\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 (VNI)"
+    "message": "\u0412\u2019\u0454\u0442\u043d\u0430\u043c\u0441\u044c\u043a\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (VNI)"
   },
   "keyboard_viqr": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430 (VIQR)"
@@ -3050,16 +3092,16 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u043b\u0430\u0442\u0432\u0456\u0439\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u043b\u0430\u0442\u0438\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430)"
   },
   "menu_key": {
-    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0432\u0430\u0454 \u043c\u0435\u043d\u044e \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
+    "message": "\u0432\u0456\u0434\u043a\u0440\u0438\u0442\u0438 \u043c\u0435\u043d\u044e \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "mn_mon_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u043c\u043e\u043d\u0433\u043e\u043b\u044c\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "move_page_key_above": {
-    "message": "\u0412\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u043a\u043b\u0430\u0432\u0456\u0448\u0456 \"-\" \u0456 \"=\", \u0449\u043e\u0431 \u0433\u043e\u0440\u0442\u0430\u0442\u0438 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432"
+    "message": "\u0413\u043e\u0440\u0442\u0430\u0442\u0438 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432 \u043a\u043b\u0430\u0432\u0456\u0448\u0430\u043c\u0438 \"-\" \u0456 \"=\""
   },
   "move_page_key_below": {
-    "message": "\u0412\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u043a\u043b\u0430\u0432\u0456\u0448\u0456 \",\" \u0456 \".\", \u0449\u043e\u0431 \u0433\u043e\u0440\u0442\u0430\u0442\u0438 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432"
+    "message": "\u0413\u043e\u0440\u0442\u0430\u0442\u0438 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432 \u043a\u043b\u0430\u0432\u0456\u0448\u0430\u043c\u0438 \",\" \u0442\u0430 \".\""
   },
   "never_auto_correct": {
     "message": "\u041d\u0456\u043a\u043e\u043b\u0438"
@@ -3074,7 +3116,7 @@
     "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u0435 \u0432\u0438\u043f\u0440\u0430\u0432\u043b\u0435\u043d\u043d\u044f"
   },
   "physical_enable_capitalization": {
-    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u0435 \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u0430\u043d\u043d\u044f \u0432\u0435\u043b\u0438\u043a\u0438\u0445 \u043b\u0456\u0442\u0435\u0440"
+    "message": "\u0410\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u043d\u043e \u0432\u0438\u043a\u043e\u0440\u0438\u0441\u0442\u043e\u0432\u0443\u0432\u0430\u0442\u0438 \u0432\u0435\u043b\u0438\u043a\u0456 \u043b\u0456\u0442\u0435\u0440\u0438"
   },
   "physical_keyboard": {
     "message": "\u0424\u0456\u0437\u0438\u0447\u043d\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
@@ -3134,7 +3176,7 @@
     "message": "\u041f\u043e\u043a\u0430\u0437\u0443\u0432\u0430\u0442\u0438 \u043f\u0440\u043e\u043f\u043e\u0437\u0438\u0446\u0456\u0457 \u0432 \u0441\u043f\u0430\u0434\u043d\u043e\u043c\u0443 \u043c\u0435\u043d\u044e \u043f\u0456\u0441\u043b\u044f \u043d\u0430\u0442\u0438\u0441\u043a\u0430\u043d\u043d\u044f \u043a\u043b\u0430\u0432\u0456\u0448\u0456 Backspace"
   },
   "show_hangul_candidate": {
-    "message": "\u041f\u043e\u043a\u0430\u0437 \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432 \u0443 \u0440\u0435\u0436\u0438\u043c\u0456 \u0445\u0430\u043d\u0433\u0443\u043b"
+    "message": "\u041f\u043e\u043a\u0430\u0437 \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432 \u0443 \u0440\u0435\u0436\u0438\u043c\u0456 \u0445\u0430\u043d\u0433\u0438\u043b\u044c"
   },
   "shrink_candidates": {
     "message": "\u0437\u0433\u043e\u0440\u043d\u0443\u0442\u0438 \u0441\u043f\u0438\u0441\u043e\u043a \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432"
@@ -3146,7 +3188,7 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0441\u043b\u043e\u0432\u0430\u0446\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "smiley": {
-    "message": "\u0441\u043c\u0430\u0439\u043b"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "\u0423 \u0434\u0435\u044f\u043a\u0438\u0445 \u0432\u0438\u043f\u0430\u0434\u043a\u0430\u0445"
@@ -3158,16 +3200,16 @@
     "message": "\u043f\u0440\u043e\u0431\u0456\u043b"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "\u0429\u043e\u0431 \u0432\u0438\u0434\u0430\u043b\u044f\u0442\u0438 \u0446\u0456\u043b\u0456 \u0441\u043b\u043e\u0432\u0430, \u043f\u0440\u043e\u0432\u043e\u0434\u044c\u0442\u0435 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u043b\u0456\u0432\u043e\u0440\u0443\u0447."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "\u0429\u043e\u0431 \u0432\u0456\u0434\u043d\u043e\u0432\u043b\u044e\u0432\u0430\u0442\u0438 \u0441\u043b\u043e\u0432\u0430, \u043f\u0440\u043e\u0432\u043e\u0434\u044c\u0442\u0435 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u043f\u0440\u0430\u0432\u043e\u0440\u0443\u0447."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "\u0429\u043e\u0431 \u043f\u0435\u0440\u0435\u043c\u0456\u0449\u0430\u0442\u0438 \u043a\u0443\u0440\u0441\u043e\u0440, \u043f\u0440\u043e\u0432\u043e\u0434\u044c\u0442\u0435 \u043f\u0430\u043b\u044c\u0446\u0435\u043c \u043b\u0456\u0432\u043e\u0440\u0443\u0447 \u0430\u0431\u043e \u043f\u0440\u0430\u0432\u043e\u0440\u0443\u0447."
   },
   "switch_to": {
-    "message": "\u0437\u043c\u0456\u043d\u0438\u0442\u0438 "
+    "message": "\u0432\u0438\u0431\u0440\u0430\u0442\u0438 \u0456\u043d\u0448\u0443 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0443 "
   },
   "switch_to_compact_layout": {
     "message": "\u041f\u043e\u043a\u0430\u0437\u0443\u0432\u0430\u0442\u0438 \u043a\u043e\u043c\u043f\u0430\u043a\u0442\u043d\u0443 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0443"
@@ -3176,16 +3218,19 @@
     "message": "\u041f\u043e\u043a\u0430\u0437\u0443\u0432\u0430\u0442\u0438 \u043f\u043e\u0432\u043d\u0443 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0443"
   },
   "switch_to_keyboard_prefix": {
-    "message": "\u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0454 \u043d\u0430 \u0442\u0430\u043a\u0443 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0443: "
+    "message": "\u0432\u0438\u0431\u0440\u0430\u0442\u0438 \u0456\u043d\u0448\u0443 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0443 "
   },
   "switched_to": {
-    "message": "\u0437\u043c\u0456\u043d\u0435\u043d\u043e \u043d\u0430 "
+    "message": "\u0432\u0438\u0431\u0440\u0430\u043d\u043e "
   },
   "tab": {
     "message": "Tab"
   },
   "touch_keyboard": {
     "message": "\u0415\u043a\u0440\u0430\u043d\u043d\u0430 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0430"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0442\u0443\u0440\u0435\u0446\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 F"
   },
   "tr_tur_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0442\u0443\u0440\u0435\u0446\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
@@ -3296,7 +3341,7 @@
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0430\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0430\u043d\u0433\u043b\u0456\u0439\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430, \u043c\u0456\u0436\u043d\u0430\u0440\u043e\u0434\u043d\u0430 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430)"
   },
   "us_intl_nld_settings_page": {
-    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0430\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0433\u043e\u043b\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430, \u043c\u0456\u0436\u043d\u0430\u0440\u043e\u0434\u043d\u0430 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430)"
+    "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0430\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u043d\u0456\u0434\u0435\u0440\u043b\u0430\u043d\u0434\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430, \u043c\u0456\u0436\u043d\u0430\u0440\u043e\u0434\u043d\u0430 \u0440\u043e\u0437\u043a\u043b\u0430\u0434\u043a\u0430)"
   },
   "us_intl_por_settings_page": {
     "message": "\u0421\u0442\u043e\u0440\u0456\u043d\u043a\u0430 \u043d\u0430\u043b\u0430\u0448\u0442\u0443\u0432\u0430\u043d\u044c \u0430\u043c\u0435\u0440\u0438\u043a\u0430\u043d\u0441\u044c\u043a\u043e\u0457 \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438 (\u0431\u0440\u0430\u0437\u0438\u043b\u044c\u0441\u044c\u043a\u0438\u0439 \u0432\u0430\u0440\u0456\u0430\u043d\u0442 \u043f\u043e\u0440\u0442\u0443\u0433\u0430\u043b\u044c\u0441\u044c\u043a\u043e\u0457 \u043c\u043e\u0432\u0438)"
@@ -3312,6 +3357,9 @@
   },
   "user_dict_clear": {
     "message": "\u041e\u0447\u0438\u0441\u0442\u0438\u0442\u0438 \u0432\u0441\u0435"
+  },
+  "user_dict_edit": {
+    "message": "\u0420\u0435\u0434\u0430\u0433\u0443\u0432\u0430\u0442\u0438 \u0441\u0442\u0430\u0442\u0442\u0456 \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0430"
   },
   "user_dict_manage": {
     "message": "\u041a\u0435\u0440\u0443\u0432\u0430\u0442\u0438 \u043e\u0441\u043e\u0431\u0438\u0441\u0442\u0438\u043c \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u043e\u043c\u2026"
@@ -3329,7 +3377,7 @@
     "message": "\u0417\u0431\u0435\u0440\u0435\u0433\u0442\u0438"
   },
   "user_dict_sync": {
-    "message": "\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0456\u0437\u0430\u0446\u0456\u044f \u043e\u0441\u043e\u0431\u0438\u0441\u0442\u043e\u0433\u043e \u0441\u043b\u043e\u0432\u043d\u0438\u043a\u0430"
+    "message": "\u0421\u0438\u043d\u0445\u0440\u043e\u043d\u0456\u0437\u0443\u0432\u0430\u0442\u0438 \u043e\u0441\u043e\u0431\u0438\u0441\u0442\u0438\u0439 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
   },
   "user_dict_title": {
     "message": "\u041e\u0441\u043e\u0431\u0438\u0441\u0442\u0438\u0439 \u0441\u043b\u043e\u0432\u043d\u0438\u043a"
@@ -3349,11 +3397,14 @@
   "wait": {
     "message": "\u0427\u0435\u043a\u0430\u0442\u0438"
   },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
+  },
   "zhuyin_keyboard_layout": {
     "message": "\u0422\u0438\u043f \u043a\u043b\u0430\u0432\u0456\u0430\u0442\u0443\u0440\u0438"
   },
   "zhuyin_page_size": {
-    "message": "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432, \u043f\u043e\u043a\u0430\u0437\u0430\u043d\u0438\u0445 \u043d\u0430 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456"
+    "message": "\u041a\u0456\u043b\u044c\u043a\u0456\u0441\u0442\u044c \u0432\u0430\u0440\u0456\u0430\u043d\u0442\u0456\u0432 \u043d\u0430 \u0441\u0442\u043e\u0440\u0456\u043d\u0446\u0456"
   },
   "zhuyin_select_keys": {
     "message": "\u041a\u043b\u0430\u0432\u0456\u0448\u0456 \u0434\u043b\u044f \u0432\u0438\u0431\u043e\u0440\u0443"

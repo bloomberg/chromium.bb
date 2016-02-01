@@ -19,11 +19,13 @@ goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 
 goog.scope(function() {
 
+
+
 /**
  * The backspace key.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {string} text The text.
  * @param {string} iconCssClass The css class for the icon.
@@ -41,6 +43,6 @@ i18n.input.chrome.inputview.elements.content.BackspaceKey = function(id, type,
   this.pointerConfig.longPressDelay = 300;
 };
 goog.inherits(i18n.input.chrome.inputview.elements.content.BackspaceKey,
-  i18n.input.chrome.inputview.elements.content.FunctionalKey);
+    i18n.input.chrome.inputview.elements.content.FunctionalKey);
 });  // goog.scope
 

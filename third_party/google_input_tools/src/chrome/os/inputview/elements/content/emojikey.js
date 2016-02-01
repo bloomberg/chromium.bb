@@ -30,7 +30,7 @@ var EMOJI_KEY_MARGIN = 6;
  * The emoji key
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {string} text The text.
  * @param {boolean} isEmoticon Wether it is an emoticon.

@@ -248,3 +248,10 @@ i18n.input.common.GlobalSettings.enableGlobalEventDelegate = true;
  * @type {boolean}
  */
 i18n.input.common.GlobalSettings.mobile = goog.userAgent.MOBILE;
+
+
+/**
+ * Whether to enable free simple easy accents mode.
+ */
+i18n.input.common.GlobalSettings.simpleEasyAccents = false;
+

@@ -147,22 +147,21 @@ i18n.input.hwt.StrokeHandler.prototype.onStroke_ = function(e) {
 i18n.input.hwt.StrokeHandler.prototype.getPoint_ = function(e) {
   var pos = goog.style.getPageOffset(this.canvas_);
   var nativeEvent = e.getBrowserEvent();
+  var scrollX = (document.dir == 'rtl' ? -1 : 1) * (
+      document.body.scrollLeft ||
+      document.documentElement.scrollLeft || 0);
+  var scrollY = document.body.scrollTop ||
+      document.documentElement.scrollTop || 0;
   var x, y;
-  if (!goog.userAgent.IE && nativeEvent.pageX && nativeEvent.pageY) {
+  if (nativeEvent.touches != null && nativeEvent.touches.length > 0) {
+    x = nativeEvent.touches[0].clientX + scrollX;
+    y = nativeEvent.touches[0].clientY + scrollY;
+  } else if (!goog.userAgent.IE && nativeEvent.pageX && nativeEvent.pageY) {
     x = nativeEvent.pageX;
     y = nativeEvent.pageY;
   } else {
-    var scrollX = (document.dir == 'rtl' ? -1 : 1) * (
-        document.body.scrollLeft ||
-        document.documentElement.scrollLeft || 0);
-    var scrollY = document.body.scrollTop ||
-        document.documentElement.scrollTop || 0;
     x = nativeEvent.clientX + scrollX;
     y = nativeEvent.clientY + scrollY;
-  }
-  if (nativeEvent.touches != null && nativeEvent.touches.length > 0) {
-    x = nativeEvent.touches[0].clientX;
-    y = nativeEvent.touches[0].clientY;
   }
   return new i18n.input.hwt.StrokeHandler.Point(x - pos.x, y - pos.y,
       goog.now());

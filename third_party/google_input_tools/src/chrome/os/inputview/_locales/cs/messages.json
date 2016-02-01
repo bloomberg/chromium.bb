@@ -6,7 +6,7 @@
     "message": "P\u0159idat do osobn\u00edho slovn\u00edku"
   },
   "add_word_to_dictionary": {
-    "message": "P\u0159idat slovo \u201e$1\u201c do slovn\u00edku",
+    "message": "P\u0159idat slovo $1 do slovn\u00edku",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -17,7 +17,7 @@
     "message": "Roz\u0161\u00ed\u0159en\u00e1 nastaven\u00ed"
   },
   "alt": {
-    "message": "alt"
+    "message": "Alt"
   },
   "altgr": {
     "message": "Alt Gr"
@@ -29,16 +29,16 @@
     "message": "Str\u00e1nka nastaven\u00ed arm\u00e9nsk\u00e9 fonetick\u00e9 kl\u00e1vesnice"
   },
   "appnamejpkeyboard": {
-    "message": "Zad\u00e1v\u00e1n\u00ed japon\u0161tiny Google (pro japonskou kl\u00e1vesnici)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Zad\u00e1v\u00e1n\u00ed japon\u0161tiny Google (pro americkou kl\u00e1vesnici)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "Automatick\u00e9 opravy"
   },
   "backspace": {
-    "message": "backspace"
+    "message": "Backspace"
   },
   "basic": {
     "message": "Z\u00e1kladn\u00ed nastaven\u00ed"
@@ -77,7 +77,7 @@
     "message": "velk\u00e9 p\u00edsmeno"
   },
   "capslock": {
-    "message": "capslock"
+    "message": "Caps Lock"
   },
   "ch_fr_fra_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed \u0161v\u00fdcarsk\u00e9 kl\u00e1vesnice (francouz\u0161tina)"
@@ -92,97 +92,97 @@
     "message": "N\u00e1stroje pro zad\u00e1v\u00e1n\u00ed textu Google"
   },
   "compositionmodedirect": {
-    "message": "P\u0159\u00edm\u00e9 zad\u00e1v\u00e1n\u00ed textu"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "\u0160irok\u00e1 latinka"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "Latinka"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Katakana polovi\u010dn\u00ed \u0161\u00ed\u0159ky"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "Z\u00e1kladn\u00ed nastaven\u00ed"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Vymazat data p\u0159izp\u016fsoben\u00ed..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Zru\u0161it"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "Historie konverz\u00ed"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "Odstranit n\u00e1sleduj\u00edc\u00ed polo\u017eky:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Vymazat data p\u0159izp\u016fsoben\u00ed"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Historie n\u00e1vrh\u016f"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Vymazat data p\u0159izp\u016fsoben\u00ed"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2013 Google Inc. V\u0161echna pr\u00e1va vyhrazena."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Zru\u0161it"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Spravovat u\u017eivatelsk\u00fd slovn\u00edk..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Chcete-li si kandid\u00e1ty konverz\u00ed p\u0159izp\u016fsobit, p\u0159idejte do u\u017eivatelsk\u00e9ho slovn\u00edku vlastn\u00ed slova."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "U\u017eivatelsk\u00e9 slovn\u00edky"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Zak\u00e1zat personalizovan\u00e9 konverze a n\u00e1vrhy a u\u017eivatelsk\u00fd slovn\u00edk"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Pomoc se zad\u00e1v\u00e1n\u00edm"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Tento software vyu\u017e\u00edv\u00e1 <a href=\"./credits_en.html\">software s otev\u0159en\u00fdm zdrojov\u00fdm k\u00f3dem</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Re\u017eim vstupu:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
   },
   "configpreeditmethodromaji": {
-    "message": "R\u00f3mad\u017ei"
+    "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Ochrana soukrom\u00ed"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Styl interpunkce:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Zkratka v\u00fdb\u011bru:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "\u017d\u00e1dn\u00e1 zkratka"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Styl mapy kl\u00e1ves:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Vlastn\u00ed mapa kl\u00e1ves"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,55 +200,55 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Nastaven\u00ed zad\u00e1v\u00e1n\u00ed japon\u0161tiny"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "P\u0159ep\u00edna\u010d re\u017eimu kl\u00e1vesy Shift:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Alfanumerick\u00e1"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "Vypnuto"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Styl zad\u00e1v\u00e1n\u00ed mezer:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Sledovat re\u017eim vstupu"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "Pln\u00e1 \u0161\u00ed\u0159ka"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Polovi\u010dn\u00ed \u0161\u00ed\u0159ka"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Po\u010det n\u00e1vrh\u016f:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Navrhnout"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Styl symbol\u016f:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Automaticky pos\u00edlat spole\u010dnosti Google statistiky vyu\u017eit\u00ed a zpr\u00e1vy o selh\u00e1n\u00ed"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Automaticky p\u0159epnout na polovi\u010dn\u00ed \u0161\u00ed\u0159ku"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Pou\u017e\u00edt syst\u00e9mov\u00fd slovn\u00edk"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Pou\u017e\u00edt historii zad\u00e1v\u00e1n\u00ed"
+    "message": "Use input history"
   },
   "ctrl": {
-    "message": "ctrl"
+    "message": "Ctrl"
   },
   "current_keyboard_prefix": {
     "message": "aktu\u00e1ln\u011b vybran\u00e1 kl\u00e1vesnice "
@@ -269,40 +269,40 @@
     "message": "Str\u00e1nka nastaven\u00ed \u010desk\u00e9 kl\u00e1vesnice QWERTY"
   },
   "d83c_dc04": {
-    "message": "mahjongov\u00fd \u017eeton"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "\u017eol\u00edk (karta)"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "krevn\u00ed skupina A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "krevn\u00ed skupina B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "krevn\u00ed skupina 0"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "parkovi\u0161t\u011b"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "krevn\u00ed skupina AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "zdarma"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "Novinka"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -314,1279 +314,1279 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "NAHORU!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "japonsk\u00e9 slovo \u201ezde\u201c"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "japonsk\u00e9 slovo \u201eslu\u017eba\u201c"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "japonsk\u00e9 slovo \u201ezdarma\u201c"
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "japonsk\u00e9 slovo \u201evyhrazeno\u201c"
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "japonsk\u00e9 slovo \u201ezak\u00e1z\u00e1no\u201c"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201evoln\u00e9 m\u00edsto\u201c"
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201eschv\u00e1lit\u201c"
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201epln\u00fd\u201c"
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "japonsk\u00e9 slovo \u201epoplatky\u201c"
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "japonsk\u00e9 slovo \u201em\u011bs\u00ed\u010dn\u011b\u201c"
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201e\u017e\u00e1dost\u201c"
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "japonsk\u00e9 slovo \u201esleva\u201c"
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201ev provozu\u201c"
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "japonsk\u00e9 slovo \u201ev\u00fdhoda\u201c"
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "\u010d\u00ednsk\u00e9 slovo \u201eschv\u00e1leno\u201c"
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "cykl\u00f3n"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "mlhavo"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "de\u0161tn\u00edk"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "no\u010dn\u00ed hv\u011bzdy"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "v\u00fdchod slunce nad horami"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "v\u00fdchod slunce"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "m\u011bsto za soumraku"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "z\u00e1pad slunce"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "duha"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "no\u010dn\u00ed most"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "vlna"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "sopka"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "Ml\u00e9\u010dn\u00e1 dr\u00e1ha"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "zem\u011bkoule, Evropa a Afrika"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "zem\u011bkoule, Amerika"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "zem\u011bkoule, Asie a Austr\u00e1lie"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "zem\u011bkoule s poledn\u00edky"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "nov"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "dor\u016fstaj\u00edc\u00ed srpek m\u011bs\u00edce"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "prvn\u00ed m\u011bs\u00ed\u010dn\u00ed \u010dtvrt"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "dor\u016fstaj\u00edc\u00ed m\u011bs\u00edc"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "\u00fapln\u011bk"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "ub\u00fdvaj\u00edc\u00ed m\u011bs\u00edc"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "posledn\u00ed m\u011bs\u00ed\u010dn\u00ed \u010dtvrt"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "ub\u00fdvaj\u00edc\u00ed srpek m\u011bs\u00edce"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "p\u016flm\u011bs\u00edc"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "obli\u010dej novolun\u00ed"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "obli\u010dej prvn\u00ed m\u011bs\u00ed\u010dn\u00ed \u010dtvrti"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "obli\u010dej posledn\u00ed m\u011bs\u00ed\u010dn\u00ed \u010dtvrti"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "obli\u010dej \u00fapl\u0148ku"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "slune\u010dn\u00ed obli\u010dej"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "z\u00e1\u0159\u00edc\u00ed hv\u011bzda"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "padaj\u00edc\u00ed hv\u011bzda"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "ka\u0161tan"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "mlad\u00e1 rostlina"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "v\u017edyzelen\u00fd strom"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "opadav\u00fd strom"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "palma"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "kaktus"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulip\u00e1n"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "kv\u011bt t\u0159e\u0161n\u011b"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "r\u016f\u017ee"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "ibi\u0161ek"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "slune\u010dnice"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "kv\u011bt"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "kuku\u0159ice"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "r\u00fd\u017ee (rostlina)"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "bylina"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "\u010dty\u0159l\u00edstek"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "javorov\u00fd list"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "padaj\u00edc\u00ed list\u00ed"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "list ve v\u011btru"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "houba"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "raj\u010de"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "lilek"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "hrozny"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "meloun"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "vodn\u00ed meloun"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "mandarinka"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "citr\u00f3n"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "ban\u00e1n"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "ananas"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "\u010derven\u00e9 jablko"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "zelen\u00e9 jablko"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "hru\u0161ka"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "broskev"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "t\u0159e\u0161e\u0148"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "jahoda"
+    "message": "strawberry"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "kousek pizzy"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "maso"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "ku\u0159ec\u00ed stehno"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "r\u00fd\u017eov\u00e1 su\u0161enka"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "r\u00fd\u017eov\u00e1 koule"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "va\u0159en\u00e1 r\u00fd\u017ee"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "r\u00fd\u017ee s kari"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
     "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "\u0161pagety"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "chl\u00e9b"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "hranolky"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "pe\u010den\u00e1 brambora"
+    "message": "roasted potato"
   },
   "d83c_df61": {
-    "message": "mo\u010di"
+    "message": "mochi"
   },
   "d83c_df62": {
     "message": "oden"
   },
   "d83c_df63": {
-    "message": "su\u0161i"
+    "message": "sushi"
   },
   "d83c_df64": {
-    "message": "sma\u017een\u00e1 kreveta"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "ryb\u00ed karben\u00e1tek"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "to\u010den\u00e1 zmrzlina"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "ledov\u00e1 t\u0159\u00ed\u0161\u0165"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "zmrzlina"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "kobliha"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "su\u0161enka"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "\u010dokol\u00e1da"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "bonb\u00f3n"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "l\u00edz\u00e1tko"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "pudink"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "hrnec medu"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "dort"
+    "message": "shortcake"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "du\u0161en\u00e9 maso"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "p\u00e1nev"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "vidli\u010dka a n\u016f\u017e"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "\u0161\u00e1lek na \u010daj"
+    "message": "teacup"
   },
   "d83c_df76": {
-    "message": "sak\u00e9"
+    "message": "sake"
   },
   "d83c_df77": {
-    "message": "v\u00edno"
+    "message": "wine"
   },
   "d83c_df78": {
-    "message": "koktejl"
+    "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "tropick\u00fd n\u00e1poj"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "pivo"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "p\u016fllitry"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "kojeneck\u00e1 l\u00e1hev"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "stuha"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "d\u00e1rek"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "narozeninov\u00fd dort"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "lucerna z d\u00fdn\u011b"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "v\u00e1no\u010dn\u00ed strome\u010dek"
+    "message": "christmas tree"
   },
   "d83c_df85": {
     "message": "santa"
   },
   "d83c_df86": {
-    "message": "oh\u0148ostroj"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "prskavka"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "bal\u00f3nek"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "vyst\u0159elova\u010d konfet"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "konfety"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "strom s pap\u00edrov\u00fdmi ozdobami"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "zk\u0159\u00ed\u017een\u00e9 vlajky"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "dekorace z borovicov\u00fdch v\u011btvi\u010dek"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "panenky"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "vlajka ve tvaru s kaprem"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "v\u011btrn\u00e1 zvonkohra"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "sledov\u00e1n\u00ed m\u011bs\u00edce"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "\u0161koln\u00ed ta\u0161ka"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "bakal\u00e1\u0159sk\u00e1 \u010dapka"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "koloto\u010d"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "rusk\u00e9 kolo"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "horsk\u00e1 dr\u00e1ha"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "ryba\u0159en\u00ed"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "mikrofon"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "filmov\u00e1 kamera"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "film"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "sluch\u00e1tka"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "mal\u00ed\u0159sk\u00e1 paleta"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "cylindr"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "cirkus"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "vstupenka"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "klapka"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "obli\u010dejov\u00e1 maska"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "videohra"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "ter\u010d"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "hern\u00ed automat"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "kule\u010dn\u00edk"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "hern\u00ed kostka"
+    "message": "game die"
   },
   "d83c_dfb3": {
     "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "hrac\u00ed karta"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "nota"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "noty"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "saxofon"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "kytara"
+    "message": "guitar"
   },
   "d83c_dfb9": {
-    "message": "klav\u00edr"
+    "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trumpeta"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "housle"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "notov\u00e1 osnova"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "b\u011b\u017eeck\u00e9 tri\u010dko"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
-    "message": "tenis"
+    "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "ly\u017ee"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "ko\u0161\u00edkov\u00e1"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "kostkovan\u00e1 vlajka"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "snowbor\u010f\u00e1k"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "b\u011b\u017eec"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "surfov\u00e1n\u00ed"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trofej"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "dostihy"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "americk\u00fd fotbal"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "fotbal"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "plavec"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "d\u016fm"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "domov"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "kancel\u00e1\u0159sk\u00e1 budova"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "japonsk\u00e1 po\u0161ta"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "evropsk\u00e1 po\u0161ta"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "nemocnice"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "banka"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "bankomat"
+    "message": "ATM"
   },
   "d83c_dfe8": {
     "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "hodinov\u00fd hotel"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "ve\u010derka"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "\u0161kola"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "obchodn\u00ed d\u016fm"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "tov\u00e1rna"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "\u010derven\u00e1 lucerna"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "japonsk\u00fd hrad"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "evropsk\u00fd hrad"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "krysa"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "my\u0161"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "v\u016fl"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "vodn\u00ed buvol"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "kr\u00e1va"
+    "message": "cow"
   },
   "d83d_dc06": {
     "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "kr\u00e1l\u00edk"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "ko\u010dka"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "drak"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "krokod\u00fdl"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "velryba"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "hlem\u00fd\u017e\u010f"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "had"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "k\u016f\u0148"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "beran"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "koza"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "ovce"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "opice"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "kohout"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "ku\u0159e"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "pes"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "prase"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "kanec"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "slon"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "chobotnice"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "lastura"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "brouk"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "mravenec"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "v\u010dela"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "beru\u0161ka"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "ryba"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "tropick\u00e1 ryba"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "je\u017e\u00edk"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "\u017eelva"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "l\u00edhnouc\u00ed se ku\u0159e"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "ku\u0159ec\u00ed obli\u010dej"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "ku\u0159\u00e1tko"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "pt\u00e1k"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "tu\u010d\u0148\u00e1k"
+    "message": "penguin"
   },
   "d83d_dc28": {
     "message": "koala"
   },
   "d83d_dc29": {
-    "message": "pudl"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "jednohrb\u00fd velbloud"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "dvouhrb\u00fd velbloud"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "delf\u00edn"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "my\u0161\u00ed obli\u010dej"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "krav\u00ed obli\u010dej"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "tyg\u0159\u00ed obli\u010dej"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "kr\u00e1li\u010d\u00ed obli\u010dej"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "ko\u010di\u010d\u00ed obli\u010dej"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "dra\u010d\u00ed obli\u010dej"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "chrl\u00edc\u00ed velryba"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "ko\u0148sk\u00fd obli\u010dej"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "opi\u010d\u00ed obli\u010dej"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "ps\u00ed obli\u010dej"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "prase\u010d\u00ed obli\u010dej"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "\u017eab\u00ed obli\u010dej"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "k\u0159e\u010d\u010d\u00ed obli\u010dej"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "vl\u010d\u00ed obli\u010dej"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "medv\u011bd\u00ed obli\u010dej"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "pand\u00ed obli\u010dej"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "prase\u010d\u00ed ryp\u00e1k"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "packa"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "o\u010di"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "ucho"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "nos"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "\u00fasta"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "jazyk"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "prst nahoru"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "prst dol\u016f"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "prst vlevo"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "prst vpravo"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "za\u0165at\u00e1 p\u011bst"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "m\u00e1v\u00e1 rukou"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "OK (gesto rukou)"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "palec nahoru"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "palec dol\u016f"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "tleskaj\u00edc\u00ed ruce"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "otev\u0159en\u00e9 ruce"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "koruna"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "d\u00e1msk\u00fd klobouk"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "br\u00fdle"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "kravata"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "tri\u010dko"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "kalhoty"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "\u0161aty"
+    "message": "dress"
   },
   "d83d_dc58": {
     "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "bikiny"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "d\u00e1msk\u00e9 oble\u010den\u00ed"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "pen\u011b\u017eenka"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "kabelka"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "vak"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "mu\u017esk\u00e1 bota"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "sportovn\u00ed bota"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "st\u0159ev\u00edc s vysok\u00fdm podpatkem"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "d\u00e1msk\u00fd sand\u00e1l"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "d\u00e1msk\u00e1 bota"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "stopa"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "busta v siluet\u011b"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "busty v siluet\u011b"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "chlapec"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "d\u00edvka"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "mu\u017e"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "\u017eena"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "rodina"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "mu\u017e a \u017eena"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "dva mu\u017ei"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "dv\u011b \u017eeny"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "policista"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "d\u00edvka v kost\u00fdmu zaj\u00ed\u010dka"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "nev\u011bsta"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "blon\u010fat\u00e1 osoba"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "mu\u017e s \u010d\u00ednsk\u00fdm klobou\u010dkem"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "mu\u017e s turbanem"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "star\u0161\u00ed mu\u017e"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "star\u0161\u00ed \u017eena"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "mimino"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "stavebn\u00ed d\u011bln\u00edk"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "princezna"
+    "message": "princess"
   },
   "d83d_dc79": {
-    "message": "zlobr"
+    "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "sk\u0159\u00edtek"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "duch"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "and\u011bl\u00ed\u010dek"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "mimozem\u0161\u0165an"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "mimozemsk\u00e1 p\u0159\u00ed\u0161era"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "rarach"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "lebka"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "informa\u010dn\u00ed p\u0159ep\u00e1\u017eka"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "str\u00e1\u017ece"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "tane\u010dn\u00edk"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "rt\u011bnka"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "p\u00e9\u010de o nehty"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "mas\u00e1\u017e obli\u010deje"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "st\u0159\u00edh\u00e1n\u00ed vlas\u016f"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "holi\u010dstv\u00ed"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "v\u00fdst\u0159el"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "pilulka"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "znamen\u00ed polibku"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "milostn\u00fd dopis"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "prsten"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "drahokam"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "polibek"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "kytice"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "p\u00e1r"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "svatebn\u00ed kaple"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "pulzuj\u00edc\u00ed srdce"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "zlomen\u00e9 srdce"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "dv\u011b srdce"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "jisk\u0159iv\u00e9 srdce"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "rostouc\u00ed srdce"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "srdce a \u0161\u00edp"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "modr\u00e9 srdce"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "zelen\u00e9 srdce"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "\u017elut\u00e9 srdce"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "purpurov\u00e9 srdce"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "srdce se stuhou"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "rotuj\u00edc\u00ed srdce"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "dekorace ve tvaru srdce"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "okv\u011btn\u00ed l\u00edstek"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "\u017e\u00e1rovka"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "vztek"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bomba"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "symbol ospalosti"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "sr\u00e1\u017eka"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "c\u00e1kaj\u00edc\u00ed pot"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "studen\u00fd pot"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "symbol sp\u011bchu"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "hov\u00ednko"
+    "message": "poop"
   },
   "d83d_dcaa": {
     "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "z\u00e1vra\u0165"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "\u0159e\u010dov\u00e1 bublina"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "my\u0161lenkov\u00e1 bublina"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "b\u00edl\u00e1 kv\u011btina"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "pln\u00e9 sk\u00f3re"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "m\u011b\u0161ec"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "sm\u011bn\u00e1rna"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "znak dolaru"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "platebn\u00ed karta"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "jenov\u00e1 bankovka"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "dolarov\u00e1 bankovka"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "eurobankovka"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "librov\u00e1 bankovka"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "l\u00e9taj\u00edc\u00ed pen\u00edze"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "rostouc\u00ed trh"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "sedadlo"
+    "message": "seat"
   },
   "d83d_dcbb": {
-    "message": "po\u010d\u00edta\u010d"
+    "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "aktovka"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "minidisk"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "disketa"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
-    "message": "Blu-ray"
+    "message": "blu-ray"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "slo\u017eka se soubory"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "otev\u0159\u00edt slo\u017eku"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "dokument"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "dokument"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "kalend\u00e1\u0159"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "trhac\u00ed kalend\u00e1\u0159"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "kartot\u00e9ka"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "vzestupn\u00fd trend"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "klesaj\u00edc\u00ed trend"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "sloupcov\u00fd graf"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "schr\u00e1nka"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "p\u0159ip\u00edn\u00e1\u010dek"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "kulat\u00fd p\u0159ip\u00edn\u00e1\u010dek"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "kancel\u00e1\u0159sk\u00e1 sponka"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "rovn\u00e9 prav\u00edtko"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "troj\u00faheln\u00edkov\u00e9 prav\u00edtko"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "\u0161t\u00edtky z\u00e1lo\u017eek"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "\u00fa\u010detn\u00ed kniha"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "z\u00e1pisn\u00edk"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "zdoben\u00fd z\u00e1pisn\u00edk"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "zav\u0159en\u00e1 kniha"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "otev\u0159en\u00e1 kniha"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "zelen\u00e1 kniha"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "kniha"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "oran\u017eov\u00e1 kniha"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "knihy"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "jmenovka"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "svitek"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "pozn\u00e1mka"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "telefon"
+    "message": "phone"
   },
   "d83d_dcdf": {
     "message": "pager"
@@ -1595,631 +1595,631 @@
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satelitn\u00ed ant\u00e9na"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "reproduktor"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "megafon"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "odeslan\u00e1 po\u0161ta"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "doru\u010den\u00e1 po\u0161ta"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "bal\u00ed\u010dek"
+    "message": "package"
   },
   "d83d_dce7": {
-    "message": "e-mail"
+    "message": "email"
   },
   "d83d_dce8": {
-    "message": "p\u0159\u00edchoz\u00ed po\u0161ta"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "odchoz\u00ed po\u0161ta"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "zav\u0159en\u00e1 po\u0161tovn\u00ed schr\u00e1nka s vlaje\u010dkou dol\u016f"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "zav\u0159en\u00e1 po\u0161tovn\u00ed schr\u00e1nka s vlaje\u010dkou nahoru"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "otev\u0159en\u00e1 po\u0161tovn\u00ed schr\u00e1nka s vlaje\u010dkou nahoru"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "otev\u0159en\u00e1 po\u0161tovn\u00ed schr\u00e1nka s vlaje\u010dkou dol\u016f"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "po\u0161tovn\u00ed schr\u00e1nka"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "po\u0161tovn\u00ed trumpeta"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "noviny"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "mobiln\u00ed telefon"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "mobiln\u00ed telefon se \u0161ipkou"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "vibra\u010dn\u00ed re\u017eim"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "vypnut\u00fd telefon"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "nepou\u017e\u00edvat mobily"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "mobiln\u00ed sign\u00e1l"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "fotoapar\u00e1t"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "videokamera"
+    "message": "video cam"
   },
   "d83d_dcfa": {
-    "message": "televize"
+    "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "r\u00e1dio"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "videokazeta"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "zk\u0159\u00ed\u017een\u00e9 \u0161ipky"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "\u0161ipky ve sm\u011bru hodinov\u00fdch ru\u010di\u010dek"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "\u0161ipky ve sm\u011bru hodinov\u00fdch ru\u010di\u010dek"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "obnovit"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "\u0161ipky proti sm\u011bru hodinov\u00fdch ru\u010di\u010dek"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "n\u00edzk\u00fd jas"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "vysok\u00fd jas"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "vypnut\u00ed zvuku"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "reproduktor"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "reproduktor s n\u00edzkou hlasitost\u00ed"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "reproduktor s vysokou hlasitost\u00ed"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "baterie"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "elektrick\u00e1 z\u00e1str\u010dka"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "doleva naklon\u011bn\u00e1 lupa"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "doprava naklon\u011bn\u00e1 lupa"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "z\u00e1mek s inkoustov\u00fdm perem"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "zam\u010den\u00fd z\u00e1mek s kl\u00ed\u010dem"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "kl\u00ed\u010d"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "zam\u010den\u00fd z\u00e1mek"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "odem\u010den\u00fd z\u00e1mek"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "zvonek"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "bez zvonku"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "z\u00e1lo\u017eka"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "zna\u010dka odkazu"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "p\u0159ep\u00edna\u010d"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "zp\u011bt"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "konec"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "\u0161ipka Zapnuto"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "zna\u010dka Brzy"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "zna\u010dka Nahoru"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "Nikdo mlad\u0161\u00ed 18 let"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "velk\u00e1 p\u00edsmena"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "mal\u00e1 p\u00edsmena"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "\u010d\u00edslice"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "symboly"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "latinka"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "ohe\u0148"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "sv\u00edtilna"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "mont\u00e1\u017en\u00ed kl\u00ed\u010d"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "kladivo"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "matice a \u0161roub"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "kuchy\u0148sk\u00fd n\u016f\u017e"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "pistole"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "mikroskop"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "dalekohled"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "k\u0159i\u0161\u0165\u00e1lov\u00e1 koule"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "\u0161estic\u00edp\u00e1 hv\u011bzda"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "zelen\u00fd a \u017elut\u00fd list"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "znak trojzubce"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "vybarven\u00e9 \u010dtvercov\u00e9 tla\u010d\u00edtko s r\u00e1me\u010dkem"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "pr\u00e1zdn\u00e9 \u010dtvercov\u00e9 tla\u010d\u00edtko s r\u00e1me\u010dkem"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "velk\u00fd \u010derven\u00fd kruh"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "velk\u00fd modr\u00fd kruh"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "velk\u00fd oran\u017eov\u00fd diamant"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "velk\u00fd modr\u00fd diamant"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "mal\u00fd oran\u017eov\u00fd diamant"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "mal\u00fd modr\u00fd diamant"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "troj\u00faheln\u00edk nahoru"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "troj\u00faheln\u00edk dol\u016f"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "troj\u00faheln\u00edkov\u00e9 tla\u010d\u00edtko Nahoru"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "troj\u00faheln\u00edkov\u00e9 tla\u010d\u00edtko Dol\u016f"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "1 hodina"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "2 hodiny"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "3 hodiny"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "4 hodiny"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "5 hodin"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "6 hodin"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "7 hodin"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "8 hodin"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "9 hodin"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "10 hodin"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "11 hodin"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "12 hodin"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "p\u016fl druh\u00e9"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "p\u016fl t\u0159et\u00ed"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "p\u016fl \u010dtvrt\u00e9"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "p\u016fl p\u00e1t\u00e9"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "p\u016fl \u0161est\u00e9"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "p\u016fl sedm\u00e9"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "p\u016fl osm\u00e9"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "p\u016fl dev\u00e1t\u00e9"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "p\u016fl des\u00e1t\u00e9"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "p\u016fl jeden\u00e1ct\u00e9"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "p\u016fl dvan\u00e1ct\u00e9"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "p\u016fl jedn\u00e9"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "hora Fud\u017ei"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "Tokijsk\u00e1 v\u011b\u017e"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "socha Svobody"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "mapa Japonska"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "socha moai"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "\u00fa\u0161klebek"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " \u00fa\u0161klebek s rozveselen\u00fdma o\u010dima"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "slzy \u0161t\u011bst\u00ed"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "\u0161irok\u00fd \u00fasm\u011bv"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "\u0161irok\u00fd \u00fasm\u011bv s rozveselen\u00fdma o\u010dima"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "\u00fasm\u011bv se studen\u00fdm potem"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " \u0161irok\u00fd \u00fasm\u011bv se zav\u0159en\u00fdma o\u010dima"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "\u00fasm\u011bv se svatoz\u00e1\u0159\u00ed"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "\u010f\u00e1belsk\u00fd \u00fasm\u011bv"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "mrkaj\u00edc\u00ed obli\u010dej"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "\u00fasm\u011bv"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "pochoutka"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "obli\u010dej s v\u00fdrazem \u00falevy"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "obli\u010dej s \u00fasm\u011bvem"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "pohod\u00e1\u0159"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "pche"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "kamenn\u00e1 tv\u00e1\u0159"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "bez v\u00fdrazu"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "nebav\u00ed se"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "studen\u00fd pot"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "zamy\u0161len\u00fd obli\u010dej"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "zmaten\u00fd obli\u010dej"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "zmaten\u00fd obli\u010dej"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "\u00fasta na\u0161pulen\u00e1 k polibku"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "rozd\u00e1v\u00e1 polibky"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "polibek a \u00fasm\u011bv"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "l\u00edbaj\u00edc\u00ed obli\u010dej"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "vypl\u00e1znut\u00fd jazyk"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "vypl\u00e1znut\u00fd jazyk a mrknut\u00ed"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "fuj"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "zklaman\u00fd"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "ustaran\u00fd"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "rozzloben\u00fd"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "rozzloben\u00fd obli\u010dej"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "pl\u00e1\u010d"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "tos pod\u011blal"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "v\u00fdraz triumfu"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "p\u00e1ni!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "zamra\u010den\u00fd obli\u010dej"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "mu\u010div\u00fd"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "hroziv\u00fd"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "unaven\u00fd"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "ospal\u00fd"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "unaven\u00fd obli\u010dej"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "grimasa"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "hlasit\u00fd pl\u00e1\u010d"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "obli\u010dej s otev\u0159en\u00fdmi \u00fasty"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "uml\u010den\u00fd obli\u010dej"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "usp\u011bchan\u00fd obli\u010dej"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "hroziv\u00fd obli\u010dej"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "ohromen\u00fd obli\u010dej"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "\u010dervenaj\u00edc\u00ed se obli\u010dej"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "sp\u00edc\u00ed obli\u010dej"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "z\u00e1vra\u0165"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "obli\u010dej bez \u00fast"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "obli\u010dej s maskou"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "obli\u010dej \u0161kleb\u00edc\u00ed se ko\u010dky"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "obli\u010dej ko\u010dky se slzami \u0161t\u011bst\u00ed"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "obli\u010dej usm\u00edvaj\u00edc\u00ed se ko\u010dky"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "obli\u010dej usm\u00edvaj\u00edc\u00ed se ko\u010dky"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "obli\u010dej otr\u00e1ven\u00e9 ko\u010dky"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "obli\u010dej l\u00edbaj\u00edc\u00ed ko\u010dky"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "obli\u010dej zlob\u00edc\u00ed se ko\u010dky"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "obli\u010dej pla\u010d\u00edc\u00ed ko\u010dky"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "obli\u010dej unaven\u00e9 ko\u010dky"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "nic dobr\u00e9ho (gesto)"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "OK (gesto)"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "omlouv\u00e1m se"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "nevid\u00edm zlo"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "nesly\u0161\u00edm zlo"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "nemluv\u00edm o zlu"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "\u0161\u0165astn\u00fd \u010dlov\u011bk"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "hur\u00e1"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "zamra\u010den\u00fd \u010dlov\u011bk"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "\u010dlov\u011bk s rozzloben\u00fdm obli\u010dejem"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "sepjat\u00e9 ruce"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "raketa"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "vrtuln\u00edk"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "parn\u00ed lokomotiva"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "vlak"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "vysokorychlostn\u00ed vlak"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "vysokorychlostn\u00ed vlak s \u201edlouh\u00fdm nosem\u201c"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "vlak"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "metro"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "lehk\u00e9 metro"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "vlakov\u00e9 n\u00e1dra\u017e\u00ed"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "tramvaj"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "vag\u00f3n tramvaje"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "autobus"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "p\u0159ij\u00ed\u017ed\u011bj\u00edc\u00ed autobus"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "trolejbus"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "autobusov\u00e1 zast\u00e1vka"
+    "message": "bus stop"
   },
   "d83d_de90": {
     "message": "minibus"
@@ -2228,160 +2228,160 @@
     "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "hasi\u010dsk\u00e1 st\u0159\u00edka\u010dka"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "policejn\u00ed auto"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "p\u0159ij\u00ed\u017ed\u011bj\u00edc\u00ed policejn\u00ed auto"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "p\u0159ij\u00ed\u017ed\u011bj\u00edc\u00ed taxi"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "auto"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "p\u0159ij\u00ed\u017ed\u011bj\u00edc\u00ed auto"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "karavan"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "dod\u00e1vka"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "n\u00e1kladn\u00ed auto"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "traktor"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "jednokolejnicov\u00e1 dr\u00e1ha"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "horsk\u00e1 \u017eeleznice"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "visut\u00e1 dr\u00e1ha"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "horsk\u00e1 lanovka"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "lanovka"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "lo\u010f"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "veslice"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "motorov\u00fd \u010dlun"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "vodorovn\u00fd semafor"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "svisl\u00fd semafor"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "ve v\u00fdstavb\u011b"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "maj\u00e1\u010dek"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "vlaje\u010dka ozna\u010duj\u00edc\u00ed polohu"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "dve\u0159e"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "zna\u010dka Z\u00e1kaz vstupu"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "znak kou\u0159en\u00ed"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "zna\u010dka Z\u00e1kaz kou\u0159en\u00ed"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "zna\u010dka odpadkov\u00e9ho ko\u0161e"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "zna\u010dka z\u00e1kazu odhazov\u00e1n\u00ed odpadk\u016f"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "pitn\u00e1 voda"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "u\u017eitkov\u00e1 voda"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "kolo"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "z\u00e1kaz vjezdu kol"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "cyklista"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "horsk\u00fd cyklista"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "chodec"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "z\u00e1kaz vstupu chodc\u016fm"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "p\u0159echod pro d\u011bti"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "zna\u010dka Mu\u017ei"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "zna\u010dka \u017deny"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "znamen\u00ed toalety"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "zna\u010dka D\u011bti"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "z\u00e1chod"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "WC"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "sprcha"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "koupel"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "vana"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "pasov\u00e1 kontrola"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "celnice"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "v\u00fddej zavazadel"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "\u00faschovna zavazadel"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed n\u011bmeck\u00e9 kl\u00e1vesnice"
@@ -2390,136 +2390,136 @@
     "message": "Str\u00e1nka nastaven\u00ed n\u011bmeck\u00e9 kl\u00e1vesnice Neo 2"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Kategorie"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Okomentovat"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Okomentovat"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Chcete slovn\u00edk [object Object] smazat?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "Smazat slovn\u00edk"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "Slovn\u00edky"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "N\u00e1zev slovn\u00edku"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Hotovo"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Exportovat"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Importovat..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "Spr\u00e1va slovn\u00edku"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Nov\u00fd slovn\u00edk"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "U\u017eivatelsk\u00e9 slovn\u00edky"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Nov\u00e9 \u010dten\u00ed"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "\u010cten\u00ed"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "N\u00e1zev obsahuje neplatn\u00e9 znaky."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "N\u00e1zev ji\u017e existuje."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Zadejte n\u00e1zev slovn\u00edku."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "N\u00e1zev je p\u0159\u00edli\u0161 dlouh\u00fd."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Nelze vytvo\u0159it \u017e\u00e1dn\u00e9 dal\u0161\u00ed slovn\u00edky."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "Soubor je pr\u00e1zdn\u00fd."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "Nelze vytvo\u0159it \u017e\u00e1dn\u00e9 dal\u0161\u00ed polo\u017eky v tomto slovn\u00edku."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Soubor nelze otev\u0159\u00edt."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "Velikost dat p\u0159ekra\u010duje limit velikosti souboru."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Operace se nezda\u0159ila."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "N\u011bkter\u00e1 slova nelze importovat."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Zdroj importu obsahuje p\u0159\u00edli\u0161 mnoho slov."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Soubor nelze \u010d\u00edst."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Nejsou k dispozici \u017e\u00e1dn\u00e9 dal\u0161\u00ed operace, kter\u00e9 by bylo mo\u017en\u00e9 vr\u00e1tit zp\u011bt."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "\u010cten\u00ed obsahuje neplatn\u00e9 znaky. Ve \u010dten\u00ed m\u016f\u017eete pou\u017e\u00edt znaky ASCII, hiraganu, zna\u010dku vyslovovan\u00e9ho zvuku (\u309b), zna\u010dku napolo vyslovovan\u00e9ho zvuku (\u309c), st\u0159edn\u00ed te\u010dku (\u30fb), zna\u010dku dlouh\u00e9ho zvuku (\u30fc), japonskou \u010d\u00e1rku (\u3001), japonskou te\u010dku (\u3002), japonsk\u00e9 z\u00e1vorky (\u300c\u300d\u300e\u300f) a japonskou vlnitou poml\u010dku (\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Zadejte \u010dten\u00ed."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "\u010cten\u00ed je p\u0159\u00edli\u0161 dlouh\u00e9."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Chyba p\u0159id\u00e1n\u00ed polo\u017eky"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Chyba vytv\u00e1\u0159en\u00ed slovn\u00edku"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Chyba maz\u00e1n\u00ed slovn\u00edku"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Chyba maz\u00e1n\u00ed polo\u017eky"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Chyba \u00fapravy polo\u017eky"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Chyba importu"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "Chyba p\u0159ejmenov\u00e1n\u00ed slovn\u00edku"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "Slovo obsahuje neplatn\u00e9 znaky."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Zadejte slovo."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "Slovo je p\u0159\u00edli\u0161 dlouh\u00e9."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Nov\u00e9 slovo"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "Slovo"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "zav\u0159\u00edt nab\u00eddku kl\u00e1vesnice"
@@ -2570,10 +2570,16 @@
     "message": "Zapnout dokon\u010dov\u00e1n\u00ed"
   },
   "enable_gesture_editing": {
+    "message": "Aktivovat gesta p\u0159ejet\u00edm prstem"
+  },
+  "enable_gesture_editing_desc": {
     "message": "P\u0159ejet\u00edm prstem od okraj\u016f kl\u00e1vesnice p\u0159esunete kurzor. P\u0159ejet\u00edm prstem od tla\u010d\u00edtka Backspace m\u016f\u017eete mazat cel\u00e1 slova."
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Aktivovat psan\u00ed gesty"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Zad\u00e1vejte slova p\u0159ej\u00ed\u017ed\u011bn\u00edm po p\u00edsmenech."
   },
   "enable_prediction": {
     "message": "Zapnout p\u0159edv\u00edd\u00e1n\u00ed dal\u0161\u00edho slova"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed finsk\u00e9 kl\u00e1vesnice"
   },
+  "fo_fao_settings_page": {
+    "message": "Str\u00e1nka nastaven\u00ed faersk\u00e9 kl\u00e1vesnice"
+  },
   "footer_docking_button": {
     "message": "ukotvit virtu\u00e1ln\u00ed kl\u00e1vesnici"
   },
@@ -2603,13 +2612,16 @@
     "message": "p\u0159epnout na emod\u017ei"
   },
   "footer_floating_button": {
-    "message": "aktivuje se pohybliv\u00e1 virtu\u00e1ln\u00ed kl\u00e1vesnice"
+    "message": "aktivovat pohyblivou virtu\u00e1ln\u00ed kl\u00e1vesnici"
   },
   "footer_handwriting_button": {
     "message": "p\u0159epnout na psan\u00ed rukou"
   },
   "footer_settings_button": {
     "message": "otev\u0159\u00edt nastaven\u00ed metody zad\u00e1v\u00e1n\u00ed"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "Str\u00e1nka nastaven\u00ed francouzsk\u00e9 kl\u00e1vesnice B\u00c9PO (francouz\u0161tina)"
   },
   "fr_fra_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed francouzsk\u00e9 kl\u00e1vesnice"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed ma\u010farsk\u00e9 kl\u00e1vesnice"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Str\u00e1nka nastaven\u00ed ma\u010farsk\u00e9 kl\u00e1vesnice Qwerty"
+  },
   "ie_ga_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed irsk\u00e9 kl\u00e1vesnice"
   },
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "Metoda zad\u00e1v\u00e1n\u00ed cchang-\u0165ie"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Metoda zad\u00e1v\u00e1n\u00ed dayi"
@@ -2765,7 +2783,7 @@
     "message": "D\u00e1nsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_devanagari_phonetic": {
-    "message": "Kl\u00e1vesnice d\u00e9van\u00e1gar\u00ed (fonetick\u00e1)"
+    "message": "D\u00e9van\u00e1gar\u00ed \u2013 kl\u00e1vesnice (fonetick\u00e1)"
   },
   "keyboard_estonian": {
     "message": "Estonsk\u00e1 kl\u00e1vesnice"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Etiopsk\u00e1 kl\u00e1vesnice"
   },
+  "keyboard_faroese": {
+    "message": "Faersk\u00e1 kl\u00e1vesnice"
+  },
   "keyboard_finnish": {
     "message": "Finsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_french": {
     "message": "Francouzsk\u00e1 kl\u00e1vesnice"
+  },
+  "keyboard_french_bepo": {
+    "message": "Francouzsk\u00e1 kl\u00e1vesnice B\u00c9PO"
   },
   "keyboard_georgian": {
     "message": "Gruz\u00ednsk\u00e1 kl\u00e1vesnice"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "Ma\u010farsk\u00e1 kl\u00e1vesnice"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "Ma\u010farsk\u00e1 kl\u00e1vesnice Qwerty"
+  },
   "keyboard_icelandic": {
     "message": "Islandsk\u00e1 kl\u00e1vesnice"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannadsk\u00e1 kl\u00e1vesnice (fonetick\u00e1)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Kl\u00e1vesnice (Kedmanee)"
   },
@@ -2828,6 +2858,9 @@
     "message": "Khm\u00e9rsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_lao": {
+    "message": "Laosk\u00e1 kl\u00e1vesnice"
+  },
+  "keyboard_laothian": {
     "message": "Laosk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_latin_american": {
@@ -2840,7 +2873,7 @@
     "message": "Litevsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Makedonsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Malaj\u00e1lamsk\u00e1 kl\u00e1vesnice (fonetick\u00e1)"
@@ -2861,7 +2894,7 @@
     "message": "Nep\u00e1lsk\u00e1 kl\u00e1vesnice (InScript)"
   },
   "keyboard_nepali_phonetic": {
-    "message": "Nep\u00e1lsk\u00e1 kl\u00e1vesnice (Phonetic)"
+    "message": "Nep\u00e1lsk\u00e1 kl\u00e1vesnice (fonetick\u00e1)"
   },
   "keyboard_netherlands": {
     "message": "Nizozemsk\u00e1 kl\u00e1vesnice"
@@ -2891,7 +2924,7 @@
     "message": "Rumunsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_romanian_standard": {
-    "message": "Standardn\u00ed rumunsk\u00e1 kl\u00e1vesnice"
+    "message": "Rumunsk\u00e1 standardn\u00ed kl\u00e1vesnice"
   },
   "keyboard_russian": {
     "message": "Rusk\u00e1 kl\u00e1vesnice"
@@ -2910,6 +2943,9 @@
   },
   "keyboard_sinhala": {
     "message": "Sinh\u00e1lsk\u00e1 kl\u00e1vesnice"
+  },
+  "keyboard_slovak": {
+    "message": "Slovensk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_slovakian": {
     "message": "Slovensk\u00e1 kl\u00e1vesnice"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Tureck\u00e1 kl\u00e1vesnice"
   },
+  "keyboard_turkish_f": {
+    "message": "Tureck\u00e1 kl\u00e1vesnice (typ F)"
+  },
   "keyboard_typewriter": {
     "message": "Kl\u00e1vesnice (psac\u00ed stroj)"
   },
@@ -2984,7 +3023,7 @@
     "message": "Britsk\u00e1 kl\u00e1vesnice"
   },
   "keyboard_uk_dvorak": {
-    "message": "Britsk\u00e1 kl\u00e1vesnice s rozlo\u017een\u00edm Dvorak"
+    "message": "Britsk\u00e1 kl\u00e1vesnice Dvorak"
   },
   "keyboard_ukrainian": {
     "message": "Ukrajinsk\u00e1 kl\u00e1vesnice"
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "Americk\u00e1 kl\u00e1vesnice Dvorak"
+  },
+  "keyboard_us_dvp": {
+    "message": "Americk\u00e1 program\u00e1torsk\u00e1 kl\u00e1vesnice Dvorak"
   },
   "keyboard_us_extended": {
     "message": "Americk\u00e1 roz\u0161\u00ed\u0159en\u00e1 kl\u00e1vesnice"
@@ -3035,7 +3077,7 @@
     "message": "Zad\u00e1vat po slabik\u00e1ch"
   },
   "latam_spa_settings_page": {
-    "message": "Str\u00e1nka nastaven\u00ed latinoamerick\u00e9 kl\u00e1vesnice (\u0161pan\u011bl\u0161tina)"
+    "message": "Str\u00e1nka nastaven\u00ed latinskoamerick\u00e9 kl\u00e1vesnice (\u0161pan\u011bl\u0161tina)"
   },
   "latin_settings_page": {
     "message": "Nastaven\u00ed"
@@ -3110,7 +3152,7 @@
     "message": "Nastaven\u00ed"
   },
   "shift": {
-    "message": "shift"
+    "message": "Shift"
   },
   "shift_lock": {
     "message": "Z\u00e1mek kl\u00e1vesy Shift"
@@ -3119,22 +3161,22 @@
     "message": "Prodleva rozbalovac\u00ed nab\u00eddky s n\u00e1vrhy"
   },
   "show_candidates_1000": {
-    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 1\u00a0s"
+    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 1 s"
   },
   "show_candidates_2000": {
-    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 2\u00a0s"
+    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 2 s"
   },
   "show_candidates_500": {
-    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 500\u00a0ms"
+    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 500 ms"
   },
   "show_candidates_5000": {
-    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 5\u00a0s"
+    "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po 5 s"
   },
   "show_candidates_backspace": {
     "message": "Zobrazit rozbalovac\u00ed nab\u00eddku s n\u00e1vrhy po stisknut\u00ed kl\u00e1vesy Backspace"
   },
   "show_hangul_candidate": {
-    "message": "Zobrazovat v\u00a0re\u017eimu korejsk\u00e9ho p\u00edsma kandid\u00e1ty"
+    "message": "Zobrazovat v re\u017eimu korejsk\u00e9ho p\u00edsma kandid\u00e1ty"
   },
   "shrink_candidates": {
     "message": "sbalit seznam kandid\u00e1t\u016f"
@@ -3146,7 +3188,7 @@
     "message": "Str\u00e1nka nastaven\u00ed slovensk\u00e9 kl\u00e1vesnice"
   },
   "smiley": {
-    "message": "smajl\u00edk"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "M\u00edrn\u00e9"
@@ -3158,13 +3200,13 @@
     "message": "mezera"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "P\u0159ejet\u00edm prstem vlevo sma\u017eete cel\u00e1 slova."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "P\u0159ejet\u00edm prstem vpravo obnov\u00edte slova."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "P\u0159ejet\u00edm prstem vlevo nebo vpravo p\u0159esunete kurzor."
   },
   "switch_to": {
     "message": "p\u0159epnout na "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "Softwarov\u00e1 kl\u00e1vesnice"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "Str\u00e1nka nastaven\u00ed tureck\u00e9 kl\u00e1vesnice (typ F)"
   },
   "tr_tur_settings_page": {
     "message": "Str\u00e1nka nastaven\u00ed tureck\u00e9 kl\u00e1vesnice"
@@ -3305,13 +3350,16 @@
     "message": "Str\u00e1nka nastaven\u00ed americk\u00e9 kl\u00e1vesnice (malaj\u0161tina)"
   },
   "user_dict": {
-    "message": "Aktivovat vlastn\u00ed slovn\u00edk"
+    "message": "Povolit osobn\u00ed slovn\u00edk"
   },
   "user_dict_add": {
     "message": "P\u0159idat"
   },
   "user_dict_clear": {
     "message": "Vymazat v\u0161e"
+  },
+  "user_dict_edit": {
+    "message": "Upravit z\u00e1znamy slovn\u00edku"
   },
   "user_dict_manage": {
     "message": "Spravovat osobn\u00ed slovn\u00edk..."
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Po\u010dkat"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Typ kl\u00e1vesnice"

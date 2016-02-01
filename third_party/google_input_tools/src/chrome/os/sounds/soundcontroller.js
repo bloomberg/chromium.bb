@@ -15,12 +15,12 @@ goog.provide('i18n.input.chrome.sounds.SoundController');
 
 goog.require('goog.Disposable');
 goog.require('goog.dom');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.sounds.Sounds');
 
 goog.scope(function() {
 var Sounds = i18n.input.chrome.sounds.Sounds;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var keyToSoundIdOnKeyUp = {};
 var keyToSoundIdOnKeyRepeat = {};
 

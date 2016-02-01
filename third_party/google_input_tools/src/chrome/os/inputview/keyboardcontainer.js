@@ -16,16 +16,17 @@ goog.provide('i18n.input.chrome.inputview.KeyboardContainer');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.i18n.bidi');
+goog.require('i18n.input.chrome.ElementType');
+goog.require('i18n.input.chrome.WindowUtil');
 goog.require('i18n.input.chrome.inputview.Css');
+goog.require('i18n.input.chrome.inputview.GesturePreviewWindow');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.AltDataView');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.EmojiView');
 goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.FloatingView');
 goog.require('i18n.input.chrome.inputview.elements.content.GestureCanvasView');
-goog.require('i18n.input.chrome.inputview.elements.content.GesturePreviewView');
 goog.require('i18n.input.chrome.inputview.elements.content.HandwritingView');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
@@ -38,11 +39,13 @@ goog.require('i18n.input.chrome.inputview.elements.content.VoiceView');
 goog.scope(function() {
 var Css = i18n.input.chrome.inputview.Css;
 var EmojiView = i18n.input.chrome.inputview.elements.content.EmojiView;
+var GesturePreviewWindow = i18n.input.chrome.inputview.GesturePreviewWindow;
 var HandwritingView = i18n.input.chrome.inputview.elements.content.
     HandwritingView;
 var KeysetView = i18n.input.chrome.inputview.elements.content.KeysetView;
 var content = i18n.input.chrome.inputview.elements.content;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
+var WindowUtil = i18n.input.chrome.WindowUtil;
 
 
 
@@ -67,8 +70,13 @@ i18n.input.chrome.inputview.KeyboardContainer =
   /** @type {!content.AltDataView} */
   this.altDataView = new content.AltDataView(this);
 
-  /** @type {!content.GesturePreviewView} */
-  this.gesturePreviewView = new content.GesturePreviewView(this);
+  // Create a new window and construct a GesturePreviewWindow with it
+  // once it's ready.
+  WindowUtil.createWindow(
+      function(newWindow) {
+        /** @type {!GesturePreviewWindow} */
+        this.gesturePreviewWindow = new GesturePreviewWindow(newWindow);
+      }.bind(this));
 
   /** @type {!content.SwipeView} */
   this.swipeView = new content.SwipeView(adapter, this.candidateView, this);
@@ -161,7 +169,6 @@ KeyboardContainer.prototype.createDom = function() {
   this.candidateView.render(this.wrapperDiv_);
   dom.appendChild(elem, this.wrapperDiv_);
   this.altDataView.render();
-  this.gesturePreviewView.render();
   this.swipeView.render();
   this.selectView.render();
   this.menuView.render();
@@ -170,8 +177,10 @@ KeyboardContainer.prototype.createDom = function() {
   this.expandedCandidateView.render(this.wrapperDiv_);
   this.expandedCandidateView.setVisible(false);
   if (this.adapter_.isFloatingVirtualKeyboardEnabled()) {
+    inputview.setMode('FLOATING');
     this.floatingView = new content.FloatingView(this);
     this.floatingView.render();
+    this.candidateView.setFloatingVKButtonsVisible(true);
   }
   this.gestureCanvasView = new content.GestureCanvasView(this);
   this.gestureCanvasView.render(this.wrapperDiv_);
@@ -332,7 +341,6 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
     this.currentKeysetView.setVisible(true);
   }
   this.altDataView.resize(width, height);
-  this.gesturePreviewView.resize(width, height);
   this.swipeView.resize(width, height);
   this.selectView.resize(width, height);
   this.menuView.resize(width, height);
@@ -348,7 +356,7 @@ KeyboardContainer.prototype.setContainerSize = function(width, height,
 KeyboardContainer.prototype.disposeInternal = function() {
   goog.dispose(this.candidateView);
   goog.dispose(this.altDataView);
-  goog.dispose(this.gesturePreviewView);
+  goog.dispose(this.gesturePreviewWindow);
   goog.dispose(this.swipeView);
   goog.dispose(this.selectView);
   goog.dispose(this.menuView);

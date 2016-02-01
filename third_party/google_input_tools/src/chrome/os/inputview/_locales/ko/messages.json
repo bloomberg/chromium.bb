@@ -29,10 +29,10 @@
     "message": "\uc544\ub974\uba54\ub2c8\uc544\uc5b4 \ud45c\uc74c\uc2dd \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "appnamejpkeyboard": {
-    "message": "Google \uc77c\ubcf8\uc5b4 \uc785\ub825(\uc77c\ubcf8\uc5b4 \ud0a4\ubcf4\ub4dc\uc6a9)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Google \uc77c\ubcf8\uc5b4 \uc785\ub825(\ubbf8\uad6d \ud0a4\ubcf4\ub4dc\uc6a9)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "\uc790\ub3d9 \uc218\uc815"
@@ -89,100 +89,100 @@
     "message": "Chrome OS\uc6a9 Google \uc785\ub825\uae30\ub97c \uc0ac\uc6a9\ud558\uc5ec Chrome OS\uc5d0\uc11c \uc6d0\ud558\ub294 \uc5b8\uc5b4\ub85c \uc785\ub825\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4."
   },
   "chos_inputtool_title": {
-    "message": "Google \uc785\ub825 \ub3c4\uad6c"
+    "message": "Google \uc785\ub825\uae30"
   },
   "compositionmodedirect": {
-    "message": "\uc9c1\uc811 \uc785\ub825"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "\uc804\uac01 \ub77c\ud2f4\uc5b4"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
-    "message": "\uac00\ud0c0\uce74\ub098"
+    "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "\ub77c\ud2f4\uc5b4"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "\ubc18\uac01 \uac00\ud0c0\uce74\ub098"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
-    "message": "\ud788\ub77c\uac00\ub098"
+    "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "\uae30\ubcf8\uc124\uc815"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "\ub9de\ucda4\uc124\uc815 \ub370\uc774\ud130 \uc9c0\uc6b0\uae30..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "\ucde8\uc18c"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "\ubcc0\ud658 \uae30\ub85d"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "\ub2e4\uc74c \ud56d\ubaa9 \uc0ad\uc81c:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "\ub9de\ucda4\uc124\uc815 \ub370\uc774\ud130 \uc9c0\uc6b0\uae30"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "\ucd94\ucc9c \uae30\ub85d"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "\ub9de\ucda4\uc124\uc815 \ub370\uc774\ud130 \uc9c0\uc6b0\uae30"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
     "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "\ucde8\uc18c"
+    "message": "Cancel"
   },
   "configdialogok": {
-    "message": "\ud655\uc778"
+    "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "\uc0ac\uc6a9\uc790 \uc0ac\uc804 \uad00\ub9ac..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "\ubcc0\ud658 \ud6c4\ubcf4\ub97c \ub9de\ucda4\uc124\uc815\ud558\ub824\uba74 \ub098\ub9cc\uc758 \ub2e8\uc5b4\ub97c \uc0ac\uc6a9\uc790 \uc0ac\uc804\uc5d0 \ucd94\uac00\ud558\uc138\uc694."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "\uc0ac\uc6a9\uc790 \uc0ac\uc804"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "\ub9de\ucda4 \ubcc0\ud658, \ucd94\ucc9c \ubc0f \uc0ac\uc6a9\uc790 \uc0ac\uc804 \uc0ac\uc6a9 \uc911\uc9c0"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "\uc785\ub825 \ub3c4\uc6c0"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "\u672c\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u306f<a href=\"./credits_en.html\">\u30aa\u30fc\u30d7\u30f3\u30bd\u30fc\u30b9\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2</a>\u3092\u5229\u7528\u3057\u3066\u3044\u307e\u3059."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "\uc785\ub825 \ubaa8\ub4dc:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
-    "message": "\uac00\ub098"
+    "message": "Kana"
   },
   "configpreeditmethodromaji": {
-    "message": "\ub85c\ub9c8\uc790(Romaji)"
+    "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "\uac1c\uc778\uc815\ubcf4 \ubcf4\ud638"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "\uad6c\ub450\uc810 \uc2a4\ud0c0\uc77c:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "\uc120\ud0dd \ub2e8\ucd95\ud0a4:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "\ub2e8\ucd95\ud0a4 \uc5c6\uc74c"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "\ud0a4 \uc124\uc815 \uc2a4\ud0c0\uc77c:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "\ud0a4 \ub9de\ucda4\uc124\uc815"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,52 +200,52 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "\uc77c\ubcf8\uc5b4 \uc785\ub825 \uc124\uc815"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Shift \ud0a4 \ubaa8\ub4dc \uc804\ud658:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "\uc601\uc22b\uc790"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
-    "message": "\uac00\ud0c0\uce74\ub098"
+    "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "\uc0ac\uc6a9 \uc911\uc9c0"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "\uacf5\ubc31 \uc785\ub825 \uc2a4\ud0c0\uc77c:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "\uc785\ub825 \ubaa8\ub4dc \ub530\ub77c\ud558\uae30"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "\uc804\uac01"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "\ubc18\uac01"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "\ucd94\ucc9c \uc218:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "\ucd94\ucc9c"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "\uae30\ud638 \uc2a4\ud0c0\uc77c:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "\uc0ac\uc6a9 \ud1b5\uacc4 \ubc0f \uc624\ub958 \ubcf4\uace0\uc11c\ub97c Google\uc5d0 \uc790\ub3d9\uc73c\ub85c \ubcf4\ub0b4\uae30"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "\ubc18\uac01\uc73c\ub85c \uc790\ub3d9 \uc804\ud658"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "\uc2dc\uc2a4\ud15c \uc0ac\uc804 \uc0ac\uc6a9"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "\uc785\ub825 \uae30\ub85d \uc0ac\uc6a9"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "Ctrl"
@@ -269,1465 +269,1465 @@
     "message": "\uccb4\ucf54\uc5b4 QWERTY \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "d83c_dc04": {
-    "message": "\ub9c8\uc791"
+    "message": "MAHJONG TILE RED DRAGON"
   },
   "d83c_dccf": {
-    "message": "\uc870\ucee4"
+    "message": "PLAYING CARD BLACK JOKER"
   },
   "d83c_dd70": {
-    "message": "A\ud615 \ud608\uc561\ud615"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER A"
   },
   "d83c_dd71": {
-    "message": "B\ud615 \ud608\uc561\ud615"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER B"
   },
   "d83c_dd7e": {
-    "message": "O\ud615 \ud608\uc561\ud615"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER O"
   },
   "d83c_dd7f": {
-    "message": "\uc8fc\ucc28"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER P"
   },
   "d83c_dd8e": {
-    "message": "AB\ud615 \ud608\uc561\ud615"
+    "message": "NEGATIVE SQUARED AB"
   },
   "d83c_dd91": {
-    "message": "CL \ud45c\uc2dc"
+    "message": "SQUARED CL"
   },
   "d83c_dd92": {
-    "message": "\uc790\uc2e0 \uc788\uc74c"
+    "message": "SQUARED COOL"
   },
   "d83c_dd93": {
-    "message": "FREE"
+    "message": "SQUARED FREE"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "SQUARED ID"
   },
   "d83c_dd95": {
-    "message": "NEW"
+    "message": "SQUARED NEW"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "SQUARED NG"
   },
   "d83c_dd97": {
-    "message": "\uc624\ucf00\uc774"
+    "message": "SQUARED OK"
   },
   "d83c_dd98": {
-    "message": "SOS"
+    "message": "SQUARED SOS"
   },
   "d83c_dd99": {
-    "message": "UP!"
+    "message": "SQUARED UP WITH EXCLAMATION MARK"
   },
   "d83c_dd9a": {
-    "message": "VS"
+    "message": "SQUARED VS"
   },
   "d83c_de01": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc5ec\uae30'"
+    "message": "\uac00\ud0c0\uac00\ub098 \ucf54\ucf54, \uc77c\ubcf8\uc5b4 \uc5ec\uae30"
   },
   "d83c_de02": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc11c\ube44\uc2a4'"
+    "message": "\uac00\ud0c0\uac00\ub098 \uc0ac, \uc77c\ubcf8\uc5b4 \uc11c\ube44\uc2a4"
   },
   "d83c_de1a": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ubb34\ub8cc'"
+    "message": "\uc5c6\uc744 \ubb34"
   },
   "d83c_de2f": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc608\uc57d'"
+    "message": "\uac00\ub9ac\ud0ac \uc9c0"
   },
   "d83c_de32": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uae08\uc9c0'"
+    "message": "\uae08\ud560 \uae08"
   },
   "d83c_de33": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\ube44\uc5c8\uc74c'"
+    "message": "\ube4c \uacf5"
   },
   "d83c_de34": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\ud569\uaca9'"
+    "message": "\ud569\ud560 \ud569"
   },
   "d83c_de35": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uac00\ub4dd \ucc38'"
+    "message": "\ucc30 \ub9cc"
   },
   "d83c_de36": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc218\uc218\ub8cc'"
+    "message": "\uc788\uc744 \uc720"
   },
   "d83c_de37": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ub9e4\uc6d4'"
+    "message": "\ub2ec \uc6d4"
   },
   "d83c_de38": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc560\ud50c\ub9ac\ucf00\uc774\uc158'"
+    "message": "\uac70\ub4ed \uc2e0"
   },
   "d83c_de39": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\ud560\uc778'"
+    "message": "\ub098\ub20c \ud560, \uac00\ub97c \ud560"
   },
   "d83c_de3a": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc0ac\uc5c5'"
+    "message": "\ub9c8\ub545 \ub2f9, \ub2f9\uc5f0\ud560 \ub2f9"
   },
   "d83c_de50": {
-    "message": "\uc77c\ubcf8\uc5b4 \ub2e8\uc5b4 '\uc7a5\uc810'"
+    "message": "\uc5bb\uc744 \ub4dd"
   },
   "d83c_de51": {
-    "message": "\uc911\uad6d\uc5b4 \ub2e8\uc5b4 '\uc2b9\uc778'"
+    "message": "\uc633\uc744 \uac00"
   },
   "d83c_df00": {
-    "message": "\uc0ac\uc774\ud074\ub860"
+    "message": "CYCLONE"
   },
   "d83c_df01": {
-    "message": "\uc548\uac1c\uac00 \ub080"
+    "message": "FOGGY"
   },
   "d83c_df02": {
-    "message": "\uc6b0\uc0b0"
+    "message": "CLOSED UMBRELLA"
   },
   "d83c_df03": {
-    "message": "\ubc24\ud558\ub298\uc758 \ubcc4"
+    "message": "NIGHT WITH STARS"
   },
   "d83c_df04": {
-    "message": "\uc0b0 \uc18d \uc77c\ucd9c"
+    "message": "\uc0b0 \uc704 \uc77c\ucd9c"
   },
   "d83c_df05": {
-    "message": "\uc77c\ucd9c"
+    "message": "SUNRISE"
   },
   "d83c_df06": {
-    "message": "\ub3c4\uc2dc\uc758 \uc800\ub141"
+    "message": "CITYSCAPE AT DUSK"
   },
   "d83c_df07": {
-    "message": "\uc77c\ubab0"
+    "message": "SUNSET OVER BUILDINGS"
   },
   "d83c_df08": {
-    "message": "\ubb34\uc9c0\uac1c"
+    "message": "RAINBOW"
   },
   "d83c_df09": {
-    "message": "\uc57c\uac04\uc758 \ub2e4\ub9ac"
+    "message": "BRIDGE AT NIGHT"
   },
   "d83c_df0a": {
-    "message": "\ud30c\ub3c4"
+    "message": "WATER WAVE"
   },
   "d83c_df0b": {
-    "message": "\ud654\uc0b0"
+    "message": "VOLCANO"
   },
   "d83c_df0c": {
-    "message": "\uc740\ud558\uc218"
+    "message": "MILKY WAY"
   },
   "d83c_df0d": {
-    "message": "\uc9c0\uad6c\ubcf8 \uc720\ub7fd-\uc544\ud504\ub9ac\uce74"
+    "message": "\uc720\ub7fd \uc544\ud504\ub9ac\uce74 \uc9c0\uad6c\ubcf8"
   },
   "d83c_df0e": {
-    "message": "\uc9c0\uad6c\ubcf8 \uc544\uba54\ub9ac\uce74"
+    "message": "\uc544\uba54\ub9ac\uce74 \uc9c0\uad6c\ubcf8"
   },
   "d83c_df0f": {
-    "message": "\uc9c0\uad6c\ubcf8 \uc544\uc2dc\uc544-\uc624\uc2a4\ud2b8\ub808\uc77c\ub9ac\uc544"
+    "message": "\uc544\uc2dc\uc544 \uc9c0\uad6c\ubcf8, \ud55c\uad6d \uc9c0\uad6c\ubcf8"
   },
   "d83c_df10": {
-    "message": "\uc9c0\uad6c\ubcf8 \uc790\uc624\uc120"
+    "message": "\uc790\uc624\uc120 \uc788\ub294 \uc9c0\uad6c\ubcf8"
   },
   "d83c_df11": {
-    "message": "\ucd08\uc2b9\ub2ec"
+    "message": "NEW MOON SYMBOL"
   },
   "d83c_df12": {
-    "message": "\uc0c1\ud604 \ucd08\uc2b9\ub2ec"
+    "message": "\uc0c1\ud604\ub2ec, \uc624\ub978\ucabd \ucd08\uc2b9\ub2ec"
   },
   "d83c_df13": {
-    "message": "\uc0c1\ud604\ub2ec"
+    "message": "\uc624\ub978\ucabd \ubc18\ub2ec"
   },
   "d83c_df14": {
-    "message": "\ucc28\uc624\ub974\ub294 \ub2ec"
+    "message": "WAXING GIBBOUS MOON SYMBOL"
   },
   "d83c_df15": {
-    "message": "\ubcf4\ub984\ub2ec"
+    "message": "FULL MOON SYMBOL"
   },
   "d83c_df16": {
-    "message": "\uae30\uc6b8\uc5b4\uac00\ub294 \ub2ec"
+    "message": "WANING GIBBOUS MOON SYMBOL"
   },
   "d83c_df17": {
-    "message": "\ud558\ud604\ub2ec"
+    "message": "\uc67c\ucabd \ubc18\ub2ec"
   },
   "d83c_df18": {
-    "message": "\uae30\uc6b0\ub294 \ud558\ud604\ub2ec"
+    "message": "\ud558\ud604\ub2ec, \uc67c\ucabd \ucd08\uc2b9\ub2ec"
   },
   "d83c_df19": {
-    "message": "\uadf8\ubbd0\ub2ec"
+    "message": "CRESCENT MOON"
   },
   "d83c_df1a": {
-    "message": "\ucd08\uc2b9\ub2ec \uc5bc\uad74"
+    "message": "NEW MOON WITH FACE"
   },
   "d83c_df1b": {
-    "message": "\uc0c1\ud604\ub2ec \uc5bc\uad74"
+    "message": "\uc624\ub978\ucabd \ubc18\ub2ec"
   },
   "d83c_df1c": {
-    "message": "\ud558\ud604\ub2ec \uc5bc\uad74"
+    "message": "\uc67c\ucabd \ubc18\ub2ec"
   },
   "d83c_df1d": {
-    "message": "\ubcf4\ub984\ub2ec \uc5bc\uad74"
+    "message": "FULL MOON WITH FACE"
   },
   "d83c_df1e": {
-    "message": "\ud0dc\uc591 \uc5bc\uad74"
+    "message": "SUN WITH FACE"
   },
   "d83c_df1f": {
-    "message": "\ube5b\ub098\ub294 \ubcc4"
+    "message": "GLOWING STAR"
   },
   "d83c_df20": {
-    "message": "\uc720\uc131"
+    "message": "SHOOTING STAR"
   },
   "d83c_df30": {
-    "message": "\ubc24"
+    "message": "CHESTNUT"
   },
   "d83c_df31": {
-    "message": "\uc0c8\uc2f9"
+    "message": "SEEDLING"
   },
   "d83c_df32": {
-    "message": "\uc0c1\ub85d\uc218"
+    "message": "EVERGREEN TREE"
   },
   "d83c_df33": {
-    "message": "\ud65c\uc5fd\uc218"
+    "message": "DECIDUOUS TREE"
   },
   "d83c_df34": {
-    "message": "\uc57c\uc790\uc218"
+    "message": "PALM TREE"
   },
   "d83c_df35": {
-    "message": "\uc120\uc778\uc7a5"
+    "message": "CACTUS"
   },
   "d83c_df37": {
-    "message": "\ud2a4\ub9bd"
+    "message": "TULIP"
   },
   "d83c_df38": {
-    "message": "\ubc9a\uaf43"
+    "message": "CHERRY BLOSSOM"
   },
   "d83c_df39": {
-    "message": "\uc7a5\ubbf8"
+    "message": "ROSE"
   },
   "d83c_df3a": {
-    "message": "\ud788\ube44\uc2a4\ucee4\uc2a4"
+    "message": "HIBISCUS"
   },
   "d83c_df3b": {
-    "message": "\ud574\ubc14\ub77c\uae30"
+    "message": "SUNFLOWER"
   },
   "d83c_df3c": {
-    "message": "\uaf43"
+    "message": "BLOSSOM"
   },
   "d83c_df3d": {
-    "message": "\uc625\uc218\uc218"
+    "message": "EAR OF MAIZE"
   },
   "d83c_df3e": {
-    "message": "\ubcbc"
+    "message": "EAR OF RICE"
   },
   "d83c_df3f": {
-    "message": "\ud480"
+    "message": "HERB"
   },
   "d83c_df40": {
-    "message": "\ub124 \uc78e \ud074\ub85c\ubc84"
+    "message": "FOUR LEAF CLOVER"
   },
   "d83c_df41": {
-    "message": "\ub2e8\ud48d\uc78e"
+    "message": "MAPLE LEAF"
   },
   "d83c_df42": {
-    "message": "\ub099\uc5fd"
+    "message": "FALLEN LEAF"
   },
   "d83c_df43": {
-    "message": "\ubc14\ub78c\uc5d0 \ub0a0\ub9ac\ub294 \uc78e"
+    "message": "LEAF FLUTTERING IN WIND"
   },
   "d83c_df44": {
-    "message": "\ubc84\uc12f"
+    "message": "MUSHROOM"
   },
   "d83c_df45": {
-    "message": "\ud1a0\ub9c8\ud1a0"
+    "message": "TOMATO"
   },
   "d83c_df46": {
-    "message": "\uac00\uc9c0"
+    "message": "AUBERGINE"
   },
   "d83c_df47": {
-    "message": "\ud3ec\ub3c4"
+    "message": "GRAPES"
   },
   "d83c_df48": {
-    "message": "\uba5c\ub860"
+    "message": "MELON"
   },
   "d83c_df49": {
-    "message": "\uc218\ubc15"
+    "message": "WATERMELON"
   },
   "d83c_df4a": {
-    "message": "\uade4"
+    "message": "TANGERINE"
   },
   "d83c_df4b": {
-    "message": "\ub808\ubaac"
+    "message": "LEMON"
   },
   "d83c_df4c": {
-    "message": "\ubc14\ub098\ub098"
+    "message": "BANANA"
   },
   "d83c_df4d": {
-    "message": "\ud30c\uc778\uc560\ud50c"
+    "message": "PINEAPPLE"
   },
   "d83c_df4e": {
-    "message": "\ube68\uac04 \uc0ac\uacfc"
+    "message": "RED APPLE"
   },
   "d83c_df4f": {
-    "message": "\uccad\uc0ac\uacfc"
+    "message": "GREEN APPLE"
   },
   "d83c_df50": {
-    "message": "\ubc30"
+    "message": "PEAR"
   },
   "d83c_df51": {
-    "message": "\ubcf5\uc22d\uc544"
+    "message": "PEACH"
   },
   "d83c_df52": {
-    "message": "\uccb4\ub9ac"
+    "message": "CHERRIES"
   },
   "d83c_df53": {
-    "message": "\ub538\uae30"
+    "message": "STRAWBERRY"
   },
   "d83c_df54": {
-    "message": "\ud584\ubc84\uac70"
+    "message": "HAMBURGER"
   },
   "d83c_df55": {
-    "message": "\ud53c\uc790 \uc870\uac01"
+    "message": "SLICE OF PIZZA"
   },
   "d83c_df56": {
-    "message": "\uace0\uae30"
+    "message": "MEAT ON BONE"
   },
   "d83c_df57": {
-    "message": "\ub2ed\ub2e4\ub9ac"
+    "message": "POULTRY LEG"
   },
   "d83c_df58": {
-    "message": "\uc300\uacfc\uc790"
+    "message": "RICE CRACKER"
   },
   "d83c_df59": {
-    "message": "\uc8fc\uba39\ubc25"
+    "message": "RICE BALL"
   },
   "d83c_df5a": {
-    "message": "\uc300\ubc25"
+    "message": "COOKED RICE"
   },
   "d83c_df5b": {
-    "message": "\uce74\ub808\ub77c\uc774\uc2a4"
+    "message": "CURRY AND RICE"
   },
   "d83c_df5c": {
-    "message": "\ub77c\uba74"
+    "message": "STEAMING BOWL"
   },
   "d83c_df5d": {
-    "message": "\uc2a4\ud30c\uac8c\ud2f0"
+    "message": "SPAGHETTI"
   },
   "d83c_df5e": {
-    "message": "\ube75"
+    "message": "BREAD"
   },
   "d83c_df5f": {
-    "message": "\uac10\uc790\ud280\uae40"
+    "message": "FRENCH FRIES"
   },
   "d83c_df60": {
-    "message": "\uad6c\uc6b4 \uac10\uc790"
+    "message": "ROASTED SWEET POTATO"
   },
   "d83c_df61": {
-    "message": "\uacbd\ub2e8"
+    "message": "DANGO"
   },
   "d83c_df62": {
-    "message": "\uc624\ub385"
+    "message": "ODEN"
   },
   "d83c_df63": {
-    "message": "\ucd08\ubc25"
+    "message": "SUSHI"
   },
   "d83c_df64": {
-    "message": "\uc0c8\uc6b0\ud280\uae40"
+    "message": "FRIED SHRIMP"
   },
   "d83c_df65": {
-    "message": "\uc5b4\ubb35"
+    "message": "FISH CAKE WITH SWIRL DESIGN"
   },
   "d83c_df66": {
-    "message": "\uc18c\ud504\ud2b8\uc544\uc774\uc2a4\ud06c\ub9bc"
+    "message": "SOFT ICE CREAM"
   },
   "d83c_df67": {
-    "message": "\ube59\uc218"
+    "message": "SHAVED ICE"
   },
   "d83c_df68": {
-    "message": "\uc544\uc774\uc2a4\ud06c\ub9bc"
+    "message": "ICE CREAM"
   },
   "d83c_df69": {
-    "message": "\ub3c4\ub11b"
+    "message": "DOUGHNUT"
   },
   "d83c_df6a": {
-    "message": "\ucfe0\ud0a4"
+    "message": "COOKIE"
   },
   "d83c_df6b": {
-    "message": "\ucd08\ucf5c\ub9bf"
+    "message": "CHOCOLATE BAR"
   },
   "d83c_df6c": {
-    "message": "\uc0ac\ud0d5"
+    "message": "CANDY"
   },
   "d83c_df6d": {
-    "message": "\ub9c9\ub300\uc0ac\ud0d5"
+    "message": "LOLLIPOP"
   },
   "d83c_df6e": {
-    "message": "\ud478\ub529"
+    "message": "CUSTARD"
   },
   "d83c_df6f": {
-    "message": "\uafc0\ub2e8\uc9c0"
+    "message": "HONEY POT"
   },
   "d83c_df70": {
-    "message": "\uc1fc\ud2b8\ucf00\uc774\ud06c"
+    "message": "SHORTCAKE"
   },
   "d83c_df71": {
-    "message": "\ub3c4\uc2dc\ub77d"
+    "message": "BENTO BOX"
   },
   "d83c_df72": {
-    "message": "\uc2a4\ud29c"
+    "message": "POT OF FOOD"
   },
   "d83c_df73": {
-    "message": "\ud504\ub77c\uc774\ud32c"
+    "message": "COOKING"
   },
   "d83c_df74": {
-    "message": "\ud3ec\ud06c\uc640 \ub098\uc774\ud504"
+    "message": "FORK AND KNIFE"
   },
   "d83c_df75": {
-    "message": "\ucc3b\uc794"
+    "message": "TEACUP WITHOUT HANDLE"
   },
   "d83c_df76": {
-    "message": "\uc815\uc885"
+    "message": "SAKE BOTTLE AND CUP"
   },
   "d83c_df77": {
-    "message": "\uc640\uc778"
+    "message": "WINE GLASS"
   },
   "d83c_df78": {
-    "message": "\uce75\ud14c\uc77c"
+    "message": "COCKTAIL GLASS"
   },
   "d83c_df79": {
-    "message": "\uc5f4\ub300\uc74c\ub8cc"
+    "message": "TROPICAL DRINK"
   },
   "d83c_df7a": {
-    "message": "\ub9e5\uc8fc"
+    "message": "BEER MUG"
   },
   "d83c_df7b": {
-    "message": "\ub9e5\uc8fc\uc794"
+    "message": "CLINKING BEER MUGS"
   },
   "d83c_df7c": {
-    "message": "\uc544\uae30 \uc816\ubcd1"
+    "message": "BABY BOTTLE"
   },
   "d83c_df80": {
-    "message": "\ub9ac\ubcf8"
+    "message": "RIBBON"
   },
   "d83c_df81": {
-    "message": "\uc120\ubb3c"
+    "message": "WRAPPED PRESENT"
   },
   "d83c_df82": {
-    "message": "\uc0dd\uc77c \ucf00\uc774\ud06c"
+    "message": "BIRTHDAY CAKE"
   },
   "d83c_df83": {
-    "message": "\ud638\ubc15\ub4f1"
+    "message": "JACK-O-LANTERN"
   },
   "d83c_df84": {
-    "message": "\ud06c\ub9ac\uc2a4\ub9c8\uc2a4\ud2b8\ub9ac"
+    "message": "CHRISTMAS TREE"
   },
   "d83c_df85": {
-    "message": "\uc0b0\ud0c0"
+    "message": "FATHER CHRISTMAS"
   },
   "d83c_df86": {
-    "message": "\ubd88\uaf43\ub180\uc774"
+    "message": "FIREWORKS"
   },
   "d83c_df87": {
-    "message": "\ubd88\uaf43"
+    "message": "FIREWORK SPARKLER"
   },
   "d83c_df88": {
-    "message": "\ud48d\uc120"
+    "message": "BALLOON"
   },
   "d83c_df89": {
-    "message": "\ud3ed\uc8fd"
+    "message": "PARTY POPPER"
   },
   "d83c_df8a": {
-    "message": "\uc0c9\uc885\uc774 \uc870\uac01"
+    "message": "CONFETTI BALL"
   },
   "d83c_df8b": {
-    "message": "\ub300\ub098\ubb34 \uc7a5\uc2dd"
+    "message": "TANABATA TREE"
   },
   "d83c_df8c": {
-    "message": "\uad50\ucc28\ub41c \uae43\ubc1c"
+    "message": "CROSSED FLAGS"
   },
   "d83c_df8d": {
-    "message": "\uc18c\ub098\ubb34 \uc7a5\uc2dd"
+    "message": "PINE DECORATION"
   },
   "d83c_df8e": {
-    "message": "\uc778\ud615"
+    "message": "JAPANESE DOLLS"
   },
   "d83c_df8f": {
-    "message": "\uc789\uc5b4 \uc5f0"
+    "message": "CARP STREAMER"
   },
   "d83c_df90": {
-    "message": "\ud48d\uacbd"
+    "message": "WIND CHIME"
   },
   "d83c_df91": {
-    "message": "\ub2ec \uad6c\uacbd"
+    "message": "MOON VIEWING CEREMONY"
   },
   "d83c_df92": {
-    "message": "\ucc45\uac00\ubc29"
+    "message": "SCHOOL SATCHEL"
   },
   "d83c_df93": {
-    "message": "\ud559\uc0ac\ubaa8"
+    "message": "GRADUATION CAP"
   },
   "d83c_dfa0": {
-    "message": "\ud68c\uc804\ubaa9\ub9c8"
+    "message": "CAROUSEL HORSE"
   },
   "d83c_dfa1": {
-    "message": "\ub300\uad00\ub78c\ucc28"
+    "message": "FERRIS WHEEL"
   },
   "d83c_dfa2": {
-    "message": "\ub864\ub7ec\ucf54\uc2a4\ud130"
+    "message": "ROLLER COASTER"
   },
   "d83c_dfa3": {
-    "message": "\ub09a\uc2dc"
+    "message": "FISHING POLE AND FISH"
   },
   "d83c_dfa4": {
-    "message": "\ub9c8\uc774\ud06c"
+    "message": "MICROPHONE"
   },
   "d83c_dfa5": {
-    "message": "\uc601\ud654 \uce74\uba54\ub77c"
+    "message": "MOVIE CAMERA"
   },
   "d83c_dfa6": {
-    "message": "\uc601\ud654"
+    "message": "CINEMA"
   },
   "d83c_dfa7": {
-    "message": "\ud5e4\ub4dc\ud3f0"
+    "message": "HEADPHONE"
   },
   "d83c_dfa8": {
-    "message": "\ubb3c\uac10 \ud314\ub808\ud2b8"
+    "message": "ARTIST PALETTE"
   },
   "d83c_dfa9": {
-    "message": "\uc2e0\uc0ac \ubaa8\uc790"
+    "message": "TOP HAT"
   },
   "d83c_dfaa": {
-    "message": "\uc11c\ucee4\uc2a4"
+    "message": "CIRCUS TENT"
   },
   "d83c_dfab": {
-    "message": "\ud2f0\ucf13"
+    "message": "TICKET"
   },
   "d83c_dfac": {
-    "message": "\ud074\ub798\ud37c\ubcf4\ub4dc"
+    "message": "CLAPPER BOARD"
   },
   "d83c_dfad": {
-    "message": "\uac00\uba74"
+    "message": "PERFORMING ARTS"
   },
   "d83c_dfae": {
-    "message": "\ube44\ub514\uc624 \uac8c\uc784"
+    "message": "VIDEO GAME"
   },
   "d83c_dfaf": {
-    "message": "\uba85\uc911\ub41c \ub2e4\ud2b8"
+    "message": "DIRECT HIT"
   },
   "d83c_dfb0": {
-    "message": "\uc2ac\ub86f\uba38\uc2e0"
+    "message": "SLOT MACHINE"
   },
   "d83c_dfb1": {
-    "message": "\ub2f9\uad6c"
+    "message": "BILLIARDS"
   },
   "d83c_dfb2": {
-    "message": "\uc8fc\uc0ac\uc704"
+    "message": "GAME DIE"
   },
   "d83c_dfb3": {
-    "message": "\ubcfc\ub9c1"
+    "message": "BOWLING"
   },
   "d83c_dfb4": {
-    "message": "\ud2b8\ub7fc\ud504"
+    "message": "FLOWER PLAYING CARDS"
   },
   "d83c_dfb5": {
-    "message": "\uc74c\ud45c"
+    "message": "MUSICAL NOTE"
   },
   "d83c_dfb6": {
-    "message": "\uc5ec\ub7ec \uc74c\ud45c"
+    "message": "MULTIPLE MUSICAL NOTES"
   },
   "d83c_dfb7": {
-    "message": "\uc0c9\uc18c\ud3f0"
+    "message": "SAXOPHONE"
   },
   "d83c_dfb8": {
-    "message": "\uae30\ud0c0"
+    "message": "GUITAR"
   },
   "d83c_dfb9": {
-    "message": "\ud53c\uc544\ub178"
+    "message": "MUSICAL KEYBOARD"
   },
   "d83c_dfba": {
-    "message": "\ud2b8\ub7fc\ud3ab"
+    "message": "TRUMPET"
   },
   "d83c_dfbb": {
-    "message": "\ubc14\uc774\uc62c\ub9b0"
+    "message": "VIOLIN"
   },
   "d83c_dfbc": {
-    "message": "\uc545\ubcf4"
+    "message": "MUSICAL SCORE"
   },
   "d83c_dfbd": {
-    "message": "\uc6b4\ub3d9\ubcf5"
+    "message": "RUNNING SHIRT WITH SASH"
   },
   "d83c_dfbe": {
-    "message": "\ud14c\ub2c8\uc2a4"
+    "message": "TENNIS RACQUET AND BALL"
   },
   "d83c_dfbf": {
-    "message": "\uc2a4\ud0a4"
+    "message": "SKI AND SKI BOOT"
   },
   "d83c_dfc0": {
-    "message": "\ub18d\uad6c"
+    "message": "BASKETBALL AND HOOP"
   },
   "d83c_dfc1": {
-    "message": "\uce74\ub808\uc774\uc2f1 \uae43\ubc1c"
+    "message": "CHEQUERED FLAG"
   },
   "d83c_dfc2": {
-    "message": "\uc2a4\ub178\ubcf4\ub354"
+    "message": "SNOWBOARDER"
   },
   "d83c_dfc3": {
-    "message": "\ub2ec\ub9ac\ub294 \uc0ac\ub78c"
+    "message": "RUNNER"
   },
   "d83c_dfc4": {
-    "message": "\uc11c\ud551"
+    "message": "SURFER"
   },
   "d83c_dfc6": {
-    "message": "\ud2b8\ub85c\ud53c"
+    "message": "TROPHY"
   },
   "d83c_dfc7": {
-    "message": "\uc2b9\ub9c8"
+    "message": "HORSE RACING"
   },
   "d83c_dfc8": {
-    "message": "\ubbf8\uc2dd\ucd95\uad6c"
+    "message": "AMERICAN FOOTBALL"
   },
   "d83c_dfc9": {
-    "message": "\ucd95\uad6c"
+    "message": "RUGBY FOOTBALL"
   },
   "d83c_dfca": {
-    "message": "\uc218\uc601 \uc120\uc218"
+    "message": "SWIMMER"
   },
   "d83c_dfe0": {
-    "message": "\uc9d1"
+    "message": "HOUSE BUILDING"
   },
   "d83c_dfe1": {
-    "message": "\uc790\ud0dd"
+    "message": "HOUSE WITH GARDEN"
   },
   "d83c_dfe2": {
-    "message": "\uc0ac\ubb34\uc2e4"
+    "message": "OFFICE BUILDING"
   },
   "d83c_dfe3": {
-    "message": "\uc77c\ubcf8 \uc6b0\uccb4\uad6d"
+    "message": "\uc77c\ubcf8 \uc6b0\uccb4\uad6d, \uc6b0\uccb4\uad6d"
   },
   "d83c_dfe4": {
-    "message": "\uc720\ub7fd \uc6b0\uccb4\uad6d"
+    "message": "\uc720\ub7fd \uc6b0\uccb4\uad6d, \uc6b0\uccb4\uad6d"
   },
   "d83c_dfe5": {
-    "message": "\ubcd1\uc6d0"
+    "message": "HOSPITAL"
   },
   "d83c_dfe6": {
-    "message": "\uc740\ud589"
+    "message": "BANK"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "AUTOMATED TELLER MACHINE"
   },
   "d83c_dfe8": {
-    "message": "\ud638\ud154"
+    "message": "HOTEL"
   },
   "d83c_dfe9": {
-    "message": "\ub7ec\ube0c\ud638\ud154"
+    "message": "LOVE HOTEL"
   },
   "d83c_dfea": {
-    "message": "\ud3b8\uc758\uc810"
+    "message": "CONVENIENCE STORE"
   },
   "d83c_dfeb": {
-    "message": "\ud559\uad50"
+    "message": "SCHOOL"
   },
   "d83c_dfec": {
-    "message": "\ubc31\ud654\uc810"
+    "message": "DEPARTMENT STORE"
   },
   "d83c_dfed": {
-    "message": "\uacf5\uc7a5"
+    "message": "FACTORY"
   },
   "d83c_dfee": {
-    "message": "\uc774\uc790\uce74\uc57c \ub4f1"
+    "message": "IZAKAYA LANTERN"
   },
   "d83c_dfef": {
-    "message": "\uc77c\ubcf8\uc758 \uc131"
+    "message": "JAPANESE CASTLE"
   },
   "d83c_dff0": {
-    "message": "\uc720\ub7fd\uc758 \uc131"
+    "message": "EUROPEAN CASTLE"
   },
   "d83d_dc00": {
-    "message": "\uc950"
+    "message": "RAT"
   },
   "d83d_dc01": {
-    "message": "\uc0dd\uc950"
+    "message": "MOUSE"
   },
   "d83d_dc02": {
-    "message": "\uc218\uc18c"
+    "message": "OX"
   },
   "d83d_dc03": {
-    "message": "\ubb3c\uc18c"
+    "message": "WATER BUFFALO"
   },
   "d83d_dc04": {
-    "message": "\uc554\uc18c"
+    "message": "COW"
   },
   "d83d_dc06": {
-    "message": "\ud45c\ubc94"
+    "message": "LEOPARD"
   },
   "d83d_dc07": {
-    "message": "\ud1a0\ub07c"
+    "message": "RABBIT"
   },
   "d83d_dc08": {
-    "message": "\uace0\uc591\uc774"
+    "message": "CAT"
   },
   "d83d_dc09": {
-    "message": "\uc6a9"
+    "message": "DRAGON"
   },
   "d83d_dc0a": {
-    "message": "\uc545\uc5b4"
+    "message": "CROCODILE"
   },
   "d83d_dc0b": {
-    "message": "\uace0\ub798"
+    "message": "WHALE"
   },
   "d83d_dc0c": {
-    "message": "\ub2ec\ud33d\uc774"
+    "message": "SNAIL"
   },
   "d83d_dc0d": {
-    "message": "\ubc40"
+    "message": "SNAKE"
   },
   "d83d_dc0e": {
-    "message": "\ub9d0"
+    "message": "HORSE"
   },
   "d83d_dc0f": {
-    "message": "\uc22b\uc591"
+    "message": "RAM"
   },
   "d83d_dc10": {
-    "message": "\uc5fc\uc18c"
+    "message": "GOAT"
   },
   "d83d_dc11": {
-    "message": "\uc591"
+    "message": "SHEEP"
   },
   "d83d_dc12": {
-    "message": "\uc6d0\uc22d\uc774"
+    "message": "MONKEY"
   },
   "d83d_dc13": {
-    "message": "\uc218\ud0c9"
+    "message": "ROOSTER"
   },
   "d83d_dc14": {
-    "message": "\ub2ed"
+    "message": "CHICKEN"
   },
   "d83d_dc15": {
-    "message": "\uac1c"
+    "message": "DOG"
   },
   "d83d_dc16": {
-    "message": "\ub3fc\uc9c0"
+    "message": "PIG"
   },
   "d83d_dc17": {
-    "message": "\uc218\ud1d8\uc9c0"
+    "message": "BOAR"
   },
   "d83d_dc18": {
-    "message": "\ucf54\ub07c\ub9ac"
+    "message": "ELEPHANT"
   },
   "d83d_dc19": {
-    "message": "\ubb38\uc5b4"
+    "message": "OCTOPUS"
   },
   "d83d_dc1a": {
-    "message": "\uc870\uac1c"
+    "message": "SPIRAL SHELL"
   },
   "d83d_dc1b": {
-    "message": "\uace4\ucda9"
+    "message": "BUG"
   },
   "d83d_dc1c": {
-    "message": "\uac1c\ubbf8"
+    "message": "ANT"
   },
   "d83d_dc1d": {
-    "message": "\uafc0\ubc8c"
+    "message": "HONEYBEE"
   },
   "d83d_dc1e": {
-    "message": "\ub531\uc815\ubc8c\ub808"
+    "message": "LADY BEETLE"
   },
   "d83d_dc1f": {
-    "message": "\ubb3c\uace0\uae30"
+    "message": "FISH"
   },
   "d83d_dc20": {
-    "message": "\uc5f4\ub300\uc5b4"
+    "message": "TROPICAL FISH"
   },
   "d83d_dc21": {
-    "message": "\ubcf5\uc5b4"
+    "message": "BLOWFISH"
   },
   "d83d_dc22": {
-    "message": "\uac70\ubd81\uc774"
+    "message": "TURTLE"
   },
   "d83d_dc23": {
-    "message": "\ubd80\ud654\ud55c \ubcd1\uc544\ub9ac"
+    "message": "HATCHING CHICK"
   },
   "d83d_dc24": {
     "message": "\ubcd1\uc544\ub9ac \uc5bc\uad74"
   },
   "d83d_dc25": {
-    "message": "\ubcd1\uc544\ub9ac"
+    "message": "FRONT-FACING BABY CHICK"
   },
   "d83d_dc26": {
-    "message": "\uc0c8"
+    "message": "BIRD"
   },
   "d83d_dc27": {
-    "message": "\ud3ad\uadc4"
+    "message": "PENGUIN"
   },
   "d83d_dc28": {
-    "message": "\ucf54\uc54c\ub77c"
+    "message": "KOALA"
   },
   "d83d_dc29": {
-    "message": "\ud478\ub4e4"
+    "message": "POODLE"
   },
   "d83d_dc2a": {
-    "message": "\ub2e8\ubd09\ub099\ud0c0"
+    "message": "DROMEDARY CAMEL"
   },
   "d83d_dc2b": {
-    "message": "\uc30d\ubd09\ub099\ud0c0"
+    "message": "BACTRIAN CAMEL"
   },
   "d83d_dc2c": {
-    "message": "\ub3cc\uace0\ub798"
+    "message": "DOLPHIN"
   },
   "d83d_dc2d": {
-    "message": "\uc0dd\uc950 \uc5bc\uad74"
+    "message": "MOUSE FACE"
   },
   "d83d_dc2e": {
-    "message": "\uc18c \uc5bc\uad74"
+    "message": "COW FACE"
   },
   "d83d_dc2f": {
-    "message": "\ud638\ub791\uc774 \uc5bc\uad74"
+    "message": "TIGER FACE"
   },
   "d83d_dc30": {
-    "message": "\ud1a0\ub07c \uc5bc\uad74"
+    "message": "RABBIT FACE"
   },
   "d83d_dc31": {
-    "message": "\uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "CAT FACE"
   },
   "d83d_dc32": {
-    "message": "\uc6a9 \uc5bc\uad74"
+    "message": "DRAGON FACE"
   },
   "d83d_dc33": {
-    "message": "\ubb3c \ubfdc\ub294 \uace0\ub798"
+    "message": "SPOUTING WHALE"
   },
   "d83d_dc34": {
-    "message": "\ub9d0 \uc5bc\uad74"
+    "message": "HORSE FACE"
   },
   "d83d_dc35": {
-    "message": "\uc6d0\uc22d\uc774 \uc5bc\uad74"
+    "message": "MONKEY FACE"
   },
   "d83d_dc36": {
-    "message": "\uac1c \uc5bc\uad74"
+    "message": "DOG FACE"
   },
   "d83d_dc37": {
-    "message": "\ub3fc\uc9c0 \uc5bc\uad74"
+    "message": "PIG FACE"
   },
   "d83d_dc38": {
-    "message": "\uac1c\uad6c\ub9ac \uc5bc\uad74"
+    "message": "FROG FACE"
   },
   "d83d_dc39": {
-    "message": "\ud584\uc2a4\ud130 \uc5bc\uad74"
+    "message": "HAMSTER FACE"
   },
   "d83d_dc3a": {
-    "message": "\ub291\ub300 \uc5bc\uad74"
+    "message": "WOLF FACE"
   },
   "d83d_dc3b": {
-    "message": "\uacf0 \uc5bc\uad74"
+    "message": "BEAR FACE"
   },
   "d83d_dc3c": {
-    "message": "\ud310\ub2e4 \uc5bc\uad74"
+    "message": "PANDA FACE"
   },
   "d83d_dc3d": {
-    "message": "\ub3fc\uc9c0\ucf54"
+    "message": "PIG NOSE"
   },
   "d83d_dc3e": {
-    "message": "\ub3d9\ubb3c \ubc1c\ubc14\ub2e5"
+    "message": "PAW PRINTS"
   },
   "d83d_dc40": {
-    "message": "\ub208"
+    "message": "EYES"
   },
   "d83d_dc42": {
-    "message": "\uadc0"
+    "message": "EAR"
   },
   "d83d_dc43": {
-    "message": "\ucf54"
+    "message": "NOSE"
   },
   "d83d_dc44": {
-    "message": "\uc785"
+    "message": "MOUTH"
   },
   "d83d_dc45": {
-    "message": "\ud600"
+    "message": "TONGUE"
   },
   "d83d_dc46": {
-    "message": "\uc704\ub97c \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
+    "message": "WHITE UP POINTING BACKHAND INDEX"
   },
   "d83d_dc47": {
-    "message": "\uc544\ub798\ub97c \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
+    "message": "WHITE DOWN POINTING BACKHAND INDEX"
   },
   "d83d_dc48": {
-    "message": "\uc67c\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
+    "message": "WHITE LEFT POINTING BACKHAND INDEX"
   },
   "d83d_dc49": {
-    "message": "\uc624\ub978\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc190\uac00\ub77d"
+    "message": "WHITE RIGHT POINTING BACKHAND INDEX"
   },
   "d83d_dc4a": {
-    "message": "\uc8fc\uba39"
+    "message": "FISTED HAND SIGN"
   },
   "d83d_dc4b": {
-    "message": "\uc190 \ud754\ub4e4\uae30"
+    "message": "WAVING HAND SIGN"
   },
   "d83d_dc4c": {
-    "message": "OK \uc190\ub3d9\uc791"
+    "message": "\uc624\ucf00\uc774 \uc190 \ubaa8\uc591"
   },
   "d83d_dc4d": {
-    "message": "\ucd5c\uace0"
+    "message": "THUMBS UP SIGN"
   },
   "d83d_dc4e": {
-    "message": "\ub098\uc068"
+    "message": "THUMBS DOWN SIGN"
   },
   "d83d_dc4f": {
-    "message": "\ubc15\uc218"
+    "message": "CLAPPING HANDS SIGN"
   },
   "d83d_dc50": {
-    "message": "\ud3bc\uce5c \uc190"
+    "message": "OPEN HANDS SIGN"
   },
   "d83d_dc51": {
-    "message": "\uc655\uad00"
+    "message": "CROWN"
   },
   "d83d_dc52": {
-    "message": "\uc5ec\uc790 \ubaa8\uc790"
+    "message": "WOMANS HAT"
   },
   "d83d_dc53": {
-    "message": "\uc548\uacbd"
+    "message": "EYEGLASSES"
   },
   "d83d_dc54": {
-    "message": "\ub125\ud0c0\uc774"
+    "message": "NECKTIE"
   },
   "d83d_dc55": {
-    "message": "\ud2f0\uc154\uce20"
+    "message": "T-SHIRT"
   },
   "d83d_dc56": {
-    "message": "\ubc14\uc9c0"
+    "message": "JEANS"
   },
   "d83d_dc57": {
-    "message": "\ub4dc\ub808\uc2a4"
+    "message": "DRESS"
   },
   "d83d_dc58": {
-    "message": "\uae30\ubaa8\ub178"
+    "message": "KIMONO"
   },
   "d83d_dc59": {
-    "message": "\ube44\ud0a4\ub2c8"
+    "message": "BIKINI"
   },
   "d83d_dc5a": {
-    "message": "\uc5ec\uc790 \uc637"
+    "message": "WOMANS CLOTHES"
   },
   "d83d_dc5b": {
-    "message": "\uc9c0\uac11"
+    "message": "PURSE"
   },
   "d83d_dc5c": {
-    "message": "\ud578\ub4dc\ubc31"
+    "message": "HANDBAG"
   },
   "d83d_dc5d": {
-    "message": "\ud30c\uc6b0\uce58"
+    "message": "POUCH"
   },
   "d83d_dc5e": {
-    "message": "\ub0a8\uc790 \uc2e0\ubc1c"
+    "message": "MANS SHOE"
   },
   "d83d_dc5f": {
-    "message": "\uc6b4\ub3d9\ud654"
+    "message": "ATHLETIC SHOE"
   },
   "d83d_dc60": {
-    "message": "\ud558\uc774\ud790"
+    "message": "HIGH-HEELED SHOE"
   },
   "d83d_dc61": {
-    "message": "\uc5ec\uc790 \uc0cc\ub4e4"
+    "message": "WOMANS SANDAL"
   },
   "d83d_dc62": {
-    "message": "\uc5ec\uc790 \ubd80\uce20"
+    "message": "WOMANS BOOTS"
   },
   "d83d_dc63": {
-    "message": "\ubc1c\uc790\uad6d"
+    "message": "FOOTPRINTS"
   },
   "d83d_dc64": {
-    "message": "\uc0ac\ub78c \uc2e4\ub8e8\uc5e3"
+    "message": "BUST IN SILHOUETTE"
   },
   "d83d_dc65": {
-    "message": "\ub450 \uc0ac\ub78c \uc2e4\ub8e8\uc5e3"
+    "message": "BUSTS IN SILHOUETTE"
   },
   "d83d_dc66": {
-    "message": "\uc18c\ub144"
+    "message": "BOY"
   },
   "d83d_dc67": {
-    "message": "\uc18c\ub140"
+    "message": "GIRL"
   },
   "d83d_dc68": {
-    "message": "\ub0a8\uc790"
+    "message": "MAN"
   },
   "d83d_dc69": {
-    "message": "\uc5ec\uc790"
+    "message": "WOMAN"
   },
   "d83d_dc6a": {
-    "message": "\uac00\uc871"
+    "message": "FAMILY"
   },
   "d83d_dc6b": {
-    "message": "\ub0a8\ub140"
+    "message": "MAN AND WOMAN HOLDING HANDS"
   },
   "d83d_dc6c": {
-    "message": "\ub450 \ub0a8\uc790"
+    "message": "TWO MEN HOLDING HANDS"
   },
   "d83d_dc6d": {
-    "message": "\ub450 \uc5ec\uc790"
+    "message": "TWO WOMEN HOLDING HANDS"
   },
   "d83d_dc6e": {
-    "message": "\uacbd\ucc30"
+    "message": "POLICE OFFICER"
   },
   "d83d_dc6f": {
-    "message": "\ubc84\ub2c8\uac78"
+    "message": "WOMAN WITH BUNNY EARS"
   },
   "d83d_dc70": {
-    "message": "\uc2e0\ubd80"
+    "message": "BRIDE WITH VEIL"
   },
   "d83d_dc71": {
-    "message": "\uae08\ubc1c \uba38\ub9ac"
+    "message": "PERSON WITH BLOND HAIR"
   },
   "d83d_dc72": {
-    "message": "\uc911\uad6d \ubaa8\uc790\ub97c \uc4f4 \ub0a8\uc790"
+    "message": "\uc911\uad6d\uc778, \uacfc\ud53c\ubaa8 \uc4f4 \uc0ac\ub78c, \uc721\ud569\ubaa8 \uc4f4 \uc0ac\ub78c"
   },
   "d83d_dc73": {
-    "message": "\ud130\ubc88\uc744 \uc4f4 \ub0a8\uc790"
+    "message": "\uc544\ub78d\uc778, \ud130\ubc88 \uc4f4 \uc0ac\ub78c"
   },
   "d83d_dc74": {
-    "message": "\ud560\uc544\ubc84\uc9c0"
+    "message": "OLDER MAN"
   },
   "d83d_dc75": {
-    "message": "\ud560\uba38\ub2c8"
+    "message": "OLDER WOMAN"
   },
   "d83d_dc76": {
-    "message": "\uc544\uae30"
+    "message": "BABY"
   },
   "d83d_dc77": {
-    "message": "\uc778\ubd80"
+    "message": "CONSTRUCTION WORKER"
   },
   "d83d_dc78": {
-    "message": "\uacf5\uc8fc"
+    "message": "PRINCESS"
   },
   "d83d_dc79": {
-    "message": "\ub3c4\uae68\ube44"
+    "message": "JAPANESE OGRE"
   },
   "d83d_dc7a": {
-    "message": "\uace0\ube14\ub9b0"
+    "message": "JAPANESE GOBLIN"
   },
   "d83d_dc7b": {
-    "message": "\uc720\ub839"
+    "message": "GHOST"
   },
   "d83d_dc7c": {
-    "message": "\uc544\uae30 \ucc9c\uc0ac"
+    "message": "BABY ANGEL"
   },
   "d83d_dc7d": {
-    "message": "\uc678\uacc4\uc778"
+    "message": "EXTRATERRESTRIAL ALIEN"
   },
   "d83d_dc7e": {
-    "message": "\uc678\uacc4 \uad34\ubb3c"
+    "message": "ALIEN MONSTER"
   },
   "d83d_dc7f": {
-    "message": "\uaf2c\ub9c8 \ub3c4\uae68\ube44"
+    "message": "IMP"
   },
   "d83d_dc80": {
-    "message": "\ud574\uace8"
+    "message": "SKULL"
   },
   "d83d_dc81": {
-    "message": "\uc548\ub0b4 \ub370\uc2a4\ud06c"
+    "message": "INFORMATION DESK PERSON"
   },
   "d83d_dc82": {
-    "message": "\uadfc\uc704\ubcd1"
+    "message": "GUARDSMAN"
   },
   "d83d_dc83": {
-    "message": "\ucda4\ucd94\ub294 \uc0ac\ub78c"
+    "message": "DANCER"
   },
   "d83d_dc84": {
-    "message": "\ub9bd\uc2a4\ud2f1"
+    "message": "LIPSTICK"
   },
   "d83d_dc85": {
-    "message": "\ub124\uc77c \ucf00\uc5b4"
+    "message": "NAIL POLISH"
   },
   "d83d_dc86": {
-    "message": "\uc5bc\uad74 \ub9c8\uc0ac\uc9c0"
+    "message": "FACE MASSAGE"
   },
   "d83d_dc87": {
-    "message": "\uba38\ub9ac \uc790\ub974\uae30"
+    "message": "HAIRCUT"
   },
   "d83d_dc88": {
-    "message": "\uc774\ubc1c\uc18c"
+    "message": "BARBER POLE"
   },
   "d83d_dc89": {
-    "message": "\ubc1c\uc0ac"
+    "message": "SYRINGE"
   },
   "d83d_dc8a": {
-    "message": "\uc54c\uc57d"
+    "message": "PILL"
   },
   "d83d_dc8b": {
-    "message": "\ud0a4\uc2a4 \ub9c8\ud06c"
+    "message": "KISS MARK"
   },
   "d83d_dc8c": {
-    "message": "\uc5f0\uc560\ud3b8\uc9c0"
+    "message": "LOVE LETTER"
   },
   "d83d_dc8d": {
-    "message": "\ubc18\uc9c0"
+    "message": "RING"
   },
   "d83d_dc8e": {
-    "message": "\ubcf4\uc11d"
+    "message": "GEM STONE"
   },
   "d83d_dc8f": {
-    "message": "\ud0a4\uc2a4\ud558\ub294 \ub0a8\ub140"
+    "message": "KISS"
   },
   "d83d_dc90": {
-    "message": "\ubd80\ucf00"
+    "message": "BOUQUET"
   },
   "d83d_dc91": {
-    "message": "\ucee4\ud50c"
+    "message": "COUPLE WITH HEART"
   },
   "d83d_dc92": {
-    "message": "\uc608\uc2dd\uc7a5"
+    "message": "WEDDING"
   },
   "d83d_dc93": {
-    "message": "\ub5a8\ub9ac\ub294 \ud558\ud2b8"
+    "message": "BEATING HEART"
   },
   "d83d_dc94": {
-    "message": "\uae68\uc9c4 \ud558\ud2b8"
+    "message": "BROKEN HEART"
   },
   "d83d_dc95": {
-    "message": "\ud558\ud2b8 2\uac1c"
+    "message": "TWO HEARTS"
   },
   "d83d_dc96": {
-    "message": "\ubc18\uc9dd\uc774\ub294 \ud558\ud2b8"
+    "message": "SPARKLING HEART"
   },
   "d83d_dc97": {
-    "message": "\ucee4\uc9c0\ub294 \ud558\ud2b8"
+    "message": "GROWING HEART"
   },
   "d83d_dc98": {
-    "message": "\ud654\uc0b4 \uaf42\ud78c \ud558\ud2b8"
+    "message": "HEART WITH ARROW"
   },
   "d83d_dc99": {
-    "message": "\ud30c\ub780 \ud558\ud2b8"
+    "message": "BLUE HEART"
   },
   "d83d_dc9a": {
-    "message": "\ucd08\ub85d \ud558\ud2b8"
+    "message": "GREEN HEART"
   },
   "d83d_dc9b": {
-    "message": "\ub178\ub780 \ud558\ud2b8"
+    "message": "YELLOW HEART"
   },
   "d83d_dc9c": {
-    "message": "\ubcf4\ub77c\uc0c9 \ud558\ud2b8"
+    "message": "PURPLE HEART"
   },
   "d83d_dc9d": {
-    "message": "\ub9ac\ubcf8 \ub2ec\ub9b0 \ud558\ud2b8"
+    "message": "HEART WITH RIBBON"
   },
   "d83d_dc9e": {
-    "message": "\ud68c\uc804\ud558\ub294 \ud558\ud2b8"
+    "message": "REVOLVING HEARTS"
   },
   "d83d_dc9f": {
-    "message": "\ud558\ud2b8 \uc7a5\uc2dd"
+    "message": "HEART DECORATION"
   },
   "d83d_dca0": {
-    "message": "\uaf43\uc78e"
+    "message": "DIAMOND SHAPE WITH A DOT INSIDE"
   },
   "d83d_dca1": {
-    "message": "\uc804\uad6c"
+    "message": "ELECTRIC LIGHT BULB"
   },
   "d83d_dca2": {
-    "message": "\ubd84\ub178"
+    "message": "ANGER SYMBOL"
   },
   "d83d_dca3": {
-    "message": "\ud3ed\ud0c4"
+    "message": "BOMB"
   },
   "d83d_dca4": {
-    "message": "\uc218\uba74 \uae30\ud638"
+    "message": "\uc878\ub9bc \uae30\ud638"
   },
   "d83d_dca5": {
-    "message": "\ucda9\ub3cc"
+    "message": "COLLISION SYMBOL"
   },
   "d83d_dca6": {
-    "message": "\ub540\ubc29\uc6b8"
+    "message": "SPLASHING SWEAT SYMBOL"
   },
   "d83d_dca7": {
-    "message": "\uc2dd\uc740\ub540"
+    "message": "DROPLET"
   },
   "d83d_dca8": {
-    "message": "\uc11c\ub450\ub984"
+    "message": "DASH SYMBOL"
   },
   "d83d_dca9": {
-    "message": "\ub625"
+    "message": "PILE OF POO"
   },
   "d83d_dcaa": {
-    "message": "\uc774\ub450\ubc15\uadfc"
+    "message": "FLEXED BICEPS"
   },
   "d83d_dcab": {
-    "message": "\ud604\uae30\uc99d"
+    "message": "DIZZY SYMBOL"
   },
   "d83d_dcac": {
-    "message": "\ub9d0\ud48d\uc120"
+    "message": "SPEECH BALLOON"
   },
   "d83d_dcad": {
-    "message": "\uc0dd\uac01 \ud48d\uc120"
+    "message": "THOUGHT BALLOON"
   },
   "d83d_dcae": {
-    "message": "\uaf43 \ub3c4\uc7a5"
+    "message": "WHITE FLOWER"
   },
   "d83d_dcaf": {
-    "message": "\ub9cc\uc810"
+    "message": "HUNDRED POINTS SYMBOL"
   },
   "d83d_dcb0": {
-    "message": "\ub3c8 \uc8fc\uba38\ub2c8"
+    "message": "MONEY BAG"
   },
   "d83d_dcb1": {
-    "message": "\ud658\uc804"
+    "message": "CURRENCY EXCHANGE"
   },
   "d83d_dcb2": {
-    "message": "\ub2ec\ub7ec \uae30\ud638"
+    "message": "HEAVY DOLLAR SIGN"
   },
   "d83d_dcb3": {
-    "message": "\uc2e0\uc6a9\uce74\ub4dc"
+    "message": "CREDIT CARD"
   },
   "d83d_dcb4": {
-    "message": "\uc5d4\ud654 \uc9c0\ud3d0"
+    "message": "BANKNOTE WITH YEN SIGN"
   },
   "d83d_dcb5": {
-    "message": "\ub2ec\ub7ec\ud654 \uc9c0\ud3d0"
+    "message": "BANKNOTE WITH DOLLAR SIGN"
   },
   "d83d_dcb6": {
-    "message": "\uc720\ub85c\ud654 \uc9c0\ud3d0"
+    "message": "BANKNOTE WITH EURO SIGN"
   },
   "d83d_dcb7": {
-    "message": "\ud30c\uc6b4\ub4dc\ud654 \uc9c0\ud3d0"
+    "message": "BANKNOTE WITH POUND SIGN"
   },
   "d83d_dcb8": {
-    "message": "\ub0a0\uac1c \ub2ec\ub9b0 \uc9c0\ud3d0"
+    "message": "MONEY WITH WINGS"
   },
   "d83d_dcb9": {
-    "message": "\uc8fc\uac00 \uc0c1\uc2b9"
+    "message": "CHART WITH UPWARDS TREND AND YEN SIGN"
   },
   "d83d_dcba": {
-    "message": "\uc88c\uc11d"
+    "message": "SEAT"
   },
   "d83d_dcbb": {
-    "message": "PC"
+    "message": "PERSONAL COMPUTER"
   },
   "d83d_dcbc": {
-    "message": "\uc11c\ub958\uac00\ubc29"
+    "message": "BRIEFCASE"
   },
   "d83d_dcbd": {
-    "message": "\ubbf8\ub2c8 \ub514\uc2a4\ud06c"
+    "message": "\uc5e0\ub514, \ubbf8\ub2c8\ub514\uc2a4\ud06c"
   },
   "d83d_dcbe": {
-    "message": "\ud50c\ub85c\ud53c \ub514\uc2a4\ud06c"
+    "message": "FLOPPY DISK"
   },
   "d83d_dcbf": {
-    "message": "\ube14\ub8e8\ub808\uc774"
+    "message": "OPTICAL DISC"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "\uc11c\ub958\ucca0"
+    "message": "FILE FOLDER"
   },
   "d83d_dcc2": {
-    "message": "\uc5f4\ub9b0 \ud3f4\ub354"
+    "message": "OPEN FILE FOLDER"
   },
   "d83d_dcc3": {
-    "message": "\ubb38\uc11c"
+    "message": "PAGE WITH CURL"
   },
   "d83d_dcc4": {
-    "message": "\ubb38\uc11c"
+    "message": "PAGE FACING UP"
   },
   "d83d_dcc5": {
-    "message": "\ub2ec\ub825"
+    "message": "CALENDAR"
   },
   "d83d_dcc6": {
-    "message": "\uc77c\ub825"
+    "message": "TEAR-OFF CALENDAR"
   },
   "d83d_dcc7": {
-    "message": "\uce74\ub4dc \uc0c9\uc778"
+    "message": "CARD INDEX"
   },
   "d83d_dcc8": {
-    "message": "\uc0c1\uc2b9 \ucd94\uc138"
+    "message": "CHART WITH UPWARDS TREND"
   },
   "d83d_dcc9": {
-    "message": "\ud558\ud5a5 \ucd94\uc138"
+    "message": "CHART WITH DOWNWARDS TREND"
   },
   "d83d_dcca": {
-    "message": "\ub9c9\ub300\uadf8\ub798\ud504"
+    "message": "BAR CHART"
   },
   "d83d_dccb": {
-    "message": "\ud074\ub9bd\ubcf4\ub4dc"
+    "message": "CLIPBOARD"
   },
   "d83d_dccc": {
-    "message": "\uc190\uc7a1\uc774 \uc555\uc815"
+    "message": "PUSHPIN"
   },
   "d83d_dccd": {
-    "message": "\uc555\uc815"
+    "message": "ROUND PUSHPIN"
   },
   "d83d_dcce": {
-    "message": "\ud074\ub9bd"
+    "message": "PAPERCLIP"
   },
   "d83d_dccf": {
-    "message": "\uace7\uc740\uc790"
+    "message": "STRAIGHT RULER"
   },
   "d83d_dcd0": {
-    "message": "\uc0bc\uac01\uc790"
+    "message": "TRIANGULAR RULER"
   },
   "d83d_dcd1": {
-    "message": "\ubd81\ub9c8\ud06c \ud0ed"
+    "message": "BOOKMARK TABS"
   },
   "d83d_dcd2": {
-    "message": "\ud68c\uacc4\uc7a5\ubd80"
+    "message": "LEDGER"
   },
   "d83d_dcd3": {
-    "message": "\uacf5\ucc45"
+    "message": "NOTEBOOK"
   },
   "d83d_dcd4": {
-    "message": "\uc7a5\uc2dd\ud55c \uacf5\ucc45"
+    "message": "NOTEBOOK WITH DECORATIVE COVER"
   },
   "d83d_dcd5": {
-    "message": "\ub36e\uc740 \ucc45"
+    "message": "CLOSED BOOK"
   },
   "d83d_dcd6": {
-    "message": "\ud3bc\uccd0\uc9c4 \ucc45"
+    "message": "OPEN BOOK"
   },
   "d83d_dcd7": {
-    "message": "\ub179\uc0c9 \ucc45"
+    "message": "GREEN BOOK"
   },
   "d83d_dcd8": {
-    "message": "\ucc45"
+    "message": "BLUE BOOK"
   },
   "d83d_dcd9": {
-    "message": "\uc8fc\ud669\uc0c9 \ucc45"
+    "message": "ORANGE BOOK"
   },
   "d83d_dcda": {
-    "message": "\uc5ec\ub7ec \uad8c\uc758 \ucc45"
+    "message": "BOOKS"
   },
   "d83d_dcdb": {
-    "message": "\uc774\ub984\ud45c"
+    "message": "NAME BADGE"
   },
   "d83d_dcdc": {
-    "message": "\ub450\ub8e8\ub9c8\ub9ac"
+    "message": "SCROLL"
   },
   "d83d_dcdd": {
-    "message": "\uba54\ubaa8"
+    "message": "MEMO"
   },
   "d83d_dcde": {
-    "message": "\uc804\ud654"
+    "message": "TELEPHONE RECEIVER"
   },
   "d83d_dcdf": {
-    "message": "\ud638\ucd9c\uae30"
+    "message": "PAGER"
   },
   "d83d_dce0": {
-    "message": "\ud329\uc2a4"
+    "message": "FAX MACHINE"
   },
   "d83d_dce1": {
-    "message": "\uc704\uc131 \uc548\ud14c\ub098"
+    "message": "SATELLITE ANTENNA"
   },
   "d83d_dce2": {
-    "message": "\uc2a4\ud53c\ucee4"
+    "message": "PUBLIC ADDRESS LOUDSPEAKER"
   },
   "d83d_dce3": {
-    "message": "\ud655\uc131\uae30"
+    "message": "CHEERING MEGAPHONE"
   },
   "d83d_dce4": {
-    "message": "\ubcf4\ub0b8 \uba54\uc77c"
+    "message": "OUTBOX TRAY"
   },
   "d83d_dce5": {
-    "message": "\ubc1b\uc740\ud3b8\uc9c0\ud568"
+    "message": "INBOX TRAY"
   },
   "d83d_dce6": {
-    "message": "\ud328\ud0a4\uc9c0"
+    "message": "PACKAGE"
   },
   "d83d_dce7": {
-    "message": "\uc774\uba54\uc77c"
+    "message": "E-MAIL SYMBOL"
   },
   "d83d_dce8": {
-    "message": "\uba54\uc77c \uc218\uc2e0"
+    "message": "INCOMING ENVELOPE"
   },
   "d83d_dce9": {
-    "message": "\uba54\uc77c \ubc1c\uc2e0"
+    "message": "ENVELOPE WITH DOWNWARDS ARROW ABOVE"
   },
   "d83d_dcea": {
-    "message": "\uae43\ubc1c\uc774 \ub0b4\ub824\uc9c4 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
+    "message": "\ud45c\uc9c0\uac00 \ub0b4\ub824\uac04 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
   },
   "d83d_dceb": {
-    "message": "\uae43\ubc1c\uc774 \uc62c\ub824\uc9c4 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
+    "message": "\ud45c\uc9c0\uac00 \uc62c\ub77c\uac04 \ub2eb\ud78c \uc6b0\ud3b8\ud568"
   },
   "d83d_dcec": {
-    "message": "\uae43\ubc1c\uc774 \uc62c\ub77c\uac04 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
+    "message": "\ud45c\uc9c0\uac00 \uc62c\ub77c\uac04 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
   },
   "d83d_dced": {
-    "message": "\uae43\ubc1c\uc774 \ub0b4\ub824\uc9c4 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
+    "message": "\ud45c\uc9c0\uac00 \ub0b4\ub824\uac04 \uc5f4\ub9b0 \uc6b0\ud3b8\ud568"
   },
   "d83d_dcee": {
-    "message": "\uc6b0\uccb4\ud1b5"
+    "message": "POSTBOX"
   },
   "d83d_dcef": {
-    "message": "\ub098\ud314"
+    "message": "POSTAL HORN"
   },
   "d83d_dcf0": {
-    "message": "\uc2e0\ubb38"
+    "message": "NEWSPAPER"
   },
   "d83d_dcf1": {
-    "message": "\ud734\ub300\uc804\ud654"
+    "message": "MOBILE PHONE"
   },
   "d83d_dcf2": {
-    "message": "\ud734\ub300\uc804\ud654\uc640 \ud654\uc0b4\ud45c"
+    "message": "MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT"
   },
   "d83d_dcf3": {
-    "message": "\uc9c4\ub3d9 \ubaa8\ub4dc"
+    "message": "VIBRATION MODE"
   },
   "d83d_dcf4": {
-    "message": "\ud734\ub300\uc804\ud654 \uc804\uc6d0 \ub044\uae30"
+    "message": "MOBILE PHONE OFF"
   },
   "d83d_dcf5": {
-    "message": "\ud734\ub300\uc804\ud654 \uc0ac\uc6a9\uae08\uc9c0"
+    "message": "NO MOBILE PHONES"
   },
   "d83d_dcf6": {
-    "message": "\ud734\ub300\uae30\uae30 \uc2e0\ud638"
+    "message": "ANTENNA WITH BARS"
   },
   "d83d_dcf7": {
-    "message": "\uce74\uba54\ub77c"
+    "message": "CAMERA"
   },
   "d83d_dcf9": {
-    "message": "\ube44\ub514\uc624\uce74\uba54\ub77c"
+    "message": "VIDEO CAMERA"
   },
   "d83d_dcfa": {
-    "message": "TV"
+    "message": "TELEVISION"
   },
   "d83d_dcfb": {
-    "message": "\ub77c\ub514\uc624"
+    "message": "RADIO"
   },
   "d83d_dcfc": {
-    "message": "\ube44\ub514\uc624\ud14c\uc774\ud504"
+    "message": "VIDEOCASSETTE"
   },
   "d83d_dd00": {
-    "message": "\uad50\ucc28\ub41c \ud654\uc0b4\ud45c"
+    "message": "TWISTED RIGHTWARDS ARROWS"
   },
   "d83d_dd01": {
-    "message": "\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd02": {
-    "message": "\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY"
   },
   "d83d_dd03": {
-    "message": "\uc0c8\ub85c\uace0\uce68"
+    "message": "CLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd04": {
-    "message": "\ubc18\uc2dc\uacc4 \ubc29\ud5a5 \ud654\uc0b4\ud45c"
+    "message": "ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd05": {
-    "message": "\ub0ae\uc740 \ubc1d\uae30"
+    "message": "LOW BRIGHTNESS SYMBOL"
   },
   "d83d_dd06": {
-    "message": "\ub192\uc740 \ubc1d\uae30"
+    "message": "HIGH BRIGHTNESS SYMBOL"
   },
   "d83d_dd07": {
-    "message": "\uc2a4\ud53c\ucee4 \ubb34\uc74c"
+    "message": "SPEAKER WITH CANCELLATION STROKE"
   },
   "d83d_dd08": {
-    "message": "\uc2a4\ud53c\ucee4"
+    "message": "SPEAKER"
   },
   "d83d_dd09": {
-    "message": "\ub0ae\uc740 \ubcfc\ub968 \uc2a4\ud53c\ucee4"
+    "message": "\ubcfc\ub968 \ub0ae\uc740 \uc2a4\ud53c\ucee4"
   },
   "d83d_dd0a": {
-    "message": "\ub192\uc740 \ubcfc\ub968 \uc2a4\ud53c\ucee4"
+    "message": "\ubcfc\ub968 \ub192\uc740 \uc2a4\ud53c\ucee4"
   },
   "d83d_dd0b": {
-    "message": "\ubc30\ud130\ub9ac"
+    "message": "BATTERY"
   },
   "d83d_dd0c": {
-    "message": "\uc804\uc6d0 \ud50c\ub7ec\uadf8"
+    "message": "ELECTRIC PLUG"
   },
   "d83d_dd0d": {
-    "message": "\uc67c\ucabd\uc73c\ub85c \uae30\uc6b8\uc5b4\uc9c4 \ub3cb\ubcf4\uae30"
+    "message": "\uc67c\ucabd \ubc29\ud5a5 \ub3cb\ubcf4\uae30"
   },
   "d83d_dd0e": {
-    "message": "\uc624\ub978\ucabd\uc73c\ub85c \uae30\uc6b8\uc5b4\uc9c4 \ub3cb\ubcf4\uae30"
+    "message": "\uc624\ub978\ucabd \ubc29\ud5a5 \ub3cb\ubcf4\uae30"
   },
   "d83d_dd0f": {
-    "message": "\uc790\ubb3c\uc1e0\uc640 \uc789\ud06c \ud39c"
+    "message": "\uc790\ubb3c\uc1e0\uc640 \ud39c"
   },
   "d83d_dd10": {
-    "message": "\uc7a0\uae34 \uc790\ubb3c\uc1e0\uc640 \uc5f4\uc1e0"
+    "message": "\uc790\ubb3c\uc1e0\uc640 \uc5f4\uc1e0"
   },
   "d83d_dd11": {
-    "message": "\uc5f4\uc1e0"
+    "message": "KEY"
   },
   "d83d_dd12": {
     "message": "\uc7a0\uae34 \uc790\ubb3c\uc1e0"
@@ -1736,652 +1736,652 @@
     "message": "\uc5f4\ub9b0 \uc790\ubb3c\uc1e0"
   },
   "d83d_dd14": {
-    "message": "\uc885"
+    "message": "BELL"
   },
   "d83d_dd15": {
-    "message": "\ubb34\uc74c"
+    "message": "BELL WITH CANCELLATION STROKE"
   },
   "d83d_dd16": {
-    "message": "\ubd81\ub9c8\ud06c"
+    "message": "BOOKMARK"
   },
   "d83d_dd17": {
-    "message": "\uc5f0\uacb0 \ud45c\uc9c0"
+    "message": "LINK SYMBOL"
   },
   "d83d_dd18": {
-    "message": "\ub77c\ub514\uc624 \ubc84\ud2bc"
+    "message": "RADIO BUTTON"
   },
   "d83d_dd19": {
-    "message": "\ub4a4\ub85c"
+    "message": "BACK WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1a": {
-    "message": "\ub05d"
+    "message": "END WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1b": {
-    "message": "ON \ud654\uc0b4\ud45c"
+    "message": "ON WITH EXCLAMATION MARK WITH LEFT RIGHT ARROW ABOVE"
   },
   "d83d_dd1c": {
-    "message": "Soon \ud45c\uc9c0"
+    "message": "SOON WITH RIGHTWARDS ARROW ABOVE"
   },
   "d83d_dd1d": {
-    "message": "Top \ud45c\uc9c0"
+    "message": "TOP WITH UPWARDS ARROW ABOVE"
   },
   "d83d_dd1e": {
-    "message": "18\uc138 \ubbf8\ub9cc \uae08\uc9c0"
+    "message": "NO ONE UNDER EIGHTEEN SYMBOL"
   },
   "d83d_dd20": {
-    "message": "\ub300\ubb38\uc790"
+    "message": "INPUT SYMBOL FOR LATIN CAPITAL LETTERS"
   },
   "d83d_dd21": {
-    "message": "\uc18c\ubb38\uc790"
+    "message": "INPUT SYMBOL FOR LATIN SMALL LETTERS"
   },
   "d83d_dd22": {
-    "message": "\uc22b\uc790"
+    "message": "INPUT SYMBOL FOR NUMBERS"
   },
   "d83d_dd23": {
-    "message": "\uae30\ud638"
+    "message": "INPUT SYMBOL FOR SYMBOLS"
   },
   "d83d_dd24": {
-    "message": "\ub77c\ud2f4 \ubb38\uc790"
+    "message": "INPUT SYMBOL FOR LATIN LETTERS"
   },
   "d83d_dd25": {
-    "message": "\ubd88"
+    "message": "FIRE"
   },
   "d83d_dd26": {
-    "message": "\uc190\uc804\ub4f1"
+    "message": "ELECTRIC TORCH"
   },
   "d83d_dd27": {
-    "message": "\ub80c\uce58"
+    "message": "WRENCH"
   },
   "d83d_dd28": {
-    "message": "\ub9dd\uce58"
+    "message": "HAMMER"
   },
   "d83d_dd29": {
-    "message": "\ub108\ud2b8\uc640 \ubcfc\ud2b8"
+    "message": "NUT AND BOLT"
   },
   "d83d_dd2a": {
-    "message": "\uc2dd\uce7c"
+    "message": "HOCHO"
   },
   "d83d_dd2b": {
-    "message": "\uad8c\ucd1d"
+    "message": "PISTOL"
   },
   "d83d_dd2c": {
-    "message": "\ud604\ubbf8\uacbd"
+    "message": "MICROSCOPE"
   },
   "d83d_dd2d": {
-    "message": "\ub9dd\uc6d0\uacbd"
+    "message": "TELESCOPE"
   },
   "d83d_dd2e": {
-    "message": "\uc218\uc815 \uad6c\uc2ac"
+    "message": "CRYSTAL BALL"
   },
   "d83d_dd2f": {
-    "message": "\uc721\uac01\ud615 \ubcc4"
+    "message": "SIX POINTED STAR WITH MIDDLE DOT"
   },
   "d83d_dd30": {
-    "message": "\ucd08\ub85d \ub178\ub791 \uc78e\uc0ac\uadc0"
+    "message": "JAPANESE SYMBOL FOR BEGINNER"
   },
   "d83d_dd31": {
-    "message": "\uc0bc\uc9c0\ucc3d \ud45c\uc9c0"
+    "message": "TRIDENT EMBLEM"
   },
   "d83d_dd32": {
-    "message": "\uc0c9\uc774 \ub4e4\uc5b4\uac04 \uc0ac\uac01\ud615 \ubc84\ud2bc"
+    "message": "\uac80\uc740\uc0c9 \ubc14\ud0d5 \uc0ac\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd33": {
-    "message": "\ud14c\ub450\ub9ac\uac00 \uc788\ub294 \uc0ac\uac01\ud615 \ubc84\ud2bc"
+    "message": "\ud770\uc0c9 \ubc14\ud0d5 \uc0ac\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd34": {
-    "message": "\ucee4\ub2e4\ub780 \ube68\uac04\uc0c9 \uc6d0"
+    "message": "\ud070 \ube68\uac04\uc0c9 \uc6d0"
   },
   "d83d_dd35": {
-    "message": "\ucee4\ub2e4\ub780 \ud30c\ub780\uc0c9 \uc6d0"
+    "message": "\ud070 \ud30c\ub780\uc0c9 \uc6d0"
   },
   "d83d_dd36": {
-    "message": "\ucee4\ub2e4\ub780 \uc8fc\ud669\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
+    "message": "\ud070 \uc8fc\ud669\uc0c9 \ub9c8\ub984\ubaa8"
   },
   "d83d_dd37": {
-    "message": "\ucee4\ub2e4\ub780 \ud30c\ub780\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
+    "message": "\ud070 \ud30c\ub780\uc0c9 \ub9c8\ub984\ubaa8"
   },
   "d83d_dd38": {
-    "message": "\uc791\uc740 \uc8fc\ud669\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
+    "message": "\uc791\uc740 \uc8fc\ud669\uc0c9 \ub9c8\ub984\ubaa8"
   },
   "d83d_dd39": {
-    "message": "\uc791\uc740 \ud30c\ub780\uc0c9 \ub2e4\uc774\uc544\ubaac\ub4dc"
+    "message": "\uc791\uc740 \ud30c\ub780\uc0c9 \ub9c8\ub984\ubaa8"
   },
   "d83d_dd3a": {
-    "message": "\uc704\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc0bc\uac01\ud615"
+    "message": "UP-POINTING RED TRIANGLE"
   },
   "d83d_dd3b": {
-    "message": "\uc544\ub798\ucabd\uc744 \uac00\ub9ac\ud0a4\ub294 \uc0bc\uac01\ud615"
+    "message": "DOWN-POINTING RED TRIANGLE"
   },
   "d83d_dd3c": {
-    "message": "\uc704\ub97c \ud5a5\ud55c \uc0bc\uac01\ud615 \ubc84\ud2bc"
+    "message": "\uc704\ucabd \uc0bc\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd3d": {
-    "message": "\uc544\ub798\ub97c \ud5a5\ud55c \uc0bc\uac01\ud615 \ubc84\ud2bc"
+    "message": "\uc544\ub798\ucabd \uc0bc\uac01\ud615 \ubc84\ud2bc"
   },
   "d83d_dd50": {
-    "message": "1\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE ONE OCLOCK"
   },
   "d83d_dd51": {
-    "message": "2\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE TWO OCLOCK"
   },
   "d83d_dd52": {
-    "message": "3\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE THREE OCLOCK"
   },
   "d83d_dd53": {
-    "message": "4\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE FOUR OCLOCK"
   },
   "d83d_dd54": {
-    "message": "5\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE FIVE OCLOCK"
   },
   "d83d_dd55": {
-    "message": "6\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE SIX OCLOCK"
   },
   "d83d_dd56": {
-    "message": "7\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE SEVEN OCLOCK"
   },
   "d83d_dd57": {
-    "message": "8\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE EIGHT OCLOCK"
   },
   "d83d_dd58": {
-    "message": "9\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE NINE OCLOCK"
   },
   "d83d_dd59": {
-    "message": "10\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE TEN OCLOCK"
   },
   "d83d_dd5a": {
-    "message": "11\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE ELEVEN OCLOCK"
   },
   "d83d_dd5b": {
-    "message": "12\uc2dc \uc815\uac01"
+    "message": "CLOCK FACE TWELVE OCLOCK"
   },
   "d83d_dd5c": {
-    "message": "1\uc2dc 30\ubd84"
+    "message": "CLOCK FACE ONE-THIRTY"
   },
   "d83d_dd5d": {
-    "message": "2\uc2dc 30\ubd84"
+    "message": "CLOCK FACE TWO-THIRTY"
   },
   "d83d_dd5e": {
-    "message": "3\uc2dc 30\ubd84"
+    "message": "CLOCK FACE THREE-THIRTY"
   },
   "d83d_dd5f": {
-    "message": "4\uc2dc 30\ubd84"
+    "message": "CLOCK FACE FOUR-THIRTY"
   },
   "d83d_dd60": {
-    "message": "5\uc2dc 30\ubd84"
+    "message": "CLOCK FACE FIVE-THIRTY"
   },
   "d83d_dd61": {
-    "message": "6\uc2dc 30\ubd84"
+    "message": "CLOCK FACE SIX-THIRTY"
   },
   "d83d_dd62": {
-    "message": "7\uc2dc 30\ubd84"
+    "message": "CLOCK FACE SEVEN-THIRTY"
   },
   "d83d_dd63": {
-    "message": "8\uc2dc 30\ubd84"
+    "message": "CLOCK FACE EIGHT-THIRTY"
   },
   "d83d_dd64": {
-    "message": "9\uc2dc 30\ubd84"
+    "message": "CLOCK FACE NINE-THIRTY"
   },
   "d83d_dd65": {
-    "message": "10\uc2dc 30\ubd84"
+    "message": "CLOCK FACE TEN-THIRTY"
   },
   "d83d_dd66": {
-    "message": "11\uc2dc 30\ubd84"
+    "message": "CLOCK FACE ELEVEN-THIRTY"
   },
   "d83d_dd67": {
-    "message": "12\uc2dc 30\ubd84"
+    "message": "CLOCK FACE TWELVE-THIRTY"
   },
   "d83d_ddfb": {
-    "message": "\ud6c4\uc9c0\uc0b0"
+    "message": "MOUNT FUJI"
   },
   "d83d_ddfc": {
-    "message": "\ub3c4\ucfc4 \ud0c0\uc6cc"
+    "message": "TOKYO TOWER"
   },
   "d83d_ddfd": {
-    "message": "\uc790\uc720\uc758 \uc5ec\uc2e0\uc0c1"
+    "message": "STATUE OF LIBERTY"
   },
   "d83d_ddfe": {
-    "message": "\uc77c\ubcf8\uc9c0\ub3c4"
+    "message": "SILHOUETTE OF JAPAN"
   },
   "d83d_ddff": {
-    "message": "\ubaa8\uc544\uc774 \uc11d\uc0c1"
+    "message": "MOYAI"
   },
   "d83d_de00": {
-    "message": "\uc774\ub97c \ub4dc\ub7ec\ub0b4\uace0 \uc6c3\uae30"
+    "message": "GRINNING FACE"
   },
   "d83d_de01": {
-    "message": " \uc6c3\ub294 \ub208\uc73c\ub85c \ud65c\uc9dd \uc6c3\uc74c"
+    "message": "\ub084\ub084\ub084"
   },
   "d83d_de02": {
-    "message": "\uae30\uc068\uc758 \ub208\ubb3c"
+    "message": "FACE WITH TEARS OF JOY"
   },
   "d83d_de03": {
-    "message": "\ud65c\uc9dd \uc6c3\uc74c"
+    "message": "SMILING FACE WITH OPEN MOUTH"
   },
   "d83d_de04": {
-    "message": "\ud568\ubc15\uc6c3\uc74c"
+    "message": "\ubd80\ub044\ub7fd\uac8c \ud5e4\ud5e4\ud5e4"
   },
   "d83d_de05": {
-    "message": "\uc2dd\uc740\ub540\uacfc \ubbf8\uc18c"
+    "message": "SMILING FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de06": {
-    "message": " \ub208 \uac10\uace0 \ud65c\uc9dd \uc6c3\uc74c"
+    "message": "\ubd80\ub044\ub7fd\uac8c \ud0a5\ud0a5\ud0a5"
   },
   "d83d_de07": {
-    "message": "\ud6c4\uad11 \uace0\ub9ac\uac00 \ub2ec\ub9b0 \uc6c3\ub294 \uc5bc\uad74"
+    "message": "SMILING FACE WITH HALO"
   },
   "d83d_de08": {
-    "message": "\uc0ac\uc545\ud55c \uc6c3\uc74c"
+    "message": "SMILING FACE WITH HORNS"
   },
   "d83d_de09": {
-    "message": "\uc719\ud06c"
+    "message": "WINKING FACE"
   },
   "d83d_de0a": {
-    "message": "\ubbf8\uc18c"
+    "message": "SMILING FACE WITH SMILING EYES"
   },
   "d83d_de0b": {
-    "message": "\ub0e0\ub0e0"
+    "message": "FACE SAVOURING DELICIOUS FOOD"
   },
   "d83d_de0c": {
-    "message": "\uc548\ub3c4\ud55c \ud45c\uc815"
+    "message": "RELIEVED FACE"
   },
   "d83d_de0d": {
-    "message": "\uc6c3\ub294 \uc5bc\uad74"
+    "message": "SMILING FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de0e": {
-    "message": "\uc790\uc2e0 \uc788\uc74c"
+    "message": "SMILING FACE WITH SUNGLASSES"
   },
   "d83d_de0f": {
-    "message": "\ube44\uc6c3\uc74c"
+    "message": "SMIRKING FACE"
   },
   "d83d_de10": {
-    "message": "\ubb34\ud45c\uc815"
+    "message": "NEUTRAL FACE"
   },
   "d83d_de11": {
-    "message": "\uc544\ubb34 \uac10\uc815 \uc5c6\uc74c"
+    "message": "EXPRESSIONLESS FACE"
   },
   "d83d_de12": {
-    "message": "\ub530\ubd84\ud568"
+    "message": "UNAMUSED FACE"
   },
   "d83d_de13": {
-    "message": "\uc2dd\uc740\ub540"
+    "message": "FACE WITH COLD SWEAT"
   },
   "d83d_de14": {
-    "message": "\uadfc\uc2ec \uc5b4\ub9b0 \ud45c\uc815"
+    "message": "PENSIVE FACE"
   },
   "d83d_de15": {
-    "message": "\ud63c\ub780\uc2a4\ub7ec\uc6c0"
+    "message": "CONFUSED FACE"
   },
   "d83d_de16": {
-    "message": "\ub2f9\ud669"
+    "message": "CONFOUNDED FACE"
   },
   "d83d_de17": {
-    "message": "\ubf40\ubf40"
+    "message": "KISSING FACE"
   },
   "d83d_de18": {
-    "message": "\ud0a4\uc2a4 \ub0a0\ub9ac\uae30"
+    "message": "FACE THROWING A KISS"
   },
   "d83d_de19": {
-    "message": "\uc6c3\uc73c\uba70 \ud0a4\uc2a4"
+    "message": "KISSING FACE WITH SMILING EYES"
   },
   "d83d_de1a": {
-    "message": "\ud0a4\uc2a4"
+    "message": "KISSING FACE WITH CLOSED EYES"
   },
   "d83d_de1b": {
-    "message": "\uba54\ub871"
+    "message": "FACE WITH STUCK-OUT TONGUE"
   },
   "d83d_de1c": {
     "message": "\uc719\ud06c\ud558\uba70 \uba54\ub871"
   },
   "d83d_de1d": {
-    "message": "\ucc21\uadf8\ub9ac\uba70 \uba54\ub871"
+    "message": "FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES"
   },
   "d83d_de1e": {
-    "message": "\uc2e4\ub9dd"
+    "message": "DISAPPOINTED FACE"
   },
   "d83d_de1f": {
-    "message": "\uac71\uc815"
+    "message": "WORRIED FACE"
   },
   "d83d_de20": {
-    "message": "\ud654\ub0a8"
+    "message": "ANGRY FACE"
   },
   "d83d_de21": {
-    "message": "\ubfcc\ub8e8\ud241\ud568"
+    "message": "POUTING FACE"
   },
   "d83d_de22": {
-    "message": "\ub208\ubb3c"
+    "message": "CRYING FACE"
   },
   "d83d_de23": {
-    "message": "\uccc7"
+    "message": "PERSEVERING FACE"
   },
   "d83d_de24": {
-    "message": "\uc758\uae30\uc591\uc591"
+    "message": "FACE WITH LOOK OF TRIUMPH"
   },
   "d83d_de25": {
-    "message": "\ud734!"
+    "message": "DISAPPOINTED BUT RELIEVED FACE"
   },
   "d83d_de26": {
-    "message": "\ucc0c\ud478\ub9b0 \uc5bc\uad74"
+    "message": "FROWNING FACE WITH OPEN MOUTH"
   },
   "d83d_de27": {
-    "message": "\uace0\ub1cc"
+    "message": "ANGUISHED FACE"
   },
   "d83d_de28": {
-    "message": "\uacf5\ud3ec"
+    "message": "FEARFUL FACE"
   },
   "d83d_de29": {
-    "message": "\uc9c0\ucce4\uc74c"
+    "message": "WEARY FACE"
   },
   "d83d_de2a": {
-    "message": "\uc878\ub9bc"
+    "message": "SLEEPY FACE"
   },
   "d83d_de2b": {
-    "message": "\ud53c\uace4"
+    "message": "TIRED FACE"
   },
   "d83d_de2c": {
-    "message": "\ucc21\uadf8\ub9bc"
+    "message": "GRIMACING FACE"
   },
   "d83d_de2d": {
-    "message": "\uc5c9\uc5c9 \uc6b8\uae30"
+    "message": "LOUDLY CRYING FACE"
   },
   "d83d_de2e": {
-    "message": "\uc785 \ubc8c\ub9b0 \uc5bc\uad74"
+    "message": "FACE WITH OPEN MOUTH"
   },
   "d83d_de2f": {
-    "message": "\uc870\uc6a9\ud55c \uc5bc\uad74"
+    "message": "HUSHED FACE"
   },
   "d83d_de30": {
-    "message": "\ub2e4\uae09\ud55c \uc5bc\uad74"
+    "message": "FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de31": {
-    "message": "\ubb34\uc11c\uc6c0"
+    "message": "FACE SCREAMING IN FEAR"
   },
   "d83d_de32": {
-    "message": "\uae5c\uc9dd \ub180\ub780 \uc5bc\uad74"
+    "message": "ASTONISHED FACE"
   },
   "d83d_de33": {
-    "message": "\uc5bc\uad74 \ube68\uac1c\uc9d0"
+    "message": "FLUSHED FACE"
   },
   "d83d_de34": {
-    "message": "\uc7a0"
+    "message": "SLEEPING FACE"
   },
   "d83d_de35": {
-    "message": "\ud604\uae30\uc99d"
+    "message": "DIZZY FACE"
   },
   "d83d_de36": {
-    "message": "\uc785 \uc5c6\ub294 \uc5bc\uad74"
+    "message": "FACE WITHOUT MOUTH"
   },
   "d83d_de37": {
-    "message": "\ub9c8\uc2a4\ud06c \uc4f4 \uc5bc\uad74"
+    "message": "FACE WITH MEDICAL MASK"
   },
   "d83d_de38": {
-    "message": "\ud65c\uc9dd \uc6c3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "GRINNING CAT FACE WITH SMILING EYES"
   },
   "d83d_de39": {
-    "message": "\uae30\uc068\uc758 \ub208\ubb3c \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "\ub208\ubb3c \ud758\ub9ac\uba70 \uc6c3\ub294 \uace0\uc591\uc774"
   },
   "d83d_de3a": {
-    "message": "\ubbf8\uc18c \uc9d3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "SMILING CAT FACE WITH OPEN MOUTH"
   },
   "d83d_de3b": {
-    "message": "\ubbf8\uc18c \uc9d3\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "SMILING CAT FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de3c": {
-    "message": "\uc2ec\uc220\uad82\uc740 \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "CAT FACE WITH WRY SMILE"
   },
   "d83d_de3d": {
-    "message": "\ud0a4\uc2a4\ub97c \ub0a0\ub9ac\ub294 \uace0\uc591\uc774"
+    "message": "KISSING CAT FACE WITH CLOSED EYES"
   },
   "d83d_de3e": {
-    "message": "\ubfcc\ub8e8\ud241\ud55c \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "POUTING CAT FACE"
   },
   "d83d_de3f": {
-    "message": "\uc6b0\ub294 \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "CRYING CAT FACE"
   },
   "d83d_de40": {
-    "message": "\uc9c0\uce5c \uace0\uc591\uc774 \uc5bc\uad74"
+    "message": "WEARY CAT FACE"
   },
   "d83d_de45": {
-    "message": "\uc548 \ub3fc\uc694 \ubab8\uc9d3"
+    "message": "FACE WITH NO GOOD GESTURE"
   },
   "d83d_de46": {
-    "message": "OK \ub3d9\uc791"
+    "message": "FACE WITH OK GESTURE"
   },
   "d83d_de47": {
-    "message": "\ubbf8\uc548"
+    "message": "PERSON BOWING DEEPLY"
   },
   "d83d_de48": {
-    "message": "\ub208 \uac00\ub9ac\uae30"
+    "message": "SEE-NO-EVIL MONKEY"
   },
   "d83d_de49": {
-    "message": "\uadc0 \ub9c9\uae30"
+    "message": "HEAR-NO-EVIL MONKEY"
   },
   "d83d_de4a": {
-    "message": "\uc785 \ub9c9\uae30"
+    "message": "SPEAK-NO-EVIL MONKEY"
   },
   "d83d_de4b": {
-    "message": "\ud589\ubcf5\ud55c \uc0ac\ub78c"
+    "message": "HAPPY PERSON RAISING ONE HAND"
   },
   "d83d_de4c": {
-    "message": "\ub9cc\uc138"
+    "message": "PERSON RAISING BOTH HANDS IN CELEBRATION"
   },
   "d83d_de4d": {
-    "message": "\ucc0c\ud478\ub9b0 \uc0ac\ub78c"
+    "message": "\uc5bc\uad74 \ucc0c\ud478\ub9b0 \uc0ac\ub78c"
   },
   "d83d_de4e": {
-    "message": "\ubfcc\ub8e8\ud241\ud568"
+    "message": "PERSON WITH POUTING FACE"
   },
   "d83d_de4f": {
-    "message": "\uc190\ubc14\ub2e5 \ub9de\ub300\uae30"
+    "message": "PERSON WITH FOLDED HANDS"
   },
   "d83d_de80": {
-    "message": "\ub85c\ucf13"
+    "message": "ROCKET"
   },
   "d83d_de81": {
-    "message": "\ud5ec\ub9ac\ucf65\ud130"
+    "message": "HELICOPTER"
   },
   "d83d_de82": {
-    "message": "\uc99d\uae30\uae30\uad00\ucc28"
+    "message": "STEAM LOCOMOTIVE"
   },
   "d83d_de83": {
-    "message": "\uc5f4\ucc28"
+    "message": "RAILWAY CAR"
   },
   "d83d_de84": {
-    "message": "\uace0\uc18d \uc5f4\ucc28"
+    "message": "HIGH-SPEED TRAIN"
   },
   "d83d_de85": {
-    "message": "\ucf54\uac00 \ubfb0\uc871\ud55c \uace0\uc18d \uc5f4\ucc28"
+    "message": "\ucf00\uc774\ud2f0\uc5d1\uc2a4, \uace0\uc18d\uc5f4\ucc28"
   },
   "d83d_de86": {
-    "message": "\uc5f4\ucc28"
+    "message": "TRAIN"
   },
   "d83d_de87": {
-    "message": "\uc9c0\ud558\ucca0"
+    "message": "METRO"
   },
   "d83d_de88": {
-    "message": "\uacbd\uc804\ucca0"
+    "message": "LIGHT RAIL"
   },
   "d83d_de89": {
-    "message": "\uae30\ucc28\uc5ed"
+    "message": "STATION"
   },
   "d83d_de8a": {
-    "message": "\uc804\ucc28"
+    "message": "TRAM"
   },
   "d83d_de8b": {
-    "message": "\uc804\ucc28"
+    "message": "TRAM CAR"
   },
   "d83d_de8c": {
-    "message": "\ubc84\uc2a4"
+    "message": "BUS"
   },
   "d83d_de8d": {
-    "message": "\ub2e4\uac00\uc624\ub294 \ubc84\uc2a4"
+    "message": "ONCOMING BUS"
   },
   "d83d_de8e": {
-    "message": "\ud2b8\ub864\ub9ac \ubc84\uc2a4"
+    "message": "TROLLEYBUS"
   },
   "d83d_de8f": {
-    "message": "\ubc84\uc2a4 \uc815\ub958\uc7a5"
+    "message": "BUS STOP"
   },
   "d83d_de90": {
-    "message": "\ubbf8\ub2c8 \ubc84\uc2a4"
+    "message": "MINIBUS"
   },
   "d83d_de91": {
-    "message": "\uad6c\uae09\ucc28"
+    "message": "AMBULANCE"
   },
   "d83d_de92": {
-    "message": "\uc18c\ubc29\ucc28"
+    "message": "FIRE ENGINE"
   },
   "d83d_de93": {
-    "message": "\uacbd\ucc30\ucc28"
+    "message": "POLICE CAR"
   },
   "d83d_de94": {
-    "message": "\ub2e4\uac00\uc624\ub294 \uacbd\ucc30\ucc28"
+    "message": "ONCOMING POLICE CAR"
   },
   "d83d_de95": {
-    "message": "\ud0dd\uc2dc"
+    "message": "TAXI"
   },
   "d83d_de96": {
-    "message": "\ub2e4\uac00\uc624\ub294 \ud0dd\uc2dc"
+    "message": "ONCOMING TAXI"
   },
   "d83d_de97": {
-    "message": "\uc790\ub3d9\ucc28"
+    "message": "AUTOMOBILE"
   },
   "d83d_de98": {
-    "message": "\ub2e4\uac00\uc624\ub294 \uc790\ub3d9\ucc28"
+    "message": "ONCOMING AUTOMOBILE"
   },
   "d83d_de99": {
-    "message": "RV"
+    "message": "RECREATIONAL VEHICLE"
   },
   "d83d_de9a": {
-    "message": "\ubc30\ub2ec \ud2b8\ub7ed"
+    "message": "DELIVERY TRUCK"
   },
   "d83d_de9b": {
-    "message": "\ud654\ubb3c\ucc28"
+    "message": "ARTICULATED LORRY"
   },
   "d83d_de9c": {
-    "message": "\ud2b8\ub799\ud130"
+    "message": "TRACTOR"
   },
   "d83d_de9d": {
-    "message": "\ubaa8\ub178\ub808\uc77c"
+    "message": "MONORAIL"
   },
   "d83d_de9e": {
-    "message": "\uc0b0\uc545 \ucca0\ub3c4"
+    "message": "MOUNTAIN RAILWAY"
   },
   "d83d_de9f": {
-    "message": "\uc11c\uc2a4\ud39c\uc158 \ucca0\ub3c4"
+    "message": "SUSPENSION RAILWAY"
   },
   "d83d_dea0": {
-    "message": "\uc0b0\uc545 \ucf00\uc774\ube14\uce74"
+    "message": "MOUNTAIN CABLEWAY"
   },
   "d83d_dea1": {
-    "message": "\ucf00\uc774\ube14\uce74"
+    "message": "AERIAL TRAMWAY"
   },
   "d83d_dea2": {
-    "message": "\uc120\ubc15"
+    "message": "SHIP"
   },
   "d83d_dea3": {
-    "message": "\ub178 \uc813\ub294 \ubc30"
+    "message": "ROWBOAT"
   },
   "d83d_dea4": {
-    "message": "\ucf8c\uc18d\uc815"
+    "message": "SPEEDBOAT"
   },
   "d83d_dea5": {
-    "message": "\uc218\ud3c9 \uad50\ud1b5 \uc2e0\ud638\ub4f1"
+    "message": "\uac00\ub85c \uc2e0\ud638\ub4f1"
   },
   "d83d_dea6": {
-    "message": "\uc218\uc9c1 \uad50\ud1b5 \uc2e0\ud638\ub4f1"
+    "message": "\uc138\ub85c \uc2e0\ud638\ub4f1"
   },
   "d83d_dea7": {
-    "message": "\uacf5\uc0ac \uc911"
+    "message": "CONSTRUCTION SIGN"
   },
   "d83d_dea8": {
-    "message": "\uacbd\uad11\ub4f1"
+    "message": "POLICE CARS REVOLVING LIGHT"
   },
   "d83d_dea9": {
-    "message": "\uc704\uce58 \ud45c\uc2dc \uae43\ubc1c"
+    "message": "TRIANGULAR FLAG ON POST"
   },
   "d83d_deaa": {
-    "message": "\ubb38"
+    "message": "DOOR"
   },
   "d83d_deab": {
-    "message": "\ucd9c\uc785\uae08\uc9c0 \ud45c\uc9c0"
+    "message": "NO ENTRY SIGN"
   },
   "d83d_deac": {
-    "message": "\ud761\uc5f0 \ud45c\uc9c0"
+    "message": "SMOKING SYMBOL"
   },
   "d83d_dead": {
-    "message": "\uae08\uc5f0 \ud45c\uc9c0"
+    "message": "NO SMOKING SYMBOL"
   },
   "d83d_deae": {
-    "message": "\uc4f0\ub808\uae30\ud1b5 \ud45c\uc9c0"
+    "message": "PUT LITTER IN ITS PLACE SYMBOL"
   },
   "d83d_deaf": {
-    "message": "\uc4f0\ub808\uae30 \ud22c\uae30 \uae08\uc9c0 \ud45c\uc9c0"
+    "message": "DO NOT LITTER SYMBOL"
   },
   "d83d_deb0": {
-    "message": "\uc2dd\uc218"
+    "message": "POTABLE WATER SYMBOL"
   },
   "d83d_deb1": {
-    "message": "\ub9c8\uc2e4 \uc218 \uc5c6\ub294 \ubb3c"
+    "message": "NON-POTABLE WATER SYMBOL"
   },
   "d83d_deb2": {
-    "message": "\uc790\uc804\uac70"
+    "message": "BICYCLE"
   },
   "d83d_deb3": {
-    "message": "\uc790\uc804\uac70 \uae08\uc9c0"
+    "message": "NO BICYCLES"
   },
   "d83d_deb4": {
-    "message": "\uc790\uc804\uac70 \ud0c0\ub294 \uc0ac\ub78c"
+    "message": "BICYCLIST"
   },
   "d83d_deb5": {
-    "message": "\uc0b0\uc545\uc790\uc804\uac70"
+    "message": "MOUNTAIN BICYCLIST"
   },
   "d83d_deb6": {
-    "message": "\ubcf4\ud589\uc790"
+    "message": "PEDESTRIAN"
   },
   "d83d_deb7": {
-    "message": "\ubcf4\ud589 \uae08\uc9c0"
+    "message": "NO PEDESTRIANS"
   },
   "d83d_deb8": {
-    "message": "\uc5b4\ub9b0\uc774 \ud6a1\ub2e8"
+    "message": "CHILDREN CROSSING"
   },
   "d83d_deb9": {
-    "message": "\ub0a8\uc131 \ud45c\uc9c0"
+    "message": "MENS SYMBOL"
   },
   "d83d_deba": {
-    "message": "\uc5ec\uc131 \ud45c\uc9c0"
+    "message": "WOMENS SYMBOL"
   },
   "d83d_debb": {
-    "message": "\ud654\uc7a5\uc2e4 \ud45c\uc9c0"
+    "message": "RESTROOM"
   },
   "d83d_debc": {
-    "message": "\uc544\uae30 \ud45c\uc9c0"
+    "message": "BABY SYMBOL"
   },
   "d83d_debd": {
-    "message": "\ubcc0\uae30"
+    "message": "TOILET"
   },
   "d83d_debe": {
-    "message": "\ud654\uc7a5\uc2e4"
+    "message": "WATER CLOSET"
   },
   "d83d_debf": {
-    "message": "\uc0e4\uc6cc"
+    "message": "SHOWER"
   },
   "d83d_dec0": {
-    "message": "\ubaa9\uc695"
+    "message": "BATH"
   },
   "d83d_dec1": {
-    "message": "\uc695\uc870"
+    "message": "BATHTUB"
   },
   "d83d_dec2": {
-    "message": "\uc5ec\uad8c \uc2ec\uc0ac"
+    "message": "PASSPORT CONTROL"
   },
   "d83d_dec3": {
-    "message": "\uc138\uad00"
+    "message": "CUSTOMS"
   },
   "d83d_dec4": {
-    "message": "\uc218\ud558\ubb3c \ucc3e\uae30"
+    "message": "BAGGAGE CLAIM"
   },
   "d83d_dec5": {
-    "message": "\ubd84\uc2e4 \uc218\ud558\ubb3c"
+    "message": "LEFT LUGGAGE"
   },
   "de_ger_settings_page": {
     "message": "\ub3c5\uc77c\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -2390,136 +2390,136 @@
     "message": "\ub3c5\uc77c\uc5b4 Neo 2 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "dictionarytoolcategorytitle": {
-    "message": "\uce74\ud14c\uace0\ub9ac"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "\ub313\uae00"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "\ub313\uae00"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "[object Object]\uc744(\ub97c) \uc0ad\uc81c\ud558\uc2dc\uaca0\uc2b5\ub2c8\uae4c?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "\uc0ac\uc804 \uc0ad\uc81c"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "\uc0ac\uc804"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "\uc0ac\uc804 \uc774\ub984"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "\uc644\ub8cc"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "\ub0b4\ubcf4\ub0b4\uae30"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "\uac00\uc838\uc624\uae30..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "\uc0ac\uc804 \uad00\ub9ac"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "\uc0c8 \uc0ac\uc804"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "\uc0ac\uc6a9\uc790 \uc0ac\uc804"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "\uc0c8 \uc77d\uae30"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "\uc77d\uae30"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "\uc774\ub984\uc5d0 \uc798\ubabb\ub41c \ubb38\uc790\uac00 \ub4e4\uc5b4 \uc788\uc2b5\ub2c8\ub2e4."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "\uc774\ub984\uc774 \uc774\ubbf8 \uc874\uc7ac\ud569\ub2c8\ub2e4."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "\uc0ac\uc804 \uc774\ub984\uc744 \uc785\ub825\ud574 \uc8fc\uc138\uc694."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "\uc774\ub984\uc774 \ub108\ubb34 \uae41\ub2c8\ub2e4."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "\ub354 \uc774\uc0c1 \uc0ac\uc804\uc744 \ub9cc\ub4e4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "\ud30c\uc77c\uc774 \ube44\uc5b4 \uc788\uc2b5\ub2c8\ub2e4."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "\uc774 \uc0ac\uc804\uc5d0 \ub354 \uc774\uc0c1 \ub2e8\uc5b4\ub97c \ub9cc\ub4e4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "\ud30c\uc77c\uc744 \uc5f4 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "\ub370\uc774\ud130 \ud06c\uae30\uac00 \ud30c\uc77c \ud06c\uae30 \uc81c\ud55c\uc744 \ucd08\uacfc\ud569\ub2c8\ub2e4."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "\uc791\uc5c5\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "\uc77c\ubd80 \ub2e8\uc5b4\ub97c \uac00\uc838\uc62c \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "\uac00\uc838\uc624\ub824\ub294 \uc18c\uc2a4\uc5d0 \ud3ec\ud568\ub41c \ub2e8\uc5b4\uac00 \ub108\ubb34 \ub9ce\uc2b5\ub2c8\ub2e4."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "\ud30c\uc77c\uc744 \uc77d\uc744 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "\ub354 \uc774\uc0c1 \ucde8\uc18c \uac00\ub2a5\ud55c \uc791\uc5c5\uc744 \uc218\ud589\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "\uc77d\uae30\uc5d0 \uc798\ubabb\ub41c \ubb38\uc790\uac00 \ub4e4\uc5b4 \uc788\uc2b5\ub2c8\ub2e4. \uc77d\uae30\uc5d0\ub294 ASCII \ubb38\uc790, \ud788\ub77c\uac00\ub098, \ud0c1\uc74c \ubd80\ud638(\u309b), \ubc18\ud0c1\uc74c \ubd80\ud638(\u309c), \uac00\uc6b4\ub383\uc810(\u00b7), \uc7a5\uc74c \ubd80\ud638(\u30fc), \uc77c\ubcf8\uc5b4 \uc27c\ud45c(,), \uc77c\ubcf8\uc5b4 \ub9c8\uce68\ud45c(.), \uc77c\ubcf8\uc5b4 \uad04\ud638(\u300c\u300d\u300e\u300f), \uc77c\ubcf8\uc5b4 \ubb3c\uacb0\ud45c\uc2dc(~)\ub97c \uc0ac\uc6a9\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "\uc77d\uae30\ub97c \uc785\ub825\ud574 \uc8fc\uc138\uc694."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "\uc77d\uae30\uac00 \ub108\ubb34 \uae41\ub2c8\ub2e4."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "\ub2e8\uc5b4 \ucd94\uac00 \uc624\ub958"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "\uc0ac\uc804 \uc0dd\uc131 \uc624\ub958"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "\uc0ac\uc804 \uc0ad\uc81c \uc624\ub958"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "\ub2e8\uc5b4 \uc0ad\uc81c \uc624\ub958"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "\ub2e8\uc5b4 \ud3b8\uc9d1 \uc624\ub958"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "\uac00\uc838\uc624\uae30 \uc624\ub958"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "\uc0ac\uc804 \uc774\ub984 \ubcc0\uacbd \uc624\ub958"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "\ub2e8\uc5b4\uc5d0 \uc798\ubabb\ub41c \ubb38\uc790\uac00 \ub4e4\uc5b4 \uc788\uc2b5\ub2c8\ub2e4."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "\ub2e8\uc5b4\ub97c \uc785\ub825\ud574 \uc8fc\uc138\uc694."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "\ub2e8\uc5b4\uac00 \ub108\ubb34 \uae41\ub2c8\ub2e4."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "\uc0c8 \ub2e8\uc5b4"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "\ub2e8\uc5b4"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "\ud0a4\ubcf4\ub4dc \uba54\ub274 \ub2eb\uae30"
@@ -2570,10 +2570,16 @@
     "message": "\uc790\ub3d9 \uc644\uc131 \uc0ac\uc6a9"
   },
   "enable_gesture_editing": {
+    "message": "\uc2a4\uc640\uc774\ud504 \ub3d9\uc791 \uc0ac\uc6a9"
+  },
+  "enable_gesture_editing_desc": {
     "message": "\ud0a4\ubcf4\ub4dc\uc758 \uac00\uc7a5\uc790\ub9ac\uc5d0\uc11c \uc2a4\uc640\uc774\ud504\ud558\uc5ec \ucee4\uc11c\ub97c \uc774\ub3d9\ud558\uac70\ub098 \ubc31\uc2a4\ud398\uc774\uc2a4 \ud0a4\uc5d0\uc11c \uc2a4\uc640\uc774\ud504\ud558\uc5ec \uc804\uccb4 \ub2e8\uc5b4\ub97c \uc0ad\uc81c\ud569\ub2c8\ub2e4."
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "\uc81c\uc2a4\ucc98 \ud0c0\uc774\ud551 \uc0ac\uc6a9"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "\ubb38\uc790 \uc704\ub97c \uc2ac\ub77c\uc774\ub4dc\ud558\uc5ec \ub2e8\uc5b4 \uc785\ub825"
   },
   "enable_prediction": {
     "message": "\ub2e4\uc74c \ub2e8\uc5b4 \ucd94\ucc9c \uc0ac\uc6a9"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "\ud540\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
+  "fo_fao_settings_page": {
+    "message": "\ud398\ub85c\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
+  },
   "footer_docking_button": {
     "message": "\uac00\uc0c1 \ud0a4\ubcf4\ub4dc \ub3c4\ud0b9"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "\uc785\ub825 \ubc29\ubc95 \uc124\uc815 \uc5f4\uae30"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "\ud504\ub791\uc2a4\uc5b4 B\u00c9PO \ud0a4\ubcf4\ub4dc(\ud504\ub791\uc2a4\uc5b4) \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "fr_fra_settings_page": {
     "message": "\ud504\ub791\uc2a4\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "\ud5dd\uac00\ub9ac\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "\ud5dd\uac00\ub9ac\uc5b4 Qwerty \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
+  },
   "ie_ga_settings_page": {
     "message": "\uc544\uc77c\ub79c\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "\ucc3d\ud790 \uc785\ub825 \ubc29\ubc95"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Dayi \uc785\ub825 \ubc29\ubc95"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "\uc5d0\ud2f0\uc624\ud53c\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
+  "keyboard_faroese": {
+    "message": "\ud398\ub85c\uc5b4 \ud0a4\ubcf4\ub4dc"
+  },
   "keyboard_finnish": {
     "message": "\ud540\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_french": {
     "message": "\ud504\ub791\uc2a4\uc5b4 \ud0a4\ubcf4\ub4dc"
+  },
+  "keyboard_french_bepo": {
+    "message": "\ud504\ub791\uc2a4\uc5b4 B\u00c9PO \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_georgian": {
     "message": "\uc870\uc9c0\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "\ud5dd\uac00\ub9ac\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "\ud5dd\uac00\ub9ac\uc5b4 Qwerty \ud0a4\ubcf4\ub4dc"
+  },
   "keyboard_icelandic": {
     "message": "\uc544\uc774\uc2ac\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "\uce78\ub098\ub2e4\uc5b4 \ud0a4\ubcf4\ub4dc(\uc74c\uc5ed)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "\ud0a4\ubcf4\ub4dc(Kedmanee)"
   },
@@ -2829,6 +2859,9 @@
   },
   "keyboard_lao": {
     "message": "\ub77c\uc624\uc5b4 \ud0a4\ubcf4\ub4dc"
+  },
+  "keyboard_laothian": {
+    "message": "\ub77c\uc624\ud0c0\uc774\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_latin_american": {
     "message": "\ub77c\ud2f4 \uc544\uba54\ub9ac\uce74 \uc5b8\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -2840,7 +2873,7 @@
     "message": "\ub9ac\ud22c\uc544\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "\ub9c8\ucf00\ub3c4\ub2c8\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_malayalam_phonetic": {
     "message": "\ub9d0\ub77c\uc584\ub78c\uc5b4 \ud0a4\ubcf4\ub4dc(\uc74c\uc5ed)"
@@ -2864,7 +2897,7 @@
     "message": "\ub124\ud314\uc5b4 \ud0a4\ubcf4\ub4dc(\uc74c\uc5ed)"
   },
   "keyboard_netherlands": {
-    "message": "\ub124\ub35c\ub780\ub4dc \ud0a4\ubcf4\ub4dc"
+    "message": "\ub124\ub35c\ub780\ub4dc\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_none": {
     "message": "\ud0a4\ubcf4\ub4dc"
@@ -2910,6 +2943,9 @@
   },
   "keyboard_sinhala": {
     "message": "\uc2e0\ud560\ub77c\uc5b4 \ud0a4\ubcf4\ub4dc"
+  },
+  "keyboard_slovak": {
+    "message": "\uc2ac\ub85c\ubc14\ud0a4\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_slovakian": {
     "message": "\uc2ac\ub85c\ubc14\ud0a4\uc544\uc5b4 \ud0a4\ubcf4\ub4dc"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "\ud130\ud0a4\uc5b4 \ud0a4\ubcf4\ub4dc"
   },
+  "keyboard_turkish_f": {
+    "message": "\ud130\ud0a4\uc5b4-F \ud0a4\ubcf4\ub4dc"
+  },
   "keyboard_typewriter": {
     "message": "\ud0a4\ubcf4\ub4dc(\ud0c0\uc790\uae30)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "\ubbf8\uad6d \uc601\uc5b4 \ub4dc\ubcf4\ub77d \ud0a4\ubcf4\ub4dc"
+  },
+  "keyboard_us_dvp": {
+    "message": "US \ud504\ub85c\uadf8\ub798\uba38 \ub4dc\ubcf4\ub77d \ud0a4\ubcf4\ub4dc"
   },
   "keyboard_us_extended": {
     "message": "\ubbf8\uad6d \uc601\uc5b4 \ud655\uc7a5 \ud0a4\ubcf4\ub4dc"
@@ -3131,7 +3173,7 @@
     "message": "5\ucd08 \ud6c4 \ucd94\ucc9c \ub4dc\ub86d\ub2e4\uc6b4 \ud45c\uc2dc"
   },
   "show_candidates_backspace": {
-    "message": "\ubc31\uc2a4\ud398\uc774\uc2a4\ub97c \uc0ac\uc6a9\ud574 \ucd94\ucc9c \ub4dc\ub86d\ub2e4\uc6b4 \ud45c\uc2dc"
+    "message": "Backspace\ub97c \uc0ac\uc6a9\ud574 \ucd94\ucc9c \ub4dc\ub86d\ub2e4\uc6b4 \ud45c\uc2dc"
   },
   "show_hangul_candidate": {
     "message": "\ud55c\uae00 \ubaa8\ub4dc\uc5d0\uc11c \ud6c4\ubcf4 \ud45c\uc2dc"
@@ -3146,7 +3188,7 @@
     "message": "\uc2ac\ub85c\ubc14\ud0a4\uc544\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "smiley": {
-    "message": "\uc774\ubaa8\ud2f0\ucf58"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "\uac00\ub054"
@@ -3155,16 +3197,16 @@
     "message": "\ubc84\ud2bc\uc744 \ub204\ub97c \ub54c \uc18c\ub9ac \ubc1c\uc0dd"
   },
   "space": {
-    "message": "Space"
+    "message": "\uc2a4\ud398\uc774\uc2a4"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "\ub2e8\uc5b4\ub97c \ubcf5\uc6d0\ud558\ub824\uba74 \uc67c\ucabd\uc73c\ub85c \uc2a4\uc640\uc774\ud504\ud569\ub2c8\ub2e4."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "\ub2e8\uc5b4\ub97c \ubcf5\uc6d0\ud558\ub824\uba74 \uc624\ub978\ucabd\uc73c\ub85c \uc2a4\uc640\uc774\ud504\ud569\ub2c8\ub2e4."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "\ucee4\uc11c\ub97c \uc774\ub3d9\ud558\ub824\uba74 \uc67c\ucabd\uc774\ub098 \uc624\ub978\ucabd\uc73c\ub85c \uc2a4\uc640\uc774\ud504\ud569\ub2c8\ub2e4."
   },
   "switch_to": {
     "message": "\ub2e4\uc74c\uc73c\ub85c \uc804\ud658: "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "\ud130\uce58 \ud0a4\ubcf4\ub4dc"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "\ud130\ud0a4\uc5b4-F \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
   },
   "tr_tur_settings_page": {
     "message": "\ud130\ud0a4\uc5b4 \ud0a4\ubcf4\ub4dc \uc124\uc815 \ud398\uc774\uc9c0"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "\ubaa8\ub450 \uc9c0\uc6b0\uae30"
   },
+  "user_dict_edit": {
+    "message": "\uc0ac\uc804 \ud56d\ubaa9 \uc218\uc815"
+  },
   "user_dict_manage": {
     "message": "\uac1c\uc778 \uc0ac\uc804 \uad00\ub9ac..."
   },
@@ -3341,13 +3389,16 @@
     "message": "\uc74c\uc131 \uc785\ub825\uc740 \ud14d\uc2a4\ud2b8 \uc778\uc2dd\uc744 \uc704\ud574 Google \uc11c\ubc84\ub85c \uc804\uc1a1\ub429\ub2c8\ub2e4."
   },
   "voice_turn_off": {
-    "message": "\uc74c\uc131 \uc785\ub825 \ub3c4\uad6c \uc0ac\uc6a9 \uc548\ud568"
+    "message": "\uc74c\uc131 \uc785\ub825\uae30 \uc0ac\uc6a9 \uc548\ud568"
   },
   "voice_turn_on": {
-    "message": "\uc74c\uc131 \uc785\ub825 \ub3c4\uad6c \uc0ac\uc6a9"
+    "message": "\uc74c\uc131 \uc785\ub825\uae30 \uc0ac\uc6a9"
   },
   "wait": {
     "message": "\ub300\uae30"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "\ud0a4\ubcf4\ub4dc \uc720\ud615"

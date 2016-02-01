@@ -22,15 +22,19 @@ goog.require('goog.events.Event');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.fx.easing');
 goog.require('goog.i18n.bidi');
+goog.require('goog.math.Coordinate');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
+goog.require('i18n.input.chrome.ElementType');
+goog.require('i18n.input.chrome.FeatureName');
 goog.require('i18n.input.chrome.Statistics');
+goog.require('i18n.input.chrome.events.KeyCodes');
 goog.require('i18n.input.chrome.inputview.Adapter');
 goog.require('i18n.input.chrome.inputview.CandidatesInfo');
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.FeatureName');
 goog.require('i18n.input.chrome.inputview.KeyboardContainer');
 goog.require('i18n.input.chrome.inputview.M17nModel');
 goog.require('i18n.input.chrome.inputview.Model');
@@ -41,13 +45,11 @@ goog.require('i18n.input.chrome.inputview.SizeSpec');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.ExpandedCandidateView');
 goog.require('i18n.input.chrome.inputview.elements.content.MenuView');
 goog.require('i18n.input.chrome.inputview.events.EventType');
-goog.require('i18n.input.chrome.inputview.events.KeyCodes');
 goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
@@ -64,13 +66,13 @@ var CandidateView = i18n.input.chrome.inputview.elements.content.CandidateView;
 var ConditionName = i18n.input.chrome.inputview.ConditionName;
 var ContextType = i18n.input.chrome.message.ContextType;
 var Css = i18n.input.chrome.inputview.Css;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var EventType = i18n.input.chrome.inputview.events.EventType;
 var ExpandedCandidateView = i18n.input.chrome.inputview.elements.content.
     ExpandedCandidateView;
-var FeatureName = i18n.input.chrome.inputview.FeatureName;
+var FeatureName = i18n.input.chrome.FeatureName;
 var InputToolCode = i18n.input.lang.InputToolCode;
-var KeyCodes = i18n.input.chrome.inputview.events.KeyCodes;
+var KeyCodes = i18n.input.chrome.events.KeyCodes;
 var MenuView = i18n.input.chrome.inputview.elements.content.MenuView;
 var Name = i18n.input.chrome.message.Name;
 var PerfTracker = i18n.input.chrome.inputview.PerfTracker;
@@ -81,6 +83,62 @@ var SoundController = i18n.input.chrome.sounds.SoundController;
 var Type = i18n.input.chrome.message.Type;
 var events = i18n.input.chrome.inputview.events;
 var util = i18n.input.chrome.inputview.util;
+
+
+/**
+ * Time in milliseconds after which backspace will start autorepeating.
+ * @const {number}
+ */
+var BACKSPACE_REPEAT_START_TIME_MS = 300;
+
+
+/**
+ * Minimum time, in milliseconds, after which backspace can repeat. This
+ * prevents deleting entire pages in a go.
+ * @const {number}
+ */
+var MINIMUM_BACKSPACE_REPEAT_TIME_MS = 25;
+
+
+/**
+ * Maximum time, in milliseconds, after which the backspace can repeat.
+ * @const {number}
+ */
+var MAXIMUM_BACKSPACE_REPEAT_TIME_MS = 75;
+
+
+/**
+ * The limit for backspace repeat for speeding up.
+ * The backspace repeat beyond this limit will have the maximum speed.
+ * @const {number}
+ */
+var BACKSPACE_REPEAT_LIMIT = 255;
+
+
+/**
+ * The time, in milliseconds, that the gesture preview window lingers before
+ * being dismissed.
+ *
+ * @const {number}
+ */
+var GESTURE_PREVIEW_LINGER_TIME_MS = 250;
+
+
+/**
+ * The maximum distance from the top of the keyboard that a gesture can move
+ * before it cancels the gesture typing gesture.
+ *
+ * @const {number}
+ */
+var MAXIMUM_DISTANCE_FROM_TOP_FOR_GESTURES = 40;
+
+
+/**
+ * The hotrod customized layout code.
+ *
+ * @const {string}
+ */
+var HOTROD_DEFAULT_KEYSET = 'hotrod';
 
 
 
@@ -184,11 +242,11 @@ i18n.input.chrome.inputview.Controller = function(keyset, languageCode,
   this.soundController_ = new SoundController(false);
 
   /**
-   * Whether or not to commit the next gesture result.
+   * Whether or not the candidates were last set by gesture typing.
    *
    * @private {boolean}
    */
-  this.commitNextGestureResult_ = false;
+  this.candidatesSetByGestureTyping_ = false;
 
   /** @private {!i18n.input.chrome.inputview.KeyboardContainer} */
   this.container_ = new i18n.input.chrome.inputview.KeyboardContainer(
@@ -256,9 +314,15 @@ i18n.input.chrome.inputview.Controller = function(keyset, languageCode,
 
   this.registerEventHandler_();
 };
-goog.inherits(i18n.input.chrome.inputview.Controller,
-    goog.Disposable);
+goog.inherits(i18n.input.chrome.inputview.Controller, goog.Disposable);
 var Controller = i18n.input.chrome.inputview.Controller;
+var Statistics = i18n.input.chrome.Statistics;
+
+/**
+ * @define {boolean} Flag to disable delayed loading of non active keyset. It
+ * should only be used in testing.
+ */
+Controller.DISABLE_DELAY_LOADING_FOR_TEST = false;
 
 
 /**
@@ -300,15 +364,6 @@ Controller.EMOJI_VIEW_CODE_ = 'emoji';
 
 
 /**
- * The limitation for backspace repeat time to avoid unexpected
- * problem that backspace is held all the time.
- *
- * @private {number}
- */
-Controller.BACKSPACE_REPEAT_LIMIT_ = 255;
-
-
-/**
  * The repeated times of the backspace.
  *
  * @private {number}
@@ -326,12 +381,12 @@ Controller.HANDWRITING_CODE_SUFFIX_ = '-t-i0-handwrit';
 
 
 /**
- * The US English compact layout prefix.
+ * The US English compact layout qwerty code.
  *
  * @const {string}
  * @private
  */
-Controller.US_COMPACT_PREFIX_ = 'us.compact';
+Controller.US_COMPACT_QWERTY_CODE_ = 'us.compact.qwerty';
 
 
 /**
@@ -617,7 +672,9 @@ Controller.prototype.onUpdateSettings_ = function(e) {
   }
   if (goog.isDef(e.msg['gestureEditing'])) {
     settings.gestureEditing = e.msg['gestureEditing'];
-    var enabled = settings.gestureEditing && !this.adapter_.isA11yMode;
+    var enabled = settings.gestureEditing && !this.adapter_.isA11yMode &&
+        !this.adapter_.isHotrod &&
+        !this.adapter_.isFloatingVirtualKeyboardEnabled();
     this.container_.swipeView.enabled = enabled;
     this.container_.selectView.setSettingsEnabled(enabled);
   }
@@ -661,20 +718,19 @@ Controller.prototype.onSettingsReady_ = function() {
   var newKeyset = '';
   if (this.adapter_.isA11yMode) {
     newKeyset = util.getConfigName(keysetMap[ContextType.DEFAULT]);
+  } else if (this.adapter_.isHotrod) {
+    newKeyset = HOTROD_DEFAULT_KEYSET;
   } else {
     newKeyset = /** @type {string} */ (this.model_.settings.
         getPreference(util.getConfigName(keysetMap[ContextType.DEFAULT])));
   }
-  if (!this.adapter_.features.isEnabled(FeatureName.EXPERIMENTAL) &&
-      keysetMap[ContextType.DEFAULT] ==
-      'zhuyin.compact.qwerty') {
-    newKeyset = 'zhuyin';
-  }
+
   if (newKeyset) {
     this.setDefaultKeyset_(newKeyset);
   }
   this.container_.selectView.setSettingsEnabled(
-      this.model_.settings.gestureEditing && !this.adapter_.isA11yMode);
+      this.model_.settings.gestureEditing && !this.adapter_.isA11yMode &&
+          !this.adapter_.isHotrod);
   // Loads resources in case the default keyset is changed.
   this.loadAllResources_();
   this.maybeCreateViews_();
@@ -689,7 +745,13 @@ Controller.prototype.onSettingsReady_ = function() {
  */
 Controller.prototype.gestureTypingEnabled_ = function() {
   return this.isKeysetUSCompact_ && this.model_.settings.gestureTyping &&
-      !this.adapter_.isA11yMode && !this.adapter_.isChromeVoxOn;
+      !this.adapter_.isA11yMode && !this.adapter_.isHotrod &&
+      !this.adapter_.isChromeVoxOn &&
+      !this.adapter_.isPasswordBox() &&
+      !this.adapter_.isFloatingVirtualKeyboardEnabled() &&
+      !this.container_.altDataView.isVisible() &&
+      !this.container_.menuView.isVisible() &&
+      !this.container_.voiceView.isVisible();
 };
 
 
@@ -748,13 +810,13 @@ Controller.prototype.getSpatialData_ = function(key, x, y) {
  * @private
  */
 Controller.prototype.getKeyContent_ = function(key) {
-  if (key.type == i18n.input.chrome.inputview.elements.ElementType.
+  if (key.type == i18n.input.chrome.ElementType.
       CHARACTER_KEY) {
     key = /** @type {!i18n.input.chrome.inputview.elements.content.
         CharacterKey} */ (key);
     return key.getActiveCharacter();
   }
-  if (key.type == i18n.input.chrome.inputview.elements.ElementType.
+  if (key.type == i18n.input.chrome.ElementType.
       COMPACT_KEY) {
     key = /** @type {!i18n.input.chrome.inputview.elements.content.
         FunctionalKey} */ (key);
@@ -833,7 +895,7 @@ Controller.prototype.maybeSendLastStroke_ = function(opt_force) {
   if (lastStroke) {
     // This call will set up the necessary callbacks the decoder will use to
     // communicate back to this class.
-    this.adapter_.sendGestureEvent(lastStroke.points);
+    this.adapter_.sendGestureEvent(lastStroke.getPoints());
   }
 };
 
@@ -848,13 +910,30 @@ Controller.prototype.maybeSendLastStroke_ = function(opt_force) {
 Controller.prototype.onDragEvent_ = function(e) {
   if (this.gestureTypingEnabled_() && e.type == EventType.DRAG &&
       !this.container_.swipeView.isVisible()) {
+    // Conveniently, the DragEvent has coordinates relative to the gesture
+    // canvas view, so we can test it's y coordinate in order to determine if
+    // we're off the canvas.
+    if (e.y + MAXIMUM_DISTANCE_FROM_TOP_FOR_GESTURES < 0) {
+      this.container_.gestureCanvasView.clear();
+      this.container_.gesturePreviewWindow.hide();
+      this.clearCandidates_();
+      return;
+    }
     this.container_.gestureCanvasView.addPoint(e);
     if (e.view && this.container_.gestureCanvasView.isGesturing) {
       // Ensure the last touched key is not highlighted.
-      e.view.setHighlighted(false);
+      if (e.view.type != ElementType.MODIFIER_KEY) {
+        e.view.setHighlighted(false);
+      }
       this.maybeSendLastStroke_();
+      // Reposition the gesture preview window to follow the user's touch point.
+      if (this.container_.gesturePreviewWindow &&
+          this.container_.gestureCanvasView.isActiveIdentifier(
+              e.identifier)) {
+        this.container_.gesturePreviewWindow.reposition(
+            new goog.math.Coordinate(e.x, e.y));
+      }
     }
-    return;
   }
 };
 
@@ -949,29 +1028,29 @@ Controller.prototype.executeCommand_ = function(command, opt_arg) {
         inputview.openSettings();
       }
       break;
-
-    case CommandEnum.FLOATING:
-      if (inputview.setMode) {
-        inputview.setMode('FLOATING');
-        this.adapter_.isFloating = true;
-        this.container_.candidateView.setFloatingVKButtonsVisible(true);
-        this.resize();
-        setTimeout(function() {
-          var x = Math.floor((screen.width - window.innerWidth) / 2);
-          window.moveTo(x, window.screenY);
-        }, 0);
-      }
-      break;
-
-    case CommandEnum.DOCKING:
-      if (inputview.setMode) {
-        inputview.setMode('FULL_WIDTH');
-        this.adapter_.isFloating = false;
-        this.container_.candidateView.setFloatingVKButtonsVisible(false);
-      }
-      break;
-
   }
+};
+
+
+/**
+ * Returns the gesture typing event type for a given candidate ID.
+ *
+ * @param {number} candidateID The candidate ID to convert.
+ * @return {?i18n.input.chrome.Statistics.GestureTypingEvent} The gesture
+ *     typing event type for the given candidate. Null if the candidate was not
+ *     found.
+ * @private
+ */
+Controller.prototype.getGestureEventTypeForCandidateID_ =
+    function(candidateID) {
+  if (candidateID == 0) {
+    return Statistics.GestureTypingEvent.REPLACED_0;
+  } else if (candidateID == 1) {
+    return Statistics.GestureTypingEvent.REPLACED_1;
+  } else if (candidateID >= 2) {
+    return Statistics.GestureTypingEvent.REPLACED_2;
+  }
+  return null;
 };
 
 
@@ -985,8 +1064,12 @@ Controller.prototype.executeCommand_ = function(command, opt_arg) {
 Controller.prototype.handlePointerAction_ = function(view, e) {
   if (this.gestureTypingEnabled_() && !this.container_.swipeView.isVisible()) {
     if (e.type == EventType.POINTER_DOWN) {
+      // Do some clean up before starting a new stroke.
+      this.container_.gestureCanvasView.removeEmptyStrokes();
       this.container_.gestureCanvasView.startStroke(e);
-      view.setHighlighted(false);
+      if (view.type != ElementType.MODIFIER_KEY) {
+        view.setHighlighted(false);
+      }
     }
 
     // Determine if the gestureCanvasView was handling a gesture before calling
@@ -995,12 +1078,13 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
     if (e.type == EventType.POINTER_UP && wasGesturing) {
       this.container_.gestureCanvasView.endStroke(e);
       this.maybeSendLastStroke_(true);
-      this.commitNextGestureResult_ = true;
     }
 
     // Do not trigger other activities when gesturing.
     if (wasGesturing) {
-      if (e.type == EventType.POINTER_OVER) {
+      if (view.type != ElementType.MODIFIER_KEY &&
+          (e.type == EventType.POINTER_OVER ||
+              e.type == EventType.POINTER_OUT)) {
         view.setHighlighted(false);
       }
       return;
@@ -1018,19 +1102,13 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
     this.handleSwipeAction_(view, e);
   }
   switch (view.type) {
-    case ElementType.KEYBOARD_CONTAINER_VIEW:
-      if (e.type == EventType.POINTER_DOWN) {
-        var tabbableKeysets = [
-          Controller.HANDWRITING_VIEW_CODE_,
-          Controller.EMOJI_VIEW_CODE_];
-        if (goog.array.contains(tabbableKeysets, this.currentKeyset_)) {
-          this.resetAll();
-          this.switchToKeyset(this.container_.currentKeysetView.fromKeyset);
-        }
-      }
-      return;
+    case ElementType.HOTROD_SWITCHER_KEY:
     case ElementType.BACK_BUTTON:
     case ElementType.BACK_TO_KEYBOARD:
+      if (view.type == ElementType.HOTROD_SWITCHER_KEY &&
+          !this.adapter_.isHotrod) {
+        return;
+      }
       if (e.type == EventType.POINTER_OUT || e.type == EventType.POINTER_UP) {
         view.setHighlighted(false);
       } else if (e.type == EventType.POINTER_DOWN ||
@@ -1038,7 +1116,12 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
         view.setHighlighted(true);
       }
       if (e.type == EventType.POINTER_UP) {
-        this.switchToKeyset(this.container_.currentKeysetView.fromKeyset);
+        var backToKeyset = this.container_.currentKeysetView.fromKeyset;
+        if (view.type == ElementType.HOTROD_SWITCHER_KEY &&
+            this.adapter_.isHotrod) {
+          backToKeyset = Controller.US_COMPACT_QWERTY_CODE_;
+        }
+        this.switchToKeyset(backToKeyset);
         this.clearCandidates_();
         this.soundController_.onKeyUp(view.type);
       }
@@ -1067,6 +1150,16 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
       if (e.type == EventType.POINTER_UP) {
         if (view.candidateType == CandidateType.CANDIDATE) {
           this.adapter_.selectCandidate(view.candidate);
+          if (this.candidatesSetByGestureTyping_) {
+            var type = this.getGestureEventTypeForCandidateID_(
+                view.candidate[Name.CANDIDATE_ID]);
+            if (type) {
+              this.statistics_.recordEnum(
+                  Statistics.GESTURE_TYPING_METRIC_NAME,
+                  type,
+                  Statistics.GestureTypingEvent.MAX);
+            }
+          }
         } else if (view.candidateType == CandidateType.NUMBER) {
           this.adapter_.sendKeyDownAndUpEvent(
               view.candidate[Name.CANDIDATE], '');
@@ -1099,6 +1192,10 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
       return;
 
     case ElementType.MENU_ITEM:
+      if (this.adapter_.isHotrod) {
+        // Disable menu items in hotrod. Fix this if hotrod needs i18n support.
+        return;
+      }
       view = /** @type {!i18n.input.chrome.inputview.elements.content.
           MenuItem} */ (view);
       if (e.type == EventType.POINTER_UP) {
@@ -1172,12 +1269,6 @@ Controller.prototype.handlePointerAction_ = function(view, e) {
     case ElementType.FLOATING_VIEW:
       if (e.type == EventType.POINTER_UP && this.container_.floatingView) {
         this.container_.floatingView.hide();
-      }
-      return;
-    case ElementType.RESIZE:
-      if (e.type == EventType.POINTER_UP) {
-        goog.dom.classlist.toggle(this.container_.getElement(), Css.SMALL);
-        this.resize();
       }
       return;
     case ElementType.CUT:
@@ -1376,7 +1467,9 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
             EnSwitcherKey} */ (softKey);
         this.adapter_.toggleLanguageState(this.model_.stateManager.isEnMode);
         this.model_.stateManager.isEnMode = !this.model_.stateManager.isEnMode;
-        key.update();
+        if (!this.updateToggleLanguageKeyset_()) {
+          key.update();
+        }
       }
       break;
     case ElementType.SPACE_KEY:
@@ -1397,6 +1490,10 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         // Return to the letter keyset.
         this.switchToKeyset(key.toKeyset);
         this.returnToLetterKeysetOnSpace_ = false;
+      }
+      var isHwt = Controller.HANDWRITING_VIEW_CODE_ == this.currentKeyset_;
+      if (isHwt) {
+        this.container_.cleanStroke();
       }
       break;
 
@@ -1436,8 +1533,14 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         this.model_.stateManager.triggerChording();
         var ch = key.getActiveCharacter();
         if (ch.length == 1) {
-          this.adapter_.sendKeyDownAndUpEvent(key.getActiveCharacter(), '', 0,
+          if (this.currentKeyset_.indexOf('symbol') != -1) {
+            this.adapter_.sendKeyDownAndUpEvent(key.getActiveCharacter(),
+                KeyCodes.SYMBOL, 0, this.getSpatialData_(key, e.x, e.y));
+          }
+          else {
+            this.adapter_.sendKeyDownAndUpEvent(key.getActiveCharacter(), '', 0,
               this.getSpatialData_(key, e.x, e.y));
+          }
         } else if (ch.length > 1) {
           // Some compact keys contains more than 1 characters, such as '.com',
           // 'http://', etc. Those keys should trigger a direct commit text
@@ -1475,10 +1578,7 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         var defaultFullKeyset = this.initialKeyset_.split(/\./)[0];
         var enableCompact = !this.adapter_.isA11yMode && goog.array.contains(
             util.KEYSETS_HAVE_COMPACT, defaultFullKeyset);
-        if (defaultFullKeyset == 'zhuyin' &&
-            !this.adapter_.features.isEnabled(FeatureName.EXPERIMENTAL) ||
-            this.languageCode_ == 'ko') {
-          // Hides 'switch to compact' for zhuyin when not in experimental env.
+        if (this.languageCode_ == 'ko') {
           enableCompact = false;
         }
         var hasHwt = !this.adapter_.isPasswordBox() &&
@@ -1487,12 +1587,10 @@ Controller.prototype.handlePointerEventForSoftKey_ = function(softKey, e) {
         var hasEmoji = !this.adapter_.isPasswordBox();
         var enableSettings = this.shouldEnableSettings() &&
             !!window.inputview && !!inputview.openSettings;
-        var enableFVK = this.adapter_.isFloatingVirtualKeyboardEnabled();
         this.adapter_.getInputMethods(function(inputMethods) {
           this.container_.menuView.show(key, defaultFullKeyset, isCompact,
               enableCompact, this.currentInputMethod_, inputMethods, hasHwt,
-              enableSettings, hasEmoji, this.adapter_.isA11yMode, enableFVK,
-              this.adapter_.isFloating);
+              enableSettings, hasEmoji, this.adapter_.isA11yMode);
         }.bind(this));
       }
       break;
@@ -1560,19 +1658,24 @@ Controller.prototype.stopBackspaceAutoRepeat_ = function() {
  * @private
  */
 Controller.prototype.backspaceTick_ = function() {
-  if (this.backspaceRepeated_ >= Controller.BACKSPACE_REPEAT_LIMIT_) {
-    this.stopBackspaceAutoRepeat_();
-    return;
-  }
   this.backspaceRepeated_++;
   this.backspaceDown_();
   this.soundController_.onKeyRepeat(ElementType.BACKSPACE_KEY);
 
   if (this.backspaceAutoRepeat_) {
-    this.backspaceAutoRepeat_.start(75);
+    var delay = MINIMUM_BACKSPACE_REPEAT_TIME_MS;
+    if (this.backspaceRepeated_ <= BACKSPACE_REPEAT_LIMIT) {
+      var ease = goog.fx.easing.easeOut(
+          this.backspaceRepeated_ / BACKSPACE_REPEAT_LIMIT);
+      var delta = MAXIMUM_BACKSPACE_REPEAT_TIME_MS -
+          MINIMUM_BACKSPACE_REPEAT_TIME_MS;
+      delay = MAXIMUM_BACKSPACE_REPEAT_TIME_MS - (delta * ease);
+    }
+    this.backspaceAutoRepeat_.start(delay);
   } else {
     this.backspaceAutoRepeat_ = new goog.async.Delay(
-        goog.bind(this.backspaceTick_, this), 300);
+        goog.bind(this.backspaceTick_, this),
+        BACKSPACE_REPEAT_START_TIME_MS);
     this.backspaceAutoRepeat_.start();
   }
 };
@@ -1613,10 +1716,13 @@ Controller.prototype.resetAll = function() {
   this.container_.menuView.hide();
   this.container_.swipeView.reset();
   this.container_.altDataView.hide();
-  this.container_.gesturePreviewView.hide();
+  if (this.container_.gesturePreviewWindow) {
+    this.container_.gesturePreviewWindow.hide();
+  }
   if (this.container_.floatingView) {
     this.container_.floatingView.hide();
   }
+  this.stopBackspaceAutoRepeat_();
 };
 
 
@@ -1655,10 +1761,10 @@ Controller.prototype.onSurroundingTextChanged_ = function(e) {
   if (!this.model_.settings.autoCapital || !e.text) {
     return;
   }
-
+  var textBeforeCursor = e.textBeforeCursor.replace(/\u00a0/g, ' ');
   var isShiftEnabled = this.model_.stateManager.hasState(StateType.SHIFT);
   var needAutoCap = this.model_.settings.autoCapital &&
-      util.needAutoCap(e.text);
+      util.needAutoCap(textBeforeCursor);
   if (needAutoCap && !isShiftEnabled) {
     this.changeState_(StateType.SHIFT, true, false);
     this.shiftForAutoCapital_ = true;
@@ -1676,6 +1782,7 @@ Controller.prototype.onSurroundingTextChanged_ = function(e) {
 Controller.prototype.onContextBlur_ = function() {
   this.container_.cleanStroke();
   this.container_.menuView.hide();
+  this.stopBackspaceAutoRepeat_();
 };
 
 
@@ -1696,7 +1803,7 @@ Controller.prototype.backspaceDown_ = function() {
   this.statistics_.recordEnum('InputMethod.VirtualKeyboard.BackspaceOnLayout',
       this.statistics_.getLayoutType(this.currentKeyset_,
           this.adapter_.isA11yMode),
-      i18n.input.chrome.Statistics.LayoutTypes.MAX);
+      Statistics.LayoutTypes.MAX);
 };
 
 
@@ -1774,32 +1881,63 @@ Controller.prototype.onCandidatesBack_ = function(e) {
 
 
 /**
+ * Converts a word to shifted or all-caps based on the current shift state.
+ *
+ * @param {string} word The word to potentially convert.
+ * @return {string} The converted word.
+ * @private
+ */
+Controller.prototype.convertToShifted_ = function(word) {
+  if (this.model_.stateManager.getState() == StateType.SHIFT) {
+    if (this.model_.stateManager.isSticky(StateType.SHIFT) &&
+        this.model_.stateManager.isFinalSticky(StateType.SHIFT)) {
+      word = word.toUpperCase();
+    } else {
+      word = word.charAt(0).toUpperCase() + word.slice(1);
+    }
+  }
+  return word;
+};
+
+
+/**
  * Callback for gestures results event.
  *
  * @param {!i18n.input.chrome.DataSource.GesturesBackEvent} e .
  * @private
  */
 Controller.prototype.onGesturesBack_ = function(e) {
-  if (!this.commitNextGestureResult_ &&
-      goog.array.equals(e.results, this.gestureResultsCache_)) {
+  var response = e.response;
+  this.stopBackspaceAutoRepeat_();
+  if (!response.commit &&
+      goog.array.equals(response.results, this.gestureResultsCache_)) {
     // If gesture results have not updated, do not transmit to the UI.
     return;
   } else {
-    this.gestureResultsCache_ = e.results;
+    this.gestureResultsCache_ = response.results;
   }
-  var bestResult = e.results[0];
-  if (this.container_.gesturePreviewView) {
-    this.container_.gesturePreviewView.show(bestResult);
+  var bestResult = this.convertToShifted_(response.results[0]);
+  if (this.container_.gesturePreviewWindow &&
+      this.container_.gestureCanvasView.isGesturing) {
+    this.container_.gesturePreviewWindow.show(bestResult);
   }
-  // TODO: Resolve a race where multiple decoder results return after this flag
-  // is set to true.
-  if (this.commitNextGestureResult_) {
+  if (response.commit) {
     // Commit the best result.
-    this.adapter_.commitGestureResult(bestResult);
-    this.commitNextGestureResult_ = false;
+    this.adapter_.commitGestureResult(
+        bestResult, this.adapter_.isGoogleDocument());
     this.gestureResultsCache_ = [];
+    this.statistics_.recordEnum(
+        Statistics.GESTURE_TYPING_METRIC_NAME,
+        Statistics.GestureTypingEvent.TYPED,
+        Statistics.GestureTypingEvent.MAX);
+    if (this.container_.gesturePreviewWindow) {
+      new goog.async.Delay(
+          goog.bind(this.container_.gesturePreviewWindow.hide,
+                    this.container_.gesturePreviewWindow),
+          GESTURE_PREVIEW_LINGER_TIME_MS).start();
+    }
   }
-  this.showGestureCandidates_(e.results.slice(1));
+  this.showGestureCandidates_(response.results.slice(1));
 };
 
 
@@ -1814,14 +1952,16 @@ Controller.prototype.showGestureCandidates_ = function(results) {
   var candidates = [];
   for (var i = 0; i < results.length; ++i) {
     var candidate = {};
-    candidate[Name.CANDIDATE] = results[i];
+    var result = this.convertToShifted_(results[i]);
+    candidate[Name.CANDIDATE] = result;
     candidate[Name.CANDIDATE_ID] = i;
     candidate[Name.IS_EMOJI] = false;
     candidate[Name.MATCHED_LENGTHS] = 0;
     candidates.push(candidate);
   }
   // The source is empty as this is a gesture and not a series of key presses.
-  this.showCandidates_('', candidates, Controller.CandidatesOperation.NONE);
+  this.showCandidates_(
+      '', candidates, Controller.CandidatesOperation.NONE, true);
 };
 
 
@@ -1831,10 +1971,12 @@ Controller.prototype.showGestureCandidates_ = function(results) {
  * @param {string} source The source text.
  * @param {!Array.<!Object>} candidates The candidate text list.
  * @param {Controller.CandidatesOperation} operation .
+ * @param {boolean=} opt_fromGestures Whether or not the candidates are being
+ *     set by gesture typing.
  * @private
  */
 Controller.prototype.showCandidates_ = function(source, candidates,
-    operation) {
+    operation, opt_fromGestures) {
   var state = !!source ? ExpandedCandidateView.State.COMPLETION_CORRECTION :
       ExpandedCandidateView.State.PREDICTION;
   var expandView = this.container_.expandedCandidateView;
@@ -1883,6 +2025,7 @@ Controller.prototype.showCandidates_ = function(source, candidates,
         SHRINK_CANDIDATES, false);
     this.container_.currentKeysetView.setVisible(true);
   }
+  this.candidatesSetByGestureTyping_ = !!opt_fromGestures;
 };
 
 
@@ -1991,11 +2134,17 @@ Controller.prototype.maybeCreateViews_ = function() {
   // active keyset.
   var keyLen = Object.keys(this.keysetDataMap_).length;
   if (created && keyLen > 1 || !created && keyLen > 0) {
-    goog.Timer.callOnce((function() {
+    if (Controller.DISABLE_DELAY_LOADING_FOR_TEST) {
       for (var keyset in this.keysetDataMap_) {
         this.createView_(keyset);
       }
-    }).bind(this));
+    } else {
+      goog.Timer.callOnce((function() {
+        for (var keyset in this.keysetDataMap_) {
+          this.createView_(keyset);
+        }
+      }).bind(this));
+    }
   }
 };
 
@@ -2016,14 +2165,17 @@ Controller.prototype.switchToKeyset = function(keyset) {
       keyset, this.contextTypeToLastKeysetMap_[contextType] ||
       this.getActiveKeyset_(), this.languageCode_);
 
+  // If it is the sub keyset switching, emoji, or in hotrod mode, don't record
+  // the keyset.
+  if (!this.isSubKeyset_(this.currentKeyset_, keyset) &&
+      keyset != Controller.EMOJI_VIEW_CODE_ &&
+      !this.adapter_.isHotrod) {
+    // Update the keyset of current context type.
+    this.contextTypeToKeysetMap_[this.currentInputMethod_][contextType] =
+        keyset;
+  }
+
   if (ret) {
-    if (!this.isSubKeyset_(this.currentKeyset_, keyset) &&
-        keyset != Controller.EMOJI_VIEW_CODE_) {
-      // If it is the sub keyset switching, or emoji, don't record it.
-      // Update the keyset of current context type.
-      this.contextTypeToKeysetMap_[this.currentInputMethod_][contextType] =
-          keyset;
-    }
     this.updateLanguageState_(this.currentKeyset_, keyset);
     this.currentKeyset_ = keyset;
     this.resize(Controller.DEV);
@@ -2033,20 +2185,19 @@ Controller.prototype.switchToKeyset = function(keyset) {
   } else {
     // Sets the current keyset for delay switching.
     this.currentKeyset_ = keyset;
-    if (keyset != Controller.EMOJI_VIEW_CODE_) {  // Emoji is temp keyset.
-      this.contextTypeToKeysetMap_[this.currentInputMethod_][contextType] =
-          keyset;
-    }
     this.loadResource_(keyset);
   }
 
   // TODO: The 'us' part of this code is a workaround an issue where other xkb
   // languages seem to be sharing options between each other.
   this.isKeysetUSCompact_ =
-      this.currentKeyset_.indexOf(Controller.US_COMPACT_PREFIX_) >= 0;
+      this.currentKeyset_.indexOf(Controller.US_COMPACT_QWERTY_CODE_) >= 0;
   // If we're switching to a new keyset, we don't want spacebar to trigger
   // another keyset switch.
   this.returnToLetterKeysetOnSpace_ = false;
+  if (this.gestureTypingEnabled_()) {
+    this.container_.gestureCanvasView.clear();
+  }
 };
 
 
@@ -2130,13 +2281,16 @@ Controller.prototype.resize = function(opt_preventResizeTo) {
     }
     candidateViewHeight = SizeSpec.NON_A11Y_CANDIDATE_VIEW_HEIGHT;
   }
-  width = this.adapter_.isFloating ?
+  var isFloatingMode = this.adapter_.isFloatingVirtualKeyboardEnabled();
+  width = isFloatingMode ?
       Math.floor(screen.width * widthPercent) : screen.width;
-  widthPercent = this.adapter_.isFloating ? 1.0 : widthPercent;
-  if (goog.dom.classlist.contains(this.container_.getElement(), Css.SMALL)) {
-    height = SizeSpec.SMALL_SIZE_HEIGHT;
-    width = SizeSpec.SMALL_SIZE_WIDTH;
-    candidateViewHeight = SizeSpec.SMALL_SIZE_CANDIDATE_VIEW_HEIGHT;
+  widthPercent = isFloatingMode ? 1.0 : widthPercent;
+
+  // Floating virtual keyboard needs to be placed in the bottom of screen and
+  // centered when initially shows up. innerHeight == 0 is used as heuristic to
+  // check if keyboard is showing up for the first time.
+  if (isFloatingMode && window.innerHeight == 0) {
+    window.moveTo((screen.width - width) / 2, screen.height - height);
   }
 
   if ((window.innerHeight != height || window.innerWidth != width) &&
@@ -2399,6 +2553,7 @@ Controller.prototype.onUpdateToggleLanguageState_ = function(e) {
     // e.msg value means whether is Chinese mode now.
     if (this.model_.stateManager.isEnMode == e.msg) {
       this.model_.stateManager.isEnMode = !e.msg;
+      this.updateToggleLanguageKeyset_();
       this.container_.currentKeysetView.update();
     }
   } else {
@@ -2419,4 +2574,31 @@ Controller.prototype.onUpdateToggleLanguageState_ = function(e) {
     }
   }
 };
+
+
+/**
+ * Update keyset when language state changes.
+ *
+ * @return {boolean}
+ * @private
+ */
+Controller.prototype.updateToggleLanguageKeyset_ = function() {
+  var pos = this.currentKeyset_.indexOf('.us');
+  var toKeyset;
+  if (pos > 0) {
+    toKeyset = this.currentKeyset_.replace('.us', '');
+    if (goog.array.contains(util.KEYSETS_SWITCH_WITH_US, toKeyset)) {
+      this.switchToKeyset(toKeyset);
+      return true;
+    }
+  }
+  else if (goog.array.contains(util.KEYSETS_SWITCH_WITH_US,
+      this.currentKeyset_)) {
+    toKeyset = this.currentKeyset_ + '.us';
+    this.switchToKeyset(toKeyset);
+      return true;
+  }
+  return false;
+};
+
 });  // goog.scope

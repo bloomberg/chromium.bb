@@ -13,13 +13,13 @@
 //
 goog.provide('i18n.input.chrome.inputview.content.Constants');
 
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.StateType');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 goog.scope(function() {
 
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 /**
@@ -75,6 +75,11 @@ i18n.input.chrome.inputview.content.Constants.NON_LETTER_KEYS = {
     'iconCssClass': i18n.input.chrome.inputview.Css.GLOBE_ICON,
     'type': ElementType.GLOBE_KEY,
     'id': 'Globe'
+  },
+  HOTROD_SWITCHER: {
+    'iconCssClass': i18n.input.chrome.inputview.Css.BACK_TO_KEYBOARD_ICON,
+    'type': ElementType.HOTROD_SWITCHER_KEY,
+    'id': 'HotrodSwitch'
   }
 };
 

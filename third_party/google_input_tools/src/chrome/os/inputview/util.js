@@ -52,6 +52,34 @@ util.DISPLAY_MAPPING = {
 
 
 /**
+ * Special lower to upper case mapping.
+ *
+ * @private {!Object.<string, string>}
+ */
+util.CASE_LOWER_TO_UPPER_MAPPING_ = {
+  '\u00b5': '\u00b5',
+  // Korean characters.
+  '\u3142': '\u3143',
+  '\u3148': '\u3149',
+  '\u3137': '\u3138',
+  '\u3131': '\u3132',
+  '\u3145': '\u3146',
+  '\u1162': '\u1164',
+  '\u1166': '\u1168'
+};
+
+
+/**
+ * Special upper to lower case mapping.
+ *
+ * @private {!Object.<string, string>}
+ */
+util.CASE_UPPER_TO_LOWER_MAPPING_ = {
+  '\u0049': '\u0131'
+};
+
+
+/**
  * The keysets using US keyboard layouts.
  *
  * @type {!Array.<string>}
@@ -65,7 +93,17 @@ util.KEYSETS_USE_US = [
   'pinyin-zh-TW',
   'quick',
   't13n',
-  'wubi'
+  'wubi',
+  'zhuyin.us',
+  'ko.set2.us',
+  'ko.set390.us',
+  'ko.set3final.us',
+  'ko.set3sun.us',
+  'ko.romaja.us',
+  'ko.ahn.us',
+  'ko.set2y.us',
+  'ko.set3yet.us',
+  'ko.set32.us'
 ];
 
 
@@ -84,7 +122,27 @@ util.KEYSETS_HAVE_EN_SWTICHER = [
   'pinyin-zh-TW',
   'quick',
   'wubi',
-  'zhuyin'
+  'zhuyin',
+  'zhuyin.us'
+];
+
+
+/**
+ * The keysets that can switch with US keyboard layouts.
+ *
+ * @type {!Array.<string>}
+ */
+util.KEYSETS_SWITCH_WITH_US = [
+  'zhuyin',
+  'ko.set2',
+  'ko.set390',
+  'ko.set3final',
+  'ko.set3sun',
+  'ko.romaja',
+  'ko.ahn',
+  'ko.set2y',
+  'ko.set3yet',
+  'ko.set32'
 ];
 
 
@@ -214,11 +272,11 @@ util.getPropertyValue = function(elem, property) {
  * @return {string} The uppercase of the character.
  */
 util.toUpper = function(character) {
-  if (character == '\u00b5') {
-    return '\u00b5';
-  } else {
-    return character.toUpperCase();
+  var upper = util.CASE_LOWER_TO_UPPER_MAPPING_[character];
+  if (upper) {
+    return upper;
   }
+  return character.toUpperCase();
 };
 
 
@@ -229,8 +287,9 @@ util.toUpper = function(character) {
  * @return {string} The lower case of the character.
  */
 util.toLower = function(character) {
-  if (character == '\u0049') {
-    return '\u0131';
+  var lower = util.CASE_UPPER_TO_LOWER_MAPPING_[character];
+  if (lower) {
+    return lower;
   }
   return character.toLowerCase();
 };
@@ -327,63 +386,4 @@ util.getConfigName = function(keyboardCode) {
   // Strips out all the suffixes in the keyboard code.
   return keyboardCode.replace(/\..*$/, '');
 };
-
-
-/**
- * Checks that the word is a valid delete from the old to new context.
- *
- * @param {string} oldContext The old context.
- * @param {string} newContext The new context.
- * @param {string} deletionCandidate A possible word deletion.
- *
- * @return {boolean} Whether the deletion was valid.
- */
-util.isPossibleDelete = function(
-    oldContext, newContext, deletionCandidate) {
-  // Check that deletionCandidate exists in oldContext. We don't check if it's a
-  // tail since our heuristic may have trimmed whitespace.
-  var rootEnd = oldContext.lastIndexOf(deletionCandidate);
-  if (rootEnd != -1) {
-    // Check that remaining text in root persisted in newContext.
-    var root = oldContext.slice(0, rootEnd);
-    return root == newContext.slice(-rootEnd);
-  }
-  return false;
-};
-
-
-/**
- * Checks whether a letter deletion would cause the observed context transform.
- *
- * @param {string} oldContext The old context.
- * @param {string} newContext The new context.
- *
- * @return {boolean} Whether the transform is valid.
- */
-util.isLetterDelete = function(oldContext, newContext) {
-  if (oldContext == '') {
-    return false;
-  }
-  // Handle buffer overflow.
-  if (oldContext.length == newContext.length) {
-    return util.isLetterDelete(oldContext, newContext.slice(1));
-  }
-  return oldContext.length == newContext.length + 1 &&
-      oldContext.indexOf(newContext) == 0;
-};
-
-
-/**
- * Checks whether a letter restoration would cause the observed context
- * transform.
- *
- * @param {string} oldContext The old context.
- * @param {string} newContext The new context.
- *
- * @return {boolean} Whether the transform is valid.
- */
-util.isLetterRestore = function(oldContext, newContext) {
-  return util.isLetterDelete(newContext, oldContext);
-};
-
 });  // goog.scope

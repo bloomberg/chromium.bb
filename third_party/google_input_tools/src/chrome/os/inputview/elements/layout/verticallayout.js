@@ -14,9 +14,9 @@
 goog.provide('i18n.input.chrome.inputview.elements.layout.VerticalLayout');
 
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.Weightable');
 goog.require('i18n.input.chrome.inputview.util');
 
@@ -30,7 +30,7 @@ goog.scope(function() {
  *
  * @param {string} id The id.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
- * @param {!i18n.input.chrome.inputview.elements.ElementType=} opt_type The sub
+ * @param {!i18n.input.chrome.ElementType=} opt_type The sub
  *     type.
  * @constructor
  * @extends {i18n.input.chrome.inputview.elements.Element}
@@ -38,7 +38,7 @@ goog.scope(function() {
  */
 i18n.input.chrome.inputview.elements.layout.VerticalLayout = function(id,
     opt_eventTarget, opt_type) {
-  var type = opt_type || i18n.input.chrome.inputview.elements.ElementType.
+  var type = opt_type || i18n.input.chrome.ElementType.
       VERTICAL_LAYOUT;
   goog.base(this, id, type, opt_eventTarget);
 };

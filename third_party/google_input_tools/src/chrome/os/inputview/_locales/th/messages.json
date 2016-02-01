@@ -6,7 +6,7 @@
     "message": "\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e44\u0e1b\u0e22\u0e31\u0e07\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e2a\u0e48\u0e27\u0e19\u0e15\u0e31\u0e27"
   },
   "add_word_to_dictionary": {
-    "message": "\u0e40\u0e1e\u0e34\u0e48\u0e21 \"$1\" \u0e43\u0e19\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21",
+    "message": "\u0e40\u0e1e\u0e34\u0e48\u0e21 \"$1\" \u0e25\u0e07\u0e43\u0e19\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -29,16 +29,16 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e41\u0e1a\u0e1a\u0e2d\u0e2d\u0e01\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e20\u0e32\u0e29\u0e32\u0e2d\u0e32\u0e23\u0e4c\u0e40\u0e21\u0e40\u0e19\u0e35\u0e22"
   },
   "appnamejpkeyboard": {
-    "message": "\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19\u0e02\u0e2d\u0e07 Google (\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19\u0e02\u0e2d\u0e07 Google (\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e2a\u0e2b\u0e23\u0e31\u0e10\u0e2f)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "\u0e01\u0e32\u0e23\u0e41\u0e01\u0e49\u0e44\u0e02\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34"
   },
   "backspace": {
-    "message": "\u0e22\u0e49\u0e2d\u0e19\u0e01\u0e25\u0e31\u0e1a"
+    "message": "\u0e25\u0e1a\u0e16\u0e2d\u0e22\u0e2b\u0e25\u0e31\u0e07"
   },
   "basic": {
     "message": "\u0e1e\u0e37\u0e49\u0e19\u0e10\u0e32\u0e19"
@@ -86,112 +86,112 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2a\u0e27\u0e34\u0e2a (\u0e40\u0e22\u0e2d\u0e23\u0e21\u0e31\u0e19)"
   },
   "chos_inputtool_description": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e02\u0e2d\u0e07 Google \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a Chrome OS \u0e0a\u0e48\u0e27\u0e22\u0e43\u0e2b\u0e49\u0e04\u0e38\u0e13\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e43\u0e19\u0e20\u0e32\u0e29\u0e32\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e44\u0e14\u0e49\u0e1a\u0e19 Chrome OS"
+    "message": "Google \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a Chrome OS \u0e0a\u0e48\u0e27\u0e22\u0e43\u0e2b\u0e49\u0e04\u0e38\u0e13\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e43\u0e19\u0e20\u0e32\u0e29\u0e32\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e44\u0e14\u0e49\u0e1a\u0e19 Chrome OS"
   },
   "chos_inputtool_title": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e02\u0e2d\u0e07 Google"
+    "message": "Google \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e21\u0e37\u0e2d\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25"
   },
   "compositionmodedirect": {
-    "message": "\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e42\u0e14\u0e22\u0e15\u0e23\u0e07"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "\u0e25\u0e30\u0e15\u0e34\u0e19\u0e15\u0e31\u0e27\u0e01\u0e27\u0e49\u0e32\u0e07"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
-    "message": "\u0e04\u0e30\u0e15\u0e30\u0e04\u0e30\u0e19\u0e30"
+    "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "\u0e25\u0e30\u0e15\u0e34\u0e19"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "\u0e04\u0e30\u0e15\u0e30\u0e04\u0e30\u0e19\u0e30\u0e41\u0e1a\u0e1a\u0e04\u0e23\u0e36\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e01\u0e27\u0e49\u0e32\u0e07"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
-    "message": "\u0e2e\u0e34\u0e23\u0e30\u0e07\u0e30\u0e19\u0e30"
+    "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "\u0e1e\u0e37\u0e49\u0e19\u0e10\u0e32\u0e19"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "\u0e25\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e1b\u0e23\u0e31\u0e1a\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e43\u0e19\u0e41\u0e1a\u0e1a\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "\u0e1b\u0e23\u0e30\u0e27\u0e31\u0e15\u0e34\u0e01\u0e32\u0e23\u0e41\u0e1b\u0e25\u0e07"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "\u0e25\u0e1a\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e15\u0e48\u0e2d\u0e44\u0e1b\u0e19\u0e35\u0e49:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "\u0e25\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e1b\u0e23\u0e31\u0e1a\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e43\u0e19\u0e41\u0e1a\u0e1a\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "\u0e1b\u0e23\u0e30\u0e27\u0e31\u0e15\u0e34\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "\u0e25\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e1b\u0e23\u0e31\u0e1a\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e43\u0e19\u0e41\u0e1a\u0e1a\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "\u0e25\u0e34\u0e02\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c \u00a9 2013 Google Inc. \u0e2a\u0e07\u0e27\u0e19\u0e25\u0e34\u0e02\u0e2a\u0e34\u0e17\u0e18\u0e34\u0e4c"
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01"
+    "message": "Cancel"
   },
   "configdialogok": {
-    "message": "\u0e15\u0e01\u0e25\u0e07"
+    "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "\u0e08\u0e31\u0e14\u0e01\u0e32\u0e23\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e04\u0e33\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13\u0e40\u0e2d\u0e07\u0e25\u0e07\u0e43\u0e19\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e04\u0e48\u0e32\u0e04\u0e33\u0e17\u0e35\u0e48\u0e41\u0e19\u0e30\u0e19\u0e33\u0e43\u0e19\u0e01\u0e32\u0e23\u0e41\u0e1b\u0e25\u0e07"
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "\u0e1b\u0e34\u0e14\u0e01\u0e32\u0e23\u0e41\u0e1b\u0e25\u0e07\u0e41\u0e25\u0e30\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33\u0e43\u0e19\u0e41\u0e1a\u0e1a\u0e02\u0e2d\u0e07\u0e04\u0e38\u0e13 \u0e23\u0e27\u0e21\u0e17\u0e31\u0e49\u0e07\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e0a\u0e48\u0e27\u0e22\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "\u0e0b\u0e2d\u0e1f\u0e15\u0e4c\u0e41\u0e27\u0e23\u0e4c\u0e19\u0e35\u0e49\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e02\u0e36\u0e49\u0e19\u0e42\u0e14\u0e22<a href=\"./credits_en.html\">\u0e0b\u0e2d\u0e1f\u0e15\u0e4c\u0e41\u0e27\u0e23\u0e4c\u0e42\u0e2d\u0e40\u0e1e\u0e19\u0e0b\u0e2d\u0e23\u0e4c\u0e2a</a>"
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "\u0e42\u0e2b\u0e21\u0e14\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
-    "message": "\u0e04\u0e30\u0e19\u0e30"
+    "message": "Kana"
   },
   "configpreeditmethodromaji": {
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e40\u0e1b\u0e47\u0e19\u0e2a\u0e48\u0e27\u0e19\u0e15\u0e31\u0e27"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e27\u0e23\u0e23\u0e04\u0e15\u0e2d\u0e19:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "\u0e17\u0e32\u0e07\u0e25\u0e31\u0e14\u0e01\u0e32\u0e23\u0e40\u0e25\u0e37\u0e2d\u0e01:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "\u0e44\u0e21\u0e48\u0e21\u0e35\u0e17\u0e32\u0e07\u0e25\u0e31\u0e14"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a Keymap:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
   },
   "configsessionkeymapchromeos": {
-    "message": "\u0e23\u0e30\u0e1a\u0e1a\u0e1b\u0e0f\u0e34\u0e1a\u0e31\u0e15\u0e34\u0e01\u0e32\u0e23 Chrome"
+    "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Keymap \u0e41\u0e1a\u0e1a\u0e01\u0e33\u0e2b\u0e19\u0e14\u0e40\u0e2d\u0e07"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,52 +200,52 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "\u0e01\u0e32\u0e23\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e42\u0e2b\u0e21\u0e14\u0e14\u0e49\u0e27\u0e22\u0e41\u0e1b\u0e49\u0e19 Shift:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "\u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23\u0e41\u0e25\u0e30\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
-    "message": "\u0e04\u0e30\u0e15\u0e30\u0e04\u0e30\u0e19\u0e30"
+    "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "\u0e1b\u0e34\u0e14"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e0a\u0e48\u0e2d\u0e07\u0e27\u0e48\u0e32\u0e07:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "\u0e42\u0e2b\u0e21\u0e14\u0e15\u0e34\u0e14\u0e15\u0e32\u0e21\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "\u0e40\u0e15\u0e47\u0e21\u0e04\u0e27\u0e32\u0e21\u0e01\u0e27\u0e49\u0e32\u0e07"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "\u0e04\u0e23\u0e36\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e01\u0e27\u0e49\u0e32\u0e07"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "\u0e08\u0e33\u0e19\u0e27\u0e19\u0e04\u0e33\u0e41\u0e19\u0e30\u0e19\u0e33:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "\u0e41\u0e19\u0e30\u0e19\u0e33"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e0d\u0e25\u0e31\u0e01\u0e29\u0e13\u0e4c:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "\u0e2a\u0e48\u0e07\u0e2a\u0e16\u0e34\u0e15\u0e34\u0e01\u0e32\u0e23\u0e43\u0e0a\u0e49\u0e07\u0e32\u0e19\u0e41\u0e25\u0e30\u0e23\u0e32\u0e22\u0e07\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e02\u0e31\u0e14\u0e02\u0e49\u0e2d\u0e07\u0e44\u0e1b\u0e22\u0e31\u0e07 Google \u0e42\u0e14\u0e22\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "\u0e2a\u0e25\u0e31\u0e1a\u0e44\u0e1b\u0e40\u0e1b\u0e47\u0e19\u0e41\u0e1a\u0e1a\u0e04\u0e23\u0e36\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e01\u0e27\u0e49\u0e32\u0e07\u0e42\u0e14\u0e22\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "\u0e43\u0e0a\u0e49\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e02\u0e2d\u0e07\u0e23\u0e30\u0e1a\u0e1a"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "\u0e43\u0e0a\u0e49\u0e1b\u0e23\u0e30\u0e27\u0e31\u0e15\u0e34\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "Ctrl"
@@ -269,70 +269,70 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e04\u0e27\u0e2d\u0e23\u0e4c\u0e15\u0e35\u0e20\u0e32\u0e29\u0e32\u0e40\u0e0a\u0e47\u0e01"
   },
   "d83c_dc04": {
-    "message": "\u0e2b\u0e21\u0e32\u0e01\u0e44\u0e1e\u0e48\u0e19\u0e01\u0e01\u0e23\u0e30\u0e08\u0e2d\u0e01\u0e02\u0e2d\u0e07\u0e08\u0e35\u0e19"
+    "message": "MAHJONG TILE RED DRAGON"
   },
   "d83c_dccf": {
-    "message": "\u0e44\u0e1e\u0e48\u0e42\u0e08\u0e4a\u0e01\u0e40\u0e01\u0e2d\u0e23\u0e4c"
+    "message": "PLAYING CARD BLACK JOKER"
   },
   "d83c_dd70": {
-    "message": "\u0e40\u0e25\u0e37\u0e2d\u0e14\u0e01\u0e23\u0e38\u0e4a\u0e1b\u0e40\u0e2d"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER A"
   },
   "d83c_dd71": {
-    "message": "\u0e40\u0e25\u0e37\u0e2d\u0e14\u0e01\u0e23\u0e38\u0e4a\u0e1b\u0e1a\u0e35"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER B"
   },
   "d83c_dd7e": {
-    "message": "\u0e40\u0e25\u0e37\u0e2d\u0e14\u0e01\u0e23\u0e38\u0e4a\u0e1b\u0e42\u0e2d"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER O"
   },
   "d83c_dd7f": {
-    "message": "\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e14\u0e23\u0e16"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER P"
   },
   "d83c_dd8e": {
-    "message": "\u0e40\u0e25\u0e37\u0e2d\u0e14\u0e01\u0e23\u0e38\u0e4a\u0e1b\u0e40\u0e2d\u0e1a\u0e35"
+    "message": "NEGATIVE SQUARED AB"
   },
   "d83c_dd91": {
-    "message": "CL"
+    "message": "SQUARED CL"
   },
   "d83c_dd92": {
-    "message": "\u0e40\u0e22\u0e47\u0e19"
+    "message": "SQUARED COOL"
   },
   "d83c_dd93": {
-    "message": "\u0e1f\u0e23\u0e35"
+    "message": "SQUARED FREE"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "SQUARED ID"
   },
   "d83c_dd95": {
-    "message": "\u0e43\u0e2b\u0e21\u0e48"
+    "message": "SQUARED NEW"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "SQUARED NG"
   },
   "d83c_dd97": {
-    "message": "\u0e15\u0e01\u0e25\u0e07"
+    "message": "SQUARED OK"
   },
   "d83c_dd98": {
-    "message": "SOS"
+    "message": "SQUARED SOS"
   },
   "d83c_dd99": {
-    "message": "\u0e02\u0e36\u0e49\u0e19!"
+    "message": "SQUARED UP WITH EXCLAMATION MARK"
   },
   "d83c_dd9a": {
-    "message": "\u0e1b\u0e30\u0e17\u0e30\u0e01\u0e31\u0e1a"
+    "message": "SQUARED VS"
   },
   "d83c_de01": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \u00e2\u20ac\u02dc\u0e17\u0e35\u0e48\u0e19\u0e35\u0e48\u00e2\u20ac\u2122"
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e17\u0e35\u0e48\u0e19\u0e35\u0e48\""
   },
   "d83c_de02": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \u00e2\u20ac\u02dc\u0e1a\u0e23\u0e34\u0e01\u0e32\u0e23\u00e2\u20ac\u2122"
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e1a\u0e23\u0e34\u0e01\u0e32\u0e23\""
   },
   "d83c_de1a": {
     "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e1f\u0e23\u0e35\""
   },
   "d83c_de2f": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e08\u0e2d\u0e07\u0e41\u0e25\u0e49\u0e27\""
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e08\u0e2d\u0e07\""
   },
   "d83c_de32": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \u00e2\u20ac\u02dc\u0e15\u0e49\u0e2d\u0e07\u0e2b\u0e49\u0e32\u0e21\u00e2\u20ac\u2122"
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e15\u0e49\u0e2d\u0e07\u0e2b\u0e49\u0e32\u0e21\""
   },
   "d83c_de33": {
     "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e21\u0e35\u0e17\u0e35\u0e48\u0e27\u0e48\u0e32\u0e07\""
@@ -350,1369 +350,1369 @@
     "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e23\u0e32\u0e22\u0e40\u0e14\u0e37\u0e2d\u0e19\""
   },
   "d83c_de38": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e41\u0e2d\u0e1b\u0e1e\u0e25\u0e34\u0e40\u0e04\u0e0a\u0e31\u0e19\""
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e43\u0e1a\u0e2a\u0e21\u0e31\u0e04\u0e23\""
   },
   "d83c_de39": {
     "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e2a\u0e48\u0e27\u0e19\u0e25\u0e14\""
   },
   "d83c_de3a": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e18\u0e38\u0e23\u0e01\u0e34\u0e08\u0e2d\u0e22\u0e39\u0e48\""
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e17\u0e33\u0e07\u0e32\u0e19\""
   },
   "d83c_de50": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e02\u0e49\u0e2d\u0e44\u0e14\u0e49\u0e40\u0e1b\u0e23\u0e35\u0e22\u0e1a\""
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19 \"\u0e1b\u0e23\u0e30\u0e42\u0e22\u0e0a\u0e19\u0e4c\""
   },
   "d83c_de51": {
-    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e44\u0e14\u0e49\u0e23\u0e31\u0e1a\u0e2d\u0e19\u0e38\u0e21\u0e31\u0e15\u0e34\""
+    "message": "\u0e04\u0e33\u0e20\u0e32\u0e29\u0e32\u0e08\u0e35\u0e19 \"\u0e2d\u0e19\u0e38\u0e21\u0e31\u0e15\u0e34\""
   },
   "d83c_df00": {
-    "message": "\u0e1e\u0e32\u0e22\u0e38\u0e44\u0e0b\u0e42\u0e04\u0e25\u0e19"
+    "message": "CYCLONE"
   },
   "d83c_df01": {
-    "message": "\u0e21\u0e35\u0e2b\u0e21\u0e2d\u0e01"
+    "message": "FOGGY"
   },
   "d83c_df02": {
-    "message": "\u0e23\u0e48\u0e21"
+    "message": "CLOSED UMBRELLA"
   },
   "d83c_df03": {
-    "message": "\u0e14\u0e32\u0e27\u0e22\u0e32\u0e21\u0e04\u0e48\u0e33\u0e04\u0e37\u0e19"
+    "message": "NIGHT WITH STARS"
   },
   "d83c_df04": {
-    "message": "\u0e1e\u0e23\u0e30\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c\u0e02\u0e36\u0e49\u0e19\u0e2b\u0e25\u0e31\u0e07\u0e40\u0e02\u0e32"
+    "message": "\u0e14\u0e27\u0e07\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c\u0e02\u0e36\u0e49\u0e19\u0e40\u0e2b\u0e19\u0e37\u0e2d\u0e20\u0e39\u0e40\u0e02\u0e32"
   },
   "d83c_df05": {
-    "message": "\u0e1e\u0e23\u0e30\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c\u0e02\u0e36\u0e49\u0e19"
+    "message": "SUNRISE"
   },
   "d83c_df06": {
-    "message": "\u0e40\u0e21\u0e37\u0e2d\u0e07\u0e22\u0e32\u0e21\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c\u0e2d\u0e31\u0e2a\u0e14\u0e07"
+    "message": "CITYSCAPE AT DUSK"
   },
   "d83c_df07": {
-    "message": "\u0e1e\u0e23\u0e30\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c\u0e15\u0e01"
+    "message": "SUNSET OVER BUILDINGS"
   },
   "d83c_df08": {
-    "message": "\u0e2a\u0e32\u0e22\u0e23\u0e38\u0e49\u0e07"
+    "message": "RAINBOW"
   },
   "d83c_df09": {
-    "message": "\u0e2a\u0e30\u0e1e\u0e32\u0e19\u0e22\u0e32\u0e21\u0e04\u0e48\u0e33\u0e04\u0e37\u0e19"
+    "message": "BRIDGE AT NIGHT"
   },
   "d83c_df0a": {
-    "message": "\u0e04\u0e25\u0e37\u0e48\u0e19"
+    "message": "WATER WAVE"
   },
   "d83c_df0b": {
-    "message": "\u0e20\u0e39\u0e40\u0e02\u0e32\u0e44\u0e1f"
+    "message": "VOLCANO"
   },
   "d83c_df0c": {
-    "message": "\u0e17\u0e32\u0e07\u0e0a\u0e49\u0e32\u0e07\u0e40\u0e1c\u0e37\u0e2d\u0e01"
+    "message": "MILKY WAY"
   },
   "d83c_df0d": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e17\u0e27\u0e35\u0e1b\u0e22\u0e38\u0e42\u0e23\u0e1b-\u0e41\u0e2d\u0e1f\u0e23\u0e34\u0e01\u0e32"
+    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e17\u0e27\u0e35\u0e1b\u0e22\u0e38\u0e42\u0e23\u0e1b\u0e41\u0e2d\u0e1f\u0e23\u0e34\u0e01\u0e32"
   },
   "d83c_df0e": {
     "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e17\u0e27\u0e35\u0e1b\u0e2d\u0e40\u0e21\u0e23\u0e34\u0e01\u0e32"
   },
   "d83c_df0f": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e17\u0e27\u0e35\u0e1b\u0e40\u0e2d\u0e40\u0e0a\u0e35\u0e22-\u0e2d\u0e2d\u0e2a\u0e40\u0e15\u0e23\u0e40\u0e25\u0e35\u0e22"
+    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e17\u0e27\u0e35\u0e1b\u0e40\u0e2d\u0e40\u0e0a\u0e35\u0e22\u0e2d\u0e2d\u0e2a\u0e40\u0e15\u0e23\u0e40\u0e25\u0e35\u0e22"
   },
   "d83c_df10": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e40\u0e2a\u0e49\u0e19\u0e41\u0e27\u0e07"
+    "message": "\u0e25\u0e39\u0e01\u0e42\u0e25\u0e01\u0e21\u0e35\u0e40\u0e2a\u0e49\u0e19\u0e40\u0e21\u0e23\u0e34\u0e40\u0e14\u0e35\u0e22\u0e19"
   },
   "d83c_df11": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e14\u0e31\u0e1a"
+    "message": "NEW MOON SYMBOL"
   },
   "d83c_df12": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e02\u0e49\u0e32\u0e07\u0e02\u0e36\u0e49\u0e19"
-  },
-  "d83c_df13": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e41\u0e23\u0e01"
-  },
-  "d83c_df14": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e02\u0e49\u0e32\u0e07\u0e02\u0e36\u0e49\u0e19"
-  },
-  "d83c_df15": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e15\u0e47\u0e21\u0e14\u0e27\u0e07"
-  },
-  "d83c_df16": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e02\u0e49\u0e32\u0e07\u0e41\u0e23\u0e21"
-  },
-  "d83c_df17": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e2a\u0e38\u0e14\u0e17\u0e49\u0e32\u0e22"
-  },
-  "d83c_df18": {
-    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e02\u0e49\u0e32\u0e07\u0e41\u0e23\u0e21"
-  },
-  "d83c_df19": {
     "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27"
   },
+  "d83c_df13": {
+    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e04\u0e23\u0e36\u0e48\u0e07\u0e14\u0e27\u0e07"
+  },
+  "d83c_df14": {
+    "message": "WAXING GIBBOUS MOON SYMBOL"
+  },
+  "d83c_df15": {
+    "message": "FULL MOON SYMBOL"
+  },
+  "d83c_df16": {
+    "message": "WANING GIBBOUS MOON SYMBOL"
+  },
+  "d83c_df17": {
+    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e04\u0e23\u0e36\u0e48\u0e07\u0e14\u0e27\u0e07"
+  },
+  "d83c_df18": {
+    "message": "\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27"
+  },
+  "d83c_df19": {
+    "message": "CRESCENT MOON"
+  },
   "d83c_df1a": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e14\u0e31\u0e1a"
+    "message": "NEW MOON WITH FACE"
   },
   "d83c_df1b": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e41\u0e23\u0e01"
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27"
   },
   "d83c_df1c": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27\u0e2a\u0e38\u0e14\u0e17\u0e49\u0e32\u0e22"
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e2a\u0e35\u0e49\u0e22\u0e27"
   },
   "d83c_df1d": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c\u0e40\u0e15\u0e47\u0e21\u0e14\u0e27\u0e07"
+    "message": "FULL MOON WITH FACE"
   },
   "d83c_df1e": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1e\u0e23\u0e30\u0e2d\u0e32\u0e17\u0e34\u0e15\u0e22\u0e4c"
+    "message": "SUN WITH FACE"
   },
   "d83c_df1f": {
-    "message": "\u0e14\u0e27\u0e07\u0e14\u0e32\u0e27\u0e2a\u0e38\u0e01\u0e2a\u0e27\u0e48\u0e32\u0e07"
+    "message": "GLOWING STAR"
   },
   "d83c_df20": {
-    "message": "\u0e14\u0e32\u0e27\u0e2b\u0e32\u0e07"
+    "message": "SHOOTING STAR"
   },
   "d83c_df30": {
-    "message": "\u0e40\u0e01\u0e32\u0e25\u0e31\u0e14"
+    "message": "CHESTNUT"
   },
   "d83c_df31": {
-    "message": "\u0e15\u0e49\u0e19\u0e01\u0e25\u0e49\u0e32"
+    "message": "SEEDLING"
   },
   "d83c_df32": {
-    "message": "\u0e15\u0e49\u0e19\u0e2a\u0e19"
+    "message": "EVERGREEN TREE"
   },
   "d83c_df33": {
-    "message": "\u0e15\u0e49\u0e19\u0e44\u0e21\u0e49\u0e1c\u0e25\u0e31\u0e14\u0e43\u0e1a"
+    "message": "DECIDUOUS TREE"
   },
   "d83c_df34": {
-    "message": "\u0e15\u0e49\u0e19\u0e1b\u0e32\u0e25\u0e4c\u0e21"
+    "message": "PALM TREE"
   },
   "d83c_df35": {
-    "message": "\u0e01\u0e23\u0e30\u0e1a\u0e2d\u0e07\u0e40\u0e1e\u0e0a\u0e23"
+    "message": "CACTUS"
   },
   "d83c_df37": {
-    "message": "\u0e17\u0e34\u0e27\u0e25\u0e34\u0e1b"
+    "message": "TULIP"
   },
   "d83c_df38": {
-    "message": "\u0e14\u0e2d\u0e01\u0e0b\u0e32\u0e01\u0e38\u0e23\u0e30"
+    "message": "CHERRY BLOSSOM"
   },
   "d83c_df39": {
-    "message": "\u0e01\u0e38\u0e2b\u0e25\u0e32\u0e1a"
+    "message": "ROSE"
   },
   "d83c_df3a": {
-    "message": "\u0e0a\u0e1a\u0e32"
+    "message": "HIBISCUS"
   },
   "d83c_df3b": {
-    "message": "\u0e14\u0e2d\u0e01\u0e17\u0e32\u0e19\u0e15\u0e30\u0e27\u0e31\u0e19"
+    "message": "SUNFLOWER"
   },
   "d83c_df3c": {
-    "message": "\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49\u0e1a\u0e32\u0e19"
+    "message": "BLOSSOM"
   },
   "d83c_df3d": {
-    "message": "\u0e02\u0e49\u0e32\u0e27\u0e42\u0e1e\u0e14"
+    "message": "EAR OF MAIZE"
   },
   "d83c_df3e": {
-    "message": "\u0e15\u0e49\u0e19\u0e02\u0e49\u0e32\u0e27"
+    "message": "EAR OF RICE"
   },
   "d83c_df3f": {
-    "message": "\u0e2a\u0e21\u0e38\u0e19\u0e44\u0e1e\u0e23"
+    "message": "HERB"
   },
   "d83c_df40": {
-    "message": "\u0e43\u0e1a\u0e42\u0e04\u0e25\u0e40\u0e27\u0e2d\u0e23\u0e4c 4 \u0e41\u0e09\u0e01"
+    "message": "FOUR LEAF CLOVER"
   },
   "d83c_df41": {
-    "message": "\u0e43\u0e1a\u0e40\u0e21\u0e40\u0e1b\u0e34\u0e49\u0e25"
+    "message": "MAPLE LEAF"
   },
   "d83c_df42": {
-    "message": "\u0e43\u0e1a\u0e44\u0e21\u0e49\u0e23\u0e48\u0e27\u0e07"
+    "message": "FALLEN LEAF"
   },
   "d83c_df43": {
-    "message": "\u0e43\u0e1a\u0e44\u0e21\u0e49\u0e43\u0e19\u0e2a\u0e32\u0e22\u0e25\u0e21"
+    "message": "LEAF FLUTTERING IN WIND"
   },
   "d83c_df44": {
-    "message": "\u0e40\u0e2b\u0e47\u0e14"
+    "message": "MUSHROOM"
   },
   "d83c_df45": {
-    "message": "\u0e21\u0e30\u0e40\u0e02\u0e37\u0e2d\u0e40\u0e17\u0e28"
+    "message": "TOMATO"
   },
   "d83c_df46": {
-    "message": "\u0e21\u0e30\u0e40\u0e02\u0e37\u0e2d\u0e21\u0e48\u0e27\u0e07"
+    "message": "AUBERGINE"
   },
   "d83c_df47": {
-    "message": "\u0e2d\u0e07\u0e38\u0e48\u0e19"
+    "message": "GRAPES"
   },
   "d83c_df48": {
-    "message": "\u0e41\u0e15\u0e07\u0e44\u0e17\u0e22"
+    "message": "MELON"
   },
   "d83c_df49": {
-    "message": "\u0e41\u0e15\u0e07\u0e42\u0e21"
+    "message": "WATERMELON"
   },
   "d83c_df4a": {
-    "message": "\u0e2a\u0e49\u0e21"
+    "message": "TANGERINE"
   },
   "d83c_df4b": {
-    "message": "\u0e21\u0e30\u0e19\u0e32\u0e27"
+    "message": "LEMON"
   },
   "d83c_df4c": {
-    "message": "\u0e01\u0e25\u0e49\u0e27\u0e22"
+    "message": "BANANA"
   },
   "d83c_df4d": {
-    "message": "\u0e2a\u0e31\u0e1a\u0e1b\u0e30\u0e23\u0e14"
+    "message": "PINEAPPLE"
   },
   "d83c_df4e": {
-    "message": "\u0e41\u0e2d\u0e1b\u0e40\u0e1b\u0e34\u0e49\u0e25\u0e41\u0e14\u0e07"
+    "message": "RED APPLE"
   },
   "d83c_df4f": {
-    "message": "\u0e41\u0e2d\u0e1b\u0e40\u0e1b\u0e34\u0e49\u0e25\u0e40\u0e02\u0e35\u0e22\u0e27"
+    "message": "GREEN APPLE"
   },
   "d83c_df50": {
-    "message": "\u0e41\u0e1e\u0e23\u0e4c"
+    "message": "PEAR"
   },
   "d83c_df51": {
-    "message": "\u0e1e\u0e35\u0e0a"
+    "message": "PEACH"
   },
   "d83c_df52": {
-    "message": "\u0e40\u0e0a\u0e2d\u0e23\u0e4c\u0e23\u0e35"
+    "message": "CHERRIES"
   },
   "d83c_df53": {
-    "message": "\u0e2a\u0e15\u0e23\u0e2d\u0e27\u0e4c\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e23\u0e35"
+    "message": "STRAWBERRY"
   },
   "d83c_df54": {
-    "message": "\u0e41\u0e2e\u0e21\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e40\u0e01\u0e2d\u0e23\u0e4c"
+    "message": "HAMBURGER"
   },
   "d83c_df55": {
-    "message": "\u0e1e\u0e34\u0e0b\u0e0b\u0e48\u0e32 1 \u0e0a\u0e34\u0e49\u0e19"
+    "message": "SLICE OF PIZZA"
   },
   "d83c_df56": {
-    "message": "\u0e40\u0e19\u0e37\u0e49\u0e2d"
+    "message": "MEAT ON BONE"
   },
   "d83c_df57": {
-    "message": "\u0e19\u0e48\u0e2d\u0e07\u0e44\u0e01\u0e48"
+    "message": "POULTRY LEG"
   },
   "d83c_df58": {
-    "message": "\u0e41\u0e04\u0e23\u0e47\u0e01\u0e40\u0e01\u0e2d\u0e23\u0e4c\u0e17\u0e33\u0e08\u0e32\u0e01\u0e02\u0e49\u0e32\u0e27"
+    "message": "RICE CRACKER"
   },
   "d83c_df59": {
-    "message": "\u0e02\u0e49\u0e32\u0e27\u0e1b\u0e31\u0e49\u0e19"
+    "message": "RICE BALL"
   },
   "d83c_df5a": {
-    "message": "\u0e02\u0e49\u0e32\u0e27\u0e2a\u0e27\u0e22"
+    "message": "COOKED RICE"
   },
   "d83c_df5b": {
-    "message": "\u0e02\u0e49\u0e32\u0e27\u0e41\u0e01\u0e07\u0e01\u0e30\u0e2b\u0e23\u0e35\u0e48"
+    "message": "CURRY AND RICE"
   },
   "d83c_df5c": {
-    "message": "\u0e23\u0e32\u0e40\u0e21\u0e47\u0e07"
+    "message": "STEAMING BOWL"
   },
   "d83c_df5d": {
-    "message": "\u0e2a\u0e1b\u0e32\u0e40\u0e01\u0e15\u0e15\u0e35"
+    "message": "SPAGHETTI"
   },
   "d83c_df5e": {
-    "message": "\u0e02\u0e19\u0e21\u0e1b\u0e31\u0e07"
+    "message": "BREAD"
   },
   "d83c_df5f": {
-    "message": "\u0e21\u0e31\u0e19\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e17\u0e2d\u0e14"
+    "message": "FRENCH FRIES"
   },
   "d83c_df60": {
-    "message": "\u0e21\u0e31\u0e19\u0e40\u0e1c\u0e32"
+    "message": "ROASTED SWEET POTATO"
   },
   "d83c_df61": {
-    "message": "\u0e42\u0e21\u0e08\u0e34"
+    "message": "DANGO"
   },
   "d83c_df62": {
-    "message": "\u0e42\u0e2d\u0e40\u0e14\u0e49\u0e07"
+    "message": "ODEN"
   },
   "d83c_df63": {
-    "message": "\u0e0b\u0e39\u0e0a\u0e34"
+    "message": "SUSHI"
   },
   "d83c_df64": {
-    "message": "\u0e01\u0e38\u0e49\u0e07\u0e17\u0e2d\u0e14"
+    "message": "FRIED SHRIMP"
   },
   "d83c_df65": {
-    "message": "\u0e25\u0e39\u0e01\u0e0a\u0e34\u0e49\u0e19\u0e1b\u0e25\u0e32"
+    "message": "FISH CAKE WITH SWIRL DESIGN"
   },
   "d83c_df66": {
-    "message": "\u0e0b\u0e2d\u0e1f\u0e15\u0e4c\u0e04\u0e23\u0e35\u0e21"
+    "message": "SOFT ICE CREAM"
   },
   "d83c_df67": {
-    "message": "\u0e19\u0e49\u0e33\u0e41\u0e02\u0e47\u0e07\u0e44\u0e2a"
+    "message": "SHAVED ICE"
   },
   "d83c_df68": {
-    "message": "\u0e44\u0e2d\u0e28\u0e01\u0e23\u0e35\u0e21"
+    "message": "ICE CREAM"
   },
   "d83c_df69": {
-    "message": "\u0e42\u0e14\u0e19\u0e31\u0e17"
+    "message": "DOUGHNUT"
   },
   "d83c_df6a": {
-    "message": "\u0e04\u0e38\u0e01\u0e01\u0e35\u0e49"
+    "message": "COOKIE"
   },
   "d83c_df6b": {
-    "message": "\u0e0a\u0e47\u0e2d\u0e01\u0e42\u0e01\u0e41\u0e25\u0e47\u0e15"
+    "message": "CHOCOLATE BAR"
   },
   "d83c_df6c": {
-    "message": "\u0e25\u0e39\u0e01\u0e01\u0e27\u0e32\u0e14"
+    "message": "CANDY"
   },
   "d83c_df6d": {
-    "message": "\u0e25\u0e39\u0e01\u0e2d\u0e21"
+    "message": "LOLLIPOP"
   },
   "d83c_df6e": {
-    "message": "\u0e04\u0e31\u0e2a\u0e15\u0e32\u0e23\u0e4c\u0e14"
+    "message": "CUSTARD"
   },
   "d83c_df6f": {
-    "message": "\u0e42\u0e16\u0e19\u0e49\u0e33\u0e1c\u0e36\u0e49\u0e07"
+    "message": "HONEY POT"
   },
   "d83c_df70": {
-    "message": "\u0e0a\u0e2d\u0e23\u0e4c\u0e15\u0e40\u0e04\u0e49\u0e01"
+    "message": "SHORTCAKE"
   },
   "d83c_df71": {
-    "message": "\u0e40\u0e1a\u0e47\u0e19\u0e42\u0e15\u0e30"
+    "message": "BENTO BOX"
   },
   "d83c_df72": {
-    "message": "\u0e2a\u0e15\u0e39"
+    "message": "POT OF FOOD"
   },
   "d83c_df73": {
-    "message": "\u0e01\u0e23\u0e30\u0e17\u0e30"
+    "message": "COOKING"
   },
   "d83c_df74": {
-    "message": "\u0e21\u0e35\u0e14\u0e41\u0e25\u0e30\u0e2a\u0e49\u0e2d\u0e21"
+    "message": "FORK AND KNIFE"
   },
   "d83c_df75": {
-    "message": "\u0e16\u0e49\u0e27\u0e22\u0e0a\u0e32"
+    "message": "TEACUP WITHOUT HANDLE"
   },
   "d83c_df76": {
-    "message": "\u0e2a\u0e32\u0e40\u0e01"
+    "message": "SAKE BOTTLE AND CUP"
   },
   "d83c_df77": {
-    "message": "\u0e44\u0e27\u0e19\u0e4c"
+    "message": "WINE GLASS"
   },
   "d83c_df78": {
-    "message": "\u0e04\u0e47\u0e2d\u0e01\u0e40\u0e17\u0e25"
+    "message": "COCKTAIL GLASS"
   },
   "d83c_df79": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e14\u0e37\u0e48\u0e21\u0e40\u0e02\u0e15\u0e23\u0e49\u0e2d\u0e19"
+    "message": "TROPICAL DRINK"
   },
   "d83c_df7a": {
-    "message": "\u0e40\u0e1a\u0e35\u0e22\u0e23\u0e4c"
+    "message": "BEER MUG"
   },
   "d83c_df7b": {
-    "message": "\u0e41\u0e01\u0e49\u0e27\u0e40\u0e1a\u0e35\u0e22\u0e23\u0e4c"
+    "message": "CLINKING BEER MUGS"
   },
   "d83c_df7c": {
-    "message": "\u0e02\u0e27\u0e14\u0e19\u0e21\u0e40\u0e14\u0e47\u0e01"
+    "message": "BABY BOTTLE"
   },
   "d83c_df80": {
-    "message": "\u0e42\u0e1a\u0e27\u0e4c"
+    "message": "RIBBON"
   },
   "d83c_df81": {
-    "message": "\u0e02\u0e2d\u0e07\u0e02\u0e27\u0e31\u0e0d"
+    "message": "WRAPPED PRESENT"
   },
   "d83c_df82": {
-    "message": "\u0e40\u0e04\u0e49\u0e01\u0e27\u0e31\u0e19\u0e40\u0e01\u0e34\u0e14"
+    "message": "BIRTHDAY CAKE"
   },
   "d83c_df83": {
-    "message": "\u0e15\u0e30\u0e40\u0e01\u0e35\u0e22\u0e07\u0e1f\u0e31\u0e01\u0e17\u0e2d\u0e07"
+    "message": "JACK-O-LANTERN"
   },
   "d83c_df84": {
-    "message": "\u0e15\u0e49\u0e19\u0e04\u0e23\u0e34\u0e2a\u0e15\u0e4c\u0e21\u0e32\u0e2a"
+    "message": "CHRISTMAS TREE"
   },
   "d83c_df85": {
-    "message": "\u0e0b\u0e32\u0e19\u0e15\u0e49\u0e32"
+    "message": "FATHER CHRISTMAS"
   },
   "d83c_df86": {
-    "message": "\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49\u0e44\u0e1f\u0e41\u0e1a\u0e1a\u0e1e\u0e25\u0e38"
+    "message": "FIREWORKS"
   },
   "d83c_df87": {
-    "message": "\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49\u0e44\u0e1f\u0e40\u0e25\u0e47\u0e01\u0e46"
+    "message": "FIREWORK SPARKLER"
   },
   "d83c_df88": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e1b\u0e48\u0e07"
+    "message": "BALLOON"
   },
   "d83c_df89": {
-    "message": "\u0e1e\u0e25\u0e38\u0e01\u0e23\u0e27\u0e22\u0e27\u0e31\u0e19\u0e40\u0e01\u0e34\u0e14"
+    "message": "PARTY POPPER"
   },
   "d83c_df8a": {
-    "message": "\u0e04\u0e2d\u0e19\u0e40\u0e1f\u0e15\u0e15\u0e35"
+    "message": "CONFETTI BALL"
   },
   "d83c_df8b": {
-    "message": "\u0e15\u0e49\u0e19\u0e44\u0e21\u0e49\u0e41\u0e25\u0e30\u0e40\u0e28\u0e29\u0e01\u0e23\u0e30\u0e14\u0e32\u0e29"
+    "message": "TANABATA TREE"
   },
   "d83c_df8c": {
-    "message": "\u0e18\u0e07\u0e44\u0e02\u0e27\u0e49"
+    "message": "CROSSED FLAGS"
   },
   "d83c_df8d": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e15\u0e01\u0e41\u0e15\u0e48\u0e07\u0e15\u0e49\u0e19\u0e2a\u0e19"
+    "message": "PINE DECORATION"
   },
   "d83c_df8e": {
-    "message": "\u0e15\u0e38\u0e4a\u0e01\u0e15\u0e32"
+    "message": "JAPANESE DOLLS"
   },
   "d83c_df8f": {
-    "message": "\u0e18\u0e07\u0e1b\u0e25\u0e32\u0e04\u0e32\u0e23\u0e4c\u0e1e"
+    "message": "CARP STREAMER"
   },
   "d83c_df90": {
-    "message": "\u0e42\u0e21\u0e1a\u0e32\u0e22\u0e01\u0e23\u0e30\u0e14\u0e34\u0e48\u0e07"
+    "message": "WIND CHIME"
   },
   "d83c_df91": {
-    "message": "\u0e01\u0e32\u0e23\u0e0a\u0e21\u0e08\u0e31\u0e19\u0e17\u0e23\u0e4c"
+    "message": "MOON VIEWING CEREMONY"
   },
   "d83c_df92": {
-    "message": "\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32\u0e19\u0e31\u0e01\u0e40\u0e23\u0e35\u0e22\u0e19"
+    "message": "SCHOOL SATCHEL"
   },
   "d83c_df93": {
-    "message": "\u0e2b\u0e21\u0e27\u0e01\u0e23\u0e31\u0e1a\u0e1b\u0e23\u0e34\u0e0d\u0e0d\u0e32"
+    "message": "GRADUATION CAP"
   },
   "d83c_dfa0": {
-    "message": "\u0e21\u0e49\u0e32\u0e2b\u0e21\u0e38\u0e19"
+    "message": "CAROUSEL HORSE"
   },
   "d83c_dfa1": {
-    "message": "\u0e0a\u0e34\u0e07\u0e0a\u0e49\u0e32\u0e2a\u0e27\u0e23\u0e23\u0e04\u0e4c"
+    "message": "FERRIS WHEEL"
   },
   "d83c_dfa2": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e40\u0e2b\u0e32\u0e30"
+    "message": "ROLLER COASTER"
   },
   "d83c_dfa3": {
-    "message": "\u0e15\u0e01\u0e1b\u0e25\u0e32"
+    "message": "FISHING POLE AND FISH"
   },
   "d83c_dfa4": {
-    "message": "\u0e44\u0e21\u0e42\u0e04\u0e23\u0e42\u0e1f\u0e19"
+    "message": "MICROPHONE"
   },
   "d83c_dfa5": {
-    "message": "\u0e01\u0e25\u0e49\u0e2d\u0e07\u0e16\u0e48\u0e32\u0e22\u0e20\u0e32\u0e1e\u0e22\u0e19\u0e15\u0e23\u0e4c"
+    "message": "MOVIE CAMERA"
   },
   "d83c_dfa6": {
-    "message": "\u0e20\u0e32\u0e1e\u0e22\u0e19\u0e15\u0e23\u0e4c"
+    "message": "CINEMA"
   },
   "d83c_dfa7": {
-    "message": "\u0e2b\u0e39\u0e1f\u0e31\u0e07"
+    "message": "HEADPHONE"
   },
   "d83c_dfa8": {
-    "message": "\u0e08\u0e32\u0e19\u0e2a\u0e35"
+    "message": "ARTIST PALETTE"
   },
   "d83c_dfa9": {
-    "message": "\u0e2b\u0e21\u0e27\u0e01\u0e17\u0e23\u0e07\u0e2a\u0e39\u0e07"
+    "message": "TOP HAT"
   },
   "d83c_dfaa": {
-    "message": "\u0e25\u0e30\u0e04\u0e23\u0e2a\u0e31\u0e15\u0e27\u0e4c"
+    "message": "CIRCUS TENT"
   },
   "d83c_dfab": {
-    "message": "\u0e15\u0e31\u0e4b\u0e27"
+    "message": "TICKET"
   },
   "d83c_dfac": {
-    "message": "\u0e1b\u0e49\u0e32\u0e22\u0e2a\u0e40\u0e25\u0e17"
+    "message": "CLAPPER BOARD"
   },
   "d83c_dfad": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e01"
+    "message": "PERFORMING ARTS"
   },
   "d83c_dfae": {
-    "message": "\u0e27\u0e34\u0e14\u0e35\u0e42\u0e2d\u0e40\u0e01\u0e21"
+    "message": "VIDEO GAME"
   },
   "d83c_dfaf": {
-    "message": "\u0e40\u0e1b\u0e49\u0e32\u0e25\u0e39\u0e01\u0e14\u0e2d\u0e01"
+    "message": "DIRECT HIT"
   },
   "d83c_dfb0": {
-    "message": "\u0e2a\u0e25\u0e47\u0e2d\u0e15\u0e41\u0e21\u0e0a\u0e0a\u0e35\u0e19"
+    "message": "SLOT MACHINE"
   },
   "d83c_dfb1": {
-    "message": "\u0e1a\u0e34\u0e25\u0e40\u0e25\u0e35\u0e22\u0e14"
+    "message": "BILLIARDS"
   },
   "d83c_dfb2": {
-    "message": "\u0e25\u0e39\u0e01\u0e40\u0e15\u0e4b\u0e32"
+    "message": "GAME DIE"
   },
   "d83c_dfb3": {
-    "message": "\u0e42\u0e1a\u0e27\u0e4c\u0e25\u0e34\u0e48\u0e07"
+    "message": "BOWLING"
   },
   "d83c_dfb4": {
-    "message": "\u0e44\u0e1e\u0e48"
+    "message": "FLOWER PLAYING CARDS"
   },
   "d83c_dfb5": {
-    "message": "\u0e42\u0e19\u0e49\u0e15\u0e40\u0e1e\u0e25\u0e07"
+    "message": "MUSICAL NOTE"
   },
   "d83c_dfb6": {
-    "message": "\u0e42\u0e19\u0e49\u0e15\u0e40\u0e1e\u0e25\u0e07\u0e2b\u0e25\u0e32\u0e22\u0e15\u0e31\u0e27"
+    "message": "MULTIPLE MUSICAL NOTES"
   },
   "d83c_dfb7": {
-    "message": "\u0e41\u0e0b\u0e01\u0e42\u0e0b\u0e42\u0e1f\u0e19"
+    "message": "SAXOPHONE"
   },
   "d83c_dfb8": {
-    "message": "\u0e01\u0e35\u0e15\u0e49\u0e32\u0e23\u0e4c"
+    "message": "GUITAR"
   },
   "d83c_dfb9": {
-    "message": "\u0e40\u0e1b\u0e35\u0e22\u0e42\u0e19"
+    "message": "MUSICAL KEYBOARD"
   },
   "d83c_dfba": {
-    "message": "\u0e17\u0e23\u0e31\u0e21\u0e40\u0e1e\u0e47\u0e15"
+    "message": "TRUMPET"
   },
   "d83c_dfbb": {
-    "message": "\u0e44\u0e27\u0e42\u0e2d\u0e25\u0e34\u0e19"
+    "message": "VIOLIN"
   },
   "d83c_dfbc": {
-    "message": "\u0e41\u0e1c\u0e48\u0e19\u0e42\u0e19\u0e49\u0e15\u0e40\u0e1e\u0e25\u0e07"
+    "message": "MUSICAL SCORE"
   },
   "d83c_dfbd": {
-    "message": "\u0e40\u0e2a\u0e37\u0e49\u0e2d\u0e27\u0e34\u0e48\u0e07"
+    "message": "RUNNING SHIRT WITH SASH"
   },
   "d83c_dfbe": {
-    "message": "\u0e40\u0e17\u0e19\u0e19\u0e34\u0e2a"
+    "message": "TENNIS RACQUET AND BALL"
   },
   "d83c_dfbf": {
-    "message": "\u0e2a\u0e01\u0e35"
+    "message": "SKI AND SKI BOOT"
   },
   "d83c_dfc0": {
-    "message": "\u0e1a\u0e32\u0e2a\u0e40\u0e01\u0e47\u0e15\u0e1a\u0e2d\u0e25"
+    "message": "BASKETBALL AND HOOP"
   },
   "d83c_dfc1": {
-    "message": "\u0e18\u0e07\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2b\u0e21\u0e32\u0e01\u0e23\u0e38\u0e01"
+    "message": "CHEQUERED FLAG"
   },
   "d83c_dfc2": {
-    "message": "\u0e19\u0e31\u0e01\u0e2a\u0e42\u0e19\u0e27\u0e4c\u0e1a\u0e2d\u0e23\u0e4c\u0e14"
+    "message": "SNOWBOARDER"
   },
   "d83c_dfc3": {
-    "message": "\u0e19\u0e31\u0e01\u0e27\u0e34\u0e48\u0e07"
+    "message": "RUNNER"
   },
   "d83c_dfc4": {
-    "message": "\u0e42\u0e15\u0e49\u0e04\u0e25\u0e37\u0e48\u0e19"
+    "message": "SURFER"
   },
   "d83c_dfc6": {
-    "message": "\u0e16\u0e49\u0e27\u0e22\u0e23\u0e32\u0e07\u0e27\u0e31\u0e25"
+    "message": "TROPHY"
   },
   "d83c_dfc7": {
-    "message": "\u0e41\u0e02\u0e48\u0e07\u0e21\u0e49\u0e32"
+    "message": "HORSE RACING"
   },
   "d83c_dfc8": {
-    "message": "\u0e2d\u0e40\u0e21\u0e23\u0e34\u0e01\u0e31\u0e19\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25"
+    "message": "AMERICAN FOOTBALL"
   },
   "d83c_dfc9": {
-    "message": "\u0e1f\u0e38\u0e15\u0e1a\u0e2d\u0e25"
+    "message": "RUGBY FOOTBALL"
   },
   "d83c_dfca": {
-    "message": "\u0e19\u0e31\u0e01\u0e27\u0e48\u0e32\u0e22\u0e19\u0e49\u0e33"
+    "message": "SWIMMER"
   },
   "d83c_dfe0": {
-    "message": "\u0e1a\u0e49\u0e32\u0e19"
+    "message": "HOUSE BUILDING"
   },
   "d83c_dfe1": {
-    "message": "\u0e1a\u0e49\u0e32\u0e19\u0e19\u0e48\u0e32\u0e2d\u0e22\u0e39\u0e48"
+    "message": "HOUSE WITH GARDEN"
   },
   "d83c_dfe2": {
-    "message": "\u0e2d\u0e32\u0e04\u0e32\u0e23\u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19"
+    "message": "OFFICE BUILDING"
   },
   "d83c_dfe3": {
-    "message": "\u0e17\u0e35\u0e48\u0e17\u0e33\u0e01\u0e32\u0e23\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19"
+    "message": "\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19"
   },
   "d83c_dfe4": {
-    "message": "\u0e17\u0e35\u0e48\u0e17\u0e33\u0e01\u0e32\u0e23\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c\u0e22\u0e38\u0e42\u0e23\u0e1b"
+    "message": "\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c\u0e22\u0e38\u0e42\u0e23\u0e1b"
   },
   "d83c_dfe5": {
-    "message": "\u0e42\u0e23\u0e07\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25"
+    "message": "HOSPITAL"
   },
   "d83c_dfe6": {
-    "message": "\u0e18\u0e19\u0e32\u0e04\u0e32\u0e23"
+    "message": "BANK"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "AUTOMATED TELLER MACHINE"
   },
   "d83c_dfe8": {
-    "message": "\u0e42\u0e23\u0e07\u0e41\u0e23\u0e21"
+    "message": "HOTEL"
   },
   "d83c_dfe9": {
-    "message": "\u0e42\u0e23\u0e07\u0e41\u0e23\u0e21\u0e21\u0e48\u0e32\u0e19\u0e23\u0e39\u0e14"
+    "message": "LOVE HOTEL"
   },
   "d83c_dfea": {
-    "message": "\u0e23\u0e49\u0e32\u0e19\u0e2a\u0e30\u0e14\u0e27\u0e01\u0e0b\u0e37\u0e49\u0e2d"
+    "message": "CONVENIENCE STORE"
   },
   "d83c_dfeb": {
-    "message": "\u0e42\u0e23\u0e07\u0e40\u0e23\u0e35\u0e22\u0e19"
+    "message": "SCHOOL"
   },
   "d83c_dfec": {
-    "message": "\u0e2b\u0e49\u0e32\u0e07\u0e2a\u0e23\u0e23\u0e1e\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32"
+    "message": "DEPARTMENT STORE"
   },
   "d83c_dfed": {
-    "message": "\u0e42\u0e23\u0e07\u0e07\u0e32\u0e19"
+    "message": "FACTORY"
   },
   "d83c_dfee": {
-    "message": "\u0e42\u0e04\u0e21\u0e44\u0e1f\u0e2a\u0e35\u0e41\u0e14\u0e07"
+    "message": "IZAKAYA LANTERN"
   },
   "d83c_dfef": {
-    "message": "\u0e1b\u0e23\u0e32\u0e2a\u0e32\u0e17\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19"
+    "message": "JAPANESE CASTLE"
   },
   "d83c_dff0": {
-    "message": "\u0e1b\u0e23\u0e32\u0e2a\u0e32\u0e17\u0e22\u0e38\u0e42\u0e23\u0e1b"
+    "message": "EUROPEAN CASTLE"
   },
   "d83d_dc00": {
-    "message": "\u0e2b\u0e19\u0e39\u0e19\u0e32"
+    "message": "RAT"
   },
   "d83d_dc01": {
-    "message": "\u0e2b\u0e19\u0e39"
+    "message": "MOUSE"
   },
   "d83d_dc02": {
-    "message": "\u0e27\u0e31\u0e27\u0e15\u0e31\u0e27\u0e1c\u0e39\u0e49"
+    "message": "OX"
   },
   "d83d_dc03": {
-    "message": "\u0e04\u0e27\u0e32\u0e22"
+    "message": "WATER BUFFALO"
   },
   "d83d_dc04": {
-    "message": "\u0e27\u0e31\u0e27\u0e15\u0e31\u0e27\u0e40\u0e21\u0e35\u0e22"
+    "message": "COW"
   },
   "d83d_dc06": {
-    "message": "\u0e40\u0e2a\u0e37\u0e2d\u0e14\u0e32\u0e27"
+    "message": "LEOPARD"
   },
   "d83d_dc07": {
-    "message": "\u0e01\u0e23\u0e30\u0e15\u0e48\u0e32\u0e22"
+    "message": "RABBIT"
   },
   "d83d_dc08": {
-    "message": "\u0e41\u0e21\u0e27"
+    "message": "CAT"
   },
   "d83d_dc09": {
-    "message": "\u0e21\u0e31\u0e07\u0e01\u0e23"
+    "message": "DRAGON"
   },
   "d83d_dc0a": {
-    "message": "\u0e08\u0e23\u0e30\u0e40\u0e02\u0e49"
+    "message": "CROCODILE"
   },
   "d83d_dc0b": {
-    "message": "\u0e27\u0e32\u0e2c"
+    "message": "WHALE"
   },
   "d83d_dc0c": {
-    "message": "\u0e2b\u0e2d\u0e22\u0e17\u0e32\u0e01"
+    "message": "SNAIL"
   },
   "d83d_dc0d": {
-    "message": "\u0e07\u0e39"
+    "message": "SNAKE"
   },
   "d83d_dc0e": {
-    "message": "\u0e21\u0e49\u0e32"
+    "message": "HORSE"
   },
   "d83d_dc0f": {
-    "message": "\u0e41\u0e01\u0e30\u0e15\u0e31\u0e27\u0e1c\u0e39\u0e49"
+    "message": "RAM"
   },
   "d83d_dc10": {
-    "message": "\u0e41\u0e1e\u0e30"
+    "message": "GOAT"
   },
   "d83d_dc11": {
-    "message": "\u0e41\u0e01\u0e30"
+    "message": "SHEEP"
   },
   "d83d_dc12": {
-    "message": "\u0e25\u0e34\u0e07"
+    "message": "MONKEY"
   },
   "d83d_dc13": {
-    "message": "\u0e44\u0e01\u0e48\u0e42\u0e15\u0e49\u0e07"
+    "message": "ROOSTER"
   },
   "d83d_dc14": {
-    "message": "\u0e44\u0e01\u0e48"
+    "message": "CHICKEN"
   },
   "d83d_dc15": {
-    "message": "\u0e2a\u0e38\u0e19\u0e31\u0e02"
+    "message": "DOG"
   },
   "d83d_dc16": {
-    "message": "\u0e2b\u0e21\u0e39"
+    "message": "PIG"
   },
   "d83d_dc17": {
-    "message": "\u0e2b\u0e21\u0e39\u0e1b\u0e48\u0e32"
+    "message": "BOAR"
   },
   "d83d_dc18": {
-    "message": "\u0e0a\u0e49\u0e32\u0e07"
+    "message": "ELEPHANT"
   },
   "d83d_dc19": {
-    "message": "\u0e1b\u0e25\u0e32\u0e2b\u0e21\u0e36\u0e01\u0e22\u0e31\u0e01\u0e29\u0e4c"
+    "message": "OCTOPUS"
   },
   "d83d_dc1a": {
-    "message": "\u0e2b\u0e2d\u0e22"
+    "message": "SPIRAL SHELL"
   },
   "d83d_dc1b": {
-    "message": "\u0e41\u0e21\u0e25\u0e07"
+    "message": "BUG"
   },
   "d83d_dc1c": {
-    "message": "\u0e21\u0e14"
+    "message": "ANT"
   },
   "d83d_dc1d": {
-    "message": "\u0e1c\u0e36\u0e49\u0e07"
+    "message": "HONEYBEE"
   },
   "d83d_dc1e": {
-    "message": "\u0e41\u0e21\u0e25\u0e07\u0e40\u0e15\u0e48\u0e32\u0e17\u0e2d\u0e07"
+    "message": "LADY BEETLE"
   },
   "d83d_dc1f": {
-    "message": "\u0e1b\u0e25\u0e32"
+    "message": "FISH"
   },
   "d83d_dc20": {
-    "message": "\u0e1b\u0e25\u0e32\u0e40\u0e02\u0e15\u0e23\u0e49\u0e2d\u0e19"
+    "message": "TROPICAL FISH"
   },
   "d83d_dc21": {
-    "message": "\u0e1b\u0e25\u0e32\u0e1b\u0e31\u0e01\u0e40\u0e1b\u0e49\u0e32"
+    "message": "BLOWFISH"
   },
   "d83d_dc22": {
-    "message": "\u0e40\u0e15\u0e48\u0e32"
+    "message": "TURTLE"
   },
   "d83d_dc23": {
-    "message": "\u0e25\u0e39\u0e01\u0e44\u0e01\u0e48\u0e43\u0e19\u0e40\u0e1b\u0e25\u0e37\u0e2d\u0e01\u0e44\u0e02\u0e48"
+    "message": "HATCHING CHICK"
   },
   "d83d_dc24": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e25\u0e39\u0e01\u0e44\u0e01\u0e48"
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e25\u0e39\u0e01\u0e40\u0e08\u0e35\u0e4a\u0e22\u0e1a"
   },
   "d83d_dc25": {
-    "message": "\u0e25\u0e39\u0e01\u0e44\u0e01\u0e48"
+    "message": "FRONT-FACING BABY CHICK"
   },
   "d83d_dc26": {
-    "message": "\u0e19\u0e01"
+    "message": "BIRD"
   },
   "d83d_dc27": {
-    "message": "\u0e19\u0e01\u0e40\u0e1e\u0e19\u0e01\u0e27\u0e34\u0e19"
+    "message": "PENGUIN"
   },
   "d83d_dc28": {
-    "message": "\u0e2b\u0e21\u0e35\u0e42\u0e04\u0e2d\u0e32\u0e25\u0e32"
+    "message": "KOALA"
   },
   "d83d_dc29": {
-    "message": "\u0e1e\u0e38\u0e14\u0e40\u0e14\u0e34\u0e25"
+    "message": "POODLE"
   },
   "d83d_dc2a": {
-    "message": "\u0e2d\u0e39\u0e10\u0e2b\u0e19\u0e2d\u0e01\u0e40\u0e14\u0e35\u0e22\u0e27"
+    "message": "DROMEDARY CAMEL"
   },
   "d83d_dc2b": {
-    "message": "\u0e2d\u0e39\u0e10 2 \u0e2b\u0e19\u0e2d\u0e01"
+    "message": "BACTRIAN CAMEL"
   },
   "d83d_dc2c": {
-    "message": "\u0e42\u0e25\u0e21\u0e32"
+    "message": "DOLPHIN"
   },
   "d83d_dc2d": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e19\u0e39"
+    "message": "MOUSE FACE"
   },
   "d83d_dc2e": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e27\u0e31\u0e27"
+    "message": "COW FACE"
   },
   "d83d_dc2f": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e2a\u0e37\u0e2d"
+    "message": "TIGER FACE"
   },
   "d83d_dc30": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e23\u0e30\u0e15\u0e48\u0e32\u0e22"
+    "message": "RABBIT FACE"
   },
   "d83d_dc31": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27"
+    "message": "CAT FACE"
   },
   "d83d_dc32": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e21\u0e31\u0e07\u0e01\u0e23"
+    "message": "DRAGON FACE"
   },
   "d83d_dc33": {
-    "message": "\u0e27\u0e32\u0e2c\u0e1e\u0e48\u0e19\u0e19\u0e49\u0e33"
+    "message": "SPOUTING WHALE"
   },
   "d83d_dc34": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e21\u0e49\u0e32"
+    "message": "HORSE FACE"
   },
   "d83d_dc35": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e25\u0e34\u0e07"
+    "message": "MONKEY FACE"
   },
   "d83d_dc36": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2a\u0e38\u0e19\u0e31\u0e02"
+    "message": "DOG FACE"
   },
   "d83d_dc37": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e21\u0e39"
+    "message": "PIG FACE"
   },
   "d83d_dc38": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e1a"
+    "message": "FROG FACE"
   },
   "d83d_dc39": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e2e\u0e21\u0e2a\u0e40\u0e15\u0e2d\u0e23\u0e4c"
+    "message": "HAMSTER FACE"
   },
   "d83d_dc3a": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e21\u0e32\u0e1b\u0e48\u0e32"
+    "message": "WOLF FACE"
   },
   "d83d_dc3b": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e21\u0e35"
+    "message": "BEAR FACE"
   },
   "d83d_dc3c": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e1e\u0e19\u0e14\u0e49\u0e32"
+    "message": "PANDA FACE"
   },
   "d83d_dc3d": {
-    "message": "\u0e08\u0e21\u0e39\u0e01\u0e2b\u0e21\u0e39"
+    "message": "PIG NOSE"
   },
   "d83d_dc3e": {
-    "message": "\u0e2d\u0e38\u0e49\u0e07\u0e40\u0e17\u0e49\u0e32"
+    "message": "PAW PRINTS"
   },
   "d83d_dc40": {
-    "message": "\u0e15\u0e32"
+    "message": "EYES"
   },
   "d83d_dc42": {
-    "message": "\u0e2b\u0e39"
+    "message": "EAR"
   },
   "d83d_dc43": {
-    "message": "\u0e08\u0e21\u0e39\u0e01"
+    "message": "NOSE"
   },
   "d83d_dc44": {
-    "message": "\u0e1b\u0e32\u0e01"
+    "message": "MOUTH"
   },
   "d83d_dc45": {
-    "message": "\u0e25\u0e34\u0e49\u0e19"
+    "message": "TONGUE"
   },
   "d83d_dc46": {
-    "message": "\u0e19\u0e34\u0e49\u0e27\u0e0a\u0e35\u0e49\u0e02\u0e36\u0e49\u0e19"
+    "message": "WHITE UP POINTING BACKHAND INDEX"
   },
   "d83d_dc47": {
-    "message": "\u0e19\u0e34\u0e49\u0e27\u0e0a\u0e35\u0e49\u0e25\u0e07"
+    "message": "WHITE DOWN POINTING BACKHAND INDEX"
   },
   "d83d_dc48": {
-    "message": "\u0e0a\u0e34\u0e49\u0e27\u0e0a\u0e35\u0e49\u0e17\u0e32\u0e07\u0e0b\u0e49\u0e32\u0e22"
+    "message": "WHITE LEFT POINTING BACKHAND INDEX"
   },
   "d83d_dc49": {
-    "message": "\u0e0a\u0e34\u0e49\u0e27\u0e0a\u0e35\u0e49\u0e17\u0e32\u0e07\u0e02\u0e27\u0e32"
+    "message": "WHITE RIGHT POINTING BACKHAND INDEX"
   },
   "d83d_dc4a": {
-    "message": "\u0e01\u0e33\u0e2b\u0e21\u0e31\u0e14"
+    "message": "FISTED HAND SIGN"
   },
   "d83d_dc4b": {
-    "message": "\u0e42\u0e1a\u0e01\u0e21\u0e37\u0e2d"
+    "message": "WAVING HAND SIGN"
   },
   "d83d_dc4c": {
-    "message": "\u0e2a\u0e31\u0e0d\u0e0d\u0e32\u0e13\u0e21\u0e37\u0e2d\u0e15\u0e01\u0e25\u0e07"
+    "message": "\u0e2a\u0e31\u0e0d\u0e25\u0e31\u0e01\u0e29\u0e13\u0e4c\u0e17\u0e33\u0e21\u0e37\u0e2d\u0e42\u0e2d\u0e40\u0e04"
   },
   "d83d_dc4d": {
-    "message": "\u0e22\u0e01\u0e19\u0e34\u0e49\u0e27\u0e43\u0e2b\u0e49"
+    "message": "THUMBS UP SIGN"
   },
   "d83d_dc4e": {
-    "message": "\u0e44\u0e21\u0e48\u0e0a\u0e2d\u0e1a"
+    "message": "THUMBS DOWN SIGN"
   },
   "d83d_dc4f": {
-    "message": "\u0e1b\u0e23\u0e1a\u0e21\u0e37\u0e2d"
+    "message": "CLAPPING HANDS SIGN"
   },
   "d83d_dc50": {
-    "message": "\u0e1d\u0e48\u0e32\u0e21\u0e37\u0e2d"
+    "message": "OPEN HANDS SIGN"
   },
   "d83d_dc51": {
-    "message": "\u0e21\u0e07\u0e01\u0e38\u0e0e"
+    "message": "CROWN"
   },
   "d83d_dc52": {
-    "message": "\u0e2b\u0e21\u0e27\u0e01\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMANS HAT"
   },
   "d83d_dc53": {
-    "message": "\u0e41\u0e27\u0e48\u0e19\u0e15\u0e32"
+    "message": "EYEGLASSES"
   },
   "d83d_dc54": {
-    "message": "\u0e40\u0e19\u0e47\u0e01\u0e44\u0e17"
+    "message": "NECKTIE"
   },
   "d83d_dc55": {
-    "message": "\u0e40\u0e2a\u0e37\u0e49\u0e2d\u0e22\u0e37\u0e14"
+    "message": "T-SHIRT"
   },
   "d83d_dc56": {
-    "message": "\u0e01\u0e32\u0e07\u0e40\u0e01\u0e07\u0e02\u0e32\u0e22\u0e32\u0e27"
+    "message": "JEANS"
   },
   "d83d_dc57": {
-    "message": "\u0e0a\u0e38\u0e14\u0e01\u0e23\u0e30\u0e42\u0e1b\u0e23\u0e07"
+    "message": "DRESS"
   },
   "d83d_dc58": {
-    "message": "\u0e01\u0e34\u0e42\u0e21\u0e42\u0e19"
+    "message": "KIMONO"
   },
   "d83d_dc59": {
-    "message": "\u0e1a\u0e34\u0e01\u0e34\u0e19\u0e35\u0e48"
+    "message": "BIKINI"
   },
   "d83d_dc5a": {
-    "message": "\u0e40\u0e2a\u0e37\u0e49\u0e2d\u0e1c\u0e49\u0e32\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMANS CLOTHES"
   },
   "d83d_dc5b": {
-    "message": "\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32\u0e2a\u0e15\u0e32\u0e07\u0e04\u0e4c\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "PURSE"
   },
   "d83d_dc5c": {
-    "message": "\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32\u0e16\u0e37\u0e2d"
+    "message": "HANDBAG"
   },
   "d83d_dc5d": {
-    "message": "\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32\u0e43\u0e1a\u0e40\u0e25\u0e47\u0e01"
+    "message": "POUCH"
   },
   "d83d_dc5e": {
-    "message": "\u0e23\u0e2d\u0e07\u0e40\u0e17\u0e49\u0e32\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22"
+    "message": "MANS SHOE"
   },
   "d83d_dc5f": {
-    "message": "\u0e23\u0e2d\u0e07\u0e40\u0e17\u0e49\u0e32\u0e01\u0e35\u0e2c\u0e32"
+    "message": "ATHLETIC SHOE"
   },
   "d83d_dc60": {
-    "message": "\u0e2a\u0e49\u0e19\u0e2a\u0e39\u0e07"
+    "message": "HIGH-HEELED SHOE"
   },
   "d83d_dc61": {
-    "message": "\u0e23\u0e2d\u0e07\u0e40\u0e17\u0e49\u0e32\u0e41\u0e15\u0e30\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMANS SANDAL"
   },
   "d83d_dc62": {
-    "message": "\u0e23\u0e2d\u0e07\u0e40\u0e17\u0e49\u0e32\u0e1a\u0e39\u0e15\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMANS BOOTS"
   },
   "d83d_dc63": {
-    "message": "\u0e23\u0e2d\u0e22\u0e40\u0e17\u0e49\u0e32"
+    "message": "FOOTPRINTS"
   },
   "d83d_dc64": {
-    "message": "\u0e40\u0e07\u0e32\u0e04\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27"
+    "message": "BUST IN SILHOUETTE"
   },
   "d83d_dc65": {
-    "message": "\u0e40\u0e07\u0e32\u0e2b\u0e25\u0e32\u0e22\u0e04\u0e19"
+    "message": "BUSTS IN SILHOUETTE"
   },
   "d83d_dc66": {
-    "message": "\u0e40\u0e14\u0e47\u0e01\u0e0a\u0e32\u0e22"
+    "message": "BOY"
   },
   "d83d_dc67": {
-    "message": "\u0e40\u0e14\u0e47\u0e01\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "GIRL"
   },
   "d83d_dc68": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22"
+    "message": "MAN"
   },
   "d83d_dc69": {
-    "message": "\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMAN"
   },
   "d83d_dc6a": {
-    "message": "\u0e04\u0e23\u0e2d\u0e1a\u0e04\u0e23\u0e31\u0e27"
+    "message": "FAMILY"
   },
   "d83d_dc6b": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22\u0e01\u0e31\u0e1a\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "MAN AND WOMAN HOLDING HANDS"
   },
   "d83d_dc6c": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22 2 \u0e04\u0e19"
+    "message": "TWO MEN HOLDING HANDS"
   },
   "d83d_dc6d": {
-    "message": "\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07 2 \u0e04\u0e19"
+    "message": "TWO WOMEN HOLDING HANDS"
   },
   "d83d_dc6e": {
-    "message": "\u0e40\u0e08\u0e49\u0e32\u0e2b\u0e19\u0e49\u0e32\u0e17\u0e35\u0e48\u0e15\u0e33\u0e23\u0e27\u0e08"
+    "message": "POLICE OFFICER"
   },
   "d83d_dc6f": {
-    "message": "\u0e2a\u0e32\u0e27\u0e1a\u0e31\u0e19\u0e19\u0e35\u0e48"
+    "message": "WOMAN WITH BUNNY EARS"
   },
   "d83d_dc70": {
-    "message": "\u0e40\u0e08\u0e49\u0e32\u0e2a\u0e32\u0e27"
+    "message": "BRIDE WITH VEIL"
   },
   "d83d_dc71": {
-    "message": "\u0e2a\u0e32\u0e27\u0e1c\u0e21\u0e1a\u0e25\u0e2d\u0e19\u0e14\u0e4c"
+    "message": "PERSON WITH BLOND HAIR"
   },
   "d83d_dc72": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22\u0e43\u0e2a\u0e48\u0e0a\u0e38\u0e14\u0e08\u0e35\u0e19"
+    "message": "\u0e0a\u0e32\u0e22\u0e43\u0e2a\u0e48\u0e2b\u0e21\u0e27\u0e01\u0e08\u0e35\u0e19"
   },
   "d83d_dc73": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22\u0e42\u0e1e\u0e01\u0e2b\u0e31\u0e27"
+    "message": "\u0e0a\u0e32\u0e22\u0e42\u0e1e\u0e01\u0e2b\u0e31\u0e27"
   },
   "d83d_dc74": {
-    "message": "\u0e1c\u0e39\u0e49\u0e0a\u0e32\u0e22\u0e41\u0e01\u0e48"
+    "message": "OLDER MAN"
   },
   "d83d_dc75": {
-    "message": "\u0e1c\u0e39\u0e49\u0e2b\u0e0d\u0e34\u0e07\u0e41\u0e01\u0e48"
+    "message": "OLDER WOMAN"
   },
   "d83d_dc76": {
-    "message": "\u0e17\u0e32\u0e23\u0e01"
+    "message": "BABY"
   },
   "d83d_dc77": {
-    "message": "\u0e04\u0e19\u0e07\u0e32\u0e19\u0e01\u0e48\u0e2d\u0e2a\u0e23\u0e49\u0e32\u0e07"
+    "message": "CONSTRUCTION WORKER"
   },
   "d83d_dc78": {
-    "message": "\u0e40\u0e08\u0e49\u0e32\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "PRINCESS"
   },
   "d83d_dc79": {
-    "message": "\u0e2d\u0e2d\u0e23\u0e4c\u0e04"
+    "message": "JAPANESE OGRE"
   },
   "d83d_dc7a": {
-    "message": "\u0e01\u0e47\u0e2d\u0e1a\u0e25\u0e34\u0e19"
+    "message": "JAPANESE GOBLIN"
   },
   "d83d_dc7b": {
-    "message": "\u0e1c\u0e35"
+    "message": "GHOST"
   },
   "d83d_dc7c": {
-    "message": "\u0e40\u0e17\u0e27\u0e14\u0e32\u0e19\u0e49\u0e2d\u0e22"
+    "message": "BABY ANGEL"
   },
   "d83d_dc7d": {
-    "message": "\u0e21\u0e19\u0e38\u0e29\u0e22\u0e4c\u0e15\u0e48\u0e32\u0e07\u0e14\u0e32\u0e27"
+    "message": "EXTRATERRESTRIAL ALIEN"
   },
   "d83d_dc7e": {
-    "message": "\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e1b\u0e23\u0e30\u0e2b\u0e25\u0e32\u0e14\u0e15\u0e48\u0e32\u0e07\u0e14\u0e32\u0e27"
+    "message": "ALIEN MONSTER"
   },
   "d83d_dc7f": {
-    "message": "\u0e20\u0e39\u0e15\u0e19\u0e49\u0e2d\u0e22"
+    "message": "IMP"
   },
   "d83d_dc80": {
-    "message": "\u0e2b\u0e31\u0e27\u0e01\u0e30\u0e42\u0e2b\u0e25\u0e01"
+    "message": "SKULL"
   },
   "d83d_dc81": {
-    "message": "\u0e42\u0e15\u0e4a\u0e30\u0e1b\u0e23\u0e30\u0e0a\u0e32\u0e2a\u0e31\u0e21\u0e1e\u0e31\u0e19\u0e18\u0e4c"
+    "message": "INFORMATION DESK PERSON"
   },
   "d83d_dc82": {
-    "message": "\u0e2d\u0e07\u0e04\u0e23\u0e31\u0e01\u0e29\u0e4c"
+    "message": "GUARDSMAN"
   },
   "d83d_dc83": {
-    "message": "\u0e19\u0e31\u0e01\u0e40\u0e15\u0e49\u0e19"
+    "message": "DANCER"
   },
   "d83d_dc84": {
-    "message": "\u0e25\u0e34\u0e1b\u0e2a\u0e15\u0e34\u0e01"
+    "message": "LIPSTICK"
   },
   "d83d_dc85": {
-    "message": "\u0e17\u0e33\u0e40\u0e25\u0e47\u0e1a"
+    "message": "NAIL POLISH"
   },
   "d83d_dc86": {
-    "message": "\u0e19\u0e27\u0e14\u0e2b\u0e19\u0e49\u0e32"
+    "message": "FACE MASSAGE"
   },
   "d83d_dc87": {
-    "message": "\u0e17\u0e33\u0e1c\u0e21"
+    "message": "HAIRCUT"
   },
   "d83d_dc88": {
-    "message": "\u0e23\u0e49\u0e32\u0e19\u0e17\u0e33\u0e1c\u0e21\u0e1a\u0e38\u0e23\u0e38\u0e29"
+    "message": "BARBER POLE"
   },
   "d83d_dc89": {
-    "message": "\u0e40\u0e02\u0e47\u0e21\u0e09\u0e35\u0e14\u0e22\u0e32"
+    "message": "SYRINGE"
   },
   "d83d_dc8a": {
-    "message": "\u0e22\u0e32\u0e40\u0e21\u0e47\u0e14"
+    "message": "PILL"
   },
   "d83d_dc8b": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e08\u0e39\u0e1a"
+    "message": "KISS MARK"
   },
   "d83d_dc8c": {
-    "message": "\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e23\u0e31\u0e01"
+    "message": "LOVE LETTER"
   },
   "d83d_dc8d": {
-    "message": "\u0e41\u0e2b\u0e27\u0e19"
+    "message": "RING"
   },
   "d83d_dc8e": {
-    "message": "\u0e2d\u0e31\u0e0d\u0e21\u0e13\u0e35"
+    "message": "GEM STONE"
   },
   "d83d_dc8f": {
-    "message": "\u0e08\u0e39\u0e1a"
+    "message": "KISS"
   },
   "d83d_dc90": {
-    "message": "\u0e0a\u0e48\u0e2d\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49"
+    "message": "BOUQUET"
   },
   "d83d_dc91": {
-    "message": "\u0e04\u0e39\u0e48\u0e23\u0e31\u0e01"
+    "message": "COUPLE WITH HEART"
   },
   "d83d_dc92": {
-    "message": "\u0e42\u0e1a\u0e2a\u0e16\u0e4c\u0e41\u0e15\u0e48\u0e07\u0e07\u0e32\u0e19"
+    "message": "WEDDING"
   },
   "d83d_dc93": {
-    "message": "\u0e43\u0e08\u0e40\u0e15\u0e49\u0e19"
+    "message": "BEATING HEART"
   },
   "d83d_dc94": {
-    "message": "\u0e2d\u0e01\u0e2b\u0e31\u0e01"
+    "message": "BROKEN HEART"
   },
   "d83d_dc95": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08 2 \u0e14\u0e27\u0e07"
+    "message": "TWO HEARTS"
   },
   "d83d_dc96": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e21\u0e35\u0e1b\u0e23\u0e30\u0e01\u0e32\u0e22"
+    "message": "SPARKLING HEART"
   },
   "d83d_dc97": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e1e\u0e2d\u0e07\u0e42\u0e15"
+    "message": "GROWING HEART"
   },
   "d83d_dc98": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e41\u0e25\u0e30\u0e25\u0e39\u0e01\u0e28\u0e23"
+    "message": "HEART WITH ARROW"
   },
   "d83d_dc99": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e2a\u0e35\u0e1f\u0e49\u0e32"
+    "message": "BLUE HEART"
   },
   "d83d_dc9a": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e2a\u0e35\u0e40\u0e02\u0e35\u0e22\u0e27"
+    "message": "GREEN HEART"
   },
   "d83d_dc9b": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e2a\u0e35\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e07"
+    "message": "YELLOW HEART"
   },
   "d83d_dc9c": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e2a\u0e35\u0e21\u0e48\u0e27\u0e07"
+    "message": "PURPLE HEART"
   },
   "d83d_dc9d": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e1e\u0e31\u0e19\u0e23\u0e34\u0e1a\u0e1a\u0e34\u0e49\u0e19"
+    "message": "HEART WITH RIBBON"
   },
   "d83d_dc9e": {
-    "message": "\u0e2b\u0e31\u0e27\u0e43\u0e08\u0e2b\u0e21\u0e38\u0e19\u0e40\u0e27\u0e35\u0e22\u0e19"
+    "message": "REVOLVING HEARTS"
   },
   "d83d_dc9f": {
-    "message": "\u0e01\u0e32\u0e23\u0e15\u0e01\u0e41\u0e15\u0e48\u0e07\u0e23\u0e39\u0e1b\u0e2b\u0e31\u0e27\u0e43\u0e08"
+    "message": "HEART DECORATION"
   },
   "d83d_dca0": {
-    "message": "\u0e01\u0e25\u0e35\u0e1a\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49"
+    "message": "DIAMOND SHAPE WITH A DOT INSIDE"
   },
   "d83d_dca1": {
-    "message": "\u0e2b\u0e25\u0e2d\u0e14\u0e44\u0e1f"
+    "message": "ELECTRIC LIGHT BULB"
   },
   "d83d_dca2": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e42\u0e01\u0e23\u0e18"
+    "message": "ANGER SYMBOL"
   },
   "d83d_dca3": {
-    "message": "\u0e23\u0e30\u0e40\u0e1a\u0e34\u0e14"
+    "message": "BOMB"
   },
   "d83d_dca4": {
-    "message": "\u0e2a\u0e31\u0e0d\u0e25\u0e31\u0e01\u0e29\u0e13\u0e4c\u0e07\u0e48\u0e27\u0e07\u0e19\u0e2d\u0e19"
+    "message": "\u0e2a\u0e31\u0e0d\u0e25\u0e31\u0e01\u0e29\u0e13\u0e4c\u0e2b\u0e25\u0e31\u0e1a"
   },
   "d83d_dca5": {
-    "message": "\u0e01\u0e32\u0e23\u0e0a\u0e19\u0e01\u0e31\u0e19"
+    "message": "COLLISION SYMBOL"
   },
   "d83d_dca6": {
-    "message": "\u0e40\u0e2b\u0e07\u0e37\u0e48\u0e2d\u0e01\u0e23\u0e30\u0e40\u0e0b\u0e47\u0e19"
+    "message": "SPLASHING SWEAT SYMBOL"
   },
   "d83d_dca7": {
-    "message": "\u0e40\u0e2b\u0e07\u0e37\u0e48\u0e2d\u0e15\u0e01"
+    "message": "DROPLET"
   },
   "d83d_dca8": {
-    "message": "\u0e27\u0e34\u0e48\u0e07\u0e1d\u0e38\u0e48\u0e19\u0e15\u0e25\u0e1a"
+    "message": "DASH SYMBOL"
   },
   "d83d_dca9": {
-    "message": "\u0e2d\u0e36"
+    "message": "PILE OF POO"
   },
   "d83d_dcaa": {
-    "message": "\u0e01\u0e25\u0e49\u0e32\u0e21\u0e41\u0e02\u0e19"
+    "message": "FLEXED BICEPS"
   },
   "d83d_dcab": {
-    "message": "\u0e21\u0e36\u0e19\u0e07\u0e07"
+    "message": "DIZZY SYMBOL"
   },
   "d83d_dcac": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e1b\u0e48\u0e07\u0e04\u0e33\u0e1e\u0e39\u0e14"
+    "message": "SPEECH BALLOON"
   },
   "d83d_dcad": {
-    "message": "\u0e25\u0e39\u0e01\u0e42\u0e1b\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e04\u0e34\u0e14"
+    "message": "THOUGHT BALLOON"
   },
   "d83d_dcae": {
-    "message": "\u0e15\u0e23\u0e32\u0e1b\u0e23\u0e30\u0e17\u0e31\u0e1a\u0e23\u0e39\u0e1b\u0e14\u0e2d\u0e01\u0e44\u0e21\u0e49"
+    "message": "WHITE FLOWER"
   },
   "d83d_dcaf": {
-    "message": "\u0e04\u0e30\u0e41\u0e19\u0e19\u0e40\u0e15\u0e47\u0e21"
+    "message": "HUNDRED POINTS SYMBOL"
   },
   "d83d_dcb0": {
-    "message": "\u0e16\u0e38\u0e07\u0e40\u0e07\u0e34\u0e19"
+    "message": "MONEY BAG"
   },
   "d83d_dcb1": {
-    "message": "\u0e41\u0e25\u0e01\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e2a\u0e01\u0e38\u0e25\u0e40\u0e07\u0e34\u0e19"
+    "message": "CURRENCY EXCHANGE"
   },
   "d83d_dcb2": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e14\u0e2d\u0e25\u0e25\u0e32\u0e23\u0e4c"
+    "message": "HEAVY DOLLAR SIGN"
   },
   "d83d_dcb3": {
-    "message": "\u0e1a\u0e31\u0e15\u0e23\u0e40\u0e04\u0e23\u0e14\u0e34\u0e15"
+    "message": "CREDIT CARD"
   },
   "d83d_dcb4": {
-    "message": "\u0e18\u0e19\u0e1a\u0e31\u0e15\u0e23\u0e40\u0e22\u0e19"
+    "message": "BANKNOTE WITH YEN SIGN"
   },
   "d83d_dcb5": {
-    "message": "\u0e18\u0e19\u0e1a\u0e31\u0e15\u0e23\u0e14\u0e2d\u0e25\u0e25\u0e32\u0e23\u0e4c"
+    "message": "BANKNOTE WITH DOLLAR SIGN"
   },
   "d83d_dcb6": {
-    "message": "\u0e18\u0e19\u0e1a\u0e31\u0e15\u0e23\u0e22\u0e39\u0e42\u0e23"
+    "message": "BANKNOTE WITH EURO SIGN"
   },
   "d83d_dcb7": {
-    "message": "\u0e18\u0e19\u0e1a\u0e31\u0e15\u0e23\u0e1b\u0e2d\u0e19\u0e14\u0e4c"
+    "message": "BANKNOTE WITH POUND SIGN"
   },
   "d83d_dcb8": {
-    "message": "\u0e40\u0e07\u0e34\u0e19\u0e1a\u0e34\u0e19\u0e44\u0e14\u0e49"
+    "message": "MONEY WITH WINGS"
   },
   "d83d_dcb9": {
-    "message": "\u0e15\u0e25\u0e32\u0e14\u0e02\u0e32\u0e02\u0e36\u0e49\u0e19"
+    "message": "CHART WITH UPWARDS TREND AND YEN SIGN"
   },
   "d83d_dcba": {
-    "message": "\u0e17\u0e35\u0e48\u0e19\u0e31\u0e48\u0e07"
+    "message": "SEAT"
   },
   "d83d_dcbb": {
-    "message": "\u0e1e\u0e35\u0e0b\u0e35"
+    "message": "PERSONAL COMPUTER"
   },
   "d83d_dcbc": {
-    "message": "\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23"
+    "message": "BRIEFCASE"
   },
   "d83d_dcbd": {
-    "message": "\u0e21\u0e34\u0e19\u0e34\u0e14\u0e34\u0e2a\u0e01\u0e4c"
+    "message": "\u0e41\u0e1c\u0e48\u0e19\u0e14\u0e34\u0e2a\u0e01\u0e4c\u0e02\u0e19\u0e32\u0e14\u0e40\u0e25\u0e47\u0e01"
   },
   "d83d_dcbe": {
-    "message": "\u0e1f\u0e25\u0e47\u0e2d\u0e1b\u0e1b\u0e35\u0e14\u0e34\u0e2a\u0e01\u0e4c"
+    "message": "FLOPPY DISK"
   },
   "d83d_dcbf": {
-    "message": "\u0e1a\u0e25\u0e39\u0e40\u0e23\u0e22\u0e4c"
+    "message": "OPTICAL DISC"
   },
   "d83d_dcc0": {
-    "message": "\u0e14\u0e35\u0e27\u0e35\u0e14\u0e35"
+    "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "\u0e42\u0e1f\u0e25\u0e40\u0e14\u0e2d\u0e23\u0e4c\u0e44\u0e1f\u0e25\u0e4c"
+    "message": "FILE FOLDER"
   },
   "d83d_dcc2": {
-    "message": "\u0e42\u0e1f\u0e25\u0e40\u0e14\u0e2d\u0e23\u0e4c\u0e40\u0e1b\u0e34\u0e14"
+    "message": "OPEN FILE FOLDER"
   },
   "d83d_dcc3": {
-    "message": "\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23"
+    "message": "PAGE WITH CURL"
   },
   "d83d_dcc4": {
-    "message": "\u0e40\u0e2d\u0e01\u0e2a\u0e32\u0e23"
+    "message": "PAGE FACING UP"
   },
   "d83d_dcc5": {
-    "message": "\u0e1b\u0e0f\u0e34\u0e17\u0e34\u0e19"
+    "message": "CALENDAR"
   },
   "d83d_dcc6": {
-    "message": "\u0e1b\u0e0f\u0e34\u0e17\u0e34\u0e19\u0e41\u0e1a\u0e1a\u0e09\u0e35\u0e01"
+    "message": "TEAR-OFF CALENDAR"
   },
   "d83d_dcc7": {
-    "message": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e1a\u0e23\u0e23\u0e08\u0e38\u0e1a\u0e31\u0e15\u0e23"
+    "message": "CARD INDEX"
   },
   "d83d_dcc8": {
-    "message": "\u0e41\u0e19\u0e27\u0e42\u0e19\u0e49\u0e21\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e02\u0e36\u0e49\u0e19"
+    "message": "CHART WITH UPWARDS TREND"
   },
   "d83d_dcc9": {
-    "message": "\u0e41\u0e19\u0e27\u0e42\u0e19\u0e49\u0e21\u0e25\u0e14\u0e25\u0e07"
+    "message": "CHART WITH DOWNWARDS TREND"
   },
   "d83d_dcca": {
-    "message": "\u0e01\u0e23\u0e32\u0e1f\u0e41\u0e17\u0e48\u0e07"
+    "message": "BAR CHART"
   },
   "d83d_dccb": {
-    "message": "\u0e04\u0e25\u0e34\u0e1b\u0e1a\u0e2d\u0e23\u0e4c\u0e14"
+    "message": "CLIPBOARD"
   },
   "d83d_dccc": {
-    "message": "\u0e2b\u0e21\u0e38\u0e14\u0e1b\u0e31\u0e01"
+    "message": "PUSHPIN"
   },
   "d83d_dccd": {
-    "message": "\u0e2b\u0e21\u0e38\u0e14\u0e1b\u0e31\u0e01\u0e2b\u0e31\u0e27\u0e01\u0e25\u0e21"
+    "message": "ROUND PUSHPIN"
   },
   "d83d_dcce": {
-    "message": "\u0e04\u0e25\u0e34\u0e1b\u0e2b\u0e19\u0e35\u0e1a\u0e01\u0e23\u0e30\u0e14\u0e32\u0e29"
+    "message": "PAPERCLIP"
   },
   "d83d_dccf": {
-    "message": "\u0e44\u0e21\u0e49\u0e1a\u0e23\u0e23\u0e17\u0e31\u0e14\u0e15\u0e23\u0e07"
+    "message": "STRAIGHT RULER"
   },
   "d83d_dcd0": {
-    "message": "\u0e44\u0e21\u0e49\u0e1a\u0e23\u0e23\u0e17\u0e31\u0e14\u0e2a\u0e32\u0e21\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21"
+    "message": "TRIANGULAR RULER"
   },
   "d83d_dcd1": {
-    "message": "\u0e41\u0e17\u0e47\u0e1a\u0e1a\u0e38\u0e4a\u0e01\u0e21\u0e32\u0e23\u0e4c\u0e01"
+    "message": "BOOKMARK TABS"
   },
   "d83d_dcd2": {
-    "message": "\u0e41\u0e1c\u0e48\u0e19\u0e2b\u0e34\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e25\u0e38\u0e21\u0e28\u0e1e"
+    "message": "LEDGER"
   },
   "d83d_dcd3": {
-    "message": "\u0e2a\u0e21\u0e38\u0e14\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01"
+    "message": "NOTEBOOK"
   },
   "d83d_dcd4": {
-    "message": "\u0e2a\u0e19\u0e38\u0e14\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e17\u0e35\u0e48\u0e21\u0e35\u0e01\u0e32\u0e23\u0e15\u0e01\u0e41\u0e15\u0e48\u0e07"
+    "message": "NOTEBOOK WITH DECORATIVE COVER"
   },
   "d83d_dcd5": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48"
+    "message": "CLOSED BOOK"
   },
   "d83d_dcd6": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e40\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48"
+    "message": "OPEN BOOK"
   },
   "d83d_dcd7": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e2a\u0e35\u0e40\u0e02\u0e35\u0e22\u0e27"
+    "message": "GREEN BOOK"
   },
   "d83d_dcd8": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d"
+    "message": "BLUE BOOK"
   },
   "d83d_dcd9": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e2a\u0e35\u0e2a\u0e49\u0e21"
+    "message": "ORANGE BOOK"
   },
   "d83d_dcda": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e2b\u0e25\u0e32\u0e22\u0e40\u0e25\u0e48\u0e21"
+    "message": "BOOKS"
   },
   "d83d_dcdb": {
-    "message": "\u0e1b\u0e49\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d"
+    "message": "NAME BADGE"
   },
   "d83d_dcdc": {
-    "message": "\u0e21\u0e49\u0e27\u0e19\u0e01\u0e23\u0e30\u0e14\u0e32\u0e29"
+    "message": "SCROLL"
   },
   "d83d_dcdd": {
-    "message": "\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01"
+    "message": "MEMO"
   },
   "d83d_dcde": {
-    "message": "\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c"
+    "message": "TELEPHONE RECEIVER"
   },
   "d83d_dcdf": {
-    "message": "\u0e40\u0e1e\u0e08\u0e40\u0e08\u0e2d\u0e23\u0e4c"
+    "message": "PAGER"
   },
   "d83d_dce0": {
-    "message": "\u0e42\u0e17\u0e23\u0e2a\u0e32\u0e23"
+    "message": "FAX MACHINE"
   },
   "d83d_dce1": {
-    "message": "\u0e08\u0e32\u0e19\u0e14\u0e32\u0e27\u0e40\u0e17\u0e35\u0e22\u0e21"
+    "message": "SATELLITE ANTENNA"
   },
   "d83d_dce2": {
-    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07\u0e02\u0e22\u0e32\u0e22\u0e40\u0e2a\u0e35\u0e22\u0e07"
+    "message": "PUBLIC ADDRESS LOUDSPEAKER"
   },
   "d83d_dce3": {
-    "message": "\u0e42\u0e17\u0e23\u0e42\u0e02\u0e48\u0e07"
+    "message": "CHEERING MEGAPHONE"
   },
   "d83d_dce4": {
-    "message": "\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e17\u0e35\u0e48\u0e2a\u0e48\u0e07\u0e41\u0e25\u0e49\u0e27"
+    "message": "OUTBOX TRAY"
   },
   "d83d_dce5": {
-    "message": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22"
+    "message": "INBOX TRAY"
   },
   "d83d_dce6": {
-    "message": "\u0e1e\u0e31\u0e2a\u0e14\u0e38"
+    "message": "PACKAGE"
   },
   "d83d_dce7": {
-    "message": "\u0e2d\u0e35\u0e40\u0e21\u0e25"
+    "message": "E-MAIL SYMBOL"
   },
   "d83d_dce8": {
-    "message": "\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e02\u0e32\u0e40\u0e02\u0e49\u0e32"
+    "message": "INCOMING ENVELOPE"
   },
   "d83d_dce9": {
-    "message": "\u0e2d\u0e35\u0e40\u0e21\u0e25\u0e02\u0e32\u0e2d\u0e2d\u0e01"
+    "message": "ENVELOPE WITH DOWNWARDS ARROW ABOVE"
   },
   "d83d_dcea": {
-    "message": "\u0e15\u0e39\u0e49\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e18\u0e07\u0e2b\u0e38\u0e1a\u0e25\u0e07"
+    "message": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e1b\u0e34\u0e14\u0e21\u0e35\u0e40\u0e2a\u0e32\u0e02\u0e36\u0e49\u0e19"
   },
   "d83d_dceb": {
-    "message": "\u0e15\u0e39\u0e49\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e18\u0e07\u0e15\u0e31\u0e49\u0e07\u0e02\u0e36\u0e49\u0e19"
+    "message": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e1b\u0e34\u0e14\u0e21\u0e35\u0e40\u0e2a\u0e32\u0e25\u0e07"
   },
   "d83d_dcec": {
-    "message": "\u0e15\u0e39\u0e49\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e18\u0e07\u0e15\u0e31\u0e49\u0e07\u0e02\u0e36\u0e49\u0e19"
+    "message": "\u0e21\u0e35\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e21\u0e35\u0e40\u0e2a\u0e32\u0e02\u0e36\u0e49\u0e19"
   },
   "d83d_dced": {
-    "message": "\u0e15\u0e39\u0e49\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e18\u0e07\u0e2b\u0e38\u0e1a\u0e25\u0e07"
+    "message": "\u0e01\u0e25\u0e48\u0e2d\u0e07\u0e08\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e27\u0e48\u0e32\u0e07\u0e21\u0e35\u0e40\u0e2a\u0e32\u0e25\u0e07"
   },
   "d83d_dcee": {
-    "message": "\u0e15\u0e39\u0e49\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c"
+    "message": "POSTBOX"
   },
   "d83d_dcef": {
-    "message": "\u0e41\u0e15\u0e23\u0e44\u0e1b\u0e23\u0e29\u0e13\u0e35\u0e22\u0e4c"
+    "message": "POSTAL HORN"
   },
   "d83d_dcf0": {
-    "message": "\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e1e\u0e34\u0e21\u0e1e\u0e4c"
+    "message": "NEWSPAPER"
   },
   "d83d_dcf1": {
-    "message": "\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d"
+    "message": "MOBILE PHONE"
   },
   "d83d_dcf2": {
-    "message": "\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e25\u0e39\u0e01\u0e28\u0e23"
+    "message": "MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT"
   },
   "d83d_dcf3": {
-    "message": "\u0e42\u0e2b\u0e21\u0e14\u0e2a\u0e31\u0e48\u0e19"
+    "message": "VIBRATION MODE"
   },
   "d83d_dcf4": {
-    "message": "\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c\u0e1b\u0e34\u0e14\u0e2d\u0e22\u0e39\u0e48"
+    "message": "MOBILE PHONE OFF"
   },
   "d83d_dcf5": {
-    "message": "\u0e2b\u0e49\u0e32\u0e21\u0e43\u0e0a\u0e49\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d"
+    "message": "NO MOBILE PHONES"
   },
   "d83d_dcf6": {
-    "message": "\u0e2a\u0e31\u0e0d\u0e0d\u0e32\u0e13\u0e21\u0e37\u0e2d\u0e16\u0e37\u0e2d"
+    "message": "ANTENNA WITH BARS"
   },
   "d83d_dcf7": {
-    "message": "\u0e01\u0e25\u0e49\u0e2d\u0e07\u0e16\u0e48\u0e32\u0e22\u0e23\u0e39\u0e1b"
+    "message": "CAMERA"
   },
   "d83d_dcf9": {
-    "message": "\u0e01\u0e25\u0e49\u0e2d\u0e07\u0e27\u0e34\u0e14\u0e35\u0e42\u0e2d"
+    "message": "VIDEO CAMERA"
   },
   "d83d_dcfa": {
-    "message": "\u0e17\u0e35\u0e27\u0e35"
+    "message": "TELEVISION"
   },
   "d83d_dcfb": {
-    "message": "\u0e27\u0e34\u0e17\u0e22\u0e38"
+    "message": "RADIO"
   },
   "d83d_dcfc": {
-    "message": "\u0e40\u0e17\u0e1b\u0e27\u0e34\u0e14\u0e35\u0e42\u0e2d"
+    "message": "VIDEOCASSETTE"
   },
   "d83d_dd00": {
-    "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e44\u0e02\u0e27\u0e49"
+    "message": "TWISTED RIGHTWARDS ARROWS"
   },
   "d83d_dd01": {
-    "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e15\u0e32\u0e21\u0e40\u0e02\u0e47\u0e21\u0e19\u0e32\u0e2c\u0e34\u0e01\u0e32"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd02": {
-    "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e15\u0e32\u0e21\u0e40\u0e02\u0e47\u0e21\u0e19\u0e32\u0e2c\u0e34\u0e01\u0e32"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY"
   },
   "d83d_dd03": {
-    "message": "\u0e42\u0e2b\u0e25\u0e14\u0e0b\u0e49\u0e33"
+    "message": "CLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd04": {
-    "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e17\u0e27\u0e19\u0e40\u0e02\u0e47\u0e21\u0e19\u0e32\u0e2c\u0e34\u0e01\u0e32"
+    "message": "ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd05": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e27\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22"
+    "message": "LOW BRIGHTNESS SYMBOL"
   },
   "d83d_dd06": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e27\u0e48\u0e32\u0e07\u0e21\u0e32\u0e01"
+    "message": "HIGH BRIGHTNESS SYMBOL"
   },
   "d83d_dd07": {
-    "message": "\u0e2b\u0e49\u0e32\u0e21\u0e1e\u0e39\u0e14"
+    "message": "SPEAKER WITH CANCELLATION STROKE"
   },
   "d83d_dd08": {
-    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07"
+    "message": "SPEAKER"
   },
   "d83d_dd09": {
-    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e15\u0e48\u0e33"
+    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e40\u0e1a\u0e32"
   },
   "d83d_dd0a": {
-    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e23\u0e30\u0e14\u0e31\u0e1a\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e2a\u0e39\u0e07"
+    "message": "\u0e25\u0e33\u0e42\u0e1e\u0e07\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e14\u0e31\u0e07"
   },
   "d83d_dd0b": {
-    "message": "\u0e41\u0e1a\u0e15\u0e40\u0e15\u0e2d\u0e23\u0e35\u0e48"
+    "message": "BATTERY"
   },
   "d83d_dd0c": {
-    "message": "\u0e1b\u0e25\u0e31\u0e4a\u0e01\u0e44\u0e1f"
+    "message": "ELECTRIC PLUG"
   },
   "d83d_dd0d": {
     "message": "\u0e41\u0e27\u0e48\u0e19\u0e02\u0e22\u0e32\u0e22\u0e40\u0e2d\u0e35\u0e22\u0e07\u0e0b\u0e49\u0e32\u0e22"
@@ -1721,112 +1721,112 @@
     "message": "\u0e41\u0e27\u0e48\u0e19\u0e02\u0e22\u0e32\u0e22\u0e40\u0e2d\u0e35\u0e22\u0e07\u0e02\u0e27\u0e32"
   },
   "d83d_dd0f": {
-    "message": "\u0e41\u0e21\u0e48\u0e01\u0e38\u0e0d\u0e41\u0e08\u0e25\u0e47\u0e2d\u0e01\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e1b\u0e32\u0e01\u0e01\u0e32\u0e2b\u0e21\u0e36\u0e01\u0e0b\u0e36\u0e21"
+    "message": "\u0e25\u0e47\u0e2d\u0e01\u0e14\u0e49\u0e27\u0e22\u0e1b\u0e32\u0e01\u0e01\u0e32\u0e2b\u0e31\u0e27\u0e2b\u0e21\u0e36\u0e01"
   },
   "d83d_dd10": {
-    "message": "\u0e41\u0e21\u0e48\u0e01\u0e38\u0e0d\u0e41\u0e08\u0e25\u0e47\u0e2d\u0e01\u0e1e\u0e23\u0e49\u0e2d\u0e21\u0e25\u0e39\u0e01\u0e01\u0e38\u0e0d\u0e41\u0e08"
+    "message": "\u0e25\u0e47\u0e2d\u0e01\u0e14\u0e49\u0e27\u0e22\u0e01\u0e38\u0e0d\u0e41\u0e08"
   },
   "d83d_dd11": {
-    "message": "\u0e25\u0e39\u0e01\u0e01\u0e38\u0e0d\u0e41\u0e08"
+    "message": "KEY"
   },
   "d83d_dd12": {
-    "message": "\u0e41\u0e21\u0e48\u0e01\u0e38\u0e0d\u0e41\u0e08\u0e25\u0e47\u0e2d\u0e01"
+    "message": "\u0e25\u0e47\u0e2d\u0e01\u0e1b\u0e34\u0e14"
   },
   "d83d_dd13": {
-    "message": "\u0e41\u0e21\u0e48\u0e01\u0e38\u0e0d\u0e41\u0e08\u0e40\u0e1b\u0e34\u0e14"
+    "message": "\u0e25\u0e47\u0e2d\u0e01\u0e40\u0e1b\u0e34\u0e14"
   },
   "d83d_dd14": {
-    "message": "\u0e01\u0e23\u0e30\u0e14\u0e34\u0e48\u0e07"
+    "message": "BELL"
   },
   "d83d_dd15": {
-    "message": "\u0e44\u0e21\u0e48\u0e21\u0e35\u0e01\u0e23\u0e30\u0e14\u0e34\u0e48\u0e07"
+    "message": "BELL WITH CANCELLATION STROKE"
   },
   "d83d_dd16": {
-    "message": "\u0e17\u0e35\u0e48\u0e04\u0e31\u0e48\u0e19\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d"
+    "message": "BOOKMARK"
   },
   "d83d_dd17": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e42\u0e0b\u0e48"
+    "message": "LINK SYMBOL"
   },
   "d83d_dd18": {
-    "message": "\u0e1b\u0e38\u0e48\u0e21\u0e15\u0e31\u0e27\u0e40\u0e25\u0e37\u0e2d\u0e01"
+    "message": "RADIO BUTTON"
   },
   "d83d_dd19": {
-    "message": "\u0e01\u0e25\u0e31\u0e1a"
+    "message": "BACK WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1a": {
-    "message": "\u0e2a\u0e34\u0e49\u0e19\u0e2a\u0e38\u0e14"
+    "message": "END WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1b": {
-    "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e40\u0e1b\u0e34\u0e14"
+    "message": "ON WITH EXCLAMATION MARK WITH LEFT RIGHT ARROW ABOVE"
   },
   "d83d_dd1c": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e23\u0e47\u0e27\u0e46 \u0e19\u0e35\u0e49"
+    "message": "SOON WITH RIGHTWARDS ARROW ABOVE"
   },
   "d83d_dd1d": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e04\u0e33\u0e27\u0e48\u0e32\u0e2a\u0e39\u0e07\u0e2a\u0e38\u0e14"
+    "message": "TOP WITH UPWARDS ARROW ABOVE"
   },
   "d83d_dd1e": {
-    "message": "\u0e1a\u0e38\u0e04\u0e04\u0e25\u0e2d\u0e32\u0e22\u0e38\u0e15\u0e48\u0e33\u0e01\u0e27\u0e48\u0e32 18 \u0e1b\u0e35\u0e2b\u0e49\u0e32\u0e21\u0e40\u0e02\u0e49\u0e32"
+    "message": "NO ONE UNDER EIGHTEEN SYMBOL"
   },
   "d83d_dd20": {
-    "message": "\u0e15\u0e31\u0e27\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e43\u0e2b\u0e0d\u0e48"
+    "message": "INPUT SYMBOL FOR LATIN CAPITAL LETTERS"
   },
   "d83d_dd21": {
-    "message": "\u0e15\u0e31\u0e27\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e25\u0e47\u0e01"
+    "message": "INPUT SYMBOL FOR LATIN SMALL LETTERS"
   },
   "d83d_dd22": {
-    "message": "\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02"
+    "message": "INPUT SYMBOL FOR NUMBERS"
   },
   "d83d_dd23": {
-    "message": "\u0e2a\u0e31\u0e0d\u0e25\u0e31\u0e01\u0e29\u0e13\u0e4c"
+    "message": "INPUT SYMBOL FOR SYMBOLS"
   },
   "d83d_dd24": {
-    "message": "\u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23\u0e25\u0e30\u0e15\u0e34\u0e19"
+    "message": "INPUT SYMBOL FOR LATIN LETTERS"
   },
   "d83d_dd25": {
-    "message": "\u0e44\u0e1f"
+    "message": "FIRE"
   },
   "d83d_dd26": {
-    "message": "\u0e44\u0e1f\u0e09\u0e32\u0e22"
+    "message": "ELECTRIC TORCH"
   },
   "d83d_dd27": {
-    "message": "\u0e1b\u0e23\u0e30\u0e41\u0e08"
+    "message": "WRENCH"
   },
   "d83d_dd28": {
-    "message": "\u0e04\u0e49\u0e2d\u0e19"
+    "message": "HAMMER"
   },
   "d83d_dd29": {
-    "message": "\u0e41\u0e2b\u0e27\u0e19\u0e2a\u0e01\u0e23\u0e39\u0e41\u0e25\u0e30\u0e2a\u0e25\u0e31\u0e01\u0e40\u0e01\u0e25\u0e35\u0e22\u0e27"
+    "message": "NUT AND BOLT"
   },
   "d83d_dd2a": {
-    "message": "\u0e21\u0e35\u0e14\u0e17\u0e33\u0e04\u0e23\u0e31\u0e27"
+    "message": "HOCHO"
   },
   "d83d_dd2b": {
-    "message": "\u0e1b\u0e37\u0e19"
+    "message": "PISTOL"
   },
   "d83d_dd2c": {
-    "message": "\u0e01\u0e25\u0e49\u0e2d\u0e07\u0e08\u0e38\u0e25\u0e17\u0e23\u0e23\u0e28\u0e19\u0e4c"
+    "message": "MICROSCOPE"
   },
   "d83d_dd2d": {
-    "message": "\u0e01\u0e25\u0e49\u0e2d\u0e07\u0e2a\u0e48\u0e2d\u0e07\u0e17\u0e32\u0e07\u0e44\u0e01\u0e25"
+    "message": "TELESCOPE"
   },
   "d83d_dd2e": {
-    "message": "\u0e25\u0e39\u0e01\u0e41\u0e01\u0e49\u0e27"
+    "message": "CRYSTAL BALL"
   },
   "d83d_dd2f": {
-    "message": "\u0e14\u0e32\u0e27 6 \u0e41\u0e09\u0e01"
+    "message": "SIX POINTED STAR WITH MIDDLE DOT"
   },
   "d83d_dd30": {
-    "message": "\u0e43\u0e1a\u0e44\u0e21\u0e49\u0e2a\u0e35\u0e40\u0e02\u0e35\u0e22\u0e27\u0e41\u0e25\u0e30\u0e40\u0e2b\u0e25\u0e37\u0e2d\u0e07"
+    "message": "JAPANESE SYMBOL FOR BEGINNER"
   },
   "d83d_dd31": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2a\u0e32\u0e21\u0e07\u0e48\u0e32\u0e21"
+    "message": "TRIDENT EMBLEM"
   },
   "d83d_dd32": {
-    "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e01\u0e23\u0e2d\u0e1a\u0e17\u0e36\u0e1a"
+    "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e01\u0e23\u0e2d\u0e1a\u0e40\u0e02\u0e49\u0e21"
   },
   "d83d_dd33": {
-    "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e01\u0e23\u0e2d\u0e1a\u0e40\u0e14\u0e48\u0e19"
+    "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e01\u0e23\u0e2d\u0e1a\u0e1a\u0e32\u0e07"
   },
   "d83d_dd34": {
     "message": "\u0e27\u0e07\u0e01\u0e25\u0e21\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e41\u0e14\u0e07"
@@ -1835,22 +1835,22 @@
     "message": "\u0e27\u0e07\u0e01\u0e25\u0e21\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e40\u0e07\u0e34\u0e19"
   },
   "d83d_dd36": {
-    "message": "\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e49\u0e32\u0e27\u0e2b\u0e25\u0e32\u0e21\u0e15\u0e31\u0e14\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e2a\u0e49\u0e21"
+    "message": "\u0e40\u0e1e\u0e0a\u0e23\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e2a\u0e49\u0e21"
   },
   "d83d_dd37": {
-    "message": "\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e49\u0e32\u0e27\u0e2b\u0e25\u0e32\u0e21\u0e15\u0e31\u0e14\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e40\u0e07\u0e34\u0e19"
+    "message": "\u0e40\u0e1e\u0e0a\u0e23\u0e43\u0e2b\u0e0d\u0e48\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e40\u0e07\u0e34\u0e19"
   },
   "d83d_dd38": {
-    "message": "\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e49\u0e32\u0e27\u0e2b\u0e25\u0e32\u0e21\u0e15\u0e31\u0e14\u0e40\u0e25\u0e47\u0e01\u0e2a\u0e35\u0e2a\u0e49\u0e21"
+    "message": "\u0e40\u0e1e\u0e0a\u0e23\u0e40\u0e25\u0e47\u0e01\u0e2a\u0e35\u0e2a\u0e49\u0e21"
   },
   "d83d_dd39": {
-    "message": "\u0e2a\u0e35\u0e48\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e49\u0e32\u0e27\u0e2b\u0e25\u0e32\u0e21\u0e15\u0e31\u0e14\u0e40\u0e25\u0e47\u0e01\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e40\u0e07\u0e34\u0e19"
+    "message": "\u0e40\u0e1e\u0e0a\u0e23\u0e40\u0e25\u0e47\u0e01\u0e2a\u0e35\u0e19\u0e49\u0e33\u0e40\u0e07\u0e34\u0e19"
   },
   "d83d_dd3a": {
-    "message": "\u0e2a\u0e32\u0e21\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e36\u0e49\u0e19"
+    "message": "UP-POINTING RED TRIANGLE"
   },
   "d83d_dd3b": {
-    "message": "\u0e2a\u0e32\u0e21\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e25\u0e07"
+    "message": "DOWN-POINTING RED TRIANGLE"
   },
   "d83d_dd3c": {
     "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e32\u0e21\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e02\u0e36\u0e49\u0e19"
@@ -1859,430 +1859,430 @@
     "message": "\u0e1b\u0e38\u0e48\u0e21\u0e2a\u0e32\u0e21\u0e40\u0e2b\u0e25\u0e35\u0e48\u0e22\u0e21\u0e25\u0e07"
   },
   "d83d_dd50": {
-    "message": "1.00 \u0e19."
+    "message": "CLOCK FACE ONE OCLOCK"
   },
   "d83d_dd51": {
-    "message": "2.00 \u0e19."
+    "message": "CLOCK FACE TWO OCLOCK"
   },
   "d83d_dd52": {
-    "message": "3.00 \u0e19."
+    "message": "CLOCK FACE THREE OCLOCK"
   },
   "d83d_dd53": {
-    "message": "4.00 \u0e19."
+    "message": "CLOCK FACE FOUR OCLOCK"
   },
   "d83d_dd54": {
-    "message": "5.00 \u0e19."
+    "message": "CLOCK FACE FIVE OCLOCK"
   },
   "d83d_dd55": {
-    "message": "6.00 \u0e19."
+    "message": "CLOCK FACE SIX OCLOCK"
   },
   "d83d_dd56": {
-    "message": "7.00 \u0e19."
+    "message": "CLOCK FACE SEVEN OCLOCK"
   },
   "d83d_dd57": {
-    "message": "8.00 \u0e19."
+    "message": "CLOCK FACE EIGHT OCLOCK"
   },
   "d83d_dd58": {
-    "message": "9.00 \u0e19."
+    "message": "CLOCK FACE NINE OCLOCK"
   },
   "d83d_dd59": {
-    "message": "10.00 \u0e19."
+    "message": "CLOCK FACE TEN OCLOCK"
   },
   "d83d_dd5a": {
-    "message": "11.00 \u0e19."
+    "message": "CLOCK FACE ELEVEN OCLOCK"
   },
   "d83d_dd5b": {
-    "message": "12.00 \u0e19."
+    "message": "CLOCK FACE TWELVE OCLOCK"
   },
   "d83d_dd5c": {
-    "message": "\u0e1a\u0e48\u0e32\u0e22\u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e15\u0e35 1 \u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE ONE-THIRTY"
   },
   "d83d_dd5d": {
-    "message": "\u0e1a\u0e48\u0e32\u0e22 2 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e15\u0e35 2 \u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE TWO-THIRTY"
   },
   "d83d_dd5e": {
-    "message": "\u0e1a\u0e48\u0e32\u0e22 3 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e15\u0e35 3 \u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE THREE-THIRTY"
   },
   "d83d_dd5f": {
-    "message": "\u0e1a\u0e48\u0e32\u0e22 4 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e15\u0e35 4 \u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE FOUR-THIRTY"
   },
   "d83d_dd60": {
-    "message": "5 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e15\u0e35 5 \u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE FIVE-THIRTY"
   },
   "d83d_dd61": {
-    "message": "6 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE SIX-THIRTY"
   },
   "d83d_dd62": {
-    "message": "7 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/1 \u0e17\u0e38\u0e48\u0e21\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE SEVEN-THIRTY"
   },
   "d83d_dd63": {
-    "message": "8 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/2 \u0e17\u0e38\u0e48\u0e21\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE EIGHT-THIRTY"
   },
   "d83d_dd64": {
-    "message": "9 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/3 \u0e17\u0e38\u0e48\u0e21\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE NINE-THIRTY"
   },
   "d83d_dd65": {
-    "message": "10 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/4 \u0e17\u0e38\u0e48\u0e21\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE TEN-THIRTY"
   },
   "d83d_dd66": {
-    "message": "11 \u0e42\u0e21\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/5 \u0e17\u0e38\u0e48\u0e21\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE ELEVEN-THIRTY"
   },
   "d83d_dd67": {
-    "message": "\u0e40\u0e17\u0e35\u0e48\u0e22\u0e07\u0e04\u0e23\u0e36\u0e48\u0e07/\u0e40\u0e17\u0e35\u0e48\u0e22\u0e19\u0e04\u0e37\u0e19\u0e04\u0e23\u0e36\u0e48\u0e07"
+    "message": "CLOCK FACE TWELVE-THIRTY"
   },
   "d83d_ddfb": {
-    "message": "\u0e20\u0e39\u0e40\u0e02\u0e32\u0e44\u0e1f\u0e1f\u0e39\u0e08\u0e34"
+    "message": "MOUNT FUJI"
   },
   "d83d_ddfc": {
-    "message": "\u0e42\u0e15\u0e40\u0e01\u0e35\u0e22\u0e27\u0e17\u0e32\u0e27\u0e40\u0e27\u0e2d\u0e23\u0e4c"
+    "message": "TOKYO TOWER"
   },
   "d83d_ddfd": {
-    "message": "\u0e40\u0e17\u0e1e\u0e35\u0e40\u0e2a\u0e23\u0e35\u0e20\u0e32\u0e1e"
+    "message": "STATUE OF LIBERTY"
   },
   "d83d_ddfe": {
-    "message": "\u0e41\u0e1c\u0e19\u0e17\u0e35\u0e48\u0e1b\u0e23\u0e30\u0e40\u0e17\u0e28\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19"
+    "message": "SILHOUETTE OF JAPAN"
   },
   "d83d_ddff": {
-    "message": "\u0e23\u0e39\u0e1b\u0e1b\u0e31\u0e49\u0e19\u0e42\u0e21\u0e44\u0e2d"
+    "message": "MOYAI"
   },
   "d83d_de00": {
-    "message": "\u0e22\u0e34\u0e49\u0e21\u0e22\u0e34\u0e07\u0e1f\u0e31\u0e19"
+    "message": "GRINNING FACE"
   },
   "d83d_de01": {
-    "message": " \u0e22\u0e34\u0e49\u0e21\u0e15\u0e32\u0e2b\u0e22\u0e35"
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21\u0e15\u0e32\u0e22\u0e34\u0e49\u0e21"
   },
   "d83d_de02": {
-    "message": "\u0e19\u0e49\u0e33\u0e15\u0e32\u0e41\u0e2b\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e22\u0e34\u0e19\u0e14\u0e35"
+    "message": "FACE WITH TEARS OF JOY"
   },
   "d83d_de03": {
-    "message": "\u0e22\u0e34\u0e49\u0e21\u0e2d\u0e49\u0e32\u0e1b\u0e32\u0e01"
+    "message": "SMILING FACE WITH OPEN MOUTH"
   },
   "d83d_de04": {
-    "message": "\u0e22\u0e34\u0e49\u0e21\u0e1b\u0e32\u0e01\u0e01\u0e27\u0e49\u0e32\u0e07\u0e15\u0e32\u0e2b\u0e22\u0e35"
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21\u0e15\u0e32\u0e22\u0e34\u0e49\u0e21"
   },
   "d83d_de05": {
-    "message": "\u0e22\u0e34\u0e49\u0e21\u0e40\u0e2b\u0e07\u0e37\u0e48\u0e2d\u0e41\u0e15\u0e01"
+    "message": "SMILING FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de06": {
-    "message": " \u0e22\u0e34\u0e49\u0e21\u0e2d\u0e49\u0e32\u0e1b\u0e32\u0e01\u0e2b\u0e25\u0e31\u0e1a\u0e15\u0e32"
+    "message": "\u0e22\u0e34\u0e49\u0e21\u0e15\u0e32\u0e2b\u0e22\u0e35"
   },
   "d83d_de07": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21\u0e21\u0e35\u0e27\u0e07\u0e41\u0e2b\u0e27\u0e19"
+    "message": "SMILING FACE WITH HALO"
   },
   "d83d_de08": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21\u0e21\u0e35\u0e40\u0e02\u0e32"
+    "message": "SMILING FACE WITH HORNS"
   },
   "d83d_de09": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e02\u0e22\u0e34\u0e1a\u0e15\u0e32"
+    "message": "WINKING FACE"
   },
   "d83d_de0a": {
-    "message": "\u0e22\u0e34\u0e49\u0e21"
+    "message": "SMILING FACE WITH SMILING EYES"
   },
   "d83d_de0b": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e25\u0e1a\u0e25\u0e34\u0e49\u0e19\u0e40\u0e25\u0e35\u0e22\u0e1b\u0e32\u0e01"
+    "message": "FACE SAVOURING DELICIOUS FOOD"
   },
   "d83d_de0c": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e42\u0e25\u0e48\u0e07\u0e2d\u0e01"
+    "message": "RELIEVED FACE"
   },
   "d83d_de0d": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21"
+    "message": "SMILING FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de0e": {
-    "message": "\u0e40\u0e08\u0e4b\u0e07"
+    "message": "SMILING FACE WITH SUNGLASSES"
   },
   "d83d_de0f": {
-    "message": "\u0e22\u0e34\u0e49\u0e21\u0e40\u0e22\u0e32\u0e30"
+    "message": "SMIRKING FACE"
   },
   "d83d_de10": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e19\u0e34\u0e48\u0e07"
+    "message": "NEUTRAL FACE"
   },
   "d83d_de11": {
-    "message": "\u0e44\u0e23\u0e49\u0e2d\u0e32\u0e23\u0e21\u0e13\u0e4c"
+    "message": "EXPRESSIONLESS FACE"
   },
   "d83d_de12": {
-    "message": "\u0e44\u0e21\u0e48\u0e15\u0e25\u0e01"
+    "message": "UNAMUSED FACE"
   },
   "d83d_de13": {
-    "message": "\u0e40\u0e2b\u0e07\u0e37\u0e48\u0e2d\u0e15\u0e01"
+    "message": "FACE WITH COLD SWEAT"
   },
   "d83d_de14": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e1b\u0e47\u0e19\u0e17\u0e38\u0e01\u0e02\u0e4c"
+    "message": "PENSIVE FACE"
   },
   "d83d_de15": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2a\u0e31\u0e1a\u0e2a\u0e19"
+    "message": "CONFUSED FACE"
   },
   "d83d_de16": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e09\u0e07\u0e19"
+    "message": "CONFOUNDED FACE"
   },
   "d83d_de17": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e08\u0e39\u0e1a"
+    "message": "KISSING FACE"
   },
   "d83d_de18": {
-    "message": "\u0e42\u0e1b\u0e23\u0e22\u0e08\u0e39\u0e1a"
+    "message": "FACE THROWING A KISS"
   },
   "d83d_de19": {
-    "message": "\u0e08\u0e39\u0e1a\u0e41\u0e25\u0e30\u0e22\u0e34\u0e49\u0e21"
+    "message": "KISSING FACE WITH SMILING EYES"
   },
   "d83d_de1a": {
-    "message": "\u0e08\u0e39\u0e1a"
+    "message": "KISSING FACE WITH CLOSED EYES"
   },
   "d83d_de1b": {
-    "message": "\u0e41\u0e25\u0e1a\u0e25\u0e34\u0e49\u0e19"
+    "message": "FACE WITH STUCK-OUT TONGUE"
   },
   "d83d_de1c": {
-    "message": "\u0e41\u0e25\u0e1a\u0e25\u0e34\u0e49\u0e19\u0e02\u0e22\u0e34\u0e1a\u0e15\u0e32"
+    "message": "\u0e41\u0e25\u0e1a\u0e25\u0e34\u0e49\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e17\u0e30\u0e40\u0e25\u0e49\u0e19"
   },
   "d83d_de1d": {
-    "message": "\u0e02\u0e22\u0e30\u0e41\u0e02\u0e22\u0e07"
+    "message": "FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES"
   },
   "d83d_de1e": {
-    "message": "\u0e1c\u0e34\u0e14\u0e2b\u0e27\u0e31\u0e07"
+    "message": "DISAPPOINTED FACE"
   },
   "d83d_de1f": {
-    "message": "\u0e01\u0e31\u0e07\u0e27\u0e25"
+    "message": "WORRIED FACE"
   },
   "d83d_de20": {
-    "message": "\u0e42\u0e01\u0e23\u0e18"
+    "message": "ANGRY FACE"
   },
   "d83d_de21": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1a\u0e36\u0e49\u0e07"
+    "message": "POUTING FACE"
   },
   "d83d_de22": {
-    "message": "\u0e23\u0e49\u0e2d\u0e07\u0e44\u0e2b\u0e49"
+    "message": "CRYING FACE"
   },
   "d83d_de23": {
-    "message": "\u0e17\u0e33\u0e1e\u0e31\u0e07"
+    "message": "PERSEVERING FACE"
   },
   "d83d_de24": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e2b\u0e48\u0e07\u0e0a\u0e31\u0e22\u0e0a\u0e19\u0e30"
+    "message": "FACE WITH LOOK OF TRIUMPH"
   },
   "d83d_de25": {
-    "message": "\u0e42\u0e25\u0e48\u0e07\u0e2d\u0e01!"
+    "message": "DISAPPOINTED BUT RELIEVED FACE"
   },
   "d83d_de26": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1a\u0e36\u0e49\u0e07\u0e15\u0e36\u0e07"
+    "message": "FROWNING FACE WITH OPEN MOUTH"
   },
   "d83d_de27": {
-    "message": "\u0e01\u0e25\u0e31\u0e14\u0e01\u0e25\u0e38\u0e49\u0e21"
+    "message": "ANGUISHED FACE"
   },
   "d83d_de28": {
-    "message": "\u0e2b\u0e27\u0e32\u0e14\u0e01\u0e25\u0e31\u0e27"
+    "message": "FEARFUL FACE"
   },
   "d83d_de29": {
-    "message": "\u0e40\u0e2b\u0e19\u0e37\u0e48\u0e2d\u0e22"
+    "message": "WEARY FACE"
   },
   "d83d_de2a": {
-    "message": "\u0e07\u0e48\u0e27\u0e07\u0e19\u0e2d\u0e19"
+    "message": "SLEEPY FACE"
   },
   "d83d_de2b": {
-    "message": "\u0e40\u0e2b\u0e19\u0e37\u0e48\u0e2d\u0e22\u0e25\u0e49\u0e32"
+    "message": "TIRED FACE"
   },
   "d83d_de2c": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e1a\u0e30"
+    "message": "GRIMACING FACE"
   },
   "d83d_de2d": {
-    "message": "\u0e23\u0e49\u0e2d\u0e07\u0e44\u0e2b\u0e49\u0e42\u0e2e"
+    "message": "LOUDLY CRYING FACE"
   },
   "d83d_de2e": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2d\u0e49\u0e32\u0e1b\u0e32\u0e01"
+    "message": "FACE WITH OPEN MOUTH"
   },
   "d83d_de2f": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e07\u0e35\u0e22\u0e1a"
+    "message": "HUSHED FACE"
   },
   "d83d_de30": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e25\u0e19\u0e25\u0e32\u0e19"
+    "message": "FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de31": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e2b\u0e27\u0e32\u0e14\u0e01\u0e25\u0e31\u0e27"
+    "message": "FACE SCREAMING IN FEAR"
   },
   "d83d_de32": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1b\u0e23\u0e30\u0e2b\u0e25\u0e32\u0e14\u0e43\u0e08"
+    "message": "ASTONISHED FACE"
   },
   "d83d_de33": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e14\u0e07"
+    "message": "FLUSHED FACE"
   },
   "d83d_de34": {
-    "message": "\u0e19\u0e2d\u0e19\u0e2b\u0e25\u0e31\u0e1a"
+    "message": "SLEEPING FACE"
   },
   "d83d_de35": {
-    "message": "\u0e21\u0e36\u0e19\u0e07\u0e07"
+    "message": "DIZZY FACE"
   },
   "d83d_de36": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e44\u0e21\u0e48\u0e21\u0e35\u0e1b\u0e32\u0e01"
+    "message": "FACE WITHOUT MOUTH"
   },
   "d83d_de37": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e43\u0e2a\u0e48\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e01"
+    "message": "FACE WITH MEDICAL MASK"
   },
   "d83d_de38": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e22\u0e34\u0e49\u0e21\u0e22\u0e34\u0e07\u0e1f\u0e31\u0e19"
+    "message": "GRINNING CAT FACE WITH SMILING EYES"
   },
   "d83d_de39": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e19\u0e49\u0e33\u0e15\u0e32\u0e41\u0e2b\u0e48\u0e07\u0e04\u0e27\u0e32\u0e21\u0e22\u0e34\u0e19\u0e14\u0e35"
+    "message": "\u0e41\u0e21\u0e27\u0e23\u0e49\u0e2d\u0e07\u0e44\u0e2b\u0e49\u0e14\u0e35\u0e43\u0e08"
   },
   "d83d_de3a": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e22\u0e34\u0e49\u0e21"
+    "message": "SMILING CAT FACE WITH OPEN MOUTH"
   },
   "d83d_de3b": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e22\u0e34\u0e49\u0e21"
+    "message": "SMILING CAT FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de3c": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e22\u0e34\u0e49\u0e21\u0e21\u0e38\u0e21\u0e1b\u0e32\u0e01"
+    "message": "CAT FACE WITH WRY SMILE"
   },
   "d83d_de3d": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e08\u0e39\u0e1a"
+    "message": "KISSING CAT FACE WITH CLOSED EYES"
   },
   "d83d_de3e": {
-    "message": "\u0e41\u0e21\u0e27\u0e2b\u0e19\u0e49\u0e32\u0e1a\u0e36\u0e49\u0e07"
+    "message": "POUTING CAT FACE"
   },
   "d83d_de3f": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e23\u0e49\u0e2d\u0e07\u0e44\u0e2b\u0e49"
+    "message": "CRYING CAT FACE"
   },
   "d83d_de40": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e41\u0e21\u0e27\u0e40\u0e2b\u0e19\u0e37\u0e48\u0e2d\u0e22"
+    "message": "WEARY CAT FACE"
   },
   "d83d_de45": {
-    "message": "\u0e17\u0e33\u0e17\u0e48\u0e32\u0e44\u0e21\u0e48\u0e40\u0e2d\u0e32"
+    "message": "FACE WITH NO GOOD GESTURE"
   },
   "d83d_de46": {
-    "message": "\u0e17\u0e33\u0e17\u0e48\u0e32\u0e15\u0e01\u0e25\u0e07"
+    "message": "FACE WITH OK GESTURE"
   },
   "d83d_de47": {
-    "message": "\u0e02\u0e2d\u0e42\u0e17\u0e29\u0e19\u0e30"
+    "message": "PERSON BOWING DEEPLY"
   },
   "d83d_de48": {
-    "message": "\u0e25\u0e34\u0e07\u0e1b\u0e34\u0e14\u0e15\u0e32"
+    "message": "SEE-NO-EVIL MONKEY"
   },
   "d83d_de49": {
-    "message": "\u0e25\u0e34\u0e07\u0e1b\u0e34\u0e14\u0e2b\u0e39"
+    "message": "HEAR-NO-EVIL MONKEY"
   },
   "d83d_de4a": {
-    "message": "\u0e25\u0e34\u0e07\u0e1b\u0e34\u0e14\u0e1b\u0e32\u0e01"
+    "message": "SPEAK-NO-EVIL MONKEY"
   },
   "d83d_de4b": {
-    "message": "\u0e04\u0e19\u0e21\u0e35\u0e04\u0e27\u0e32\u0e21\u0e2a\u0e38\u0e02"
+    "message": "HAPPY PERSON RAISING ONE HAND"
   },
   "d83d_de4c": {
-    "message": "\u0e44\u0e0a\u0e42\u0e22"
+    "message": "PERSON RAISING BOTH HANDS IN CELEBRATION"
   },
   "d83d_de4d": {
-    "message": "\u0e04\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e1a\u0e36\u0e49\u0e07\u0e15\u0e36\u0e07"
+    "message": "\u0e04\u0e19\u0e02\u0e21\u0e27\u0e14\u0e04\u0e34\u0e49\u0e27"
   },
   "d83d_de4e": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e1a\u0e36\u0e49\u0e07"
+    "message": "PERSON WITH POUTING FACE"
   },
   "d83d_de4f": {
-    "message": "\u0e44\u0e2b\u0e27\u0e49"
+    "message": "PERSON WITH FOLDED HANDS"
   },
   "d83d_de80": {
-    "message": "\u0e08\u0e23\u0e27\u0e14"
+    "message": "ROCKET"
   },
   "d83d_de81": {
-    "message": "\u0e40\u0e2e\u0e25\u0e34\u0e04\u0e2d\u0e1b\u0e40\u0e15\u0e2d\u0e23\u0e4c"
+    "message": "HELICOPTER"
   },
   "d83d_de82": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e08\u0e31\u0e01\u0e23\u0e44\u0e2d\u0e19\u0e49\u0e33"
+    "message": "STEAM LOCOMOTIVE"
   },
   "d83d_de83": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f"
+    "message": "RAILWAY CAR"
   },
   "d83d_de84": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e04\u0e27\u0e32\u0e21\u0e40\u0e23\u0e47\u0e27\u0e2a\u0e39\u0e07"
+    "message": "HIGH-SPEED TRAIN"
   },
   "d83d_de85": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e04\u0e27\u0e32\u0e21\u0e40\u0e23\u0e47\u0e27\u0e2a\u0e39\u0e07\u0e2b\u0e31\u0e27\u0e08\u0e23\u0e27\u0e14"
+    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e04\u0e27\u0e32\u0e21\u0e40\u0e23\u0e47\u0e27\u0e2a\u0e39\u0e07\u0e2b\u0e31\u0e27\u0e25\u0e39\u0e01\u0e1b\u0e37\u0e19"
   },
   "d83d_de86": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f"
+    "message": "TRAIN"
   },
   "d83d_de87": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e43\u0e15\u0e49\u0e14\u0e34\u0e19"
+    "message": "METRO"
   },
   "d83d_de88": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e1a\u0e19\u0e23\u0e32\u0e07"
+    "message": "LIGHT RAIL"
   },
   "d83d_de89": {
-    "message": "\u0e2a\u0e16\u0e32\u0e19\u0e35\u0e23\u0e16\u0e44\u0e1f"
+    "message": "STATION"
   },
   "d83d_de8a": {
-    "message": "\u0e23\u0e16\u0e23\u0e32\u0e07"
+    "message": "TRAM"
   },
   "d83d_de8b": {
-    "message": "\u0e23\u0e16\u0e23\u0e32\u0e07"
+    "message": "TRAM CAR"
   },
   "d83d_de8c": {
-    "message": "\u0e23\u0e16\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e17\u0e32\u0e07"
+    "message": "BUS"
   },
   "d83d_de8d": {
-    "message": "\u0e23\u0e16\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e17\u0e32\u0e07\u0e01\u0e33\u0e25\u0e31\u0e07\u0e21\u0e32"
+    "message": "ONCOMING BUS"
   },
   "d83d_de8e": {
-    "message": "\u0e23\u0e16\u0e23\u0e31\u0e1a\u0e2a\u0e48\u0e07"
+    "message": "TROLLEYBUS"
   },
   "d83d_de8f": {
-    "message": "\u0e1b\u0e49\u0e32\u0e22\u0e23\u0e16\u0e1b\u0e23\u0e30\u0e08\u0e33\u0e17\u0e32\u0e07"
+    "message": "BUS STOP"
   },
   "d83d_de90": {
-    "message": "\u0e21\u0e34\u0e19\u0e34\u0e1a\u0e31\u0e2a"
+    "message": "MINIBUS"
   },
   "d83d_de91": {
-    "message": "\u0e23\u0e16\u0e1e\u0e22\u0e32\u0e1a\u0e32\u0e25"
+    "message": "AMBULANCE"
   },
   "d83d_de92": {
-    "message": "\u0e23\u0e16\u0e14\u0e31\u0e1a\u0e40\u0e1e\u0e25\u0e34\u0e07"
+    "message": "FIRE ENGINE"
   },
   "d83d_de93": {
-    "message": "\u0e23\u0e16\u0e15\u0e33\u0e23\u0e27\u0e08"
+    "message": "POLICE CAR"
   },
   "d83d_de94": {
-    "message": "\u0e23\u0e16\u0e15\u0e33\u0e23\u0e27\u0e08\u0e01\u0e33\u0e25\u0e31\u0e07\u0e21\u0e32"
+    "message": "ONCOMING POLICE CAR"
   },
   "d83d_de95": {
-    "message": "\u0e23\u0e16\u0e41\u0e17\u0e47\u0e01\u0e0b\u0e35\u0e48"
+    "message": "TAXI"
   },
   "d83d_de96": {
-    "message": "\u0e23\u0e16\u0e41\u0e17\u0e47\u0e01\u0e0b\u0e35\u0e48\u0e01\u0e33\u0e25\u0e31\u0e07\u0e21\u0e32"
+    "message": "ONCOMING TAXI"
   },
   "d83d_de97": {
-    "message": "\u0e23\u0e16\u0e22\u0e19\u0e15\u0e4c"
+    "message": "AUTOMOBILE"
   },
   "d83d_de98": {
-    "message": "\u0e23\u0e16\u0e22\u0e19\u0e15\u0e4c\u0e01\u0e33\u0e25\u0e31\u0e07\u0e21\u0e32"
+    "message": "ONCOMING AUTOMOBILE"
   },
   "d83d_de99": {
-    "message": "\u0e23\u0e16\u0e1a\u0e49\u0e32\u0e19"
+    "message": "RECREATIONAL VEHICLE"
   },
   "d83d_de9a": {
-    "message": "\u0e23\u0e16\u0e1a\u0e23\u0e23\u0e17\u0e38\u0e01\u0e2a\u0e48\u0e07\u0e02\u0e2d\u0e07"
+    "message": "DELIVERY TRUCK"
   },
   "d83d_de9b": {
-    "message": "\u0e23\u0e16\u0e1a\u0e23\u0e23\u0e17\u0e38\u0e01"
+    "message": "ARTICULATED LORRY"
   },
   "d83d_de9c": {
-    "message": "\u0e23\u0e16\u0e41\u0e17\u0e23\u0e47\u0e01\u0e40\u0e15\u0e2d\u0e23\u0e4c"
+    "message": "TRACTOR"
   },
   "d83d_de9d": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e23\u0e32\u0e07\u0e40\u0e14\u0e35\u0e22\u0e27"
+    "message": "MONORAIL"
   },
   "d83d_de9e": {
-    "message": "\u0e23\u0e16\u0e01\u0e23\u0e30\u0e40\u0e0a\u0e49\u0e32\u0e02\u0e36\u0e49\u0e19\u0e40\u0e02\u0e32"
+    "message": "MOUNTAIN RAILWAY"
   },
   "d83d_de9f": {
-    "message": "\u0e23\u0e16\u0e44\u0e1f\u0e41\u0e02\u0e27\u0e19"
+    "message": "SUSPENSION RAILWAY"
   },
   "d83d_dea0": {
-    "message": "\u0e17\u0e32\u0e07\u0e2a\u0e25\u0e34\u0e07\u0e02\u0e36\u0e49\u0e19\u0e40\u0e02\u0e32"
+    "message": "MOUNTAIN CABLEWAY"
   },
   "d83d_dea1": {
-    "message": "\u0e23\u0e16\u0e01\u0e23\u0e30\u0e40\u0e0a\u0e49\u0e32"
+    "message": "AERIAL TRAMWAY"
   },
   "d83d_dea2": {
-    "message": "\u0e40\u0e23\u0e37\u0e2d\u0e40\u0e14\u0e34\u0e19\u0e17\u0e30\u0e40\u0e25"
+    "message": "SHIP"
   },
   "d83d_dea3": {
-    "message": "\u0e40\u0e23\u0e37\u0e2d\u0e1e\u0e32\u0e22"
+    "message": "ROWBOAT"
   },
   "d83d_dea4": {
-    "message": "\u0e2a\u0e1b\u0e35\u0e14\u0e42\u0e1a\u0e4a\u0e17"
+    "message": "SPEEDBOAT"
   },
   "d83d_dea5": {
     "message": "\u0e44\u0e1f\u0e08\u0e23\u0e32\u0e08\u0e23\u0e41\u0e19\u0e27\u0e19\u0e2d\u0e19"
@@ -2291,97 +2291,97 @@
     "message": "\u0e44\u0e1f\u0e08\u0e23\u0e32\u0e08\u0e23\u0e41\u0e19\u0e27\u0e15\u0e31\u0e49\u0e07"
   },
   "d83d_dea7": {
-    "message": "\u0e01\u0e33\u0e25\u0e31\u0e07\u0e01\u0e48\u0e2d\u0e2a\u0e23\u0e49\u0e32\u0e07"
+    "message": "CONSTRUCTION SIGN"
   },
   "d83d_dea8": {
-    "message": "\u0e42\u0e04\u0e21\u0e44\u0e1f\u0e2b\u0e21\u0e38\u0e19"
+    "message": "POLICE CARS REVOLVING LIGHT"
   },
   "d83d_dea9": {
-    "message": "\u0e18\u0e07\u0e1a\u0e2d\u0e01\u0e15\u0e33\u0e41\u0e2b\u0e19\u0e48\u0e07"
+    "message": "TRIANGULAR FLAG ON POST"
   },
   "d83d_deaa": {
-    "message": "\u0e1b\u0e23\u0e30\u0e15\u0e39"
+    "message": "DOOR"
   },
   "d83d_deab": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e32\u0e21\u0e40\u0e02\u0e49\u0e32"
+    "message": "NO ENTRY SIGN"
   },
   "d83d_deac": {
-    "message": "\u0e1b\u0e49\u0e32\u0e22\u0e17\u0e35\u0e48\u0e2a\u0e39\u0e1a\u0e1a\u0e38\u0e2b\u0e23\u0e35\u0e48"
+    "message": "SMOKING SYMBOL"
   },
   "d83d_dead": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e32\u0e21\u0e2a\u0e39\u0e1a\u0e1a\u0e38\u0e2b\u0e23\u0e35\u0e48"
+    "message": "NO SMOKING SYMBOL"
   },
   "d83d_deae": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e16\u0e31\u0e07\u0e02\u0e22\u0e30"
+    "message": "PUT LITTER IN ITS PLACE SYMBOL"
   },
   "d83d_deaf": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e32\u0e21\u0e17\u0e34\u0e49\u0e07\u0e02\u0e22\u0e30"
+    "message": "DO NOT LITTER SYMBOL"
   },
   "d83d_deb0": {
-    "message": "\u0e19\u0e49\u0e33\u0e14\u0e37\u0e48\u0e21"
+    "message": "POTABLE WATER SYMBOL"
   },
   "d83d_deb1": {
-    "message": "\u0e44\u0e21\u0e48\u0e43\u0e0a\u0e48\u0e19\u0e49\u0e33\u0e14\u0e37\u0e48\u0e21"
+    "message": "NON-POTABLE WATER SYMBOL"
   },
   "d83d_deb2": {
-    "message": "\u0e08\u0e31\u0e01\u0e23\u0e22\u0e32\u0e19"
+    "message": "BICYCLE"
   },
   "d83d_deb3": {
-    "message": "\u0e2b\u0e49\u0e32\u0e21\u0e08\u0e2d\u0e14\u0e08\u0e31\u0e01\u0e23\u0e22\u0e32\u0e19"
+    "message": "NO BICYCLES"
   },
   "d83d_deb4": {
-    "message": "\u0e19\u0e31\u0e01\u0e1b\u0e31\u0e48\u0e19\u0e08\u0e31\u0e01\u0e23\u0e22\u0e32\u0e19"
+    "message": "BICYCLIST"
   },
   "d83d_deb5": {
-    "message": "\u0e19\u0e31\u0e01\u0e1b\u0e31\u0e48\u0e19\u0e08\u0e31\u0e01\u0e23\u0e22\u0e32\u0e19\u0e40\u0e2a\u0e37\u0e2d\u0e20\u0e39\u0e40\u0e02\u0e32"
+    "message": "MOUNTAIN BICYCLIST"
   },
   "d83d_deb6": {
-    "message": "\u0e04\u0e19\u0e40\u0e14\u0e34\u0e19\u0e40\u0e17\u0e49\u0e32"
+    "message": "PEDESTRIAN"
   },
   "d83d_deb7": {
-    "message": "\u0e2b\u0e49\u0e32\u0e21\u0e04\u0e19\u0e40\u0e14\u0e34\u0e19\u0e40\u0e17\u0e49\u0e32"
+    "message": "NO PEDESTRIANS"
   },
   "d83d_deb8": {
-    "message": "\u0e40\u0e14\u0e47\u0e01\u0e02\u0e49\u0e32\u0e21\u0e16\u0e19\u0e19"
+    "message": "CHILDREN CROSSING"
   },
   "d83d_deb9": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e49\u0e33\u0e0a\u0e32\u0e22"
+    "message": "MENS SYMBOL"
   },
   "d83d_deba": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e49\u0e33\u0e2b\u0e0d\u0e34\u0e07"
+    "message": "WOMENS SYMBOL"
   },
   "d83d_debb": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e49\u0e33"
+    "message": "RESTROOM"
   },
   "d83d_debc": {
-    "message": "\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e49\u0e2d\u0e07\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e1c\u0e49\u0e32\u0e2d\u0e49\u0e2d\u0e21"
+    "message": "BABY SYMBOL"
   },
   "d83d_debd": {
-    "message": "\u0e42\u0e16\u0e2a\u0e49\u0e27\u0e21"
+    "message": "TOILET"
   },
   "d83d_debe": {
-    "message": "\u0e2b\u0e49\u0e2d\u0e07\u0e19\u0e49\u0e33"
+    "message": "WATER CLOSET"
   },
   "d83d_debf": {
-    "message": "\u0e1d\u0e31\u0e01\u0e1a\u0e31\u0e27"
+    "message": "SHOWER"
   },
   "d83d_dec0": {
-    "message": "\u0e2d\u0e48\u0e32\u0e07\u0e19\u0e49\u0e33"
+    "message": "BATH"
   },
   "d83d_dec1": {
-    "message": "\u0e2d\u0e48\u0e32\u0e07\u0e2d\u0e32\u0e1a\u0e19\u0e49\u0e33"
+    "message": "BATHTUB"
   },
   "d83d_dec2": {
-    "message": "\u0e14\u0e48\u0e32\u0e19\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e2b\u0e19\u0e31\u0e07\u0e2a\u0e37\u0e2d\u0e40\u0e14\u0e34\u0e19\u0e17\u0e32\u0e07"
+    "message": "PASSPORT CONTROL"
   },
   "d83d_dec3": {
-    "message": "\u0e28\u0e38\u0e25\u0e01\u0e32\u0e01\u0e23"
+    "message": "CUSTOMS"
   },
   "d83d_dec4": {
-    "message": "\u0e08\u0e38\u0e14\u0e23\u0e31\u0e1a\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32"
+    "message": "BAGGAGE CLAIM"
   },
   "d83d_dec5": {
-    "message": "\u0e1d\u0e32\u0e01\u0e01\u0e23\u0e30\u0e40\u0e1b\u0e4b\u0e32"
+    "message": "LEFT LUGGAGE"
   },
   "de_ger_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e40\u0e22\u0e2d\u0e23\u0e21\u0e31\u0e19"
@@ -2390,136 +2390,136 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e19\u0e35\u0e42\u0e2d 2 \u0e20\u0e32\u0e29\u0e32\u0e40\u0e22\u0e2d\u0e23\u0e21\u0e31\u0e19"
   },
   "dictionarytoolcategorytitle": {
-    "message": "\u0e2b\u0e21\u0e27\u0e14\u0e2b\u0e21\u0e39\u0e48"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e04\u0e34\u0e14\u0e40\u0e2b\u0e47\u0e19"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "\u0e04\u0e27\u0e32\u0e21\u0e04\u0e34\u0e14\u0e40\u0e2b\u0e47\u0e19"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "\u0e04\u0e38\u0e13\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e25\u0e1a [object Object] \u0e44\u0e2b\u0e21"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "\u0e25\u0e1a\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "\u0e0a\u0e37\u0e48\u0e2d\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "\u0e2a\u0e48\u0e07\u0e2d\u0e2d\u0e01"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "\u0e19\u0e33\u0e40\u0e02\u0e49\u0e32..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "\u0e01\u0e32\u0e23\u0e08\u0e31\u0e14\u0e01\u0e32\u0e23\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e43\u0e2b\u0e21\u0e48"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e1c\u0e39\u0e49\u0e43\u0e0a\u0e49"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19\u0e43\u0e2b\u0e21\u0e48"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e35\u0e2d\u0e31\u0e01\u0e02\u0e23\u0e30\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07"
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "\u0e21\u0e35\u0e0a\u0e37\u0e48\u0e2d\u0e19\u0e35\u0e49\u0e2d\u0e22\u0e39\u0e48\u0e41\u0e25\u0e49\u0e27"
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "\u0e42\u0e1b\u0e23\u0e14\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e0a\u0e37\u0e48\u0e2d\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "\u0e0a\u0e37\u0e48\u0e2d\u0e22\u0e32\u0e27\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b"
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e44\u0e14\u0e49\u0e2d\u0e35\u0e01"
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "\u0e44\u0e1f\u0e25\u0e4c\u0e27\u0e48\u0e32\u0e07\u0e40\u0e1b\u0e25\u0e48\u0e32"
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e43\u0e19\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e19\u0e35\u0e49\u0e44\u0e14\u0e49\u0e2d\u0e35\u0e01"
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e40\u0e1b\u0e34\u0e14\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e14\u0e49"
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "\u0e02\u0e19\u0e32\u0e14\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e40\u0e01\u0e34\u0e19\u0e02\u0e35\u0e14\u0e08\u0e33\u0e01\u0e31\u0e14\u0e02\u0e19\u0e32\u0e14\u0e44\u0e1f\u0e25\u0e4c"
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "\u0e01\u0e32\u0e23\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e25\u0e49\u0e21\u0e40\u0e2b\u0e25\u0e27"
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e19\u0e33\u0e40\u0e02\u0e49\u0e32\u0e04\u0e33\u0e1a\u0e32\u0e07\u0e04\u0e33"
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "\u0e15\u0e49\u0e19\u0e09\u0e1a\u0e31\u0e1a\u0e17\u0e35\u0e48\u0e19\u0e33\u0e40\u0e02\u0e49\u0e32\u0e21\u0e35\u0e04\u0e33\u0e21\u0e32\u0e01\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b"
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e2d\u0e48\u0e32\u0e19\u0e44\u0e1f\u0e25\u0e4c\u0e44\u0e14\u0e49"
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "\u0e01\u0e32\u0e23\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e44\u0e21\u0e48\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e40\u0e25\u0e34\u0e01\u0e17\u0e33\u0e44\u0e14\u0e49\u0e2d\u0e35\u0e01"
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19\u0e21\u0e35\u0e2d\u0e31\u0e01\u0e02\u0e23\u0e30\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07 \u0e04\u0e38\u0e13\u0e2a\u0e32\u0e21\u0e32\u0e23\u0e16\u0e43\u0e0a\u0e49\u0e2d\u0e31\u0e01\u0e02\u0e23\u0e30 ASCII, \u0e2e\u0e34\u0e23\u0e30\u0e07\u0e30\u0e19\u0e30, \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e40\u0e19\u0e49\u0e19(\u309b), \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e01\u0e36\u0e48\u0e07\u0e40\u0e19\u0e49\u0e19(\u309c), \u0e08\u0e38\u0e14\u0e15\u0e23\u0e07\u0e01\u0e25\u0e32\u0e07(\u30fb), \u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e2b\u0e21\u0e32\u0e22\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e22\u0e32\u0e27(\u30fc), \u0e08\u0e38\u0e25\u0e20\u0e32\u0e04\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19(\u3001), \u0e21\u0e2b\u0e31\u0e1e\u0e20\u0e32\u0e04\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19(\u3002), \u0e27\u0e07\u0e40\u0e25\u0e47\u0e1a\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19(\u300c\u300d\u300e\u300f) \u0e41\u0e25\u0e30\u0e02\u0e35\u0e14\u0e41\u0e1a\u0e1a\u0e04\u0e25\u0e37\u0e48\u0e19\u0e20\u0e32\u0e29\u0e32\u0e0d\u0e35\u0e48\u0e1b\u0e38\u0e48\u0e19(\u301c) \u0e43\u0e19\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19"
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "\u0e42\u0e1b\u0e23\u0e14\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19"
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "\u0e01\u0e32\u0e23\u0e2d\u0e48\u0e32\u0e19\u0e22\u0e32\u0e27\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b"
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e40\u0e1e\u0e34\u0e48\u0e21\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e19\u0e33\u0e2d\u0e2d\u0e01\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e19\u0e33\u0e2d\u0e2d\u0e01\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e41\u0e01\u0e49\u0e44\u0e02\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e19\u0e33\u0e40\u0e02\u0e49\u0e32"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "\u0e02\u0e49\u0e2d\u0e1c\u0e34\u0e14\u0e1e\u0e25\u0e32\u0e14\u0e40\u0e01\u0e35\u0e48\u0e22\u0e27\u0e01\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e0a\u0e37\u0e48\u0e2d\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "\u0e04\u0e33\u0e21\u0e35\u0e2d\u0e31\u0e01\u0e02\u0e23\u0e30\u0e17\u0e35\u0e48\u0e44\u0e21\u0e48\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07"
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "\u0e42\u0e1b\u0e23\u0e14\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e04\u0e33"
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "\u0e04\u0e33\u0e22\u0e32\u0e27\u0e40\u0e01\u0e34\u0e19\u0e44\u0e1b"
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "\u0e04\u0e33\u0e43\u0e2b\u0e21\u0e48"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "\u0e04\u0e33"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "\u0e1b\u0e34\u0e14\u0e40\u0e21\u0e19\u0e39\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c"
@@ -2528,7 +2528,7 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e40\u0e14\u0e19\u0e21\u0e32\u0e23\u0e4c\u0e01"
   },
   "double_space_period": {
-    "message": "\u0e40\u0e04\u0e32\u0e30\u0e27\u0e23\u0e23\u0e04\u0e2a\u0e2d\u0e07\u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e08\u0e38\u0e14"
+    "message": "\u0e40\u0e04\u0e32\u0e30\u0e27\u0e23\u0e23\u0e04 2 \u0e04\u0e23\u0e31\u0e49\u0e07\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e08\u0e38\u0e14"
   },
   "down_arrow": {
     "message": "\u0e25\u0e39\u0e01\u0e28\u0e23\u0e25\u0e07"
@@ -2570,10 +2570,16 @@
     "message": "\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e0a\u0e49\u0e01\u0e32\u0e23\u0e40\u0e15\u0e34\u0e21\u0e04\u0e33"
   },
   "enable_gesture_editing": {
-    "message": "\u0e01\u0e27\u0e32\u0e14\u0e08\u0e32\u0e01\u0e02\u0e2d\u0e1a\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e40\u0e04\u0e2d\u0e23\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c \u0e2b\u0e23\u0e37\u0e2d\u0e08\u0e32\u0e01\u0e1b\u0e38\u0e48\u0e21\u0e25\u0e1a\u0e16\u0e2d\u0e22\u0e2b\u0e25\u0e31\u0e07\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e25\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e04\u0e33"
+    "message": "\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e0a\u0e49\u0e17\u0e48\u0e32\u0e17\u0e32\u0e07\u0e2a\u0e31\u0e21\u0e1c\u0e31\u0e2a\u0e41\u0e1a\u0e1a\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e08\u0e32\u0e01\u0e02\u0e2d\u0e1a\u0e02\u0e2d\u0e07\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e22\u0e49\u0e32\u0e22\u0e40\u0e04\u0e2d\u0e23\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c \u0e2b\u0e23\u0e37\u0e2d\u0e08\u0e32\u0e01\u0e41\u0e1b\u0e49\u0e19\u0e25\u0e1a\u0e16\u0e2d\u0e22\u0e2b\u0e25\u0e31\u0e07\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e25\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e04\u0e33"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e0a\u0e49\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e14\u0e49\u0e27\u0e22\u0e17\u0e48\u0e32\u0e17\u0e32\u0e07"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "\u0e1b\u0e49\u0e2d\u0e19\u0e04\u0e33\u0e42\u0e14\u0e22\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e1c\u0e48\u0e32\u0e19\u0e15\u0e31\u0e27\u0e2d\u0e31\u0e01\u0e29\u0e23"
   },
   "enable_prediction": {
     "message": "\u0e40\u0e1b\u0e34\u0e14\u0e43\u0e0a\u0e49\u0e01\u0e32\u0e23\u0e04\u0e32\u0e14\u0e04\u0e30\u0e40\u0e19\u0e04\u0e33\u0e16\u0e31\u0e14\u0e44\u0e1b"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1f\u0e34\u0e19\u0e41\u0e25\u0e19\u0e14\u0e4c"
   },
+  "fo_fao_settings_page": {
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e41\u0e1f\u0e42\u0e23"
+  },
   "footer_docking_button": {
     "message": "\u0e08\u0e31\u0e14\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e40\u0e2a\u0e21\u0e37\u0e2d\u0e19\u0e0a\u0e34\u0e14\u0e02\u0e2d\u0e1a"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "\u0e40\u0e1b\u0e34\u0e14\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e27\u0e34\u0e18\u0e35\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e40\u0e28\u0e2a\u0e41\u0e1a\u0e1a B\u00c9PO (\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e40\u0e28\u0e2a)"
   },
   "fr_fra_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e40\u0e28\u0e2a"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2e\u0e31\u0e07\u0e01\u0e32\u0e23\u0e35"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c Qwerty \u0e20\u0e32\u0e29\u0e32\u0e2e\u0e31\u0e07\u0e01\u0e32\u0e23\u0e35"
+  },
   "ie_ga_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e44\u0e2d\u0e23\u0e4c\u0e41\u0e25\u0e19\u0e14\u0e4c"
   },
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "\u0e27\u0e34\u0e18\u0e35\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e41\u0e1a\u0e1a Cangjie"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "\u0e27\u0e34\u0e18\u0e35\u0e01\u0e32\u0e23\u0e1b\u0e49\u0e2d\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Dayi"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e40\u0e2d\u0e18\u0e34\u0e42\u0e2d\u0e40\u0e1b\u0e35\u0e22"
   },
+  "keyboard_faroese": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e41\u0e1f\u0e42\u0e23"
+  },
   "keyboard_finnish": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1f\u0e34\u0e19\u0e41\u0e25\u0e19\u0e14\u0e4c"
   },
   "keyboard_french": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e40\u0e28\u0e2a"
+  },
+  "keyboard_french_bepo": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e1d\u0e23\u0e31\u0e48\u0e07\u0e40\u0e28\u0e2a\u0e41\u0e1a\u0e1a B\u00c9PO"
   },
   "keyboard_georgian": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e08\u0e2d\u0e23\u0e4c\u0e40\u0e08\u0e35\u0e22"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2e\u0e31\u0e07\u0e01\u0e32\u0e40\u0e23\u0e35\u0e22\u0e19"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c Qwerty \u0e20\u0e32\u0e29\u0e32\u0e2e\u0e31\u0e07\u0e01\u0e32\u0e23\u0e35"
+  },
   "keyboard_icelandic": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c Icelandic"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e01\u0e31\u0e19\u0e19\u0e32\u0e14\u0e32 (\u0e04\u0e33\u0e17\u0e35\u0e48\u0e43\u0e0a\u0e49\u0e2d\u0e2d\u0e01\u0e40\u0e2a\u0e35\u0e22\u0e07)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c (\u0e40\u0e01\u0e29\u0e21\u0e13\u0e35)"
   },
@@ -2828,6 +2858,9 @@
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e01\u0e31\u0e21\u0e1e\u0e39\u0e0a\u0e32"
   },
   "keyboard_lao": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e25\u0e32\u0e27"
+  },
+  "keyboard_laothian": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e25\u0e32\u0e27"
   },
   "keyboard_latin_american": {
@@ -2840,7 +2873,7 @@
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e25\u0e34\u0e17\u0e31\u0e27\u0e40\u0e19\u0e35\u0e22"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e21\u0e32\u0e0b\u0e34\u0e42\u0e14\u0e40\u0e19\u0e35\u0e22"
   },
   "keyboard_malayalam_phonetic": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e21\u0e32\u0e25\u0e32\u0e22\u0e32\u0e25\u0e31\u0e21 (\u0e04\u0e33\u0e17\u0e35\u0e48\u0e43\u0e0a\u0e49\u0e2d\u0e2d\u0e01\u0e40\u0e2a\u0e35\u0e22\u0e07)"
@@ -2911,6 +2944,9 @@
   "keyboard_sinhala": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2a\u0e34\u0e07\u0e2b\u0e25"
   },
+  "keyboard_slovak": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2a\u0e42\u0e25\u0e27\u0e31\u0e01"
+  },
   "keyboard_slovakian": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2a\u0e42\u0e25\u0e27\u0e31\u0e01"
   },
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e15\u0e38\u0e23\u0e01\u0e35"
   },
+  "keyboard_turkish_f": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e15\u0e38\u0e23\u0e01\u0e35-F"
+  },
   "keyboard_typewriter": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c (\u0e40\u0e04\u0e23\u0e37\u0e48\u0e2d\u0e07\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e14\u0e35\u0e14)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e14\u0e35\u0e42\u0e27\u0e23\u0e31\u0e01\u0e2a\u0e2b\u0e23\u0e31\u0e10\u0e2d\u0e40\u0e21\u0e23\u0e34\u0e01\u0e32"
+  },
+  "keyboard_us_dvp": {
+    "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e14\u0e35\u0e42\u0e27\u0e23\u0e31\u0e01\u0e42\u0e1b\u0e23\u0e41\u0e01\u0e23\u0e21\u0e40\u0e21\u0e2d\u0e23\u0e4c\u0e2a\u0e2b\u0e23\u0e31\u0e10\u0e2d\u0e40\u0e21\u0e23\u0e34\u0e01\u0e32"
   },
   "keyboard_us_extended": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2d\u0e31\u0e07\u0e01\u0e24\u0e29\u0e2a\u0e2b\u0e23\u0e31\u0e10\u0e2d\u0e40\u0e21\u0e23\u0e34\u0e01\u0e32 (Extended)"
@@ -3146,7 +3188,7 @@
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e2a\u0e42\u0e25\u0e27\u0e31\u0e01"
   },
   "smiley": {
-    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e22\u0e34\u0e49\u0e21"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "\u0e1b\u0e32\u0e19\u0e01\u0e25\u0e32\u0e07"
@@ -3155,16 +3197,16 @@
     "message": "\u0e21\u0e35\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e01\u0e14\u0e41\u0e1b\u0e49\u0e19"
   },
   "space": {
-    "message": "Space"
+    "message": "\u0e27\u0e23\u0e23\u0e04"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e44\u0e1b\u0e17\u0e32\u0e07\u0e0b\u0e49\u0e32\u0e22\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e25\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e04\u0e33"
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e44\u0e1b\u0e17\u0e32\u0e07\u0e02\u0e27\u0e32\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e04\u0e37\u0e19\u0e04\u0e48\u0e32\u0e04\u0e33"
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "\u0e40\u0e25\u0e37\u0e48\u0e2d\u0e19\u0e44\u0e1b\u0e17\u0e32\u0e07\u0e0b\u0e49\u0e32\u0e22\u0e2b\u0e23\u0e37\u0e2d\u0e02\u0e27\u0e32\u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e02\u0e22\u0e31\u0e1a\u0e40\u0e04\u0e2d\u0e23\u0e4c\u0e40\u0e0b\u0e2d\u0e23\u0e4c"
   },
   "switch_to": {
     "message": "\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e40\u0e1b\u0e47\u0e19 "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e1a\u0e19\u0e2b\u0e19\u0e49\u0e32\u0e08\u0e2d"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e15\u0e38\u0e23\u0e01\u0e35-F"
   },
   "tr_tur_settings_page": {
     "message": "\u0e2b\u0e19\u0e49\u0e32\u0e01\u0e32\u0e23\u0e15\u0e31\u0e49\u0e07\u0e04\u0e48\u0e32\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e20\u0e32\u0e29\u0e32\u0e15\u0e38\u0e23\u0e01\u0e35"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "\u0e25\u0e49\u0e32\u0e07\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14"
   },
+  "user_dict_edit": {
+    "message": "\u0e41\u0e01\u0e49\u0e44\u0e02\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e43\u0e19\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21"
+  },
   "user_dict_manage": {
     "message": "\u0e08\u0e31\u0e14\u0e01\u0e32\u0e23\u0e1e\u0e08\u0e19\u0e32\u0e19\u0e38\u0e01\u0e23\u0e21\u0e2a\u0e48\u0e27\u0e19\u0e15\u0e31\u0e27..."
   },
@@ -3349,11 +3397,14 @@
   "wait": {
     "message": "\u0e23\u0e2d"
   },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
+  },
   "zhuyin_keyboard_layout": {
     "message": "\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e02\u0e2d\u0e07\u0e41\u0e1b\u0e49\u0e19\u0e1e\u0e34\u0e21\u0e1e\u0e4c"
   },
   "zhuyin_page_size": {
-    "message": "\u0e08\u0e33\u0e19\u0e27\u0e19\u0e15\u0e31\u0e27\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e17\u0e35\u0e48\u0e08\u0e30\u0e41\u0e2a\u0e14\u0e07\u0e15\u0e48\u0e2d\u0e2b\u0e19\u0e36\u0e48\u0e07\u0e2b\u0e19\u0e49\u0e32"
+    "message": "\u0e08\u0e33\u0e19\u0e27\u0e19\u0e15\u0e31\u0e27\u0e40\u0e25\u0e37\u0e2d\u0e01\u0e17\u0e35\u0e48\u0e08\u0e30\u0e41\u0e2a\u0e14\u0e07\u0e15\u0e48\u0e2d 1 \u0e2b\u0e19\u0e49\u0e32"
   },
   "zhuyin_select_keys": {
     "message": "\u0e04\u0e35\u0e22\u0e4c\u0e01\u0e32\u0e23\u0e40\u0e25\u0e37\u0e2d\u0e01"

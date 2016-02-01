@@ -35,8 +35,7 @@ i18n.input.chrome.Constant.NACL_LANGUAGES = [
   'fr',
   'it',
   'nl',
-  // When enable "no-t-i0-und" make NACL crash, so disable it now.
-  // 'no',
+  'no',
   'pl',
   'pt',
   'pt-BR',

@@ -19,8 +19,8 @@ goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
 goog.require('goog.object');
 goog.require('i18n.input.chrome.DataSource');
-goog.require('i18n.input.chrome.inputview.FeatureName');
-goog.require('i18n.input.chrome.inputview.FeatureTracker');
+goog.require('i18n.input.chrome.FeatureName');
+goog.require('i18n.input.chrome.FeatureTracker');
 goog.require('i18n.input.chrome.inputview.ReadyState');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.events.EventType');
@@ -34,8 +34,8 @@ goog.require('i18n.input.chrome.message.Type');
 goog.scope(function() {
 var CandidatesBackEvent = i18n.input.chrome.DataSource.CandidatesBackEvent;
 var ContextType = i18n.input.chrome.message.ContextType;
-var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
-var FeatureName = i18n.input.chrome.inputview.FeatureName;
+var FeatureTracker = i18n.input.chrome.FeatureTracker;
+var FeatureName = i18n.input.chrome.FeatureName;
 var GesturesBackEvent = i18n.input.chrome.DataSource.GesturesBackEvent;
 var Name = i18n.input.chrome.message.Name;
 var State = i18n.input.chrome.inputview.ReadyState.State;
@@ -109,12 +109,25 @@ var Adapter = i18n.input.chrome.inputview.Adapter;
  */
 Adapter.GoogleSites = {
   // TODO: Add support for spreadsheets.
-  DOCS: 'https://docs.google.com/document/d'
+  DOCS: 'https://docs.google.com/document/d',
+  MAIL: 'https://mail.google.com'
 };
+
+
+/**
+ * The minimal inches of display which enables floating virtual keyboard.
+ *
+ * @private {number}
+ */
+Adapter.ENABLE_FLOATING_THRESHOLD_INCHES_ = 15;
 
 
 /** @type {boolean} */
 Adapter.prototype.isA11yMode = false;
+
+
+/** @type {boolean} */
+Adapter.prototype.isHotrod = false;
 
 
 /** @type {boolean} */
@@ -123,6 +136,10 @@ Adapter.prototype.isVoiceInputEnabled = true;
 
 /** @type {boolean} */
 Adapter.prototype.showGlobeKey = false;
+
+
+/** @type {number} */
+Adapter.prototype.displayInInches = 0;
 
 
 /** @type {string} */
@@ -139,10 +156,6 @@ Adapter.prototype.isChromeVoxOn = false;
 
 /** @type {string} */
 Adapter.prototype.textBeforeCursor = '';
-
-
-/** @type {boolean} */
-Adapter.prototype.isFloating = false;
 
 
 /**
@@ -255,9 +268,8 @@ Adapter.prototype.setGestureEditingInProgress = function(inProgress,
 /**
  * Sends a gesture typing event to the backend for decoding.
  *
- * @param {!Array.<!i18n.input.chrome.inputview.elements.content.
- *                 GestureCanvasView.Point>} gestureData The gesture data
- *                 (trail) to send.
+ * @param {!Array.<!i18n.input.chrome.inputview.elements.content.Point>}
+ *     gestureData The gesture data (trail) to send.
  */
 Adapter.prototype.sendGestureEvent = function(gestureData) {
   chrome.runtime.sendMessage(
@@ -326,9 +338,9 @@ Adapter.prototype.generateKeyboardEvent_ = function(
   var shift = !!this.modifierState_[StateType.SHIFT];
 
   if (opt_modifiers) {
-    if (opt_modifiers.ctrl)
+    if (opt_modifiers.ctrl != undefined)
       ctrl = opt_modifiers.ctrl;
-    if (opt_modifiers.shift)
+    if (opt_modifiers.shift != undefined)
       shift = opt_modifiers.shift;
   }
 
@@ -355,15 +367,18 @@ Adapter.prototype.generateKeyboardEvent_ = function(
 /**
  * Callback when surrounding text is changed.
  *
- * @param {string} text .
+ * @param {string} textBeforeCursor .
  * @param {number} anchor .
  * @param {number} focus .
+ * @param {number} offset .
  * @private
  */
-Adapter.prototype.onSurroundingTextChanged_ = function(text, anchor, focus) {
-  this.textBeforeCursor = text;
+Adapter.prototype.onSurroundingTextChanged_ = function(textBeforeCursor,
+    anchor, focus, offset) {
+  this.textBeforeCursor = textBeforeCursor;
   this.dispatchEvent(new i18n.input.chrome.inputview.events.
-      SurroundingTextChangedEvent(this.textBeforeCursor, anchor, focus));
+      SurroundingTextChangedEvent(textBeforeCursor, anchor, focus,
+          offset));
 };
 
 
@@ -410,6 +425,15 @@ Adapter.prototype.isFloatingVirtualKeyboardEnabled = function() {
   // This feature depends on setMode API. The api is a private API and may not
   // be available all the time.
   if (!inputview || !inputview.setMode) {
+    return false;
+  }
+
+  if (!this.readyState_.isReady(State.DISPLAY_SIZE_READY))
+    console.error('Display size is not ready yet.');
+
+  // Disable floating virtual keyboard if the screen is smaller than
+  // ENABLE_FLOATING_THRESHOLD_PX.
+  if (this.displayInInches < Adapter.ENABLE_FLOATING_THRESHOLD_INCHES_) {
     return false;
   }
   return this.features.isEnabled(FeatureName.FLOATING_VIRTUAL_KEYBOARD);
@@ -469,6 +493,17 @@ Adapter.prototype.isGoogleDocument = function() {
 
 
 /**
+ * Returns whether the current context is Google Mail.
+ *
+ * @return {boolean}
+ */
+Adapter.prototype.isGoogleMail = function() {
+  return this.currentSite_ &&
+      this.currentSite_.lastIndexOf(Adapter.GoogleSites.MAIL) === 0;
+};
+
+
+/**
  * Callback when focus on a context.
  *
  * @param {!Object<string, *>} message .
@@ -523,6 +558,7 @@ Adapter.prototype.initialize = function() {
   if (window.inputview) {
     inputview.getKeyboardConfig((function(config) {
       this.isA11yMode = !!config['a11ymode'];
+      this.isHotrod = !!config['hotrodmode'];
       this.features.initialize(config);
       this.isVoiceInputEnabled =
           this.features.isEnabled(FeatureName.VOICE_INPUT);
@@ -530,15 +566,22 @@ Adapter.prototype.initialize = function() {
       this.maybeDispatchSettingsReadyEvent_();
     }).bind(this));
     inputview.getInputMethods((function(inputMethods) {
-      // Only show globe key to switching between IMEs when there are more
-      // than one IME.
-      this.showGlobeKey = inputMethods.length > 1;
+      // Globe key is disabled if either condition is met:
+      // - Only one IME presents.
+      // - In hotrod mode.
+      this.showGlobeKey = inputMethods.length > 1 && !this.isHotrod;
       this.readyState_.markStateReady(State.IME_LIST_READY);
+      this.maybeDispatchSettingsReadyEvent_();
+    }).bind(this));
+    inputview.getDisplayInInches((function(inches) {
+      this.displayInInches = inches;
+      this.readyState_.markStateReady(State.DISPLAY_SIZE_READY);
       this.maybeDispatchSettingsReadyEvent_();
     }).bind(this));
   } else {
     this.readyState_.markStateReady(State.IME_LIST_READY);
     this.readyState_.markStateReady(State.KEYBOARD_CONFIG_READY);
+    this.readyState_.markStateReady(State.DISPLAY_SIZE_READY);
   }
 
   this.maybeDispatchSettingsReadyEvent_();
@@ -553,7 +596,8 @@ Adapter.prototype.initialize = function() {
 Adapter.prototype.maybeDispatchSettingsReadyEvent_ = function() {
   var states = [
     State.KEYBOARD_CONFIG_READY,
-    State.IME_LIST_READY];
+    State.IME_LIST_READY,
+    State.DISPLAY_SIZE_READY];
   var ready = true;
   for (var i = 0; i < states.length; i++) {
     ready = ready && this.readyState_.isReady(states[i]);
@@ -664,13 +708,15 @@ Adapter.prototype.commitText = function(text) {
 
 
 /**
- * Commits the gesture result.
+ * Commits the gesture result, possibly with a force space before the result.
  *
  * @param {string} text .
+ * @param {boolean} forceAutoSpace .
  */
-Adapter.prototype.commitGestureResult = function(text) {
+Adapter.prototype.commitGestureResult = function(text, forceAutoSpace) {
   chrome.runtime.sendMessage(goog.object.create(
-      Name.TYPE, Type.CONFIRM_GESTURE_RESULT, Name.TEXT, text));
+      Name.TYPE, Type.CONFIRM_GESTURE_RESULT, Name.TEXT, text,
+      Name.FORCE_AUTO_SPACE, forceAutoSpace));
 };
 
 
@@ -699,7 +745,7 @@ Adapter.prototype.onCandidatesBack_ = function(message) {
 
 
 /**
- * Callbck when completion is back.
+ * Callback when completion is back.
  *
  * @param {!Object} message .
  * @private
@@ -775,9 +821,10 @@ Adapter.prototype.onMessage_ = function(request, sender, sendResponse) {
       this.onGesturesBack_(msg);
       break;
     case Type.SURROUNDING_TEXT_CHANGED:
-      this.onSurroundingTextChanged_(request[Name.TEXT],
+      this.onSurroundingTextChanged_(request[Name.TEXT_BEFORE_CURSOR],
           request[Name.ANCHOR],
-          request[Name.FOCUS]);
+          request[Name.FOCUS],
+          request[Name.OFFSET]);
       break;
     case Type.UPDATE_SETTINGS:
       this.onUpdateSettings_(msg);
@@ -856,4 +903,3 @@ Adapter.prototype.unsetController = function() {
           Type.UNSET_CONTROLLER));
 };
 });  // goog.scope
-

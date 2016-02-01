@@ -17,13 +17,13 @@ goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.State');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.SoftKey');
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 
@@ -32,7 +32,7 @@ var ElementType = i18n.input.chrome.inputview.elements.ElementType;
  * backspace, tab, etc.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {string} text The text.
  * @param {string} iconCssClass The css class for the icon.

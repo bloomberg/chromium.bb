@@ -13,10 +13,11 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.EnterKey');
 
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 
 
 

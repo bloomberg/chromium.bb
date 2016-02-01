@@ -14,11 +14,13 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.CharacterModel');
 
 goog.require('i18n.input.chrome.inputview.StateType');
+goog.require('i18n.input.chrome.inputview.util');
 
 
 
 goog.scope(function() {
 var StateType = i18n.input.chrome.inputview.StateType;
+var util = i18n.input.chrome.inputview.util;
 
 
 
@@ -181,13 +183,9 @@ CharacterModel.prototype.isVisible = function() {
  * @private
  */
 CharacterModel.prototype.toReversedCase_ = function() {
-  var reversed;
-  if (this.character_.toUpperCase() == this.character_) {
-    reversed = this.character_.toLowerCase();
-  } else {
-    reversed = this.character_.toUpperCase();
-  }
-  return reversed;
+  var upper = util.toUpper(this.character_);
+  var lower = util.toLower(this.character_);
+  return (upper == this.character_) ? lower : upper;
 };
 
 

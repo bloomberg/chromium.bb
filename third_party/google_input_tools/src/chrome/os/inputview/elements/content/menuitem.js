@@ -15,19 +15,19 @@ goog.provide('i18n.input.chrome.inputview.elements.content.MenuItem');
 
 goog.require('goog.a11y.aria');
 goog.require('goog.a11y.aria.State');
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 
 goog.scope(function() {
 var Css = i18n.input.chrome.inputview.Css;
 var TagName = goog.dom.TagName;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
+
+
 
 /**
  * The menu item in the menu.
@@ -125,6 +125,8 @@ MenuItem.prototype.createDom = function() {
 
 /**
  * Gets the command of this menu item.
+ *
+ * @return {Object} The command.
  */
 MenuItem.prototype.getCommand = function() {
   return this.item_['command'];

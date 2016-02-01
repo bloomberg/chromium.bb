@@ -61,8 +61,6 @@ i18n.input.common.dom.isEditable = function(element) {
     case 'INPUT':
       return (element.type.toUpperCase() == 'TEXT' ||
           element.type.toUpperCase() == 'SEARCH');
-    case 'DIV':
-      return element.isContentEditable;
     case 'IFRAME':
       // Accessing iframe's contents or properties throws exception when the
       // iframe is not hosted on the same domain.
@@ -76,9 +74,9 @@ i18n.input.common.dom.isEditable = function(element) {
       } catch (e) {
         return false;
       }
+    default:
+      return !!element.isContentEditable;
   }
-
-  return false;
 };
 
 
@@ -192,7 +190,7 @@ i18n.input.common.dom.createIframeWrapper = function(opt_doc) {
 
   var css = i18n.input.common.GlobalSettings.alternativeImageUrl ?
       i18n.input.common.GlobalSettings.css.replace(
-      /\/\/ssl.gstatic.com\/inputtools\/images/g,
+      /^(?:https?:)?\/\/ssl.gstatic.com\/inputtools\/images/g,
       i18n.input.common.GlobalSettings.alternativeImageUrl) :
       i18n.input.common.GlobalSettings.css;
   goog.style.installStyles(

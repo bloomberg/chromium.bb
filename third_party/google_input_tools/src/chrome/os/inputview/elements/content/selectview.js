@@ -13,23 +13,19 @@
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.SelectView');
 
-goog.require('goog.array');
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.math.Coordinate');
 goog.require('goog.style');
-goog.require('i18n.input.chrome.inputview.Accents');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
-goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
 var Css = i18n.input.chrome.inputview.Css;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var TagName = goog.dom.TagName;
+
 
 
 /**
@@ -118,7 +114,7 @@ SelectView.prototype.resize = function(width, height) {
   goog.base(this, 'resize', width, height);
   var isLandscape = screen.width > screen.height;
   var affordanceWidth = isLandscape ?
-    SelectView.WIDTH_ : SelectView.PORTRAIT_WIDTH_;
+      SelectView.WIDTH_ : SelectView.PORTRAIT_WIDTH_;
   if (isLandscape) {
     goog.dom.classlist.addRemove(this.getElement(),
         Css.PORTRAIT, Css.LANDSCAPE);

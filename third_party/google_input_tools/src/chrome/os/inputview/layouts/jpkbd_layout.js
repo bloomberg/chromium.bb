@@ -91,7 +91,7 @@ goog.require('i18n.input.chrome.inputview.layouts.util');
   });
 
   var data = {
-    'layoutID': 'm-jpkbd',
+    'layoutID': 'jpkbd',
     'widthInWeight': 15,
     'children': [keyboardContainer]
   };

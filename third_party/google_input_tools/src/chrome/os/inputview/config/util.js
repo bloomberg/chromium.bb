@@ -14,14 +14,14 @@
 goog.provide('i18n.input.chrome.inputview.content.util');
 
 goog.require('goog.array');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.Direction');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
 
 
@@ -535,7 +535,7 @@ i18n.input.chrome.inputview.content.util.createData = function(keyCharacters,
     mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + i;
   }
   var layout = is102 ? '102kbd' : '101kbd';
-  var result = [];
+  var result = {};
   result[SpecNodeName.KEY_LIST] = keyList;
   result[SpecNodeName.MAPPING] = mapping;
   result[SpecNodeName.LAYOUT] = layout;

@@ -23,7 +23,7 @@ goog.scope(function() {
  * The three dots menu key.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {string} text The text.
  * @param {string} iconCssClass The css class for the icon.

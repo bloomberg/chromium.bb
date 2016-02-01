@@ -1,4 +1,4 @@
-// Copyright 2015 The ChromeOS IME Authors. All Rights Reserved.
+// Copyright 2016 The ChromeOS IME Authors. All Rights Reserved.
 // limitations under the License.
 // See the License for the specific language governing permissions and
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,13 +11,13 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.inputview.FeatureTracker');
+goog.provide('i18n.input.chrome.FeatureTracker');
 
-goog.require('goog.object');
-goog.require('i18n.input.chrome.inputview.FeatureName');
+goog.require('i18n.input.chrome.FeatureName');
 
 goog.scope(function() {
-var FeatureName = i18n.input.chrome.inputview.FeatureName;
+var FeatureName = i18n.input.chrome.FeatureName;
+
 
 
 /**
@@ -25,7 +25,7 @@ var FeatureName = i18n.input.chrome.inputview.FeatureName;
  *
  * @constructor
  */
-i18n.input.chrome.inputview.FeatureTracker = function() {
+i18n.input.chrome.FeatureTracker = function() {
 
   /**
    * Whether experimental flags is enabled.
@@ -51,7 +51,7 @@ i18n.input.chrome.inputview.FeatureTracker = function() {
   this.ready_ = false;
 };
 
-var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
+var FeatureTracker = i18n.input.chrome.FeatureTracker;
 
 
 /**

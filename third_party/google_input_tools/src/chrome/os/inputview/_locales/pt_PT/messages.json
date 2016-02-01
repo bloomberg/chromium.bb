@@ -14,7 +14,7 @@
     }
   },
   "advanced": {
-    "message": "Avan\u00e7ada"
+    "message": "Avan\u00e7adas"
   },
   "alt": {
     "message": "alt"
@@ -29,10 +29,10 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado fon\u00e9tico arm\u00e9nio"
   },
   "appnamejpkeyboard": {
-    "message": "Introdu\u00e7\u00e3o japonesa do Google (para teclado japon\u00eas)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Introdu\u00e7\u00e3o japonesa do Google (para teclado dos EUA)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "Corre\u00e7\u00e3o autom\u00e1tica"
@@ -41,7 +41,7 @@
     "message": "retrocesso"
   },
   "basic": {
-    "message": "No\u00e7\u00f5es B\u00e1sicas"
+    "message": "B\u00e1sicas"
   },
   "be_fra_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado belga (franc\u00eas)"
@@ -86,13 +86,13 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado su\u00ed\u00e7o (alem\u00e3o)"
   },
   "chos_inputtool_description": {
-    "message": "As Ferramentas de Inser\u00e7\u00e3o de Texto da Google para o SO Chrome permitem-lhe escrever no idioma que pretender no SO Chrome."
+    "message": "A Ferramenta de inser\u00e7\u00e3o de texto da Google para o SO Chrome permite-lhe escrever no idioma pretendido no SO Chrome."
   },
   "chos_inputtool_title": {
-    "message": "Ferramenta de Inser\u00e7\u00e3o de Texto da Google"
+    "message": "Ferramenta de inser\u00e7\u00e3o de texto da Google"
   },
   "compositionmodedirect": {
-    "message": "Introdu\u00e7\u00e3o direta"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
     "message": "Wide Latin"
@@ -101,67 +101,67 @@
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "Latim"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Katakana de meia largura"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "No\u00e7\u00f5es b\u00e1sicas"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Limpar dados de personaliza\u00e7\u00e3o..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Cancelar"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "Hist\u00f3rico de convers\u00f5es"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "Limpar os seguintes itens:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Limpar dados de personaliza\u00e7\u00e3o"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Hist\u00f3rico de sugest\u00f5es"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Limpar dados de personaliza\u00e7\u00e3o"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2013 Google Inc. Todos os direitos reservados."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Cancelar"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Gerir o dicion\u00e1rio do utilizador..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Adicione as suas palavras ao dicion\u00e1rio do utilizador para personalizar os candidatos de convers\u00e3o."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Dicion\u00e1rios do utilizador"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Desativar as sugest\u00f5es e as convers\u00f5es personalizadas, bem como o dicion\u00e1rio do utilizador"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Assist\u00eancia de introdu\u00e7\u00e3o"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Este software foi poss\u00edvel devido a <a href=\"./credits_en.html\">software de c\u00f3digo aberto</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Modo de introdu\u00e7\u00e3o:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,28 +170,28 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Privacidade"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Estilo de pontua\u00e7\u00e3o:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Atalho de sele\u00e7\u00e3o:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Nenhum atalho"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Estilo do esquema do teclado:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
   },
   "configsessionkeymapchromeos": {
-    "message": "SO Chrome"
+    "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Mapa de teclas personalizado"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,52 +200,52 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Defini\u00e7\u00f5es de introdu\u00e7\u00e3o de japon\u00eas"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Altera\u00e7\u00e3o de modo com tecla Shift:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Alfanum\u00e9rico"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "Desativado"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Estilo de introdu\u00e7\u00e3o de espa\u00e7o:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Seguir modo de introdu\u00e7\u00e3o"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "Largura completa"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Meia largura"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "N\u00famero de sugest\u00f5es:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Sugerir"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Estilo de s\u00edmbolo:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Enviar automaticamente estat\u00edsticas de utiliza\u00e7\u00e3o e relat\u00f3rios de falhas para a Google"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Mudar automaticamente para meia largura"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Utilizar o dicion\u00e1rio do sistema"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Utilizar o hist\u00f3rico de introdu\u00e7\u00f5es"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "ctrl"
@@ -254,13 +254,13 @@
     "message": "teclado selecionado atualmente "
   },
   "current_lang": {
-    "message": "O idioma de introdu\u00e7\u00e3o \u00e9 o chin\u00eas"
+    "message": "O idioma de entrada \u00e9 o chin\u00eas"
   },
   "current_punc": {
-    "message": "A largura da pontua\u00e7\u00e3o \u00e9 Total"
+    "message": "A largura da pontua\u00e7\u00e3o \u00e9 Completa"
   },
   "current_sbc": {
-    "message": "A largura de caracteres \u00e9 Total"
+    "message": "A largura de carateres \u00e9 Completa"
   },
   "cz_cze_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado checo"
@@ -269,40 +269,40 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado QWERTY checo"
   },
   "d83c_dc04": {
-    "message": "mosaico Mahjong"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "carta J\u00f3quer"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "sangue tipo A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "sangue tipo B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "sangue tipo O"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "parque de estacionamento"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "sangue tipo AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "porreiro"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "gratuito"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "Novo"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -314,298 +314,298 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "PARA CIMA!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "Palavra japonesa \u00e2\u20ac\u02dcaqui\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "Palavra japonesa \u00e2\u20ac\u02dcservi\u00e7o\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "Palavra japonesa \"gratuito\""
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "Palavra japonesa \"reservado\""
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "Palavra japonesa \u00e2\u20ac\u02dcproibido\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "Palavra chinesa \"espa\u00e7o dispon\u00edvel\""
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "Palavra chinesa \"passe\""
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "Palavra chinesa \"cheio\""
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "Palavra japonesa \"taxas\""
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "Palavra japonesa \"mensal\""
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "Palavra chinesa \"aplica\u00e7\u00e3o\""
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "Palavra japonesa \"desconto\""
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "Palavra chinesa \"em atividade comercial\""
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "Palavra japonesa \"vantagem\""
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "Palavra chinesa \"aprovado\""
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "ciclone"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "enevoado"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "guarda-chuva"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "estrelas na noite"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "nascer do sol nas montanhas"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "nascer do sol"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "cidade ao crep\u00fasculo"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "p\u00f4r do sol"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "arco-\u00edris"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "ponte \u00e0 noite"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "onda"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "vulc\u00e3o"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "Via L\u00e1ctea"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "globo da Europa-\u00c1frica"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "globo das Am\u00e9ricas"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "globo da \u00c1sia-Austr\u00e1lia"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "globo com meridianos"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "lua nova"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "lua crescente"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "lua em quarto crescente"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "lua crescente"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "lua cheia"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "lua minguante"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "lua em quarto minguante"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "lua minguante c\u00f4ncava"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "lua crescente"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "cara de lua nova"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "cara de quarto crescente da lua"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "cara de quarto minguante da lua"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "cara de lua cheia"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "cara de sol"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "estrela brilhante"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "estrela cadente"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "castanha"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "planta nova"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "\u00e1rvore de folhas perenes"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "\u00e1rvore de folhas caducas"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "palmeira"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "cato"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "t\u00falipa"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "cerejeira em flor"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "rosa"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "hibisco"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "girassol"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "rebento de flor"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "milho"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "planta de arroz"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "erva"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "trevo de quatro folhas"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "folha de \u00e1cer"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "folhas a cair"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "folha no vento"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "cogumelo"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "tomate"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "berinjela"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "uvas"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "mel\u00e3o"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "melancia"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "tangerina"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "lim\u00e3o"
+    "message": "lemon"
   },
   "d83c_df4c": {
     "message": "banana"
   },
   "d83c_df4d": {
-    "message": "anan\u00e1s"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "ma\u00e7\u00e3 vermelha"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "ma\u00e7\u00e3 verde"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "pera"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "p\u00eassego"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "cereja"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "morango"
+    "message": "strawberry"
   },
   "d83c_df54": {
-    "message": "hamb\u00farguer"
+    "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "fatia de piza"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "carne"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "coxa de frango"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "bolacha de arroz"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "bolinho de arroz"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "arroz cozido"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "caril e arroz"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
     "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "esparguete"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "p\u00e3o"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "batatas fritas"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "batata assada"
+    "message": "roasted potato"
   },
   "d83c_df61": {
     "message": "mochi"
@@ -617,670 +617,670 @@
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "camar\u00e3o frito"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "empada de peixe"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "sorvete"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "granizado"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "gelado"
+    "message": "ice cream"
   },
   "d83c_df69": {
     "message": "donut"
   },
   "d83c_df6a": {
-    "message": "bolacha"
+    "message": "cookie"
   },
   "d83c_df6b": {
     "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "rebu\u00e7ado"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "chupa-chupa"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "creme"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "pote de mel"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "biscoito"
+    "message": "shortcake"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "estufado"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "frigideira"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "garfo e faca"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "ch\u00e1vena de ch\u00e1"
+    "message": "teacup"
   },
   "d83c_df76": {
-    "message": "saqu\u00ea"
+    "message": "sake"
   },
   "d83c_df77": {
-    "message": "vinho"
+    "message": "wine"
   },
   "d83c_df78": {
     "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "bebida tropical"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "cerveja"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "canecas de cerveja"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "biber\u00e3o"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "fita"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "prenda"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "bolo de anivers\u00e1rio"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "ab\u00f3bora de halloween"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "\u00e1rvore de natal"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "pai natal"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "fogo de art\u00edficio"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "vela cintilante"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "bal\u00e3o"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "lan\u00e7a confetti"
+    "message": "party popper"
   },
   "d83c_df8a": {
     "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "\u00e1rvore e faixas de papel"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "bandeiras cruzadas"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "decora\u00e7\u00e3o de pinheiro"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "bonecas"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "carpa"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "espanta-esp\u00edritos"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "vista da lua"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "pasta da escola"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "chap\u00e9u de gradua\u00e7\u00e3o"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "carrossel"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "roda gigante"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "montanha russa"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "pesca"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "microfone"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "c\u00e2mara de filmar"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "filme"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "auscultador"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "paleta de pintura"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "cartola"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "circo"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "bilhete"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "claquete"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "m\u00e1scara"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "videojogo"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "olho de boi"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
     "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "bilhar"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "morte no jogo"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "b\u00f3lingue"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "carta de jogar"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "nota musical"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "notas musicais"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "saxofone"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "guitarra"
+    "message": "guitar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trompete"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "violino"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "pauta musical"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "camisola de corrida"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
-    "message": "t\u00e9nis"
+    "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "esqui"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "basquetebol"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "bandeira axadrezada"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
     "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "corredor"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "surf"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "trof\u00e9u"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "corrida de cavalos"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "futebol americano"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "futebol"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "nadador"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "casa"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "lar"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "edif\u00edcio de escrit\u00f3rios"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "Esta\u00e7\u00e3o de correios japonesa"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "Esta\u00e7\u00e3o de correios europeia"
+    "message": "European post office"
   },
   "d83c_dfe5": {
     "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "banco"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "caixa de multibanco"
+    "message": "ATM"
   },
   "d83c_dfe8": {
     "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "hotel do amor"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "loja de conveni\u00eancia"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "escola"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "centro comercial"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "f\u00e1brica"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "lanterna vermelha"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "castelo japon\u00eas"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "castelo europeu"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "Ratazana"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "Rato"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "Boi"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "b\u00fafalo-asi\u00e1tico"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "vaca"
+    "message": "cow"
   },
   "d83d_dc06": {
-    "message": "leopardo"
+    "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "coelho"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "gato"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "drag\u00e3o"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "crocodilo"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "baleia"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "caracol"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "cobra"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "cavalo"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "carneiro"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "cabra"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "ovelha"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "macaco"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "galo"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "galinha"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "c\u00e3o"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "porco"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "javali"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "elefante"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "polvo"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "concha"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "inseto"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "formiga"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "abelha"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "joaninha"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "peixe"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "peixe tropical"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "peixe-bal\u00e3o"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "tartaruga"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "pintainho a sair do ovo"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "cara de pintainho"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "pinta\u00ednho"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "p\u00e1ssaro"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "pinguim"
+    "message": "penguin"
   },
   "d83d_dc28": {
-    "message": "coala"
+    "message": "koala"
   },
   "d83d_dc29": {
     "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "dromed\u00e1rio"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "camelo"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "golfinho"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "cara de rato"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "cara de vaca"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "cara de tigre"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "cara de coelho"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "cara de gato"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "cara de drag\u00e3o"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "baleia a esguichar"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "cara de cavalo"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "cara de macaco"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "cara de c\u00e3o"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "cara de porco"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "cara de sapo"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "cara de hamster"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "cara de lobo"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "cara de urso"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "cara de panda"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "focinho de porco"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "pata"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "olhos"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "orelha"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "nariz"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "boca"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "l\u00edngua"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "dedo para cima"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "dedo para baixo"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "dedo esquerdo"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "dedo direito"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "punho cerrado"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "m\u00e3o a acenar"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "sinal gestual de OK"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "gosto"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "n\u00e3o gosto"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "bater palmas"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "m\u00e3os abertas"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "coroa"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "chap\u00e9u de senhora"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "\u00f3culos"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "gravata"
+    "message": "necktie"
   },
   "d83d_dc55": {
     "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "cal\u00e7as"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "vestido"
+    "message": "dress"
   },
   "d83d_dc58": {
-    "message": "quimono"
+    "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "biqu\u00edni"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "roupas de senhora"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "carteira"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "mala de m\u00e3o"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "bolsa"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "sapato de homem"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "cal\u00e7ado desportivo"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "saltos altos"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "sand\u00e1lia de senhora"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "bota de senhora"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "pegada"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "busto em silhueta"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "bustos em silhueta"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "rapaz"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "rapariga"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "homem"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "mulher"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "fam\u00edlia"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "homem e mulher"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "dois homens"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "duas mulheres"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "pol\u00edcia"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "coelhinha"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "noiva"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "pessoa loura"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "homem com gua pi mao"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "homem com turbante"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "homem mais velho"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "mulher mais velha"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "beb\u00e9"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "oper\u00e1rio de constru\u00e7\u00e3o civil"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "princesa"
+    "message": "princess"
   },
   "d83d_dc79": {
     "message": "ogre"
@@ -1289,208 +1289,208 @@
     "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "fantasma"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "anjo beb\u00e9"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "extraterrestre"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "monstro extraterrestre"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "diabinho"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "caveira"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "balc\u00e3o de informa\u00e7\u00f5es"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "guarda"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "dan\u00e7arino"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "batom"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "cuidados com as unhas"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "massagem de cara"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "corte de cabelo"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "barbeiro"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "tiro"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "comprimido"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "marca de beijo"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "carta de amor"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "anel"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "joia"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "beijo"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "buqu\u00ea"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "casal"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "capela para casamentos"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "cora\u00e7\u00e3o pulsante"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "cora\u00e7\u00e3o partido"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "dois cora\u00e7\u00f5es"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "cora\u00e7\u00e3o cintilante"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "cora\u00e7\u00e3o crescente"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "cora\u00e7\u00e3o e seta"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "cora\u00e7\u00e3o azul"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "cora\u00e7\u00e3o verde"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "cora\u00e7\u00e3o amarelo"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "cora\u00e7\u00e3o p\u00farpura"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "cora\u00e7\u00e3o com fita"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "cora\u00e7\u00f5es rodopiantes"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "decora\u00e7\u00e3o de cora\u00e7\u00e3o"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "p\u00e9tala de flor"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "l\u00e2mpada"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "f\u00faria"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bomba"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "s\u00edmbolo de sonolento"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "colis\u00e3o"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "a salpicar suor"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "suor frio"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "corrida r\u00e1pida"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "coc\u00f3"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "b\u00edcepes"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "tonto"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "bal\u00e3o de fala"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "bal\u00e3o de pensamento"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "estampa de flor"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "pontua\u00e7\u00e3o total"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "saco de dinheiro"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "c\u00e2mbio"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "cifr\u00e3o"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "cart\u00e3o de cr\u00e9dito"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "notas de iene"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "nota de d\u00f3lar"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "nota de euro"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "nota de libra"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "dinheiro voador"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "mercado crescente"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "assento"
+    "message": "seat"
   },
   "d83d_dcbb": {
     "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "pasta"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "mini-disco"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "disquete"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1499,94 +1499,94 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "pasta de ficheiro"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "pasta aberta"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "documento"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "documento"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "calend\u00e1rio"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "calend\u00e1rio destac\u00e1vel"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "\u00edndice de cart\u00f5es"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "tend\u00eancia ascendente"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "tend\u00eancia descendente"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "gr\u00e1fico de barras"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "caderno de notas"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "alfinete"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "alfinete de cabe\u00e7a redonda"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "clipe de papel"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "r\u00e9gua reta"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "esquadro"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "separadores de marcador"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "livro raz\u00e3o"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "bloco de notas"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "bloco de notas decorado"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "livro fechado"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "livro aberto"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "livro verde"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "livro"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "livro cor de laranja"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "livros"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "crach\u00e1 com o nome"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "pergaminho"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "memorando"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "telefone"
+    "message": "phone"
   },
   "d83d_dcdf": {
     "message": "pager"
@@ -1595,793 +1595,793 @@
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "antena parab\u00f3lica"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "altifalante"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "megafone"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "correio enviado"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "Caixa de entrada"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "pacote"
+    "message": "package"
   },
   "d83d_dce7": {
     "message": "email"
   },
   "d83d_dce8": {
-    "message": "correio a receber"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "correio a enviar"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "caixa de correio fechada com bandeira para baixo"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "caixa de correio fechada com bandeira para cima"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "caixa de correio aberta com bandeira para cima"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "caixa de correio aberta com bandeira para baixo"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "caixa postal"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "trompa dos correios"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "jornal"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "telem\u00f3vel"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "telem\u00f3vel com seta"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "modo de vibra\u00e7\u00e3o"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "telem\u00f3vel desligado"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "proibido utilizar telem\u00f3veis"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "sinais de dispositivos m\u00f3veis"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "c\u00e2mara"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "c\u00e2mara de v\u00eddeo"
+    "message": "video cam"
   },
   "d83d_dcfa": {
     "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "r\u00e1dio"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "cassete de v\u00eddeo"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "setas cruzadas"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "setas no sentido dos ponteiros do rel\u00f3gio"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "setas no sentido dos ponteiros do rel\u00f3gio"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "recarregar"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "setas no sentido contr\u00e1rio ao dos ponteiros do rel\u00f3gio"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "pouco brilho"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "brilho elevado"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "sil\u00eancio"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "coluna"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "coluna com volume baixo"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "coluna com volume alto"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "bateria"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "ficha el\u00e9trica"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "lupa inclinada para a esquerda"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "lupa inclinada para a direita"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "cadeado com caneta de tinta"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "cadeado fechado com chave"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "tecla"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "cadeado fechado"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "cadeado aberto"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "campainha"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "sem campainha"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "marcador"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "sinal de link"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "bot\u00e3o de sele\u00e7\u00e3o"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "anterior"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "fim"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "seta LIGADO"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "sinal de Breve"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "sinal Para cima"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "Ningu\u00e9m com menos de 18"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "letras mai\u00fasculas"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "letras min\u00fasculas"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "n\u00fameros"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "s\u00edmbolos"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "Alfabeto latino"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "fogo"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "lanterna"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "chave inglesa"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "martelo"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "porca e parafuso"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "faca de cozinha"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "arma"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "microsc\u00f3pio"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "telesc\u00f3pio"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "bola de cristal"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "estrela de seis pontos"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "folha verde e amarela"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "sinal de tridente"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "bot\u00e3o quadrado de contorno s\u00f3lido"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "bot\u00e3o quadrado de contorno delineado"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "c\u00edrculo vermelho grande"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "c\u00edrculo azul grande"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "diamante grande cor de laranja"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "diamante grande azul"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "diamante pequeno cor de laranja"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "diamante pequeno azul"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "tri\u00e2ngulo para cima"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "tri\u00e2ngulo para baixo"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "bot\u00e3o de tri\u00e2ngulo para cima"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "bot\u00e3o de tri\u00e2ngulo para baixo"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "1 hora"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "2 horas"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "3 horas"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "4 horas"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "5 horas"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "6 horas"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "7 horas"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "8 horas"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "9 horas"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "10 horas"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "11 horas"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "12 horas"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "uma e meia"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "duas e meia"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "tr\u00eas e meia"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "quatro e meia"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "cinco e meia"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "seis e meia"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "sete e meia"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "oito e meia"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "nove e meia"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "dez e meia"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "onze e meia"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "doze e meia"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "Monte Fuji"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "Torre de T\u00f3quio"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "Est\u00e1tua da Liberdade"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "Mapa do Jap\u00e3o"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "Est\u00e1tua de Moyai"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "sorriso largo"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " sorriso largo com olhos sorridentes"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "l\u00e1grimas de alegria"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "sorriso de boca aberta"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "sorriso de boca aberta com olhos sorridentes"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "sorriso de suor frio"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " sorriso de boca aberta com olhos fechados"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "sorriso com aur\u00e9ola"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "sorriso com cornos"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "piscar de olho"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "sorriso"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "cara deliciada"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "cara de al\u00edvio"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "cara sorridente"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "porreiro"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "sorriso afetado"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "cara sem express\u00e3o"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "sem express\u00e3o"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "chateado"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "suor frio"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "cara pensativa"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "cara confusa"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "cara confusa"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "cara beijoqueira"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "atirar beijos"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "beijo e sorriso"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "a beijar"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "l\u00edngua de fora"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "l\u00edngua de fora com piscar de olho"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "nojo"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "desapontado"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "preocupado"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "zangado"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "amuado"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "a chorar"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "estragou tudo"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "olhar de triunfo"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "ufa!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "cara carrancuda"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "angustiado"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "temeroso"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "exausto"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "sonolento"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "cansado"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "careta"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "choro alto"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "cara com boca aberta"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "cara em expetativa"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "cara apressada"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "cara assustadora"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "cara surpreendida"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "envergonhado"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "a dormir"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "tonto"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "cara sem boca"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "cara com m\u00e1scara"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "cara de gato com sorriso aberto"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "cara de gato com l\u00e1grimas de alegria"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "cara de gato sorridente"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "cara de gato sorridente"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "cara de gato com esgar"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "gato beijoqueiro"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "cara de gato amuado"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "cara de gato a chorar"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "cara de gato exausto"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "gesto de N\u00e3o presta"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "gesto de OK"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "lamento"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "n\u00e3o v\u00ea nada de mal"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "n\u00e3o ouve nada de mal"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "n\u00e3o diz nada de mal"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "pessoa feliz"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "hurra"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "pessoa carrancuda"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "amuado"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "m\u00e3os cruzadas"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "foguet\u00e3o"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "helic\u00f3ptero"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "locomotiva a vapor"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "comboio"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "comboio de alta velocidade"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "comboio de alta velocidade bala"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "comboio"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "metro"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "metropolitano"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "esta\u00e7\u00e3o de comboios"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "el\u00e9trico"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "carro el\u00e9trico"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "autocarro"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "autocarro a aproximar-se"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "tr\u00f3lei"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "paragem de autocarro"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "miniautocarro"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "ambul\u00e2ncia"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "carro de bombeiros"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "carro de pol\u00edcia"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "carro de pol\u00edcia a aproximar-se"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
-    "message": "t\u00e1xi"
+    "message": "taxi"
   },
   "d83d_de96": {
-    "message": "t\u00e1xi a aproximar-se"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "carro"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "carro a aproximar-se"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "autocaravana"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "cami\u00e3o de entregas"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "cami\u00e3o"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "trator"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "monocarril"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "comboio da montanha"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "comboio suspenso"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "telef\u00e9rico de montanha"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "telef\u00e9rico"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "navio"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "barco a remos"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "lancha"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "sem\u00e1foros horizontais"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "sem\u00e1foros verticais"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "em constru\u00e7\u00e3o"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "luz girat\u00f3ria"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "bandeira de localiza\u00e7\u00e3o"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "porta"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "sinal de entrada proibida"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "sinal de fumador"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "sinal de n\u00e3o fumadores"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "sinal de caixa de areia para gatos"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "sinal de n\u00e3o fazer lixo"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "\u00e1gua pot\u00e1vel"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "\u00e1gua n\u00e3o pot\u00e1vel"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "bicicleta"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "sem bicicleta"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "ciclista"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "ciclista de montanha"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "pe\u00e3o"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "proibido a pe\u00f5es"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "passadeira de crian\u00e7as"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "sinal Homens"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "sinal Mulheres"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "sinal de casa de banho"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "sinal de beb\u00e9"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "sanita"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "casa de banho"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "chuveiro"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "banho"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "banheira"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "controlo de passaportes"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "alf\u00e2ndega"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "recolha de bagagens"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "bagagem n\u00e3o recolhida"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado alem\u00e3o"
@@ -2390,136 +2390,136 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado alem\u00e3o Neo 2"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Categoria"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Coment\u00e1rio"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Coment\u00e1rio"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Pretende eliminar [object Object]?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "Eliminar dicion\u00e1rio"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "Dicion\u00e1rios"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "Nome do dicion\u00e1rio"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Conclu\u00eddo"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Exportar"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Importar..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "Gest\u00e3o de dicion\u00e1rios"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Novo dicion\u00e1rio"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Dicion\u00e1rios do utilizador"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Nova leitura"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Leitura"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "O nome cont\u00e9m um ou mais carateres inv\u00e1lidos."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "O nome j\u00e1 existe."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Introduza o nome de um dicion\u00e1rio."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "O nome \u00e9 demasiado longo."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "N\u00e3o \u00e9 poss\u00edvel criar mais dicion\u00e1rios."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "O ficheiro est\u00e1 vazio."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "N\u00e3o \u00e9 poss\u00edvel criar mais entradas neste dicion\u00e1rio."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "N\u00e3o foi poss\u00edvel abrir o ficheiro."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "O tamanho dos dados excede o limite de tamanho do ficheiro."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "A opera\u00e7\u00e3o falhou."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "N\u00e3o foi poss\u00edvel importar algumas palavras."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "A fonte de importa\u00e7\u00e3o cont\u00e9m demasiadas palavras."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "N\u00e3o foi poss\u00edvel ler o ficheiro."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "N\u00e3o existem mais opera\u00e7\u00f5es anul\u00e1veis."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "A leitura cont\u00e9m um ou mais carateres inv\u00e1lidos. Pode utilizar carateres ASCII, Hiragana, marca de som voc\u00e1lico (\u309b), marca de som semivoc\u00e1lico (\u309c), ponto central (\u30fb), marca de som prolongado (\u30fc), v\u00edrgula japonesa (\u3001), ponto japon\u00eas (\u3002), par\u00eanteses japoneses (\u300c\u300d\u300e\u300f) e tra\u00e7o ondulado japon\u00eas (\u301c) na leitura."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Introduza a leitura."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "A leitura \u00e9 demasiado longa."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Erro ao adicionar a entrada"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Erro ao criar o dicion\u00e1rio"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Erro ao eliminar o dicion\u00e1rio"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Erro ao eliminar a entrada"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Erro ao editar a entrada"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Erro ao importar"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "Erro ao mudar o nome do dicion\u00e1rio"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "A palavra cont\u00e9m um ou mais carateres inv\u00e1lidos."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Introduza a palavra."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "A palavra \u00e9 demasiado longa."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Nova palavra"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "Palavra"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "ignorar menu do teclado"
@@ -2570,16 +2570,22 @@
     "message": "Ativar preenchimento"
   },
   "enable_gesture_editing": {
-    "message": "Deslize rapidamente a partir das extremidades do teclado para mover o cursor ou a partir da tecla de retrocesso para eliminar palavras inteiras."
+    "message": "Ativar toques de deslizar rapidamente"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Deslize rapidamente a partir das extremidades do teclado para mover o cursor ou a partir da tecla de retrocesso para eliminar palavras inteiras"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Ativar escrita com gestos"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Introduzir uma palavra ao deslizar lentamente pelas letras"
   },
   "enable_prediction": {
     "message": "Ativar previs\u00e3o da palavra seguinte"
   },
   "enter": {
-    "message": "introduzir"
+    "message": "enter"
   },
   "es_cat_cat_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado catal\u00e3o"
@@ -2596,8 +2602,11 @@
   "fi_fin_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado finland\u00eas"
   },
+  "fo_fao_settings_page": {
+    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado faroense"
+  },
   "footer_docking_button": {
-    "message": "minimizar o teclado virtual"
+    "message": "ancorar o teclado virtual"
   },
   "footer_emoji_button": {
     "message": "mudar para emoji"
@@ -2611,11 +2620,14 @@
   "footer_settings_button": {
     "message": "abrir defini\u00e7\u00f5es do m\u00e9todo de introdu\u00e7\u00e3o"
   },
+  "fr_bepo_fra_settings_page": {
+    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado B\u00c9PO franc\u00eas"
+  },
   "fr_fra_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado franc\u00eas"
   },
   "fuzzy_pinyin": {
-    "message": "Ativar modo Pinyin Semelhante"
+    "message": "Ativar modo Pinyin semelhante"
   },
   "gb_dvorak_eng_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado ingl\u00eas Dvorak"
@@ -2630,7 +2642,7 @@
     "message": "mudar para o teclado anterior"
   },
   "got_it": {
-    "message": "Entendi"
+    "message": "Compreendi"
   },
   "gr_gre_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado grego"
@@ -2639,7 +2651,7 @@
     "message": "Anterior"
   },
   "handwriting_netowrk_error": {
-    "message": "Lamentamos, mas n\u00e3o \u00e9 poss\u00edvel utilizar a escrita manual porque a rede est\u00e1 indispon\u00edvel."
+    "message": "Lamentamos, mas n\u00e3o pode utilizar a escrita manual porque a rede n\u00e3o est\u00e1 dispon\u00edvel."
   },
   "handwriting_privacy_info": {
     "message": "Os dados introduzidos s\u00e3o enviados para os servidores da Google para fazer o reconhecimento do texto."
@@ -2652,6 +2664,9 @@
   },
   "hu_hun_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado h\u00fangaro"
+  },
+  "hu_qwerty_hun_settings_page": {
+    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado QWERTY h\u00fangaro"
   },
   "ie_ga_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado irland\u00eas"
@@ -2666,13 +2681,13 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado hebraico"
   },
   "init_lang": {
-    "message": "O idioma de introdu\u00e7\u00e3o inicial \u00e9 o chin\u00eas"
+    "message": "O idioma de entrada inicial \u00e9 o chin\u00eas"
   },
   "init_punc": {
     "message": "A largura de pontua\u00e7\u00e3o inicial \u00e9 Completa"
   },
   "init_sbc": {
-    "message": "A largura de caracteres inicial \u00e9 Completa"
+    "message": "A largura de carateres inicial \u00e9 Completa"
   },
   "input_hangul": {
     "message": "Modo hangul"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "M\u00e9todo de introdu\u00e7\u00e3o cangjie"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "M\u00e9todo de introdu\u00e7\u00e3o dayi"
@@ -2765,7 +2783,7 @@
     "message": "Teclado dinamarqu\u00eas"
   },
   "keyboard_devanagari_phonetic": {
-    "message": "Teclado devanagari (Fon\u00e9tica)"
+    "message": "Teclado devan\u00e1gari (Fon\u00e9tica)"
   },
   "keyboard_estonian": {
     "message": "Teclado est\u00f3nio"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Teclado et\u00edope"
   },
+  "keyboard_faroese": {
+    "message": "Teclado faroense"
+  },
   "keyboard_finnish": {
     "message": "Teclado finland\u00eas"
   },
   "keyboard_french": {
     "message": "Teclado franc\u00eas"
+  },
+  "keyboard_french_bepo": {
+    "message": "Teclado B\u00c9PO franc\u00eas"
   },
   "keyboard_georgian": {
     "message": "Teclado georgiano"
@@ -2792,13 +2816,16 @@
     "message": "Teclado grego"
   },
   "keyboard_gujarati_phonetic": {
-    "message": "Teclado gujarati (Fon\u00e9tica)"
+    "message": "Teclado guzerate (Fon\u00e9tica)"
   },
   "keyboard_hebrew": {
     "message": "Teclado hebraico"
   },
   "keyboard_hungarian": {
     "message": "Teclado h\u00fangaro"
+  },
+  "keyboard_hungarian_qwerty": {
+    "message": "Teclado QWERTY h\u00fangaro"
   },
   "keyboard_icelandic": {
     "message": "Teclado island\u00eas"
@@ -2819,19 +2846,25 @@
     "message": "Teclado japon\u00eas"
   },
   "keyboard_kannada_phonetic": {
-    "message": "Teclado canarim (Fon\u00e9tica)"
+    "message": "Teclado canar\u00e1 (Fon\u00e9tica)"
+  },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
   },
   "keyboard_kedmanee": {
     "message": "Teclado (Kedmanee)"
   },
   "keyboard_khmer": {
-    "message": "Teclado em khmer"
+    "message": "Teclado khmer"
   },
   "keyboard_lao": {
-    "message": "Teclado em laosiano"
+    "message": "Teclado laosiano"
+  },
+  "keyboard_laothian": {
+    "message": "Teclado laociano"
   },
   "keyboard_latin_american": {
-    "message": "Teclado da Am\u00e9rica Latina"
+    "message": "Teclado latino-americano"
   },
   "keyboard_latvian": {
     "message": "Teclado let\u00e3o"
@@ -2840,7 +2873,7 @@
     "message": "Teclado lituano"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Teclado maced\u00f3nio"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Teclado malaiala (Fon\u00e9tica)"
@@ -2858,10 +2891,10 @@
     "message": "Teclado Mianmar Myansan"
   },
   "keyboard_nepali_inscript": {
-    "message": "Teclado em nepal\u00eas (InScript)"
+    "message": "Teclado nepal\u00eas (InScript)"
   },
   "keyboard_nepali_phonetic": {
-    "message": "Teclado em nepal\u00eas (fon\u00e9tico)"
+    "message": "Teclado nepal\u00eas (Fon\u00e9tica)"
   },
   "keyboard_netherlands": {
     "message": "Teclado holand\u00eas"
@@ -2909,7 +2942,10 @@
     "message": "Teclado s\u00e9rvio"
   },
   "keyboard_sinhala": {
-    "message": "Teclado em cingal\u00eas"
+    "message": "Teclado cingal\u00eas"
+  },
+  "keyboard_slovak": {
+    "message": "Teclado eslovaco"
   },
   "keyboard_slovakian": {
     "message": "Teclado eslovaco"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Teclado turco"
   },
+  "keyboard_turkish_f": {
+    "message": "Teclado Turco-F"
+  },
   "keyboard_typewriter": {
     "message": "Teclado (M\u00e1quina de escrever)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "Teclado americano Dvorak"
+  },
+  "keyboard_us_dvp": {
+    "message": "Teclado Dvorak de programador americano"
   },
   "keyboard_us_extended": {
     "message": "Teclado americano alargado"
@@ -3035,7 +3077,7 @@
     "message": "Introduzir uma s\u00edlaba de cada vez"
   },
   "latam_spa_settings_page": {
-    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado da Am\u00e9rica Latina (espanhol)"
+    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado latino-americano (espanhol)"
   },
   "latin_settings_page": {
     "message": "Defini\u00e7\u00f5es"
@@ -3053,7 +3095,7 @@
     "message": "abrir menu do teclado"
   },
   "mn_mon_settings_page": {
-    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado em mongol"
+    "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado mongol"
   },
   "move_page_key_above": {
     "message": "Utilize as teclas - e = para paginar uma lista de candidatos"
@@ -3113,22 +3155,22 @@
     "message": "shift"
   },
   "shift_lock": {
-    "message": "Bloqueio do Shift"
+    "message": "Bloqueio do shift"
   },
   "show_candidate_mode": {
     "message": "Atraso do menu pendente de sugest\u00f5es"
   },
   "show_candidates_1000": {
-    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 1 seg."
+    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 1 seg"
   },
   "show_candidates_2000": {
-    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 2 seg."
+    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 2 seg"
   },
   "show_candidates_500": {
     "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 500 ms"
   },
   "show_candidates_5000": {
-    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 5 seg."
+    "message": "Mostrar menu pendente de sugest\u00f5es ap\u00f3s 5 seg"
   },
   "show_candidates_backspace": {
     "message": "Mostrar menu pendente de sugest\u00f5es ao premir a tecla Retrocesso"
@@ -3146,7 +3188,7 @@
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado eslovaco"
   },
   "smiley": {
-    "message": "emoticon"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "Moderada"
@@ -3158,13 +3200,13 @@
     "message": "espa\u00e7o"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Deslize rapidamente para a esquerda para eliminar palavras inteiras."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "Deslize rapidamente para a direita para restaurar palavras."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Deslize rapidamente para a esquerda ou para a direita para mover o cursor."
   },
   "switch_to": {
     "message": "mudar para "
@@ -3182,10 +3224,13 @@
     "message": "mudado para "
   },
   "tab": {
-    "message": "separador"
+    "message": "tabula\u00e7\u00e3o"
   },
   "touch_keyboard": {
     "message": "Teclado no ecr\u00e3"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "P\u00e1gina de defini\u00e7\u00f5es de teclado turco-F"
   },
   "tr_tur_settings_page": {
     "message": "P\u00e1gina de defini\u00e7\u00f5es do teclado turco"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "Limpar tudo"
   },
+  "user_dict_edit": {
+    "message": "Editar entradas do dicion\u00e1rio"
+  },
   "user_dict_manage": {
     "message": "Gerir dicion\u00e1rio pessoal..."
   },
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Aguardar"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Tipo de teclado"

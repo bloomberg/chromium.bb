@@ -12,25 +12,20 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.elements.content.EnSwitcherKey');
-goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
-goog.require('i18n.input.chrome.message.Name');
-goog.require('i18n.input.chrome.message.Type');
 
 
 goog.scope(function() {
 
-var Type = i18n.input.chrome.message.Type;
-var Name = i18n.input.chrome.message.Name;
+
 
 /**
  * The switcher key to switch to engish.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {string} text The text.
  * @param {i18n.input.chrome.inputview.Css} iconCssClass The css for the icon.

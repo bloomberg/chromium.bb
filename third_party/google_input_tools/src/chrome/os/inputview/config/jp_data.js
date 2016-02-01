@@ -12,16 +12,16 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.require('goog.array');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.Direction');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.content.util');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 
 (function() {
   var Css = i18n.input.chrome.inputview.Css;
   var Direction = i18n.input.chrome.inputview.Direction;
-  var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+  var ElementType = i18n.input.chrome.ElementType;
   var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
   var util = i18n.input.chrome.inputview.content.util;
 
@@ -136,7 +136,7 @@ goog.require('i18n.input.chrome.inputview.elements.ElementType');
       mapping[key['spec'][SpecNodeName.ID]] = viewIdPrefix + i;
     });
 
-    var result = [];
+    var result = {};
     result[SpecNodeName.KEY_LIST] = keyList;
     result[SpecNodeName.MAPPING] = mapping;
     result[SpecNodeName.LAYOUT] = 'jpkbd';

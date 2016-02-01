@@ -38,12 +38,6 @@
 #us-compact-qwerty .inputview-sk {
   margin: 8px;
 }
-.inputview-small-keyboard .inputview-sk,
-.inputview-small-keyboard #us-compact-symbol .inputview-sk,
-.inputview-small-keyboard #us-compact-more .inputview-sk,
-.inputview-small-keyboard #us-compact-qwerty .inputview-sk {
-  margin: 1px;
-}
 #us-compact-qwerty #Globe {
   margin: 5px 0 5px 0;
 }
@@ -68,11 +62,6 @@
 .inputview-font-small.inputview-compact-key,
 .inputview-a11y .inputview-digit-character.inputview-ch {
   font-size: 17px;
-}
-.inputview-small-keyboard .inputview-font-small.inputview-special-key-name,
-.inputview-small-keyboard .inputview-font-small.inputview-compact-key,
-.inputview-small-keyboard .inputview-a11y .inputview-digit-character.inputview-ch {
-  font-size: 12px;
 }
 .inputview-a11y .inputview-ch {
   font-size: 17px;
@@ -149,10 +138,10 @@
   font-family: Roboto2, Roboto, NanumGothic, Sans-Serif;
 }
 .inputview-emoji-font {
-  font-family: Noto Color Emoji, Noto Sans Emoji, Droid Emoji;
+  font-family: Noto Color Emoji, Noto Emoji, Droid Emoji;
 }
 .inputview-emoticon {
-  font-family: Noto Sans Emoji, Droid Emoji;
+  font-family: Noto Color Emoji, Noto Emoji, Droid Emoji;
 }
 .inputview-modifier {
   display: table-cell;
@@ -244,18 +233,6 @@
   background-size: 18px;
   height: 100%;
 }
-.inputview-menu-footer-floating-button {
-  /* TODO: replace floating.png with a proper image. */
-  background: url('images/floating.png') no-repeat center;
-  background-size: 18px;
-  height: 100%;
-}
-.inputview-menu-footer-docking-button {
-  /* TODO: replace docking.png with a proper image. */
-  background: url('images/docking.png') no-repeat center;
-  background-size: 18px;
-  height: 100%;
-}
 .inputview-menu-footer {
   -webkit-box-orient: horizontal;
   background: rgba(55, 71, 89, .08);
@@ -285,11 +262,6 @@
   opacity: 0;
   position: fixed;
   z-index: 998;
-}
-.inputview-small-keyboard .inputview-globe-icon {
-  background-size: 10px 10px;
-  height: 10px;
-  width: 10px;
 }
 .inputview-globe-icon {
   background: transparent url('images/globe.png') 0 0 / 20px 20px no-repeat;
@@ -325,9 +297,6 @@
   opacity: 0;
   position: relative;
 }
-.inputview-small-keyboard .inputview-swipe-key {
-  font-size: 12px;
-}
 .inputview-swipe-key {
   display: inline;
   vertical-align: middle;
@@ -341,9 +310,6 @@
   vertical-align: middle;
   text-align: center;
 }
-.inputview-small-keyboard .inputview-altdata-key {
-  font-size: 20px;
-}
 .inputview-a11y .inputview-altdata-key {
   font-size: 18px;
 }
@@ -356,9 +322,6 @@
 }
 .inputview-candidate.inputview-candidate-number {
   font-size: 25px;
-}
-.inputview-small-keyboard .inputview-candidate.inputview-candidate-number {
-  font-size: 20px;
 }
 .inputview-candidate-view {
   overflow: hidden;
@@ -385,9 +348,6 @@
   display: table-cell;
   vertical-align: middle;
   text-align: center;
-}
-.inputview-small-keyboard .inputview-title {
-  font-size: 10px;
 }
 .inputview-title {
   font-size: 16px;
@@ -428,6 +388,9 @@
   overflow: hidden;
   top: 43px;
   z-index: 998;
+}
+.inputview-track-cover.inputview-numeric {
+  top: 0;
 }
 .inputview-arrow-key {
   display: inline-block;
@@ -471,21 +434,11 @@
   background: transparent url('images/arrow_down_inactive.png') 0 0 no-repeat;
   background-size: 10px 6.5px;
 }
-.inputview-small-keyboard .inputview-menu-icon {
-  background: transparent url('images/3dots.png') 0 0/2px 9px no-repeat;
-  width: 2px;
-  height: 9px;
-}
 .inputview-menu-icon {
   background: transparent url('images/3dots.png') 0 0/4px 17px no-repeat;
   display: inline-block;
   width: 4px;
   height: 17px;
-}
-.inputview-small-keyboard .inputview-hide-keyboard-icon {
-  background-size: 16px 16px;
-  height: 16px;
-  width: 16px;
 }
 .inputview-hide-keyboard-icon {
   background: transparent url('images/hidekeyboard.png') 0 0/32px 32px no-repeat;
@@ -502,23 +455,12 @@
 .inputview-menu-footer-item.inputview-element-highlight {
   background-color: #cccccc;
 }
-.inputview-small-keyboard .inputview-backspace-icon,
-.inputview-small-keyboard .inputview-shift-icon {
-  background-size: 14px 14px;
-  height: 14px;
-  width: 14px;
-}
 .inputview-backspace-icon {
   background: transparent url('images/backspace.png');
   background-size: 24px 24px;
   display: inline-block;
   height: 24px;
   width: 24px;
-}
-.inputview-small-keyboard .inputview-enter-icon {
-  background-size: 20px 20px;
-  height: 20px;
-  width: 20px;
 }
 .inputview-enter-icon {
   background: transparent url('images/enter.png');
@@ -538,11 +480,6 @@
   width: 30px;
   height: 7.5px;
 }
-.inputview-small-keyboard .inputview-shift-icon {
-  background-size: 14px 14px;
-  width: 14px;
-  height: 14px;
-}
 .inputview-shift-icon {
   background: transparent url('images/shift.png');
   background-size: 25px 22px;
@@ -561,15 +498,9 @@
 .inputview-special-key-disable-bg-hl.inputview-special-key-highlight {
   background-color: transparent;
 }
-.inputview-small-keyboard .inputview-special-key-highlight .inputview-shift-icon {
-  background-size: 12px 11px;
-}
 .inputview-special-key-highlight .inputview-shift-icon {
   background: transparent url('images/shift-pressed.png');
   background-size: 25px 22px;
-}
-.inputview-small-keyboard .inputview-functional-key-sticky .inputview-shift-icon {
-  background-size: 12px 11px;
 }
 .inputview-functional-key-sticky .inputview-shift-icon {
   background: transparent url('images/shift-press-hold.png');
@@ -593,9 +524,6 @@
 .inputview-capslock-dot-highlight {
   background-color: #4285f4;
 }
-.inputview-small-keyboard .inputview-hint-text {
-  font-size: 8px;
-}
 .inputview-hint-text {
   font-size: 16px;
   color: rgba(55, 71, 89, 0.6);
@@ -606,14 +534,6 @@
 .inputview-compact-key {
   font-size: 28px;
   color: #37474f;
-}
-.inputview-small-keyboard .inputview-compact-key {
-  font-size: 19px;
-}
-.inputview-small-keyboard .inputview-compact-switcher {
-  background-size: 10px 7px;
-  height: 7px;
-  width: 10px;
 }
 .inputview-compact-switcher {
   background: transparent url('images/compact.png');
@@ -632,9 +552,6 @@
 #Space {
   color: rgba(55, 71, 89, 0.6);
   font-size: 18px;
-}
-.inputview-small-keyboard #Space {
-  font-size: 9px;
 }
 #Menu {
   font-weight: bold;
@@ -733,9 +650,6 @@
  * The following css style is for handwriting panel,
  * please keep it in the end of the file
  */
-.inputview-small-keyboard .inputview-handwriting {
-  font-size: 8px;
-}
 .inputview-handwriting {
   font-size: 16px;
 }
@@ -819,12 +733,6 @@
   font-size: 12px;
   display: inline-block;
 }
-.inputview-small-keyboard .inputview-switcher-chinese,
-.inputview-small-keyboard .inputview-switcher-english {
-  background-size: 14px 7px;
-  height: 7px;
-  width: 14px;
-}
 .inputview-switcher-chinese {
   display: inline-block;
   background: url('images/cn.png') no-repeat center;
@@ -906,15 +814,9 @@
   font-size: 20px;
   color: #4285f4;
 }
-.inputview-small-keyboard .inputview-switcher-key-name {
-  font-size: 10px;
-}
 .inputview-switcher-key-name {
   font-size: 20px;
   color: rgba(55, 71, 89, .8);
-}
-.inputview-small-keyboard .inputivew-switcher-key-name {
-  font-size: 8px;
 }
 .inputview-back-to-keyboard {
   background: url('images/back_to_keyboard.png') no-repeat center;
@@ -944,11 +846,6 @@
 }
 .inputview-drag-button {
   background: transparent url('images/draggable_area.png') 0 0/17px 16.5px no-repeat;
-  height: 17px;
-  width: 16.5px;
-}
-.inputview-resize-button {
-  background: transparent url('images/resize.png') 0 0/17px 16.5px no-repeat;
   height: 17px;
   width: 16.5px;
 }

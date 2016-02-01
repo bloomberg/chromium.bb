@@ -6,7 +6,7 @@
     "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306b\u8ffd\u52a0"
   },
   "add_word_to_dictionary": {
-    "message": "\u300c$1\u300d\u3092\u8f9e\u66f8\u306b\u8ffd\u52a0",
+    "message": "\u8f9e\u66f8\u306b\u300c$1\u300d\u3092\u8ffd\u52a0",
     "placeholders": {
       "1": {
         "content": "$1"
@@ -17,10 +17,10 @@
     "message": "\u8a73\u7d30\u8a2d\u5b9a"
   },
   "alt": {
-    "message": "alt"
+    "message": "Alt"
   },
   "altgr": {
-    "message": "alt gr"
+    "message": "AltGr"
   },
   "always_auto_correct": {
     "message": "\u5f37\u3081"
@@ -29,28 +29,28 @@
     "message": "\u30a2\u30eb\u30e1\u30cb\u30a2\u8a9e\uff08\u8868\u97f3\uff09\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "appnamejpkeyboard": {
-    "message": "Google \u65e5\u672c\u8a9e\u5165\u529b\uff08\u65e5\u672c\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u7528\uff09"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Google \u65e5\u672c\u8a9e\u5165\u529b\uff08US \u30ad\u30fc\u30dc\u30fc\u30c9\u7528\uff09"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "\u30aa\u30fc\u30c8\u30b3\u30ec\u30af\u30c8"
   },
   "backspace": {
-    "message": "backspace"
+    "message": "Backspace"
   },
   "basic": {
     "message": "\u57fa\u672c\u8a2d\u5b9a"
   },
   "be_fra_settings_page": {
-    "message": "\u30d9\u30eb\u30ae\u30fc\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30d5\u30e9\u30f3\u30b9\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
+    "message": "\u30d9\u30eb\u30ae\u30fc\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30d5\u30e9\u30f3\u30b9\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "be_ger_settings_page": {
-    "message": "\u30d9\u30eb\u30ae\u30fc\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c9\u30a4\u30c4\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
+    "message": "\u30d9\u30eb\u30ae\u30fc\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c9\u30a4\u30c4\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "be_nld_settings_page": {
-    "message": "\u30d9\u30eb\u30ae\u30fc\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30aa\u30e9\u30f3\u30c0\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
+    "message": "\u30d9\u30eb\u30ae\u30fc\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30aa\u30e9\u30f3\u30c0\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "bg_bul_settings_page": {
     "message": "\u30d6\u30eb\u30ac\u30ea\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -77,112 +77,112 @@
     "message": "\u5927\u6587\u5b57"
   },
   "capslock": {
-    "message": "caps lock"
+    "message": "CapsLock"
   },
   "ch_fr_fra_settings_page": {
     "message": "\u30b9\u30a4\u30b9\u30d5\u30e9\u30f3\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30d5\u30e9\u30f3\u30b9\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "ch_ger_settings_page": {
-    "message": "\u30b9\u30a4\u30b9\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c9\u30a4\u30c4\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
+    "message": "\u30b9\u30a4\u30b9\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c9\u30a4\u30c4\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "chos_inputtool_description": {
-    "message": "Chrome OS \u5411\u3051 Google \u5165\u529b\u30c4\u30fc\u30eb\u3092\u4f7f\u7528\u3059\u308b\u3068\u3001Chrome OS \u4e0a\u3067\u5e0c\u671b\u306e\u8a00\u8a9e\u3067\u5165\u529b\u3067\u304d\u307e\u3059\u3002"
+    "message": "Chrome OS \u7248 Google \u5165\u529b\u30c4\u30fc\u30eb\u3092\u4f7f\u7528\u3059\u308b\u3068\u3001Chrome OS \u4e0a\u3067\u5e0c\u671b\u306e\u8a00\u8a9e\u3067\u5165\u529b\u3067\u304d\u307e\u3059\u3002"
   },
   "chos_inputtool_title": {
     "message": "Google \u5165\u529b\u30c4\u30fc\u30eb"
   },
   "compositionmodedirect": {
-    "message": "\u76f4\u63a5\u5165\u529b"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "\u5168\u89d2\u82f1\u6570"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
-    "message": "\u5168\u89d2\u30ab\u30bf\u30ab\u30ca"
+    "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "\u534a\u89d2\u82f1\u6570"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "\u534a\u89d2\u30ab\u30bf\u30ab\u30ca"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
-    "message": "\u3072\u3089\u304c\u306a"
+    "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "\u57fa\u672c\u8a2d\u5b9a"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "\u5165\u529b\u5c65\u6b74\u306e\u6d88\u53bb..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "\u30ad\u30e3\u30f3\u30bb\u30eb"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "\u5909\u63db\u5c65\u6b74"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "\u6b21\u306e\u30a2\u30a4\u30c6\u30e0\u3092\u6d88\u53bb:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "\u5165\u529b\u5c65\u6b74\u3092\u6d88\u53bb\u3059\u308b"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "\u30b5\u30b8\u30a7\u30b9\u30c8\u7528\u5c65\u6b74"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "\u5165\u529b\u5c65\u6b74\u3092\u6d88\u53bb\u3059\u308b"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2014 Google Inc. All Rights Reserved."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "\u30ad\u30e3\u30f3\u30bb\u30eb"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306e\u7ba1\u7406..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "\u3088\u304f\u4f7f\u3046\u5358\u8a9e\u3092\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u306b\u767b\u9332\u3059\u308b\u3053\u3068\u304c\u3067\u304d\u307e\u3059\u3002"
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "\u4e00\u6642\u7684\u306b\u5b66\u7fd2\u6a5f\u80fd\u3001\u5165\u529b\u5c65\u6b74\u304b\u3089\u306e\u30b5\u30b8\u30a7\u30b9\u30c8\u6a5f\u80fd\u3001\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u6a5f\u80fd\u3092\u7121\u52b9\u306b\u3059\u308b"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "\u5165\u529b\u88dc\u52a9"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "\u672c\u30bd\u30d5\u30c8\u30a6\u30a7\u30a2\u306f<a href=\"./credits_ja.html\">\u30aa\u30fc\u30d7\u30f3\u30bd\u30fc\u30b9 \u30bd\u30d5\u30c8\u30a6\u30a7\u30a2</a>\u3092\u5229\u7528\u3057\u3066\u3044\u307e\u3059\u3002"
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "\u30ed\u30fc\u30de\u5b57\u5165\u529b\u30fb\u304b\u306a\u5165\u529b:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
-    "message": "\u304b\u306a\u5165\u529b"
+    "message": "Kana"
   },
   "configpreeditmethodromaji": {
-    "message": "\u30ed\u30fc\u30de\u5b57\u5165\u529b"
+    "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "\u30d7\u30e9\u30a4\u30d0\u30b7\u30fc"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "\u53e5\u8aad\u70b9:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "\u5019\u88dc\u9078\u629e\u30b7\u30e7\u30fc\u30c8\u30ab\u30c3\u30c8:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "\u306a\u3057"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "\u30ad\u30fc\u8a2d\u5b9a\u306e\u9078\u629e:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,64 +191,64 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "\u30ab\u30b9\u30bf\u30e0"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
-    "message": "\u3053\u3068\u3048\u308a"
+    "message": "Kotoeri"
   },
   "configsessionkeymapmsime": {
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "\u65e5\u672c\u8a9e\u5165\u529b\u306e\u8a2d\u5b9a"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Shift \u30ad\u30fc\u3067\u306e\u5165\u529b\u5207\u66ff:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "\u82f1\u6570\u5b57"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
-    "message": "\u30ab\u30bf\u30ab\u30ca"
+    "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "\u30aa\u30d5"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "\u30b9\u30da\u30fc\u30b9\u306e\u5165\u529b:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "\u5165\u529b\u30e2\u30fc\u30c9\u306b\u5f93\u3046"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "\u5168\u89d2"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "\u534a\u89d2"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "\u30b5\u30b8\u30a7\u30b9\u30c8\u306e\u5019\u88dc\u6570:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "\u30b5\u30b8\u30a7\u30b9\u30c8"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "\u8a18\u53f7:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "\u4f7f\u7528\u7d71\u8a08\u30c7\u30fc\u30bf\u3084\u969c\u5bb3\u30ec\u30dd\u30fc\u30c8\u3092 Google \u306b\u81ea\u52d5\u9001\u4fe1\u3059\u308b"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "\u81ea\u52d5\u82f1\u6570\u5909\u63db\u3092\u6709\u52b9\u306b\u3059\u308b"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "\u30b7\u30b9\u30c6\u30e0\u8f9e\u66f8\u304b\u3089\u306e\u30b5\u30b8\u30a7\u30b9\u30c8\u81ea\u52d5\u8868\u793a\u3092\u6709\u52b9\u306b\u3059\u308b"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "\u5165\u529b\u5c65\u6b74\u304b\u3089\u306e\u30b5\u30b8\u30a7\u30b9\u30c8\u81ea\u52d5\u8868\u793a\u3092\u6709\u52b9\u306b\u3059\u308b"
+    "message": "Use input history"
   },
   "ctrl": {
-    "message": "ctrl"
+    "message": "Ctrl"
   },
   "current_keyboard_prefix": {
     "message": "\u73fe\u5728\u9078\u629e\u3057\u3066\u3044\u308b\u30ad\u30fc\u30dc\u30fc\u30c9 "
@@ -269,2119 +269,2119 @@
     "message": "\u30c1\u30a7\u30b3\u8a9e\uff08QWERTY\uff09\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "d83c_dc04": {
-    "message": "\u9ebb\u96c0"
+    "message": "\u307e\u30fc\u3058\u3083\u3093\u3071\u3044"
   },
   "d83c_dccf": {
-    "message": "\u30b8\u30e7\u30fc\u30ab\u30fc"
+    "message": "\u3058\u3087\u30fc\u304b\u30fc\u304b\u30fc\u3069"
   },
   "d83c_dd70": {
-    "message": "\u8840\u6db2\u578b A"
+    "message": "\u3051\u3064\u3048\u304d\u304c\u305f\u3048\u30fc"
   },
   "d83c_dd71": {
-    "message": "\u8840\u6db2\u578b B"
+    "message": "\u3051\u3064\u3048\u304d\u304c\u305f\u3073\u30fc"
   },
   "d83c_dd7e": {
-    "message": "\u8840\u6db2\u578b O"
+    "message": "\u3051\u3064\u3048\u304d\u304c\u305f\u304a\u30fc"
   },
   "d83c_dd7f": {
-    "message": "\u30d1\u30fc\u30ad\u30f3\u30b0\u30a8\u30ea\u30a2"
+    "message": "\b\u3071\u30fc\u304d\u3093\u3050 \u3061\u3085\u3046\u3057\u3083\u3058\u3087\u3046"
   },
   "d83c_dd8e": {
-    "message": "\u8840\u6db2\u578b AB"
+    "message": "\u3051\u3064\u3048\u304d\u304c\u305f\u3048\u30fc\u3073\u30fc"
   },
   "d83c_dd91": {
-    "message": "CLEAR \u30de\u30fc\u30af"
+    "message": "\u304f\u308a\u3042\u3055\u3044\u3093"
   },
   "d83c_dd92": {
-    "message": "COOL \u30de\u30fc\u30af"
+    "message": "\u304f\u30fc\u308b\u3055\u3044\u3093"
   },
   "d83c_dd93": {
-    "message": "FREE \u30de\u30fc\u30af"
+    "message": "\u3075\u308a\u30fc\u3055\u3044\u3093"
   },
   "d83c_dd94": {
-    "message": "ID \u30de\u30fc\u30af"
+    "message": "\u3042\u3044\u3067\u3043\u30fc\u3055\u3044\u3093"
   },
   "d83c_dd95": {
-    "message": "NEW \u30de\u30fc\u30af"
+    "message": "\u306b\u3085\u30fc\u3055\u3044\u3093"
   },
   "d83c_dd96": {
-    "message": "NG \u30de\u30fc\u30af"
+    "message": "\u3048\u306c\u3058\u30fc\u3055\u3044\u3093"
   },
   "d83c_dd97": {
-    "message": "OK \u30de\u30fc\u30af"
+    "message": "\u304a\u30fc\u3051\u30fc\u3055\u3044\u3093"
   },
   "d83c_dd98": {
-    "message": "SOS \u30de\u30fc\u30af"
+    "message": "\u3048\u3059\u304a\u30fc\u3048\u3059\u3055\u3044\u3093"
   },
   "d83c_dd99": {
-    "message": "UP! \u30de\u30fc\u30af"
+    "message": "\u3042\u3063\u3077\u3055\u3044\u3093"
   },
   "d83c_dd9a": {
-    "message": "VS \u30de\u30fc\u30af"
+    "message": "\u3076\u3043\u3048\u3059\u3055\u3044\u3093"
   },
   "d83c_de01": {
-    "message": "\u300c\u30b3\u30b3\u300d\u30de\u30fc\u30af"
+    "message": "\u3053\u3053\u3055\u3044\u3093"
   },
   "d83c_de02": {
-    "message": "\u300c\u30b5\u30fc\u30d3\u30b9\u300d\u30de\u30fc\u30af"
+    "message": "\u3055\u30fc\u3073\u3059\u3055\u3044\u3093"
   },
   "d83c_de1a": {
-    "message": "\u300c\u7121\u6599\u300d\u30de\u30fc\u30af"
+    "message": "\u3080\u308a\u3087\u3046\u3055\u3044\u3093"
   },
   "d83c_de2f": {
-    "message": "\u300c\u6307\u5b9a\u300d\u30de\u30fc\u30af"
+    "message": "\u3057\u3066\u3044\u307e\u30fc\u304f"
   },
   "d83c_de32": {
-    "message": "\u300c\u7981\u300d\u30de\u30fc\u30af"
+    "message": "\u304d\u3093\u3057\u3055\u3044\u3093"
   },
   "d83c_de33": {
-    "message": "\u300c\u7a7a\u300d\u30de\u30fc\u30af"
+    "message": "\u3042\u304d\u3042\u308a\u3055\u3044\u3093"
   },
   "d83c_de34": {
-    "message": "\u300c\u5408\u683c\u300d\u30de\u30fc\u30af"
+    "message": "\u3054\u3046\u304b\u304f\u307e\u30fc\u304f"
   },
   "d83c_de35": {
-    "message": "\u300c\u6e80\u300d\u30de\u30fc\u30af"
+    "message": "\u307e\u3093\u3044\u3093\u3055\u3044\u3093"
   },
   "d83c_de36": {
-    "message": "\u300c\u6709\u6599\u300d\u30de\u30fc\u30af"
+    "message": "\u3086\u3046\u308a\u3087\u3046\u3055\u3044\u3093"
   },
   "d83c_de37": {
-    "message": "\u300c\u6708\u6975\u300d\u30de\u30fc\u30af"
+    "message": "\u3064\u304d\u304e\u3081\u3055\u3044\u3093"
   },
   "d83c_de38": {
-    "message": "\u300c\u7533\u8acb\u300d\u30de\u30fc\u30af"
+    "message": "\u3082\u3046\u3057\u3053\u307f\u3055\u3044\u3093"
   },
   "d83c_de39": {
-    "message": "\u300c\u5272\u5f15\u300d\u30de\u30fc\u30af"
+    "message": "\u308f\u308a\u3073\u304d\u3055\u3044\u3093"
   },
   "d83c_de3a": {
-    "message": "\u300c\u55b6\u696d\u4e2d\u300d\u30de\u30fc\u30af"
+    "message": "\u3048\u3044\u304e\u3087\u3046\u3055\u3044\u3093"
   },
   "d83c_de50": {
-    "message": "\u300c\u304a\u8cb7\u3044\u5f97\u300d\u30de\u30fc\u30af"
+    "message": "\u307e\u308b\u3068\u304f\u3055\u3044\u3093"
   },
   "d83c_de51": {
-    "message": "\u300c\u53ef\u300d\u30de\u30fc\u30af"
+    "message": "\u304b\u306e\u3046\u3055\u3044\u3093"
   },
   "d83c_df00": {
-    "message": "\u53f0\u98a8"
+    "message": "\u3046\u305a\u307e\u304d \u305f\u3044\u3075\u3046 \u3046\u305a \u3081\u307e\u3044 \u3082\u3084\u3082\u3084"
   },
   "d83c_df01": {
-    "message": "\u9727"
+    "message": "\u304d\u308a"
   },
   "d83c_df02": {
-    "message": "\u5098"
+    "message": "\u304b\u3055 \u3042\u3081"
   },
   "d83c_df03": {
-    "message": "\u591c\u7a7a"
+    "message": "\u307b\u3057\u306e\u3088\u308b \u3088\u308b \u307b\u3057 \u306a\u304c\u308c\u307c\u3057"
   },
   "d83c_df04": {
-    "message": "\u65e5\u306e\u51fa"
+    "message": "\u3084\u307e\u306e\u3072\u306e\u3067"
   },
   "d83c_df05": {
-    "message": "\u671d\u65e5"
+    "message": "\u3072\u306e\u3067 \u305f\u3044\u3088\u3046 \u3042\u3055\u3072"
   },
   "d83c_df06": {
-    "message": "\u5915\u66ae\u308c\u306e\u8857"
+    "message": "\u307e\u3061\u306e\u3086\u3046\u304c\u305f"
   },
   "d83c_df07": {
-    "message": "\u5915\u65e5"
+    "message": "\u3086\u3046\u3072 \u3086\u3046\u304c\u305f"
   },
   "d83c_df08": {
-    "message": "\u8679"
+    "message": "\u306b\u3058"
   },
   "d83c_df09": {
-    "message": "\u591c\u306e\u6a4b"
+    "message": "\u3088\u308b\u306e\u306f\u3057 \u306f\u3057"
   },
   "d83c_df0a": {
-    "message": "\u6ce2"
+    "message": "\u306a\u307f"
   },
   "d83c_df0b": {
-    "message": "\u706b\u5c71"
+    "message": "\u304b\u3056\u3093 \u3084\u307e \u3075\u3093\u304b"
   },
   "d83c_df0c": {
-    "message": "\u5929\u306e\u5ddd"
+    "message": "\u3042\u307e\u306e\u304c\u308f \u307f\u308b\u304d\u30fc\u3046\u3047\u3044"
   },
   "d83c_df0d": {
-    "message": "\u30e8\u30fc\u30ed\u30c3\u30d1\u3068\u30a2\u30d5\u30ea\u30ab\u5927\u9678"
+    "message": "\u3088\u30fc\u308d\u3063\u3071\u3042\u3075\u308a\u304b\u3061\u304d\u3085\u3046\u304e"
   },
   "d83c_df0e": {
-    "message": "\u30a2\u30e1\u30ea\u30ab\u5927\u9678"
+    "message": "\u307b\u304f\u306a\u3093\u3079\u3044\u3061\u304d\u3085\u3046\u304e"
   },
   "d83c_df0f": {
-    "message": "\u30a2\u30b8\u30a2\u3068\u30aa\u30fc\u30b9\u30c8\u30e9\u30ea\u30a2\u5927\u9678"
+    "message": "\u3042\u3058\u3042\u304a\u30fc\u3059\u3068\u3089\u308a\u3042\u3061\u304d\u3085\u3046\u304e"
   },
   "d83c_df10": {
-    "message": "\u5b50\u5348\u7dda\u4ed8\u304d\u306e\u5730\u7403"
+    "message": "\u3057\u3054\u305b\u3093\u3064\u304d\u3061\u304d\u3085\u3046\u304e"
   },
   "d83c_df11": {
-    "message": "\u65b0\u6708"
+    "message": "\u3057\u3093\u3052\u3064 \u3064\u304d"
   },
   "d83c_df12": {
-    "message": "\u6e80\u3061\u3066\u3044\u304f\u4e09\u65e5\u6708"
+    "message": "\u3058\u3087\u3046\u3052\u3093\u306e\u307f\u304b\u3065\u304d"
   },
   "d83c_df13": {
-    "message": "\u534a\u6708"
+    "message": "\u3058\u3087\u3046\u3052\u3093\u306e\u3064\u304d"
   },
   "d83c_df14": {
-    "message": "\u5341\u4e09\u591c\u6708"
+    "message": "\u3058\u3085\u3046\u3055\u3093\u3084\u306e\u3064\u304d"
   },
   "d83c_df15": {
-    "message": "\u6e80\u6708"
+    "message": "\u307e\u3093\u3052\u3064 \u3064\u304d"
   },
   "d83c_df16": {
-    "message": "\u3084\u3084\u6b20\u3051\u6708"
+    "message": "\u3058\u3085\u3046\u306f\u3061\u3084\u306e\u3064\u304d"
   },
   "d83c_df17": {
-    "message": "\u5f26\u6708"
+    "message": "\u304b\u3052\u3093\u306e\u3064\u304d"
   },
   "d83c_df18": {
-    "message": "\u6b20\u3051\u3066\u3044\u304f\u4e09\u65e5\u6708"
+    "message": "\u304b\u3052\u3093\u306e\u307f\u304b\u3065\u304d"
   },
   "d83c_df19": {
-    "message": "\u4e09\u65e5\u6708"
+    "message": "\u307f\u304b\u3065\u304d \u3064\u304d"
   },
   "d83c_df1a": {
-    "message": "\u9854\u4ed8\u304d\u65b0\u6708"
+    "message": "\u3057\u3093\u3052\u3064\u306e\u304b\u304a"
   },
   "d83c_df1b": {
-    "message": "\u9854\u4ed8\u304d\u4e09\u65e5\u6708"
+    "message": "\u3058\u3087\u3046\u3052\u3093\u304b\u3052\u3093\u307f\u304b\u3065\u304d\u306e\u304b\u304a"
   },
   "d83c_df1c": {
-    "message": "\u9854\u4ed8\u304d\u4e0b\u5f26\u306e\u6708"
+    "message": "\u304b\u3052\u3093\u307f\u304b\u3065\u304d\u306e\u304b\u304a"
   },
   "d83c_df1d": {
-    "message": "\u9854\u4ed8\u304d\u6e80\u6708"
+    "message": "\u307e\u3093\u3052\u3064\u306e\u304b\u304a"
   },
   "d83c_df1e": {
-    "message": "\u9854\u4ed8\u304d\u592a\u967d"
+    "message": "\u305f\u3044\u3088\u3046\u306e\u304b\u304a"
   },
   "d83c_df1f": {
-    "message": "\u8f1d\u304f\u661f"
+    "message": "\u304b\u304c\u3084\u304f\u307b\u3057"
   },
   "d83c_df20": {
-    "message": "\u6d41\u308c\u661f"
+    "message": "\u306a\u304c\u308c\u307c\u3057 \u307b\u3057"
   },
   "d83c_df30": {
-    "message": "\u6817"
+    "message": "\u304f\u308a"
   },
   "d83c_df31": {
-    "message": "\u82bd"
+    "message": "\u3057\u3093\u3081 \u3081 \u3075\u305f\u3070"
   },
   "d83c_df32": {
-    "message": "\u91dd\u8449\u6a39"
+    "message": "\u3058\u3087\u3046\u308a\u3087\u304f\u3058\u3085 \u304d"
   },
   "d83c_df33": {
-    "message": "\u5e83\u8449\u6a39"
+    "message": "\u3089\u304f\u3088\u3046\u3058\u3085 \u304d"
   },
   "d83c_df34": {
-    "message": "\u3084\u3057\u306e\u6728"
+    "message": "\u3084\u3057\u306e\u304d \u304d \u3084\u3057"
   },
   "d83c_df35": {
-    "message": "\u30b5\u30dc\u30c6\u30f3"
+    "message": "\u3055\u307c\u3066\u3093"
   },
   "d83c_df37": {
-    "message": "\u30c1\u30e5\u30fc\u30ea\u30c3\u30d7"
+    "message": "\u3061\u3085\u30fc\u308a\u3063\u3077 \u306f\u306a"
   },
   "d83c_df38": {
-    "message": "\u3055\u304f\u3089"
+    "message": "\u3055\u304f\u3089 \u306f\u306a"
   },
   "d83c_df39": {
-    "message": "\u30d0\u30e9"
+    "message": "\u3070\u3089 \u306f\u306a"
   },
   "d83c_df3a": {
-    "message": "\u30cf\u30a4\u30d3\u30b9\u30ab\u30b9"
+    "message": "\u306f\u3044\u3073\u3059\u304b\u3059 \u306f\u306a"
   },
   "d83c_df3b": {
-    "message": "\u3072\u307e\u308f\u308a"
+    "message": "\u3072\u307e\u308f\u308a \u306f\u306a"
   },
   "d83c_df3c": {
-    "message": "\u82b1"
+    "message": "\u3055\u3044\u305f\u306f\u306a \u306f\u306a"
   },
   "d83c_df3d": {
-    "message": "\u3068\u3046\u3082\u308d\u3053\u3057"
+    "message": "\u3068\u3046\u3082\u308d\u3053\u3057 \u3053\u30fc\u3093"
   },
   "d83c_df3e": {
-    "message": "\u7a32\u7a42"
+    "message": "\u3044\u306d"
   },
   "d83c_df3f": {
-    "message": "\u30cf\u30fc\u30d6"
+    "message": "\u306f\u30fc\u3076 \u306f\u3063\u3071"
   },
   "d83c_df40": {
-    "message": "\u56db\u3064\u8449\u306e\u30af\u30ed\u30fc\u30d0\u30fc"
+    "message": "\u304f\u308d\u30fc\u3070\u30fc \u3088\u3064\u3070"
   },
   "d83c_df41": {
-    "message": "\u3082\u307f\u3058"
+    "message": "\u3082\u307f\u3058 \u304b\u3048\u3067 \u3053\u3046\u3088\u3046"
   },
   "d83c_df42": {
-    "message": "\u843d\u3061\u8449"
+    "message": "\u304b\u308c\u306f \u304a\u3061\u3070"
   },
   "d83c_df43": {
-    "message": "\u98a8\u306b\u821e\u3046\u8449"
+    "message": "\u3086\u308c\u308b\u3053\u306e\u306f"
   },
   "d83c_df44": {
     "message": "\u304d\u306e\u3053"
   },
   "d83c_df45": {
-    "message": "\u30c8\u30de\u30c8"
+    "message": "\u3068\u307e\u3068 \u3084\u3055\u3044"
   },
   "d83c_df46": {
-    "message": "\u306a\u3059"
+    "message": "\u306a\u3059 \u3084\u3055\u3044"
   },
   "d83c_df47": {
-    "message": "\u3076\u3069\u3046"
+    "message": "\u3076\u3069\u3046 \u304f\u3060\u3082\u306e"
   },
   "d83c_df48": {
-    "message": "\u30e1\u30ed\u30f3"
+    "message": "\u3081\u308d\u3093 \u304f\u3060\u3082\u306e"
   },
   "d83c_df49": {
-    "message": "\u30b9\u30a4\u30ab"
+    "message": "\u3059\u3044\u304b \u304f\u3060\u3082\u306e"
   },
   "d83c_df4a": {
-    "message": "\u307f\u304b\u3093"
+    "message": "\u307f\u304b\u3093 \u304a\u308c\u3093\u3058 \u304f\u3060\u3082\u306e"
   },
   "d83c_df4b": {
-    "message": "\u30ec\u30e2\u30f3"
+    "message": "\u308c\u3082\u3093"
   },
   "d83c_df4c": {
-    "message": "\u30d0\u30ca\u30ca"
+    "message": "\u3070\u306a\u306a \u304f\u3060\u3082\u306e"
   },
   "d83c_df4d": {
-    "message": "\u30d1\u30a4\u30ca\u30c3\u30d7\u30eb"
+    "message": "\u3071\u3044\u306a\u3063\u3077\u308b \u3071\u3044\u3093 \u304f\u3060\u3082\u306e"
   },
   "d83c_df4e": {
-    "message": "\u308a\u3093\u3054"
+    "message": "\u3042\u304b\u308a\u3093\u3054 \u308a\u3093\u3054 \u3042\u3063\u3077\u308b \u304f\u3060\u3082\u306e"
   },
   "d83c_df4f": {
-    "message": "\u9752\u308a\u3093\u3054"
+    "message": "\u3042\u304a\u308a\u3093\u3054 \u308a\u3093\u3054 \u3042\u3063\u3077\u308b \u304f\u3060\u3082\u306e"
   },
   "d83c_df50": {
-    "message": "\u6d0b\u306a\u3057"
+    "message": "\u305b\u3044\u3088\u3046\u306a\u3057 \u306a\u3057 \u304f\u3060\u3082\u306e"
   },
   "d83c_df51": {
-    "message": "\u6843"
+    "message": "\u3082\u3082 \u304f\u3060\u3082\u306e \u3074\u30fc\u3061"
   },
   "d83c_df52": {
-    "message": "\u3055\u304f\u3089\u3093\u307c"
+    "message": "\u3055\u304f\u3089\u3093\u307c \u3061\u3047\u308a\u30fc \u304f\u3060\u3082\u306e"
   },
   "d83c_df53": {
-    "message": "\u30a4\u30c1\u30b4"
+    "message": "\u3044\u3061\u3054 \u3059\u3068\u308d\u3079\u308a\u30fc \u304f\u3060\u3082\u306e"
   },
   "d83c_df54": {
-    "message": "\u30cf\u30f3\u30d0\u30fc\u30ac\u30fc"
+    "message": "\u3070\u30fc\u304c\u30fc \u306f\u3093\u3070\u30fc\u304c\u30fc"
   },
   "d83c_df55": {
-    "message": "\u30d4\u30b6"
+    "message": "\u3074\u3056 \u3074\u3063\u3064\u3041"
   },
   "d83c_df56": {
-    "message": "\u8089"
+    "message": "\u307b\u306d\u3064\u304d\u306b\u304f \u306b\u304f \u3082\u3082\u306b\u304f"
   },
   "d83c_df57": {
-    "message": "\u30c1\u30ad\u30f3"
+    "message": "\u3068\u308a\u3082\u3082\u306b\u304f \u306b\u304f \u307b\u306d\u3064\u304d\u306b\u304f \u3082\u3082\u306b\u304f"
   },
   "d83c_df58": {
-    "message": "\u304a\u305b\u3093\u3079\u3044"
+    "message": "\u305b\u3093\u3079\u3044"
   },
   "d83c_df59": {
     "message": "\u304a\u306b\u304e\u308a"
   },
   "d83c_df5a": {
-    "message": "\u3054\u306f\u3093"
+    "message": "\u3054\u306f\u3093 \u3061\u3083\u308f\u3093"
   },
   "d83c_df5b": {
-    "message": "\u30ab\u30ec\u30fc\u30e9\u30a4\u30b9"
+    "message": "\u304b\u308c\u30fc \u304b\u308c\u30fc\u3089\u3044\u3059"
   },
   "d83c_df5c": {
-    "message": "\u30e9\u30fc\u30e1\u30f3"
+    "message": "\u3089\u30fc\u3081\u3093"
   },
   "d83c_df5d": {
-    "message": "\u30b9\u30d1\u30b2\u30c3\u30c6\u30a3\u30fc"
+    "message": "\u3071\u3059\u305f \u3059\u3071\u3052\u3063\u3066\u3043\u30fc \u3059\u3071\u3052\u3063\u3066\u3043"
   },
   "d83c_df5e": {
-    "message": "\u98df\u30d1\u30f3"
+    "message": "\u3057\u3087\u304f\u3071\u3093 \u3071\u3093"
   },
   "d83c_df5f": {
-    "message": "\u30d5\u30e9\u30a4\u30c9\u30dd\u30c6\u30c8"
+    "message": "\u3075\u3089\u3044\u3069\u307d\u3066\u3068 \u307d\u3066\u3068"
   },
   "d83c_df60": {
-    "message": "\u3084\u304d\u3044\u3082"
+    "message": "\u3084\u304d\u3044\u3082 \u3044\u3082"
   },
   "d83c_df61": {
-    "message": "\u3060\u3093\u3054"
+    "message": "\u3060\u3093\u3054 \u304a\u3060\u3093\u3054"
   },
   "d83c_df62": {
     "message": "\u304a\u3067\u3093"
   },
   "d83c_df63": {
-    "message": "\u3059\u3057"
+    "message": "\u3059\u3057 \u304a\u3059\u3057"
   },
   "d83c_df64": {
-    "message": "\u30a8\u30d3\u30d5\u30e9\u30a4"
+    "message": "\u3048\u3073\u3075\u3089\u3044 \u3075\u3089\u3044 \u3048\u3073"
   },
   "d83c_df65": {
-    "message": "\u306a\u308b\u3068"
+    "message": "\u306a\u308b\u3068 \u3046\u305a"
   },
   "d83c_df66": {
-    "message": "\u30bd\u30d5\u30c8\u30af\u30ea\u30fc\u30e0"
+    "message": "\u305d\u3075\u3068\u304f\u308a\u30fc\u3080 \u3042\u3044\u3059 \u304a\u304b\u3057"
   },
   "d83c_df67": {
-    "message": "\u304b\u304d\u6c37"
+    "message": "\u304b\u304d\u3054\u304a\u308a \u3053\u304a\u308a \u304a\u304b\u3057"
   },
   "d83c_df68": {
-    "message": "\u30a2\u30a4\u30b9\u30af\u30ea\u30fc\u30e0"
+    "message": "\u3042\u3044\u3059\u304f\u308a\u30fc\u3080 \u3042\u3044\u3059 \u304a\u304b\u3057"
   },
   "d83c_df69": {
-    "message": "\u30c9\u30fc\u30ca\u30c4"
+    "message": "\u3069\u30fc\u306a\u3064 \u304a\u304b\u3057"
   },
   "d83c_df6a": {
-    "message": "\u30af\u30c3\u30ad\u30fc"
+    "message": "\u304f\u3063\u304d\u30fc \u304a\u304b\u3057"
   },
   "d83c_df6b": {
-    "message": "\u30c1\u30e7\u30b3"
+    "message": "\u3061\u3087\u3053 \u3061\u3087\u3053\u308c\u30fc\u3068 \u304a\u304b\u3057"
   },
   "d83c_df6c": {
-    "message": "\u30ad\u30e3\u30f3\u30c7\u30a3"
+    "message": "\u304d\u3083\u3093\u3067\u3043 \u304d\u3083\u3093\u3067\u3043\u30fc \u3042\u3081 \u304a\u304b\u3057"
   },
   "d83c_df6d": {
-    "message": "\u307a\u308d\u307a\u308d\u30ad\u30e3\u30f3\u30c7\u30a3"
+    "message": "\u3042\u3081 \u304a\u304b\u3057 \u304d\u3083\u3093\u3067\u3043\u30fc \u304d\u3083\u3093\u3067\u3043"
   },
   "d83c_df6e": {
-    "message": "\u30d7\u30ea\u30f3"
+    "message": "\u3077\u308a\u3093 \u304a\u304b\u3057"
   },
   "d83c_df6f": {
-    "message": "\u8702\u871c\u30dd\u30c3\u30c8"
+    "message": "\u306f\u3061\u307f\u3064 \u306f\u306b\u30fc \u307f\u3064\u3073\u3093 \u306f\u306b\u30fc\u307d\u3063\u3068"
   },
   "d83c_df70": {
-    "message": "\u30b7\u30e7\u30fc\u30c8\u30b1\u30fc\u30ad"
+    "message": "\u3051\u30fc\u304d \u304a\u304b\u3057 \u3057\u3087\u30fc\u3068\u3051\u30fc\u304d"
   },
   "d83c_df71": {
-    "message": "\u304a\u5f01\u5f53"
+    "message": "\u3079\u3093\u3068\u3046 \u307e\u304f\u306e\u3046\u3061"
   },
   "d83c_df72": {
-    "message": "\u306a\u3079"
+    "message": "\u306a\u3079 \u306a\u3079\u308a\u3087\u3046\u308a"
   },
   "d83c_df73": {
-    "message": "\u30af\u30c3\u30ad\u30f3\u30b0"
+    "message": "\u3075\u3089\u3044\u3071\u3093 \u3081\u3060\u307e\u3084\u304d \u305f\u307e\u3054"
   },
   "d83c_df74": {
-    "message": "\u30ca\u30a4\u30d5\uff06\u30d5\u30a9\u30fc\u30af"
+    "message": "\u3075\u3049\u30fc\u304f \u306a\u3044\u3075 \u308c\u3059\u3068\u3089\u3093"
   },
   "d83c_df75": {
-    "message": "\u6e6f\u306e\u307f"
+    "message": "\u3086\u306e\u307f \u304a\u3061\u3083"
   },
   "d83c_df76": {
-    "message": "\u3068\u3063\u304f\u308a"
+    "message": "\u3068\u3063\u304f\u308a \u3055\u3051"
   },
   "d83c_df77": {
-    "message": "\u30ef\u30a4\u30f3\u30b0\u30e9\u30b9"
+    "message": "\u308f\u3044\u3093 \u308f\u3044\u3093\u3050\u3089\u3059"
   },
   "d83c_df78": {
-    "message": "\u30ab\u30af\u30c6\u30eb"
+    "message": "\u3070\u30fc \u304b\u304f\u3066\u308b"
   },
   "d83c_df79": {
-    "message": "\u30c8\u30ed\u30d4\u30ab\u30eb \u30c9\u30ea\u30f3\u30af"
+    "message": "\u3068\u308d\u3074\u304b\u308b\u3069\u308a\u3093\u304f \u304b\u304f\u3066\u308b"
   },
   "d83c_df7a": {
-    "message": "\u30d3\u30fc\u30eb"
+    "message": " \u3058\u3087\u3063\u304d \u3073\u30fc\u308b"
   },
   "d83c_df7b": {
-    "message": "\u4e7e\u676f"
+    "message": "\u304b\u3093\u3071\u3044 \u3073\u30fc\u308b"
   },
   "d83c_df7c": {
-    "message": "\u307b\u4e73\u74f6"
+    "message": "\u307b\u306b\u3085\u30fc\u3073\u3093 \u307f\u308b\u304f \u3042\u304b\u3061\u3083\u3093"
   },
   "d83c_df80": {
-    "message": "\u30ea\u30dc\u30f3"
+    "message": "\u308a\u307c\u3093"
   },
   "d83c_df81": {
-    "message": "\u30d7\u30ec\u30bc\u30f3\u30c8"
+    "message": "\u3077\u308c\u305c\u3093\u3068"
   },
   "d83c_df82": {
-    "message": "\u30d0\u30fc\u30b9\u30c7\u30fc \u30b1\u30fc\u30ad"
+    "message": " \u3070\u30fc\u3059\u3067\u30fc\u3051\u30fc\u304d \u3051\u30fc\u304d \u3070\u30fc\u3059\u3067\u30fc \u305f\u3093\u3058\u3087\u3046\u3073 \u304a\u305f\u3093\u3058\u3087\u3046\u3073"
   },
   "d83c_df83": {
-    "message": "\u30cf\u30ed\u30a6\u30a3\u30f3"
+    "message": "\u304d\u308a\u306c\u304d\u304b\u307c\u3061\u3083\u3000\u304b\u307c\u3061\u3083"
   },
   "d83c_df84": {
-    "message": "\u30af\u30ea\u30b9\u30de\u30b9 \u30c4\u30ea\u30fc"
+    "message": "\u304f\u308a\u3059\u307e\u3059\u3064\u308a\u30fc \u3064\u308a\u30fc \u304f\u308a\u3059\u307e\u3059"
   },
   "d83c_df85": {
-    "message": "\u30b5\u30f3\u30bf"
+    "message": "\u3055\u3093\u305f \u304f\u308a\u3059\u307e\u3059 \u3055\u3093\u305f\u304f\u308d\u30fc\u3059"
   },
   "d83c_df86": {
-    "message": "\u82b1\u706b"
+    "message": "\u306f\u306a\u3073 \u3046\u3061\u3042\u3052\u306f\u306a\u3073"
   },
   "d83c_df87": {
-    "message": "\u7dda\u9999\u82b1\u706b"
+    "message": "\u305b\u3093\u3053\u3046\u306f\u306a\u3073 \u306f\u306a\u3073"
   },
   "d83c_df88": {
-    "message": "\u98a8\u8239"
+    "message": "\u3075\u3046\u305b\u3093 \u3070\u308b\u30fc\u3093"
   },
   "d83c_df89": {
-    "message": "\u30af\u30e9\u30c3\u30ab\u30fc"
+    "message": "\u3071\u30fc\u3066\u3043\u304f\u3089\u3063\u304b\u30fc \u304f\u3089\u3063\u304b\u30fc"
   },
   "d83c_df8a": {
-    "message": "\u30a2\u30bf\u30ea\u306e\u304f\u3059\u7389"
+    "message": "\u304f\u3059\u3060\u307e"
   },
   "d83c_df8b": {
-    "message": "\u4e03\u5915\u7b39\u98fe\u308a"
+    "message": "\u305f\u306a\u3070\u305f \u305f\u3093\u3056\u304f"
   },
   "d83c_df8c": {
-    "message": "\u795d\u65e5\u30de\u30fc\u30af"
+    "message": "\u3057\u3085\u304f\u3058\u3064 \u306f\u305f \u3072\u306e\u307e\u308b"
   },
   "d83c_df8d": {
-    "message": "\u9580\u677e"
+    "message": "\u304b\u3069\u307e\u3064 \u3057\u3087\u3046\u304c\u3064"
   },
   "d83c_df8e": {
-    "message": "\u3072\u306a\u796d\u308a"
+    "message": "\u3072\u306a\u307e\u3064\u308a \u304a\u3060\u3044\u308a\u3055\u307e"
   },
   "d83c_df8f": {
-    "message": "\u3053\u3044\u306e\u307c\u308a"
+    "message": "\u3053\u3044\u306e\u307c\u308a \u3053\u3069\u3082\u306e\u3072"
   },
   "d83c_df90": {
-    "message": "\u98a8\u9234"
+    "message": "\u3075\u3046\u308a\u3093"
   },
   "d83c_df91": {
-    "message": "\u304a\u6708\u898b"
+    "message": "\u3064\u304d\u307f \u3059\u3059\u304d \u3064\u304d \u3058\u3085\u3046\u3054\u3084"
   },
   "d83c_df92": {
-    "message": "\u30e9\u30f3\u30c9\u30bb\u30eb"
+    "message": "\u3089\u3093\u3069\u305b\u308b \u304b\u3070\u3093 \u3057\u3087\u3046\u304c\u3063\u3053\u3046 \u304c\u3063\u3053\u3046"
   },
   "d83c_df93": {
-    "message": "\u5352\u696d\u5f0f"
+    "message": "\u305d\u3064\u304e\u3087\u3046\u3057\u304d \u305d\u3064\u304e\u3087\u3046\u307c\u3046\u3057 \u307c\u3046\u3057"
   },
   "d83c_dfa0": {
-    "message": "\u904a\u5712\u5730"
+    "message": "\u3081\u308a\u30fc\u3054\u30fc\u3089\u3093\u3069 \u3086\u3046\u3048\u3093\u3061"
   },
   "d83c_dfa1": {
-    "message": "\u89b3\u89a7\u8eca"
+    "message": "\u304b\u3093\u3089\u3093\u3057\u3083 \u3086\u3046\u3048\u3093\u3061"
   },
   "d83c_dfa2": {
-    "message": "\u30b8\u30a7\u30c3\u30c8\u30b3\u30fc\u30b9\u30bf\u30fc"
+    "message": "\u3058\u3047\u3063\u3068\u3053\u30fc\u3059\u305f\u30fc \u3053\u30fc\u3059\u305f\u30fc \u3086\u3046\u3048\u3093\u3061"
   },
   "d83c_dfa3": {
-    "message": "\u91e3\u308a"
+    "message": "\u3064\u308a\u3056\u304a \u3064\u308a"
   },
   "d83c_dfa4": {
-    "message": "\u30de\u30a4\u30af"
+    "message": "\u307e\u3044\u304f \u304b\u3089\u304a\u3051"
   },
   "d83c_dfa5": {
-    "message": "\u6620\u753b\u30ab\u30e1\u30e9"
+    "message": "\u304b\u3081\u3089 \u3048\u3044\u304c"
   },
   "d83c_dfa6": {
-    "message": "\u6620\u753b\u9928"
+    "message": "\u3048\u3044\u304c\u304b\u3093 \u3048\u3044\u304c \u304b\u3081\u3089"
   },
   "d83c_dfa7": {
-    "message": "\u30d8\u30c3\u30c9\u30d5\u30a9\u30f3"
+    "message": "\u3078\u3063\u3069\u307b\u3093 \u3078\u3063\u3069\u3075\u3049\u3093 \u3044\u3084\u307b\u3093 \u3044\u3084\u3075\u3049\u3093"
   },
   "d83c_dfa8": {
-    "message": "\u30a2\u30fc\u30c8"
+    "message": "\u3042\u30fc\u3068\u3071\u308c\u3063\u3068 \u3071\u308c\u3063\u3068 \u3075\u3067"
   },
   "d83c_dfa9": {
-    "message": "\u30b7\u30eb\u30af\u30cf\u30c3\u30c8"
+    "message": "\u3057\u308b\u304f\u306f\u3063\u3068 \u307c\u3046\u3057"
   },
   "d83c_dfaa": {
-    "message": "\u30a4\u30d9\u30f3\u30c8"
+    "message": "\u3055\u30fc\u304b\u3059 \u3066\u3093\u3068 \u3044\u3079\u3093\u3068"
   },
   "d83c_dfab": {
-    "message": "\u30c1\u30b1\u30c3\u30c8"
+    "message": "\u3061\u3051\u3063\u3068 \u304d\u3063\u3077"
   },
   "d83c_dfac": {
-    "message": "\u304b\u3061\u3093\u3053"
+    "message": "\u304b\u3061\u3093\u3053 \u3048\u3044\u304c"
   },
   "d83c_dfad": {
-    "message": "\u6f14\u5287"
+    "message": "\u3048\u3093\u3052\u3044 \u304a\u3081\u3093 \u3052\u3044\u3058\u3085\u3064 \u3048\u3093\u305f\u3081"
   },
   "d83c_dfae": {
-    "message": "\u30b2\u30fc\u30e0"
+    "message": "\u3052\u30fc\u3080\u3053\u3093\u3068\u308d\u30fc\u3089\u30fc"
   },
   "d83c_dfaf": {
-    "message": "\u5f53\u9078"
+    "message": "\u307e\u3068 \u3042\u305f\u308a"
   },
   "d83c_dfb0": {
-    "message": "\u30b9\u30ed\u30c3\u30c8"
+    "message": "\u3059\u308d\u3063\u3068 \u3059\u308a\u30fc\u305b\u3076\u3093"
   },
   "d83c_dfb1": {
-    "message": "\u30d3\u30ea\u30e4\u30fc\u30c9"
+    "message": "\u3073\u308a\u3084\u30fc\u3069"
   },
   "d83c_dfb2": {
-    "message": "\u30b5\u30a4\u30b3\u30ed"
+    "message": "\u3055\u3044\u3053\u308d \u3060\u3044\u3059"
   },
   "d83c_dfb3": {
-    "message": "\u30dc\u30fc\u30ea\u30f3\u30b0"
+    "message": "\u307c\u30fc\u308a\u3093\u3050"
   },
   "d83c_dfb4": {
-    "message": "\u82b1\u672d"
+    "message": "\u306f\u306a\u3075\u3060 \u304b\u30fc\u3069"
   },
   "d83c_dfb5": {
-    "message": "\u97f3\u7b26"
+    "message": "\u304a\u3093\u3077"
   },
   "d83c_dfb6": {
-    "message": "\u97f3\u697d"
+    "message": "\u304a\u3093\u3077\u305f\u3061 \u304a\u3093\u3077"
   },
   "d83c_dfb7": {
-    "message": "\u30b5\u30c3\u30af\u30b9"
+    "message": "\u3055\u3063\u304f\u3059 \u3055\u304f\u305d\u3075\u3049\u3093 \u304c\u3063\u304d"
   },
   "d83c_dfb8": {
-    "message": "\u30ae\u30bf\u30fc"
+    "message": "\u304e\u305f\u30fc \u304c\u3063\u304d"
   },
   "d83c_dfb9": {
-    "message": "\u30d4\u30a2\u30ce"
+    "message": "\u304d\u30fc\u307c\u30fc\u3069 \u304c\u3063\u304d"
   },
   "d83c_dfba": {
-    "message": "\u30c8\u30e9\u30f3\u30da\u30c3\u30c8"
+    "message": "\u3068\u3089\u3093\u307a\u3063\u3068 \u304c\u3063\u304d"
   },
   "d83c_dfbb": {
-    "message": "\u30d0\u30a4\u30aa\u30ea\u30f3"
+    "message": "\u3070\u3044\u304a\u308a\u3093 \u304c\u3063\u304d"
   },
   "d83c_dfbc": {
-    "message": "\u697d\u8b5c"
+    "message": "\u304c\u304f\u3075 \u3068\u304a\u3093\u304d\u3054\u3046 \u3059\u3053\u3042 \u3054\u305b\u3093"
   },
   "d83c_dfbd": {
-    "message": "\u9678\u4e0a\u7af6\u6280"
+    "message": "\u305f\u3059\u304d\u3057\u3083\u3064 \u3057\u3083\u3064 \u305f\u3059\u304d \u307e\u3089\u305d\u3093"
   },
   "d83c_dfbe": {
-    "message": "\u30c6\u30cb\u30b9"
+    "message": "\u3066\u306b\u3059 \u3059\u307d\u30fc\u3064 \u3066\u306b\u3059\u307c\u30fc\u308b"
   },
   "d83c_dfbf": {
-    "message": "\u30b9\u30ad\u30fc"
+    "message": "\u3059\u304d\u30fc \u3059\u3068\u3063\u304f \u3059\u307d\u30fc\u3064 \u3059\u304d\u30fc\u3076\u30fc\u3064"
   },
   "d83c_dfc0": {
-    "message": "\u30d0\u30b9\u30b1\u30c3\u30c8\u30dc\u30fc\u30eb"
+    "message": "\u3070\u3059\u3051 \u3070\u3059\u3051\u3063\u3068\u307c\u30fc\u308b \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfc1": {
-    "message": "\u30c1\u30a7\u30c3\u30ab\u30fc \u30d5\u30e9\u30b0"
+    "message": "\u3061\u3047\u3063\u304b\u30fc\u3075\u3089\u3050"
   },
   "d83c_dfc2": {
-    "message": "\u30b9\u30ce\u30fc\u30dc\u30fc\u30c9"
+    "message": "\u3059\u306e\u30fc\u307c\u30fc\u3069 \u3059\u306e\u307c \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfc3": {
-    "message": "\u30e9\u30f3\u30ca\u30fc"
+    "message": "\u3089\u3093\u306a\u30fc \u307e\u3089\u305d\u3093 \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfc4": {
-    "message": "\u30b5\u30fc\u30d5\u30a3\u30f3"
+    "message": "\u3055\u30fc\u3075\u3043\u3093 \u3075\u3041\u30fc\u3075\u3041\u30fc \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfc6": {
-    "message": "\u30c8\u30ed\u30d5\u30a3\u30fc"
+    "message": "\u3068\u308d\u3075\u3043\u30fc \u304b\u3063\u3077"
   },
   "d83c_dfc7": {
-    "message": "\u7af6\u99ac"
+    "message": "\u3051\u3044\u3070"
   },
   "d83c_dfc8": {
-    "message": "\u30d5\u30c3\u30c8\u30dc\u30fc\u30eb"
+    "message": " \u3042\u3081\u3075\u3068 \u3089\u3050\u3073\u30fc \u3089\u3050\u3073\u30fc\u307c\u30fc\u308b \u307c\u30fc\u308b \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfc9": {
-    "message": "\u30e9\u30b0\u30d3\u30fc"
+    "message": "\u3089\u3050\u3073\u30fc \u3089\u3050\u3073\u30fc\u307c\u30fc\u308b \u307c\u30fc\u308b \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfca": {
-    "message": "\u6c34\u6cf3"
+    "message": "\u3059\u3044\u307e\u30fc \u3059\u3044\u3048\u3044 \u3059\u307d\u30fc\u3064"
   },
   "d83c_dfe0": {
-    "message": "\u5bb6"
+    "message": "\u3044\u3048 \u304b\u304a\u304f \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe1": {
-    "message": "\u30db\u30fc\u30e0"
+    "message": "\u307e\u3044\u307b\u30fc\u3080 \u3044\u3048 \u3046\u3061 \u307b\u30fc\u3080 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe2": {
-    "message": "\u30aa\u30d5\u30a3\u30b9\u30d3\u30eb"
+    "message": "\u3073\u308b \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe3": {
-    "message": "\u90f5\u4fbf\u5c40\uff08\u65e5\u672c\uff09"
+    "message": "\u3086\u3046\u3073\u3093\u304d\u3087\u304f \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe4": {
-    "message": "\u90f5\u4fbf\u5c40\uff08\u30e8\u30fc\u30ed\u30c3\u30d1\uff09"
+    "message": "\u305b\u3044\u304a\u3046\u306e\u3086\u3046\u3073\u3093\u304d\u3087\u304f"
   },
   "d83c_dfe5": {
-    "message": "\u75c5\u9662"
+    "message": "\u3073\u3087\u3046\u3044\u3093 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe6": {
-    "message": "\u9280\u884c"
+    "message": "\u304e\u3093\u3053\u3046 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe7": {
-    "message": "ATM"
+    "message": "\uff21\uff34\uff2d"
   },
   "d83c_dfe8": {
-    "message": "\u30db\u30c6\u30eb"
+    "message": "\u307b\u3066\u308b \u305f\u3066\u3082\u306e"
   },
   "d83c_dfe9": {
-    "message": "\u30e9\u30d6\u30db\u30c6\u30eb"
+    "message": "\u3089\u3076\u307b \u307b\u3066\u308b \u305f\u3066\u3082\u306e \u3089\u3076\u307b\u3066\u308b"
   },
   "d83c_dfea": {
-    "message": "\u30b3\u30f3\u30d3\u30cb"
+    "message": "\u3053\u3093\u3073\u306b \u3053\u3093\u3073\u306b\u3048\u3093\u3059\u3059\u3068\u3042 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfeb": {
-    "message": "\u5b66\u6821"
+    "message": "\u304c\u3063\u3053\u3046 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfec": {
-    "message": "\u30c7\u30d1\u30fc\u30c8"
+    "message": "\u3067\u3071\u30fc\u3068 \u305f\u3066\u3082\u306e"
   },
   "d83c_dfed": {
-    "message": "\u5de5\u5834"
+    "message": "\u3053\u3046\u3058\u3087\u3046 \u3053\u3046\u3070"
   },
   "d83c_dfee": {
-    "message": "\u8d64\u3061\u3087\u3046\u3061\u3093"
+    "message": "\u3044\u3056\u304b\u3084 \u3061\u3087\u3046\u3061\u3093 \u306e\u307f\u3084 \u3042\u304b\u3061\u3087\u3046\u3061\u3093"
   },
   "d83c_dfef": {
-    "message": "\u304a\u57ce\uff08\u65e5\u672c\uff09"
+    "message": "\u3057\u308d \u304a\u3057\u308d \u305f\u3066\u3082\u306e"
   },
   "d83c_dff0": {
-    "message": "\u304a\u57ce\uff08\u897f\u6d0b\uff09"
+    "message": "\u305b\u3044\u304a\u3046\u306e\u304a\u3057\u308d"
   },
   "d83d_dc00": {
-    "message": "\u306d\u305a\u307f"
+    "message": "\u306d\u305a\u307f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc01": {
-    "message": "\u30cf\u30c4\u30ab\u30cd\u30ba\u30df"
+    "message": "\u306f\u3064\u304b\u306d\u305a\u307f \u307e\u3046\u3059 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc02": {
-    "message": "\u304a\u3046\u3057"
+    "message": "\u304a\u3046\u3057 \u3046\u3057"
   },
   "d83d_dc03": {
-    "message": "\u6c34\u725b"
+    "message": "\u3059\u3044\u304e\u3085\u3046 \u3070\u3063\u3075\u3041\u308d\u30fc \u3069\u3046\u3076\u3064"
   },
   "d83d_dc04": {
-    "message": "\u4e73\u725b"
+    "message": "\u3081\u3046\u3057 \u3046\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc06": {
-    "message": "\u30d2\u30e7\u30a6"
+    "message": "\u3072\u3087\u3046 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc07": {
-    "message": "\u30a6\u30b5\u30ae"
+    "message": "\u3046\u3055\u304e \u3069\u3046\u3076\u3064"
   },
   "d83d_dc08": {
-    "message": "\u732b"
+    "message": "\u306d\u3053 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc09": {
-    "message": "\u7adc"
+    "message": "\u308a\u3085\u3046 \u3069\u3089\u3054\u3093 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0a": {
-    "message": "\u30ef\u30cb"
+    "message": "\u308f\u306b \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0b": {
-    "message": "\u30af\u30b8\u30e9"
+    "message": "\u304f\u3058\u3089 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0c": {
-    "message": "\u304b\u305f\u3064\u3080\u308a"
+    "message": "\u304b\u305f\u3064\u3080\u308a \u3080\u3057 \u3067\u3093\u3067\u3093\u3080\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0d": {
-    "message": "\u30d8\u30d3"
+    "message": "\u3078\u3073 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0e": {
-    "message": "\u7af6\u99ac"
+    "message": "\u3046\u307e \u3069\u3046\u3076\u3064"
   },
   "d83d_dc0f": {
-    "message": "\u304a\u3072\u3064\u3058"
+    "message": "\u304a\u3072\u3064\u3058 \u3072\u3064\u3058 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc10": {
-    "message": "\u30e4\u30ae"
+    "message": "\u3084\u304e \u3069\u3046\u3076\u3064"
   },
   "d83d_dc11": {
-    "message": "\u5b50\u30d2\u30c4\u30b8"
+    "message": "\u3072\u3064\u3058 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc12": {
-    "message": "\u30b5\u30eb"
+    "message": "\u3055\u308b \u3069\u3046\u3076\u3064"
   },
   "d83d_dc13": {
-    "message": "\u304a\u3093\u3069\u308a"
+    "message": "\u304a\u3093\u3069\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc14": {
-    "message": "\u30cb\u30ef\u30c8\u30ea"
+    "message": "\u306b\u308f\u3068\u308a \u3068\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc15": {
-    "message": "\u72ac"
+    "message": "\u3044\u306c \u3069\u3046\u3076\u3064"
   },
   "d83d_dc16": {
-    "message": "\u30d6\u30bf"
+    "message": "\u3076\u305f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc17": {
-    "message": "\u30a4\u30ce\u30b7\u30b7"
+    "message": "\u3044\u306e\u3057\u3057 \u306e\u3076\u305f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc18": {
-    "message": "\u30be\u30a6"
+    "message": "\u305e\u3046 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc19": {
-    "message": "\u30bf\u30b3"
+    "message": "\u305f\u3053 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1a": {
-    "message": "\u5dfb\u8c9d"
+    "message": "\u304b\u3044 \u307e\u304d\u304c\u3044  \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1b": {
-    "message": "\u30b2\u30b8\u30b2\u30b8"
+    "message": "\u3051\u3080\u3057 \u3052\u3058\u3052\u3058 \u3080\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1c": {
-    "message": "\u30a2\u30ea"
+    "message": "\u3042\u308a \u3080\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1d": {
-    "message": "\u30df\u30c4\u30d0\u30c1"
+    "message": "\u306f\u3061 \u307f\u3064\u3070\u3061 \u3080\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1e": {
-    "message": "\u3066\u3093\u3068\u3046\u866b"
+    "message": "\u3066\u3093\u3068\u3046\u3080\u3057 \u3080\u3057 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc1f": {
-    "message": "\u9b5a"
+    "message": "\u3055\u304b\u306a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc20": {
-    "message": "\u71b1\u5e2f\u9b5a"
+    "message": "\u3055\u304b\u306a \u306d\u3063\u305f\u3044\u304e\u3087 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc21": {
-    "message": "\u3075\u3050"
+    "message": "\u3075\u3050 \u3055\u304b\u306a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc22": {
-    "message": "\u30ab\u30e1"
+    "message": "\u304b\u3081 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc23": {
-    "message": "\u3072\u306a\u9ce5"
+    "message": "\u3072\u306a\u3069\u308a \u3072\u3088\u3053 \u305f\u307e\u3054 \u3075\u304b \u3068\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc24": {
-    "message": "\u3072\u3088\u3053"
+    "message": "\u3072\u3088\u3053\u306e\u304b\u304a \u3072\u3088\u3053 \u3068\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc25": {
-    "message": "\u6b63\u9762\u5411\u304d\u306e\u3072\u3088\u3053"
+    "message": "\u3072\u3088\u3053 \u3068\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc26": {
-    "message": "\u9ce5"
+    "message": "\u3068\u308a \u3069\u3046\u3076\u3064"
   },
   "d83d_dc27": {
-    "message": "\u30da\u30f3\u30ae\u30f3"
+    "message": "\u307a\u3093\u304e\u3093 \u3068\u308a"
   },
   "d83d_dc28": {
-    "message": "\u30b3\u30a2\u30e9"
+    "message": "\u3053\u3042\u3089 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc29": {
-    "message": "\u30d7\u30fc\u30c9\u30eb"
+    "message": "\u3077\u30fc\u3069\u308b \u3044\u306c \u3069\u3046\u3076\u3064"
   },
   "d83d_dc2a": {
-    "message": "\u3089\u304f\u3060"
+    "message": "\u3072\u3068\u3053\u3076\u3089\u304f\u3060"
   },
   "d83d_dc2b": {
     "message": "\u3075\u305f\u3053\u3076\u3089\u304f\u3060"
   },
   "d83d_dc2c": {
-    "message": "\u30a4\u30eb\u30ab"
+    "message": "\u3044\u308b\u304b \u3069\u3046\u3076\u3064"
   },
   "d83d_dc2d": {
-    "message": "\u30cd\u30ba\u30df\u306e\u9854"
+    "message": "\u306d\u305a\u307f\u306e\u304b\u304a \u306d \u3069\u3046\u3076\u3064 \u3048\u3068 \u3058\u3085\u3046\u306b\u3057"
   },
   "d83d_dc2e": {
-    "message": "\u30db\u30eb\u30b9\u30bf\u30a4\u30f3\u306e\u9854"
+    "message": "\u3046\u3057\u306e\u304b\u304a \u3046\u3057 \u3069\u3046\u3076\u3064 \u3048\u3068 \u3058\u3085\u3046\u306b\u3057"
   },
   "d83d_dc2f": {
-    "message": "\u30c8\u30e9\u306e\u9854"
+    "message": "\u3068\u3089\u306e\u304b\u304a \u3068\u3089 \u3057\u3057 \u3069\u3046\u3076\u3064 \u3048\u3068 \u3058\u3085\u3046\u306b\u3057"
   },
   "d83d_dc30": {
-    "message": "\u30a6\u30b5\u30ae\u306e\u9854"
+    "message": "\u3046\u3055\u304e\u306e\u304b\u304a \u3046 \u3046\u3055\u304e \u3069\u3046\u3076\u3064 \u3048\u3068 \u3058\u3085\u3046\u306b\u3057"
   },
   "d83d_dc31": {
-    "message": "\u732b\u306e\u9854"
+    "message": "\u306d\u3053\u306e\u304b\u304a \u306d\u3053 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc32": {
-    "message": "\u7adc\u306e\u9854"
+    "message": "\u308a\u3085\u3046\u306e\u304b\u304a \u305f\u3064 \u308a\u3085\u3046 \u3069\u3046\u3076\u3064 \u3048\u3068 \u3058\u3085\u3046\u306b\u3057"
   },
   "d83d_dc33": {
-    "message": "\u6f6e\u5439\u304d\u30af\u30b8\u30e9"
+    "message": "\u3057\u304a\u3075\u304d\u304f\u3058\u3089 \u304f\u3058\u3089 \u3057\u304a \u3057\u304a\u3075\u304d \u3069\u3046\u3076\u3064"
   },
   "d83d_dc34": {
-    "message": "\u99ac\u306e\u9854"
+    "message": "\u3046\u307e\u306e\u304b\u304a \u3046\u307e \u3069\u3046\u3076\u3064"
   },
   "d83d_dc35": {
-    "message": "\u30b5\u30eb\u306e\u9854"
+    "message": "\u3055\u308b\u306e\u304b\u304a \u3055\u308b \u3069\u3046\u3076\u3064"
   },
   "d83d_dc36": {
-    "message": "\u72ac\u306e\u9854"
+    "message": "\u3044\u306c\u306e\u304b\u304a \u3044\u306c \u3069\u3046\u3076\u3064"
   },
   "d83d_dc37": {
-    "message": "\u30d6\u30bf\u306e\u9854"
+    "message": "\u3076\u305f\u306e\u304b\u304a \u3076\u305f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc38": {
-    "message": "\u30ab\u30a8\u30eb\u306e\u9854"
+    "message": "\u304b\u3048\u308b\u306e\u304b\u304a \u304b\u3048\u308b \u3080\u3057"
   },
   "d83d_dc39": {
-    "message": "\u30cf\u30e0\u30b9\u30bf\u30fc"
+    "message": "\u306f\u3080\u3059\u305f\u30fc\u306e\u304b\u304a \u306f\u3080\u3059\u305f\u30fc \u306d\u305a\u307f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc3a": {
-    "message": "\u304a\u304a\u304b\u307f\u306e\u9854"
+    "message": "\u304a\u304a\u304b\u307f\u306e\u304b\u304a \u304a\u304a\u304b\u307f \u3069\u3046\u3076\u3064"
   },
   "d83d_dc3b": {
-    "message": "\u30af\u30de\u306e\u9854"
+    "message": "\u304f\u307e\u306e\u304b\u304a \u304f\u307e \u3069\u3046\u3076\u3064"
   },
   "d83d_dc3c": {
-    "message": "\u30d1\u30f3\u30c0\u306e\u9854"
+    "message": "\u3071\u3093\u3060\u306e\u304b\u304a \u3071\u3093\u3060 \u3069\u3046\u3076\u3064"
   },
   "d83d_dc3d": {
-    "message": "\u30d6\u30bf\u306e\u9f3b"
+    "message": "\u3076\u305f\u3070\u306a \u3076\u305f \u306f\u306a"
   },
   "d83d_dc3e": {
-    "message": "\u8db3\u8de1"
+    "message": "\u3069\u3046\u3076\u3064\u306e\u3042\u3057\u3042\u3068"
   },
   "d83d_dc40": {
-    "message": "\u76ee"
+    "message": "\u3081 \u304b\u304a"
   },
   "d83d_dc42": {
-    "message": "\u8033"
+    "message": "\u307f\u307f \u304b\u304a"
   },
   "d83d_dc43": {
-    "message": "\u9f3b"
+    "message": "\u306f\u306a \u304b\u304a"
   },
   "d83d_dc44": {
-    "message": "\u53e3"
+    "message": "\u304f\u3061 \u304b\u304a"
   },
   "d83d_dc45": {
-    "message": "\u820c"
+    "message": "\u3057\u305f \u3079\u308d \u304b\u304a"
   },
   "d83d_dc46": {
-    "message": "\u4e0a\u6307\u5dee\u3057"
+    "message": "\u3086\u3073\u306e\u3046\u3048\u3055\u3057"
   },
   "d83d_dc47": {
-    "message": "\u4e0b\u6307\u5dee\u3057"
+    "message": "\u3086\u3073\u306e\u3057\u305f\u3055\u3057"
   },
   "d83d_dc48": {
-    "message": "\u6307\u5dee\u3057\u78ba\u8a8d\u5de6"
+    "message": "\u3086\u3073\u306e\u3072\u3060\u308a\u3055\u3057"
   },
   "d83d_dc49": {
-    "message": "\u6307\u5dee\u3057\u78ba\u8a8d\u53f3"
+    "message": "\u3086\u3073\u306e\u307f\u304e\u3055\u3057"
   },
   "d83d_dc4a": {
-    "message": "\u30d1\u30f3\u30c1"
+    "message": "\u3052\u3093\u3053\u3064\u306e\u306f\u3093\u3069\u3055\u3044\u3093"
   },
   "d83d_dc4b": {
-    "message": "\u30d0\u30a4\u30d0\u30a4"
+    "message": "\u3066\u3092\u3075\u308b\u306f\u3093\u3069\u3055\u3044\u3093"
   },
   "d83d_dc4c": {
-    "message": "\u6307\u3067 OK"
+    "message": "\u304a\u30fc\u3051\u30fc\u306f\u3093\u3069\u3055\u3044\u3093"
   },
   "d83d_dc4d": {
-    "message": "\u3044\u3044\u306d\uff01"
+    "message": " \u3055\u3080\u305a\u3042\u3063\u3077 \u304a\u30fc\u3051\u30fc \u3050\u3063\u3069 \u3055\u3080\u3042\u3063\u3077 \u3046\u3048 \u3066 \u304a\u3063\u3051\u30fc \u304a\u3084\u3086\u3073\u3055\u3044\u3093"
   },
   "d83d_dc4e": {
-    "message": "\u30d6\u30fc\u30a4\u30f3\u30b0"
+    "message": " \u3055\u3080\u305a\u3060\u3046\u3093 \u3057\u305f \u3076\u30fc\u3044\u3093\u3050 \u3066 \uff2e\uff27 \u3060\u3081"
   },
   "d83d_dc4f": {
-    "message": "\u62cd\u624b"
+    "message": "\u306f\u304f\u3057\u3085 \u3066 \u3071\u3061\u3071\u3061"
   },
   "d83d_dc50": {
-    "message": "\u304a\u3063\u306f\u30fc"
+    "message": "\u308a\u3087\u3046\u3066\u306e\u3072\u3089 \u3066\u306e\u3072\u3089 \u3066 \u304a\u3063\u306f\u30fc"
   },
   "d83d_dc51": {
-    "message": "\u738b\u51a0"
+    "message": "\u304a\u3046\u304b\u3093 \u304b\u3093\u3080\u308a"
   },
   "d83d_dc52": {
-    "message": "\u9ea6\u308f\u3089\u5e3d\u5b50"
+    "message": "\u3058\u3087\u305b\u3044\u307c\u3046\u3057 \u307c\u3046\u3057 \u3080\u304e\u308f\u3089 \u3080\u304e\u308f\u3089\u307c\u3046\u3057 \u304a\u3093\u306a\u306e\u307c\u3046\u3057"
   },
   "d83d_dc53": {
     "message": "\u3081\u304c\u306d"
   },
   "d83d_dc54": {
-    "message": "\u30cd\u30af\u30bf\u30a4"
+    "message": "\u306d\u304f\u305f\u3044 \u305f\u3044 \u3057\u3083\u3064"
   },
   "d83d_dc55": {
-    "message": "T \u30b7\u30e3\u30c4"
+    "message": "\u3066\u3043\u30fc\u3057\u3083\u3064 \u3057\u3083\u3064 \u3075\u304f \uff34\u3057\u3083\u3064"
   },
   "d83d_dc56": {
-    "message": "\u30b8\u30fc\u30f3\u30ba"
+    "message": "\u305a\u307c\u3093 \u3071\u3093\u3064 \u3058\u30fc\u3093\u305a \u3058\u30fc\u3071\u3093 \u3075\u304f"
   },
   "d83d_dc57": {
-    "message": "\u30c9\u30ec\u30b9"
+    "message": "\u308f\u3093\u3074\u30fc\u3059 \u3069\u308c\u3059 \u3075\u304f"
   },
   "d83d_dc58": {
-    "message": "\u7740\u7269"
+    "message": "\u304d\u3082\u306e \u3075\u304f"
   },
   "d83d_dc59": {
-    "message": "\u30d3\u30ad\u30cb"
+    "message": "\u3073\u304d\u306b \u307f\u305a\u304e \u3075\u304f"
   },
   "d83d_dc5a": {
-    "message": "\u5a66\u4eba\u670d"
+    "message": "\u3075\u3058\u3093\u3075\u304f \u3075\u304f"
   },
   "d83d_dc5b": {
-    "message": "\u304c\u307e\u53e3\u8ca1\u5e03"
+    "message": "\u304c\u307e\u3050\u3061 \u304c\u307e\u3050\u3061\u3056\u3044\u3075 \u3055\u3044\u3075"
   },
   "d83d_dc5c": {
-    "message": "\u30cf\u30f3\u30c9\u30d0\u30c3\u30b0"
+    "message": " \u306f\u3093\u3069\u3070\u3063\u3050 \u3070\u3063\u3050 \u304b\u3070\u3093"
   },
   "d83d_dc5d": {
-    "message": "\u30dd\u30fc\u30c1"
+    "message": "\u307d\u30fc\u3061 \u3070\u3063\u3050"
   },
   "d83d_dc5e": {
-    "message": "\u7d33\u58eb\u9774"
+    "message": "\u3057\u3093\u3057\u3050\u3064 \u304f\u3064 \u304b\u308f\u3050\u3064"
   },
   "d83d_dc5f": {
-    "message": "\u30b9\u30cb\u30fc\u30ab\u30fc"
+    "message": "\u3042\u3059\u308c\u3066\u3043\u3063\u304f\u3057\u3085\u30fc\u305a"
   },
   "d83d_dc60": {
-    "message": "\u30cf\u30a4\u30d2\u30fc\u30eb"
+    "message": "\u306f\u3044\u3072\u30fc\u308b \u304f\u3064 \u3075\u304f \u3072\u30fc\u308b"
   },
   "d83d_dc61": {
-    "message": "\u30b5\u30f3\u30c0\u30eb"
+    "message": "\u3058\u3087\u305b\u3044\u3055\u3093\u3060\u308b"
   },
   "d83d_dc62": {
-    "message": "\u30d6\u30fc\u30c4"
+    "message": "\u3058\u3087\u305b\u3044\u308d\u3093\u3050\u3076\u30fc\u3064"
   },
   "d83d_dc63": {
-    "message": "\u9774\u8de1"
+    "message": "\u3072\u3068\u306e\u3042\u3057\u3042\u3068"
   },
   "d83d_dc64": {
-    "message": "\u30a2\u30ab\u30a6\u30f3\u30c8"
+    "message": "\u3072\u3068\u304b\u3052 \u304b\u3052 \u3052\u3059\u3068 \u3052\u3059\u3068\u3042\u304b\u3046\u3093\u3068"
   },
   "d83d_dc65": {
-    "message": "\u30b2\u30b9\u30c8 \u30a2\u30ab\u30a6\u30f3\u30c8"
+    "message": "\u3072\u3068\u304b\u3052\u305f\u3061 \u304b\u3052 \u3052\u3059\u3068 \u3052\u3059\u3068\u3042\u304b\u3046\u3093\u3068"
   },
   "d83d_dc66": {
-    "message": "\u7537\u306e\u5b50"
+    "message": "\u304a\u3068\u3053\u306e\u3053 \u304b\u304a \u3053\u3069\u3082"
   },
   "d83d_dc67": {
-    "message": "\u5973\u306e\u5b50"
+    "message": "\u304a\u3093\u306a\u306e\u3053 \u304b\u304a \u3053\u3069\u3082"
   },
   "d83d_dc68": {
-    "message": "\u6210\u4eba\u7537\u6027"
+    "message": "\u304a\u3068\u3053 \u304b\u304a \u3060\u3093\u305b\u3044"
   },
   "d83d_dc69": {
-    "message": "\u6210\u4eba\u5973\u6027"
+    "message": "\u304a\u3093\u306a \u304b\u304a \u3058\u3087\u305b\u3044"
   },
   "d83d_dc6a": {
-    "message": "\u5bb6\u65cf"
+    "message": "\u304b\u305e\u304f"
   },
   "d83d_dc6b": {
-    "message": "\u30ab\u30c3\u30d7\u30eb"
+    "message": "\u3066\u3092\u3064\u306a\u3050\u3060\u3093\u3058\u3087"
   },
   "d83d_dc6c": {
-    "message": "\u7537\u6027\u540c\u58eb"
+    "message": "\u3066\u3092\u3064\u306a\u3050\u304a\u3068\u3053\u305f\u3061"
   },
   "d83d_dc6d": {
-    "message": "\u5973\u6027\u540c\u58eb"
+    "message": "\u3066\u3092\u3064\u306a\u3050\u304a\u3093\u306a\u305f\u3061"
   },
   "d83d_dc6e": {
-    "message": "\u8b66\u5bdf"
+    "message": "\u304a\u307e\u308f\u308a\u3055\u3093 \u3051\u3044\u3055\u3064 \u304b\u304a \u3051\u3044\u304b\u3093 \u307d\u308a\u3059"
   },
   "d83d_dc6f": {
-    "message": "\u30d0\u30cb\u30fc\u30ac\u30fc\u30eb"
+    "message": "\u3070\u306b\u30fc\u304c\u30fc\u308b \u3070\u306b\u30fc \u304b\u304a"
   },
   "d83d_dc70": {
-    "message": "\u82b1\u5ac1"
+    "message": "\u306f\u306a\u3088\u3081 \u3051\u3063\u3053\u3093 \u304b\u304a"
   },
   "d83d_dc71": {
-    "message": "\u767d\u4eba"
+    "message": "\u304d\u3093\u3071\u3064\u306e\u3072\u3068 \u304b\u304a \u304c\u3044\u3053\u304f\u3058\u3093 \u304d\u3093\u3071\u3064"
   },
   "d83d_dc72": {
-    "message": "\u4e2d\u56fd\u4eba"
+    "message": " \u304a\u308f\u3093\u307c\u3046\u306e\u3072\u3068  \u304a\u308f\u3093\u307c\u3046 \u304b\u304a \u3061\u3085\u3046\u3054\u304f\u3058\u3093"
   },
   "d83d_dc73": {
-    "message": "\u30a4\u30f3\u30c9\u4eba"
+    "message": "\u305f\u30fc\u3070\u3093\u306e\u3072\u3068 \u304b\u304a \u3044\u3093\u3069\u3058\u3093 \u305f\u30fc\u3070\u3093"
   },
   "d83d_dc74": {
-    "message": "\u304a\u3058\u3044\u3055\u3093"
+    "message": "\u304a\u3058\u3044\u3055\u3093 \u304a\u3068\u3057\u3088\u308a \u304b\u304a"
   },
   "d83d_dc75": {
-    "message": "\u304a\u3070\u3042\u3055\u3093"
+    "message": " \u304a\u3070\u3042\u3055\u3093 \u304a\u3068\u3057\u3088\u308a \u304b\u304a"
   },
   "d83d_dc76": {
-    "message": "\u8d64\u3061\u3083\u3093"
+    "message": "\u3042\u304b\u3061\u3083\u3093 \u304b\u304a \u3042\u304b\u3093\u307c\u3046"
   },
   "d83d_dc77": {
-    "message": "\u5de5\u4e8b\u73fe\u5834\u306e\u4eba"
+    "message": "\u3051\u3093\u305b\u3064\u3055\u304e\u3087\u3046\u3044\u3093"
   },
   "d83d_dc78": {
-    "message": "\u304a\u59eb\u69d8"
+    "message": "\u3077\u308a\u3093\u305b\u3059 \u304b\u304a \u304a\u3046\u3058\u3087 \u304f\u3044\u30fc\u3093 \u304a\u3072\u3081\u3055\u307e"
   },
   "d83d_dc79": {
-    "message": "\u306a\u307e\u306f\u3052"
+    "message": "\u304a\u306b \u304b\u304a \u306a\u307e\u306f\u3052"
   },
   "d83d_dc7a": {
-    "message": "\u5929\u72d7"
+    "message": "\u3066\u3093\u3050 \u304b\u304a"
   },
   "d83d_dc7b": {
-    "message": "\u304a\u5316\u3051"
+    "message": "\u304a\u3070\u3051"
   },
   "d83d_dc7c": {
-    "message": "\u5929\u4f7f"
+    "message": "\u3079\u3044\u3073\u30fc\u3048\u3093\u3058\u3047\u308b"
   },
   "d83d_dc7d": {
-    "message": "\u5916\u56fd\u4eba"
+    "message": "\u3050\u308c\u3044 \u3046\u3061\u3085\u3046\u3058\u3093 \u3048\u3044\u308a\u3042\u3093 \u304b\u304a \u3086\u30fc\u3075\u3049\u30fc \uff35\uff26\uff2f"
   },
   "d83d_dc7e": {
-    "message": "\u5b87\u5b99\u4eba"
+    "message": "\u3046\u3061\u3085\u3046\u3058\u3093 \u3048\u3044\u308a\u3042\u3093 \u304b\u304a \u3082\u3093\u3059\u305f\u30fc"
   },
   "d83d_dc7f": {
-    "message": "\u5c0f\u60aa\u9b54"
+    "message": "\u3042\u304f\u307e\u306e\u3053 \u304b\u304a \u3042\u304f\u307e"
   },
   "d83d_dc80": {
-    "message": "\u3069\u304f\u308d"
+    "message": "\u3069\u304f\u308d \u304b\u304a \u304c\u3044\u3053\u3064"
   },
   "d83d_dc81": {
-    "message": "\u53d7\u4ed8\u5b22"
+    "message": " \u3042\u3093\u306a\u3044\u304c\u304b\u308a \u304b\u304a \u3046\u3051\u3064\u3051\u3058\u3087\u3046 \u3046\u3051\u3064\u3051 \u3042\u3093\u306a\u3044"
   },
   "d83d_dc82": {
-    "message": "\u885b\u5175"
+    "message": "\u3048\u3044\u3078\u3044 \u304b\u304a \u3051\u3044\u3073 \u3082\u3093\u3070\u3093"
   },
   "d83d_dc83": {
-    "message": "\u30c0\u30f3\u30b9"
+    "message": " \u3060\u3093\u3055\u30fc \u3060\u3093\u3059 \u3075\u3089\u3081\u3093\u3053"
   },
   "d83d_dc84": {
-    "message": "\u53e3\u7d05"
+    "message": "\u304f\u3061\u3079\u306b \u308a\u3063\u3077\u3059\u3066\u3043\u3063\u304f"
   },
   "d83d_dc85": {
-    "message": "\u30de\u30cb\u30ad\u30e5\u30a2"
+    "message": "\u307e\u306b\u304d\u3085\u3042 \u3064\u3081 \u306d\u3044\u308b"
   },
   "d83d_dc86": {
-    "message": "\u30a8\u30b9\u30c6"
+    "message": " \u3075\u3047\u3044\u3059\u307e\u3063\u3055\u30fc\u3058 \u307e\u3063\u3055\u30fc\u3058 \u3048\u3059\u3066"
   },
   "d83d_dc87": {
-    "message": "\u7f8e\u5bb9\u9662"
+    "message": "\u3078\u3042\u304b\u3063\u3068 \u3055\u3093\u3071\u3064 \u3073\u3088\u3046\u3044\u3093"
   },
   "d83d_dc88": {
-    "message": "\u5e8a\u5c4b"
+    "message": "\u3068\u3053\u3084 \u3070\u30fc\u3070\u30fc \u3055\u3093\u3071\u3064 \u3073\u3088\u3046\u3044\u3093"
   },
   "d83d_dc89": {
-    "message": "\u6ce8\u5c04"
+    "message": "\u3061\u3085\u3046\u3057\u3083\u304d \u3061\u3085\u3046\u3057\u3083"
   },
   "d83d_dc8a": {
-    "message": "\u304f\u3059\u308a"
+    "message": "\u304b\u3077\u305b\u308b\u3050\u3059\u308a"
   },
   "d83d_dc8b": {
-    "message": "\u30ad\u30b9\u30de\u30fc\u30af"
+    "message": "\u304d\u3059\u307e\u30fc\u304f \u304f\u3061\u3073\u308b \u304d\u3059"
   },
   "d83d_dc8c": {
-    "message": "\u30e9\u30d6\u30ec\u30bf\u30fc"
+    "message": "\u3089\u3076\u308c\u305f\u30fc \u3066\u304c\u307f \u3053\u3044\u3076\u307f"
   },
   "d83d_dc8d": {
-    "message": "\u6307\u8f2a"
+    "message": "\u3086\u3073\u308f \u3058\u3085\u3048\u308a\u30fc \u308a\u3093\u3050"
   },
   "d83d_dc8e": {
-    "message": "\u30b8\u30e5\u30a8\u30ea\u30fc"
+    "message": "\u307b\u3046\u305b\u304d \u3060\u3044\u3084 \u3060\u3044\u3042"
   },
   "d83d_dc8f": {
-    "message": "\u30ad\u30b9"
+    "message": "\u304d\u3059"
   },
   "d83d_dc90": {
-    "message": "\u82b1\u675f"
+    "message": "\u3076\u30fc\u3051 \u306f\u306a\u305f\u3070"
   },
   "d83d_dc91": {
-    "message": "\u30c7\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068\u306e\u304b\u3063\u3077\u308b \u3053\u3044\u3073\u3068 \u304b\u3063\u3077\u308b \u3042\u3064\u3042\u3064"
   },
   "d83d_dc92": {
-    "message": "\u7d50\u5a5a\u5f0f"
+    "message": "\u304d\u3087\u3046\u304b\u3044 \u3051\u3063\u3053\u3093 \u3051\u3063\u3053\u3093\u3057\u304d"
   },
   "d83d_dc93": {
-    "message": "\u63fa\u308c\u308b\u30cf\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068 \u3069\u304d\u3069\u304d"
   },
   "d83d_dc94": {
-    "message": "\u30cf\u30fc\u30c8\u30d6\u30ec\u30a4\u30af"
+    "message": "\u306f\u30fc\u3068\u3076\u308c\u3044\u304f"
   },
   "d83d_dc95": {
-    "message": "\u30cf\u30fc\u30c8\u305f\u3061"
+    "message": "\u3075\u305f\u3064\u306e\u306f\u30fc\u3068"
   },
   "d83d_dc96": {
-    "message": "\u5149\u308b\u30cf\u30fc\u30c8"
+    "message": "\u3074\u304b\u3074\u304b\u306f\u30fc\u3068"
   },
   "d83d_dc97": {
-    "message": "\u30c9\u30ad\u30c9\u30ad\u3057\u3066\u3044\u308b\u30cf\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068\u3069\u304d\u3069\u304d"
   },
   "d83d_dc98": {
-    "message": "\u77e2\u304c\u523a\u3055\u3063\u3066\u3044\u308b\u30cf\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068\u3068\u3084"
   },
   "d83d_dc99": {
-    "message": "\u9752\u30cf\u30fc\u30c8"
+    "message": "\u3042\u304a\u3044\u306f\u30fc\u3068 \u306f\u30fc\u3068"
   },
   "d83d_dc9a": {
-    "message": "\u7dd1\u30cf\u30fc\u30c8"
+    "message": "\u307f\u3069\u308a\u306e\u306f\u30fc\u3068 \u306f\u30fc\u3068"
   },
   "d83d_dc9b": {
-    "message": "\u9ec4\u30cf\u30fc\u30c8"
+    "message": "\u304d\u3044\u308d\u306e\u306f\u30fc\u3068 \u306f\u30fc\u3068"
   },
   "d83d_dc9c": {
-    "message": "\u7d2b\u30cf\u30fc\u30c8"
+    "message": "\u3080\u3089\u3055\u304d\u306e\u306f\u30fc\u3068 \u306f\u30fc\u3068"
   },
   "d83d_dc9d": {
-    "message": "\u30ea\u30dc\u30f3\u304c\u3051\u306e\u30cf\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068\u3068\u308a\u307c\u3093"
   },
   "d83d_dc9e": {
-    "message": "\u56de\u8ee2\u3059\u308b\u30cf\u30fc\u30c8\u305f\u3061"
+    "message": "\u307e\u308f\u308b\u306f\u30fc\u3068"
   },
   "d83d_dc9f": {
-    "message": "\u30cf\u30fc\u30c8\u98fe\u308a"
+    "message": "\u306f\u30fc\u3068\u3067\u3053 \u306f\u30fc\u3068\u3067\u3053\u308c\u30fc\u3057\u3087\u3093 \u306f\u30fc\u3068"
   },
   "d83d_dca0": {
-    "message": "\u304b\u308f\u3044\u3044"
+    "message": "\u3072\u3057\u304c\u305f\u3068\u306a\u304b\u3066\u3093"
   },
   "d83d_dca1": {
-    "message": "\u3072\u3089\u3081\u304d"
+    "message": "\u3067\u3093\u304d\u3085\u3046 \u3074\u3053\u30fc\u3093 \u3072\u3089\u3081\u304d"
   },
   "d83d_dca2": {
-    "message": "\u3080\u304b\u3063"
+    "message": "\u3044\u304b\u308a\u306e\u3057\u3093\u307c\u308b"
   },
   "d83d_dca3": {
-    "message": "\u7206\u5f3e"
+    "message": "\u3070\u304f\u3060\u3093"
   },
   "d83d_dca4": {
-    "message": "ZZZ"
+    "message": "\u3050\u30fc\u3050\u30fc \uff3a\uff5a\uff5a \u306d\u308b \u3044\u3073\u304d"
   },
   "d83d_dca5": {
-    "message": "\u3069\u3093\u3063"
+    "message": "\u3057\u3087\u3046\u3068\u3064 \u3057\u3087\u3046\u3052\u304d \u3069\u3093\u3063"
   },
   "d83d_dca6": {
-    "message": "\u305f\u3089\u30fc\u3063"
+    "message": " \u3042\u305b\u3042\u305b \u3042\u305b"
   },
   "d83d_dca7": {
-    "message": "\u96eb"
+    "message": "\u3042\u305b \u306a\u307f\u3060 \u3057\u305a\u304f \u305f\u3089\u30fc\u3063"
   },
   "d83d_dca8": {
-    "message": "\u30c0\u30c3\u30b7\u30e5"
+    "message": "\u3060\u3063\u3057\u3085 \u306f\u3057\u308b"
   },
   "d83d_dca9": {
-    "message": "\u30a6\u30f3\u30c1\u30de\u30fc\u30af"
+    "message": "\u3046\u3093\u3053 \u3046\u3093\u3061"
   },
   "d83d_dcaa": {
-    "message": "\u529b\u3053\u3076"
+    "message": "\u3061\u304b\u3089\u3053\u3076"
   },
   "d83d_dcab": {
-    "message": "\u30af\u30e9\u30af\u30e9"
+    "message": "\u304f\u3089\u304f\u3089 \u307b\u3057"
   },
   "d83d_dcac": {
-    "message": "\u30d5\u30ad\u30c0\u30b7"
+    "message": "\u3075\u304d\u3060\u3057 \u305b\u308a\u3075"
   },
   "d83d_dcad": {
-    "message": "\u30d5\u30ad\u30c0\u30b7 \u30b3\u30e1\u30f3\u30c8"
+    "message": "\u304b\u3093\u304c\u3048\u3075\u304d\u3060\u3057"
   },
   "d83d_dcae": {
-    "message": "\u82b1\u4e38"
+    "message": "\u3088\u304f\u3067\u304d\u307e\u3057\u305f \u306f\u306a\u307e\u308b"
   },
   "d83d_dcaf": {
-    "message": "\u6e80\u70b9"
+    "message": "\u3072\u3083\u304f\u3066\u3093\u307e\u3093\u3066\u3093 \uff11\uff10\uff10 \u307e\u3093\u3066\u3093"
   },
   "d83d_dcb0": {
-    "message": "\u30c9\u30eb\u888b"
+    "message": "\u3069\u308b\u3076\u304f\u308d \u304a\u304b\u306d \u304b\u306d\u3076\u304f\u308d \u3057\u3087\u3046\u304d\u3093"
   },
   "d83d_dcb1": {
-    "message": "\u70ba\u66ff"
+    "message": "\u308a\u3087\u3046\u304c\u3048 \u304a\u304b\u306d"
   },
   "d83d_dcb2": {
-    "message": "\u91cd\u30c9\u30eb\u8a18\u53f7"
+    "message": " \u3069\u308b \u304a\u304b\u306d"
   },
   "d83d_dcb3": {
-    "message": "\u30af\u30ec\u30b8\u30c3\u30c8 \u30ab\u30fc\u30c9"
+    "message": "\u304f\u308c\u3058\u3063\u3068\u304b\u30fc\u3069 \u304b\u30fc\u3069"
   },
   "d83d_dcb4": {
-    "message": "\u65e5\u672c\u5186\u306e\u672d\u675f"
+    "message": "\u3048\u3093\u306e\u304a\u3055\u3064 \u304a\u304b\u306d \u304a\u3055\u3064 \u3055\u3064\u305f\u3070 \u3086\u3046\u308a\u3087\u3046 \u3053\u304e\u3063\u3066"
   },
   "d83d_dcb5": {
-    "message": "\u30c9\u30eb\u306e\u672d\u675f"
+    "message": "\u3069\u308b\u3055\u3064 \u304a\u304b\u306d \u304a\u3055\u3064 \u3055\u3064\u305f\u3070"
   },
   "d83d_dcb6": {
-    "message": "\u30e6\u30fc\u30ed\u306e\u672d\u675f"
+    "message": "\u3086\u30fc\u308d\u3055\u3064 \u304a\u304b\u306d \u304a\u3055\u3064 \u3086\u30fc\u308d"
   },
   "d83d_dcb7": {
-    "message": "\u30dd\u30f3\u30c9\u306e\u672d\u675f"
+    "message": "\u307d\u3093\u3069\u3055\u3064 \u304a\u304b\u306d \u304a\u3055\u3064 \u307d\u3093\u3069"
   },
   "d83d_dcb8": {
-    "message": "\u7fbd\u306e\u751f\u3048\u305f\u304a\u672d"
+    "message": "\u3064\u3070\u3055\u306e\u3055\u3064\u305f\u3070"
   },
   "d83d_dcb9": {
-    "message": "\u682a\u4fa1"
+    "message": "\u3058\u3087\u3046\u3057\u3087\u3046\u3061\u3083\u30fc\u3068"
   },
   "d83d_dcba": {
-    "message": "\u5ea7\u5e2d"
+    "message": "\u305b\u304d \u3044\u3059 \u3056\u305b\u304d"
   },
   "d83d_dcbb": {
-    "message": "\u30d1\u30bd\u30b3\u30f3"
+    "message": "\u3071\u305d\u3053\u3093 \u3053\u3093\u3074\u3085\u30fc\u305f\u30fc \u3053\u3093\u3074\u3085\u30fc\u305f"
   },
   "d83d_dcbc": {
-    "message": "\u30d6\u30ea\u30fc\u30d5\u30b1\u30fc\u30b9"
+    "message": "\u304b\u3070\u3093 \u3076\u308a\u30fc\u3075\u3051\u30fc\u3059"
   },
   "d83d_dcbd": {
-    "message": "MD"
+    "message": "\u307f\u306b\u3067\u3043\u3059\u304f \uff2d\uff24"
   },
   "d83d_dcbe": {
-    "message": "\u30d5\u30ed\u30c3\u30d4\u30fc"
+    "message": "\u3075\u308d\u3063\u3074\u30fc \uff26\uff24 \u3075\u308d\u3063\u3074\u30fc\u3067\u3043\u3059\u304f"
   },
   "d83d_dcbf": {
-    "message": "\u30d6\u30eb\u30fc\u30ec\u30a4"
+    "message": "\uff23\uff24"
   },
   "d83d_dcc0": {
-    "message": "DVD"
+    "message": "\uff24\uff36\uff24"
   },
   "d83d_dcc1": {
-    "message": "\u30d5\u30a9\u30eb\u30c0"
+    "message": "\u3075\u3049\u308b\u3060\u30fc"
   },
   "d83d_dcc2": {
-    "message": "\u30d5\u30a9\u30eb\u30c0\uff08\u958b\uff09"
+    "message": "\u3072\u3089\u3044\u305f\u3075\u3049\u308b\u3060\u30fc"
   },
   "d83d_dcc3": {
-    "message": "\u6587\u66f8"
+    "message": "\u304b\u30fc\u308b\u3055\u308c\u305f\u307a\u30fc\u3058"
   },
   "d83d_dcc4": {
-    "message": "\u30c9\u30ad\u30e5\u30e1\u30f3\u30c8"
+    "message": "\u307a\u30fc\u3058\u306e\u304a\u3082\u3066"
   },
   "d83d_dcc5": {
-    "message": "\u30ab\u30ec\u30f3\u30c0\u30fc"
+    "message": "\u304b\u308c\u3093\u3060\u30fc"
   },
   "d83d_dcc6": {
-    "message": "\u65e5\u3081\u304f\u308a\u30ab\u30ec\u30f3\u30c0\u30fc"
+    "message": "\u3072\u3081\u304f\u308a \u304b\u308c\u3093\u3060\u30fc"
   },
   "d83d_dcc7": {
-    "message": "\u540d\u523a\u30d5\u30a9\u30eb\u30c0"
+    "message": "\u308d\u30fc\u308d\u3067\u3063\u304f\u3059 \u304b\u30fc\u3069\u3044\u3093\u3067\u3063\u304f\u3059"
   },
   "d83d_dcc8": {
-    "message": "\u6298\u308c\u7dda\u30b0\u30e9\u30d5"
+    "message": "\u3058\u3087\u3046\u3057\u3087\u3046\u3050\u3089\u3075"
   },
   "d83d_dcc9": {
-    "message": "\u30b0\u30e9\u30d5"
+    "message": "\u304b\u3053\u3046\u3050\u3089\u3075"
   },
   "d83d_dcca": {
-    "message": "\u68d2\u30b0\u30e9\u30d5"
+    "message": "\u307c\u3046\u3050\u3089\u3075 \u3050\u3089\u3075 \u3061\u3083\u30fc\u3068"
   },
   "d83d_dccb": {
-    "message": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9"
+    "message": "\u304f\u308a\u3063\u3077\u307c\u30fc\u3069 \u304f\u308a\u3063\u3077 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dccc": {
-    "message": "\u753b\u3073\u3087\u3046"
+    "message": "\u304a\u3057\u3074\u3093 \u3077\u3063\u3057\u3085\u3074\u3093 \u3074\u3093 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dccd": {
-    "message": "\u30d7\u30c3\u30b7\u30e5\u30d4\u30f3"
+    "message": "\u307e\u308b\u3077\u3063\u3057\u3085\u3074\u3093"
   },
   "d83d_dcce": {
-    "message": "\u30af\u30ea\u30c3\u30d7"
+    "message": "\u304f\u308a\u3063\u3077 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dccf": {
-    "message": "\u5b9a\u898f"
+    "message": "\u3058\u3087\u3046\u304e \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcd0": {
-    "message": "\u4e09\u89d2\u5b9a\u898f"
+    "message": "\u3055\u3093\u304b\u304f\u3058\u3087\u3046\u304e \u3058\u3087\u3046\u304e \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcd1": {
-    "message": "\u4ed8\u7b8b"
+    "message": "\u307a\u30fc\u3058\u307e\u30fc\u304f \u3076\u3093\u307c\u3046\u3050 \u307e\u30fc\u304f"
   },
   "d83d_dcd2": {
-    "message": "\u53f0\u5e33"
+    "message": "\u3082\u3068\u3061\u3087\u3046 \u3076\u3093\u307c\u3046\u3050 \u306e\u30fc\u3068 \u3060\u3044\u3061\u3087\u3046"
   },
   "d83d_dcd3": {
-    "message": "\u30ce\u30fc\u30c8"
+    "message": "\u306e\u30fc\u3068 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcd4": {
-    "message": "\u539a\u624b\u30ce\u30fc\u30c8"
+    "message": "\u304b\u3056\u308a\u306e\u30fc\u3068 \u3076\u3093\u307c\u3046\u3050 \u306e\u30fc\u3068"
   },
   "d83d_dcd5": {
-    "message": "\u672c"
+    "message": "\u3068\u3058\u305f\u307b\u3093"
   },
   "d83d_dcd6": {
-    "message": "\u672c\uff08\u958b\uff09"
+    "message": "\u3042\u3044\u305f\u307b\u3093"
   },
   "d83d_dcd7": {
-    "message": "\u7dd1\u306e\u672c"
+    "message": "\u307f\u3069\u308a\u306e\u307b\u3093"
   },
   "d83d_dcd8": {
-    "message": "\u9752\u306e\u672c"
+    "message": "\u3042\u304a\u306e\u307b\u3093"
   },
   "d83d_dcd9": {
-    "message": "\u6a59\u8272\u306e\u672c"
+    "message": "\u304a\u308c\u3093\u3058\u3044\u308d\u306e\u307b\u3093"
   },
   "d83d_dcda": {
-    "message": "\u8907\u6570\u672c"
+    "message": "\u307b\u3093\u306e\u3084\u307e \u307b\u3093 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcdb": {
-    "message": "\u540d\u672d"
+    "message": "\u306a\u3075\u3060"
   },
   "d83d_dcdc": {
-    "message": "\u5dfb\u7269"
+    "message": "\u3059\u304f\u308d\u30fc\u308b \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcdd": {
-    "message": "\u30e1\u30e2"
+    "message": "\u3081\u3082 \u3076\u3093\u307c\u3046\u3050"
   },
   "d83d_dcde": {
-    "message": "\u53d7\u8a71\u5668"
+    "message": "  \u3058\u3085\u308f\u304d \u3067\u3093\u308f"
   },
   "d83d_dcdf": {
-    "message": "\u30dd\u30b1\u30c3\u30c8\u30d9\u30eb"
+    "message": "\u307d\u3051\u3079\u308b \u307d\u3051\u3063\u3068\u3079\u308b"
   },
   "d83d_dce0": {
-    "message": "\u30d5\u30a1\u30af\u30b7\u30df\u30ea"
+    "message": "\u3075\u3041\u3063\u304f\u3059 \uff26\uff21\uff38"
   },
   "d83d_dce1": {
-    "message": "\u30d1\u30e9\u30dc\u30e9 \u30a2\u30f3\u30c6\u30ca"
+    "message": "\u3048\u3044\u305b\u3044\u3042\u3093\u3066\u306a"
   },
   "d83d_dce2": {
-    "message": "\u30e1\u30ac\u30db\u30f3"
+    "message": "\u304b\u304f\u305b\u3044\u304d \u3059\u3074\u30fc\u304b\u30fc \u3081\u304c\u307b\u3093"
   },
   "d83d_dce3": {
-    "message": "\u5fdc\u63f4\u30e1\u30ac\u30db\u30f3"
+    "message": "\u3081\u304c\u307b\u3093 \u304b\u304f\u305b\u3044\u304d"
   },
   "d83d_dce4": {
-    "message": "\u9001\u4fe1\u30c8\u30ec\u30a4"
+    "message": "\u305d\u3046\u3057\u3093 \u3081\u30fc\u308b \u305d\u3046\u3057\u3093\u3068\u308c\u3044"
   },
   "d83d_dce5": {
-    "message": "\u53d7\u4fe1\u30c8\u30ec\u30a4"
+    "message": "\u3058\u3085\u3057\u3093 \u3081\u30fc\u308b \u3058\u3085\u3057\u3093\u3068\u308c\u3044"
   },
   "d83d_dce6": {
-    "message": "\u30d7\u30ec\u30bc\u30f3\u30c8"
+    "message": "\u3071\u3063\u3051\u30fc\u3058 \u3060\u3093\u307c\u30fc\u308b \u3071\u3063\u304f"
   },
   "d83d_dce7": {
-    "message": "\u30e1\u30fc\u30eb \u30a2\u30a4\u30b3\u30f3"
+    "message": "\u3044\u30fc\u3081\u30fc\u308b \uff25\u3081\u30fc\u308b \u3081\u30fc\u308b"
   },
   "d83d_dce8": {
-    "message": "\u53d7\u4fe1\u30e1\u30fc\u30eb"
+    "message": "\u3058\u3085\u3057\u3093\u3075\u3046\u3068\u3046"
   },
   "d83d_dce9": {
-    "message": "\u9001\u4fe1\u30e1\u30fc\u30eb"
+    "message": "\u305d\u3046\u3057\u3093\u3075\u3046\u3068\u3046"
   },
   "d83d_dcea": {
-    "message": "\u7a7a\u306e\u30e1\u30fc\u30eb\u30dc\u30c3\u30af\u30b9"
+    "message": "\u306f\u305f\u3057\u305f\u3068\u3058\u305f\u3086\u3046\u3073\u3093\u3070\u3053"
   },
   "d83d_dceb": {
-    "message": "\u53d7\u4fe1\u30e1\u30fc\u30eb\u306e\u3042\u308b\u30e1\u30fc\u30eb\u30dc\u30c3\u30af\u30b9"
+    "message": "\u306f\u305f\u3046\u3048\u3068\u3058\u305f\u3086\u3046\u3073\u3093\u3070\u3053"
   },
   "d83d_dcec": {
-    "message": "\u65b0\u7740\u30e1\u30fc\u30eb\u306e\u3042\u308b\u53d7\u4fe1\u7bb1"
+    "message": "\u306f\u305f\u3046\u3048\u3042\u3044\u305f\u3086\u3046\u3073\u3093\u3070\u3053"
   },
   "d83d_dced": {
-    "message": "\u7a7a\u306e\u53d7\u4fe1\u7bb1"
+    "message": "\u306f\u305f\u3057\u305f\u3042\u3044\u305f\u3086\u3046\u3073\u3093\u3070\u3053"
   },
   "d83d_dcee": {
-    "message": "\u30dd\u30b9\u30c8"
+    "message": "\u3086\u3046\u3073\u3093\u307d\u3059\u3068 \u3086\u3046\u3073\u3093\u3070\u3053 \u3086\u3046\u3073\u3093 \u307d\u3059\u3068"
   },
   "d83d_dcef": {
-    "message": "\u30db\u30eb\u30f3"
+    "message": "\u3086\u3046\u3073\u3093\u3089\u3063\u3071 \u3089\u3063\u3071"
   },
   "d83d_dcf0": {
-    "message": "\u65b0\u805e"
+    "message": "\u3057\u3093\u3076\u3093 \u3057\u3093\u3076\u3093\u3057"
   },
   "d83d_dcf1": {
-    "message": "\u30b1\u30fc\u30bf\u30a4"
+    "message": "\u3051\u3044\u305f\u3044 \u3051\u3044\u305f\u3044\u3067\u3093\u308f"
   },
   "d83d_dcf2": {
-    "message": "\u30b1\u30fc\u30bf\u30a4\u96fb\u8a71\u756a\u53f7"
+    "message": "\u3067\u3093\u308f\u306f\u3063\u3057\u3093 \u3051\u3044\u305f\u3044 \u3051\u3044\u305f\u3044\u3067\u3093\u308f"
   },
   "d83d_dcf3": {
-    "message": "\u30de\u30ca\u30fc\u30e2\u30fc\u30c9"
+    "message": "\u307e\u306a\u30fc\u3082\u30fc\u3069 \u3051\u3044\u305f\u3044 \u3051\u3044\u305f\u3044\u3067\u3093\u308f"
   },
   "d83d_dcf4": {
-    "message": "\u96fb\u6e90\u30aa\u30d5"
+    "message": "\u3051\u3044\u305f\u3044\u304a\u3075 \u3051\u3044\u305f\u3044 \u3051\u3044\u305f\u3044\u3067\u3093\u308f \u3067\u3093\u3052\u3093\u304a\u3075"
   },
   "d83d_dcf5": {
-    "message": "\u643a\u5e2f\u96fb\u8a71\u4f7f\u7528\u7981\u6b62"
+    "message": "\u3051\u3044\u305f\u3044\u304d\u3093\u3057"
   },
   "d83d_dcf6": {
-    "message": "\u96fb\u6ce2\u72b6\u6cc1"
+    "message": "\u3067\u3093\u3071 \u3051\u3093\u306a\u3044 \u3051\u3044\u305f\u3044 \u3051\u3044\u305f\u3044\u3067\u3093\u308f"
   },
   "d83d_dcf7": {
-    "message": "\u30ab\u30e1\u30e9"
+    "message": "\u304b\u3081\u3089"
   },
   "d83d_dcf9": {
-    "message": "\u30cf\u30f3\u30c7\u30a3\u30ab\u30e0"
+    "message": "\u3073\u3067\u304a\u304b\u3081\u3089 \u3073\u3067\u304a \u304b\u3081\u3089"
   },
   "d83d_dcfa": {
-    "message": "\u30c6\u30ec\u30d3"
+    "message": "\u3066\u308c\u3073"
   },
   "d83d_dcfb": {
-    "message": "\u30e9\u30b8\u30aa"
+    "message": "\u3089\u3058\u304a"
   },
   "d83d_dcfc": {
-    "message": "\u30d3\u30c7\u30aa\u30ab\u30bb\u30c3\u30c8"
+    "message": "\u3073\u3067\u304a\u3066\u30fc\u3077 \u3073\u3067\u304a \u3073\u3067\u304a\u304b\u305b\u3063\u3068"
   },
   "d83d_dd00": {
-    "message": "\u30b7\u30e3\u30c3\u30d5\u30eb"
+    "message": "\u3053\u3046\u3055\u3057\u305f\u307f\u304e\u3084\u3058\u308b\u3057"
   },
   "d83d_dd01": {
-    "message": "\u30ea\u30d4\u30fc\u30c8"
+    "message": "\u307f\u304e\u307e\u308f\u308a\u3084\u3058\u308b\u3057"
   },
   "d83d_dd02": {
-    "message": "\u3082\u3046\u4e00\u5ea6\u7e70\u308a\u8fd4\u3057"
+    "message": "\u3044\u3061\u3064\u304d\u307f\u304e\u307e\u308f\u308a\u3084\u3058\u308b\u3057"
   },
   "d83d_dd03": {
-    "message": "\u518d\u8aad\u307f\u8fbc\u307f"
+    "message": "\u304f\u308a\u304b\u3048\u3057 \u3084\u3058\u308b\u3057 \u3055\u3044\u3088\u307f\u3053\u307f \u308a\u308d\u30fc\u3069"
   },
   "d83d_dd04": {
-    "message": "\u3084\u308a\u76f4\u3057"
+    "message": "\u3072\u3060\u308a\u307e\u308f\u308a\u3084\u3058\u308b\u3057"
   },
   "d83d_dd05": {
-    "message": "\u660e\u308b\u3055\u3092\u4e0b\u3052\u308b"
+    "message": "\u3072\u304f\u3044\u304d\u3069 \u3042\u304b\u308b\u3055 \u3076\u3089\u3044\u3068\u306d\u3059"
   },
   "d83d_dd06": {
-    "message": "\u660e\u308b\u3055\u3092\u4e0a\u3052\u308b"
+    "message": "\u305f\u304b\u3044\u304d\u3069 \u3042\u304b\u308b\u3055 \u3076\u3089\u3044\u3068\u306d\u3059"
   },
   "d83d_dd07": {
-    "message": "\u6d88\u97f3"
+    "message": "\u304a\u3068\u306a\u3057\u3059\u3074\u30fc\u304b\u30fc"
   },
   "d83d_dd08": {
-    "message": "\u30b9\u30d4\u30fc\u30ab\u30fc"
+    "message": "\u3059\u3074\u30fc\u304b\u30fc"
   },
   "d83d_dd09": {
-    "message": "\u4f4e\u97f3"
+    "message": "\u304a\u3093\u308a\u3087\u3046\u306e\u3061\u3044\u3055\u3044\u3059\u3074\u30fc\u304b\u30fc"
   },
   "d83d_dd0a": {
-    "message": "\u5927\u97f3\u97ff"
+    "message": "\u304a\u3093\u308a\u3087\u3046\u306e\u304a\u304a\u304d\u3044\u3059\u3074\u30fc\u304b\u30fc"
   },
   "d83d_dd0b": {
-    "message": "\u96fb\u6c60"
+    "message": "\u3067\u3093\u3061 \u304b\u3093\u3067\u3093\u3061"
   },
   "d83d_dd0c": {
-    "message": "\u30b3\u30f3\u30bb\u30f3\u30c8"
+    "message": "\u3053\u3093\u305b\u3093\u3068 \u3077\u3089\u3050 \u3067\u3093\u3052\u3093"
   },
   "d83d_dd0d": {
-    "message": "\u866b\u3081\u304c\u306d\uff08\u5de6\u5411\u304d\uff09"
+    "message": "\u3080\u3057\u3081\u304c\u306d \u3051\u3093\u3055\u304f"
   },
   "d83d_dd0e": {
-    "message": "\u866b\u3081\u304c\u306d\uff08\u53f3\u5411\u304d\uff09"
+    "message": "\u3080\u3057\u3081\u304c\u306d \u3051\u3093\u3055\u304f \u3057\u3087\u3046\u3055\u3044"
   },
   "d83d_dd0f": {
-    "message": "\u500b\u4eba\u60c5\u5831"
+    "message": "\u3058\u3087\u3046\u3068\u3044\u3093\u304f\u307a\u3093"
   },
   "d83d_dd10": {
-    "message": "\u30ed\u30c3\u30af\u78ba\u8a8d"
+    "message": "\u3058\u3087\u3046\u3068\u304b\u304e"
   },
   "d83d_dd11": {
-    "message": "\u9375"
+    "message": "\u304b\u304e \u3071\u3059\u308f\u30fc\u3069"
   },
   "d83d_dd12": {
-    "message": "\u30ed\u30c3\u30af"
+    "message": "\u308d\u3063\u304f\u304a\u3093 \u3058\u3087\u3046  \u308d\u3063\u304f"
   },
   "d83d_dd13": {
-    "message": "\u30ed\u30c3\u30af\u89e3\u9664"
+    "message": "\u308d\u3063\u304f\u304a\u3075 \u3058\u3087\u3046 \u308d\u3063\u304f"
   },
   "d83d_dd14": {
-    "message": "\u76ee\u899a\u307e\u3057\u6642\u8a08\u3092\u30bb\u30c3\u30c8\u3059\u308b"
+    "message": "\u3079\u308b \u3061\u3083\u307a\u308b"
   },
   "d83d_dd15": {
-    "message": "\u76ee\u899a\u307e\u3057\u6642\u8a08\u3092\u6b62\u3081\u308b"
+    "message": "\u304a\u3068\u306a\u3057\u306e\u3079\u308b\u3000\u3079\u308b"
   },
   "d83d_dd16": {
-    "message": "\u30d6\u30c3\u30af\u30de\u30fc\u30af"
+    "message": "\u305f\u3050 \u3075\u305b\u3093 \u3057\u304a\u308a \u3076\u3063\u304f\u307e\u30fc\u304f"
   },
   "d83d_dd17": {
-    "message": "\u30ea\u30f3\u30af"
+    "message": "\u308a\u3093\u304f\u3057\u3093\u307c\u308b \u308a\u3093\u304f"
   },
   "d83d_dd18": {
-    "message": "\u30e9\u30b8\u30aa\u30dc\u30bf\u30f3"
+    "message": "\u3089\u3058\u304a\u307c\u305f\u3093"
   },
   "d83d_dd19": {
-    "message": "\u623b\u308b\u77e2\u5370"
+    "message": "\u3082\u3069\u308a\u3084\u3058\u308b\u3057 \u3084\u3058\u308b\u3057 \u3082\u3069\u308b"
   },
   "d83d_dd1a": {
-    "message": "END \u77e2\u5370"
+    "message": "\u3048\u3093\u3069\u3084\u3058\u308b\u3057 \u3084\u3058\u308b\u3057 \u3048\u3093\u3069"
   },
   "d83d_dd1b": {
-    "message": "ON \u77e2\u5370"
+    "message": "\u304a\u3093\u3084\u3058\u308b\u3057 \u304a\u3093 \u3084\u3058\u308b\u3057"
   },
   "d83d_dd1c": {
-    "message": "SOON \u77e2\u5370"
+    "message": "\u3059\u30fc\u3093\u3084\u3058\u308b\u3057 \u3059\u30fc\u3093 \u3084\u3058\u308b\u3057"
   },
   "d83d_dd1d": {
-    "message": "TOP \u77e2\u5370"
+    "message": "\u3068\u3063\u3077\u3084\u3058\u308b\u3057 \u3059\u30fc\u3093 \u3084\u3058\u308b\u3057  \u3046\u3048"
   },
   "d83d_dd1e": {
-    "message": "18 \u7981\u30de\u30fc\u30af"
+    "message": "\u3058\u3085\u3046\u306f\u3063\u304d\u3093 \uff11\uff18\u304d\u3093"
   },
   "d83d_dd20": {
-    "message": "\u5927\u6587\u5b57 ABCD"
+    "message": "\u308d\u30fc\u307e\u3058\u304a\u304a\u3082\u3058"
   },
   "d83d_dd21": {
-    "message": "\u5c0f\u6587\u5b57 abcd"
+    "message": "\u308d\u30fc\u307e\u3058\u3053\u3082\u3058"
   },
   "d83d_dd22": {
-    "message": "\u6570\u5b57 1234"
+    "message": "\u3059\u3046\u3058 \uff11\uff12\uff13\uff14"
   },
   "d83d_dd23": {
-    "message": "\u8a18\u53f7"
+    "message": "\u304d\u3054\u3046"
   },
   "d83d_dd24": {
-    "message": "\u30ed\u30fc\u30de\u5b57 abc"
+    "message": " \u308d\u30fc\u307e\u3058 \uff21\uff22\uff23 \u3048\u3044\u3054"
   },
   "d83d_dd25": {
-    "message": "\u708e"
+    "message": "\u3072 \u307b\u306e\u304a \u3075\u3041\u3044\u3084\u30fc \u3075\u3041\u3044\u3042\u30fc"
   },
   "d83d_dd26": {
-    "message": "\u61d0\u4e2d\u96fb\u706f"
+    "message": "\u304b\u3044\u3061\u3085\u3046\u3067\u3093\u3068\u3046 \u3089\u3044\u3068 \u3067\u3093\u3068\u3046"
   },
   "d83d_dd27": {
-    "message": "\u30ec\u30f3\u30c1"
+    "message": "\u308c\u3093\u3061 \u3053\u3046\u3050"
   },
   "d83d_dd28": {
-    "message": "\u30cf\u30f3\u30de\u30fc"
+    "message": "\u304b\u306a\u3065\u3061 \u3068\u3093\u304b\u3061 \u306f\u3093\u307e\u30fc"
   },
   "d83d_dd29": {
-    "message": "\u30dc\u30eb\u30c8\uff06\u30ca\u30c3\u30c8"
+    "message": "\u307c\u308b\u3068\u3068\u306a\u3063\u3068 \u307c\u308b\u3068 \u306a\u3063\u3068"
   },
   "d83d_dd2a": {
-    "message": "\u5305\u4e01"
+    "message": "\u307b\u3046\u3061\u3087\u3046"
   },
   "d83d_dd2b": {
-    "message": "\u30d4\u30b9\u30c8\u30eb"
+    "message": "\u3058\u3085\u3046 \u3074\u3059\u3068\u308b \u3051\u3093\u3058\u3085\u3046"
   },
   "d83d_dd2c": {
-    "message": "\u9855\u5fae\u93e1"
+    "message": "\u3051\u3093\u3073\u304d\u3087\u3046"
   },
   "d83d_dd2d": {
-    "message": "\u671b\u9060\u93e1"
+    "message": "\u307c\u3046\u3048\u3093\u304d\u3087\u3046"
   },
   "d83d_dd2e": {
-    "message": "\u6c34\u6676\u7389"
+    "message": "\u3059\u3044\u3057\u3087\u3046\u3060\u307e \u3059\u3044\u3057\u3087\u3046 \u3046\u3089\u306a\u3044"
   },
   "d83d_dd2f": {
-    "message": "\u5360\u3044"
+    "message": "\u308d\u3063\u304b\u304f\u305b\u3044\u3068\u306a\u304b\u3066\u3093"
   },
   "d83d_dd30": {
-    "message": "\u521d\u5fc3\u8005\u30de\u30fc\u30af"
+    "message": "\u308f\u304b\u3070\u307e\u30fc\u304f \u3057\u3087\u3057\u3093\u3057\u3083 \u306f\u3064"
   },
   "d83d_dd31": {
-    "message": "\u30a8\u30f3\u30d6\u30ec\u30e0"
+    "message": "\u3044\u304b\u308a \u3068\u3089\u3044\u3067\u3093\u3068 \u3048\u3093\u3076\u308c\u3080"
   },
   "d83d_dd32": {
-    "message": "\u9ed2\u30dc\u30bf\u30f3"
+    "message": "\u304f\u308d\u308f\u304f\u3057\u304b\u304f"
   },
   "d83d_dd33": {
-    "message": "\u767d\u30dc\u30bf\u30f3"
+    "message": "\u3057\u308d\u308f\u304f\u3057\u304b\u304f"
   },
   "d83d_dd34": {
-    "message": "\u8d64\u5927\u4e38"
+    "message": "\u3042\u304b\u3044\u304a\u304a\u304d\u3044\u307e\u308b"
   },
   "d83d_dd35": {
-    "message": "\u9752\u5927\u4e38"
+    "message": "\u3042\u304a\u3044\u304a\u304a\u304d\u3044\u307e\u308b"
   },
   "d83d_dd36": {
-    "message": "\u6a59\u5927\u3072\u3057\u5f62"
+    "message": "\u304a\u308c\u3093\u3058\u306e\u304a\u304a\u304d\u3044\u3072\u3057\u304c\u305f"
   },
   "d83d_dd37": {
-    "message": "\u9752\u5927\u3072\u3057\u5f62"
+    "message": "\u3042\u304a\u306e\u304a\u304a\u304d\u3044\u3072\u3057\u304c\u305f"
   },
   "d83d_dd38": {
-    "message": "\u6a59\u5c0f\u3072\u3057\u5f62"
+    "message": "\u304a\u308c\u3093\u3058\u306e\u3061\u3044\u3055\u3044\u3072\u3057\u304c\u305f"
   },
   "d83d_dd39": {
-    "message": "\u9752\u5c0f\u3072\u3057\u5f62"
+    "message": "\u3042\u304a\u306e\u3061\u3044\u3055\u3044\u3072\u3057\u304c\u305f"
   },
   "d83d_dd3a": {
-    "message": "\u4e0a\u4e09\u89d2"
+    "message": "\u3046\u3048\u3080\u304d\u3042\u304b\u3055\u3093\u304b\u304f"
   },
   "d83d_dd3b": {
-    "message": "\u4e0b\u4e09\u89d2"
+    "message": "\u3057\u305f\u3080\u304d\u3042\u304b\u3055\u3093\u304b\u304f"
   },
   "d83d_dd3c": {
-    "message": "\u4e0a\u5c0f\u4e09\u89d2"
+    "message": "\u3046\u3048\u3080\u304d\u3042\u304b\u3044\u3057\u3087\u3046\u3055\u3093\u304b\u304f"
   },
   "d83d_dd3d": {
-    "message": "\u4e0b\u5c0f\u4e09\u89d2"
+    "message": "\u3057\u305f\u3080\u304d\u3042\u304b\u3044\u3057\u3087\u3046\u3055\u3093\u304b\u304f"
   },
   "d83d_dd50": {
-    "message": "1 \u6642"
+    "message": "\u3044\u3061\u3058 \u3068\u3051\u3044 \uff11\u3058"
   },
   "d83d_dd51": {
-    "message": "2 \u6642"
+    "message": "\u306b\u3058 \u3068\u3051\u3044 \uff12\u3058"
   },
   "d83d_dd52": {
-    "message": "3 \u6642"
+    "message": "\u3055\u3093\u3058 \u3068\u3051\u3044 \uff13\u3058"
   },
   "d83d_dd53": {
-    "message": "4 \u6642"
+    "message": "\u3088\u3058 \u3068\u3051\u3044 \uff14\u3058"
   },
   "d83d_dd54": {
-    "message": "5 \u6642"
+    "message": "\u3054\u3058 \u3068\u3051\u3044 \uff15\u3058"
   },
   "d83d_dd55": {
-    "message": "6 \u6642"
+    "message": "\u308d\u304f\u3058 \u3068\u3051\u3044 \uff16\u3058"
   },
   "d83d_dd56": {
-    "message": "7 \u6642"
+    "message": "\u306a\u306a\u3058 \u3068\u3051\u3044 \u3057\u3061\u3058 \uff17\u3058"
   },
   "d83d_dd57": {
-    "message": "8 \u6642"
+    "message": "\u306f\u3061\u3058 \u3068\u3051\u3044 \uff18\u3058"
   },
   "d83d_dd58": {
-    "message": "9 \u6642"
+    "message": "\u304f\u3058 \u3068\u3051\u3044 \uff19\u3058"
   },
   "d83d_dd59": {
-    "message": "10 \u6642"
+    "message": "\u3058\u3085\u3046\u3058 \u3068\u3051\u3044 \uff11\uff10\u3058 \u3081\u3056\u307e\u3057"
   },
   "d83d_dd5a": {
-    "message": "11 \u6642"
+    "message": "\u3058\u3085\u3046\u3044\u3061\u3058 \u3068\u3051\u3044 \uff11\uff11\u3058"
   },
   "d83d_dd5b": {
-    "message": "12 \u6642"
+    "message": "\u3058\u3085\u3046\u306b\u3058 \u3068\u3051\u3044 \uff11\uff12\u3058 \u3057\u3087\u3046\u3054"
   },
   "d83d_dd5c": {
-    "message": "1 \u6642\u534a"
+    "message": "\u3044\u3061\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd5d": {
-    "message": "2 \u6642\u534a"
+    "message": "\u306b\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd5e": {
-    "message": "3 \u6642\u534a"
+    "message": "\u3055\u3093\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd5f": {
-    "message": "4 \u6642\u534a"
+    "message": "\u3088\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd60": {
-    "message": "5 \u6642\u534a"
+    "message": "\u3054\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd61": {
-    "message": "6 \u6642\u534a"
+    "message": "\u308d\u304f\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd62": {
-    "message": "7 \u6642\u534a"
+    "message": "\u306a\u306a\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd63": {
-    "message": "8 \u6642\u534a"
+    "message": "\u306f\u3061\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd64": {
-    "message": "9 \u6642\u534a"
+    "message": "\u304f\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd65": {
-    "message": "10 \u6642\u534a"
+    "message": "\u3058\u3085\u3046\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd66": {
-    "message": "11 \u6642\u534a"
+    "message": "\u3058\u3085\u3046\u3044\u3061\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_dd67": {
-    "message": "12 \u6642\u534a"
+    "message": "\u3058\u3085\u3046\u306b\u3058\u306f\u3093 \u3068\u3051\u3044"
   },
   "d83d_ddfb": {
-    "message": "\u5bcc\u58eb\u5c71"
+    "message": "\u3075\u3058\u3055\u3093 \u3084\u307e"
   },
   "d83d_ddfc": {
-    "message": "\u6771\u4eac\u30bf\u30ef\u30fc"
+    "message": "\u3068\u3046\u304d\u3087\u3046\u305f\u308f\u30fc \u305f\u308f\u30fc"
   },
   "d83d_ddfd": {
-    "message": "\u81ea\u7531\u306e\u5973\u795e"
+    "message": "\u3058\u3086\u3046\u306e\u3081\u304c\u307f \u3081\u304c\u307f"
   },
   "d83d_ddfe": {
-    "message": "\u65e5\u672c\u5730\u56f3"
+    "message": "\u306b\u307b\u3093 \u3061\u305a"
   },
   "d83d_ddff": {
-    "message": "\u30e2\u30a2\u30a4\u50cf"
+    "message": "\u3082\u3084\u3044 \u3082\u3042\u3044"
   },
   "d83d_de00": {
-    "message": "\u30cb\u30f3\u30de\u30ea\u9854"
+    "message": "\u306b\u3084\u3063\u3068\u308f\u3089\u3046\u304b\u304a"
   },
   "d83d_de01": {
-    "message": " \u3046\u3063\u3057\u3063\u3057"
+    "message": "\u306b\u3084\u3063\u3068\u3081\u3082\u308f\u3089\u3046\u304b\u304a"
   },
   "d83d_de02": {
-    "message": "\u6ce3\u304d\u7b11\u3044"
+    "message": "\u3046\u308c\u3057\u306a\u304d\u306e\u304b\u304a"
   },
   "d83d_de03": {
-    "message": "\u30b9\u30de\u30a4\u30eb"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u305f\u3048\u304c\u304a"
   },
   "d83d_de04": {
-    "message": "\u308f\u30fc\u3044"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u3066\u3081\u3082\u308f\u3089\u3046\u3048\u304c\u304a"
   },
   "d83d_de05": {
-    "message": "\u7167\u308c\u7b11\u3044"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u305f\u3072\u3084\u3042\u305b\u306e\u3048\u304c\u304a"
   },
   "d83d_de06": {
-    "message": " \u3066\u308c\u3066\u308c"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u3066\u3081\u304c\u304b\u305f\u304f\u3068\u3058\u305f\u3048\u304c\u304a"
   },
   "d83d_de07": {
-    "message": "\u5929\u4f7f\u306e\u8f2a"
+    "message": "\u3054\u3053\u3046\u306e\u3055\u3059\u3048\u304c\u304a"
   },
   "d83d_de08": {
-    "message": "\u60aa\u9b54\u306e\u89d2"
+    "message": "\u3064\u306e\u306e\u3042\u308b\u3048\u304c\u304a"
   },
   "d83d_de09": {
-    "message": "\u30a6\u30a4\u30f3\u30af"
+    "message": "\u3046\u3043\u3093\u304f\u304c\u304a"
   },
   "d83d_de0a": {
-    "message": "\u306b\u3053\u306b\u3053"
+    "message": "\u3081\u304a\u3082\u308f\u3089\u3046\u3048\u304c\u304a"
   },
   "d83d_de0b": {
-    "message": "\u304a\u3044\u3057\u3044\u9854"
+    "message": "\u304a\u3057\u304b\u3063\u305f\u304b\u304a"
   },
   "d83d_de0c": {
-    "message": "\u307b\u3063\u3068\u3057\u305f\u9854"
+    "message": " \u307b\u3063\u3068\u3057\u305f\u304b\u304a \u304b\u304a"
   },
   "d83d_de0d": {
-    "message": "\u76ee\u304c\u30cf\u30fc\u30c8"
+    "message": "\u306f\u30fc\u3068\u306e\u3081\u306e\u3048\u304c\u304a"
   },
   "d83d_de0e": {
-    "message": "\u76ee\u306b\u30b5\u30f3\u30b0\u30e9\u30b9"
+    "message": "\u3055\u3093\u3050\u3089\u3059\u306e\u3048\u304c\u304a"
   },
   "d83d_de0f": {
-    "message": "\u30cb\u30d2\u30eb"
+    "message": "\u306b\u3083\u3063\u3068\u3057\u305f\u304b\u304a"
   },
   "d83d_de10": {
-    "message": "\u7121\u611f\u60c5"
+    "message": "\u3075\u3064\u3046\u306e\u304b\u304a"
   },
   "d83d_de11": {
-    "message": "\u7121\u8868\u60c5\u306a\u9854"
+    "message": "\u3080\u3072\u3087\u3046\u3058\u3087\u3046\u306e\u304b\u304a"
   },
   "d83d_de12": {
-    "message": "\u6a2a\u76ee"
+    "message": "\u3057\u3089\u3051\u305f\u304b\u304a"
   },
   "d83d_de13": {
-    "message": "\u51b7\u3084\u6c57"
+    "message": "\u3072\u3084\u3042\u305b\u304c\u304a"
   },
   "d83d_de14": {
-    "message": "\u3057\u3087\u307c\u308a"
+    "message": "\u3057\u3087\u307c\u30fc\u3093\u3068\u3057\u305f\u304b\u304a"
   },
   "d83d_de15": {
-    "message": "\u6df7\u4e71\u3057\u305f\u9854"
+    "message": "\u3053\u3093\u3089\u3093\u3057\u305f\u304b\u304a"
   },
   "d83d_de16": {
-    "message": "\u56f0\u60d1"
+    "message": "\u3053\u3093\u308f\u304f\u3057\u305f\u304b\u304a"
   },
   "d83d_de17": {
-    "message": "\u30bf\u30b3\u30c1\u30e5\u30fc 1"
+    "message": "\u304d\u3059\u3059\u308b\u304b\u304a"
   },
   "d83d_de18": {
-    "message": "\u6295\u3052\u30ad\u30c3\u30b9"
+    "message": "\u3061\u3085\u3063\u3059\u308b\u304b\u304a"
   },
   "d83d_de19": {
-    "message": "\u30bf\u30b3\u30c1\u30e5\u30fc 2"
+    "message": "\u304d\u3059\u3059\u308b\u3048\u304c\u304a"
   },
   "d83d_de1a": {
-    "message": "\u30c1\u30e5"
+    "message": "\u3081\u3092\u3068\u3058\u3066\u304d\u3059\u3059\u308b\u3048\u304c\u304a"
   },
   "d83d_de1b": {
-    "message": "\u3066\u3078\u3063"
+    "message": "\u3057\u305f\u3079\u30fc\u3067\u3081\u3092\u3068\u3058\u305f\u304b\u304a"
   },
   "d83d_de1c": {
-    "message": "\u3042\u3063\u304b\u3093\u3079\u30fc"
+    "message": "\u3042\u3063\u304b\u3093\u3079\u30fc\u306e\u304b\u304a"
   },
   "d83d_de1d": {
-    "message": "\u30a6\u30a7\u30fc\uff01"
+    "message": "\u3057\u305f\u3079\u30fc\u306e\u304b\u304a"
   },
   "d83d_de1e": {
-    "message": "\u304c\u3063\u304b\u308a"
+    "message": "\u304c\u3063\u304f\u308a\u304c\u304a"
   },
   "d83d_de1f": {
-    "message": "\u5fc3\u914d"
+    "message": "\u3057\u3093\u3071\u3044\u304c\u304a"
   },
   "d83d_de20": {
-    "message": "\u6012\u3063\u305f\u9854"
+    "message": "\u3077\u3093\u3077\u3093\u304c\u304a"
   },
   "d83d_de21": {
-    "message": "\u3077\u3063\u304f\u3063\u304f\u306a\u9854"
+    "message": "\u3075\u304f\u308c\u3063\u3064\u3089 \u3075\u304d\u3052\u3093 \u3077\u3093\u3077\u3093 \u304b\u304a"
   },
   "d83d_de22": {
-    "message": "\u6d99\u307d\u308d\u308a"
+    "message": "\u306a\u304d\u304c\u304a \u306a\u304f \u304b\u304a \u304b\u306a\u3057\u3044"
   },
   "d83d_de23": {
-    "message": "\u304c\u307e\u3093\u9854"
+    "message": "\u304c\u307e\u3093\u304c\u304a \u304c\u307e\u3093 \u304b\u304a"
   },
   "d83d_de24": {
-    "message": "\u52dd\u3061\u8a87\u308a"
+    "message": "\u3075\u3093\u3063\u3068\u3057\u305f\u304b\u304a"
   },
   "d83d_de25": {
-    "message": "\u3084\u308c\u3084\u308c"
+    "message": "\u304c\u3063\u304b\u308a\u307b\u3063\u3068\u3057\u305f\u304b\u304a"
   },
   "d83d_de26": {
-    "message": "\u30c9\u30ad\u30c3"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u305f\u3057\u304b\u3081\u304c\u304a"
   },
   "d83d_de27": {
-    "message": "\u3042\u308a\u3083\u307e"
+    "message": "\u304f\u306e\u3046\u306e\u304b\u304a"
   },
   "d83d_de28": {
-    "message": "\u304c\u30fc\u3093"
+    "message": "\u3042\u304a\u3056\u3081\u305f\u304b\u304a"
   },
   "d83d_de29": {
-    "message": "\u3046\u3093\u3056\u308a"
+    "message": "\u3042\u304d\u3089\u3081\u305f\u304b\u304a"
   },
   "d83d_de2a": {
-    "message": "\u7720\u3044"
+    "message": "\u306d\u3080\u3044\u304b\u304a"
   },
   "d83d_de2b": {
-    "message": "\u75b2\u308c\u305f\u9854"
+    "message": "\u3064\u304b\u308c\u305f\u304b\u304a"
   },
   "d83d_de2c": {
-    "message": "\u3057\u304b\u3081\u3063\u9762"
+    "message": "\u3057\u304b\u3081\u3063\u3064\u3089 \u3057\u304b\u3081\u304c\u304a \u304b\u304a"
   },
   "d83d_de2d": {
-    "message": "\u5927\u6ce3\u304d"
+    "message": "\u304a\u304a\u306a\u304d\u304c\u304a"
   },
   "d83d_de2e": {
-    "message": "\u307d\u304b\u30fc\u3093"
+    "message": "\u304f\u3061\u306e\u3042\u3044\u305f\u304b\u304a"
   },
   "d83d_de2f": {
-    "message": "\u3042\u3093\u3050\u308a"
+    "message": "\u3060\u307e\u3063\u305f\u304b\u304a"
   },
   "d83d_de30": {
-    "message": "\u304a\u308d\u304a\u308d"
+    "message": "\u304f\u3061\u304c\u3042\u3044\u3066\u3072\u3084\u3042\u305b\u306e\u304b\u304a"
   },
   "d83d_de31": {
-    "message": "\u30b7\u30e7\u30c3\u30ad\u30f3\u30b0"
+    "message": "\u304d\u3087\u3046\u3075\u3067\u3055\u3051\u3076\u304b\u304a"
   },
   "d83d_de32": {
-    "message": "\u3073\u3063\u304f\u308a"
+    "message": "\u304d\u3087\u3046\u304c\u304f\u306e\u304b\u304a"
   },
   "d83d_de33": {
-    "message": "\u3073\u3063\u304f\u308a"
+    "message": "\u3042\u304b\u304f\u306a\u3063\u305f\u304b\u304a"
   },
   "d83d_de34": {
-    "message": "\u5bdd\u9854"
+    "message": "\u306d\u3080\u308a\u304c\u304a"
   },
   "d83d_de35": {
-    "message": "\u3075\u3089\u3075\u3089"
+    "message": "\u3081\u307e\u3044\u304c\u304a"
   },
   "d83d_de36": {
-    "message": "\u76ee\u304c\u70b9"
+    "message": "\u304f\u3061\u306a\u3057\u304c\u304a \u304f\u3061\u306a\u3057 \u304b\u304a"
   },
   "d83d_de37": {
-    "message": "\u98a8\u90aa\u3072\u304d"
+    "message": "\u304b\u305c\u307e\u3059\u304f\u306e\u304b\u304a"
   },
   "d83d_de38": {
-    "message": "\u30a6\u30c3\u30b7\u30c3\u30b7\uff08\u30cd\u30b3\uff09"
+    "message": "\u306b\u3084\u3063\u3068\u3081\u3082\u308f\u3089\u3046\u306d\u3053"
   },
   "d83d_de39": {
-    "message": "\u6ce3\u304d\u7b11\u3044\uff08\u30cd\u30b3\uff09"
+    "message": "\u3046\u308c\u3057\u306a\u304d\u306e\u306d\u3053"
   },
   "d83d_de3a": {
-    "message": "\u306b\u3053\uff08\u30cd\u30b3\uff09"
+    "message": "\u3046\u3061\u304c\u3042\u3044\u305f\u3048\u304c\u304a\u306e\u306d\u3053"
   },
   "d83d_de3b": {
-    "message": "\u76ee\u304c\u30cf\u30fc\u30c8\uff08\u30cd\u30b3\uff09"
+    "message": "\u306f\u30fc\u3068\u306e\u3081\u3067\u3048\u304c\u304a\u306e\u306d\u3053"
   },
   "d83d_de3c": {
-    "message": "\u304d\u308a\u308a\uff08\u30cd\u30b3\uff09"
+    "message": "\u306b\u304c\u308f\u3089\u3044\u306e\u306d\u3053"
   },
   "d83d_de3d": {
-    "message": "\u30c1\u30e5\u30fc\uff08\u30cd\u30b3\uff09"
+    "message": "\u3081\u3092\u3068\u3058\u3066\u304d\u3059\u3059\u308b\u306d\u3053"
   },
   "d83d_de3e": {
-    "message": "\u3076\u30fc\uff08\u30cd\u30b3\uff09"
+    "message": "\u3077\u3093\u3077\u3093\u304c\u304a\u306e\u306d\u3053"
   },
   "d83d_de3f": {
-    "message": "\u6d99\u307d\u308d\u308a\uff08\u30cd\u30b3\uff09"
+    "message": "\u306a\u304d\u304c\u304a\u306e\u306d\u3053"
   },
   "d83d_de40": {
-    "message": "\u307b\u3048\u30fc\uff08\u30cd\u30b3\uff09"
+    "message": "\u3042\u304d\u3089\u3081\u304c\u304a\u306e\u306d\u3053"
   },
   "d83d_de45": {
-    "message": "\u30c0\u30e1"
+    "message": "\u3060\u3081\u306e\u304b\u304a"
   },
   "d83d_de46": {
-    "message": "\u30aa\u30c3\u30b1\u30fc"
+    "message": "\u304a\u30fc\u3051\u30fc\u306e\u304b\u304a"
   },
   "d83d_de47": {
-    "message": "\u571f\u4e0b\u5ea7"
+    "message": "\u3075\u304b\u304f\u304a\u3058\u304e\u3059\u308b\u3072\u3068"
   },
   "d83d_de48": {
-    "message": "\u898b\u3056\u308b"
+    "message": "\u307f\u3056\u308b"
   },
   "d83d_de49": {
-    "message": "\u805e\u304b\u3056\u308b"
+    "message": "\u304d\u304b\u3056\u308b"
   },
   "d83d_de4a": {
-    "message": "\u8a00\u308f\u3056\u308b"
+    "message": "\u3044\u308f\u3056\u308b"
   },
   "d83d_de4b": {
-    "message": "\u6319\u624b"
+    "message": "\u3066\u3092\u3042\u3052\u308b\u3057\u3042\u308f\u305b\u306a\u3072\u3068"
   },
   "d83d_de4c": {
-    "message": "\u4e07\u6b73"
+    "message": "\u304a\u3044\u308f\u3044\u306b\u308a\u3087\u3046\u3066\u3092\u3042\u3052\u308b\u3072\u3068"
   },
   "d83d_de4d": {
-    "message": "\u3057\u3087\u3093\u307c\u308a"
+    "message": "\u3057\u304b\u3081\u3064\u3089\u306e\u3072\u3068"
   },
   "d83d_de4e": {
-    "message": "\u304b\u308f\u3044\u304f\u6012\u308b"
+    "message": "\u3077\u3093\u3077\u3093\u304c\u304a\u306e\u3072\u3068"
   },
   "d83d_de4f": {
-    "message": "\u304a\u9858\u3044"
+    "message": "\u3066\u3092\u3042\u308f\u305b\u308b\u3072\u3068"
   },
   "d83d_de80": {
-    "message": "\u30ed\u30b1\u30c3\u30c8"
+    "message": "\u308d\u3051\u3063\u3068 \u306e\u308a\u3082\u306e"
   },
   "d83d_de81": {
-    "message": "\u30d8\u30ea\u30b3\u30d7\u30bf\u30fc"
+    "message": "\u3078\u308a\u3053\u3077\u305f\u30fc \u3078\u308a \u306e\u308a\u3082\u306e"
   },
   "d83d_de82": {
-    "message": "\u84b8\u6c17\u6a5f\u95a2\u8eca"
+    "message": "\u3058\u3087\u3046\u304d\u304d\u304b\u3093\u3057\u3083"
   },
   "d83d_de83": {
-    "message": "\u96fb\u8eca"
+    "message": "\u3066\u3064\u3069\u3046\u3057\u3083"
   },
   "d83d_de84": {
-    "message": "\u65b0\u5e79\u7dda"
+    "message": "\u3057\u3093\u304c\u305f\u3057\u3093\u304b\u3093\u305b\u3093"
   },
   "d83d_de85": {
-    "message": "\u65b0\u578b\u65b0\u5e79\u7dda"
+    "message": "\u304d\u3085\u3046\u304c\u305f\u3057\u3093\u304b\u3093\u305b\u3093"
   },
   "d83d_de86": {
-    "message": "\u5217\u8eca"
+    "message": "\u3067\u3093\u3057\u3083 \u308c\u3063\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de87": {
-    "message": "\u5730\u4e0b\u9244"
+    "message": "\u3081\u3068\u308d \u3061\u304b\u3066\u3064 \u3067\u3093\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de88": {
-    "message": "\u8def\u9762\u96fb\u8eca"
+    "message": "\u3089\u3044\u3068\u308c\u30fc\u308b \u3051\u3044\u308a\u3087\u3046\u3066\u3064\u3069\u3046 \u3067\u3093\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de89": {
-    "message": "\u99c5"
+    "message": "\u3048\u304d \u3067\u3093\u3057\u3083 \u3075\u307f\u304d\u308a \u306e\u308a\u3082\u306e"
   },
   "d83d_de8a": {
-    "message": "\u5e02\u8857\u96fb\u8eca"
+    "message": "\u308d\u3081\u3093\u3067\u3093\u3057\u3083"
   },
   "d83d_de8b": {
-    "message": "\u5e02\u8857\u96fb\u8eca"
+    "message": "\u3057\u304c\u3044\u3067\u3093\u3057\u3083"
   },
   "d83d_de8c": {
-    "message": "\u30d0\u30b9"
+    "message": "\u3070\u3059 \u306e\u308a\u3082\u306e"
   },
   "d83d_de8d": {
-    "message": "\u5bfe\u5411\u30d0\u30b9"
+    "message": "\u3080\u304b\u3063\u3066\u304f\u308b\u3070\u3059"
   },
   "d83d_de8e": {
-    "message": "\u30c8\u30ed\u30ea\u30fc\u30d0\u30b9"
+    "message": "\u3068\u308d\u308a\u30fc\u3070\u3059 \u3070\u3059 \u306e\u308a\u3082\u306e"
   },
   "d83d_de8f": {
-    "message": "\u30d0\u30b9\u505c"
+    "message": "\u3070\u3059\u3066\u3044 \u3070\u3059\u306e\u308a\u3070 \u306e\u308a\u3082\u306e"
   },
   "d83d_de90": {
-    "message": "\u30de\u30a4\u30af\u30ed\u30d0\u30b9"
+    "message": "\u307f\u306b\u3070\u3059 \u3070\u3059 \u306e\u308a\u3082\u306e"
   },
   "d83d_de91": {
-    "message": "\u6551\u6025\u8eca"
+    "message": "\u304d\u3085\u3046\u304d\u3085\u3046\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de92": {
-    "message": "\u6d88\u9632\u8eca"
+    "message": "\u3057\u3087\u3046\u307c\u3046\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de93": {
-    "message": "\u30d1\u30c8\u30ab\u30fc"
+    "message": "\u3071\u3068\u304b\u30fc \u306e\u308a\u3082\u306e"
   },
   "d83d_de94": {
-    "message": "\u5bfe\u5411\u30d1\u30c8\u30ab\u30fc"
+    "message": "\u3080\u304b\u3063\u3066\u304f\u308b\u3071\u3068\u304b\u30fc"
   },
   "d83d_de95": {
-    "message": "\u30bf\u30af\u30b7\u30fc"
+    "message": "\u305f\u304f\u3057\u30fc \u306e\u308a\u3082\u306e"
   },
   "d83d_de96": {
-    "message": "\u5bfe\u5411\u30bf\u30af\u30b7\u30fc"
+    "message": "\u3080\u304b\u3063\u3066\u304f\u308b\u305f\u304f\u3057\u30fc"
   },
   "d83d_de97": {
-    "message": "\u8eca"
+    "message": "\u3058\u3069\u3046\u3057\u3083 \u304f\u308b\u307e \u306e\u308a\u3082\u306e"
   },
   "d83d_de98": {
-    "message": "\u5bfe\u5411\u8eca"
+    "message": "\u3080\u304b\u3063\u3066\u304f\u308b\u3058\u3069\u3046\u3057\u3083"
   },
   "d83d_de99": {
-    "message": "RV \u8eca"
+    "message": "\u3042\u30fc\u308b\u3076\u3044\u3057\u3083"
   },
   "d83d_de9a": {
-    "message": "\u30c8\u30e9\u30c3\u30af"
+    "message": "\u3068\u3089\u3063\u304f \u304f\u308b\u307e \u306e\u308a\u3082\u306e"
   },
   "d83d_de9b": {
-    "message": "\u30c8\u30ec\u30fc\u30e9\u30fc"
+    "message": "\u3068\u308c\u30fc\u3089\u30fc\u3068\u3089\u3063\u304f"
   },
   "d83d_de9c": {
-    "message": "\u30c8\u30e9\u30af\u30bf\u30fc"
+    "message": "\u3068\u3089\u304f\u305f\u30fc \u304f\u308b\u307e \u306e\u308a\u3082\u306e"
   },
   "d83d_de9d": {
-    "message": "\u30e2\u30ce\u30ec\u30fc\u30eb"
+    "message": "\u3082\u306e\u308c\u30fc\u308b \u306e\u308a\u3082\u306e"
   },
   "d83d_de9e": {
-    "message": "\u5c71\u5cb3\u9244\u9053"
+    "message": "\u3068\u3056\u3093\u3066\u3064\u3069\u3046 \u3068\u3056\u3093\u3067\u3093\u3057\u3083 \u3067\u3093\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_de9f": {
-    "message": "\u9ad8\u67b6\u9244\u9053"
+    "message": "\u3064\u308a\u3055\u3052\u3082\u306e\u308c\u30fc\u308b"
   },
   "d83d_dea0": {
-    "message": "\u30b1\u30fc\u30d6\u30eb\u30ab\u30fc"
+    "message": "\u3068\u3056\u3093\u3051\u30fc\u3076\u308b\u304b\u30fc"
   },
   "d83d_dea1": {
-    "message": "\u30ed\u30fc\u30d7\u30a6\u30a7\u30a4"
+    "message": "\u308d\u30fc\u3077\u3046\u3047\u3044 \u3051\u30fc\u3076\u308b\u304b\u30fc \u306e\u308a\u3082\u306e"
   },
   "d83d_dea2": {
-    "message": "\u8239"
+    "message": "\u3075\u306d \u306e\u308a\u3082\u306e"
   },
   "d83d_dea3": {
-    "message": "\u30dc\u30fc\u30c8"
+    "message": "\u3066\u3053\u304e\u307c\u30fc\u3068"
   },
   "d83d_dea4": {
-    "message": "\u7af6\u8247"
+    "message": "\u3059\u3074\u30fc\u3069\u307c\u30fc\u3068 \u307c\u30fc\u3068 \u3075\u306d \u306e\u308a\u3082\u306e"
   },
   "d83d_dea5": {
-    "message": "\u4fe1\u53f7\u6a5f\uff08\u6a2a\uff09"
+    "message": "\u3059\u3044\u3078\u3044\u3057\u3093\u3054\u3046"
   },
   "d83d_dea6": {
-    "message": "\u4fe1\u53f7\u6a5f\uff08\u7e26\uff09"
+    "message": "\u3059\u3044\u3061\u3087\u304f\u3057\u3093\u3054\u3046"
   },
   "d83d_dea7": {
-    "message": "\u5de5\u4e8b\u4e2d"
+    "message": "\u3053\u3046\u3058\u3061\u3085\u3046\u3055\u3044\u3093"
   },
   "d83d_dea8": {
-    "message": "\u30d1\u30c8\u30ab\u30fc\u306e\u30e9\u30f3\u30d7"
+    "message": "\u3071\u3068\u3089\u3093\u3077"
   },
   "d83d_dea9": {
-    "message": "\u4f4d\u7f6e\u60c5\u5831"
+    "message": "\u3054\u308b\u3075\u3075\u3089\u3063\u3050"
   },
   "d83d_deaa": {
-    "message": "\u30c9\u30a2"
+    "message": "\u3069\u3042 \u3068\u3073\u3089"
   },
   "d83d_deab": {
-    "message": "\u8eca\u4e21\u901a\u884c\u6b62\u3081"
+    "message": "\u304d\u3093\u3057\u307e\u30fc\u304f"
   },
   "d83d_deac": {
-    "message": "\u55ab\u7159"
+    "message": "\u304d\u3064\u3048\u3093\u3055\u3044\u3093"
   },
   "d83d_dead": {
-    "message": "\u7981\u7159"
+    "message": "\u304d\u3093\u3048\u3093\u3055\u3044\u3093"
   },
   "d83d_deae": {
-    "message": "\u30b4\u30df\u7bb1"
+    "message": "\u3054\u307f\u306f\u3054\u307f\u3070\u3053\u306b"
   },
   "d83d_deaf": {
-    "message": "\u30dd\u30a4\u6368\u3066\u7981\u6b62"
+    "message": "\u3054\u307f\u3059\u3066\u304d\u3093\u3057"
   },
   "d83d_deb0": {
-    "message": "\u98f2\u6599\u6c34"
+    "message": "\u3044\u3093\u308a\u3087\u3046\u3059\u3044 \u306e\u307f\u307f\u305a"
   },
   "d83d_deb1": {
-    "message": "\u98f2\u3081\u306a\u3044\u6c34"
+    "message": "\u306e\u3081\u306a\u3044\u307f\u305a \u306e\u3081\u307e\u305b\u3093"
   },
   "d83d_deb2": {
-    "message": "\u81ea\u8ee2\u8eca"
+    "message": "\u3058\u3066\u3093\u3057\u3083 \u306e\u308a\u3082\u306e"
   },
   "d83d_deb3": {
-    "message": "\u81ea\u8ee2\u8eca\u4e57\u308a\u5165\u308c\u7981\u6b62"
+    "message": "\u3058\u3066\u3093\u3057\u3083\u304d\u3093\u3057 \u3053\u3046\u3064\u3046\u3055\u3044\u3093"
   },
   "d83d_deb4": {
-    "message": "\u30b5\u30a4\u30af\u30ea\u30b9\u30c8"
+    "message": "\u3058\u3066\u3093\u3057\u3083\u306e\u308a \u3055\u3044\u304f\u308a\u3059\u3068"
   },
   "d83d_deb5": {
-    "message": "\u30de\u30a6\u30f3\u30c6\u30f3\u30d0\u30a4\u30af"
+    "message": "\u307e\u3046\u3093\u3066\u3093\u3058\u3066\u3093\u3057\u3083\u306e\u308a"
   },
   "d83d_deb6": {
-    "message": "\u6b69\u884c\u8005"
+    "message": "\u307b\u3053\u3046\u3057\u3083 \u3053\u3046\u3064\u3046\u3055\u3044\u3093"
   },
   "d83d_deb7": {
-    "message": "\u6b69\u884c\u7981\u6b62"
+    "message": "\u307b\u3053\u3046\u304d\u3093\u3057 \u3053\u3046\u3064\u3046\u3055\u3044\u3093"
   },
   "d83d_deb8": {
-    "message": "\u5b66\u7ae5\u6a2a\u65ad\u8def"
+    "message": "\u3058\u3069\u3046\u304a\u3046\u3060\u3093\u3061\u3085\u3046\u3044"
   },
   "d83d_deb9": {
-    "message": "\u7537\u6027\u30de\u30fc\u30af"
+    "message": "\u3060\u3093\u305b\u3044\u3055\u3044\u3093"
   },
   "d83d_deba": {
-    "message": "\u5973\u6027\u30de\u30fc\u30af"
+    "message": "\u3058\u3087\u305b\u3044\u3055\u3044\u3093"
   },
   "d83d_debb": {
-    "message": "\u516c\u8846\u30c8\u30a4\u30ec"
+    "message": "\u3068\u3044\u308c\u3055\u3044\u3093"
   },
   "d83d_debc": {
-    "message": "\u8d64\u3061\u3083\u3093\u30de\u30fc\u30af"
+    "message": "\u3042\u304b\u3061\u3083\u3093\u3055\u3044\u3093"
   },
   "d83d_debd": {
-    "message": "\u6d0b\u5f0f\u30c8\u30a4\u30ec"
+    "message": "\u3068\u3044\u308c"
   },
   "d83d_debe": {
-    "message": "\u6c34\u6d17\u30c8\u30a4\u30ec"
+    "message": "\u3060\u3076\u308a\u3085\u3057\u30fc\u3055\u3044\u3093"
   },
   "d83d_debf": {
-    "message": "\u30b7\u30e3\u30ef\u30fc"
+    "message": "\u3057\u3083\u308f\u30fc"
   },
   "d83d_dec0": {
-    "message": "\u304a\u98a8\u5442"
+    "message": "\u3075\u308d"
   },
   "d83d_dec1": {
-    "message": "\u6d74\u69fd"
+    "message": "\u3070\u3059\u305f\u3073"
   },
   "d83d_dec2": {
-    "message": "\u5165\u56fd\u5be9\u67fb"
+    "message": "\u3057\u3085\u3064\u306b\u3085\u3046\u3053\u304f\u3057\u3093\u3055"
   },
   "d83d_dec3": {
-    "message": "\u7a0e\u95a2"
+    "message": "\u305c\u3044\u304b\u3093"
   },
   "d83d_dec4": {
-    "message": "\u624b\u8377\u7269\u53d7\u53d6\u6240"
+    "message": "\u3066\u306b\u3082\u3064\u3046\u3051\u3068\u308a \u3066\u306b\u3082\u3064"
   },
   "d83d_dec5": {
-    "message": "\u30b3\u30a4\u30f3\u30ed\u30c3\u30ab\u30fc"
+    "message": "\u3066\u306b\u3082\u3064\u3042\u305a\u304b\u308a \u3066\u306b\u3082\u3064"
   },
   "de_ger_settings_page": {
     "message": "\u30c9\u30a4\u30c4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -2390,136 +2390,136 @@
     "message": "\u30c9\u30a4\u30c4\u8a9e\uff08Neo 2\uff09\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "dictionarytoolcategorytitle": {
-    "message": "\u54c1\u8a5e"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "\u30b3\u30e1\u30f3\u30c8"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "\u30b3\u30e1\u30f3\u30c8"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "[object Object]\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "\u8f9e\u66f8\u3092\u524a\u9664"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "\u8f9e\u66f8"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "\u8f9e\u66f8\u540d"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "\u5b8c\u4e86"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "\u30a8\u30af\u30b9\u30dd\u30fc\u30c8"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "\u30a4\u30f3\u30dd\u30fc\u30c8..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "\u8f9e\u66f8\u7ba1\u7406"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "\u65b0\u898f\u8f9e\u66f8"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "\u65b0\u3057\u3044\u5358\u8a9e\u306e\u3088\u307f"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "\u3088\u307f"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "\u8f9e\u66f8\u540d\u306b\u4f7f\u7528\u3067\u304d\u306a\u3044\u6587\u5b57\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059\u3002"
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "\u305d\u306e\u8f9e\u66f8\u540d\u306f\u65e2\u306b\u4f7f\u308f\u308c\u3066\u3044\u307e\u3059\u3002"
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "\u8f9e\u66f8\u540d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "\u8f9e\u66f8\u540d\u304c\u9577\u3059\u304e\u307e\u3059\u3002"
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "\u3053\u308c\u4ee5\u4e0a\u8f9e\u66f8\u3092\u4f5c\u6210\u3067\u304d\u307e\u305b\u3093\u3002"
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "\u7a7a\u306e\u30d5\u30a1\u30a4\u30eb\u3067\u3059\u3002"
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "\u3053\u306e\u8f9e\u66f8\u306b\u3053\u308c\u4ee5\u4e0a\u5358\u8a9e\u3092\u8ffd\u52a0\u3067\u304d\u307e\u305b\u3093\u3002"
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "\u30d5\u30a1\u30a4\u30eb\u3092\u958b\u3051\u307e\u305b\u3093\u3002"
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "\u30d5\u30a1\u30a4\u30eb\u304c\u5927\u304d\u3059\u304e\u307e\u3059\u3002"
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "\u64cd\u4f5c\u3092\u5b9f\u884c\u3067\u304d\u307e\u305b\u3093\u3002"
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "\u30a4\u30f3\u30dd\u30fc\u30c8\u3067\u304d\u306a\u3044\u5358\u8a9e\u304c\u3042\u308a\u307e\u3057\u305f\u3002"
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "\u30a4\u30f3\u30dd\u30fc\u30c8\u3059\u308b\u5358\u8a9e\u304c\u591a\u3059\u304e\u307e\u3059\u3002"
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "\u30d5\u30a1\u30a4\u30eb\u3092\u8aad\u307f\u8fbc\u3081\u307e\u305b\u3093\u3002"
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "\u3053\u308c\u4ee5\u4e0a\u64cd\u4f5c\u3092\u53d6\u308a\u6d88\u305b\u307e\u305b\u3093\u3002"
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "\u3088\u307f\u306b\u4f7f\u7528\u3067\u304d\u306a\u3044\u6587\u5b57\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059\u3002ASCII \u6587\u5b57\u3001\u3072\u3089\u304c\u306a\u3001\u6fc1\u70b9\uff08\u309b\uff09\u3001\u534a\u6fc1\u70b9\uff08\u309c\uff09\u3001\u4e2d\u70b9\uff08\u30fb\uff09\u3001\u9577\u97f3\u7b26\uff08\u30fc\uff09\u3001\u8aad\u70b9\uff08\u3001\uff09\u3001\u53e5\u70b9\uff08\u3002\uff09\u3001\u62ec\u5f27\uff08\u300c\u300d\u300e\u300f\uff09\u3001\u6ce2\u30c0\u30c3\u30b7\u30e5\uff08\uff5e\uff09\u3092\u3088\u307f\u306b\u4f7f\u7528\u3067\u304d\u307e\u3059\u3002"
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "\u3088\u307f\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "\u3088\u307f\u304c\u9577\u3059\u304e\u307e\u3059\u3002"
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "\u5358\u8a9e\u8ffd\u52a0\u30a8\u30e9\u30fc"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "\u8f9e\u66f8\u4f5c\u6210\u30a8\u30e9\u30fc"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "\u8f9e\u66f8\u524a\u9664\u30a8\u30e9\u30fc"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "\u5358\u8a9e\u524a\u9664\u30a8\u30e9\u30fc"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "\u5358\u8a9e\u7de8\u96c6\u30a8\u30e9\u30fc"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "\u30a4\u30f3\u30dd\u30fc\u30c8 \u30a8\u30e9\u30fc"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "\u8f9e\u66f8\u540d\u5909\u66f4\u30a8\u30e9\u30fc"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "\u5358\u8a9e\u306b\u4f7f\u7528\u3067\u304d\u306a\u3044\u6587\u5b57\u304c\u542b\u307e\u308c\u3066\u3044\u307e\u3059\u3002"
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "\u5358\u8a9e\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002"
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "\u5358\u8a9e\u304c\u9577\u3059\u304e\u307e\u3059\u3002"
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "\u65b0\u3057\u3044\u5358\u8a9e"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "\u5358\u8a9e"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9 \u30e1\u30cb\u30e5\u30fc\u3092\u8868\u793a\u3057\u306a\u3044"
@@ -2558,7 +2558,7 @@
     "message": "\u7d75\u6587\u5b57\u30ab\u30c6\u30b4\u30ea: \u5834\u6240"
   },
   "emoji_tab_recent": {
-    "message": "\u7d75\u6587\u5b57\u30ab\u30c6\u30b4\u30ea: \u6700\u65b0"
+    "message": "\u7d75\u6587\u5b57\u30ab\u30c6\u30b4\u30ea: \u5c65\u6b74"
   },
   "emoji_tab_symbol": {
     "message": "\u7d75\u6587\u5b57\u30ab\u30c6\u30b4\u30ea: \u8a18\u53f7"
@@ -2570,16 +2570,22 @@
     "message": "\u30b3\u30f3\u30d7\u30ea\u30fc\u30c8\u3092\u6709\u52b9\u306b\u3059\u308b"
   },
   "enable_gesture_editing": {
-    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\u306e\u7aef\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u30ab\u30fc\u30bd\u30eb\u3092\u79fb\u52d5\u3067\u304d\u3001Backspace \u30ad\u30fc\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u5358\u8a9e\u5168\u4f53\u3092\u524a\u9664\u3067\u304d\u307e\u3059\u3002"
+    "message": "\u30b9\u30ef\u30a4\u30d7 \u30b8\u30a7\u30b9\u30c1\u30e3\u30fc\u3092\u6709\u52b9\u306b\u3059\u308b"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\u306e\u7aef\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u30ab\u30fc\u30bd\u30eb\u3092\u79fb\u52d5\u3067\u304d\u3001Backspace \u30ad\u30fc\u304b\u3089\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u5358\u8a9e\u5168\u4f53\u3092\u524a\u9664\u3067\u304d\u307e\u3059"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "\u30b8\u30a7\u30b9\u30c1\u30e3\u30fc\u5165\u529b\u3092\u6709\u52b9\u306b\u3059\u308b"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "\u6587\u5b57\u3092\u30b9\u30e9\u30a4\u30c9\u3057\u3066\u5358\u8a9e\u3092\u5165\u529b\u3067\u304d\u307e\u3059"
   },
   "enable_prediction": {
     "message": "\u5f8c\u7d9a\u8a9e\u4e88\u6e2c\u3092\u6709\u52b9\u306b\u3059\u308b"
   },
   "enter": {
-    "message": "enter"
+    "message": "Enter"
   },
   "es_cat_cat_settings_page": {
     "message": "\u30ab\u30bf\u30ed\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "\u30d5\u30a3\u30f3\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
+  "fo_fao_settings_page": {
+    "message": "\u30d5\u30a7\u30ed\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
+  },
   "footer_docking_button": {
     "message": "\u4eee\u60f3\u30ad\u30fc\u30dc\u30fc\u30c9\u3092\u8868\u793a"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "\u5165\u529b\u65b9\u6cd5\u306e\u8a2d\u5b9a\u3092\u958b\u304f"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "\u30d5\u30e9\u30f3\u30b9\u8a9e B\u00c9PO \u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30d5\u30e9\u30f3\u30b9\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "fr_fra_settings_page": {
     "message": "\u30d5\u30e9\u30f3\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -2653,6 +2665,9 @@
   "hu_hun_settings_page": {
     "message": "\u30cf\u30f3\u30ac\u30ea\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "\u30cf\u30f3\u30ac\u30ea\u30fc\u8a9e QWERTY \u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
+  },
   "ie_ga_settings_page": {
     "message": "\u30a2\u30a4\u30eb\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "\u5009\u9821\u5165\u529b\u65b9\u6cd5"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "\u5927\u6613\u5165\u529b\u65b9\u6cd5"
@@ -2726,7 +2744,7 @@
     "message": "\u30d9\u30e9\u30eb\u30fc\u30b7\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_belgian": {
-    "message": "\u30d9\u30eb\u30ae\u30fc\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+    "message": "\u30d9\u30eb\u30ae\u30fc\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_bengali_phonetic": {
     "message": "\u30d9\u30f3\u30ac\u30eb\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
@@ -2765,7 +2783,7 @@
     "message": "\u30c7\u30f3\u30de\u30fc\u30af\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_devanagari_phonetic": {
-    "message": "\u30c7\u30d0\u30ca\u30fc\u30ac\u30ea\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
+    "message": "\u30c7\u30fc\u30f4\u30a1\u30ca\u30fc\u30ac\u30ea\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
   },
   "keyboard_estonian": {
     "message": "\u30a8\u30b9\u30c8\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "\u30a8\u30c1\u30aa\u30d4\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_faroese": {
+    "message": "\u30d5\u30a7\u30ed\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
   "keyboard_finnish": {
     "message": "\u30d5\u30a3\u30f3\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_french": {
     "message": "\u30d5\u30e9\u30f3\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
+  "keyboard_french_bepo": {
+    "message": "\u30d5\u30e9\u30f3\u30b9\u8a9e B\u00c9PO \u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_georgian": {
     "message": "\u30b0\u30eb\u30b8\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "\u30cf\u30f3\u30ac\u30ea\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "\u30cf\u30f3\u30ac\u30ea\u30fc\u8a9e QWERTY \u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
   "keyboard_icelandic": {
     "message": "\u30a2\u30a4\u30b9\u30e9\u30f3\u30c9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
@@ -2813,13 +2840,16 @@
     "message": "\u30a4\u30bf\u30ea\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_itrans": {
-    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08ITRANS\uff09"
+    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08itrans\uff09"
   },
   "keyboard_japanese": {
     "message": "\u65e5\u672c\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_kannada_phonetic": {
     "message": "\u30ab\u30f3\u30ca\u30c0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
+  },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
   },
   "keyboard_kedmanee": {
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Kedmanee\uff09"
@@ -2830,17 +2860,20 @@
   "keyboard_lao": {
     "message": "\u30e9\u30aa\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_laothian": {
+    "message": "\u30e9\u30aa\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
   "keyboard_latin_american": {
     "message": "\u30e9\u30c6\u30f3\u30a2\u30e1\u30ea\u30ab\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_latvian": {
-    "message": "\u30e9\u30c8\u30d3\u30a2\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+    "message": "\u30e9\u30c8\u30d3\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_lithuanian": {
     "message": "\u30ea\u30c8\u30a2\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "\u30de\u30b1\u30c9\u30cb\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_malayalam_phonetic": {
     "message": "\u30de\u30e9\u30e4\u30fc\u30e9\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
@@ -2873,7 +2906,7 @@
     "message": "\u30ce\u30eb\u30a6\u30a7\u30fc\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_pattachote": {
-    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Pattachote\uff09\u3000"
+    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Pattachote\uff09"
   },
   "keyboard_persian": {
     "message": "\u30da\u30eb\u30b7\u30e3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -2911,6 +2944,9 @@
   "keyboard_sinhala": {
     "message": "\u30b7\u30f3\u30cf\u30e9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_slovak": {
+    "message": "\u30b9\u30ed\u30d0\u30ad\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
   "keyboard_slovakian": {
     "message": "\u30b9\u30ed\u30d0\u30ad\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
@@ -2930,7 +2966,7 @@
     "message": "\u30b9\u30a6\u30a7\u30fc\u30c7\u30f3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_swiss": {
-    "message": "\u30b9\u30a4\u30b9\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+    "message": "\u30b9\u30a4\u30b9\u591a\u8a00\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_swiss_french": {
     "message": "\u30b9\u30a4\u30b9\u30d5\u30e9\u30f3\u30b9\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
@@ -2957,7 +2993,7 @@
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08TCVN\uff09"
   },
   "keyboard_telex": {
-    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c6\u30ec\u30c3\u30af\u30b9\uff09"
+    "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Telex\uff09"
   },
   "keyboard_telugu_phonetic": {
     "message": "\u30c6\u30eb\u30b0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u8868\u97f3\uff09"
@@ -2969,13 +3005,16 @@
     "message": "\u30bf\u30a4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Pattachote\uff09"
   },
   "keyboard_thai_tis": {
-    "message": "\u30bf\u30a4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08TIS 820\uff5e2531\uff09"
+    "message": "\u30bf\u30a4\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08TIS 820-2531\uff09"
   },
   "keyboard_tis": {
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08TIS 820-2531\uff09"
   },
   "keyboard_turkish": {
     "message": "\u30c8\u30eb\u30b3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
+  "keyboard_turkish_f": {
+    "message": "\u30c8\u30eb\u30b3\u8a9e-F \u30ad\u30fc\u30dc\u30fc\u30c9"
   },
   "keyboard_typewriter": {
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30bf\u30a4\u30d7\u30e9\u30a4\u30bf\u30fc\uff09"
@@ -2998,6 +3037,9 @@
   "keyboard_us_dvorak": {
     "message": "US\uff08Dvorak\uff09\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
+  "keyboard_us_dvp": {
+    "message": "US Programmer Dvorak \u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
   "keyboard_us_extended": {
     "message": "US\uff08\u62e1\u5f35\uff09\u30ad\u30fc\u30dc\u30fc\u30c9"
   },
@@ -3008,7 +3050,7 @@
     "message": "\u30d9\u30c8\u30ca\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08TCVN\uff09"
   },
   "keyboard_vietnamese_telex": {
-    "message": "\u30d9\u30c8\u30ca\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30c6\u30ec\u30c3\u30af\u30b9\uff09"
+    "message": "\u30d9\u30c8\u30ca\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08Telex\uff09"
   },
   "keyboard_vietnamese_viqr": {
     "message": "\u30d9\u30c8\u30ca\u30e0\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\uff08VIQR\uff09"
@@ -3110,10 +3152,10 @@
     "message": "\u8a2d\u5b9a"
   },
   "shift": {
-    "message": "shift"
+    "message": "Shift"
   },
   "shift_lock": {
-    "message": "shift \u30ed\u30c3\u30af"
+    "message": "Shift \u30ed\u30c3\u30af"
   },
   "show_candidate_mode": {
     "message": "\u5019\u88dc\u3092\u30d7\u30eb\u30c0\u30a6\u30f3\u8868\u793a\u3059\u308b\u307e\u3067\u306e\u6642\u9593"
@@ -3146,7 +3188,7 @@
     "message": "\u30b9\u30ed\u30d0\u30ad\u30a2\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "smiley": {
-    "message": "\u7d75\u6587\u5b57"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "\u5f31\u3081"
@@ -3155,19 +3197,19 @@
     "message": "\u30ad\u30fc\u3092\u62bc\u3057\u305f\u3068\u304d\u306e\u97f3"
   },
   "space": {
-    "message": "\u30b9\u30da\u30fc\u30b9"
+    "message": "Space"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "\u5de6\u306b\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u3001\u5358\u8a9e\u5168\u4f53\u304c\u524a\u9664\u3055\u308c\u307e\u3059\u3002"
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "\u53f3\u306b\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u3001\u5358\u8a9e\u304c\u5fa9\u5143\u3055\u308c\u307e\u3059\u3002"
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "\u5de6\u53f3\u306b\u30b9\u30ef\u30a4\u30d7\u3059\u308b\u3068\u3001\u30ab\u30fc\u30bd\u30eb\u304c\u79fb\u52d5\u3057\u307e\u3059\u3002"
   },
   "switch_to": {
-    "message": "\u6b21\u306b\u5207\u308a\u66ff\u3048\u307e\u3059: "
+    "message": "\u5207\u308a\u66ff\u3048: "
   },
   "switch_to_compact_layout": {
     "message": "\u7c21\u6613\u914d\u5217\u306b\u5207\u308a\u66ff\u3048"
@@ -3179,13 +3221,16 @@
     "message": "\u6b21\u306b\u5207\u308a\u66ff\u3048: "
   },
   "switched_to": {
-    "message": "\u6b21\u306b\u5207\u308a\u66ff\u3048\u307e\u3057\u305f: "
+    "message": "\u5207\u308a\u66ff\u3048\u307e\u3057\u305f: "
   },
   "tab": {
-    "message": "tab"
+    "message": "Tab"
   },
   "touch_keyboard": {
     "message": "\u753b\u9762\u30ad\u30fc\u30dc\u30fc\u30c9"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "\u30c8\u30eb\u30b3\u8a9e-F \u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "tr_tur_settings_page": {
     "message": "\u30c8\u30eb\u30b3\u8a9e\u30ad\u30fc\u30dc\u30fc\u30c9\u8a2d\u5b9a\u30da\u30fc\u30b8"
@@ -3305,13 +3350,16 @@
     "message": "US \u30ad\u30fc\u30dc\u30fc\u30c9\uff08\u30de\u30ec\u30fc\u8a9e\uff09\u8a2d\u5b9a\u30da\u30fc\u30b8"
   },
   "user_dict": {
-    "message": "\u30e6\u30fc\u30b6\u30fc\u8f9e\u66f8\u3092\u6709\u52b9\u306b\u3059\u308b"
+    "message": "\u5358\u8a9e\u30ea\u30b9\u30c8\u3092\u6709\u52b9\u306b\u3059\u308b"
   },
   "user_dict_add": {
     "message": "\u8ffd\u52a0"
   },
   "user_dict_clear": {
     "message": "\u3059\u3079\u3066\u6d88\u53bb"
+  },
+  "user_dict_edit": {
+    "message": "\u8f9e\u66f8\u306e\u30a8\u30f3\u30c8\u30ea\u3092\u7de8\u96c6"
   },
   "user_dict_manage": {
     "message": "\u500b\u4eba\u8f9e\u66f8\u3092\u7ba1\u7406..."
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "\u5f85\u6a5f"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "\u30ad\u30fc\u30dc\u30fc\u30c9 \u30bf\u30a4\u30d7"

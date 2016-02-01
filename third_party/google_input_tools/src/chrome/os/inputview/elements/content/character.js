@@ -16,9 +16,9 @@ goog.provide('i18n.input.chrome.inputview.elements.content.Character');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.util');
 
 
@@ -39,7 +39,7 @@ goog.scope(function() {
  */
 i18n.input.chrome.inputview.elements.content.Character = function(
     id, model, isRTL) {
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       CHARACTER);
 
   /**

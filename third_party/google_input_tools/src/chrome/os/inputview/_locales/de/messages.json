@@ -29,16 +29,16 @@
     "message": "Seite mit Einstellungen f\u00fcr armenische phonetische Tastatur"
   },
   "appnamejpkeyboard": {
-    "message": "Google Japanese Input (f\u00fcr japanische Tastatur)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Google Japanese Input (f\u00fcr US-Tastatur)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "Autokorrektur"
   },
   "backspace": {
-    "message": "L\u00f6schtaste"
+    "message": "R\u00fccktaste"
   },
   "basic": {
     "message": "Grundeinstellungen"
@@ -86,13 +86,13 @@
     "message": "Seite mit Einstellungen f\u00fcr schweizerische Tastatur (deutsch)"
   },
   "chos_inputtool_description": {
-    "message": "Mit Google Input Tools f\u00fcr Chrome OS k\u00f6nnen Sie Eingaben in Ihrer gew\u00fcnschten Sprache in Chrome OS vornehmen."
+    "message": "Mit Google Input Tools f\u00fcr Chrome OS k\u00f6nnen Sie in Chrome OS Eingaben in Ihrer gew\u00fcnschten Sprache vornehmen."
   },
   "chos_inputtool_title": {
     "message": "Google Input Tools"
   },
   "compositionmodedirect": {
-    "message": "Direkte Eingabe"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
     "message": "Wide Latin"
@@ -104,64 +104,64 @@
     "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Katakana mit halber Breite"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "Grundeinstellungen"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Personalisierungsdaten l\u00f6schen..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Abbrechen"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "Konvertierungsverlauf"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "Folgende Elemente l\u00f6schen:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Personalisierungsdaten l\u00f6schen"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Vorschlagsverlauf"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Personalisierungsdaten l\u00f6schen"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2013 Google Inc. Alle Rechte vorbehalten."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Abbrechen"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Mein W\u00f6rterbuch verwalten..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "F\u00fcgen Sie eigene Begriffe zu Ihrem W\u00f6rterbuch hinzu, um die Konvertierungsauswahl anzupassen."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Meine W\u00f6rterb\u00fccher"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Personalisierte Konvertierungen und Vorschl\u00e4ge sowie mein W\u00f6rterbuch deaktivieren"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Eingabehilfe"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Diese Software basiert auf <a href=\"./credits_en.html\">Open-Source-Software</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Eingabemodus:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,19 +170,19 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Datenschutz"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Satzzeichenstil:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Auswahltastaturk\u00fcrzel:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Kein Tastaturk\u00fcrzel"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Stil f\u00fcr Tastaturbelegung:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Benutzerdefinierte Tastaturbelegung"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,58 +200,58 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Japanische Eingabeeinstellungen"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Moduswechsel mit Umschalttaste:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Alphanumerisch"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "Aus"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Eingabestil f\u00fcr Leerzeichen:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Dieselbe Methode wie bei der Eingabe verwenden"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "Volle Breite"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Halbe Breite"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Anzahl der Vorschl\u00e4ge:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Vorschlagen"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Symbolstil:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Nutzungsstatistiken und Absturzberichte automatisch an Google senden"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Automatisch in halbbreites Format wechseln"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Systemw\u00f6rterbuch verwenden"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Eingabeverlauf verwenden"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "Strg-Taste"
   },
   "current_keyboard_prefix": {
-    "message": "momentan ausgew\u00e4hlte Tastatur "
+    "message": "Momentan ausgew\u00e4hlte Tastatur "
   },
   "current_lang": {
     "message": "Eingabesprache ist Chinesisch."
@@ -269,145 +269,145 @@
     "message": "Seite mit Einstellungen f\u00fcr tschechische Qwerty-Tastatur"
   },
   "d83c_dc04": {
-    "message": "Mahjong-Fliese"
+    "message": "MAHJONG TILE RED DRAGON"
   },
   "d83c_dccf": {
-    "message": "Jokerkarte"
+    "message": "PLAYING CARD BLACK JOKER"
   },
   "d83c_dd70": {
-    "message": "Blutgruppe A"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER A"
   },
   "d83c_dd71": {
-    "message": "Blutgruppe B"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER B"
   },
   "d83c_dd7e": {
-    "message": "Blutgruppe O"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER O"
   },
   "d83c_dd7f": {
-    "message": "Parkplatz"
+    "message": "NEGATIVE SQUARED LATIN CAPITAL LETTER P"
   },
   "d83c_dd8e": {
-    "message": "Blutgruppe AB"
+    "message": "NEGATIVE SQUARED AB"
   },
   "d83c_dd91": {
-    "message": "CL"
+    "message": "SQUARED CL"
   },
   "d83c_dd92": {
-    "message": "cool"
+    "message": "SQUARED COOL"
   },
   "d83c_dd93": {
-    "message": "kostenlos"
+    "message": "SQUARED FREE"
   },
   "d83c_dd94": {
-    "message": "ID"
+    "message": "SQUARED ID"
   },
   "d83c_dd95": {
-    "message": "neu"
+    "message": "SQUARED NEW"
   },
   "d83c_dd96": {
-    "message": "NG"
+    "message": "SQUARED NG"
   },
   "d83c_dd97": {
-    "message": "O.K."
+    "message": "SQUARED OK"
   },
   "d83c_dd98": {
-    "message": "SOS"
+    "message": "SQUARED SOS"
   },
   "d83c_dd99": {
-    "message": "hinauf"
+    "message": "SQUARED UP WITH EXCLAMATION MARK"
   },
   "d83c_dd9a": {
-    "message": "gegen"
+    "message": "SQUARED VS"
   },
   "d83c_de01": {
-    "message": "japanisches Wort \"hier\""
+    "message": "Japanisches Zeichen f\u00fcr \"hier\""
   },
   "d83c_de02": {
-    "message": "japanisches Wort \"Dienst\""
+    "message": "Japanisches Zeichen f\u00fcr \"Dienst\""
   },
   "d83c_de1a": {
-    "message": "japanisches Wort \"frei\""
+    "message": "Japanisches Zeichen f\u00fcr \"frei\""
   },
   "d83c_de2f": {
-    "message": "japanisches Wort \"reserviert\""
+    "message": "Japanisches Zeichen f\u00fcr \"reserviert\""
   },
   "d83c_de32": {
-    "message": "japanisches Wort \"verboten\""
+    "message": "Japanisches Zeichen f\u00fcr \"verboten\""
   },
   "d83c_de33": {
-    "message": "chinesisches Wort \"Platz frei\""
+    "message": "Chinesisches Zeichen f\u00fcr \"frei\""
   },
   "d83c_de34": {
-    "message": "chinesisches Wort \"Pass\""
+    "message": "Chinesisches Zeichen f\u00fcr \"bestanden\""
   },
   "d83c_de35": {
-    "message": "chinesisches Wort \"voll\""
+    "message": "Chinesisches Zeichen f\u00fcr \"voll\""
   },
   "d83c_de36": {
-    "message": "japanisches Wort \"Geb\u00fchren\""
+    "message": "Japanisches Zeichen f\u00fcr \"Geb\u00fchren\""
   },
   "d83c_de37": {
-    "message": "japanisches Wort \"monatlich\""
+    "message": "Japanisches Zeichen f\u00fcr \"monatlich\""
   },
   "d83c_de38": {
-    "message": "chinesisches Wort \"Antrag\""
+    "message": "Chinesisches Zeichen f\u00fcr \"Bewerbung\""
   },
   "d83c_de39": {
-    "message": "japanisches Wort \"Rabatt\""
+    "message": "Japanisches Zeichen f\u00fcr \"Rabatt\""
   },
   "d83c_de3a": {
-    "message": "chinesisches Wort \"im Gesch\u00e4ft\""
+    "message": "Chinesisches Zeichen f\u00fcr \"ge\u00f6ffnet\""
   },
   "d83c_de50": {
-    "message": "japanisches Wort \"Vorteil\""
+    "message": "Japanisches Zeichen f\u00fcr \"Vorteil\""
   },
   "d83c_de51": {
-    "message": "chinesisches Wort \"zugelassen\""
+    "message": "Chinesisches Zeichen f\u00fcr \"genehmigt\""
   },
   "d83c_df00": {
-    "message": "Wirbelsturm"
+    "message": "CYCLONE"
   },
   "d83c_df01": {
-    "message": "nebelig"
+    "message": "FOGGY"
   },
   "d83c_df02": {
-    "message": "Regenschirm"
+    "message": "CLOSED UMBRELLA"
   },
   "d83c_df03": {
-    "message": "Sterne in der Nacht"
+    "message": "NIGHT WITH STARS"
   },
   "d83c_df04": {
-    "message": "Sonnenaufgang \u00fcber Bergen"
+    "message": "Sonnenaufgang \u00fcber den Bergen"
   },
   "d83c_df05": {
-    "message": "Sonnenaufgang"
+    "message": "SUNRISE"
   },
   "d83c_df06": {
-    "message": "Stadt in der D\u00e4mmerung"
+    "message": "CITYSCAPE AT DUSK"
   },
   "d83c_df07": {
-    "message": "Sonnenuntergang"
+    "message": "SUNSET OVER BUILDINGS"
   },
   "d83c_df08": {
-    "message": "Regenbogen"
+    "message": "RAINBOW"
   },
   "d83c_df09": {
-    "message": "Br\u00fccke bei Nacht"
+    "message": "BRIDGE AT NIGHT"
   },
   "d83c_df0a": {
-    "message": "Welle"
+    "message": "WATER WAVE"
   },
   "d83c_df0b": {
-    "message": "Vulkan"
+    "message": "VOLCANO"
   },
   "d83c_df0c": {
-    "message": "Milchstra\u00dfe"
+    "message": "MILKY WAY"
   },
   "d83c_df0d": {
     "message": "Globus mit Europa und Afrika"
   },
   "d83c_df0e": {
-    "message": "Globus mit Amerika"
+    "message": "Globus mit Nord- und S\u00fcdamerika"
   },
   "d83c_df0f": {
     "message": "Globus mit Asien und Australien"
@@ -416,1291 +416,1291 @@
     "message": "Globus mit Meridianen"
   },
   "d83c_df11": {
-    "message": "Neumond"
+    "message": "NEW MOON SYMBOL"
   },
   "d83c_df12": {
-    "message": "zunehmende Mondsichel"
+    "message": "Erstes Mondviertel"
   },
   "d83c_df13": {
-    "message": "Mond im ersten Viertel"
+    "message": "Zunehmender Halbmond"
   },
   "d83c_df14": {
-    "message": "zunehmender Mond"
+    "message": "WAXING GIBBOUS MOON SYMBOL"
   },
   "d83c_df15": {
-    "message": "Vollmond"
+    "message": "FULL MOON SYMBOL"
   },
   "d83c_df16": {
-    "message": "abnehmender Mond"
+    "message": "WANING GIBBOUS MOON SYMBOL"
   },
   "d83c_df17": {
-    "message": "Mond im letzten Viertel"
+    "message": "Abnehmender Halbmond"
   },
   "d83c_df18": {
-    "message": "abnehmende Mondsichel"
+    "message": "Letztes Mondviertel"
   },
   "d83c_df19": {
-    "message": "Mondsichel"
+    "message": "CRESCENT MOON"
   },
   "d83c_df1a": {
-    "message": "Neumondgesicht"
+    "message": "NEW MOON WITH FACE"
   },
   "d83c_df1b": {
-    "message": "Mond im ersten Viertel mit Gesicht"
+    "message": "Erstes Mondviertel mit Gesicht"
   },
   "d83c_df1c": {
-    "message": "Mond im letzten Viertel mit Gesicht"
+    "message": "Letztes Mondviertel mit Gesicht"
   },
   "d83c_df1d": {
-    "message": "Vollmondgesicht"
+    "message": "FULL MOON WITH FACE"
   },
   "d83c_df1e": {
-    "message": "Sonnengesicht"
+    "message": "SUN WITH FACE"
   },
   "d83c_df1f": {
-    "message": "leuchtender Stern"
+    "message": "GLOWING STAR"
   },
   "d83c_df20": {
-    "message": "Sternschnuppe"
+    "message": "SHOOTING STAR"
   },
   "d83c_df30": {
-    "message": "Kastanie"
+    "message": "CHESTNUT"
   },
   "d83c_df31": {
-    "message": "junge Pflanze"
+    "message": "SEEDLING"
   },
   "d83c_df32": {
-    "message": "Nadelbaum"
+    "message": "EVERGREEN TREE"
   },
   "d83c_df33": {
-    "message": "Laubbaum"
+    "message": "DECIDUOUS TREE"
   },
   "d83c_df34": {
-    "message": "Palme"
+    "message": "PALM TREE"
   },
   "d83c_df35": {
-    "message": "Kaktus"
+    "message": "CACTUS"
   },
   "d83c_df37": {
-    "message": "Tulpe"
+    "message": "TULIP"
   },
   "d83c_df38": {
-    "message": "Kirschbl\u00fcte"
+    "message": "CHERRY BLOSSOM"
   },
   "d83c_df39": {
-    "message": "Rose"
+    "message": "ROSE"
   },
   "d83c_df3a": {
-    "message": "Hibiskus"
+    "message": "HIBISCUS"
   },
   "d83c_df3b": {
-    "message": "Sonnenblume"
+    "message": "SUNFLOWER"
   },
   "d83c_df3c": {
-    "message": "Bl\u00fcte"
+    "message": "BLOSSOM"
   },
   "d83c_df3d": {
-    "message": "Mais"
+    "message": "EAR OF MAIZE"
   },
   "d83c_df3e": {
-    "message": "Reispflanze"
+    "message": "EAR OF RICE"
   },
   "d83c_df3f": {
-    "message": "Kraut"
+    "message": "HERB"
   },
   "d83c_df40": {
-    "message": "vierbl\u00e4ttriges Kleeblatt"
+    "message": "FOUR LEAF CLOVER"
   },
   "d83c_df41": {
-    "message": "Ahornblatt"
+    "message": "MAPLE LEAF"
   },
   "d83c_df42": {
-    "message": "fallende Bl\u00e4tter"
+    "message": "FALLEN LEAF"
   },
   "d83c_df43": {
-    "message": "Blatt im Wind"
+    "message": "LEAF FLUTTERING IN WIND"
   },
   "d83c_df44": {
-    "message": "Pilz"
+    "message": "MUSHROOM"
   },
   "d83c_df45": {
-    "message": "Tomate"
+    "message": "TOMATO"
   },
   "d83c_df46": {
-    "message": "Aubergine"
+    "message": "AUBERGINE"
   },
   "d83c_df47": {
-    "message": "Trauben"
+    "message": "GRAPES"
   },
   "d83c_df48": {
-    "message": "Melone"
+    "message": "MELON"
   },
   "d83c_df49": {
-    "message": "Wassermelone"
+    "message": "WATERMELON"
   },
   "d83c_df4a": {
-    "message": "Mandarine"
+    "message": "TANGERINE"
   },
   "d83c_df4b": {
-    "message": "Zitrone"
+    "message": "LEMON"
   },
   "d83c_df4c": {
-    "message": "Banane"
+    "message": "BANANA"
   },
   "d83c_df4d": {
-    "message": "Ananas"
+    "message": "PINEAPPLE"
   },
   "d83c_df4e": {
-    "message": "roter Apfel"
+    "message": "RED APPLE"
   },
   "d83c_df4f": {
-    "message": "gr\u00fcner Apfel"
+    "message": "GREEN APPLE"
   },
   "d83c_df50": {
-    "message": "Birne"
+    "message": "PEAR"
   },
   "d83c_df51": {
-    "message": "Pfirsich"
+    "message": "PEACH"
   },
   "d83c_df52": {
-    "message": "Kirsche"
+    "message": "CHERRIES"
   },
   "d83c_df53": {
-    "message": "Erdbeere"
+    "message": "STRAWBERRY"
   },
   "d83c_df54": {
-    "message": "Hamburger"
+    "message": "HAMBURGER"
   },
   "d83c_df55": {
-    "message": "Pizzascheibe"
+    "message": "SLICE OF PIZZA"
   },
   "d83c_df56": {
-    "message": "Fleisch"
+    "message": "MEAT ON BONE"
   },
   "d83c_df57": {
-    "message": "H\u00e4hnchenschenkel"
+    "message": "POULTRY LEG"
   },
   "d83c_df58": {
-    "message": "Reiscracker"
+    "message": "RICE CRACKER"
   },
   "d83c_df59": {
-    "message": "Reisb\u00e4llchen"
+    "message": "RICE BALL"
   },
   "d83c_df5a": {
-    "message": "Reis"
+    "message": "COOKED RICE"
   },
   "d83c_df5b": {
-    "message": "Curry und Reis"
+    "message": "CURRY AND RICE"
   },
   "d83c_df5c": {
-    "message": "Ramen"
+    "message": "STEAMING BOWL"
   },
   "d83c_df5d": {
-    "message": "Spaghetti"
+    "message": "SPAGHETTI"
   },
   "d83c_df5e": {
-    "message": "Brot"
+    "message": "BREAD"
   },
   "d83c_df5f": {
-    "message": "Pommes frites"
+    "message": "FRENCH FRIES"
   },
   "d83c_df60": {
-    "message": "ger\u00f6stete Kartoffel"
+    "message": "ROASTED SWEET POTATO"
   },
   "d83c_df61": {
-    "message": "Mochi"
+    "message": "DANGO"
   },
   "d83c_df62": {
-    "message": "Oden"
+    "message": "ODEN"
   },
   "d83c_df63": {
-    "message": "Sushi"
+    "message": "SUSHI"
   },
   "d83c_df64": {
-    "message": "gebackene Garnele"
+    "message": "FRIED SHRIMP"
   },
   "d83c_df65": {
-    "message": "Fischkuchen"
+    "message": "FISH CAKE WITH SWIRL DESIGN"
   },
   "d83c_df66": {
-    "message": "Softeis"
+    "message": "SOFT ICE CREAM"
   },
   "d83c_df67": {
-    "message": "Wassereis"
+    "message": "SHAVED ICE"
   },
   "d83c_df68": {
-    "message": "Speiseeis"
+    "message": "ICE CREAM"
   },
   "d83c_df69": {
-    "message": "Doughnut"
+    "message": "DOUGHNUT"
   },
   "d83c_df6a": {
-    "message": "Pl\u00e4tzchen"
+    "message": "COOKIE"
   },
   "d83c_df6b": {
-    "message": "Schokolade"
+    "message": "CHOCOLATE BAR"
   },
   "d83c_df6c": {
-    "message": "Bonbon"
+    "message": "CANDY"
   },
   "d83c_df6d": {
-    "message": "Lolli"
+    "message": "LOLLIPOP"
   },
   "d83c_df6e": {
-    "message": "Pudding"
+    "message": "CUSTARD"
   },
   "d83c_df6f": {
-    "message": "Honigtopf"
+    "message": "HONEY POT"
   },
   "d83c_df70": {
-    "message": "Tortenst\u00fcck"
+    "message": "SHORTCAKE"
   },
   "d83c_df71": {
-    "message": "Bento"
+    "message": "BENTO BOX"
   },
   "d83c_df72": {
-    "message": "Eintopf"
+    "message": "POT OF FOOD"
   },
   "d83c_df73": {
-    "message": "Bratpfanne"
+    "message": "COOKING"
   },
   "d83c_df74": {
-    "message": "Messer und Gabel"
+    "message": "FORK AND KNIFE"
   },
   "d83c_df75": {
-    "message": "Teetasse"
+    "message": "TEACUP WITHOUT HANDLE"
   },
   "d83c_df76": {
-    "message": "Sake"
+    "message": "SAKE BOTTLE AND CUP"
   },
   "d83c_df77": {
-    "message": "Wein"
+    "message": "WINE GLASS"
   },
   "d83c_df78": {
-    "message": "Cocktail"
+    "message": "COCKTAIL GLASS"
   },
   "d83c_df79": {
-    "message": "exotischer Drink"
+    "message": "TROPICAL DRINK"
   },
   "d83c_df7a": {
-    "message": "Bier"
+    "message": "BEER MUG"
   },
   "d83c_df7b": {
-    "message": "Bierkr\u00fcge"
+    "message": "CLINKING BEER MUGS"
   },
   "d83c_df7c": {
-    "message": "Babyflasche"
+    "message": "BABY BOTTLE"
   },
   "d83c_df80": {
-    "message": "Schleife"
+    "message": "RIBBON"
   },
   "d83c_df81": {
-    "message": "Geschenk"
+    "message": "WRAPPED PRESENT"
   },
   "d83c_df82": {
-    "message": "Geburtstagstorte"
+    "message": "BIRTHDAY CAKE"
   },
   "d83c_df83": {
-    "message": "K\u00fcrbislaterne"
+    "message": "JACK-O-LANTERN"
   },
   "d83c_df84": {
-    "message": "Weihnachtsbaum"
+    "message": "CHRISTMAS TREE"
   },
   "d83c_df85": {
-    "message": "Weihnachtsmann"
+    "message": "FATHER CHRISTMAS"
   },
   "d83c_df86": {
-    "message": "Feuerwerk"
+    "message": "FIREWORKS"
   },
   "d83c_df87": {
-    "message": "Wunderkerze"
+    "message": "FIREWORK SPARKLER"
   },
   "d83c_df88": {
-    "message": "Ballon"
+    "message": "BALLOON"
   },
   "d83c_df89": {
-    "message": "Konfettibombe"
+    "message": "PARTY POPPER"
   },
   "d83c_df8a": {
-    "message": "Konfetti"
+    "message": "CONFETTI BALL"
   },
   "d83c_df8b": {
-    "message": "Baum mit Papierstreifen"
+    "message": "TANABATA TREE"
   },
   "d83c_df8c": {
-    "message": "gekreuzte Flaggen"
+    "message": "CROSSED FLAGS"
   },
   "d83c_df8d": {
-    "message": "Kieferndekoration"
+    "message": "PINE DECORATION"
   },
   "d83c_df8e": {
-    "message": "Puppen"
+    "message": "JAPANESE DOLLS"
   },
   "d83c_df8f": {
-    "message": "Karpfenluftschlange"
+    "message": "CARP STREAMER"
   },
   "d83c_df90": {
-    "message": "Windspiel"
+    "message": "WIND CHIME"
   },
   "d83c_df91": {
-    "message": "Mondbetrachtung"
+    "message": "MOON VIEWING CEREMONY"
   },
   "d83c_df92": {
-    "message": "Schultasche"
+    "message": "SCHOOL SATCHEL"
   },
   "d83c_df93": {
-    "message": "Collegehut"
+    "message": "GRADUATION CAP"
   },
   "d83c_dfa0": {
-    "message": "Karussell"
+    "message": "CAROUSEL HORSE"
   },
   "d83c_dfa1": {
-    "message": "Riesenrad"
+    "message": "FERRIS WHEEL"
   },
   "d83c_dfa2": {
-    "message": "Achterbahn"
+    "message": "ROLLER COASTER"
   },
   "d83c_dfa3": {
-    "message": "Angeln"
+    "message": "FISHING POLE AND FISH"
   },
   "d83c_dfa4": {
-    "message": "Mikrofon"
+    "message": "MICROPHONE"
   },
   "d83c_dfa5": {
-    "message": "Filmkamera"
+    "message": "MOVIE CAMERA"
   },
   "d83c_dfa6": {
-    "message": "Film"
+    "message": "CINEMA"
   },
   "d83c_dfa7": {
-    "message": "Kopfh\u00f6rer"
+    "message": "HEADPHONE"
   },
   "d83c_dfa8": {
-    "message": "Farbpalette"
+    "message": "ARTIST PALETTE"
   },
   "d83c_dfa9": {
-    "message": "Zylinder"
+    "message": "TOP HAT"
   },
   "d83c_dfaa": {
-    "message": "Zirkus"
+    "message": "CIRCUS TENT"
   },
   "d83c_dfab": {
-    "message": "Eintrittskarte"
+    "message": "TICKET"
   },
   "d83c_dfac": {
-    "message": "Filmklappe"
+    "message": "CLAPPER BOARD"
   },
   "d83c_dfad": {
-    "message": "Masken"
+    "message": "PERFORMING ARTS"
   },
   "d83c_dfae": {
-    "message": "Computerspiel"
+    "message": "VIDEO GAME"
   },
   "d83c_dfaf": {
-    "message": "Volltreffer"
+    "message": "DIRECT HIT"
   },
   "d83c_dfb0": {
-    "message": "M\u00fcnzautomat"
+    "message": "SLOT MACHINE"
   },
   "d83c_dfb1": {
-    "message": "Billard"
+    "message": "BILLIARDS"
   },
   "d83c_dfb2": {
-    "message": "W\u00fcrfel"
+    "message": "GAME DIE"
   },
   "d83c_dfb3": {
-    "message": "Bowling"
+    "message": "BOWLING"
   },
   "d83c_dfb4": {
-    "message": "Spielkarte"
+    "message": "FLOWER PLAYING CARDS"
   },
   "d83c_dfb5": {
-    "message": "Musiknote"
+    "message": "MUSICAL NOTE"
   },
   "d83c_dfb6": {
-    "message": "Musiknoten"
+    "message": "MULTIPLE MUSICAL NOTES"
   },
   "d83c_dfb7": {
-    "message": "Saxofon"
+    "message": "SAXOPHONE"
   },
   "d83c_dfb8": {
-    "message": "Gitarre"
+    "message": "GUITAR"
   },
   "d83c_dfb9": {
-    "message": "Klavier"
+    "message": "MUSICAL KEYBOARD"
   },
   "d83c_dfba": {
-    "message": "Trompete"
+    "message": "TRUMPET"
   },
   "d83c_dfbb": {
-    "message": "Geige"
+    "message": "VIOLIN"
   },
   "d83c_dfbc": {
-    "message": "Musikpartitur"
+    "message": "MUSICAL SCORE"
   },
   "d83c_dfbd": {
-    "message": "Laufshirt"
+    "message": "RUNNING SHIRT WITH SASH"
   },
   "d83c_dfbe": {
-    "message": "Tennis"
+    "message": "TENNIS RACQUET AND BALL"
   },
   "d83c_dfbf": {
-    "message": "Skier"
+    "message": "SKI AND SKI BOOT"
   },
   "d83c_dfc0": {
-    "message": "Basketball"
+    "message": "BASKETBALL AND HOOP"
   },
   "d83c_dfc1": {
-    "message": "Zielflagge"
+    "message": "CHEQUERED FLAG"
   },
   "d83c_dfc2": {
-    "message": "Snowboarder"
+    "message": "SNOWBOARDER"
   },
   "d83c_dfc3": {
-    "message": "L\u00e4ufer"
+    "message": "RUNNER"
   },
   "d83c_dfc4": {
-    "message": "Surfen"
+    "message": "SURFER"
   },
   "d83c_dfc6": {
-    "message": "Pokal"
+    "message": "TROPHY"
   },
   "d83c_dfc7": {
-    "message": "Pferderennen"
+    "message": "HORSE RACING"
   },
   "d83c_dfc8": {
-    "message": "American Football"
+    "message": "AMERICAN FOOTBALL"
   },
   "d83c_dfc9": {
-    "message": "Fu\u00dfball"
+    "message": "RUGBY FOOTBALL"
   },
   "d83c_dfca": {
-    "message": "Schwimmer"
+    "message": "SWIMMER"
   },
   "d83c_dfe0": {
-    "message": "Haus"
+    "message": "HOUSE BUILDING"
   },
   "d83c_dfe1": {
-    "message": "Heim"
+    "message": "HOUSE WITH GARDEN"
   },
   "d83c_dfe2": {
-    "message": "B\u00fcrogeb\u00e4ude"
+    "message": "OFFICE BUILDING"
   },
   "d83c_dfe3": {
-    "message": "japanische Post"
+    "message": "Japanisches Postgeb\u00e4ude"
   },
   "d83c_dfe4": {
-    "message": "europ\u00e4ische Post"
+    "message": "Europ\u00e4isches Postgeb\u00e4ude"
   },
   "d83c_dfe5": {
-    "message": "Krankenhaus"
+    "message": "HOSPITAL"
   },
   "d83c_dfe6": {
-    "message": "Bank"
+    "message": "BANK"
   },
   "d83c_dfe7": {
-    "message": "Geldautomat"
+    "message": "AUTOMATED TELLER MACHINE"
   },
   "d83c_dfe8": {
-    "message": "Hotel"
+    "message": "HOTEL"
   },
   "d83c_dfe9": {
-    "message": "Liebeshotel"
+    "message": "LOVE HOTEL"
   },
   "d83c_dfea": {
-    "message": "Verbrauchermarkt"
+    "message": "CONVENIENCE STORE"
   },
   "d83c_dfeb": {
-    "message": "Schule"
+    "message": "SCHOOL"
   },
   "d83c_dfec": {
-    "message": "Kaufhaus"
+    "message": "DEPARTMENT STORE"
   },
   "d83c_dfed": {
-    "message": "Fabrik"
+    "message": "FACTORY"
   },
   "d83c_dfee": {
-    "message": "rote Laterne"
+    "message": "IZAKAYA LANTERN"
   },
   "d83c_dfef": {
-    "message": "japanische Burg"
+    "message": "JAPANESE CASTLE"
   },
   "d83c_dff0": {
-    "message": "europ\u00e4ische Burg"
+    "message": "EUROPEAN CASTLE"
   },
   "d83d_dc00": {
-    "message": "Ratte"
+    "message": "RAT"
   },
   "d83d_dc01": {
-    "message": "Maus"
+    "message": "MOUSE"
   },
   "d83d_dc02": {
-    "message": "Ochse"
+    "message": "OX"
   },
   "d83d_dc03": {
-    "message": "Wasserb\u00fcffel"
+    "message": "WATER BUFFALO"
   },
   "d83d_dc04": {
-    "message": "Kuh"
+    "message": "COW"
   },
   "d83d_dc06": {
-    "message": "Leopard"
+    "message": "LEOPARD"
   },
   "d83d_dc07": {
-    "message": "Kaninchen"
+    "message": "RABBIT"
   },
   "d83d_dc08": {
-    "message": "Katze"
+    "message": "CAT"
   },
   "d83d_dc09": {
-    "message": "Drache"
+    "message": "DRAGON"
   },
   "d83d_dc0a": {
-    "message": "Krokodil"
+    "message": "CROCODILE"
   },
   "d83d_dc0b": {
-    "message": "Wal"
+    "message": "WHALE"
   },
   "d83d_dc0c": {
-    "message": "Schnecke"
+    "message": "SNAIL"
   },
   "d83d_dc0d": {
-    "message": "Schlange"
+    "message": "SNAKE"
   },
   "d83d_dc0e": {
-    "message": "Pferd"
+    "message": "HORSE"
   },
   "d83d_dc0f": {
-    "message": "Widder"
+    "message": "RAM"
   },
   "d83d_dc10": {
-    "message": "Ziege"
+    "message": "GOAT"
   },
   "d83d_dc11": {
-    "message": "Schaf"
+    "message": "SHEEP"
   },
   "d83d_dc12": {
-    "message": "Affe"
+    "message": "MONKEY"
   },
   "d83d_dc13": {
-    "message": "Hahn"
+    "message": "ROOSTER"
   },
   "d83d_dc14": {
-    "message": "Huhn"
+    "message": "CHICKEN"
   },
   "d83d_dc15": {
-    "message": "Hund"
+    "message": "DOG"
   },
   "d83d_dc16": {
-    "message": "Schwein"
+    "message": "PIG"
   },
   "d83d_dc17": {
-    "message": "Wildschwein"
+    "message": "BOAR"
   },
   "d83d_dc18": {
-    "message": "Elefant"
+    "message": "ELEPHANT"
   },
   "d83d_dc19": {
-    "message": "Krake"
+    "message": "OCTOPUS"
   },
   "d83d_dc1a": {
-    "message": "Muschel"
+    "message": "SPIRAL SHELL"
   },
   "d83d_dc1b": {
-    "message": "Raupe"
+    "message": "BUG"
   },
   "d83d_dc1c": {
-    "message": "Ameise"
+    "message": "ANT"
   },
   "d83d_dc1d": {
-    "message": "Honigbiene"
+    "message": "HONEYBEE"
   },
   "d83d_dc1e": {
-    "message": "Marienk\u00e4fer"
+    "message": "LADY BEETLE"
   },
   "d83d_dc1f": {
-    "message": "Fisch"
+    "message": "FISH"
   },
   "d83d_dc20": {
-    "message": "tropischer Fisch"
+    "message": "TROPICAL FISH"
   },
   "d83d_dc21": {
-    "message": "Kugelfisch"
+    "message": "BLOWFISH"
   },
   "d83d_dc22": {
-    "message": "Schildkr\u00f6te"
+    "message": "TURTLE"
   },
   "d83d_dc23": {
-    "message": "schl\u00fcpfendes K\u00fcken"
+    "message": "HATCHING CHICK"
   },
   "d83d_dc24": {
     "message": "K\u00fckengesicht"
   },
   "d83d_dc25": {
-    "message": "K\u00fcken"
+    "message": "FRONT-FACING BABY CHICK"
   },
   "d83d_dc26": {
-    "message": "Vogel"
+    "message": "BIRD"
   },
   "d83d_dc27": {
-    "message": "Pinguin"
+    "message": "PENGUIN"
   },
   "d83d_dc28": {
-    "message": "Koala"
+    "message": "KOALA"
   },
   "d83d_dc29": {
-    "message": "Pudel"
+    "message": "POODLE"
   },
   "d83d_dc2a": {
-    "message": "Dromedar"
+    "message": "DROMEDARY CAMEL"
   },
   "d83d_dc2b": {
-    "message": "Kamel"
+    "message": "BACTRIAN CAMEL"
   },
   "d83d_dc2c": {
-    "message": "Delfin"
+    "message": "DOLPHIN"
   },
   "d83d_dc2d": {
-    "message": "M\u00e4usegesicht"
+    "message": "MOUSE FACE"
   },
   "d83d_dc2e": {
-    "message": "Kuhgesicht"
+    "message": "COW FACE"
   },
   "d83d_dc2f": {
-    "message": "Tigergesicht"
+    "message": "TIGER FACE"
   },
   "d83d_dc30": {
-    "message": "Kaninchengesicht"
+    "message": "RABBIT FACE"
   },
   "d83d_dc31": {
-    "message": "Katzengesicht"
+    "message": "CAT FACE"
   },
   "d83d_dc32": {
-    "message": "Drachengesicht"
+    "message": "DRAGON FACE"
   },
   "d83d_dc33": {
-    "message": "Wasser speiender Wal"
+    "message": "SPOUTING WHALE"
   },
   "d83d_dc34": {
-    "message": "Pferdegesicht"
+    "message": "HORSE FACE"
   },
   "d83d_dc35": {
-    "message": "Affengesicht"
+    "message": "MONKEY FACE"
   },
   "d83d_dc36": {
-    "message": "Hundegesicht"
+    "message": "DOG FACE"
   },
   "d83d_dc37": {
-    "message": "Schweinegesicht"
+    "message": "PIG FACE"
   },
   "d83d_dc38": {
-    "message": "Froschgesicht"
+    "message": "FROG FACE"
   },
   "d83d_dc39": {
-    "message": "Hamstergesicht"
+    "message": "HAMSTER FACE"
   },
   "d83d_dc3a": {
-    "message": "Wolfsgesicht"
+    "message": "WOLF FACE"
   },
   "d83d_dc3b": {
-    "message": "B\u00e4rengesicht"
+    "message": "BEAR FACE"
   },
   "d83d_dc3c": {
-    "message": "Pandagesicht"
+    "message": "PANDA FACE"
   },
   "d83d_dc3d": {
-    "message": "Schweinenase"
+    "message": "PIG NOSE"
   },
   "d83d_dc3e": {
-    "message": "Pfotenabdruck"
+    "message": "PAW PRINTS"
   },
   "d83d_dc40": {
-    "message": "Augen"
+    "message": "EYES"
   },
   "d83d_dc42": {
-    "message": "Ohr"
+    "message": "EAR"
   },
   "d83d_dc43": {
-    "message": "Nase"
+    "message": "NOSE"
   },
   "d83d_dc44": {
-    "message": "Mund"
+    "message": "MOUTH"
   },
   "d83d_dc45": {
-    "message": "Zunge"
+    "message": "TONGUE"
   },
   "d83d_dc46": {
-    "message": "nach oben zeigender Finger"
+    "message": "WHITE UP POINTING BACKHAND INDEX"
   },
   "d83d_dc47": {
-    "message": "nach unten zeigender Finger"
+    "message": "WHITE DOWN POINTING BACKHAND INDEX"
   },
   "d83d_dc48": {
-    "message": "nach links zeigender Finger"
+    "message": "WHITE LEFT POINTING BACKHAND INDEX"
   },
   "d83d_dc49": {
-    "message": "nach rechts zeigender Finger"
+    "message": "WHITE RIGHT POINTING BACKHAND INDEX"
   },
   "d83d_dc4a": {
-    "message": "geballte Faust"
+    "message": "FISTED HAND SIGN"
   },
   "d83d_dc4b": {
-    "message": "winkende Hand"
+    "message": "WAVING HAND SIGN"
   },
   "d83d_dc4c": {
-    "message": "Handzeichen f\u00fcr O.K."
+    "message": "Handzeichen f\u00fcr \"OK\""
   },
   "d83d_dc4d": {
-    "message": "Daumen hoch"
+    "message": "THUMBS UP SIGN"
   },
   "d83d_dc4e": {
-    "message": "Daumen nach unten"
+    "message": "THUMBS DOWN SIGN"
   },
   "d83d_dc4f": {
-    "message": "klatschende H\u00e4nde"
+    "message": "CLAPPING HANDS SIGN"
   },
   "d83d_dc50": {
-    "message": "offene H\u00e4nde"
+    "message": "OPEN HANDS SIGN"
   },
   "d83d_dc51": {
-    "message": "Krone"
+    "message": "CROWN"
   },
   "d83d_dc52": {
-    "message": "Damenhut"
+    "message": "WOMANS HAT"
   },
   "d83d_dc53": {
-    "message": "Brille"
+    "message": "EYEGLASSES"
   },
   "d83d_dc54": {
-    "message": "Krawatte"
+    "message": "NECKTIE"
   },
   "d83d_dc55": {
-    "message": "T-Shirt"
+    "message": "T-SHIRT"
   },
   "d83d_dc56": {
-    "message": "Hose"
+    "message": "JEANS"
   },
   "d83d_dc57": {
-    "message": "Kleid"
+    "message": "DRESS"
   },
   "d83d_dc58": {
-    "message": "Kimono"
+    "message": "KIMONO"
   },
   "d83d_dc59": {
-    "message": "Bikini"
+    "message": "BIKINI"
   },
   "d83d_dc5a": {
-    "message": "Damenkleidung"
+    "message": "WOMANS CLOTHES"
   },
   "d83d_dc5b": {
-    "message": "Geldb\u00f6rse"
+    "message": "PURSE"
   },
   "d83d_dc5c": {
-    "message": "Handtasche"
+    "message": "HANDBAG"
   },
   "d83d_dc5d": {
-    "message": "Beutel"
+    "message": "POUCH"
   },
   "d83d_dc5e": {
-    "message": "Herrenschuh"
+    "message": "MANS SHOE"
   },
   "d83d_dc5f": {
-    "message": "Sportschuh"
+    "message": "ATHLETIC SHOE"
   },
   "d83d_dc60": {
-    "message": "St\u00f6ckelschuh"
+    "message": "HIGH-HEELED SHOE"
   },
   "d83d_dc61": {
-    "message": "Damensandale"
+    "message": "WOMANS SANDAL"
   },
   "d83d_dc62": {
-    "message": "Damenstiefel"
+    "message": "WOMANS BOOTS"
   },
   "d83d_dc63": {
-    "message": "Fu\u00dfabdruck"
+    "message": "FOOTPRINTS"
   },
   "d83d_dc64": {
-    "message": "Umriss eines Kopfes"
+    "message": "BUST IN SILHOUETTE"
   },
   "d83d_dc65": {
-    "message": "Umrisse von K\u00f6pfen"
+    "message": "BUSTS IN SILHOUETTE"
   },
   "d83d_dc66": {
-    "message": "Junge"
+    "message": "BOY"
   },
   "d83d_dc67": {
-    "message": "M\u00e4dchen"
+    "message": "GIRL"
   },
   "d83d_dc68": {
-    "message": "Mann"
+    "message": "MAN"
   },
   "d83d_dc69": {
-    "message": "Frau"
+    "message": "WOMAN"
   },
   "d83d_dc6a": {
-    "message": "Familie"
+    "message": "FAMILY"
   },
   "d83d_dc6b": {
-    "message": "Mann und Frau"
+    "message": "MAN AND WOMAN HOLDING HANDS"
   },
   "d83d_dc6c": {
-    "message": "zwei M\u00e4nner"
+    "message": "TWO MEN HOLDING HANDS"
   },
   "d83d_dc6d": {
-    "message": "zwei Frauen"
+    "message": "TWO WOMEN HOLDING HANDS"
   },
   "d83d_dc6e": {
-    "message": "Polizist"
+    "message": "POLICE OFFICER"
   },
   "d83d_dc6f": {
-    "message": "M\u00e4dchen mit Hasenohren"
+    "message": "WOMAN WITH BUNNY EARS"
   },
   "d83d_dc70": {
-    "message": "Braut"
+    "message": "BRIDE WITH VEIL"
   },
   "d83d_dc71": {
-    "message": "blonde Person"
+    "message": "PERSON WITH BLOND HAIR"
   },
   "d83d_dc72": {
-    "message": "Mann mit Gua-Pi-Mao-Kappe"
+    "message": "Mann mit chinesischem Hut"
   },
   "d83d_dc73": {
     "message": "Mann mit Turban"
   },
   "d83d_dc74": {
-    "message": "\u00e4lterer Mann"
+    "message": "OLDER MAN"
   },
   "d83d_dc75": {
-    "message": "\u00e4ltere Frau"
+    "message": "OLDER WOMAN"
   },
   "d83d_dc76": {
-    "message": "Baby"
+    "message": "BABY"
   },
   "d83d_dc77": {
-    "message": "Bauarbeiter"
+    "message": "CONSTRUCTION WORKER"
   },
   "d83d_dc78": {
-    "message": "Prinzessin"
+    "message": "PRINCESS"
   },
   "d83d_dc79": {
-    "message": "Ungeheuer"
+    "message": "JAPANESE OGRE"
   },
   "d83d_dc7a": {
-    "message": "Kobold"
+    "message": "JAPANESE GOBLIN"
   },
   "d83d_dc7b": {
-    "message": "Gespenst"
+    "message": "GHOST"
   },
   "d83d_dc7c": {
-    "message": "Engel"
+    "message": "BABY ANGEL"
   },
   "d83d_dc7d": {
-    "message": "Au\u00dferirdischer"
+    "message": "EXTRATERRESTRIAL ALIEN"
   },
   "d83d_dc7e": {
-    "message": "au\u00dferirdisches Monster"
+    "message": "ALIEN MONSTER"
   },
   "d83d_dc7f": {
-    "message": "Teufelchen"
+    "message": "IMP"
   },
   "d83d_dc80": {
-    "message": "Sch\u00e4del"
+    "message": "SKULL"
   },
   "d83d_dc81": {
-    "message": "Informationsschalter"
+    "message": "INFORMATION DESK PERSON"
   },
   "d83d_dc82": {
-    "message": "Wachmann"
+    "message": "GUARDSMAN"
   },
   "d83d_dc83": {
-    "message": "T\u00e4nzer"
+    "message": "DANCER"
   },
   "d83d_dc84": {
-    "message": "Lippenstift"
+    "message": "LIPSTICK"
   },
   "d83d_dc85": {
-    "message": "Nagelpflege"
+    "message": "NAIL POLISH"
   },
   "d83d_dc86": {
-    "message": "Gesichtsmassage"
+    "message": "FACE MASSAGE"
   },
   "d83d_dc87": {
-    "message": "Haarschnitt"
+    "message": "HAIRCUT"
   },
   "d83d_dc88": {
-    "message": "Friseurladen"
+    "message": "BARBER POLE"
   },
   "d83d_dc89": {
-    "message": "Schuss"
+    "message": "SYRINGE"
   },
   "d83d_dc8a": {
-    "message": "Pille"
+    "message": "PILL"
   },
   "d83d_dc8b": {
-    "message": "Kussabdruck"
+    "message": "KISS MARK"
   },
   "d83d_dc8c": {
-    "message": "Liebesbrief"
+    "message": "LOVE LETTER"
   },
   "d83d_dc8d": {
-    "message": "Ring"
+    "message": "RING"
   },
   "d83d_dc8e": {
-    "message": "Juwel"
+    "message": "GEM STONE"
   },
   "d83d_dc8f": {
-    "message": "Kuss"
+    "message": "KISS"
   },
   "d83d_dc90": {
-    "message": "Bouquet"
+    "message": "BOUQUET"
   },
   "d83d_dc91": {
-    "message": "Paar"
+    "message": "COUPLE WITH HEART"
   },
   "d83d_dc92": {
-    "message": "Hochzeitskapelle"
+    "message": "WEDDING"
   },
   "d83d_dc93": {
-    "message": "schlagendes Herz"
+    "message": "BEATING HEART"
   },
   "d83d_dc94": {
-    "message": "gebrochenes Herz"
+    "message": "BROKEN HEART"
   },
   "d83d_dc95": {
-    "message": "zwei Herzen"
+    "message": "TWO HEARTS"
   },
   "d83d_dc96": {
-    "message": "funkelndes Herz"
+    "message": "SPARKLING HEART"
   },
   "d83d_dc97": {
-    "message": "wachsendes Herz"
+    "message": "GROWING HEART"
   },
   "d83d_dc98": {
-    "message": "Herz und Pfeil"
+    "message": "HEART WITH ARROW"
   },
   "d83d_dc99": {
-    "message": "blaues Herz"
+    "message": "BLUE HEART"
   },
   "d83d_dc9a": {
-    "message": "gr\u00fcnes Herz"
+    "message": "GREEN HEART"
   },
   "d83d_dc9b": {
-    "message": "gelbes Herz"
+    "message": "YELLOW HEART"
   },
   "d83d_dc9c": {
-    "message": "violettes Herz"
+    "message": "PURPLE HEART"
   },
   "d83d_dc9d": {
-    "message": "Herz mit Band"
+    "message": "HEART WITH RIBBON"
   },
   "d83d_dc9e": {
-    "message": "sich drehende Herzen"
+    "message": "REVOLVING HEARTS"
   },
   "d83d_dc9f": {
-    "message": "Herzdekoration"
+    "message": "HEART DECORATION"
   },
   "d83d_dca0": {
-    "message": "Bl\u00fctenblatt"
+    "message": "DIAMOND SHAPE WITH A DOT INSIDE"
   },
   "d83d_dca1": {
-    "message": "Gl\u00fchlampe"
+    "message": "ELECTRIC LIGHT BULB"
   },
   "d83d_dca2": {
-    "message": "Zorn"
+    "message": "ANGER SYMBOL"
   },
   "d83d_dca3": {
-    "message": "Bombe"
+    "message": "BOMB"
   },
   "d83d_dca4": {
-    "message": "Schlaf"
+    "message": "Symbol f\u00fcr Schlaf"
   },
   "d83d_dca5": {
-    "message": "Zusammensto\u00df"
+    "message": "COLLISION SYMBOL"
   },
   "d83d_dca6": {
-    "message": "Schwei\u00dftropfen"
+    "message": "SPLASHING SWEAT SYMBOL"
   },
   "d83d_dca7": {
-    "message": "kalter Schwei\u00df"
+    "message": "DROPLET"
   },
   "d83d_dca8": {
-    "message": "Rasen"
+    "message": "DASH SYMBOL"
   },
   "d83d_dca9": {
-    "message": "H\u00e4ufchen"
+    "message": "PILE OF POO"
   },
   "d83d_dcaa": {
-    "message": "Bizeps"
+    "message": "FLEXED BICEPS"
   },
   "d83d_dcab": {
-    "message": "schwindelig"
+    "message": "DIZZY SYMBOL"
   },
   "d83d_dcac": {
-    "message": "Sprechblase"
+    "message": "SPEECH BALLOON"
   },
   "d83d_dcad": {
-    "message": "Denkblase"
+    "message": "THOUGHT BALLOON"
   },
   "d83d_dcae": {
-    "message": "Blumenstempel"
+    "message": "WHITE FLOWER"
   },
   "d83d_dcaf": {
-    "message": "volle Punktezahl"
+    "message": "HUNDRED POINTS SYMBOL"
   },
   "d83d_dcb0": {
-    "message": "Geldsack"
+    "message": "MONEY BAG"
   },
   "d83d_dcb1": {
-    "message": "Geldwechsel"
+    "message": "CURRENCY EXCHANGE"
   },
   "d83d_dcb2": {
-    "message": "Dollarzeichen"
+    "message": "HEAVY DOLLAR SIGN"
   },
   "d83d_dcb3": {
-    "message": "Kreditkarte"
+    "message": "CREDIT CARD"
   },
   "d83d_dcb4": {
-    "message": "Yen-Schein"
+    "message": "BANKNOTE WITH YEN SIGN"
   },
   "d83d_dcb5": {
-    "message": "Dollarschein"
+    "message": "BANKNOTE WITH DOLLAR SIGN"
   },
   "d83d_dcb6": {
-    "message": "Euro-Schein"
+    "message": "BANKNOTE WITH EURO SIGN"
   },
   "d83d_dcb7": {
-    "message": "Pfund-Schein"
+    "message": "BANKNOTE WITH POUND SIGN"
   },
   "d83d_dcb8": {
-    "message": "fliegendes Geld"
+    "message": "MONEY WITH WINGS"
   },
   "d83d_dcb9": {
-    "message": "steigender Kurs"
+    "message": "CHART WITH UPWARDS TREND AND YEN SIGN"
   },
   "d83d_dcba": {
-    "message": "Sitz"
+    "message": "SEAT"
   },
   "d83d_dcbb": {
-    "message": "PC"
+    "message": "PERSONAL COMPUTER"
   },
   "d83d_dcbc": {
-    "message": "Aktentasche"
+    "message": "BRIEFCASE"
   },
   "d83d_dcbd": {
-    "message": "Mini-Disc"
+    "message": "Minidisk"
   },
   "d83d_dcbe": {
-    "message": "Diskette"
+    "message": "FLOPPY DISK"
   },
   "d83d_dcbf": {
-    "message": "Blu-Ray"
+    "message": "OPTICAL DISC"
   },
   "d83d_dcc0": {
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "Dateiordner"
+    "message": "FILE FOLDER"
   },
   "d83d_dcc2": {
-    "message": "offener Ordner"
+    "message": "OPEN FILE FOLDER"
   },
   "d83d_dcc3": {
-    "message": "Dokument"
+    "message": "PAGE WITH CURL"
   },
   "d83d_dcc4": {
-    "message": "Dokument"
+    "message": "PAGE FACING UP"
   },
   "d83d_dcc5": {
-    "message": "Kalender"
+    "message": "CALENDAR"
   },
   "d83d_dcc6": {
-    "message": "Abrei\u00dfkalender"
+    "message": "TEAR-OFF CALENDAR"
   },
   "d83d_dcc7": {
-    "message": "Kartei"
+    "message": "CARD INDEX"
   },
   "d83d_dcc8": {
-    "message": "Aufw\u00e4rtstrend"
+    "message": "CHART WITH UPWARDS TREND"
   },
   "d83d_dcc9": {
-    "message": "Abw\u00e4rtstrend"
+    "message": "CHART WITH DOWNWARDS TREND"
   },
   "d83d_dcca": {
-    "message": "Balkendiagramm"
+    "message": "BAR CHART"
   },
   "d83d_dccb": {
-    "message": "Zwischenablage"
+    "message": "CLIPBOARD"
   },
   "d83d_dccc": {
-    "message": "Rei\u00dfzwecke"
+    "message": "PUSHPIN"
   },
   "d83d_dccd": {
-    "message": "Rundrei\u00dfzwecke"
+    "message": "ROUND PUSHPIN"
   },
   "d83d_dcce": {
-    "message": "B\u00fcroklammer"
+    "message": "PAPERCLIP"
   },
   "d83d_dccf": {
-    "message": "gerades Lineal"
+    "message": "STRAIGHT RULER"
   },
   "d83d_dcd0": {
-    "message": "dreieckiges Lineal"
+    "message": "TRIANGULAR RULER"
   },
   "d83d_dcd1": {
-    "message": "Lesezeichen"
+    "message": "BOOKMARK TABS"
   },
   "d83d_dcd2": {
-    "message": "Block"
+    "message": "LEDGER"
   },
   "d83d_dcd3": {
-    "message": "Notizbuch"
+    "message": "NOTEBOOK"
   },
   "d83d_dcd4": {
-    "message": "dekoriertes Notizbuch"
+    "message": "NOTEBOOK WITH DECORATIVE COVER"
   },
   "d83d_dcd5": {
-    "message": "geschlossenes Buch"
+    "message": "CLOSED BOOK"
   },
   "d83d_dcd6": {
-    "message": "offenes Buch"
+    "message": "OPEN BOOK"
   },
   "d83d_dcd7": {
-    "message": "gr\u00fcnes Buch"
+    "message": "GREEN BOOK"
   },
   "d83d_dcd8": {
-    "message": "Buch"
+    "message": "BLUE BOOK"
   },
   "d83d_dcd9": {
-    "message": "orangefarbenes Buch"
+    "message": "ORANGE BOOK"
   },
   "d83d_dcda": {
-    "message": "B\u00fccher"
+    "message": "BOOKS"
   },
   "d83d_dcdb": {
-    "message": "Namensschild"
+    "message": "NAME BADGE"
   },
   "d83d_dcdc": {
-    "message": "Papierrolle"
+    "message": "SCROLL"
   },
   "d83d_dcdd": {
-    "message": "Notiz"
+    "message": "MEMO"
   },
   "d83d_dcde": {
-    "message": "Telefon"
+    "message": "TELEPHONE RECEIVER"
   },
   "d83d_dcdf": {
-    "message": "Pager"
+    "message": "PAGER"
   },
   "d83d_dce0": {
-    "message": "Fax"
+    "message": "FAX MACHINE"
   },
   "d83d_dce1": {
-    "message": "Satellitensch\u00fcssel"
+    "message": "SATELLITE ANTENNA"
   },
   "d83d_dce2": {
-    "message": "Lautsprecher"
+    "message": "PUBLIC ADDRESS LOUDSPEAKER"
   },
   "d83d_dce3": {
-    "message": "Megafon"
+    "message": "CHEERING MEGAPHONE"
   },
   "d83d_dce4": {
-    "message": "gesendete E-Mail"
+    "message": "OUTBOX TRAY"
   },
   "d83d_dce5": {
-    "message": "Posteingang"
+    "message": "INBOX TRAY"
   },
   "d83d_dce6": {
-    "message": "Paket"
+    "message": "PACKAGE"
   },
   "d83d_dce7": {
-    "message": "E-Mail"
+    "message": "E-MAIL SYMBOL"
   },
   "d83d_dce8": {
-    "message": "eingehende Post"
+    "message": "INCOMING ENVELOPE"
   },
   "d83d_dce9": {
-    "message": "ausgehende Post"
+    "message": "ENVELOPE WITH DOWNWARDS ARROW ABOVE"
   },
   "d83d_dcea": {
-    "message": "geschlossener Briefkasten mit gesenktem F\u00e4hnchen"
+    "message": "Geschlossener Briefkasten ohne Post"
   },
   "d83d_dceb": {
-    "message": "geschlossener Briefkasten mit hochgeklapptem F\u00e4hnchen"
+    "message": "Geschlossener Briefkasten mit Post"
   },
   "d83d_dcec": {
-    "message": "offener Briefkasten mit hochgeklapptem F\u00e4hnchen"
+    "message": "Offener Briefkasten mit Post"
   },
   "d83d_dced": {
-    "message": "offener Briefkasten mit gesenktem F\u00e4hnchen"
+    "message": "Offener Briefkasten ohne Post"
   },
   "d83d_dcee": {
-    "message": "Briefkasten"
+    "message": "POSTBOX"
   },
   "d83d_dcef": {
-    "message": "Posthorn"
+    "message": "POSTAL HORN"
   },
   "d83d_dcf0": {
-    "message": "Zeitung"
+    "message": "NEWSPAPER"
   },
   "d83d_dcf1": {
-    "message": "Handy"
+    "message": "MOBILE PHONE"
   },
   "d83d_dcf2": {
-    "message": "Handy mit Pfeil"
+    "message": "MOBILE PHONE WITH RIGHTWARDS ARROW AT LEFT"
   },
   "d83d_dcf3": {
-    "message": "Vibrationsmodus"
+    "message": "VIBRATION MODE"
   },
   "d83d_dcf4": {
-    "message": "Telefon aus"
+    "message": "MOBILE PHONE OFF"
   },
   "d83d_dcf5": {
-    "message": "kein Handy"
+    "message": "NO MOBILE PHONES"
   },
   "d83d_dcf6": {
-    "message": "Mobilfunksignale"
+    "message": "ANTENNA WITH BARS"
   },
   "d83d_dcf7": {
-    "message": "Kamera"
+    "message": "CAMERA"
   },
   "d83d_dcf9": {
-    "message": "Videokamera"
+    "message": "VIDEO CAMERA"
   },
   "d83d_dcfa": {
-    "message": "TV-Ger\u00e4t"
+    "message": "TELEVISION"
   },
   "d83d_dcfb": {
-    "message": "Radio"
+    "message": "RADIO"
   },
   "d83d_dcfc": {
-    "message": "Videokassette"
+    "message": "VIDEOCASSETTE"
   },
   "d83d_dd00": {
-    "message": "gekreuzte Pfeile"
+    "message": "TWISTED RIGHTWARDS ARROWS"
   },
   "d83d_dd01": {
-    "message": "Pfeile im Uhrzeigersinn"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd02": {
-    "message": "Pfeile im Uhrzeigersinn"
+    "message": "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS WITH CIRCLED ONE OVERLAY"
   },
   "d83d_dd03": {
-    "message": "neu laden"
+    "message": "CLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd04": {
-    "message": "Pfeile gegen den Uhrzeigersinn"
+    "message": "ANTICLOCKWISE DOWNWARDS AND UPWARDS OPEN CIRCLE ARROWS"
   },
   "d83d_dd05": {
-    "message": "geringe Helligkeit"
+    "message": "LOW BRIGHTNESS SYMBOL"
   },
   "d83d_dd06": {
-    "message": "hohe Helligkeit"
+    "message": "HIGH BRIGHTNESS SYMBOL"
   },
   "d83d_dd07": {
-    "message": "nicht sprechen"
+    "message": "SPEAKER WITH CANCELLATION STROKE"
   },
   "d83d_dd08": {
-    "message": "Lautsprecher"
+    "message": "SPEAKER"
   },
   "d83d_dd09": {
     "message": "Lautsprecher mit geringer Lautst\u00e4rke"
@@ -1709,820 +1709,820 @@
     "message": "Lautsprecher mit hoher Lautst\u00e4rke"
   },
   "d83d_dd0b": {
-    "message": "Batterie"
+    "message": "BATTERY"
   },
   "d83d_dd0c": {
-    "message": "Netzstecker"
+    "message": "ELECTRIC PLUG"
   },
   "d83d_dd0d": {
-    "message": "nach links gelehnte Lupe"
+    "message": "Nach links gerichtete Lupe"
   },
   "d83d_dd0e": {
-    "message": "nach rechts gelehnte Lupe"
+    "message": "Nach rechts gerichtete Lupe"
   },
   "d83d_dd0f": {
-    "message": "Schloss mit F\u00fcllfeder"
+    "message": "Schloss mit F\u00fcller"
   },
   "d83d_dd10": {
-    "message": "versperrtes Schloss mit Schl\u00fcssel"
+    "message": "Schloss mit Schl\u00fcssel"
   },
   "d83d_dd11": {
-    "message": "Schl\u00fcssel"
+    "message": "KEY"
   },
   "d83d_dd12": {
-    "message": "versperrtes Schloss"
+    "message": "Geschlossenes Schloss"
   },
   "d83d_dd13": {
-    "message": "offenes Schloss"
+    "message": "Offenes Schloss"
   },
   "d83d_dd14": {
-    "message": "Glocke"
+    "message": "BELL"
   },
   "d83d_dd15": {
-    "message": "keine Glocke"
+    "message": "BELL WITH CANCELLATION STROKE"
   },
   "d83d_dd16": {
-    "message": "Lesezeichen"
+    "message": "BOOKMARK"
   },
   "d83d_dd17": {
-    "message": "Verbindung"
+    "message": "LINK SYMBOL"
   },
   "d83d_dd18": {
-    "message": "runde Schaltfl\u00e4che"
+    "message": "RADIO BUTTON"
   },
   "d83d_dd19": {
-    "message": "zur\u00fcck"
+    "message": "BACK WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1a": {
-    "message": "Ende"
+    "message": "END WITH LEFTWARDS ARROW ABOVE"
   },
   "d83d_dd1b": {
-    "message": "\"Ein\"-Pfeil"
+    "message": "ON WITH EXCLAMATION MARK WITH LEFT RIGHT ARROW ABOVE"
   },
   "d83d_dd1c": {
-    "message": "\"Bald\"-Schild"
+    "message": "SOON WITH RIGHTWARDS ARROW ABOVE"
   },
   "d83d_dd1d": {
-    "message": "\"Oben\"-Schild"
+    "message": "TOP WITH UPWARDS ARROW ABOVE"
   },
   "d83d_dd1e": {
-    "message": "niemand unter 18"
+    "message": "NO ONE UNDER EIGHTEEN SYMBOL"
   },
   "d83d_dd20": {
-    "message": "Gro\u00dfbuchstaben"
+    "message": "INPUT SYMBOL FOR LATIN CAPITAL LETTERS"
   },
   "d83d_dd21": {
-    "message": "Kleinbuchstaben"
+    "message": "INPUT SYMBOL FOR LATIN SMALL LETTERS"
   },
   "d83d_dd22": {
-    "message": "Zahlen"
+    "message": "INPUT SYMBOL FOR NUMBERS"
   },
   "d83d_dd23": {
-    "message": "Symbole"
+    "message": "INPUT SYMBOL FOR SYMBOLS"
   },
   "d83d_dd24": {
-    "message": "lateinisches Alphabet"
+    "message": "INPUT SYMBOL FOR LATIN LETTERS"
   },
   "d83d_dd25": {
-    "message": "Feuer"
+    "message": "FIRE"
   },
   "d83d_dd26": {
-    "message": "Taschenlampe"
+    "message": "ELECTRIC TORCH"
   },
   "d83d_dd27": {
-    "message": "Schraubenschl\u00fcssel"
+    "message": "WRENCH"
   },
   "d83d_dd28": {
-    "message": "Hammer"
+    "message": "HAMMER"
   },
   "d83d_dd29": {
-    "message": "Mutter und Schraube"
+    "message": "NUT AND BOLT"
   },
   "d83d_dd2a": {
-    "message": "Kochmesser"
+    "message": "HOCHO"
   },
   "d83d_dd2b": {
-    "message": "Revolver"
+    "message": "PISTOL"
   },
   "d83d_dd2c": {
-    "message": "Mikroskop"
+    "message": "MICROSCOPE"
   },
   "d83d_dd2d": {
-    "message": "Teleskop"
+    "message": "TELESCOPE"
   },
   "d83d_dd2e": {
-    "message": "Kristallkugel"
+    "message": "CRYSTAL BALL"
   },
   "d83d_dd2f": {
-    "message": "sechszackiger Stern"
+    "message": "SIX POINTED STAR WITH MIDDLE DOT"
   },
   "d83d_dd30": {
-    "message": "gelbgr\u00fcnes Blatt"
+    "message": "JAPANESE SYMBOL FOR BEGINNER"
   },
   "d83d_dd31": {
-    "message": "Dreizack-Zeichen"
+    "message": "TRIDENT EMBLEM"
   },
   "d83d_dd32": {
-    "message": "volle viereckige Schaltfl\u00e4che"
+    "message": "Dunkel umrahmte quadratische Schaltfl\u00e4che"
   },
   "d83d_dd33": {
-    "message": "leere viereckige Schaltfl\u00e4che"
+    "message": "Hell umrahmte quadratische Schaltfl\u00e4che"
   },
   "d83d_dd34": {
-    "message": "gro\u00dfer roter Kreis"
+    "message": "Gro\u00dfer roter Kreis"
   },
   "d83d_dd35": {
-    "message": "gro\u00dfer blauer Kreis"
+    "message": "Gro\u00dfer blauer Kreis"
   },
   "d83d_dd36": {
-    "message": "gro\u00dfe orangefarbene Raute"
+    "message": "Gro\u00dfe orangefarbene Raute"
   },
   "d83d_dd37": {
-    "message": "gro\u00dfe blaue Raute"
+    "message": "Gro\u00dfe blaue Raute"
   },
   "d83d_dd38": {
-    "message": "kleine orangefarbene Raute"
+    "message": "Kleine orangefarbene Raute"
   },
   "d83d_dd39": {
-    "message": "kleine blaue Raute"
+    "message": "Kleine blaue Raute"
   },
   "d83d_dd3a": {
-    "message": "nach oben zeigendes Dreieck"
+    "message": "UP-POINTING RED TRIANGLE"
   },
   "d83d_dd3b": {
-    "message": "nach unten zeigendes Dreieck"
+    "message": "DOWN-POINTING RED TRIANGLE"
   },
   "d83d_dd3c": {
-    "message": "nach oben zeigendes Dreieck"
+    "message": "Schaltfl\u00e4che \"Nach oben\""
   },
   "d83d_dd3d": {
-    "message": "nach unten zeigendes Dreieck"
+    "message": "Schaltfl\u00e4che \"Nach unten\""
   },
   "d83d_dd50": {
-    "message": "01:00\u00a0Uhr"
+    "message": "CLOCK FACE ONE OCLOCK"
   },
   "d83d_dd51": {
-    "message": "02:00\u00a0Uhr"
+    "message": "CLOCK FACE TWO OCLOCK"
   },
   "d83d_dd52": {
-    "message": "03:00\u00a0Uhr"
+    "message": "CLOCK FACE THREE OCLOCK"
   },
   "d83d_dd53": {
-    "message": "04:00\u00a0Uhr"
+    "message": "CLOCK FACE FOUR OCLOCK"
   },
   "d83d_dd54": {
-    "message": "05:00\u00a0Uhr"
+    "message": "CLOCK FACE FIVE OCLOCK"
   },
   "d83d_dd55": {
-    "message": "06:00\u00a0Uhr"
+    "message": "CLOCK FACE SIX OCLOCK"
   },
   "d83d_dd56": {
-    "message": "07:00\u00a0Uhr"
+    "message": "CLOCK FACE SEVEN OCLOCK"
   },
   "d83d_dd57": {
-    "message": "08:00\u00a0Uhr"
+    "message": "CLOCK FACE EIGHT OCLOCK"
   },
   "d83d_dd58": {
-    "message": "09:00\u00a0Uhr"
+    "message": "CLOCK FACE NINE OCLOCK"
   },
   "d83d_dd59": {
-    "message": "10:00\u00a0Uhr"
+    "message": "CLOCK FACE TEN OCLOCK"
   },
   "d83d_dd5a": {
-    "message": "11:00\u00a0Uhr"
+    "message": "CLOCK FACE ELEVEN OCLOCK"
   },
   "d83d_dd5b": {
-    "message": "12:00\u00a0Uhr"
+    "message": "CLOCK FACE TWELVE OCLOCK"
   },
   "d83d_dd5c": {
-    "message": "01:30\u00a0Uhr"
+    "message": "CLOCK FACE ONE-THIRTY"
   },
   "d83d_dd5d": {
-    "message": "02:30\u00a0Uhr"
+    "message": "CLOCK FACE TWO-THIRTY"
   },
   "d83d_dd5e": {
-    "message": "03:30\u00a0Uhr"
+    "message": "CLOCK FACE THREE-THIRTY"
   },
   "d83d_dd5f": {
-    "message": "04:30\u00a0Uhr"
+    "message": "CLOCK FACE FOUR-THIRTY"
   },
   "d83d_dd60": {
-    "message": "05:30\u00a0Uhr"
+    "message": "CLOCK FACE FIVE-THIRTY"
   },
   "d83d_dd61": {
-    "message": "06:30\u00a0Uhr"
+    "message": "CLOCK FACE SIX-THIRTY"
   },
   "d83d_dd62": {
-    "message": "07:30\u00a0Uhr"
+    "message": "CLOCK FACE SEVEN-THIRTY"
   },
   "d83d_dd63": {
-    "message": "08:30\u00a0Uhr"
+    "message": "CLOCK FACE EIGHT-THIRTY"
   },
   "d83d_dd64": {
-    "message": "09:30\u00a0Uhr"
+    "message": "CLOCK FACE NINE-THIRTY"
   },
   "d83d_dd65": {
-    "message": "10:30\u00a0Uhr"
+    "message": "CLOCK FACE TEN-THIRTY"
   },
   "d83d_dd66": {
-    "message": "11:30\u00a0Uhr"
+    "message": "CLOCK FACE ELEVEN-THIRTY"
   },
   "d83d_dd67": {
-    "message": "12:30\u00a0Uhr"
+    "message": "CLOCK FACE TWELVE-THIRTY"
   },
   "d83d_ddfb": {
-    "message": "Berg Fuji"
+    "message": "MOUNT FUJI"
   },
   "d83d_ddfc": {
-    "message": "Tokio-Turm"
+    "message": "TOKYO TOWER"
   },
   "d83d_ddfd": {
-    "message": "Freiheitsstatue"
+    "message": "STATUE OF LIBERTY"
   },
   "d83d_ddfe": {
-    "message": "Karte von Japan"
+    "message": "SILHOUETTE OF JAPAN"
   },
   "d83d_ddff": {
-    "message": "Moyai-Statue"
+    "message": "MOYAI"
   },
   "d83d_de00": {
-    "message": "Grinsen"
+    "message": "GRINNING FACE"
   },
   "d83d_de01": {
-    "message": " Grinsen mit l\u00e4chelnden Augen"
+    "message": "Grinsender Smiley mit lachenden Augen"
   },
   "d83d_de02": {
-    "message": "Freudentr\u00e4nen"
+    "message": "FACE WITH TEARS OF JOY"
   },
   "d83d_de03": {
-    "message": "L\u00e4cheln mit offenem Mund"
+    "message": "SMILING FACE WITH OPEN MOUTH"
   },
   "d83d_de04": {
-    "message": "lachendes Gesicht mit l\u00e4chelnden Augen"
+    "message": "Lachender Smiley mit lachenden Augen"
   },
   "d83d_de05": {
-    "message": "L\u00e4cheln mit Schwei\u00dfperle"
+    "message": "SMILING FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de06": {
-    "message": " Lachen mit geschlossenen Augen"
+    "message": "Lachender Smiley mit geschlossenen Augen"
   },
   "d83d_de07": {
-    "message": "L\u00e4cheln mit Heiligenschein"
+    "message": "SMILING FACE WITH HALO"
   },
   "d83d_de08": {
-    "message": "Teufelsgesicht"
+    "message": "SMILING FACE WITH HORNS"
   },
   "d83d_de09": {
-    "message": "zwinkerndes Gesicht"
+    "message": "WINKING FACE"
   },
   "d83d_de0a": {
-    "message": "L\u00e4cheln"
+    "message": "SMILING FACE WITH SMILING EYES"
   },
   "d83d_de0b": {
-    "message": "sich die Lippen leckendes Gesicht"
+    "message": "FACE SAVOURING DELICIOUS FOOD"
   },
   "d83d_de0c": {
-    "message": "erleichtertes Gesicht"
+    "message": "RELIEVED FACE"
   },
   "d83d_de0d": {
-    "message": "l\u00e4chelndes Gesicht"
+    "message": "SMILING FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de0e": {
-    "message": "cool"
+    "message": "SMILING FACE WITH SUNGLASSES"
   },
   "d83d_de0f": {
-    "message": "verschmitzt l\u00e4chelnd"
+    "message": "SMIRKING FACE"
   },
   "d83d_de10": {
-    "message": "ausdrucksloses Gesicht"
+    "message": "NEUTRAL FACE"
   },
   "d83d_de11": {
-    "message": "ausdruckslos"
+    "message": "EXPRESSIONLESS FACE"
   },
   "d83d_de12": {
-    "message": "nicht erfreut"
+    "message": "UNAMUSED FACE"
   },
   "d83d_de13": {
-    "message": "kalter Schwei\u00df"
+    "message": "FACE WITH COLD SWEAT"
   },
   "d83d_de14": {
-    "message": "nachdenkliches Gesicht"
+    "message": "PENSIVE FACE"
   },
   "d83d_de15": {
-    "message": "verwirrtes Gesicht"
+    "message": "CONFUSED FACE"
   },
   "d83d_de16": {
-    "message": "best\u00fcrztes Gesicht"
+    "message": "CONFOUNDED FACE"
   },
   "d83d_de17": {
-    "message": "k\u00fcssendes Gesicht"
+    "message": "KISSING FACE"
   },
   "d83d_de18": {
-    "message": "K\u00fcsse sendend"
+    "message": "FACE THROWING A KISS"
   },
   "d83d_de19": {
-    "message": "k\u00fcssendes, lachendes Gesicht"
+    "message": "KISSING FACE WITH SMILING EYES"
   },
   "d83d_de1a": {
-    "message": "k\u00fcssend"
+    "message": "KISSING FACE WITH CLOSED EYES"
   },
   "d83d_de1b": {
-    "message": "herausgestreckte Zunge"
+    "message": "FACE WITH STUCK-OUT TONGUE"
   },
   "d83d_de1c": {
-    "message": "zwinkerndes Gesicht mit herausgestreckter Zunge"
+    "message": "Zwinkernder Smiley mit herausgestreckter Zunge"
   },
   "d83d_de1d": {
-    "message": "angeekelt"
+    "message": "FACE WITH STUCK-OUT TONGUE AND TIGHTLY-CLOSED EYES"
   },
   "d83d_de1e": {
-    "message": "entt\u00e4uscht"
+    "message": "DISAPPOINTED FACE"
   },
   "d83d_de1f": {
-    "message": "besorgt"
+    "message": "WORRIED FACE"
   },
   "d83d_de20": {
-    "message": "w\u00fctend"
+    "message": "ANGRY FACE"
   },
   "d83d_de21": {
-    "message": "schmollend"
+    "message": "POUTING FACE"
   },
   "d83d_de22": {
-    "message": "weinend"
+    "message": "CRYING FACE"
   },
   "d83d_de23": {
-    "message": "vermasselt"
+    "message": "PERSEVERING FACE"
   },
   "d83d_de24": {
-    "message": "triumphierendes Gesicht"
+    "message": "FACE WITH LOOK OF TRIUMPH"
   },
   "d83d_de25": {
-    "message": "erleichtert"
+    "message": "DISAPPOINTED BUT RELIEVED FACE"
   },
   "d83d_de26": {
-    "message": "d\u00fcsteres Gesicht"
+    "message": "FROWNING FACE WITH OPEN MOUTH"
   },
   "d83d_de27": {
-    "message": "gequ\u00e4lt"
+    "message": "ANGUISHED FACE"
   },
   "d83d_de28": {
-    "message": "\u00e4ngstlich"
+    "message": "FEARFUL FACE"
   },
   "d83d_de29": {
-    "message": "ersch\u00f6pft"
+    "message": "WEARY FACE"
   },
   "d83d_de2a": {
-    "message": "schl\u00e4frig"
+    "message": "SLEEPY FACE"
   },
   "d83d_de2b": {
-    "message": "m\u00fcde"
+    "message": "TIRED FACE"
   },
   "d83d_de2c": {
-    "message": "Grimasse"
+    "message": "GRIMACING FACE"
   },
   "d83d_de2d": {
-    "message": "weinend"
+    "message": "LOUDLY CRYING FACE"
   },
   "d83d_de2e": {
-    "message": "Gesicht mit offenem Mund"
+    "message": "FACE WITH OPEN MOUTH"
   },
   "d83d_de2f": {
-    "message": "verstummtes Gesicht"
+    "message": "HUSHED FACE"
   },
   "d83d_de30": {
-    "message": "gestresstes Gesicht"
+    "message": "FACE WITH OPEN MOUTH AND COLD SWEAT"
   },
   "d83d_de31": {
-    "message": "\u00e4ngstliches Gesicht"
+    "message": "FACE SCREAMING IN FEAR"
   },
   "d83d_de32": {
-    "message": "erstauntes Gesicht"
+    "message": "ASTONISHED FACE"
   },
   "d83d_de33": {
-    "message": "err\u00f6tend"
+    "message": "FLUSHED FACE"
   },
   "d83d_de34": {
-    "message": "schlafend"
+    "message": "SLEEPING FACE"
   },
   "d83d_de35": {
-    "message": "benommen"
+    "message": "DIZZY FACE"
   },
   "d83d_de36": {
-    "message": "Gesicht ohne Mund"
+    "message": "FACE WITHOUT MOUTH"
   },
   "d83d_de37": {
-    "message": "Gesicht mit Maske"
+    "message": "FACE WITH MEDICAL MASK"
   },
   "d83d_de38": {
-    "message": "grinsendes Katzengesicht"
+    "message": "GRINNING CAT FACE WITH SMILING EYES"
   },
   "d83d_de39": {
-    "message": "Katzengesicht mit Freudentr\u00e4nen"
+    "message": "Katzen-Smiley mit Freudentr\u00e4nen"
   },
   "d83d_de3a": {
-    "message": "lachendes Katzengesicht"
+    "message": "SMILING CAT FACE WITH OPEN MOUTH"
   },
   "d83d_de3b": {
-    "message": "l\u00e4chelndes Katzengesicht"
+    "message": "SMILING CAT FACE WITH HEART-SHAPED EYES"
   },
   "d83d_de3c": {
-    "message": "sp\u00f6ttisches Katzengesicht"
+    "message": "CAT FACE WITH WRY SMILE"
   },
   "d83d_de3d": {
-    "message": "k\u00fcssende Katze"
+    "message": "KISSING CAT FACE WITH CLOSED EYES"
   },
   "d83d_de3e": {
-    "message": "schmollendes Katzengesicht"
+    "message": "POUTING CAT FACE"
   },
   "d83d_de3f": {
-    "message": "weinendes Katzengesicht"
+    "message": "CRYING CAT FACE"
   },
   "d83d_de40": {
-    "message": "ersch\u00f6pftes Katzengesicht"
+    "message": "WEARY CAT FACE"
   },
   "d83d_de45": {
-    "message": "abweisende Geste"
+    "message": "FACE WITH NO GOOD GESTURE"
   },
   "d83d_de46": {
-    "message": "O.K.-Geste"
+    "message": "FACE WITH OK GESTURE"
   },
   "d83d_de47": {
-    "message": "Entschuldigung"
+    "message": "PERSON BOWING DEEPLY"
   },
   "d83d_de48": {
-    "message": "nichts sehen"
+    "message": "SEE-NO-EVIL MONKEY"
   },
   "d83d_de49": {
-    "message": "nichts h\u00f6ren"
+    "message": "HEAR-NO-EVIL MONKEY"
   },
   "d83d_de4a": {
-    "message": "nichts sagen"
+    "message": "SPEAK-NO-EVIL MONKEY"
   },
   "d83d_de4b": {
-    "message": "gl\u00fcckliche Person"
+    "message": "HAPPY PERSON RAISING ONE HAND"
   },
   "d83d_de4c": {
-    "message": "Jubel"
+    "message": "PERSON RAISING BOTH HANDS IN CELEBRATION"
   },
   "d83d_de4d": {
-    "message": "finster dreinblickende Person"
+    "message": "Stirnrunzelnde Frau"
   },
   "d83d_de4e": {
-    "message": "schmollend"
+    "message": "PERSON WITH POUTING FACE"
   },
   "d83d_de4f": {
-    "message": "gefaltete H\u00e4nde"
+    "message": "PERSON WITH FOLDED HANDS"
   },
   "d83d_de80": {
-    "message": "Rakete"
+    "message": "ROCKET"
   },
   "d83d_de81": {
-    "message": "Hubschrauber"
+    "message": "HELICOPTER"
   },
   "d83d_de82": {
-    "message": "Dampflokomotive"
+    "message": "STEAM LOCOMOTIVE"
   },
   "d83d_de83": {
-    "message": "Zug"
+    "message": "RAILWAY CAR"
   },
   "d83d_de84": {
-    "message": "Hochgeschwindigkeitszug"
+    "message": "HIGH-SPEED TRAIN"
   },
   "d83d_de85": {
-    "message": "Hochgeschwindigkeitszug mit Kugelnase"
+    "message": "Hochgeschwindigkeitszug mit runder Nase"
   },
   "d83d_de86": {
-    "message": "Zug"
+    "message": "TRAIN"
   },
   "d83d_de87": {
-    "message": "U-Bahn"
+    "message": "METRO"
   },
   "d83d_de88": {
-    "message": "Stadtbahn"
+    "message": "LIGHT RAIL"
   },
   "d83d_de89": {
-    "message": "Bahnhof"
+    "message": "STATION"
   },
   "d83d_de8a": {
-    "message": "Stra\u00dfenbahn"
+    "message": "TRAM"
   },
   "d83d_de8b": {
-    "message": "Stra\u00dfenbahn"
+    "message": "TRAM CAR"
   },
   "d83d_de8c": {
-    "message": "Bus"
+    "message": "BUS"
   },
   "d83d_de8d": {
-    "message": "entgegenkommender Bus"
+    "message": "ONCOMING BUS"
   },
   "d83d_de8e": {
-    "message": "Oberleitungsbus"
+    "message": "TROLLEYBUS"
   },
   "d83d_de8f": {
-    "message": "Bushaltestelle"
+    "message": "BUS STOP"
   },
   "d83d_de90": {
-    "message": "Kleinbus"
+    "message": "MINIBUS"
   },
   "d83d_de91": {
-    "message": "Krankenwagen"
+    "message": "AMBULANCE"
   },
   "d83d_de92": {
-    "message": "Feuerwehrauto"
+    "message": "FIRE ENGINE"
   },
   "d83d_de93": {
-    "message": "Polizeiauto"
+    "message": "POLICE CAR"
   },
   "d83d_de94": {
-    "message": "entgegenkommendes Polizeiauto"
+    "message": "ONCOMING POLICE CAR"
   },
   "d83d_de95": {
-    "message": "Taxi"
+    "message": "TAXI"
   },
   "d83d_de96": {
-    "message": "entgegenkommendes Taxi"
+    "message": "ONCOMING TAXI"
   },
   "d83d_de97": {
-    "message": "Auto"
+    "message": "AUTOMOBILE"
   },
   "d83d_de98": {
-    "message": "entgegenkommendes Auto"
+    "message": "ONCOMING AUTOMOBILE"
   },
   "d83d_de99": {
-    "message": "Wohnmobil"
+    "message": "RECREATIONAL VEHICLE"
   },
   "d83d_de9a": {
-    "message": "Lieferwagen"
+    "message": "DELIVERY TRUCK"
   },
   "d83d_de9b": {
-    "message": "Lastwagen"
+    "message": "ARTICULATED LORRY"
   },
   "d83d_de9c": {
-    "message": "Traktor"
+    "message": "TRACTOR"
   },
   "d83d_de9d": {
-    "message": "Einschienenbahn"
+    "message": "MONORAIL"
   },
   "d83d_de9e": {
-    "message": "Bergbahn"
+    "message": "MOUNTAIN RAILWAY"
   },
   "d83d_de9f": {
-    "message": "Schwebebahn"
+    "message": "SUSPENSION RAILWAY"
   },
   "d83d_dea0": {
-    "message": "Bergbahn"
+    "message": "MOUNTAIN CABLEWAY"
   },
   "d83d_dea1": {
-    "message": "Drahtseilbahn"
+    "message": "AERIAL TRAMWAY"
   },
   "d83d_dea2": {
-    "message": "Schiff"
+    "message": "SHIP"
   },
   "d83d_dea3": {
-    "message": "Ruderboot"
+    "message": "ROWBOAT"
   },
   "d83d_dea4": {
-    "message": "Rennboot"
+    "message": "SPEEDBOAT"
   },
   "d83d_dea5": {
-    "message": "horizontale Ampel"
+    "message": "Waagerechte Verkehrsampel"
   },
   "d83d_dea6": {
-    "message": "vertikale Ampel"
+    "message": "Vertikale Verkehrsampel"
   },
   "d83d_dea7": {
-    "message": "im Bau"
+    "message": "CONSTRUCTION SIGN"
   },
   "d83d_dea8": {
-    "message": "Drehleuchtfeuer"
+    "message": "POLICE CARS REVOLVING LIGHT"
   },
   "d83d_dea9": {
-    "message": "Standortflagge"
+    "message": "TRIANGULAR FLAG ON POST"
   },
   "d83d_deaa": {
-    "message": "T\u00fcr"
+    "message": "DOOR"
   },
   "d83d_deab": {
-    "message": "kein Eingang"
+    "message": "NO ENTRY SIGN"
   },
   "d83d_deac": {
-    "message": "Raucherzeichen"
+    "message": "SMOKING SYMBOL"
   },
   "d83d_dead": {
-    "message": "Nichtraucher-Zeichen"
+    "message": "NO SMOKING SYMBOL"
   },
   "d83d_deae": {
-    "message": "Abfalleimer-Zeichen"
+    "message": "PUT LITTER IN ITS PLACE SYMBOL"
   },
   "d83d_deaf": {
-    "message": "keinen Abfall hinterlassen"
+    "message": "DO NOT LITTER SYMBOL"
   },
   "d83d_deb0": {
-    "message": "Trinkwasser"
+    "message": "POTABLE WATER SYMBOL"
   },
   "d83d_deb1": {
-    "message": "kein Trinkwasser"
+    "message": "NON-POTABLE WATER SYMBOL"
   },
   "d83d_deb2": {
-    "message": "Fahrrad"
+    "message": "BICYCLE"
   },
   "d83d_deb3": {
-    "message": "kein Fahrrad"
+    "message": "NO BICYCLES"
   },
   "d83d_deb4": {
-    "message": "Radfahrer"
+    "message": "BICYCLIST"
   },
   "d83d_deb5": {
-    "message": "Bergradfahrer"
+    "message": "MOUNTAIN BICYCLIST"
   },
   "d83d_deb6": {
-    "message": "Fu\u00dfg\u00e4nger"
+    "message": "PEDESTRIAN"
   },
   "d83d_deb7": {
-    "message": "keine Fu\u00dfg\u00e4nger"
+    "message": "NO PEDESTRIANS"
   },
   "d83d_deb8": {
-    "message": "die Stra\u00dfe \u00fcberquerende Kinder"
+    "message": "CHILDREN CROSSING"
   },
   "d83d_deb9": {
-    "message": "M\u00e4nner-Zeichen"
+    "message": "MENS SYMBOL"
   },
   "d83d_deba": {
-    "message": "Frauen-Zeichen"
+    "message": "WOMENS SYMBOL"
   },
   "d83d_debb": {
-    "message": "Toilette-Zeichen"
+    "message": "RESTROOM"
   },
   "d83d_debc": {
-    "message": "Baby-Zeichen"
+    "message": "BABY SYMBOL"
   },
   "d83d_debd": {
-    "message": "Toilette"
+    "message": "TOILET"
   },
   "d83d_debe": {
-    "message": "Sp\u00fclklosett"
+    "message": "WATER CLOSET"
   },
   "d83d_debf": {
-    "message": "Dusche"
+    "message": "SHOWER"
   },
   "d83d_dec0": {
-    "message": "Bad"
+    "message": "BATH"
   },
   "d83d_dec1": {
-    "message": "Badewanne"
+    "message": "BATHTUB"
   },
   "d83d_dec2": {
-    "message": "Passkontrolle"
+    "message": "PASSPORT CONTROL"
   },
   "d83d_dec3": {
-    "message": "Zoll"
+    "message": "CUSTOMS"
   },
   "d83d_dec4": {
-    "message": "Gep\u00e4ckausgabe"
+    "message": "BAGGAGE CLAIM"
   },
   "d83d_dec5": {
-    "message": "Gep\u00e4ckaufbewahrung"
+    "message": "LEFT LUGGAGE"
   },
   "de_ger_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr deutsche Tastatur"
   },
   "de_neo_ger_settings_page": {
-    "message": "Seite mit Einstellungen f\u00fcr deutsche Neo2-Tastatur"
+    "message": "Seite mit Einstellungen f\u00fcr deutsche Neo-2-Tastatur"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Kategorie"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Kommentar"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Kommentar"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "M\u00f6chten Sie [object Object] l\u00f6schen?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "W\u00f6rterbuch l\u00f6schen"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "W\u00f6rterb\u00fccher"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "Name des W\u00f6rterbuchs"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Fertig"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Exportieren"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Importieren..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "W\u00f6rterbuchverwaltung"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Neues W\u00f6rterbuch"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Meine W\u00f6rterb\u00fccher"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Neue Lesung"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Lesung"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "Der Name enth\u00e4lt ung\u00fcltige Zeichen."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "Der Name ist bereits vorhanden."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Geben Sie einen Namen f\u00fcr das W\u00f6rterbuch ein."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "Der Name ist zu lang."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Es k\u00f6nnen keine weiteren W\u00f6rterb\u00fccher mehr erstellt werden."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "Die Datei ist leer."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "Es k\u00f6nnen keine weiteren Eintr\u00e4ge zu diesem W\u00f6rterbuch hinzugef\u00fcgt werden."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Die Datei konnte nicht ge\u00f6ffnet werden."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "Die Datei \u00fcberschreitet die maximal zul\u00e4ssige Dateigr\u00f6\u00dfe."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Der Vorgang ist fehlgeschlagen."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "Einige W\u00f6rter konnten nicht importiert werden."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Die Importquelle enth\u00e4lt zu viele W\u00f6rter."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Die Datei konnte nicht gelesen werden."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Es ist kein weiterer Vorgang vorhanden, der r\u00fcckg\u00e4ngig gemacht werden kann."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "Die Lesung enth\u00e4lt ung\u00fcltige Zeichen. Zul\u00e4ssig sind ASCII-Zeichen, Hiragana, Dakuten (\u309b), Handakuten (\u309c), Mittelpunkt (\u30fb), Verl\u00e4ngerungsstrich (\u30fc), japanisches Komma (\u3001), japanischer Punkt (\u3002), japanische Klammern (\u300c\u300d\u300e\u300f) und japanischer Wellen-Geviertstrich (\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Tippen Sie die Lesung ein."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "Die Lesung ist zu lang."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Fehler beim Hinzuf\u00fcgen des Eintrags"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Fehler beim Erstellen des W\u00f6rterbuchs"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Fehler beim L\u00f6schen des W\u00f6rterbuchs"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Fehler beim L\u00f6schen des Eintrags"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Fehler beim Bearbeiten des Eintrags"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Fehler beim Import"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "Fehler beim Umbenennen des W\u00f6rterbuchs"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "Das Wort enth\u00e4lt ung\u00fcltige Zeichen."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Tippen Sie das Wort ein."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "Das Wort ist zu lang."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Neues Wort"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "Wort"
+    "message": "Word"
   },
   "dismiss_menu": {
-    "message": "Tastaturmen\u00fc verlassen"
+    "message": "Tastaturmen\u00fc schlie\u00dfen"
   },
   "dk_dan_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr d\u00e4nische Tastatur"
@@ -2564,22 +2564,28 @@
     "message": "Emoji-Kategorie \"Symbol\""
   },
   "enable_capitalization": {
-    "message": "Autom. Gro\u00df-/Kleinschreibung"
+    "message": "Automatische Gro\u00df-/Kleinschreibung"
   },
   "enable_completion": {
     "message": "Vervollst\u00e4ndigung aktivieren"
   },
   "enable_gesture_editing": {
+    "message": "Wischbewegungen aktivieren"
+  },
+  "enable_gesture_editing_desc": {
     "message": "Wischen Sie vom Rand der Tastatur, um den Cursor zu bewegen, oder von der R\u00fccktaste, um ganze W\u00f6rter zu l\u00f6schen."
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Bewegungseingabe aktivieren"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Geben Sie durch Bewegen der Finger \u00fcber die Buchstaben ein Wort ein."
   },
   "enable_prediction": {
     "message": "Vervollst\u00e4ndigung des n\u00e4chsten Wortes aktivieren"
   },
   "enter": {
-    "message": "Eingabe"
+    "message": "Eingabetaste"
   },
   "es_cat_cat_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr katalanische Tastatur"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr finnische Tastatur"
   },
+  "fo_fao_settings_page": {
+    "message": "Seite mit Einstellungen f\u00fcr f\u00e4r\u00f6ische Tastatur"
+  },
   "footer_docking_button": {
     "message": "Bildschirmtastatur verankern"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "Einstellungen f\u00fcr die Eingabemethode \u00f6ffnen"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "Seite mit Einstellungen f\u00fcr franz\u00f6sische B\u00c9PO-Tastatur (Franz\u00f6sisch)"
   },
   "fr_fra_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr franz\u00f6sische Tastatur"
@@ -2627,7 +2639,7 @@
     "message": "Seite mit Einstellungen f\u00fcr georgische Tastatur"
   },
   "globe": {
-    "message": "Zur vorherigen Tastatur"
+    "message": "Zur vorherigen Tastatur wechseln"
   },
   "got_it": {
     "message": "OK"
@@ -2652,6 +2664,9 @@
   },
   "hu_hun_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr ungarische Tastatur"
+  },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Ungarische Qwerty-Tastatur \u2013 Einrichtungsseite"
   },
   "ie_ga_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr irische Tastatur"
@@ -2686,6 +2701,9 @@
   "inputmethod_cangjie": {
     "message": "Cangjie-Eingabemethode"
   },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
+  },
   "inputmethod_dayi": {
     "message": "Dayi-Eingabemethode"
   },
@@ -2717,7 +2735,7 @@
     "message": "Seite mit Einstellungen f\u00fcr japanische Tastatur"
   },
   "keyboard_arabic": {
-    "message": "Tastatur Arabisch"
+    "message": "Arabische Tastatur"
   },
   "keyboard_armenian_phonetic": {
     "message": "Armenische phonetische Tastatur"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "\u00c4thiopische Tastatur"
   },
+  "keyboard_faroese": {
+    "message": "F\u00e4r\u00f6ische Tastatur"
+  },
   "keyboard_finnish": {
     "message": "Finnische Tastatur"
   },
   "keyboard_french": {
     "message": "Franz\u00f6sische Tastatur"
+  },
+  "keyboard_french_bepo": {
+    "message": "Franz\u00f6sische B\u00c9PO-Tastatur"
   },
   "keyboard_georgian": {
     "message": "Georgische Tastatur"
@@ -2786,7 +2810,7 @@
     "message": "Deutsche Tastatur"
   },
   "keyboard_german_neo_2": {
-    "message": "Deutsche Neo2-Tastatur"
+    "message": "Deutsche Neo-2-Tastatur"
   },
   "keyboard_greek": {
     "message": "Griechische Tastatur"
@@ -2799,6 +2823,9 @@
   },
   "keyboard_hungarian": {
     "message": "Ungarische Tastatur"
+  },
+  "keyboard_hungarian_qwerty": {
+    "message": "Ungarische Qwerty-Tastatur"
   },
   "keyboard_icelandic": {
     "message": "Isl\u00e4ndische Tastatur"
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannada-Tastatur (phonetisch)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Tastatur (Kedmanee)"
   },
@@ -2829,6 +2859,9 @@
   },
   "keyboard_lao": {
     "message": "Lao-Tastatur"
+  },
+  "keyboard_laothian": {
+    "message": "Laotische Tastatur"
   },
   "keyboard_latin_american": {
     "message": "Lateinamerikanische Tastatur"
@@ -2840,7 +2873,7 @@
     "message": "Litauische Tastatur"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Mazedonische Tastatur"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam-Tastatur (phonetisch)"
@@ -2911,6 +2944,9 @@
   "keyboard_sinhala": {
     "message": "Singhalesische Tastatur"
   },
+  "keyboard_slovak": {
+    "message": "Slowakische Tastatur"
+  },
   "keyboard_slovakian": {
     "message": "Slowakische Tastatur"
   },
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "T\u00fcrkische Tastatur"
   },
+  "keyboard_turkish_f": {
+    "message": "Tastatur \"T\u00fcrkisch-F\""
+  },
   "keyboard_typewriter": {
     "message": "Tastatur (Schreibmaschine)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "US-amerikanische Dvorak-Tastatur"
+  },
+  "keyboard_us_dvp": {
+    "message": "US-amerikanische \"Programmer Dvorak\"-Tastatur"
   },
   "keyboard_us_extended": {
     "message": "US-amerikanische erweiterte Tastatur"
@@ -3074,7 +3116,7 @@
     "message": "Autokorrektur"
   },
   "physical_enable_capitalization": {
-    "message": "Autom. Gro\u00df-/Kleinschreibung"
+    "message": "Automatische Gro\u00df-/Kleinschreibung"
   },
   "physical_keyboard": {
     "message": "Physische Tastatur"
@@ -3134,7 +3176,7 @@
     "message": "Drop-down-Liste mit Vorschl\u00e4gen per R\u00fccktaste einblenden"
   },
   "show_hangul_candidate": {
-    "message": "Kandidaten im Hangul-Modus ansehen"
+    "message": "Kandidaten im Hangul-Modus anzeigen"
   },
   "shrink_candidates": {
     "message": "Kandidatenliste minimieren"
@@ -3146,7 +3188,7 @@
     "message": "Seite mit Einstellungen f\u00fcr slowakische Tastatur"
   },
   "smiley": {
-    "message": "Smiley"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "Moderat"
@@ -3155,16 +3197,16 @@
     "message": "Ton bei Tastendruck"
   },
   "space": {
-    "message": "Leerzeichen"
+    "message": "Leertaste"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Wischen Sie nach links, um ganze W\u00f6rter zu l\u00f6schen."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "Wischen Sie nach rechts, um W\u00f6rter wiederherzustellen."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Wischen Sie nach links oder rechts, um den Cursor zu bewegen."
   },
   "switch_to": {
     "message": "Wechseln zu "
@@ -3179,7 +3221,7 @@
     "message": "Wechseln zu "
   },
   "switched_to": {
-    "message": "Gewechselt "
+    "message": "Gewechselt zu "
   },
   "tab": {
     "message": "Tabulatortaste"
@@ -3187,86 +3229,89 @@
   "touch_keyboard": {
     "message": "Bildschirmtastatur"
   },
+  "tr_f_tur_settings_page": {
+    "message": "Seite mit Einstellungen f\u00fcr die Tastatur \"T\u00fcrkisch-F\""
+  },
   "tr_tur_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr t\u00fcrkische Tastatur"
   },
   "transliteration_am": {
-    "message": "Transliteration (salam \u2192 \u1230\u120b\u121d)"
+    "message": "Transliteration salam \u2192 \u1230\u120b\u121d"
   },
   "transliteration_ar": {
-    "message": "Transliteration (marhaban \u2190 \u0645\u0631\u062d\u0628\u0627)"
+    "message": "Transliteration marhaban \u2190 \u0645\u0631\u062d\u0628\u0627"
   },
   "transliteration_be": {
-    "message": "Transliteration (pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435)"
+    "message": "Transliteration pryvitannie \u2192 \u043f\u0440\u044b\u0432\u0456\u0442\u0430\u043d\u043d\u0435"
   },
   "transliteration_bg": {
-    "message": "Transliteration (zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438)"
+    "message": "Transliteration zdrasti \u2192 \u0437\u0434\u0440\u0430\u0441\u0442\u0438"
   },
   "transliteration_bn": {
-    "message": "Transliteration (namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0)"
+    "message": "Transliteration namaskar \u2192 \u09a8\u09ae\u09b8\u09cd\u0995\u09be\u09b0"
   },
   "transliteration_el": {
-    "message": "Transliteration (geia \u2192 \u03b3\u03b5\u03b9\u03b1)"
+    "message": "Transliteration geia \u2192 \u03b3\u03b5\u03b9\u03b1"
   },
   "transliteration_fa": {
-    "message": "Transliteration (salam \u2190 \u0633\u0644\u0627\u0645)"
+    "message": "Transliteration salam \u2190 \u0633\u0644\u0627\u0645"
   },
   "transliteration_gu": {
-    "message": "Transliteration (namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7)"
+    "message": "Transliteration namaste \u2192 \u0aa8\u0aae\u0ab8\u0acd\u0aa4\u0ac7"
   },
   "transliteration_he": {
-    "message": "Transliteration (shalom \u2190 \u05e9\u05dc\u05d5\u05dd)"
+    "message": "Transliteration shalom \u2190 \u05e9\u05dc\u05d5\u05dd"
   },
   "transliteration_hi": {
-    "message": "Transliteration (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+    "message": "Transliteration namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947"
   },
   "transliteration_kn": {
-    "message": "Transliteration (namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0)"
+    "message": "Transliteration namaskaram \u2192 \u0ca8\u0cae\u0cb8\u0ccd\u0c95\u0cbe\u0cb0"
   },
   "transliteration_ml": {
-    "message": "Transliteration (namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02)"
+    "message": "Transliteration namaskar \u2192 \u0d28\u0d2e\u0d38\u0d4d\u0d15\u0d3e\u0d30\u0d02"
   },
   "transliteration_mr": {
-    "message": "Transliteration (namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930)"
+    "message": "Transliteration namaste \u2192 \u0928\u092e\u0938\u094d\u0915\u093e\u0930"
   },
   "transliteration_ne": {
-    "message": "Transliteration (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+    "message": "Transliteration namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947"
   },
   "transliteration_or": {
-    "message": "Transliteration (mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47)"
+    "message": "Transliteration mausam \u2192 \u0b28\u0b2e\u0b38\u0b4d\u0b24\u0b47"
   },
   "transliteration_pa": {
-    "message": "Transliteration (mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e)"
+    "message": "Transliteration mausam \u2192 \u0a2e\u0a4c\u0a38\u0a2e"
   },
   "transliteration_ru": {
-    "message": "Transliteration (privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442)"
+    "message": "Transliteration privet \u2192 \u043f\u0440\u0438\u0432\u0435\u0442"
   },
   "transliteration_sa": {
-    "message": "Transliteration (namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947)"
+    "message": "Transliteration namaste \u2192 \u0928\u092e\u0938\u094d\u0924\u0947"
   },
   "transliteration_si": {
-    "message": "Transliteration (halo \u2192 \u0dc4\u0dbd\u0ddd)"
+    "message": "Transliteration halo \u2192 \u0dc4\u0dbd\u0ddd"
   },
   "transliteration_sr": {
-    "message": "Transliteration (zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e)"
+    "message": "Transliteration zdravo \u2192 \u0437\u0434\u0440\u0430\u0432\u043e"
   },
   "transliteration_ta": {
-    "message": "Transliteration (vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd)"
+    "message": "Transliteration vanakkam \u2192 \u0bb5\u0ba3\u0b95\u0bcd\u0b95\u0bae\u0bcd"
   },
   "transliteration_te": {
-    "message": "Transliteration (emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40)"
+    "message": "Transliteration emandi \u2192 \u0c0f\u0c2e\u0c02\u0c21\u0c40"
   },
   "transliteration_ti": {
-    "message": "Transliteration (selam \u2192 \u1230\u120b\u121d)"
+    "message": "Transliteration selam \u2192 \u1230\u120b\u121d"
   },
   "transliteration_uk": {
-    "message": "Transliteration (pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442)"
+    "message": "Transliteration pryvit \u2192 \u043f\u0440\u0438\u0432\u0456\u0442"
   },
   "transliteration_ur": {
-    "message": "Transliteration (salam \u2190 \u0633\u0644\u0627\u0645)"
+    "message": "Transliteration salam \u2190 \u0633\u0644\u0627\u0645"
   },
   "transliteration_vi": {
-    "message": "Transliteration (chao \u2192 ch\u00e0o)"
+    "message": "Transliteration chao \u2192 ch\u00e0o"
   },
   "ua_ukr_settings_page": {
     "message": "Seite mit Einstellungen f\u00fcr ukrainische Tastatur"
@@ -3308,16 +3353,19 @@
     "message": "Pers\u00f6nliches W\u00f6rterbuch aktivieren"
   },
   "user_dict_add": {
-    "message": "hinzuf\u00fcgen"
+    "message": "Hinzuf\u00fcgen"
   },
   "user_dict_clear": {
-    "message": "alle l\u00f6schen"
+    "message": "Alle l\u00f6schen"
+  },
+  "user_dict_edit": {
+    "message": "W\u00f6rterbucheintr\u00e4ge bearbeiten"
   },
   "user_dict_manage": {
-    "message": "pers\u00f6nliches W\u00f6rterbuch verwalten..."
+    "message": "Pers\u00f6nliches W\u00f6rterbuch verwalten..."
   },
   "user_dict_new_word": {
-    "message": "neues Wort"
+    "message": "Neues Wort"
   },
   "user_dict_remove": {
     "message": "Auswahl entfernen"
@@ -3329,10 +3377,10 @@
     "message": "Speichern"
   },
   "user_dict_sync": {
-    "message": "pers\u00f6nliches W\u00f6rterbuch synchronisieren"
+    "message": "Pers\u00f6nliches W\u00f6rterbuch synchronisieren"
   },
   "user_dict_title": {
-    "message": "pers\u00f6nliches W\u00f6rterbuch"
+    "message": "Pers\u00f6nliches W\u00f6rterbuch"
   },
   "voice": {
     "message": "Spracheingabe"
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Warten"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Tastaturtyp"

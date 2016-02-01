@@ -41,7 +41,8 @@ ReadyState.State = {
   KEYBOARD_CONFIG_READY: 0x10,
   LAYOUT_READY: 0x100,
   LAYOUT_CONFIG_READY: 0x1000,
-  M17N_LAYOUT_READY: 0x10000
+  M17N_LAYOUT_READY: 0x10000,
+  DISPLAY_SIZE_READY: 0x100000
 };
 
 
@@ -51,21 +52,6 @@ ReadyState.State = {
  * @private {number}
  */
 ReadyState.prototype.state_ = 0;
-
-
-/**
- * Gets whether the system is ready.
- *
- * @return {boolean} Whether the system is ready.
- */
-ReadyState.prototype.isAllReady = function() {
-  return !!(this.state_ & (
-      ReadyState.State.IME_LIST_READY |
-      ReadyState.State.KEYBOARD_CONFIG_READY |
-      ReadyState.State.LAYOUT_READY |
-      ReadyState.State.LAYOUT_CONFIG_READY |
-      ReadyState.State.M17N_LAYOUT_READY));
-};
 
 
 /**

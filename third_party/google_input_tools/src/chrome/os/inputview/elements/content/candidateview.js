@@ -19,13 +19,12 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.object');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.Candidate');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
 goog.require('i18n.input.chrome.inputview.elements.content.DragButton');
-goog.require('i18n.input.chrome.inputview.elements.content.FloatingVKButton');
 goog.require('i18n.input.chrome.inputview.elements.content.ToolbarButton');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.Name');
@@ -37,7 +36,7 @@ var Css = i18n.input.chrome.inputview.Css;
 var TagName = goog.dom.TagName;
 var Candidate = i18n.input.chrome.inputview.elements.content.Candidate;
 var Type = i18n.input.chrome.inputview.elements.content.Candidate.Type;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var content = i18n.input.chrome.inputview.elements.content;
 var Name = i18n.input.chrome.message.Name;
 var util = i18n.input.chrome.inputview.util;
@@ -92,8 +91,6 @@ i18n.input.chrome.inputview.elements.content.CandidateView = function(id,
 
   this.fvkButtons_.push(new content.
       DragButton('', ElementType.DRAG, Css.DRAG_BUTTON, this));
-  this.fvkButtons_.push(new content.
-      FloatingVKButton('', ElementType.RESIZE, Css.RESIZE_BUTTON, this));
 
   /**
    * Toolbar buttons.
@@ -261,6 +258,14 @@ CandidateView.prototype.tryShowingToolbar = false;
 CandidateView.prototype.keyset_ = '';
 
 
+/** @private {boolean} */
+CandidateView.prototype.isPasswordBox_ = false;
+
+
+/** @private {boolean} */
+CandidateView.prototype.isRTL_ = false;
+
+
 /**
  * The width of the inter container.
  *
@@ -363,11 +368,10 @@ CandidateView.prototype.showNumberRow = function() {
  * @param {string=} opt_text The text to display.
  */
 CandidateView.prototype.showTooltip = function(opt_text) {
+  this.clearCandidates();
   this.candidateViewType_ = CandidateViewType.TOOLTIP;
   goog.dom.classlist.remove(this.getElement(),
       i18n.input.chrome.inputview.Css.THREE_CANDIDATES);
-  var dom = this.getDomHelper();
-  dom.removeChildren(this.interContainer_);
   var candidateElem = new Candidate('tooltip', goog.object.create(
       Name.CANDIDATE, opt_text || ''),
       Type.TOOLTIP, this.height, false, this.width, this);
@@ -383,7 +387,8 @@ CandidateView.prototype.hideTooltip = function() {
   if (this.candidateViewType_ == CandidateViewType.TOOLTIP) {
     this.candidateViewType_ = CandidateViewType.NONE;
     this.getDomHelper().removeChildren(this.interContainer_);
-    this.switchToIcon(IconType.VOICE, this.needToShowVoiceIcon_());
+    // Restore previous settings.
+    this.updateByKeyset(this.keyset_, this.isPasswordBox_, this.isRTL_);
   }
 };
 
@@ -427,7 +432,7 @@ CandidateView.prototype.addThreeCandidates_ = function(candidates) {
   this.interContainer_.style.width = 'auto';
   var num = Math.min(3, candidates.length);
   var width = CandidateView.WIDTH_FOR_THREE_CANDIDATES_;
-  if (this.adapter_.isFloating) {
+  if (this.adapter_.isFloatingVirtualKeyboardEnabled()) {
     //TODO: large size floating virtual keyboard may still use the regular
     //width. Add an enum to distinguish small size from large and middle size
     //for floating virtual keyboard.
@@ -647,7 +652,7 @@ CandidateView.prototype.hasEnoughSpaceForToolbar_ = function() {
       CandidateView.TOOLBAR_ICON_WIDTH_ * this.toolbarButtons_.length;
   // Reserve space to display at least 3 candidates
   var candidatesSpace = CandidateView.WIDTH_FOR_THREE_CANDIDATES_ * 3;
-  if (this.adapter_.isFloating) {
+  if (this.adapter_.isFloatingVirtualKeyboardEnabled()) {
     //TODO: large size floating virtual keyboard may still use the regular
     //width. Add an enum to distinguish small size from large and middle size
     //for floating virtual keyboard.
@@ -668,6 +673,8 @@ CandidateView.prototype.hasEnoughSpaceForToolbar_ = function() {
 CandidateView.prototype.updateByKeyset = function(
     keyset, isPasswordBox, isRTL) {
   this.keyset_ = keyset;
+  this.isPasswordBox_ = isPasswordBox;
+  this.isRTL_ = isRTL;
   if (keyset == CandidateView.HANDWRITING_VIEW_CODE_ ||
       keyset == CandidateView.EMOJI_VIEW_CODE_) {
     // Handwriting and emoji keyset do not allow to show voice icon.

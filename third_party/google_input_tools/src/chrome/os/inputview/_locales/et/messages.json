@@ -3,7 +3,7 @@
     "message": "Lisa s\u00f5nastikku"
   },
   "add_to_personal_dictionary": {
-    "message": "Isiklikku s\u00f5nastikku lisamine"
+    "message": "Lisa isiklikku s\u00f5nastikku"
   },
   "add_word_to_dictionary": {
     "message": "Lisa \u201e$1\u201d s\u00f5nastikku",
@@ -14,7 +14,7 @@
     }
   },
   "advanced": {
-    "message": "T\u00e4psemad"
+    "message": "T\u00e4psem"
   },
   "alt": {
     "message": "alt"
@@ -29,10 +29,10 @@
     "message": "Armeenia foneetilise klaviatuuri seadete leht"
   },
   "appnamejpkeyboard": {
-    "message": "Google'i jaapanikeelne sisestus (jaapani klaviatuuri jaoks)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Google'i jaapanikeelne sisestus (USA klaviatuuri jaoks)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "Automaatne parandamine"
@@ -59,7 +59,7 @@
     "message": "Bulgaaria foneetilise klaviatuuri seadete leht"
   },
   "br_por_settings_page": {
-    "message": "Brasiilia klaviatuuri (Brasiilia portugali) seadete leht"
+    "message": "Brasiilia klaviatuuri (Brasiilia portugali keele) seadete leht"
   },
   "by_bel_settings_page": {
     "message": "Valgevene klaviatuuri seadete leht"
@@ -92,76 +92,76 @@
     "message": "Google'i sisestust\u00f6\u00f6riistad"
   },
   "compositionmodedirect": {
-    "message": "Otsesisestus"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
-    "message": "Lai ladina"
+    "message": "Wide Latin"
   },
   "compositionmodefullkatakana": {
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "ladina"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Poollaiusega katakana"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "P\u00f5hiteave"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "Isikup\u00e4rastamisandmete kustutamine ..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "T\u00fchistamine"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "Konversioonide ajalugu"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "J\u00e4rgmiste \u00fcksuste kustutamine:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "Isikup\u00e4rastamisandmete kustutamine"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "Soovituste ajalugu"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "Isikup\u00e4rastamisandmete kustutamine"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Autori\u00f5igus \u00a9 2013 Google Inc. K\u00f5ik \u00f5igused kaitstud."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "T\u00fchistamine"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Kasutaja s\u00f5nastiku haldamine ..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Konversioonikandidaatide kohandamiseks lisage oma s\u00f5nad kasutaja s\u00f5nastikku."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Kasutaja s\u00f5nastikud"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "Isikup\u00e4rastatud konversioonide ja soovituste ning kasutaja s\u00f5nastiku keelamine"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Sisestusabi"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Selle tarkvara pakkumist toetab <a href=\"./credits_en.html\">avatud litsentsiga tarkvara</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Sisestusre\u017eiim:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,19 +170,19 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "Privaatsus"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Kirjavahem\u00e4rkide stiil:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Valimise otsetee:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Otseteed pole"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Klahvitabeli stiil:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Kohandatud klahvitabel"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,52 +200,52 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Jaapani keele sisestusseaded"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "T\u00f5stuklahvi re\u017eiimi l\u00fcliti:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "T\u00e4htnumbriline"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "V\u00e4ljas"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "T\u00fchiku sisestusstiil:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Sisestusre\u017eiimi j\u00e4lgimine"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "T\u00e4islaius"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "Poollaius"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Soovituste arv:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Soovitamine"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "S\u00fcmboli stiil:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Kasutusstatistika ja krahhiaruannete automaatselt Google'ile saatmine"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Automaatselt poollaiusele l\u00fclitumine"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "S\u00fcsteemi s\u00f5nastiku kasutamine"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Sisestusajaloo kasutamine"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "ctrl"
@@ -269,40 +269,40 @@
     "message": "T\u0161ehhi Qwerty klaviatuuri seadete leht"
   },
   "d83c_dc04": {
-    "message": "Mahjongi kivi"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "Jokker"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "veregrupp A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "veregrupp B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "veregrupp O"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "parkimine"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "veregrupp AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "lahe"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "tasuta"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "Uus"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -311,1186 +311,1186 @@
     "message": "OK"
   },
   "d83c_dd98": {
-    "message": "Appi"
+    "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "\u00dcLES!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
-    "message": "vs."
+    "message": "versus"
   },
   "d83c_de01": {
-    "message": "Jaapani s\u00f5na \u00e2\u20ac\u02dcsiin\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "Jaapani s\u00f5na \u00e2\u20ac\u02dcteenindus\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "Jaapani s\u00f5na \u201etasuta\u201d"
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "Jaapani s\u00f5na \u201ebroneeritud\u201d"
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "Jaapani s\u00f5na \u00e2\u20ac\u02dckeelatud\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "Hiina s\u00f5na \u201eruum on saadaval\u201d"
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "Hiina s\u00f5na \u201ej\u00e4ta vahele\u201d"
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "Hiina s\u00f5na \u201et\u00e4is\u201d"
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "Jaapani s\u00f5na \u201etasud\u201d"
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "Jaapani s\u00f5na \u201eigakuine\u201d"
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "Hiina s\u00f5na \u201etaotlus\u201d"
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "Jaapani s\u00f5na \u201eallahindlus\u201d"
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "Hiina s\u00f5na \u201e\u00e4ris\u201d"
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "Jaapani s\u00f5na \u201eeelis\u201d"
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "Hiina s\u00f5na \u201ekinnitatud\u201d"
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "keeristorm"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "udune"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "vihmavari"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "\u00f6ised t\u00e4hed"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "p\u00e4ikeset\u00f5us m\u00e4gede kohal"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "p\u00e4ikeset\u00f5us"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "linn h\u00e4maruses"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "p\u00e4ikseloojang"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "vikerkaar"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "\u00f6ine sild"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "laine"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "vulkaan"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "linnutee"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "Euroopa ja Aafrika gloobusel"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "Ameerika gloobusel"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "Aasia ja Austraalia gloobusel"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "meridiaanidega gloobus"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "noorkuu"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "kasvav poolkuu"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "esimese veerandi kuu"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "kasvav kuu"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "t\u00e4iskuu"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "kahanev kuu"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "viimase veerandi kuu"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "kahanev poolkuu"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "poolkuu"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "noorkuu n\u00e4gu"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "esimese veerandi kuu n\u00e4gu"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "viimase veerandi kuu n\u00e4gu"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "t\u00e4iskuu n\u00e4gu"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "p\u00e4ikese n\u00e4gu"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "h\u00f5\u00f5guv t\u00e4ht"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "langev t\u00e4ht"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "kastan"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "istik"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "igihaljas puu"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "lehti langetav puu"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "palmipuu"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "kaktus"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "tulp"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "kirsi\u00f5is"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "roos"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "hibisk"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "p\u00e4evalill"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "\u00f5is"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "mais"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "riisitaim"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "ravimtaim"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "neljaleheline ristik"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "vahtraleht"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "langevad lehed"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "lehed tuules"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "seen"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "tomat"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "bakla\u017eaan"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "viinamarjad"
+    "message": "grapes"
   },
   "d83c_df48": {
     "message": "melon"
   },
   "d83c_df49": {
-    "message": "arbuus"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "mandariin"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "sidrun"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "banaan"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "ananass"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "punane \u00f5un"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "roheline \u00f5un"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "pirn"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "virsik"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "kirss"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "maasikas"
+    "message": "strawberry"
   },
   "d83c_df54": {
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "pitsal\u00f5ik"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "liha"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "kanakoib"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "riisik\u00fcpsis"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "riisipall"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "keedetud riis"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "karri ja riis"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
-    "message": "r\u0101men"
+    "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "spagetid"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "leib"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "friikartulid"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "r\u00f6stitud kartul"
+    "message": "roasted potato"
   },
   "d83c_df61": {
-    "message": "mochi riisikook"
+    "message": "mochi"
   },
   "d83c_df62": {
     "message": "oden"
   },
   "d83c_df63": {
-    "message": "su\u0161i"
+    "message": "sushi"
   },
   "d83c_df64": {
-    "message": "praetud krevetid"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "kalakook"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "pehme j\u00e4\u00e4tis"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "sorbett"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "j\u00e4\u00e4tis"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "s\u00f5\u00f5rik"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "k\u00fcpsis"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "\u0161okolaad"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "komm"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "pulgakomm"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "vanillikaste"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "meepott"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "kihiline kook"
+    "message": "shortcake"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "hautis"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "praepann"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "nuga ja kahvel"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "teetass"
+    "message": "teacup"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "vein"
+    "message": "wine"
   },
   "d83c_df78": {
-    "message": "kokteil"
+    "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "troopiline jook"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "\u00f5lu"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "\u00f5llekannud"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "lutipudel"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "lint"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "kingitus"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "s\u00fcnnip\u00e4evatort"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "halloween'i k\u00f5rvits"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "j\u00f5ulupuu"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "j\u00f5uluvana"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "ilutulestik"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "s\u00e4rak\u00fc\u00fcnal"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "\u00f5hupall"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "paberkahur"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "serpentiinid"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "puidust ja paberist ribad"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "ristatud lipud"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "m\u00e4nnipuust kaunistus"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "nukud"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "karpkalakujulised serpentiinid"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "tuulekell"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "kuu vaatamine"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "koolikott"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "l\u00f5pum\u00fcts"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "karussell"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "vaateratas"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "Ameerika m\u00e4ed"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "kalastamine"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "mikrofon"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "videokaamera"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "film"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "k\u00f5rvaklapid"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "v\u00e4rvipalett"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "silinder"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "tsirkus"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "pilet"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "klapptahvel"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "n\u00e4omask"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "videom\u00e4ng"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "m\u00e4rklaud"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "m\u00e4nguautomaat"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "piljard"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "m\u00e4ngut\u00e4ring"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "keegel"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "m\u00e4ngukaart"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "noot"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "noodid"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "saksofon"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "kitarr"
+    "message": "guitar"
   },
   "d83c_dfb9": {
-    "message": "klaver"
+    "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trompet"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "viiul"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "noodikiri"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "jooksus\u00e4rk"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
     "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "suusatamine"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "korvpall"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "ruuduline lipp"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "lumelaudur"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "jooksja"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "surfamine"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "auhind"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "hobuste v\u00f5iduajamine"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "Ameerika jalgpall"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "jalgpall"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "ujuja"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "maja"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "kodu"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "b\u00fcroohoone"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "Jaapani postkontor"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "Euroopa postkontor"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "haigla"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "pank"
+    "message": "bank"
   },
   "d83c_dfe7": {
-    "message": "rahaautomaat"
+    "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "hotell"
+    "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "armastushotell"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "kodupood"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "kool"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "kaubamaja"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "tehas"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "punane latern"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "Jaapani loss"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "Euroopa loss"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "Rott"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "Hiir"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "H\u00e4rg"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "vesip\u00fchvel"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "lehm"
+    "message": "cow"
   },
   "d83d_dc06": {
     "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "k\u00fc\u00fclik"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "kass"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "draakon"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "krokodill"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "vaal"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "tigu"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "madu"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "hobune"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "j\u00e4\u00e4r"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "kits"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "lammas"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "ahv"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "kukk"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "kana"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "koer"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "siga"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "metssiga"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "elevant"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "kaheksajalg"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "karp"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "putukas"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "sipelgas"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "mesilane"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "lepatriinu"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "kala"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "troopiline kala"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "kerakala"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "kilpkonn"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "kooruv tibu"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "beebitibu n\u00e4gu"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "beebitibu"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "lind"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "pingviin"
+    "message": "penguin"
   },
   "d83d_dc28": {
-    "message": "koaala"
+    "message": "koala"
   },
   "d83d_dc29": {
-    "message": "puudel"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "\u00fche k\u00fc\u00fcruga kaamel"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "kahe k\u00fc\u00fcruga kaamel"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "delfiin"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "hiire n\u00e4gu"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "lehma n\u00e4gu"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "tiigri n\u00e4gu"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "k\u00fc\u00fcliku n\u00e4gu"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "kassi n\u00e4gu"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "draakoni n\u00e4gu"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "vett purskav vaal"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "hobuse n\u00e4gu"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "ahvi n\u00e4gu"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "koera n\u00e4gu"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "sea n\u00e4gu"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "konna n\u00e4gu"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "hamstri n\u00e4gu"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "hundi n\u00e4gu"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "karu n\u00e4gu"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "panda n\u00e4gu"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "sea nina"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "k\u00e4pp"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "silmad"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "k\u00f5rv"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "nina"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "suu"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "keel"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "\u00fcles osutav s\u00f5rm"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "alla osutav s\u00f5rm"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "vasakule osutav s\u00f5rm"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "paremale osutav s\u00f5rm"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "kokkusurutud rusikas"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "lehvitav"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "k\u00f5ik on korras"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "p\u00f6idlad p\u00fcsti"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "p\u00f6idlad all"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "k\u00e4si plaksutav"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "avali k\u00e4ed"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "kroon"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "naiste k\u00fcbar"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "prillid"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "lips"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "T-s\u00e4rk"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "p\u00fcksid"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "kleit"
+    "message": "dress"
   },
   "d83d_dc58": {
     "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "bikiinid"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "naiste riided"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "k\u00e4ekott"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "k\u00e4ekott"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "tasku"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "meeste king"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "spordijalats"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "kontsaking"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "naiste sandaal"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "naiste saabas"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "jalaj\u00e4lg"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "b\u00fcsti siluett"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "b\u00fcstidega siluett"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "poiss"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "t\u00fcdruk"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "mees"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "naine"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "perekond"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "mees ja naine"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "kaks meest"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "kaks naist"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "politseinik"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "j\u00e4nkut\u00fcdruk"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "pruut"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "blond isik"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "pigim\u00fctsiga mees"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "turbaniga mees"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "vanem mees"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "vanem naine"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "laps"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "ehitust\u00f6\u00f6line"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "printsess"
+    "message": "princess"
   },
   "d83d_dc79": {
-    "message": "koll"
+    "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "paharet"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "kummitus"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "beebiingel"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "tulnukas"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "tulnukkoletis"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "kuradike"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "pealuu"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "teabelett"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "kaardiv\u00e4elane"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "tantsija"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "huulepulk"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "k\u00fc\u00fcnehooldus"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "n\u00e4omassaa\u017e"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "soeng"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "meestejuuksur"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "s\u00fcst"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "tablett"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "suudluse j\u00e4lg"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "armastuskiri"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "s\u00f5rmus"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "p\u00e4rl"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "suudlus"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "lillekimp"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "paar"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "pulmakabel"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "pulseeriv s\u00fcda"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "murtud s\u00fcda"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "kaks s\u00fcdant"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "s\u00e4delev s\u00fcda"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "kasvav s\u00fcda"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "s\u00fcda ja nool"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "sinine s\u00fcda"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "roheline s\u00fcda"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "kollane s\u00fcda"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "lilla s\u00fcda"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "lindiga s\u00fcda"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "p\u00f6\u00f6rlevad s\u00fcdamed"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "s\u00fcdamekaunistus"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "kroonleht"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "lambipirn"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "viha"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "pomm"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "unise s\u00fcmbol"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "kokkup\u00f5rge"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "pritsiv higi"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "k\u00fclm higi"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "jooksev kriips"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "kaka"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "biitseps"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "uimane"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "jutumull"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "m\u00f5ttemull"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "lilletempel"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "partituur"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "rahakott"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "valuutavahetus"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "dollarim\u00e4rk"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "krediitkaart"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "jeen"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "dollar"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "euro"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "nael"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "lendav raha"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "t\u00f5us b\u00f6rsil"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "istekoht"
+    "message": "seat"
   },
   "d83d_dcbb": {
-    "message": "arvuti"
+    "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "portfell"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "miniketas"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "flopiketas"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1499,889 +1499,889 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "kiirk\u00f6itja"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "avatud kaust"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "dokument"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "dokument"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "kalender"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "rebitavate lehtedega kalender"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "kartoteek"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "kasvutrend"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "langustrend"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "tulpdiagramm"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "l\u00f5ikelaud"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "n\u00f6\u00f6pn\u00f5el"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "\u00fcmmarguse otsaga n\u00f6\u00f6pn\u00f5el"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "kirjaklamber"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "sirge joonlaud"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "kolmnurkne joonlaud"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "j\u00e4rjehoidja vahelehed"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "arveraamat"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "m\u00e4rkmik"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "kaunistatud m\u00e4rkmik"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "suletud raamat"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "avatud raamat"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "roheline raamat"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "raamat"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "oran\u017e raamat"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "raamatud"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "nimesilt"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "k\u00e4sikiri"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "meeldetuletus"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "telefon"
+    "message": "phone"
   },
   "d83d_dcdf": {
-    "message": "piipar"
+    "message": "pager"
   },
   "d83d_dce0": {
-    "message": "faks"
+    "message": "fax"
   },
   "d83d_dce1": {
-    "message": "satelliitantenn"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "valjuh\u00e4\u00e4ldi"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "ruupor"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "saadetud post"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "Postkast"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "pakend"
+    "message": "package"
   },
   "d83d_dce7": {
-    "message": "e-post"
+    "message": "email"
   },
   "d83d_dce8": {
-    "message": "sissetulev post"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "v\u00e4ljaminev post"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "langetatud lipuga suletud postkast"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "t\u00f5stetud lipuga suletud postkast"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "t\u00f5stetud lipuga avatud postkast"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "langetatud lipuga avatud postkast"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "kirjakast"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "postisarv"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "ajaleht"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "mobiiltelefon"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "noolega mobiiltelefon"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "vibratsioonire\u017eiim"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "telefon on v\u00e4ljas"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "mobiiltelefon on keelatud"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "mobiilisignaalid"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "kaamera"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "videokaamera"
+    "message": "video cam"
   },
   "d83d_dcfa": {
-    "message": "teler"
+    "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "raadio"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "filmilint"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "ristatud nooled"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "p\u00e4rip\u00e4eva nooled"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "p\u00e4rip\u00e4eva nooled"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "laadi uuesti"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "vastup\u00e4eva nooled"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "v\u00e4he heledust"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "v\u00e4ga hele"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "r\u00e4\u00e4kimine keelatud"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "k\u00f5lar"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "vaikse heliga k\u00f5lar"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "valju heliga k\u00f5lar"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "aku"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "elektripistik"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "vasakule kallutatud luup"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "paremale kallutatud luup"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "sulepeaga lukk"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "suletud lukk v\u00f5tmega"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "v\u00f5ti"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "suletud lukk"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "avatud lukk"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "kelluke"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "ei kellukesele"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "j\u00e4rjehoidja"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "viida m\u00e4rk"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "raadionupp"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "tagasi"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "l\u00f5pp"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "nool SEES"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "Varsti tulemas m\u00e4rk"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "\u00fclesm\u00e4rk"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "Keelatud alla 18 eluaastastele"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "suurt\u00e4hed"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "v\u00e4iket\u00e4hed"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "numbrid"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "s\u00fcmbolid"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "ladina t\u00e4hestik"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "tuli"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "taskulamp"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "mutriv\u00f5ti"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "haamer"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "mutter ja polt"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "k\u00f6\u00f6ginuga"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "p\u00fcss"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "mikroskoop"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "teleskoop"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "kristallkuul"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "kuueharuline t\u00e4ht"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "roheline ja kollane leht"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "kolmhargi m\u00e4rk"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "raamitud ruuduga nupp"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "kontuuriga raamistatud ruuduga nupp"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "suur punane ring"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "suur sinine ring"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "suur oran\u017e romb"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "suur sinine romb"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "v\u00e4ike oran\u017e romb"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "v\u00e4ike sinine romb"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "\u00fclespoole suunatud kolmnurk"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "allapoole suunatud kolmnurk"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "\u00fclespoole suunatud kolmnurgaga nupp"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "allapoole suunatud kolmnurgaga nupp"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "kell 1"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "kell 2"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "kell 3"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "kell 4"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "kell 5"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "kell 6"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "kell 7"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "kell 8"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "kell 9"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "kell 10"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "kell 11"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "kell 12"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "pool kaks"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "pool kolm"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "pool neli"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "pool viis"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "pool kuus"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "pool seitse"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "pool kaheksa"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "pool \u00fcheksa"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "pool k\u00fcmme"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "pool \u00fcksteist"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "pool kaksteist"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "pool \u00fcks"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "Fuji m\u00e4gi"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
     "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "Vabadussammas"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "Jaapani kaart"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "Moyai kuju"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "irve"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " irve naeratavate silmadega"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "r\u00f5\u00f5mupisarad"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "avatud suuga naeratus"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "avatud suuga naeratus naeratavate silmadega"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "naeratus k\u00fclma higiga"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " avatud suuga naeratus suletud silmadega"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "aupaistega naeratus"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "sarvedega naeratus"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "silma pilgutav n\u00e4gu"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "naeratus"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "maias n\u00e4gu"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "kergendust tundev n\u00e4gu"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "naeratav n\u00e4gu"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "lahe"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "irve"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "surmt\u00f5sine n\u00e4gu"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "ilmetu"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "igavlev"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "k\u00fclm higi"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "m\u00f5tlik n\u00e4gu"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "segaduses n\u00e4gu"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "segadusseviidud n\u00e4gu"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "suudlev n\u00e4gu"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "suudlusi saatev"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "suudlus ja naeratus"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "suudlev"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "keel v\u00e4ljas"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "keel suust v\u00e4ljas silmapilgutusega"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "\u00f6\u00e4k"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "pettunud"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "mures"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "vihane"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "mossis"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "nuttev"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "pagan v\u00f5taks"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "v\u00f5idukas"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "huh!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "kulmu kortsutav n\u00e4gu"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "ahastuses"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "hirmunud"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "kurnatud"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "unine"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "v\u00e4sinud"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "grimass"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "valjusti nuttev"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "avatud suuga n\u00e4gu"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "vaigistatud n\u00e4gu"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "tormakas n\u00e4gu"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "hirmunud n\u00e4gu"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "\u00fcllatunud n\u00e4gu"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "punetav"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "magav"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "uimane"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "suuta n\u00e4gu"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "maskiga n\u00e4gu"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "irvitava kassi n\u00e4gu"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "r\u00f5\u00f5mupisaratega kassi n\u00e4gu"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "naeratava kassi n\u00e4gu"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "naeratava kassi n\u00e4gu"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "muigava kassi n\u00e4gu"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "suudlev kass"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "mossitava kassi n\u00e4gu"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "nutva kassi n\u00e4gu"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "kurnatud kassi n\u00e4gu"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "see pole hea idee"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "OK-\u017eest"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "vabandust"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "ei n\u00e4e kurja"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "ei kuule kurja"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "ei r\u00e4\u00e4gi kurja"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "\u00f5nnelik inimene"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "hurraa"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "kulmu kortsutav isik"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "mossis"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "k\u00e4ed ristis"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "rakett"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "helikopter"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "auruvedur"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "rong"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "kiirrong"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "terava ninaga kiirrong"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "rong"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "metroo"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "kergraudtee"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "rongijaam"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "tramm"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "trammivagun"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "buss"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "l\u00e4henev buss"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "trollibuss"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "bussipeatus"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "v\u00e4ikebuss"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "kiirabi"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "tulet\u00f5rjeauto"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "politseiauto"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "l\u00e4henev politseiauto"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
-    "message": "takso"
+    "message": "taxi"
   },
   "d83d_de96": {
-    "message": "l\u00e4henev takso"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "auto"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "l\u00e4henev auto"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "haagismaja"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "veoauto"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "kallur"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "traktor"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "\u00fcher\u00f6\u00f6pmeline raudtee"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "m\u00e4giraudtee"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "rippraudtee"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "m\u00e4gik\u00f6istee"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "t\u00f5stuk"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "laev"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "s\u00f5udepaat"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "kiirkaater"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "horisontaalsed valgusfoorid"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "vertikaalsed valgusfoorid"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "ehitusj\u00e4rgus"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "vilkur"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "asukoha lipp"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "uks"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "m\u00e4rk Sisenemine on keelatud"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "suitsetamise m\u00e4rk"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "suitsetamine keelatud"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "pr\u00fcgikasti m\u00e4rk"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "pr\u00fcgi mitte mahaviskamise m\u00e4rk"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "joogivesi"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "mittejoodav vesi"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "ratas"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "rattad keelatud"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "jalgrattur"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "m\u00e4gijalgrattur"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "jalak\u00e4ija"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "jalak\u00e4ijad keelatud"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "teed \u00fcletavad lapsed"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "m\u00e4rk Mehed"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "m\u00e4rk Naised"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "tualeti m\u00e4rk"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "beebi m\u00e4rk"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "tualett"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "tualettruum"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "du\u0161\u0161"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "vann"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "vann"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "passikontroll"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "toll"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "pagasi k\u00e4ttesaamine"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "mahaj\u00e4etud pagas"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "Saksa klaviatuuri seadete leht"
@@ -2390,139 +2390,139 @@
     "message": "Saksa Neo 2 klaviatuuri seadete leht"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Kategooria"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Kommenteerimine"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Kommenteerimine"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Kas soovite kustutada s\u00f5nastiku [object Object]?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "S\u00f5nastiku kustutamine"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "S\u00f5nastikud"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "S\u00f5nastiku nimi"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Valmis"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Eksportimine"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Importimine ..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "S\u00f5nastiku haldamine"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Uus s\u00f5nastik"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Kasutaja s\u00f5nastikud"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Uus loetud tekst"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Loetud tekst"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "Nimi sisaldab sobimatut t\u00e4hem\u00e4rki / sobimatuid t\u00e4hem\u00e4rke."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "Nimi on juba olemas."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Sisestage s\u00f5nastiku nimi."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "Nimi on liiga pikk."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Rohkem s\u00f5nastikke ei saa luua."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "Fail on t\u00fchi."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "Sellesse s\u00f5nastikku ei saa rohkem kirjeid luua."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Faili ei \u00f5nnestu avada."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "Andmemahu suurus \u00fcletab faili suuruse limiidi."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Toiming on eba\u00f5nnestunud."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "M\u00f5nda s\u00f5na ei \u00f5nnestunud importida."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Importimise allikas sisaldab liiga palju s\u00f5nu."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Faili ei \u00f5nnestunud lugeda."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Pole rohkem toiminguid, mida saaks tagasi v\u00f5tta."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "Loetud tekst sisaldab sobimatut t\u00e4hem\u00e4rki / sobimatuid t\u00e4hem\u00e4rke. Saate loetud tekstis kasutada ASCII t\u00e4hem\u00e4rke, Hiraganat, h\u00e4\u00e4likum\u00e4rki (\u309b), poolh\u00e4\u00e4likum\u00e4rki (\u309c), keskmist punkti (\u30fb), pikka h\u00e4\u00e4likum\u00e4rki (\u30fc), jaapani koma (\u3001), jaapani punkti (\u3002), jaapani sulge (\u300c\u300d\u300e\u300f) ja jaapani lainelist kriipsu (\u301c)."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Sisestage loetud tekst."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "Loetud tekst on liiga pikk."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Kirje lisamise viga"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "S\u00f5nastiku loomise viga"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "S\u00f5nastiku kustutamise viga"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Kirje kustutamise viga"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Kirje muutmise viga"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Importimise viga"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "S\u00f5nastiku \u00fcmbernimetamise viga"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "S\u00f5na sisaldab sobimatut t\u00e4hem\u00e4rki / sobimatuid t\u00e4hem\u00e4rke."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Sisestage s\u00f5na."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "S\u00f5na on liiga pikk."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Uus s\u00f5na"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "S\u00f5na"
+    "message": "Word"
   },
   "dismiss_menu": {
-    "message": "loobu klaviatuuri men\u00fc\u00fcst"
+    "message": "klaviatuuri men\u00fc\u00fcst loobumine"
   },
   "dk_dan_settings_page": {
     "message": "Taani klaviatuuri seadete leht"
@@ -2534,34 +2534,34 @@
     "message": "allanool"
   },
   "drag_button": {
-    "message": "Lohistamine virtuaalse klaviatuuri teisaldamiseks"
+    "message": "Lohista virtuaalse klaviatuuri teisaldamiseks"
   },
   "ee_est_settings_page": {
     "message": "Eesti klaviatuuri seadete leht"
   },
   "emoji_tab_emoticon": {
-    "message": "emotikonide kategooria"
+    "message": "Emotikonide kategooria"
   },
   "emoji_tab_face": {
-    "message": "n\u00e4oemotikonide kategooria"
+    "message": "N\u00e4oemotikonide kategooria"
   },
   "emoji_tab_hot": {
-    "message": "kuumade emotikonide kategooria"
+    "message": "Kuumade emotikonide kategooria"
   },
   "emoji_tab_nature": {
-    "message": "loodusemotikonide kategooria"
+    "message": "Loodusemotikonide kategooria"
   },
   "emoji_tab_object": {
-    "message": "objektemotikonide kategooria"
+    "message": "Objektiemotikonide kategooria"
   },
   "emoji_tab_place": {
-    "message": "kohaemotikonide kategooria"
+    "message": "Kohaemotikonide kategooria"
   },
   "emoji_tab_recent": {
-    "message": "hiljutiste emotikonide kategooria"
+    "message": "Hiljutiste emotikonide kategooria"
   },
   "emoji_tab_symbol": {
-    "message": "s\u00fcmbolemotikonide kategooria"
+    "message": "S\u00fcmbolemotikonide kategooria"
   },
   "enable_capitalization": {
     "message": "Automaatne suurt\u00e4htede kasutamine"
@@ -2570,10 +2570,16 @@
     "message": "Luba automaatne t\u00e4itmine"
   },
   "enable_gesture_editing": {
-    "message": "Tervete s\u00f5nade kustutamiseks p\u00fchkige kursori liigutamiseks klaviatuuri servadest v\u00f5i tagasil\u00fckkeklahvilt."
+    "message": "P\u00fchkimisliigutuste lubamine"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Kursori liigutamiseks p\u00fchkige klaviatuuri servadest ning tervete s\u00f5nade kustutamiseks tagasil\u00fckkeklahvilt"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "Joonistusega sisestamise lubamine"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Sisestage s\u00f5na s\u00f5rmega l\u00e4bi t\u00e4htede libistades"
   },
   "enable_prediction": {
     "message": "Luba j\u00e4rgmise s\u00f5na ennustamine"
@@ -2596,14 +2602,17 @@
   "fi_fin_settings_page": {
     "message": "Soome klaviatuuri seadete leht"
   },
+  "fo_fao_settings_page": {
+    "message": "F\u00e4\u00e4ri klaviatuuri seadete leht"
+  },
   "footer_docking_button": {
-    "message": "doki virtuaalne klaviatuur"
+    "message": "virtuaalse klaviatuuri dokkimine"
   },
   "footer_emoji_button": {
     "message": "emotikonidele l\u00fclitumine"
   },
   "footer_floating_button": {
-    "message": "muutke virtuaalne klaviatuur teisaldatavaks"
+    "message": "virtuaalse klaviatuuri teisaldatavaks muutmine"
   },
   "footer_handwriting_button": {
     "message": "k\u00e4sitsikirjale l\u00fclitumine"
@@ -2611,17 +2620,20 @@
   "footer_settings_button": {
     "message": "sisestusmeetodi seadete avamine"
   },
+  "fr_bepo_fra_settings_page": {
+    "message": "Prantsuse B\u00c9PO-klaviatuuri (prantsuse keel) seadete leht"
+  },
   "fr_fra_settings_page": {
     "message": "Prantsuse klaviatuuri seadete leht"
   },
   "fuzzy_pinyin": {
-    "message": "Lubage h\u00e4gus pinyin-re\u017eiim"
+    "message": "H\u00e4gusa pinyini re\u017eiimi lubamine"
   },
   "gb_dvorak_eng_settings_page": {
-    "message": "Inglise Dvoraki klaviatuuri (inglise keel) seadete leht"
+    "message": "Inglise Dvoraki klaviatuuri (inglise keele) seadete leht"
   },
   "gb_extd_eng_settings_page": {
-    "message": "Inglise klaviatuuri (inglise keel) seadete leht"
+    "message": "Inglise klaviatuuri (inglise keele) seadete leht"
   },
   "ge_geo_settings_page": {
     "message": "Gruusia klaviatuuri seadete leht"
@@ -2630,7 +2642,7 @@
     "message": "eelmisele klaviatuurile l\u00fclitumine"
   },
   "got_it": {
-    "message": "Sain aru"
+    "message": "Selge"
   },
   "gr_gre_settings_page": {
     "message": "Kreeka klaviatuuri seadete leht"
@@ -2652,6 +2664,9 @@
   },
   "hu_hun_settings_page": {
     "message": "Ungari klaviatuuri seadete leht"
+  },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Ungari Qwerty-klaviatuuri seadete leht"
   },
   "ie_ga_settings_page": {
     "message": "Iiri klaviatuuri seadete leht"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "Cangjie sisestusmeetod"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Dayi sisestusmeetod"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Etioopia klaviatuur"
   },
+  "keyboard_faroese": {
+    "message": "F\u00e4\u00e4ri klaviatuur"
+  },
   "keyboard_finnish": {
     "message": "Soome klaviatuur"
   },
   "keyboard_french": {
     "message": "Prantsuse klaviatuur"
+  },
+  "keyboard_french_bepo": {
+    "message": "Prantsuse B\u00c9PO-klaviatuur"
   },
   "keyboard_georgian": {
     "message": "Gruusia klaviatuur"
@@ -2800,11 +2824,14 @@
   "keyboard_hungarian": {
     "message": "Ungari klaviatuur"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "Ungari Qwerty-klaviatuur"
+  },
   "keyboard_icelandic": {
     "message": "Islandi klaviatuur"
   },
   "keyboard_inscript": {
-    "message": "Klaviatuur (India t\u00e4htedega)"
+    "message": "Klaviatuur (InScript)"
   },
   "keyboard_irish": {
     "message": "Iiri klaviatuur"
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannada klaviatuur (foneetiline)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Klaviatuur (Kedmanee)"
   },
@@ -2828,6 +2858,9 @@
     "message": "Khmeeri klaviatuur"
   },
   "keyboard_lao": {
+    "message": "Lao klaviatuur"
+  },
+  "keyboard_laothian": {
     "message": "Lao klaviatuur"
   },
   "keyboard_latin_american": {
@@ -2840,7 +2873,7 @@
     "message": "Leedu klaviatuur"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Makedoonia klaviatuur"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Malajalami klaviatuur (foneetiline)"
@@ -2911,8 +2944,11 @@
   "keyboard_sinhala": {
     "message": "Singali klaviatuur"
   },
+  "keyboard_slovak": {
+    "message": "Slovaki klaviatuur"
+  },
   "keyboard_slovakian": {
-    "message": "Slovakkia klaviatuur"
+    "message": "Slovaki klaviatuur"
   },
   "keyboard_slovenian": {
     "message": "Sloveenia klaviatuur"
@@ -2939,10 +2975,10 @@
     "message": "Klaviatuur (Tamil99)"
   },
   "keyboard_tamil_inscript": {
-    "message": "Tamili klaviatuur (India t\u00e4htedega)"
+    "message": "Tamili klaviatuur (InScript)"
   },
   "keyboard_tamil_itrans": {
-    "message": "Tamili klaviatuur (India transliteratsiooniga)"
+    "message": "Tamili klaviatuur (itrans)"
   },
   "keyboard_tamil_phonetic": {
     "message": "Tamili klaviatuur (foneetiline)"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "T\u00fcrgi klaviatuur"
   },
+  "keyboard_turkish_f": {
+    "message": "T\u00fcrgi F-klaviatuur"
+  },
   "keyboard_typewriter": {
     "message": "Klaviatuur (kirjutusmasin)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "USA Dvoraki klaviatuur"
+  },
+  "keyboard_us_dvp": {
+    "message": "USA programmeerija Dvoraki klaviatuur"
   },
   "keyboard_us_extended": {
     "message": "USA laiendatud klaviatuur"
@@ -3035,7 +3077,7 @@
     "message": "Sisestab \u00fche silbi korraga"
   },
   "latam_spa_settings_page": {
-    "message": "Ladina-Ameerika klaviatuuri (hispaania keel) seadete leht"
+    "message": "Ladina-Ameerika klaviatuuri (hispaania keele) seadete leht"
   },
   "latin_settings_page": {
     "message": "Seaded"
@@ -3047,7 +3089,7 @@
     "message": "Leedu klaviatuuri seadete leht"
   },
   "lv_apostrophe_lav_settings_page": {
-    "message": "L\u00e4ti klaviatuuri (l\u00e4ti keel) seadete leht"
+    "message": "L\u00e4ti klaviatuuri (l\u00e4ti keele) seadete leht"
   },
   "menu_key": {
     "message": "klaviatuuri men\u00fc\u00fc avamine"
@@ -3146,7 +3188,7 @@
     "message": "Slovakkia klaviatuuri seadete leht"
   },
   "smiley": {
-    "message": "n\u00e4oikoon"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
     "message": "M\u00f5\u00f5dukas"
@@ -3158,16 +3200,16 @@
     "message": "t\u00fchik"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Tervete s\u00f5nade kustutamiseks p\u00fchkige vasakule."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "S\u00f5nade taastamiseks p\u00fchkige paremale."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Kursori liigutamiseks p\u00fchkige vasakule v\u00f5i paremale."
   },
   "switch_to": {
-    "message": "paigutusele l\u00fclitamine "
+    "message": "l\u00fclitamine paigutusele "
   },
   "switch_to_compact_layout": {
     "message": "Kompaktsele paigutusele l\u00fclitumine"
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "Ekraanil kuvatav klaviatuur"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "T\u00fcrgi F-klaviatuuri seadete leht"
   },
   "tr_tur_settings_page": {
     "message": "T\u00fcrgi klaviatuuri seadete leht"
@@ -3275,34 +3320,34 @@
     "message": "\u00fclesnool"
   },
   "us_altgr_intl_eng_settings_page": {
-    "message": "USA laiendatud klaviatuuri (inglise keel) seadete leht"
+    "message": "USA laiendatud klaviatuuri (inglise keele) seadete leht"
   },
   "us_colemak_eng_settings_page": {
-    "message": "USA Colemaki klaviatuuri (inglise keel) seadete leht"
+    "message": "USA Colemaki klaviatuuri (inglise keele) seadete leht"
   },
   "us_dvorak_eng_settings_page": {
-    "message": "USA Dvoraki klaviatuuri (inglise keel) seadete leht"
+    "message": "USA Dvoraki klaviatuuri (inglise keele) seadete leht"
   },
   "us_eng_settings_page": {
-    "message": "USA klaviatuuri (inglise keel) seadete leht"
+    "message": "USA klaviatuuri (inglise keele) seadete leht"
   },
   "us_fil_settings_page": {
-    "message": "USA klaviatuuri (filipiini keel) seadete leht"
+    "message": "USA klaviatuuri (filipiini keele) seadete leht"
   },
   "us_ind_settings_page": {
-    "message": "USA klaviatuuri (indoneesia keel) seadete leht"
+    "message": "USA klaviatuuri (indoneesia keele) seadete leht"
   },
   "us_intl_eng_settings_page": {
-    "message": "USA rahvusvahelise klaviatuuri (inglise keel) seadete leht"
+    "message": "USA rahvusvahelise klaviatuuri (inglise keele) seadete leht"
   },
   "us_intl_nld_settings_page": {
-    "message": "USA rahvusvahelise klaviatuuri (hollandi keel) seadete leht"
+    "message": "USA rahvusvahelise klaviatuuri (hollandi keele) seadete leht"
   },
   "us_intl_por_settings_page": {
-    "message": "USA rahvusvahelise klaviatuuri (Brasiilia portugali keel) seadete leht"
+    "message": "USA rahvusvahelise klaviatuuri (Brasiilia portugali keele) seadete leht"
   },
   "us_msa_settings_page": {
-    "message": "USA klaviatuuri (malai keel) seadete leht"
+    "message": "USA klaviatuuri (malai keele) seadete leht"
   },
   "user_dict": {
     "message": "Isikliku s\u00f5nastiku lubamine"
@@ -3312,6 +3357,9 @@
   },
   "user_dict_clear": {
     "message": "T\u00fchjenda k\u00f5ik"
+  },
+  "user_dict_edit": {
+    "message": "Muuda s\u00f5nastiku sisestusi"
   },
   "user_dict_manage": {
     "message": "Isikliku s\u00f5nastiku haldamine ..."
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Oota"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Klaviatuuri t\u00fc\u00fcp"

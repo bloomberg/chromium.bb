@@ -12,12 +12,12 @@
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
 goog.provide('i18n.input.chrome.inputview.layouts.util');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
+goog.require('i18n.input.chrome.ElementType');
 
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var util = i18n.input.chrome.inputview.layouts.util;
 
 

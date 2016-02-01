@@ -29,13 +29,13 @@
     "message": "Page ng Mga Setting ng Armenian na Phonetic Keyboard"
   },
   "appnamejpkeyboard": {
-    "message": "Pag-input ng Japanese ng Google (para sa Japanese na keyboard)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Pag-input ng Japanese ng Google (para sa US na keyboard)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Awtomatikong pagwawasto"
   },
   "backspace": {
     "message": "backspace"
@@ -86,13 +86,13 @@
     "message": "Page ng Mga Setting ng Swiss na Keyboard (German)"
   },
   "chos_inputtool_description": {
-    "message": "Binibigyang-daan ka ng Mga Input Tool ng Google para sa Chrome OS na mag-type gamit ang iyong ninanais na wika sa Chrome OS."
+    "message": "Sa pamamagitan ng Mga Input Tool ng Google para sa Chrome OS maaari kang\nmag-type gamit ang gusto mong wika sa Chrome OS."
   },
   "chos_inputtool_title": {
-    "message": "Mga Tool sa Pag-input ng Google"
+    "message": "Mga Input Tool ng Google"
   },
   "compositionmodedirect": {
-    "message": "Direktang pag-input"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
     "message": "Wide Latin"
@@ -110,58 +110,58 @@
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "Mga Pangunahing Kaalaman"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "I-clear ang data ng pag-personalize..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "Kanselahin"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
     "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "I-obliterate ang sumusunod na mga item:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "I-clear ang data ng pag-personalize"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "History ng suhestyon"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "I-clear ang data ng pag-personalize"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "Copyright \u00a9 2013 Google Inc. Nakalaan ang Lahat ng Karapatan."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "Kanselahin"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Pamahalaan ang mga diksyunaryo ng user..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Magdagdag ng sarili mong mga salita sa diksyunaryo ng user upang ma-customize ang mga kandidato ng conversion."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "Mga diksyunaryo ng user"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "I-disable ang mga naka-personalize na conversion at suhestyon pati na rin ang diksyunaryo ng user"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "Tulong sa pag-input"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Ang software na ito ay ginawang posible ng <a href=\"./credits_en.html\">open source software</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Mode ng pag-input:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -173,16 +173,16 @@
     "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Istilo ng bantas:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Shortcut sa pagpipilian:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Walang shortcut"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Istilo ng keymap:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "Custom na keymap"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,10 +200,10 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "Mga setting ng pag-input ng Japanese"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Paglipat ng mode ng shift key:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
     "message": "Alphanumeric"
@@ -212,13 +212,13 @@
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "I-off"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Istilo ng pag-input ng puwang:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Sundin ang pamamaraan ng pag-input"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
     "message": "Fullwidth"
@@ -227,25 +227,25 @@
     "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "Bilang ng mga suhestyon:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "Imungkahi"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Istilo ng simbolo:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "Awtomatikong ipadala ang mga istatistika ng paggamit at mga ulat ng pag-crash sa Google"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "Awtomatikong lumipat sa halfwidth"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "Gamitin ang diksyunaryo ng system"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "Gamitin ang history ng input"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "ctrl"
@@ -284,7 +284,7 @@
     "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "paradahan"
+    "message": "parking"
   },
   "d83c_dd8e": {
     "message": "blood type AB"
@@ -293,16 +293,16 @@
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "astig"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "libre"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "Bago"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -320,100 +320,100 @@
     "message": "versus"
   },
   "d83c_de01": {
-    "message": "Japanese na salitang \u00e2\u20ac\u02dcdito\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "Japanese sa salitang \u00e2\u20ac\u02dcserbisyo\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "Japanese na salitang 'libre'"
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "Japanese na salitang 'nakareserba'"
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "Japanese na salitang \u00e2\u20ac\u02dcipinagbabawal\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "Chinese na salitang 'may available na espasyo'"
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "Chinese na salitang 'pass'"
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "Chinese na salitang 'buo'"
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "Japanese na salitang 'mga bayarin'"
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "Japanese na salitang 'buwan-buwan'"
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "Chinese na salitang 'application'"
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "Japanese na salitang 'diskwento'"
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "Chinese na salitang 'nagnenegosyo'"
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "Japanese na salitang 'bentahe'"
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "Chinese na salitang 'inaprubahan'"
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "bagyo"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "mahamog"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "payong"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "mga bituin sa gabi"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "pagsikat ng araw sa mga bundok"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "Pagsikat ng araw"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "lungsod kapag takipsilim"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "takipsilim"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "bahaghari"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "tulay sa gabi"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "alon"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "bulkan"
+    "message": "volcano"
   },
   "d83c_df0c": {
     "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "Europe-Africa sa globo"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "Americas sa globo"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "Asia-Australia sa globo"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "globong may mga meridian"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
     "message": "new moon"
@@ -443,31 +443,31 @@
     "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "mukha ng new moon"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "mukha ng first quarter moon"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "mukha ng last quarter moon"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "mukha ng full moon"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "mukha ng araw"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "umiilaw na bituin"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "bulalakaw"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "kastanyas"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "maliit na halaman"
+    "message": "young plant"
   },
   "d83c_df32": {
     "message": "evergreen tree"
@@ -488,10 +488,10 @@
     "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "rosas"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "gumamela"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
     "message": "sunflower"
@@ -500,10 +500,10 @@
     "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "mais"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "palay"
+    "message": "rice plant"
   },
   "d83c_df3f": {
     "message": "herb"
@@ -512,31 +512,31 @@
     "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "dahon ng maple"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "mga nalalagas na dahon"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "dahon sa hangin"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "kabute"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "kamatis"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "talong"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "ubas"
+    "message": "grapes"
   },
   "d83c_df48": {
     "message": "melon"
   },
   "d83c_df49": {
-    "message": "pakwan"
+    "message": "watermelon"
   },
   "d83c_df4a": {
     "message": "tangerine"
@@ -545,19 +545,19 @@
     "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "saging"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "pinya"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "pulang mansanas"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "berdeng mansanas"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "peras"
+    "message": "pear"
   },
   "d83c_df51": {
     "message": "peach"
@@ -572,13 +572,13 @@
     "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "hiwa ng pizza"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "karne"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "hita ng manok"
+    "message": "chicken leg"
   },
   "d83c_df58": {
     "message": "rice cracker"
@@ -587,10 +587,10 @@
     "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "sinaing na kanin"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "curry at kanin"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
     "message": "ramen"
@@ -599,13 +599,13 @@
     "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "tinapay"
+    "message": "bread"
   },
   "d83c_df5f": {
     "message": "fries"
   },
   "d83c_df60": {
-    "message": "inihaw na patatas"
+    "message": "roasted potato"
   },
   "d83c_df61": {
     "message": "mochi"
@@ -617,7 +617,7 @@
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "pritong hipon"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
     "message": "fish cake"
@@ -626,10 +626,10 @@
     "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "kinaskas na yelo"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "sorbetes"
+    "message": "ice cream"
   },
   "d83c_df69": {
     "message": "donut"
@@ -638,7 +638,7 @@
     "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "tsokolate"
+    "message": "chocolate"
   },
   "d83c_df6c": {
     "message": "candy"
@@ -662,19 +662,19 @@
     "message": "stew"
   },
   "d83c_df73": {
-    "message": "kawali"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "tinidor at kutsilyo"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "tasa"
+    "message": "teacup"
   },
   "d83c_df76": {
     "message": "sake"
   },
   "d83c_df77": {
-    "message": "alak"
+    "message": "wine"
   },
   "d83c_df78": {
     "message": "cocktail"
@@ -686,16 +686,16 @@
     "message": "beer"
   },
   "d83c_df7b": {
-    "message": "mga beer mug"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "bote ng sanggol"
+    "message": "baby bottle"
   },
   "d83c_df80": {
     "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "regalo"
+    "message": "gift"
   },
   "d83c_df82": {
     "message": "birthday cake"
@@ -710,13 +710,13 @@
     "message": "santa"
   },
   "d83c_df86": {
-    "message": "paputok"
+    "message": "firework"
   },
   "d83c_df87": {
     "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "lobo"
+    "message": "balloon"
   },
   "d83c_df89": {
     "message": "party popper"
@@ -725,16 +725,16 @@
     "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "puno at mga piraso ng papel"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "magkakrus na mga bandila"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "dekorasyong pine"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "mga doll"
+    "message": "dolls"
   },
   "d83c_df8f": {
     "message": "carp streamer"
@@ -743,7 +743,7 @@
     "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "pagtingin sa buwan"
+    "message": "moon viewing"
   },
   "d83c_df92": {
     "message": "school bag"
@@ -761,7 +761,7 @@
     "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "pangingisda"
+    "message": "fishing"
   },
   "d83c_dfa4": {
     "message": "mic"
@@ -770,7 +770,7 @@
     "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "pelikula"
+    "message": "movie"
   },
   "d83c_dfa7": {
     "message": "headphone"
@@ -803,7 +803,7 @@
     "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "bilyar"
+    "message": "billiard"
   },
   "d83c_dfb2": {
     "message": "game die"
@@ -812,25 +812,25 @@
     "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "baraha"
+    "message": "playing card"
   },
   "d83c_dfb5": {
     "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "mga musical note"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
     "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "gitara"
+    "message": "guitar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "trumpeta"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
     "message": "violin"
@@ -866,7 +866,7 @@
     "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "karera ng kabayo"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
     "message": "American football"
@@ -878,25 +878,25 @@
     "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "bahay"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "bahay"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "gusali ng opisina"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "post office sa Japan"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "post office sa Europe"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "ospital"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "bangko"
+    "message": "bank"
   },
   "d83c_dfe7": {
     "message": "ATM"
@@ -911,115 +911,115 @@
     "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "paaralan"
+    "message": "school"
   },
   "d83c_dfec": {
     "message": "department store"
   },
   "d83c_dfed": {
-    "message": "pabrika"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "pulang lantern"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "kastilyo sa Japan"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "kastilyo sa Europe"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "Daga"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "Daga"
+    "message": "Mouse"
   },
   "d83d_dc02": {
     "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "kalabaw"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "baka"
+    "message": "cow"
   },
   "d83d_dc06": {
     "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "kuneho"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "pusa"
+    "message": "cat"
   },
   "d83d_dc09": {
     "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "buwaya"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "balyena"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "suso"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "ahas"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "kabayo"
+    "message": "horse"
   },
   "d83d_dc0f": {
     "message": "ram"
   },
   "d83d_dc10": {
-    "message": "kambing"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "tupa"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "unggoy"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "tandang"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "manok"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "aso"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "baboy"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "baboy-ramo"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "elepante"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "pugita"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "kabibe"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "insekto"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "langgam"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "bubuyog"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "babaeng salagubang"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "isda"
+    "message": "fish"
   },
   "d83d_dc20": {
     "message": "tropical fish"
@@ -1028,19 +1028,19 @@
     "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "pagong"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "napipisang sisiw"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "mukha ng sisiw"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "sisiw"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "ibon"
+    "message": "bird"
   },
   "d83d_dc27": {
     "message": "penguin"
@@ -1061,94 +1061,94 @@
     "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "mukha ng daga"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "mukha ng baka"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "mukha ng tigre"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "mukha ng kuneho"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "mukha ng pusa"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "mukha ng dragon"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "balyenang naglalabas ng tubig"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "mukha ng kabayo"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "mukha ng unggoy"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "mukha ng aso"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "mukha ng baboy"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "mukha ng palaka"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "mukha ng hamster"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "mukha ng lobo"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "mukha ng oso"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "mukha ng panda"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "ilong ng baboy"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
     "message": "paw"
   },
   "d83d_dc40": {
-    "message": "mga mata"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "tainga"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "ilong"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "bibig"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "dila"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "daliring nakaturo pataas"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "daliring nakaturo pababa"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "daliring nakaturo pakaliwa"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "daliring nakaturo pakanan"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "nakasarang kamao"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "kumakaway"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "senyales ng kamay na OK"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
     "message": "thumbs up"
@@ -1157,31 +1157,31 @@
     "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "pumapalakpak"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "mga nakabukas na palad"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "korona"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "sumbrero na pambabae"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "salamin sa mata"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "kurbata"
+    "message": "necktie"
   },
   "d83d_dc55": {
     "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "pantalon"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "bestida"
+    "message": "dress"
   },
   "d83d_dc58": {
     "message": "kimono"
@@ -1190,7 +1190,7 @@
     "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "damit na pambabae"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
     "message": "purse"
@@ -1202,85 +1202,85 @@
     "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "sapatos na panlalaki"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "sapatos na pang-sports"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "sapatos na may takong"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "sandal na pambabae"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "bota na pambabae"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "bakas ng paa"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "anino ng tao"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "mga anino ng tao"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "batang lalaki"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "batang babae"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "lalaki"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "babae"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "pamilya"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "lalaki at babae"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "dalawang lalaki"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "dalawang babae"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "pulis"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "babaeng kuneho"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "asawa"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "blond na tao"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "lalaking may gua pi mao"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "lalaking may turban"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "matandang lalaki"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "matandang babae"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "sanggol"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "trabahador"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "prinsesa"
+    "message": "princess"
   },
   "d83d_dc79": {
     "message": "ogre"
@@ -1289,22 +1289,22 @@
     "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "multo"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "anghel na sanggol"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
     "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "halimaw na alien"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
     "message": "imp"
   },
   "d83d_dc80": {
-    "message": "bungo"
+    "message": "skull"
   },
   "d83d_dc81": {
     "message": "information desk"
@@ -1313,127 +1313,127 @@
     "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "mananayaw"
+    "message": "dancer"
   },
   "d83d_dc84": {
     "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "manicure"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "masahe sa mukha"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "gupit ng buhok"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "barberya"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "iniksyon"
+    "message": "shot"
   },
   "d83d_dc8a": {
     "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "marka ng halik"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "liham ng pag-ibig"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "singsing"
+    "message": "ring"
   },
   "d83d_dc8e": {
     "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "halik"
+    "message": "kiss"
   },
   "d83d_dc90": {
     "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "magkasintahan"
+    "message": "couple"
   },
   "d83d_dc92": {
     "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "tumitibok na puso"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "biyak na puso"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "dalawang puso"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "kumikislap na puso"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "lumalaking puso"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "puso at palaso"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "asul na puso"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "berdeng puso"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "dilaw na puso"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "purple na puso"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "puso na may ribbon"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "mga umiikot na puso"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "dekorasyong puso"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "talulot ng bulaklak"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "bumbilya"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "galit"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bomba"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "simbolo ng inaantok"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "banggaan"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "tumatalsik na pawis"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "malamig na pawis"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "mabilis na pagtakbo"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "dumi"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "mga braso"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "nahihilo"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
     "message": "speech balloon"
@@ -1442,10 +1442,10 @@
     "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "stam ng bulaklak"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "buong score"
+    "message": "full score"
   },
   "d83d_dcb0": {
     "message": "money bag"
@@ -1454,31 +1454,31 @@
     "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "simbolo ng dolyar"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
     "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "perang yen"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "perang dolyar"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "perang Euro"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "perang Pound"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "lumilipad na pera"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "umaangat na merkado"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "upuan"
+    "message": "seat"
   },
   "d83d_dcbb": {
     "message": "PC"
@@ -1502,28 +1502,28 @@
     "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "bukas na folder"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "dokumento"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "dokumento"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "kalendaryo"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "tear-off na kalendaryo"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
     "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "pataas na trend"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "pababang trend"
+    "message": "downward trend"
   },
   "d83d_dcca": {
     "message": "bar graph"
@@ -1535,46 +1535,46 @@
     "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "pabilog na pushpin"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
     "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "diretsong ruler"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "tatsulok na ruler"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "mga bookmark tab"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
     "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "kuwaderno"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "kuwadernong may dekorasyon"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "nakasarang aklat"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "nakabukas na aklat"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "berdeng aklat"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "aklat"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "orange na aklat"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "mga aklat"
+    "message": "books"
   },
   "d83d_dcdb": {
     "message": "name badge"
@@ -1586,7 +1586,7 @@
     "message": "memo"
   },
   "d83d_dcde": {
-    "message": "telepono"
+    "message": "phone"
   },
   "d83d_dcdf": {
     "message": "pager"
@@ -1604,7 +1604,7 @@
     "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "naipadalang mail"
+    "message": "sent mail"
   },
   "d83d_dce5": {
     "message": "Inbox"
@@ -1616,22 +1616,22 @@
     "message": "email"
   },
   "d83d_dce8": {
-    "message": "papasok na mail"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "papalabas na mail"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "nakasarang mailbox na nakababa ang flag"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "nakasarang mailbox na nakataas ang flag"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "nakabukas na mailbox na nakataas ang flag"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "nakabukas na mailbox na nakababa ang flag"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
     "message": "postbox"
@@ -1640,25 +1640,25 @@
     "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "diyaryo"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
     "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "cell phone na may arrow"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
     "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "i-off ang telepono"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "walang cell phone"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "mga mobile signal"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
     "message": "camera"
@@ -1670,82 +1670,82 @@
     "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "radyo"
+    "message": "radio"
   },
   "d83d_dcfc": {
     "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "mga magkakrus na arrow"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "mga pakanang arrow"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "mga pakanang arrow"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
     "message": "reload"
   },
   "d83d_dd04": {
-    "message": "mga pakaliwang arrow"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "mababang brightness"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "mataas na brightness"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "bawal magsalita"
+    "message": "no speaking"
   },
   "d83d_dd08": {
     "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "speaker na mahina ang volume"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "speaker na malakas ang volume"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "baterya"
+    "message": "battery"
   },
   "d83d_dd0c": {
     "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "magnifying glass na nakapaling sa kaliwa"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "magnifying glass na nakapaling sa kanan"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "kandado na may ink pen"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "nakasarang kandado na may susi"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "susi"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "nakasarang kandado"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "nakabukas na kandado"
+    "message": "open lock"
   },
   "d83d_dd14": {
     "message": "bell"
   },
   "d83d_dd15": {
-    "message": "walang bell"
+    "message": "no bell"
   },
   "d83d_dd16": {
     "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "simbolong link"
+    "message": "link sign"
   },
   "d83d_dd18": {
     "message": "radio button"
@@ -1757,52 +1757,52 @@
     "message": "end"
   },
   "d83d_dd1b": {
-    "message": "arrow na ON"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "simbolong Soon"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "simbolong Top"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "Bawal ang mas bata sa 18"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "malalaking titik"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "maliliit na titik"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "mga numero"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "mga simbolo"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "Latin na Alpabeto"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "apoy"
+    "message": "fire"
   },
   "d83d_dd26": {
     "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "liyabe"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "martilyo"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "nut at bolt"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "kutsilyo sa pagluluto"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "baril"
+    "message": "gun"
   },
   "d83d_dd2c": {
     "message": "microscope"
@@ -1811,127 +1811,127 @@
     "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "bolang kristal"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "six-pointed na bituin"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "berde at dilaw na dahon"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "simbolo ng trident"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "solid na button na frame square"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "naka-outline na button na frame square"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "malaking pulang bilog"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "malaking asul na bilog"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "malaking orange na diamante"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "malaking asul na diamante"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "maliit na orange na diamante"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "maliit na asul na diamante"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "pataas na tatsulok"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "pababang tatsulok"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "button na pataas na tatsulok"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "button na pababang tatsulok"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "ala una"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "alas dos"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "alas tres"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "alas kuwatro"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "alas singko"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "alas sais"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "alas siyete"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "alas otso"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "alas nuwebe"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "alas diyes"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "alas onse"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "alas dose"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "ala una y media"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "alas dos y media"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "alas tres y media"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "alas kuwatro y media"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "alas singko y media"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "alas sais y media"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "alas siyete y media"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "alas otso y media"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "alas nuwebe y media"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "alas diyes y media"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "alas onse y media"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "alas dose y media"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "Bundok Fuji"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
     "message": "Tokyo Tower"
@@ -1940,238 +1940,238 @@
     "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "Mapa ng Japan"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
     "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "ngisi"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " ngisi na may masasayang mata"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "mga luha ng kasiyahan"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "ngiti na nakabukas ang bibig"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "ngiti na nakabukas ang bibig na may masasayang mata"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "ngiti na may malamig na pawis"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " ngiti na nakabukas ang bibig at nakapikit"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "ngiti na may halo"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "ngiti na may mga sungay"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "kumikindat na mukha"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "ngiti"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "mukha na nasasarapan"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "mukha na nakahinga nang maluwag"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "nakangiting mukha"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "astig"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "ngisi"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "walang emosyon na mukha"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "walang emosyon"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "hindi natutuwa"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "malamig na pawis"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "nag-iisip na mukha"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "nalilitong mukha"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "naguguluhang mukha"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "humahalik na mukha"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "humahalik"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "halik at ngiti"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "naghahalikan"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "nakadila"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "nakadila kasabay ng kindat"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "kadiri"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "dismayado"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "nag-aalala"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "galit"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "nagmumukmok"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "umiiyak"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "pumalpak"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "mukha ng tagumpay"
+    "message": "look of triumph"
   },
   "d83d_de25": {
     "message": "whew!"
   },
   "d83d_de26": {
-    "message": "nakasimangot na mukha"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "nahihirapan"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "natatakot"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "pagod"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "inaantok"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "pagod"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "ngiwi"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "umiiyak nang malakas"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "mukha na nakabukas ang bibig"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "naghihintay na mukha"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "nagmamadaling mukha"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "natatakot na mukha"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "nabiglang mukha"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "namumula"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "natutulog"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "nahihilo"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "mukha na walang bibig"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "mukha na may maskara"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "nakangising mukha ng pusa"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "mukha ng pusa na may mga luha ng kasiyahan"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "nakangiting mukha ng pusa"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "nakangiting mukha ng pusa"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "nang-aasar na mukha ng pusa"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "humahalik na pusa"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "nagmumukmok na mukha ng pusa"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "umiiyak na mukha ng pusa"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "napapagod na mukha ng pusa"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "Walang magandang gesture"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "gesture na OK"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "paumanhin"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "ayaw makakita ng masama"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "ayaw makarinig ng masama"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "ayaw magsalita ng masama"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "masayang tao"
+    "message": "happy person"
   },
   "d83d_de4c": {
     "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "nakasimangot na tao"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "nagmumukmok"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "nakahalukipkip na mga kamay"
+    "message": "folded hands"
   },
   "d83d_de80": {
     "message": "rocket"
@@ -2183,16 +2183,16 @@
     "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "tren"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "high-speed na tren"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "high-speed na tren na may bullet nose"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "tren"
+    "message": "front view of train"
   },
   "d83d_de87": {
     "message": "subway"
@@ -2201,7 +2201,7 @@
     "message": "light rail"
   },
   "d83d_de89": {
-    "message": "istasyon ng tren"
+    "message": "train station"
   },
   "d83d_de8a": {
     "message": "tram"
@@ -2213,40 +2213,40 @@
     "message": "bus"
   },
   "d83d_de8d": {
-    "message": "paparating na bus"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
     "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "sakayan ng bus"
+    "message": "bus stop"
   },
   "d83d_de90": {
     "message": "minibus"
   },
   "d83d_de91": {
-    "message": "ambulansya"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "trak ng bumbero"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "sasakyan ng pulis"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "paparating na sasakyan ng pulis"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "paparating na taxi"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "sasakyan"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "paparating na sasakyan"
+    "message": "oncoming car"
   },
   "d83d_de99": {
     "message": "RV"
@@ -2258,103 +2258,103 @@
     "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "traktora"
+    "message": "tractor"
   },
   "d83d_de9d": {
     "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "railway sa bundok"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
     "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "cableway sa bundok"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
     "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "barko"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "bangka"
+    "message": "rowboat"
   },
   "d83d_dea4": {
     "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "mga pahigang ilaw trapiko"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "mga patayong ilaw trapiko"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "ginagawa"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "umiikot na ilaw"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "flag ng lokasyon"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "pinto"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "simbolong Bawal pumasok"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "simbolo ng paninigarilyo"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "simbolo na bawal manigarilyo"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "simbolo ng litterbox"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "simbolong huwag magkalat"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "inuming tubig"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "hindi inuming tubig"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "bisikleta"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "walang bisikleta"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "nagbibisikleta"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "nagbibisikleta sa bundok"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
     "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "walang mga pedestrian"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "tawiran ng mga bata"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "simbolo ng Lalaki"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "simbolo ng Babae"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "simbolo ng palikuran"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "simbolo ng sanggol"
+    "message": "baby sign"
   },
   "d83d_debd": {
     "message": "toilet"
@@ -2372,16 +2372,16 @@
     "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "kontrol sa pasaporte"
+    "message": "passport control"
   },
   "d83d_dec3": {
     "message": "customs"
   },
   "d83d_dec4": {
-    "message": "kuhaan ng bagahe"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "naiwang bagahe"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "Page ng Mga Setting ng German na Keyboard"
@@ -2390,136 +2390,136 @@
     "message": "Page ng Mga Setting ng German na Neo 2 Keyboard"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Kategorya"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Magkomento"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Magkomento"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "Gusto mo bang i-delete ang [object Object]?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "I-delete ang diksyunaryo"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "Mga Diksyunaryo"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "Pangalan ng Diksyunaryo"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Tapos na"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "I-export"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "I-import..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "Pamamahala ng diksyunaryo"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "Bagong diksyunaryo"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "Mga diksyunaryo ng user"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Bagong reading"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
     "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "Naglalaman ang pangalan ng (mga) di-wastong character."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "Umiiral na ang pangalan."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Mangyaring mag-type ng pangalan ng diksyunaryo."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "Masyadong mahaba ang pangalan."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Hindi na makakagawa ng higit pang mga diksyunaryo."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "Walang laman ang file."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "Hindi na makakagawa ng anumang higit pang mga entry sa diksyunaryong ito."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Hindi mabuksan ang file."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "Lumalagpas ang laki ng data sa limitasyon sa laki ng file."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Hindi nagawa ang operasyon."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "Hindi ma-import ang ilang salita."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Naglalaman ang masyadong maraming salita ang na-import na pinagmumulan."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Hindi mabasa ang file."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Wala nang naa-undo na operasyon."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "Naglalaman ang reading ng (mga) di-wastong character. Maaari kang gumamit ng mga ASCII character, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), mga Japanese bracket(\u300c\u300d\u300e\u300f) at Japanese wavedash(\u301c) sa reading."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Paki-type ang reading."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "Masyadong mahaba ang reading."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "Error sa pagdagdag ng entry"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "Error sa  paggawa ng diksyunaryo"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "Error sa  pag-delete ng diksyunaryo"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "Error sa pag-delete ng entry"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "Error sa pag-edit ng entry"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "Error sa pag-import"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "Error sa pagpalit ng pangalan ng diksyunaryo"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "Naglalaman ang salita ng (mga) di-wastong character."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Paki-type ang salita."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "Masyadong mahaba ang salita."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "Bagong salita"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "Salita"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "i-dismiss ang menu ng keyboard"
@@ -2528,7 +2528,7 @@
     "message": "Page ng Mga Setting ng Danish na Keyboard"
   },
   "double_space_period": {
-    "message": "Dobleng puwang upang mag-type ng tuldok"
+    "message": "Double-space upang mag-type ng tuldok"
   },
   "down_arrow": {
     "message": "pababang arrow"
@@ -2570,10 +2570,16 @@
     "message": "I-enable ang pagkumpleto"
   },
   "enable_gesture_editing": {
-    "message": "Mag-swipe mula sa mga gilid ng keyboard upang ilipat ang cursor, o mula sa backspace key upang i-delete ang mga buong salita."
+    "message": "I-enable ang mga galaw na pag-swipe"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Mag-swipe mula sa mga gilid ng keyboard upang ilipat ang cursor o mula sa backspace key upang mag-delete ng mga buong salita"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "I-enable ang gesture na pag-type"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Mag-input ng salita sa pamamagitan ng pag-slide sa mga titik"
   },
   "enable_prediction": {
     "message": "I-enable ang hula sa susunod na salita"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "Page ng Mga Setting ng Finnish na Keyboard"
   },
+  "fo_fao_settings_page": {
+    "message": "Page ng Mga Setting ng Faroese na Keyboard"
+  },
   "footer_docking_button": {
     "message": "i-dock ang virtual na keyboard"
   },
@@ -2610,6 +2619,9 @@
   },
   "footer_settings_button": {
     "message": "buksan ang mga setting ng paraan ng pag-input"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "Page ng Mga Setting ng French B\u00c9PO Keyboard (French)"
   },
   "fr_fra_settings_page": {
     "message": "Page ng Mga Setting ng French na Keyboard"
@@ -2630,7 +2642,7 @@
     "message": "lumipat sa nakaraang keyboard"
   },
   "got_it": {
-    "message": "Nakuha ko"
+    "message": "Ok"
   },
   "gr_gre_settings_page": {
     "message": "Page ng Mga Setting ng Greek na Keyboard"
@@ -2652,6 +2664,9 @@
   },
   "hu_hun_settings_page": {
     "message": "Page ng Mga Setting ng Hungarian na Keyboard"
+  },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Page ng Mga Setting ng Hungarian na Qwerty Keyboard"
   },
   "ie_ga_settings_page": {
     "message": "Page ng Mga Setting ng Irish na Keyboard"
@@ -2685,6 +2700,9 @@
   },
   "inputmethod_cangjie": {
     "message": "Cangjie na paraan ng pag-input"
+  },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
   },
   "inputmethod_dayi": {
     "message": "Dayi na paraan ng pag-input"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "Ethiopic keyboard"
   },
+  "keyboard_faroese": {
+    "message": "Faroese na keyboard"
+  },
   "keyboard_finnish": {
     "message": "Finnish na keyboard"
   },
   "keyboard_french": {
     "message": "French na keyboard"
+  },
+  "keyboard_french_bepo": {
+    "message": "French B\u00c9PO keyboard"
   },
   "keyboard_georgian": {
     "message": "Georgian na keyboard"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "Hungarian na keyboard"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "Hungarian na Qwerty keyboard"
+  },
   "keyboard_icelandic": {
     "message": "Icelandic na keyboard"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "Kannada keyboard (Phonetic)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "Keyboard (Kedmanee)"
   },
@@ -2829,6 +2859,9 @@
   },
   "keyboard_lao": {
     "message": "Lao keyboard"
+  },
+  "keyboard_laothian": {
+    "message": "Laothian keyboard"
   },
   "keyboard_latin_american": {
     "message": "Latin American na keyboard"
@@ -2840,7 +2873,7 @@
     "message": "Lithuanian na keyboard"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "Macedonian na keyboard"
   },
   "keyboard_malayalam_phonetic": {
     "message": "Malayalam keyboard (Phonetic)"
@@ -2911,8 +2944,11 @@
   "keyboard_sinhala": {
     "message": "Sinhala keyboard"
   },
+  "keyboard_slovak": {
+    "message": "Slovak na keyboard"
+  },
   "keyboard_slovakian": {
-    "message": "Slovakian na keyboard"
+    "message": "Slovak na keyboard"
   },
   "keyboard_slovenian": {
     "message": "Slovenian na keyboard"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "Turkish na keyboard"
   },
+  "keyboard_turkish_f": {
+    "message": "Turkish-F na keyboard"
+  },
   "keyboard_typewriter": {
     "message": "Keyboard (Typewriter)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "US Dvorak na keyboard"
+  },
+  "keyboard_us_dvp": {
+    "message": "Dvorak keyboard ng US programmer"
   },
   "keyboard_us_extended": {
     "message": "US na extended keyboard"
@@ -3056,10 +3098,10 @@
     "message": "Page ng Mga Setting ng Mongolian na Keyboard"
   },
   "move_page_key_above": {
-    "message": "Gamitin ang - at = na mga key upang ilagay sa pahina ang isang listahan ng kandidato"
+    "message": "Gamitin ang - at = na mga key upang ilagay sa page ang isang listahan ng kandidato"
   },
   "move_page_key_below": {
-    "message": "Gamitin ang , at . na mga key upang ilagay sa pahina ang isang listahan ng kandidato"
+    "message": "Gamitin ang , at . na mga key upang ilagay sa page ang isang listahan ng kandidato"
   },
   "never_auto_correct": {
     "message": "I-off"
@@ -3071,7 +3113,7 @@
     "message": "I-pause"
   },
   "physical_auto_correction_level": {
-    "message": "Auto-correction"
+    "message": "Awtomatikong pagwawasto"
   },
   "physical_enable_capitalization": {
     "message": "Auto-capitalization"
@@ -3158,13 +3200,13 @@
     "message": "space"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "I-swipe pakaliwa para i-delete ang mga buong salita."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "I-swipe pakanan para i-restore ang mga salita."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "I-swipe pakaliwa o pakanan para igalaw ang cursor."
   },
   "switch_to": {
     "message": "lumipat sa "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "On-screen na keyboard"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "Page ng Mga Setting ng Turkish-F na Keyboard"
   },
   "tr_tur_settings_page": {
     "message": "Page ng Mga Setting ng Turkish na Keyboard"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "I-clear Lahat"
   },
+  "user_dict_edit": {
+    "message": "I-edit ang Mga Entry sa Diksyunaryo"
+  },
   "user_dict_manage": {
     "message": "Pamahalaan ang personal na diksyunaryo..."
   },
@@ -3349,11 +3397,14 @@
   "wait": {
     "message": "Maghintay"
   },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
+  },
   "zhuyin_keyboard_layout": {
     "message": "Uri ng keyboard"
   },
   "zhuyin_page_size": {
-    "message": "Bilang ng mga kandidatong ipapakita sa bawat pahina"
+    "message": "Bilang ng mga kandidatong ipapakita sa bawat page"
   },
   "zhuyin_select_keys": {
     "message": "Mga key sa pagpili"

@@ -23,22 +23,22 @@
     "message": "Alt Graphic"
   },
   "always_auto_correct": {
-    "message": "Hung h\u0103ng"
+    "message": "Linh ho\u1ea1t"
   },
   "am_phonetic_arm_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ng\u1eef \u00e2m Armenia"
   },
   "appnamejpkeyboard": {
-    "message": "Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Nh\u1eadt)"
+    "message": "Google Japanese Input (for Japanese keyboard)"
   },
   "appnameuskeyboard": {
-    "message": "Ph\u01b0\u01a1ng ph\u00e1p Nh\u1eadp ti\u1ebfng Nh\u1eadt c\u1ee7a Google (d\u00e0nh cho b\u00e0n ph\u00edm Hoa K\u1ef3)"
+    "message": "Google Japanese Input (for US keyboard)"
   },
   "auto_correction_level": {
     "message": "T\u1ef1 \u0111\u1ed9ng s\u1eeda"
   },
   "backspace": {
-    "message": "ph\u00edm x\u00f3a l\u00f9i"
+    "message": "x\u00f3a l\u00f9i"
   },
   "basic": {
     "message": "C\u01a1 b\u1ea3n"
@@ -74,7 +74,7 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm \u0111a ng\u00f4n ng\u1eef c\u1ee7a Canada (ti\u1ebfng Ph\u00e1p)"
   },
   "capital": {
-    "message": "ch\u1eef vi\u1ebft hoa"
+    "message": "ch\u1eef hoa"
   },
   "capslock": {
     "message": "capslock"
@@ -86,13 +86,13 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ee5y S\u0129 (ti\u1ebfng \u0110\u1ee9c)"
   },
   "chos_inputtool_description": {
-    "message": "C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google d\u00e0nh cho Chrome OS cho ph\u00e9p b\u1ea1n nh\u1eadp b\u1eb1ng ng\u00f4n ng\u1eef mong mu\u1ed1n c\u1ee7a m\u00ecnh tr\u00ean Chrome OS."
+    "message": "C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google d\u00e0nh cho Chrome OS cho ph\u00e9p b\u1ea1n nh\u1eadp b\u1eb1ng ng\u00f4n ng\u1eef m\u00ecnh mu\u1ed1n tr\u00ean Chrome OS."
   },
   "chos_inputtool_title": {
     "message": "C\u00f4ng c\u1ee5 nh\u1eadp li\u1ec7u c\u1ee7a Google"
   },
   "compositionmodedirect": {
-    "message": "Nh\u1eadp tr\u1ef1c ti\u1ebfp"
+    "message": "Direct input"
   },
   "compositionmodefullascii": {
     "message": "Wide Latin"
@@ -101,67 +101,67 @@
     "message": "Katakana"
   },
   "compositionmodehalfascii": {
-    "message": "Latinh"
+    "message": "Latin"
   },
   "compositionmodehalfkatakana": {
-    "message": "Katakana n\u1eeda chi\u1ec1u r\u1ed9ng"
+    "message": "Half width katakana"
   },
   "compositionmodehiragana": {
     "message": "Hiragana"
   },
   "configbasicstitle": {
-    "message": "C\u01a1 b\u1ea3n"
+    "message": "Basics"
   },
   "configclearhistory": {
-    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a..."
+    "message": "Clear personalization data..."
   },
   "configclearhistorycancelbutton": {
-    "message": "H\u1ee7y"
+    "message": "Cancel"
   },
   "configclearhistoryconversionhistory": {
-    "message": "L\u1ecbch s\u1eed chuy\u1ec3n \u0111\u1ed5i"
+    "message": "Conversion history"
   },
   "configclearhistorymessage": {
-    "message": "X\u00f3a s\u1ea1ch c\u00e1c m\u1ee5c sau:"
+    "message": "Obliterate the following items:"
   },
   "configclearhistoryokbutton": {
-    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"
+    "message": "Clear personalization data"
   },
   "configclearhistorysuggestionhistory": {
-    "message": "L\u1ecbch s\u1eed \u0111\u1ec1 xu\u1ea5t"
+    "message": "Suggestion history"
   },
   "configclearhistorytitle": {
-    "message": "X\u00f3a d\u1eef li\u1ec7u c\u00e1 nh\u00e2n h\u00f3a"
+    "message": "Clear personalization data"
   },
   "configcreditsdescription": {
-    "message": "B\u1ea3n quy\u1ec1n \u00a9 2013 Google Inc. M\u1ecdi quy\u1ec1n \u0111\u01b0\u1ee3c b\u1ea3o l\u01b0u."
+    "message": "Copyright \u00a9 2013 Google Inc. All Rights Reserved."
   },
   "configdialogcancel": {
-    "message": "H\u1ee7y"
+    "message": "Cancel"
   },
   "configdialogok": {
     "message": "OK"
   },
   "configdictionarytoolbutton": {
-    "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng..."
+    "message": "Manage user dictionary..."
   },
   "configdictionarytooldescription": {
-    "message": "Th\u00eam t\u1eeb c\u1ee7a ch\u00ednh b\u1ea1n v\u00e0o t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng \u0111\u1ec3 t\u00f9y ch\u1ec9nh c\u00e1c \u0111\u1ec1 xu\u1ea5t chuy\u1ec3n \u0111\u1ed5i."
+    "message": "Add your own words to the user dictionary in order to customize the conversion candidates."
   },
   "configdictionarytooltitle": {
-    "message": "T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+    "message": "User dictionaries"
   },
   "configincognitomode": {
-    "message": "T\u1eaft chuy\u1ec3n \u0111\u1ed5i v\u00e0 \u0111\u1ec1 xu\u1ea5t \u0111\u01b0\u1ee3c c\u00e1 nh\u00e2n h\u00f3a c\u0169ng nh\u01b0 t\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+    "message": "Disable personalized conversions and suggestions as well as user dictionary"
   },
   "configinputassistancetitle": {
-    "message": "H\u1ed7 tr\u1ee3 nh\u1eadp"
+    "message": "Input assistance"
   },
   "configosscreditsdescription": {
-    "message": "Ph\u1ea7n m\u1ec1m n\u00e0y \u0111\u01b0\u1ee3c h\u1ed7 tr\u1ee3 b\u1edfi <a href=\"./credits_en.html\">ph\u1ea7n m\u1ec1m ngu\u1ed3n m\u1edf</a>."
+    "message": "This software is made possible by <a href=\"./credits_en.html\">open source software</a>."
   },
   "configpreeditmethod": {
-    "message": "Ch\u1ebf \u0111\u1ed9 nh\u1eadp:"
+    "message": "Input mode:"
   },
   "configpreeditmethodkana": {
     "message": "Kana"
@@ -170,19 +170,19 @@
     "message": "Romaji"
   },
   "configprivacytitle": {
-    "message": "B\u1ea3o m\u1eadt"
+    "message": "Privacy"
   },
   "configpunctuationmethod": {
-    "message": "Ki\u1ec3u d\u1ea5u ch\u1ea5m c\u00e2u:"
+    "message": "Punctuation style:"
   },
   "configselectionshortcut": {
-    "message": "Ph\u00edm t\u1eaft ch\u1ecdn:"
+    "message": "Selection shortcut:"
   },
   "configselectionshortcutno": {
-    "message": "Kh\u00f4ng c\u00f3 ph\u00edm t\u1eaft"
+    "message": "No shortcut"
   },
   "configsessionkeymap": {
-    "message": "Ki\u1ec3u s\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm:"
+    "message": "Keymap style:"
   },
   "configsessionkeymapatok": {
     "message": "ATOK"
@@ -191,7 +191,7 @@
     "message": "Chrome OS"
   },
   "configsessionkeymapcustom": {
-    "message": "S\u01a1 \u0111\u1ed3 b\u00e0n ph\u00edm t\u00f9y ch\u1ec9nh"
+    "message": "Custom keymap"
   },
   "configsessionkeymapkotoeri": {
     "message": "Kotoeri"
@@ -200,58 +200,58 @@
     "message": "MS-IME"
   },
   "configsettingstitle": {
-    "message": "C\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp ti\u1ebfng Nh\u1eadt"
+    "message": "Japanese input settings"
   },
   "configshiftkeymodeswitch": {
-    "message": "Chuy\u1ec3n ch\u1ebf \u0111\u1ed9 ph\u00edm shift:"
+    "message": "Shift key mode switch:"
   },
   "configshiftkeymodeswitchalphanumeric": {
-    "message": "Ch\u1eef v\u00e0 s\u1ed1"
+    "message": "Alphanumeric"
   },
   "configshiftkeymodeswitchkatakana": {
     "message": "Katakana"
   },
   "configshiftkeymodeswitchoff": {
-    "message": "T\u1eaft"
+    "message": "Off"
   },
   "configspacecharacterform": {
-    "message": "Ki\u1ec3u nh\u1eadp d\u1ea5u c\u00e1ch:"
+    "message": "Space input style:"
   },
   "configspacecharacterformfollow": {
-    "message": "Tu\u00e2n theo ch\u1ebf \u0111\u1ed9 nh\u1eadp"
+    "message": "Follow input mode"
   },
   "configspacecharacterformfull": {
-    "message": "\u0110\u1ed9 r\u1ed9ng t\u1ed1i \u0111a"
+    "message": "Fullwidth"
   },
   "configspacecharacterformhalf": {
-    "message": "N\u1eeda \u0111\u1ed9 r\u1ed9ng"
+    "message": "Halfwidth"
   },
   "configsuggestionssize": {
-    "message": "S\u1ed1 \u0111\u1ec1 xu\u1ea5t:"
+    "message": "Number of suggestions:"
   },
   "configsuggesttitle": {
-    "message": "\u0110\u1ec1 xu\u1ea5t"
+    "message": "Suggest"
   },
   "configsymbolmethod": {
-    "message": "Ki\u1ec3u bi\u1ec3u t\u01b0\u1ee3ng:"
+    "message": "Symbol style:"
   },
   "configuploadusagestats": {
-    "message": "T\u1ef1 \u0111\u1ed9ng g\u1eedi s\u1ed1 li\u1ec7u th\u1ed1ng k\u00ea v\u1ec1 vi\u1ec7c s\u1eed d\u1ee5ng v\u00e0 b\u00e1o c\u00e1o s\u1ef1 c\u1ed1 cho Google"
+    "message": "Automatically send usage statistics and crash reports to Google"
   },
   "configuseautoimeturnoff": {
-    "message": "T\u1ef1 \u0111\u1ed9ng chuy\u1ec3n sang n\u1eeda \u0111\u1ed9 r\u1ed9ng"
+    "message": "Automatically switch to halfwidth"
   },
   "configusedictionarysuggest": {
-    "message": "S\u1eed d\u1ee5ng t\u1eeb \u0111i\u1ec3n c\u1ee7a h\u1ec7 th\u1ed1ng"
+    "message": "Use system dictionary"
   },
   "configusehistorysuggest": {
-    "message": "S\u1eed d\u1ee5ng l\u1ecbch s\u1eed nh\u1eadp"
+    "message": "Use input history"
   },
   "ctrl": {
     "message": "ctrl"
   },
   "current_keyboard_prefix": {
-    "message": "b\u00e0n ph\u00edm hi\u1ec7n \u0111\u00e3 ch\u1ecdn "
+    "message": "b\u00e0n ph\u00edm hi\u1ec7n \u0111ang ch\u1ecdn "
   },
   "current_lang": {
     "message": "Ng\u00f4n ng\u1eef nh\u1eadp l\u00e0 ti\u1ebfng Trung"
@@ -269,40 +269,40 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Qwerty c\u1ee7a S\u00e9c"
   },
   "d83c_dc04": {
-    "message": "x\u1ebfp t\u1ea7ng Mahjong"
+    "message": "Mahjong tile"
   },
   "d83c_dccf": {
-    "message": "B\u00e0i ph\u0103ng teo"
+    "message": "Joker card"
   },
   "d83c_dd70": {
-    "message": "nh\u00f3m m\u00e1u A"
+    "message": "blood type A"
   },
   "d83c_dd71": {
-    "message": "nh\u00f3m m\u00e1u B"
+    "message": "blood type B"
   },
   "d83c_dd7e": {
-    "message": "nh\u00f3m m\u00e1u O"
+    "message": "blood type O"
   },
   "d83c_dd7f": {
-    "message": "b\u00e3i \u0111\u1ed7 xe"
+    "message": "parking"
   },
   "d83c_dd8e": {
-    "message": "nh\u00f3m m\u00e1u AB"
+    "message": "blood type AB"
   },
   "d83c_dd91": {
     "message": "CL"
   },
   "d83c_dd92": {
-    "message": "th\u1edd \u01a1"
+    "message": "cool sign"
   },
   "d83c_dd93": {
-    "message": "mi\u1ec5n ph\u00ed"
+    "message": "free"
   },
   "d83c_dd94": {
     "message": "ID"
   },
   "d83c_dd95": {
-    "message": "M\u1edbi"
+    "message": "New"
   },
   "d83c_dd96": {
     "message": "NG"
@@ -314,298 +314,298 @@
     "message": "SOS"
   },
   "d83c_dd99": {
-    "message": "CAO H\u01a0N!"
+    "message": "UP!"
   },
   "d83c_dd9a": {
-    "message": "\u0111\u1ea5u v\u1edbi"
+    "message": "versus"
   },
   "d83c_de01": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dchere\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018here\u2019"
   },
   "d83c_de02": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dcservice\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018service\u2019"
   },
   "d83c_de1a": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'mi\u1ec5n ph\u00ed'"
+    "message": "Japanese word 'free'"
   },
   "d83c_de2f": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'd\u00e0nh ri\u00eang'"
+    "message": "Japanese word 'reserved'"
   },
   "d83c_de32": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt \u00e2\u20ac\u02dcprohibited\u00e2\u20ac\u2122"
+    "message": "Japanese word \u2018prohibited\u2019"
   },
   "d83c_de33": {
-    "message": "T\u1eeb ti\u1ebfng Trung 'c\u00f2n ch\u1ed7'"
+    "message": "Chinese word 'space available'"
   },
   "d83c_de34": {
-    "message": "T\u1eeb ti\u1ebfng Trung 'qua'"
+    "message": "Chinese word 'pass'"
   },
   "d83c_de35": {
-    "message": "T\u1eeb ti\u1ebfng Trung '\u0111\u1ea7y \u0111\u1ee7'"
+    "message": "Chinese word 'full'"
   },
   "d83c_de36": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'ph\u00ed'"
+    "message": "Japanese word 'fees'"
   },
   "d83c_de37": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'h\u00e0ng th\u00e1ng'"
+    "message": "Japanese word 'monthly'"
   },
   "d83c_de38": {
-    "message": "T\u1eeb ti\u1ebfng Trung '\u1ee9ng d\u1ee5ng'"
+    "message": "Chinese word 'application'"
   },
   "d83c_de39": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'gi\u1ea3m gi\u00e1'"
+    "message": "Japanese word 'discount'"
   },
   "d83c_de3a": {
-    "message": "T\u1eeb ti\u1ebfng Trung 'kinh doanh'"
+    "message": "Chinese word 'in business'"
   },
   "d83c_de50": {
-    "message": "T\u1eeb ti\u1ebfng Nh\u1eadt 'l\u1ee3i th\u1ebf'"
+    "message": "Japanese word 'advantage'"
   },
   "d83c_de51": {
-    "message": "T\u1eeb ti\u1ebfng Trung '\u0111\u01b0\u1ee3c ph\u00ea duy\u1ec7t'"
+    "message": "Chinese word 'approved'"
   },
   "d83c_df00": {
-    "message": "l\u1ed1c xo\u00e1y"
+    "message": "cyclone"
   },
   "d83c_df01": {
-    "message": "c\u00f3 s\u01b0\u01a1ng m\u00f9"
+    "message": "foggy"
   },
   "d83c_df02": {
-    "message": "\u00f4"
+    "message": "umbrella"
   },
   "d83c_df03": {
-    "message": "sao \u0111\u00eam"
+    "message": "night stars"
   },
   "d83c_df04": {
-    "message": "b\u00ecnh minh tr\u00ean n\u00fai"
+    "message": "sunrise over mountains"
   },
   "d83c_df05": {
-    "message": "b\u00ecnh minh"
+    "message": "sunrise"
   },
   "d83c_df06": {
-    "message": "th\u00e0nh ph\u1ed1 l\u00fac ho\u00e0ng h\u00f4n"
+    "message": "city at dusk"
   },
   "d83c_df07": {
-    "message": "ho\u00e0ng h\u00f4n"
+    "message": "sunset"
   },
   "d83c_df08": {
-    "message": "c\u1ea7u v\u1ed3ng"
+    "message": "rainbow"
   },
   "d83c_df09": {
-    "message": "c\u1ea7u v\u00e0o ban \u0111\u00eam"
+    "message": "night bridge"
   },
   "d83c_df0a": {
-    "message": "s\u00f3ng"
+    "message": "wave"
   },
   "d83c_df0b": {
-    "message": "n\u00fai l\u1eeda"
+    "message": "volcano"
   },
   "d83c_df0c": {
-    "message": "Ng\u00e2n h\u00e0"
+    "message": "Milky Way"
   },
   "d83c_df0d": {
-    "message": "ch\u00e2u \u00c2u-Ch\u00e2u Phi tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+    "message": "globe Europe-Africa"
   },
   "d83c_df0e": {
-    "message": "ch\u00e2u M\u1ef9 tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+    "message": "globe Americas"
   },
   "d83c_df0f": {
-    "message": "ch\u00e2u \u00c1-ch\u00e2u \u00dac tr\u00ean qu\u1ea3 \u0111\u1ecba c\u1ea7u"
+    "message": "globe Asia-Australia"
   },
   "d83c_df10": {
-    "message": "qu\u1ea3 \u0111\u1ecba c\u1ea7u c\u00f3 kinh tuy\u1ebfn"
+    "message": "globe with meridians"
   },
   "d83c_df11": {
-    "message": "tr\u0103ng non"
+    "message": "new moon"
   },
   "d83c_df12": {
-    "message": "tr\u0103ng l\u01b0\u1ee1i li\u1ec1m"
+    "message": "waxing crescent moon"
   },
   "d83c_df13": {
-    "message": "tr\u0103ng th\u01b0\u1ee3ng tu\u1ea7n"
+    "message": "first quarter moon"
   },
   "d83c_df14": {
-    "message": "tr\u0103ng khuy\u1ebft"
+    "message": "waxing moon"
   },
   "d83c_df15": {
-    "message": "tr\u0103ng tr\u00f2n"
+    "message": "full moon"
   },
   "d83c_df16": {
-    "message": "tr\u0103ng cu\u1ed1i th\u00e1ng"
+    "message": "waning moon"
   },
   "d83c_df17": {
-    "message": "tr\u0103ng h\u1ea1 tu\u1ea7n"
+    "message": "last quarter moon"
   },
   "d83c_df18": {
-    "message": "tr\u0103ng khuy\u1ebft cu\u1ed1i th\u00e1ng"
+    "message": "waning crescent moon"
   },
   "d83c_df19": {
-    "message": "tr\u0103ng l\u01b0\u1ee1i li\u1ec1m"
+    "message": "crescent moon"
   },
   "d83c_df1a": {
-    "message": "m\u1eb7t h\u00ecnh tr\u0103ng non"
+    "message": "new moon face"
   },
   "d83c_df1b": {
-    "message": "m\u1eb7t h\u00ecnh tr\u0103ng th\u01b0\u1ee3ng tu\u1ea7n"
+    "message": "first quarter moon face"
   },
   "d83c_df1c": {
-    "message": "m\u1eb7t h\u00ecnh tr\u0103ng h\u1ea1 tu\u1ea7n"
+    "message": "last quarter moon face"
   },
   "d83c_df1d": {
-    "message": "m\u1eb7t h\u00ecnh tr\u0103ng tr\u00f2n"
+    "message": "full moon face"
   },
   "d83c_df1e": {
-    "message": "m\u1eb7t h\u00ecnh m\u1eb7t tr\u1eddi"
+    "message": "sun face"
   },
   "d83c_df1f": {
-    "message": "sao l\u1ea5p l\u00e1nh"
+    "message": "glowing star"
   },
   "d83c_df20": {
-    "message": "sao b\u0103ng"
+    "message": "shooting star"
   },
   "d83c_df30": {
-    "message": "h\u1ea1t d\u1ebb"
+    "message": "chestnut"
   },
   "d83c_df31": {
-    "message": "c\u00e2y non"
+    "message": "young plant"
   },
   "d83c_df32": {
-    "message": "c\u00e2y th\u01b0\u1eddng xanh"
+    "message": "evergreen tree"
   },
   "d83c_df33": {
-    "message": "c\u00e2y \u0111\u1ed5"
+    "message": "shedding tree"
   },
   "d83c_df34": {
-    "message": "c\u00e2y c\u1ecd"
+    "message": "palm tree"
   },
   "d83c_df35": {
-    "message": "c\u00e2y x\u01b0\u01a1ng r\u1ed3ng"
+    "message": "cactus"
   },
   "d83c_df37": {
-    "message": "hoa tulip"
+    "message": "tulip"
   },
   "d83c_df38": {
-    "message": "hoa anh \u0111\u00e0o n\u1edf"
+    "message": "cherry blossom"
   },
   "d83c_df39": {
-    "message": "hoa h\u1ed3ng"
+    "message": "rose"
   },
   "d83c_df3a": {
-    "message": "d\u00e2m b\u1ee5t"
+    "message": "hibiscus"
   },
   "d83c_df3b": {
-    "message": "h\u01b0\u1edbng d\u01b0\u01a1ng"
+    "message": "sunflower"
   },
   "d83c_df3c": {
-    "message": "hoa"
+    "message": "blossom"
   },
   "d83c_df3d": {
-    "message": "ng\u00f4"
+    "message": "corn"
   },
   "d83c_df3e": {
-    "message": "c\u00e2y l\u00faa"
+    "message": "rice plant"
   },
   "d83c_df3f": {
-    "message": "th\u1ea3o m\u1ed9c"
+    "message": "herb"
   },
   "d83c_df40": {
-    "message": "c\u1ecf b\u1ed1n l\u00e1"
+    "message": "four leaf clover"
   },
   "d83c_df41": {
-    "message": "l\u00e1 phong \u0111\u1ecf"
+    "message": "maple leaf"
   },
   "d83c_df42": {
-    "message": "l\u00e1 r\u01a1i"
+    "message": "falling leaves"
   },
   "d83c_df43": {
-    "message": "l\u00e1 bay trong gi\u00f3"
+    "message": "leaf in wind"
   },
   "d83c_df44": {
-    "message": "n\u1ea5m"
+    "message": "mushroom"
   },
   "d83c_df45": {
-    "message": "c\u00e0 chua"
+    "message": "tomato"
   },
   "d83c_df46": {
-    "message": "c\u00e0 t\u00edm"
+    "message": "eggplant"
   },
   "d83c_df47": {
-    "message": "nho"
+    "message": "grapes"
   },
   "d83c_df48": {
-    "message": "qu\u1ea3 d\u01b0a"
+    "message": "melon"
   },
   "d83c_df49": {
-    "message": "d\u01b0a h\u1ea5u"
+    "message": "watermelon"
   },
   "d83c_df4a": {
-    "message": "qu\u00fdt"
+    "message": "tangerine"
   },
   "d83c_df4b": {
-    "message": "chanh"
+    "message": "lemon"
   },
   "d83c_df4c": {
-    "message": "chu\u1ed1i"
+    "message": "banana"
   },
   "d83c_df4d": {
-    "message": "d\u1ee9a"
+    "message": "pineapple"
   },
   "d83c_df4e": {
-    "message": "t\u00e1o \u0111\u1ecf"
+    "message": "red apple"
   },
   "d83c_df4f": {
-    "message": "t\u00e1o xanh"
+    "message": "green apple"
   },
   "d83c_df50": {
-    "message": "l\u00ea"
+    "message": "pear"
   },
   "d83c_df51": {
-    "message": "\u0111\u00e0o"
+    "message": "peach"
   },
   "d83c_df52": {
-    "message": "qu\u1ea3 anh \u0111\u00e0o"
+    "message": "cherry"
   },
   "d83c_df53": {
-    "message": "d\u00e2u t\u00e2y"
+    "message": "strawberry"
   },
   "d83c_df54": {
-    "message": "b\u00e1nh hamburger"
+    "message": "hamburger"
   },
   "d83c_df55": {
-    "message": "l\u00e1t pizza"
+    "message": "pizza slice"
   },
   "d83c_df56": {
-    "message": "th\u1ecbt"
+    "message": "meat"
   },
   "d83c_df57": {
-    "message": "ch\u00e2n g\u00e0"
+    "message": "chicken leg"
   },
   "d83c_df58": {
-    "message": "b\u00e1nh g\u1ea1o"
+    "message": "rice cracker"
   },
   "d83c_df59": {
-    "message": "n\u1eafm c\u01a1m"
+    "message": "rice ball"
   },
   "d83c_df5a": {
-    "message": "c\u01a1m"
+    "message": "cooked rice"
   },
   "d83c_df5b": {
-    "message": "m\u00f3n ca ri v\u00e0 c\u01a1m"
+    "message": "curry and rice"
   },
   "d83c_df5c": {
-    "message": "m\u1ef3 t\u00f4m"
+    "message": "ramen"
   },
   "d83c_df5d": {
-    "message": "m\u00ec \u1ed1ng"
+    "message": "spaghetti"
   },
   "d83c_df5e": {
-    "message": "b\u00e1nh m\u00ec"
+    "message": "bread"
   },
   "d83c_df5f": {
-    "message": "khoai t\u00e2y chi\u00ean"
+    "message": "fries"
   },
   "d83c_df60": {
-    "message": "khoai t\u00e2y n\u01b0\u1edbng"
+    "message": "roasted potato"
   },
   "d83c_df61": {
     "message": "mochi"
@@ -617,880 +617,880 @@
     "message": "sushi"
   },
   "d83c_df64": {
-    "message": "t\u00f4m chi\u00ean"
+    "message": "fried shrimp"
   },
   "d83c_df65": {
-    "message": "vi\u00ean c\u00e1 b\u0103m"
+    "message": "fish cake"
   },
   "d83c_df66": {
-    "message": "kem m\u1ec1m"
+    "message": "soft ice cream"
   },
   "d83c_df67": {
-    "message": "\u0111\u00e1 b\u00e0o"
+    "message": "shaved ice"
   },
   "d83c_df68": {
-    "message": "kem"
+    "message": "ice cream"
   },
   "d83c_df69": {
-    "message": "b\u00e1nh r\u00e1n"
+    "message": "donut"
   },
   "d83c_df6a": {
-    "message": "b\u00e1nh quy"
+    "message": "cookie"
   },
   "d83c_df6b": {
-    "message": "s\u00f4c\u00f4la"
+    "message": "chocolate"
   },
   "d83c_df6c": {
-    "message": "k\u1eb9o"
+    "message": "candy"
   },
   "d83c_df6d": {
-    "message": "k\u1eb9o que"
+    "message": "lollipop"
   },
   "d83c_df6e": {
-    "message": "m\u00f3n s\u1eefa tr\u1ee9ng"
+    "message": "custard"
   },
   "d83c_df6f": {
-    "message": "b\u00ecnh \u0111\u1ef1ng m\u1eadt ong"
+    "message": "honeypot"
   },
   "d83c_df70": {
-    "message": "b\u00e1nh b\u01a1 gi\u00f2n"
+    "message": "shortcake"
   },
   "d83c_df71": {
     "message": "bento"
   },
   "d83c_df72": {
-    "message": "m\u00f3n th\u1ecbt h\u1ea7m"
+    "message": "stew"
   },
   "d83c_df73": {
-    "message": "ch\u1ea3o r\u00e1n"
+    "message": "frying pan"
   },
   "d83c_df74": {
-    "message": "dao v\u00e0 n\u0129a"
+    "message": "fork and knife"
   },
   "d83c_df75": {
-    "message": "t\u00e1ch tr\u00e0"
+    "message": "teacup"
   },
   "d83c_df76": {
-    "message": "r\u01b0\u1ee3u sak\u00ea"
+    "message": "sake"
   },
   "d83c_df77": {
-    "message": "r\u01b0\u1ee3u vang"
+    "message": "wine"
   },
   "d83c_df78": {
     "message": "cocktail"
   },
   "d83c_df79": {
-    "message": "\u0111\u1ed3 u\u1ed1ng ki\u1ec3u nhi\u1ec7t \u0111\u1edbi"
+    "message": "tropical drink"
   },
   "d83c_df7a": {
-    "message": "bia"
+    "message": "beer"
   },
   "d83c_df7b": {
-    "message": "c\u1ed1c bia"
+    "message": "beer mugs"
   },
   "d83c_df7c": {
-    "message": "chai nh\u1ecf"
+    "message": "baby bottle"
   },
   "d83c_df80": {
-    "message": "d\u1ea3i b\u0103ng"
+    "message": "ribbon"
   },
   "d83c_df81": {
-    "message": "qu\u00e0 t\u1eb7ng"
+    "message": "gift"
   },
   "d83c_df82": {
-    "message": "b\u00e1nh sinh nh\u1eadt"
+    "message": "birthday cake"
   },
   "d83c_df83": {
-    "message": "\u0111\u00e8n ma"
+    "message": "jack-o-lantern"
   },
   "d83c_df84": {
-    "message": "c\u00e2y th\u00f4ng Noel"
+    "message": "christmas tree"
   },
   "d83c_df85": {
-    "message": "\u00f4ng gi\u00e0 Noel"
+    "message": "santa"
   },
   "d83c_df86": {
-    "message": "ph\u00e1o hoa"
+    "message": "firework"
   },
   "d83c_df87": {
-    "message": "tia l\u1eeda"
+    "message": "sparkler"
   },
   "d83c_df88": {
-    "message": "kh\u00ed c\u1ea7u"
+    "message": "balloon"
   },
   "d83c_df89": {
-    "message": "ph\u00e1o hoa kim tuy\u1ebfn"
+    "message": "party popper"
   },
   "d83c_df8a": {
-    "message": "hoa gi\u1ea5y"
+    "message": "confetti"
   },
   "d83c_df8b": {
-    "message": "c\u00e2y v\u00e0 m\u1ea3nh gi\u1ea5y"
+    "message": "tree and paper strips"
   },
   "d83c_df8c": {
-    "message": "c\u1edd \u0111an ch\u00e9o"
+    "message": "crossed flags"
   },
   "d83c_df8d": {
-    "message": "trang tr\u00ed c\u00e2y th\u00f4ng"
+    "message": "pine decoration"
   },
   "d83c_df8e": {
-    "message": "b\u00fap b\u00ea"
+    "message": "dolls"
   },
   "d83c_df8f": {
-    "message": "c\u1edd c\u00e1 ch\u00e9p"
+    "message": "carp streamer"
   },
   "d83c_df90": {
-    "message": "chu\u00f4ng gi\u00f3"
+    "message": "wind chime"
   },
   "d83c_df91": {
-    "message": "ng\u1eafm tr\u0103ng"
+    "message": "moon viewing"
   },
   "d83c_df92": {
-    "message": "c\u1eb7p s\u00e1ch"
+    "message": "school bag"
   },
   "d83c_df93": {
-    "message": "m\u0169 t\u1ed1t nghi\u1ec7p"
+    "message": "graduation cap"
   },
   "d83c_dfa0": {
-    "message": "b\u0103ng chuy\u1ec1n"
+    "message": "carousel"
   },
   "d83c_dfa1": {
-    "message": "v\u00f2ng \u0111u quay"
+    "message": "ferris wheel"
   },
   "d83c_dfa2": {
-    "message": "\u0111\u01b0\u1eddng s\u1eaft cho t\u00e0u tr\u01b0\u1ee3t"
+    "message": "roller coaster"
   },
   "d83c_dfa3": {
-    "message": "c\u00e2u ca\u0301"
+    "message": "fishing"
   },
   "d83c_dfa4": {
-    "message": "micr\u00f4"
+    "message": "mic"
   },
   "d83c_dfa5": {
-    "message": "m\u00e1y quay phim"
+    "message": "movie camera"
   },
   "d83c_dfa6": {
-    "message": "phim"
+    "message": "movie"
   },
   "d83c_dfa7": {
-    "message": "tai nghe"
+    "message": "headphone"
   },
   "d83c_dfa8": {
-    "message": "b\u1ea3ng m\u00e0u s\u01a1n"
+    "message": "paint palette"
   },
   "d83c_dfa9": {
-    "message": "m\u0169 ch\u00f3p cao"
+    "message": "top hat"
   },
   "d83c_dfaa": {
-    "message": "r\u1ea1p xi\u1ebfc"
+    "message": "circus"
   },
   "d83c_dfab": {
-    "message": "v\u00e9"
+    "message": "ticket"
   },
   "d83c_dfac": {
-    "message": "b\u1ea3ng ph\u00e2n c\u1ea3nh"
+    "message": "clapperboard"
   },
   "d83c_dfad": {
-    "message": "m\u1eb7t n\u1ea1"
+    "message": "face mask"
   },
   "d83c_dfae": {
-    "message": "tr\u00f2 ch\u01a1i \u0111i\u1ec7n t\u1eed"
+    "message": "video game"
   },
   "d83c_dfaf": {
-    "message": "\u0111i\u1ec3m \u0111en"
+    "message": "bull's eye"
   },
   "d83c_dfb0": {
-    "message": "m\u00e1y b\u00e1n h\u00e0ng t\u1ef1 \u0111\u1ed9ng"
+    "message": "slot machine"
   },
   "d83c_dfb1": {
-    "message": "bi-a"
+    "message": "billiard"
   },
   "d83c_dfb2": {
-    "message": "x\u00fac x\u1eafc"
+    "message": "game die"
   },
   "d83c_dfb3": {
-    "message": "tr\u00f2 ch\u01a1i l\u0103n b\u00f3ng g\u1ed7"
+    "message": "bowling"
   },
   "d83c_dfb4": {
-    "message": "ch\u01a1i b\u00e0i"
+    "message": "playing card"
   },
   "d83c_dfb5": {
-    "message": "n\u1ed1t nh\u1ea1c"
+    "message": "musical note"
   },
   "d83c_dfb6": {
-    "message": "nh\u1eefng n\u1ed1t nh\u1ea1c"
+    "message": "musical notes"
   },
   "d83c_dfb7": {
-    "message": "k\u00e8n sax"
+    "message": "sax"
   },
   "d83c_dfb8": {
-    "message": "\u0111\u00e0n ghi ta"
+    "message": "guitar"
   },
   "d83c_dfb9": {
     "message": "piano"
   },
   "d83c_dfba": {
-    "message": "k\u00e8n trumpet"
+    "message": "trumpet"
   },
   "d83c_dfbb": {
-    "message": "vi-\u00f4-l\u00f4ng"
+    "message": "violin"
   },
   "d83c_dfbc": {
-    "message": "b\u1ea3ng t\u1ed5ng ph\u1ed5 nh\u1ea1c"
+    "message": "music score"
   },
   "d83c_dfbd": {
-    "message": "\u00e1o thun"
+    "message": "running shirt"
   },
   "d83c_dfbe": {
-    "message": "tr\u00f2 ch\u01a1i qu\u1ea7n v\u1ee3t"
+    "message": "tennis"
   },
   "d83c_dfbf": {
-    "message": "tr\u01b0\u1ee3t tuy\u1ebft"
+    "message": "ski"
   },
   "d83c_dfc0": {
-    "message": "tr\u00f2 ch\u01a1i b\u00f3ng r\u1ed5"
+    "message": "basketball"
   },
   "d83c_dfc1": {
-    "message": "tr\u00f2 ch\u01a1i c\u1edd ca r\u00f4"
+    "message": "checkered flag"
   },
   "d83c_dfc2": {
-    "message": "tr\u01b0\u1ee3t v\u00e1n"
+    "message": "snowboarder"
   },
   "d83c_dfc3": {
-    "message": "ng\u01b0\u1eddi ch\u1ea1y"
+    "message": "runner"
   },
   "d83c_dfc4": {
-    "message": "l\u01b0\u1edbt s\u00f3ng"
+    "message": "surfing"
   },
   "d83c_dfc6": {
-    "message": "c\u00fap"
+    "message": "trophy"
   },
   "d83c_dfc7": {
-    "message": "\u0111ua ng\u1ef1a"
+    "message": "horse racing"
   },
   "d83c_dfc8": {
-    "message": "B\u00f3ng \u0111\u00e1 M\u1ef9"
+    "message": "American football"
   },
   "d83c_dfc9": {
-    "message": "b\u00f3ng \u0111\u00e1"
+    "message": "soccer"
   },
   "d83c_dfca": {
-    "message": "ng\u01b0\u1eddi b\u01a1i"
+    "message": "swimmer"
   },
   "d83c_dfe0": {
-    "message": "ng\u00f4i nh\u00e0"
+    "message": "house"
   },
   "d83c_dfe1": {
-    "message": "nh\u00e0 ri\u00eang"
+    "message": "home"
   },
   "d83c_dfe2": {
-    "message": "t\u00f2a nh\u00e0 v\u0103n ph\u00f2ng"
+    "message": "office building"
   },
   "d83c_dfe3": {
-    "message": "B\u01b0u \u0111i\u1ec7n Nh\u1eadt B\u1ea3n"
+    "message": "Japanese post office"
   },
   "d83c_dfe4": {
-    "message": "B\u01b0u \u0111i\u1ec7n ch\u00e2u \u00c2u"
+    "message": "European post office"
   },
   "d83c_dfe5": {
-    "message": "b\u1ec7nh vi\u1ec7n"
+    "message": "hospital"
   },
   "d83c_dfe6": {
-    "message": "ng\u00e2n h\u00e0ng"
+    "message": "bank"
   },
   "d83c_dfe7": {
     "message": "ATM"
   },
   "d83c_dfe8": {
-    "message": "kh\u00e1ch s\u1ea1n"
+    "message": "hotel"
   },
   "d83c_dfe9": {
-    "message": "kh\u00e1ch s\u1ea1n t\u00ecnh y\u00eau"
+    "message": "love hotel"
   },
   "d83c_dfea": {
-    "message": "c\u1eeda h\u00e0ng ti\u1ec7n \u00edch"
+    "message": "convenience store"
   },
   "d83c_dfeb": {
-    "message": "tr\u01b0\u1eddng h\u1ecdc"
+    "message": "school"
   },
   "d83c_dfec": {
-    "message": "c\u1eeda h\u00e0ng b\u00e1ch h\u00f3a"
+    "message": "department store"
   },
   "d83c_dfed": {
-    "message": "nh\u00e0 m\u00e1y"
+    "message": "factory"
   },
   "d83c_dfee": {
-    "message": "\u0111\u00e8n l\u1ed3ng \u0111\u1ecf"
+    "message": "red lantern"
   },
   "d83c_dfef": {
-    "message": "L\u00e2u \u0111\u00e0i Nh\u1eadt B\u1ea3n"
+    "message": "Japanese castle"
   },
   "d83c_dff0": {
-    "message": "L\u00e2u \u0111\u00e0i ch\u00e2u \u00c2u"
+    "message": "European castle"
   },
   "d83d_dc00": {
-    "message": "Chu\u1ed9t c\u1ed1ng"
+    "message": "Rat"
   },
   "d83d_dc01": {
-    "message": "Chu\u1ed9t"
+    "message": "Mouse"
   },
   "d83d_dc02": {
-    "message": "B\u00f2 \u0111\u1ef1c"
+    "message": "Ox"
   },
   "d83d_dc03": {
-    "message": "tr\u00e2u n\u01b0\u1edbc"
+    "message": "water buffalo"
   },
   "d83d_dc04": {
-    "message": "b\u00f2 c\u00e1i"
+    "message": "cow"
   },
   "d83d_dc06": {
-    "message": "con b\u00e1o"
+    "message": "leopard"
   },
   "d83d_dc07": {
-    "message": "th\u1ecf"
+    "message": "rabbit"
   },
   "d83d_dc08": {
-    "message": "m\u00e8o"
+    "message": "cat"
   },
   "d83d_dc09": {
-    "message": "r\u1ed3ng"
+    "message": "dragon"
   },
   "d83d_dc0a": {
-    "message": "c\u00e1 s\u1ea5u"
+    "message": "crocodile"
   },
   "d83d_dc0b": {
-    "message": "c\u00e1 voi"
+    "message": "whale"
   },
   "d83d_dc0c": {
-    "message": "\u1ed1c"
+    "message": "snail"
   },
   "d83d_dc0d": {
-    "message": "r\u1eafn"
+    "message": "snake"
   },
   "d83d_dc0e": {
-    "message": "ng\u1ef1a"
+    "message": "horse"
   },
   "d83d_dc0f": {
-    "message": "c\u1eebu \u0111\u1ef1c"
+    "message": "ram"
   },
   "d83d_dc10": {
-    "message": "d\u00ea"
+    "message": "goat"
   },
   "d83d_dc11": {
-    "message": "c\u1eebu"
+    "message": "sheep"
   },
   "d83d_dc12": {
-    "message": "kh\u1ec9"
+    "message": "monkey"
   },
   "d83d_dc13": {
-    "message": "g\u00e0 tr\u1ed1ng"
+    "message": "rooster"
   },
   "d83d_dc14": {
-    "message": "g\u00e0"
+    "message": "chicken"
   },
   "d83d_dc15": {
-    "message": "c\u00fan"
+    "message": "dog"
   },
   "d83d_dc16": {
-    "message": "l\u1ee3n"
+    "message": "pig"
   },
   "d83d_dc17": {
-    "message": "l\u1ee3n r\u1eebng"
+    "message": "boar"
   },
   "d83d_dc18": {
-    "message": "voi"
+    "message": "elephant"
   },
   "d83d_dc19": {
-    "message": "b\u1ea1ch tu\u1ed9c"
+    "message": "octopus"
   },
   "d83d_dc1a": {
-    "message": "v\u1ecf s\u00f2"
+    "message": "shell"
   },
   "d83d_dc1b": {
-    "message": "b\u1ecd"
+    "message": "bug"
   },
   "d83d_dc1c": {
-    "message": "ki\u1ebfn"
+    "message": "ant"
   },
   "d83d_dc1d": {
-    "message": "ong m\u1eadt"
+    "message": "honeybee"
   },
   "d83d_dc1e": {
-    "message": "b\u1ecd r\u00f9a"
+    "message": "lady beetle"
   },
   "d83d_dc1f": {
-    "message": "c\u00e1"
+    "message": "fish"
   },
   "d83d_dc20": {
-    "message": "c\u00e1 nhi\u1ec7t \u0111\u1edbi"
+    "message": "tropical fish"
   },
   "d83d_dc21": {
-    "message": "c\u00e1 n\u00f3c"
+    "message": "blowfish"
   },
   "d83d_dc22": {
-    "message": "r\u00f9a"
+    "message": "turtle"
   },
   "d83d_dc23": {
-    "message": "g\u00e0 \u1ea5p tr\u1ee9ng"
+    "message": "hatching chick"
   },
   "d83d_dc24": {
-    "message": "m\u1eb7t g\u00e0 con"
+    "message": "baby chick face"
   },
   "d83d_dc25": {
-    "message": "g\u00e0 con"
+    "message": "baby chick"
   },
   "d83d_dc26": {
-    "message": "chim"
+    "message": "bird"
   },
   "d83d_dc27": {
-    "message": "chim c\u00e1nh c\u1ee5t"
+    "message": "penguin"
   },
   "d83d_dc28": {
-    "message": "g\u1ea5u t\u00fai"
+    "message": "koala"
   },
   "d83d_dc29": {
-    "message": "ch\u00f3 x\u00f9"
+    "message": "poodle"
   },
   "d83d_dc2a": {
-    "message": "l\u1ea1c \u0111\u00e0 m\u1ed9t b\u01b0\u1edbu"
+    "message": "one hump camel"
   },
   "d83d_dc2b": {
-    "message": "l\u1ea1c \u0111\u00e0 hai b\u01b0\u1edbu"
+    "message": "two hump camel"
   },
   "d83d_dc2c": {
-    "message": "c\u00e1 heo"
+    "message": "dolphin"
   },
   "d83d_dc2d": {
-    "message": "m\u1eb7t chu\u1ed9t"
+    "message": "mouse face"
   },
   "d83d_dc2e": {
-    "message": "m\u1eb7t b\u00f2 c\u00e1i"
+    "message": "cow face"
   },
   "d83d_dc2f": {
-    "message": "m\u1eb7t h\u1ed5"
+    "message": "tiger face"
   },
   "d83d_dc30": {
-    "message": "m\u1eb7t th\u1ecf"
+    "message": "rabbit face"
   },
   "d83d_dc31": {
-    "message": "m\u1eb7t m\u00e8o"
+    "message": "cat face"
   },
   "d83d_dc32": {
-    "message": "m\u1eb7t r\u1ed3ng"
+    "message": "dragon face"
   },
   "d83d_dc33": {
-    "message": "c\u00e1 voi phun n\u01b0\u1edbc"
+    "message": "spouting whale"
   },
   "d83d_dc34": {
-    "message": "m\u1eb7t ng\u1ef1a"
+    "message": "horse face"
   },
   "d83d_dc35": {
-    "message": "m\u1eb7t kh\u1ec9"
+    "message": "monkey face"
   },
   "d83d_dc36": {
-    "message": "m\u1eb7t c\u00fan"
+    "message": "dog face"
   },
   "d83d_dc37": {
-    "message": "m\u1eb7t l\u1ee3n"
+    "message": "pig face"
   },
   "d83d_dc38": {
-    "message": "m\u1eb7t \u1ebfch"
+    "message": "frog face"
   },
   "d83d_dc39": {
-    "message": "m\u1eb7t chu\u1ed9t \u0111\u1ed3ng"
+    "message": "hamster face"
   },
   "d83d_dc3a": {
-    "message": "m\u1eb7t s\u00f3i"
+    "message": "wolf face"
   },
   "d83d_dc3b": {
-    "message": "m\u1eb7t g\u1ea5u"
+    "message": "bear face"
   },
   "d83d_dc3c": {
-    "message": "m\u1eb7t g\u1ea5u tr\u00fac"
+    "message": "panda face"
   },
   "d83d_dc3d": {
-    "message": "m\u0169i l\u1ee3n"
+    "message": "pig nose"
   },
   "d83d_dc3e": {
-    "message": "m\u00f3ng"
+    "message": "paw"
   },
   "d83d_dc40": {
-    "message": "m\u1eaft"
+    "message": "eyes"
   },
   "d83d_dc42": {
-    "message": "tai"
+    "message": "ear"
   },
   "d83d_dc43": {
-    "message": "m\u0169i"
+    "message": "nose"
   },
   "d83d_dc44": {
-    "message": "mi\u1ec7ng"
+    "message": "mouth"
   },
   "d83d_dc45": {
-    "message": "l\u01b0\u1ee1i"
+    "message": "tongue"
   },
   "d83d_dc46": {
-    "message": "gi\u01a1 ng\u00f3n tay l\u00ean"
+    "message": "up finger"
   },
   "d83d_dc47": {
-    "message": "gi\u01a1 ng\u00f3n tay xu\u1ed1ng"
+    "message": "down finger"
   },
   "d83d_dc48": {
-    "message": "ng\u00f3n tay tr\u00e1i"
+    "message": "left finger"
   },
   "d83d_dc49": {
-    "message": "ng\u00f3n tay ph\u1ea3i"
+    "message": "right finger"
   },
   "d83d_dc4a": {
-    "message": "tay n\u1eafm ch\u1eb7t"
+    "message": "clenched fist"
   },
   "d83d_dc4b": {
-    "message": "v\u1eaby tay"
+    "message": "hand waving"
   },
   "d83d_dc4c": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng b\u00e0n tay ra d\u1ea5u Ok"
+    "message": "OK hand sign"
   },
   "d83d_dc4d": {
-    "message": "ng\u00f3n tay c\u00e1i gi\u01a1 l\u00ean"
+    "message": "thumbs up"
   },
   "d83d_dc4e": {
-    "message": "ng\u00f3n tay c\u00e1i quay xu\u1ed1ng"
+    "message": "thumbs down"
   },
   "d83d_dc4f": {
-    "message": "v\u1ed7 tay"
+    "message": "hands clapping"
   },
   "d83d_dc50": {
-    "message": "\u0111\u00f4i b\u00e0n tay m\u1edf"
+    "message": "open hands"
   },
   "d83d_dc51": {
-    "message": "v\u01b0\u01a1ng mi\u1ec7n"
+    "message": "crown"
   },
   "d83d_dc52": {
-    "message": "m\u0169 n\u1eef"
+    "message": "woman's hat"
   },
   "d83d_dc53": {
-    "message": "k\u00ednh m\u1eaft"
+    "message": "eyeglasses"
   },
   "d83d_dc54": {
-    "message": "ca v\u00e1t"
+    "message": "necktie"
   },
   "d83d_dc55": {
-    "message": "\u00c1o s\u01a1 mi"
+    "message": "T-shirt"
   },
   "d83d_dc56": {
-    "message": "qu\u1ea7n"
+    "message": "trousers"
   },
   "d83d_dc57": {
-    "message": "\u0111\u1ea7m"
+    "message": "dress"
   },
   "d83d_dc58": {
     "message": "kimono"
   },
   "d83d_dc59": {
-    "message": "b\u1ed9 bikini"
+    "message": "bikini"
   },
   "d83d_dc5a": {
-    "message": "qu\u1ea7n \u00e1o n\u1eef"
+    "message": "woman's clothes"
   },
   "d83d_dc5b": {
-    "message": "c\u00e1i v\u00ed"
+    "message": "purse"
   },
   "d83d_dc5c": {
-    "message": "t\u00fai x\u00e1ch"
+    "message": "handbag"
   },
   "d83d_dc5d": {
-    "message": "t\u00fai nh\u1ecf"
+    "message": "pouch"
   },
   "d83d_dc5e": {
-    "message": "gi\u00e0y nam"
+    "message": "man's shoe"
   },
   "d83d_dc5f": {
-    "message": "gi\u00e0y th\u1ec3 thao"
+    "message": "athletic shoe"
   },
   "d83d_dc60": {
-    "message": "cao g\u00f3t"
+    "message": "high-heel"
   },
   "d83d_dc61": {
-    "message": "x\u0103ng \u0111an n\u1eef"
+    "message": "woman's sandal"
   },
   "d83d_dc62": {
-    "message": "gi\u00e0y \u1ed1ng n\u1eef"
+    "message": "woman's boot"
   },
   "d83d_dc63": {
-    "message": "d\u1ea5u ch\u00e2n"
+    "message": "footprint"
   },
   "d83d_dc64": {
-    "message": "h\u00ecnh b\u00f3ng n\u1eeda ng\u01b0\u1eddi"
+    "message": "bust in silhouette"
   },
   "d83d_dc65": {
-    "message": "h\u00ecnh b\u00f3ng n\u1eeda ng\u01b0\u1eddi"
+    "message": "busts in silhouette"
   },
   "d83d_dc66": {
-    "message": "con trai"
+    "message": "boy"
   },
   "d83d_dc67": {
-    "message": "con g\u00e1i"
+    "message": "girl"
   },
   "d83d_dc68": {
-    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng"
+    "message": "man"
   },
   "d83d_dc69": {
-    "message": "ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+    "message": "woman"
   },
   "d83d_dc6a": {
-    "message": "gia \u0111\u00ecnh"
+    "message": "family"
   },
   "d83d_dc6b": {
-    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng v\u00e0 ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+    "message": "man and woman"
   },
   "d83d_dc6c": {
-    "message": "hai ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng"
+    "message": "two men"
   },
   "d83d_dc6d": {
-    "message": "hai ng\u01b0\u1eddi ph\u1ee5 n\u1eef"
+    "message": "two women"
   },
   "d83d_dc6e": {
-    "message": "c\u1ea3nh s\u00e1t"
+    "message": "police officer"
   },
   "d83d_dc6f": {
-    "message": "c\u00f4 g\u00e1i m\u1eb7c b\u1ed9 qu\u1ea7n \u00e1o c\u00f3 tai th\u1ecf v\u00e0 \u0111u\u00f4i th\u1ecf gi\u1ea3"
+    "message": "bunny girl"
   },
   "d83d_dc70": {
-    "message": "c\u00f4 d\u00e2u"
+    "message": "bride"
   },
   "d83d_dc71": {
-    "message": "ng\u01b0\u1eddi c\u00f3 t\u00f3c v\u00e0ng"
+    "message": "blond person"
   },
   "d83d_dc72": {
-    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng \u0111\u1ed9i m\u0169 gua pi mao"
+    "message": "man with gua pi mao"
   },
   "d83d_dc73": {
-    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng \u0111\u1ed9i kh\u0103n x\u1ebfp"
+    "message": "man with a turban"
   },
   "d83d_dc74": {
-    "message": "ng\u01b0\u1eddi \u0111\u00e0n \u00f4ng l\u1edbn tu\u1ed5i"
+    "message": "older man"
   },
   "d83d_dc75": {
-    "message": "ng\u01b0\u1eddi ph\u1ee5 n\u1eef l\u1edbn tu\u1ed5i"
+    "message": "older woman"
   },
   "d83d_dc76": {
-    "message": "em b\u00e9"
+    "message": "baby"
   },
   "d83d_dc77": {
-    "message": "c\u00f4ng nh\u00e2n x\u00e2y d\u1ef1ng"
+    "message": "construction worker"
   },
   "d83d_dc78": {
-    "message": "c\u00f4ng ch\u00faa"
+    "message": "princess"
   },
   "d83d_dc79": {
-    "message": "y\u00eau qu\u00e1i"
+    "message": "ogre"
   },
   "d83d_dc7a": {
-    "message": "y\u00eau tinh"
+    "message": "goblin"
   },
   "d83d_dc7b": {
-    "message": "ma"
+    "message": "ghost"
   },
   "d83d_dc7c": {
-    "message": "thi\u00ean th\u1ea7n nh\u1ecf"
+    "message": "baby angel"
   },
   "d83d_dc7d": {
-    "message": "ng\u01b0\u1eddi ngo\u00e0i h\u00e0nh tinh"
+    "message": "alien"
   },
   "d83d_dc7e": {
-    "message": "qu\u00e1i v\u1eadt ngo\u00e0i h\u00e0nh tinh"
+    "message": "alien monster"
   },
   "d83d_dc7f": {
-    "message": "ti\u1ec3u qu\u1ef7"
+    "message": "imp"
   },
   "d83d_dc80": {
-    "message": "\u0111\u1ea7u l\u00e2u"
+    "message": "skull"
   },
   "d83d_dc81": {
-    "message": "b\u00e0n h\u01b0\u1edbng d\u1eabn"
+    "message": "information desk"
   },
   "d83d_dc82": {
-    "message": "nh\u00e2n vi\u00ean b\u1ea3o v\u1ec7"
+    "message": "guardsman"
   },
   "d83d_dc83": {
-    "message": "v\u0169 c\u00f4ng"
+    "message": "dancer"
   },
   "d83d_dc84": {
-    "message": "son m\u00f4i"
+    "message": "lipstick"
   },
   "d83d_dc85": {
-    "message": "ch\u0103m s\u00f3c m\u00f3ng tay"
+    "message": "nail care"
   },
   "d83d_dc86": {
-    "message": "xoa b\u00f3p m\u1eb7t"
+    "message": "face massage"
   },
   "d83d_dc87": {
-    "message": "c\u1eaft t\u00f3c"
+    "message": "haircut"
   },
   "d83d_dc88": {
-    "message": "ti\u1ec7m c\u1eaft t\u00f3c"
+    "message": "barber shop"
   },
   "d83d_dc89": {
-    "message": "b\u1eafn"
+    "message": "shot"
   },
   "d83d_dc8a": {
-    "message": "vi\u00ean thu\u1ed1c"
+    "message": "pill"
   },
   "d83d_dc8b": {
-    "message": "d\u1ea5u h\u00f4n"
+    "message": "kiss mark"
   },
   "d83d_dc8c": {
-    "message": "b\u1ee9c th\u01b0 t\u00ecnh"
+    "message": "love letter"
   },
   "d83d_dc8d": {
-    "message": "nh\u1eabn"
+    "message": "ring"
   },
   "d83d_dc8e": {
-    "message": "ng\u1ecdc"
+    "message": "gem"
   },
   "d83d_dc8f": {
-    "message": "h\u00f4n"
+    "message": "kiss"
   },
   "d83d_dc90": {
-    "message": "b\u00f3 hoa"
+    "message": "bouquet"
   },
   "d83d_dc91": {
-    "message": "c\u1eb7p \u0111\u00f4i"
+    "message": "couple"
   },
   "d83d_dc92": {
-    "message": "t\u1ed5 ch\u1ee9c ti\u1ec7c c\u01b0\u1edbi"
+    "message": "wedding chapel"
   },
   "d83d_dc93": {
-    "message": "tr\u00e1i tim rung \u0111\u1ed9ng"
+    "message": "pulsating heart"
   },
   "d83d_dc94": {
-    "message": "tim v\u1ee1"
+    "message": "heart break"
   },
   "d83d_dc95": {
-    "message": "hai tr\u00e1i tim"
+    "message": "two hearts"
   },
   "d83d_dc96": {
-    "message": "tr\u00e1i tim l\u1ea5p l\u00e1nh"
+    "message": "sparkling heart"
   },
   "d83d_dc97": {
-    "message": "tr\u00e1i t\u00edm l\u1edbn d\u1ea7n"
+    "message": "growing heart"
   },
   "d83d_dc98": {
-    "message": "tr\u00e1i tim v\u00e0 m\u0169i t\u00ean"
+    "message": "heart and arrow"
   },
   "d83d_dc99": {
-    "message": "tr\u00e1i tim m\u00e0u xanh lam"
+    "message": "blue heart"
   },
   "d83d_dc9a": {
-    "message": "tr\u00e1i tim m\u00e0u xanh l\u1ee5c"
+    "message": "green heart"
   },
   "d83d_dc9b": {
-    "message": "tr\u00e1i tim m\u00e0u v\u00e0ng"
+    "message": "yellow heart"
   },
   "d83d_dc9c": {
-    "message": "tr\u00e1i tim m\u00e0u t\u00edm"
+    "message": "purple heart"
   },
   "d83d_dc9d": {
-    "message": "tr\u00e1i tim c\u00f3 d\u1ea3i b\u0103ng"
+    "message": "heart with ribbon"
   },
   "d83d_dc9e": {
-    "message": "tr\u00e1i tim xoay v\u00f2ng"
+    "message": "revolving hearts"
   },
   "d83d_dc9f": {
-    "message": "trang tr\u00ed tr\u00e1i tim"
+    "message": "heart decoration"
   },
   "d83d_dca0": {
-    "message": "c\u00e1nh hoa"
+    "message": "flower petal"
   },
   "d83d_dca1": {
-    "message": "b\u00f3ng \u0111\u00e8n"
+    "message": "light bulb"
   },
   "d83d_dca2": {
-    "message": "ph\u1eabn n\u1ed9"
+    "message": "anger"
   },
   "d83d_dca3": {
-    "message": "bom"
+    "message": "bomb"
   },
   "d83d_dca4": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng bu\u1ed3n ng\u1ee7"
+    "message": "sleepy symbol"
   },
   "d83d_dca5": {
-    "message": "va ch\u1ea1m"
+    "message": "collision"
   },
   "d83d_dca6": {
-    "message": "m\u1ed3 h\u00f4i t\u00faa ra"
+    "message": "splashing sweat"
   },
   "d83d_dca7": {
-    "message": "to\u00e1t m\u1ed3 h\u00f4i"
+    "message": "sweat droplet"
   },
   "d83d_dca8": {
-    "message": "r\u01b0\u1ee3t \u0111u\u1ed5i"
+    "message": "running dash"
   },
   "d83d_dca9": {
-    "message": "kh\u1edd kh\u1ea1o"
+    "message": "poop"
   },
   "d83d_dcaa": {
-    "message": "b\u1eafp tay"
+    "message": "biceps"
   },
   "d83d_dcab": {
-    "message": "ch\u00f3ng m\u1eb7t"
+    "message": "dizzy icon"
   },
   "d83d_dcac": {
-    "message": "h\u1ed9p ch\u00fa gi\u1ea3i l\u1eddi n\u00f3i"
+    "message": "speech balloon"
   },
   "d83d_dcad": {
-    "message": "h\u1ed9p ch\u00fa gi\u1ea3i suy ngh\u0129"
+    "message": "thought balloon"
   },
   "d83d_dcae": {
-    "message": "tem hoa"
+    "message": "flower stamp"
   },
   "d83d_dcaf": {
-    "message": "\u0111i\u1ec3m s\u1ed1 \u0111\u1ea7y \u0111\u1ee7"
+    "message": "full score"
   },
   "d83d_dcb0": {
-    "message": "t\u00fai ti\u1ec1n"
+    "message": "money bag"
   },
   "d83d_dcb1": {
-    "message": "h\u1ed1i \u0111o\u00e1i"
+    "message": "currency exchange"
   },
   "d83d_dcb2": {
-    "message": "k\u00fd hi\u1ec7u $"
+    "message": "dollar sign"
   },
   "d83d_dcb3": {
-    "message": "th\u1ebb t\u00edn d\u1ee5ng"
+    "message": "credit card"
   },
   "d83d_dcb4": {
-    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng Y\u00ean"
+    "message": "yen note"
   },
   "d83d_dcb5": {
-    "message": "ghi ch\u00fa v\u1ec1 \u0111\u00f4 la"
+    "message": "dollar note"
   },
   "d83d_dcb6": {
-    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng Euro"
+    "message": "Euro note"
   },
   "d83d_dcb7": {
-    "message": "ghi ch\u00fa v\u1ec1 \u0111\u1ed3ng b\u1ea3ng Anh"
+    "message": "Pound note"
   },
   "d83d_dcb8": {
-    "message": "ti\u1ec1n bay"
+    "message": "flying money"
   },
   "d83d_dcb9": {
-    "message": "th\u1ecb tr\u01b0\u1eddng t\u0103ng"
+    "message": "rising market"
   },
   "d83d_dcba": {
-    "message": "gh\u1ebf"
+    "message": "seat"
   },
   "d83d_dcbb": {
     "message": "PC"
   },
   "d83d_dcbc": {
-    "message": "c\u1eb7p t\u00e0i li\u1ec7u"
+    "message": "briefcase"
   },
   "d83d_dcbd": {
-    "message": "\u0111\u0129a mini"
+    "message": "mini disc"
   },
   "d83d_dcbe": {
-    "message": "\u0111\u0129a m\u1ec1m"
+    "message": "floppy disc"
   },
   "d83d_dcbf": {
     "message": "blu-ray"
@@ -1499,889 +1499,889 @@
     "message": "DVD"
   },
   "d83d_dcc1": {
-    "message": "g\u1eedi th\u01b0 m\u1ee5c"
+    "message": "file folder"
   },
   "d83d_dcc2": {
-    "message": "m\u1edf th\u01b0 m\u1ee5c"
+    "message": "open folder"
   },
   "d83d_dcc3": {
-    "message": "t\u00e0i li\u1ec7u"
+    "message": "page with a curl"
   },
   "d83d_dcc4": {
-    "message": "t\u00e0i li\u1ec7u"
+    "message": "page with face up"
   },
   "d83d_dcc5": {
-    "message": "l\u1ecbch"
+    "message": "calendar"
   },
   "d83d_dcc6": {
-    "message": "l\u1ecbch x\u00e9"
+    "message": "tear-off calendar"
   },
   "d83d_dcc7": {
-    "message": "ch\u1ec9 m\u1ee5c th\u1ebb"
+    "message": "card index"
   },
   "d83d_dcc8": {
-    "message": "xu h\u01b0\u1edbng \u0111i l\u00ean"
+    "message": "upward trend"
   },
   "d83d_dcc9": {
-    "message": "xu h\u01b0\u1edbng \u0111i xu\u1ed1ng"
+    "message": "downward trend"
   },
   "d83d_dcca": {
-    "message": "bi\u1ec3u \u0111\u1ed3 thanh"
+    "message": "bar graph"
   },
   "d83d_dccb": {
-    "message": "khay nh\u1edb t\u1ea1m"
+    "message": "clipboard"
   },
   "d83d_dccc": {
-    "message": "\u0111inh ghim"
+    "message": "pushpin"
   },
   "d83d_dccd": {
-    "message": "\u0111inh ghim tr\u00f2n"
+    "message": "round pushpin"
   },
   "d83d_dcce": {
-    "message": "k\u1eb9p gi\u1ea5y"
+    "message": "paperclip"
   },
   "d83d_dccf": {
-    "message": "th\u01b0\u1edbc th\u1eb3ng"
+    "message": "straight ruler"
   },
   "d83d_dcd0": {
-    "message": "th\u01b0\u1edbc tam gi\u00e1c"
+    "message": "triangle ruler"
   },
   "d83d_dcd1": {
-    "message": "tab d\u1ea5u trang"
+    "message": "bookmark tabs"
   },
   "d83d_dcd2": {
-    "message": "s\u1ed5 c\u00e1i"
+    "message": "ledger"
   },
   "d83d_dcd3": {
-    "message": "s\u1ed5 tay"
+    "message": "notebook"
   },
   "d83d_dcd4": {
-    "message": "s\u1ed5 tay \u0111\u01b0\u1ee3c trang tr\u00ed"
+    "message": "decorated notebook"
   },
   "d83d_dcd5": {
-    "message": "s\u00e1ch \u0111\u00f3ng"
+    "message": "closed book"
   },
   "d83d_dcd6": {
-    "message": "s\u00e1ch m\u1edf"
+    "message": "open book"
   },
   "d83d_dcd7": {
-    "message": "s\u00e1ch m\u00e0u xanh l\u1ee5c"
+    "message": "green book"
   },
   "d83d_dcd8": {
-    "message": "s\u00e1ch"
+    "message": "book"
   },
   "d83d_dcd9": {
-    "message": "s\u00e1ch m\u00e0u cam"
+    "message": "orange book"
   },
   "d83d_dcda": {
-    "message": "s\u00e1ch"
+    "message": "books"
   },
   "d83d_dcdb": {
-    "message": "huy hi\u1ec7u t\u00ean"
+    "message": "name badge"
   },
   "d83d_dcdc": {
-    "message": "cu\u1ed9n gi\u1ea5y"
+    "message": "scroll"
   },
   "d83d_dcdd": {
-    "message": "ghi nh\u1edb"
+    "message": "memo"
   },
   "d83d_dcde": {
-    "message": "\u0111i\u1ec7n tho\u1ea1i"
+    "message": "phone"
   },
   "d83d_dcdf": {
-    "message": "s\u1ed1 m\u00e1y nh\u0103\u0301n tin"
+    "message": "pager"
   },
   "d83d_dce0": {
     "message": "fax"
   },
   "d83d_dce1": {
-    "message": "\u0103ng ten ch\u1ea3o v\u1ec7 tinh"
+    "message": "satellite dish"
   },
   "d83d_dce2": {
-    "message": "loa"
+    "message": "loudspeaker"
   },
   "d83d_dce3": {
-    "message": "loa"
+    "message": "megaphone"
   },
   "d83d_dce4": {
-    "message": "th\u01b0 \u0111\u00e3 g\u1eedi"
+    "message": "sent mail"
   },
   "d83d_dce5": {
-    "message": "H\u1ed9p th\u01b0 \u0111\u1ebfn"
+    "message": "Inbox"
   },
   "d83d_dce6": {
-    "message": "g\u00f3i"
+    "message": "package"
   },
   "d83d_dce7": {
     "message": "email"
   },
   "d83d_dce8": {
-    "message": "th\u01b0 \u0111\u1ebfn"
+    "message": "incoming mail"
   },
   "d83d_dce9": {
-    "message": "th\u01b0 \u0111i"
+    "message": "outgoing mail"
   },
   "d83d_dcea": {
-    "message": "h\u1ed9p th\u01b0 \u0111\u00f3ng v\u1edbi c\u1edd \u0111\u01b0\u1ee3c h\u1ea1 xu\u1ed1ng"
+    "message": "closed mailbox with flag down"
   },
   "d83d_dceb": {
-    "message": "h\u1ed9p th\u01b0 \u0111\u00f3ng v\u1edbi c\u1edd \u0111\u01b0\u1ee3c d\u00e2ng cao"
+    "message": "closed mailbox with flag up"
   },
   "d83d_dcec": {
-    "message": "h\u1ed9p th\u01b0 m\u1edf v\u1edbi c\u1edd \u0111\u01b0\u1ee3c d\u00e2ng cao"
+    "message": "open mailbox with flag up"
   },
   "d83d_dced": {
-    "message": "h\u1ed9p th\u01b0 m\u1edf v\u1edbi c\u1edd h\u1ea1 xu\u1ed1ng"
+    "message": "open mailbox with flag down"
   },
   "d83d_dcee": {
-    "message": "h\u00f2m th\u01b0"
+    "message": "postbox"
   },
   "d83d_dcef": {
-    "message": "c\u00f2i b\u01b0u ch\u00ednh"
+    "message": "postal horn"
   },
   "d83d_dcf0": {
-    "message": "b\u00e1o"
+    "message": "newspaper"
   },
   "d83d_dcf1": {
-    "message": "\u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng"
+    "message": "cell phone"
   },
   "d83d_dcf2": {
-    "message": "\u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng c\u00f3 m\u0169i t\u00ean"
+    "message": "cell phone with arrow"
   },
   "d83d_dcf3": {
-    "message": "ch\u1ebf \u0111\u1ed9 rung"
+    "message": "vibration mode"
   },
   "d83d_dcf4": {
-    "message": "\u0111i\u1ec7n tho\u1ea1i t\u1eaft"
+    "message": "phone off"
   },
   "d83d_dcf5": {
-    "message": "c\u1ea5m \u0111i\u1ec7n tho\u1ea1i di \u0111\u1ed9ng"
+    "message": "no cell phone"
   },
   "d83d_dcf6": {
-    "message": "t\u00edn hi\u1ec7u thi\u1ebft b\u1ecb di \u0111\u1ed9ng"
+    "message": "mobile signals"
   },
   "d83d_dcf7": {
-    "message": "m\u00e1y \u1ea3nh"
+    "message": "camera"
   },
   "d83d_dcf9": {
-    "message": "m\u00e1y quay video"
+    "message": "video cam"
   },
   "d83d_dcfa": {
     "message": "TV"
   },
   "d83d_dcfb": {
-    "message": "\u0111\u00e0i"
+    "message": "radio"
   },
   "d83d_dcfc": {
-    "message": "b\u0103ng video"
+    "message": "video tape"
   },
   "d83d_dd00": {
-    "message": "m\u0169i t\u00ean b\u1eaft ch\u00e9o"
+    "message": "crossed arrows"
   },
   "d83d_dd01": {
-    "message": "m\u0169i t\u00ean theo chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+    "message": "clockwise arrows"
   },
   "d83d_dd02": {
-    "message": "m\u0169i t\u00ean theo chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+    "message": "clockwise arrows with number 1"
   },
   "d83d_dd03": {
-    "message": "t\u1ea3i l\u1ea1i"
+    "message": "reload"
   },
   "d83d_dd04": {
-    "message": "m\u0169i t\u00ean ng\u01b0\u1ee3c chi\u1ec1u kim \u0111\u1ed3ng h\u1ed3"
+    "message": "anti-clockwise arrows"
   },
   "d83d_dd05": {
-    "message": "\u0111\u1ed9 s\u00e1ng th\u1ea5p"
+    "message": "low brightness"
   },
   "d83d_dd06": {
-    "message": "\u0111\u1ed9 s\u00e1ng cao"
+    "message": "high brightness"
   },
   "d83d_dd07": {
-    "message": "c\u1ea5m n\u00f3i chuy\u1ec7n"
+    "message": "no speaking"
   },
   "d83d_dd08": {
-    "message": "loa"
+    "message": "speaker"
   },
   "d83d_dd09": {
-    "message": "loa c\u00f3 \u00e2m l\u01b0\u1ee3ng th\u1ea5p"
+    "message": "speaker with low volume"
   },
   "d83d_dd0a": {
-    "message": "loa c\u00f3 \u00e2m l\u01b0\u1ee3ng cao"
+    "message": "speaker with high volume"
   },
   "d83d_dd0b": {
-    "message": "pin"
+    "message": "battery"
   },
   "d83d_dd0c": {
-    "message": "\u0111\u1ea7u c\u1eafm \u0111i\u1ec7n"
+    "message": "electric plug"
   },
   "d83d_dd0d": {
-    "message": "k\u00ednh l\u00fap nghi\u00eang sang tr\u00e1i"
+    "message": "left-tilted magnifying glass"
   },
   "d83d_dd0e": {
-    "message": "k\u00ednh l\u00fap nghi\u00eang sang ph\u1ea3i"
+    "message": "right-tilted magnifying glass"
   },
   "d83d_dd0f": {
-    "message": "kh\u00f3a c\u00f3 b\u00fat m\u1ef1c"
+    "message": "lock with an ink pen"
   },
   "d83d_dd10": {
-    "message": "kh\u00f3a \u0111\u00f3ng c\u00f3 ch\u00eca"
+    "message": "closed lock with a key"
   },
   "d83d_dd11": {
-    "message": "ch\u00eca kh\u00f3a"
+    "message": "key"
   },
   "d83d_dd12": {
-    "message": "kh\u00f3a \u0111\u00f3ng"
+    "message": "closed lock"
   },
   "d83d_dd13": {
-    "message": "kh\u00f3a m\u1edf"
+    "message": "open lock"
   },
   "d83d_dd14": {
-    "message": "chu\u00f4ng"
+    "message": "bell"
   },
   "d83d_dd15": {
-    "message": "kh\u00f4ng c\u00f3 chu\u00f4ng"
+    "message": "no bell"
   },
   "d83d_dd16": {
-    "message": "d\u1ea5u trang"
+    "message": "bookmark"
   },
   "d83d_dd17": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng li\u00ean k\u1ebft"
+    "message": "link sign"
   },
   "d83d_dd18": {
-    "message": "n\u00fat radio"
+    "message": "radio button"
   },
   "d83d_dd19": {
-    "message": "quay l\u1ea1i"
+    "message": "back"
   },
   "d83d_dd1a": {
-    "message": "k\u1ebft th\u00fac"
+    "message": "end"
   },
   "d83d_dd1b": {
-    "message": "M\u0169i t\u00ean TR\u00caN"
+    "message": "ON arrow"
   },
   "d83d_dd1c": {
-    "message": "K\u00fd hi\u1ec7u s\u1edbm"
+    "message": "Soon sign"
   },
   "d83d_dd1d": {
-    "message": "K\u00fd hi\u1ec7u h\u00e0ng \u0111\u1ea7u"
+    "message": "Top sign"
   },
   "d83d_dd1e": {
-    "message": "C\u1ea5m ng\u01b0\u1eddi d\u01b0\u1edbi 18 tu\u1ed5i"
+    "message": "No one under 18"
   },
   "d83d_dd20": {
-    "message": "ch\u1eef hoa"
+    "message": "uppercase letters"
   },
   "d83d_dd21": {
-    "message": "ch\u1eef th\u01b0\u1eddng"
+    "message": "lowercase letters"
   },
   "d83d_dd22": {
-    "message": "s\u1ed1"
+    "message": "numbers"
   },
   "d83d_dd23": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng"
+    "message": "symbols"
   },
   "d83d_dd24": {
-    "message": "B\u1ea3ng ch\u1eef c\u00e1i Latinh"
+    "message": "Latin Alphabet"
   },
   "d83d_dd25": {
-    "message": "n\u00f3ng gi\u1eadn"
+    "message": "fire"
   },
   "d83d_dd26": {
-    "message": "\u0111\u00e8n pin"
+    "message": "flashlight"
   },
   "d83d_dd27": {
-    "message": "c\u1edd l\u00ea"
+    "message": "wrench"
   },
   "d83d_dd28": {
-    "message": "b\u00faa"
+    "message": "hammer"
   },
   "d83d_dd29": {
-    "message": "\u0111ai \u1ed1c v\u00e0 bu l\u00f4ng"
+    "message": "nut and bolt"
   },
   "d83d_dd2a": {
-    "message": "dao n\u1ea5u \u0103n"
+    "message": "cooking knife"
   },
   "d83d_dd2b": {
-    "message": "s\u00fang"
+    "message": "gun"
   },
   "d83d_dd2c": {
-    "message": "k\u00ednh hi\u1ec3n vi"
+    "message": "microscope"
   },
   "d83d_dd2d": {
-    "message": "k\u00ednh vi\u1ec5n v\u1ecdng"
+    "message": "telescope"
   },
   "d83d_dd2e": {
-    "message": "qu\u1ea3 c\u1ea7u pha l\u00ea"
+    "message": "crystal ball"
   },
   "d83d_dd2f": {
-    "message": "sao s\u00e1u c\u00e1nh"
+    "message": "six-pointed star"
   },
   "d83d_dd30": {
-    "message": "l\u00e1 c\u00e2y m\u00e0u xanh v\u00e0 m\u00e0u v\u00e0ng"
+    "message": "green and yellow leaf"
   },
   "d83d_dd31": {
-    "message": "k\u00fd hi\u1ec7u \u0111inh ba"
+    "message": "trident sign"
   },
   "d83d_dd32": {
-    "message": "n\u00fat h\u00ecnh vu\u00f4ng c\u00f3 khung li\u1ec1n"
+    "message": "solid frame square button"
   },
   "d83d_dd33": {
-    "message": "n\u00fat h\u00ecnh vu\u00f4ng khung c\u00f3 vi\u1ec1n"
+    "message": "outlined frame square button"
   },
   "d83d_dd34": {
-    "message": "h\u00ecnh tr\u00f2n m\u00e0u \u0111\u1ecf l\u1edbn"
+    "message": "large red circle"
   },
   "d83d_dd35": {
-    "message": "h\u00ecnh tr\u00f2n m\u00e0u lam l\u1edbn"
+    "message": "large blue circle"
   },
   "d83d_dd36": {
-    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u cam l\u1edbn"
+    "message": "large orange diamond"
   },
   "d83d_dd37": {
-    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u lam l\u1edbn"
+    "message": "large blue diamond"
   },
   "d83d_dd38": {
-    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u cam nh\u1ecf"
+    "message": "small orange diamond"
   },
   "d83d_dd39": {
-    "message": "h\u00ecnh kim c\u01b0\u01a1ng m\u00e0u lam nh\u1ecf"
+    "message": "small blue diamond"
   },
   "d83d_dd3a": {
-    "message": "h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng l\u00ean"
+    "message": "up triangle"
   },
   "d83d_dd3b": {
-    "message": "h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng xu\u1ed1ng"
+    "message": "down triangle"
   },
   "d83d_dd3c": {
-    "message": "n\u00fat h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng l\u00ean"
+    "message": "up triangle button"
   },
   "d83d_dd3d": {
-    "message": "n\u00fat h\u00ecnh tam gi\u00e1c h\u01b0\u1edbng xu\u1ed1ng"
+    "message": "down triangle button"
   },
   "d83d_dd50": {
-    "message": "1 gi\u1edd"
+    "message": "1 o'clock"
   },
   "d83d_dd51": {
-    "message": "2 gi\u1edd"
+    "message": "2 o'clock"
   },
   "d83d_dd52": {
-    "message": "3 gi\u1edd"
+    "message": "3 o'clock"
   },
   "d83d_dd53": {
-    "message": "4 gi\u1edd"
+    "message": "4 o'clock"
   },
   "d83d_dd54": {
-    "message": "5 gi\u1edd"
+    "message": "5 o'clock"
   },
   "d83d_dd55": {
-    "message": "6 gi\u1edd"
+    "message": "6 o'clock"
   },
   "d83d_dd56": {
-    "message": "7 gi\u1edd"
+    "message": "7 o'clock"
   },
   "d83d_dd57": {
-    "message": "8 gi\u1edd"
+    "message": "8 o'clock"
   },
   "d83d_dd58": {
-    "message": "9 gi\u1edd"
+    "message": "9 o'clock"
   },
   "d83d_dd59": {
-    "message": "10 gi\u1edd"
+    "message": "10 o'clock"
   },
   "d83d_dd5a": {
-    "message": "11 gi\u1edd"
+    "message": "11 o'clock"
   },
   "d83d_dd5b": {
-    "message": "12 gi\u1edd"
+    "message": "12 o'clock"
   },
   "d83d_dd5c": {
-    "message": "1 gi\u1edd 30 ph\u00fat"
+    "message": "one-thirty"
   },
   "d83d_dd5d": {
-    "message": "2 gi\u1edd 30 ph\u00fat"
+    "message": "two-thirty"
   },
   "d83d_dd5e": {
-    "message": "3 gi\u1edd 30 ph\u00fat"
+    "message": "three-thirty"
   },
   "d83d_dd5f": {
-    "message": "4 gi\u1edd 30 ph\u00fat"
+    "message": "four-thirty"
   },
   "d83d_dd60": {
-    "message": "5 gi\u1edd 30 ph\u00fat"
+    "message": "five-thirty"
   },
   "d83d_dd61": {
-    "message": "6 gi\u1edd 30 ph\u00fat"
+    "message": "six-thirty"
   },
   "d83d_dd62": {
-    "message": "7 gi\u1edd 30 ph\u00fat"
+    "message": "seven-thirty"
   },
   "d83d_dd63": {
-    "message": "8 gi\u1edd 30 ph\u00fat"
+    "message": "eight-thirty"
   },
   "d83d_dd64": {
-    "message": "9 gi\u1edd 30 ph\u00fat"
+    "message": "nine-thirty"
   },
   "d83d_dd65": {
-    "message": "10 gi\u1edd 30 ph\u00fat"
+    "message": "ten-thirty"
   },
   "d83d_dd66": {
-    "message": "11 gi\u1edd 30 ph\u00fat"
+    "message": "eleven-thirty"
   },
   "d83d_dd67": {
-    "message": "12 gi\u1edd 30 ph\u00fat"
+    "message": "twelve-thirty"
   },
   "d83d_ddfb": {
-    "message": "N\u00fai Ph\u00fa S\u0129"
+    "message": "Mt. Fuji"
   },
   "d83d_ddfc": {
-    "message": "Th\u00e1p Tokyo"
+    "message": "Tokyo Tower"
   },
   "d83d_ddfd": {
-    "message": "T\u01b0\u1ee3ng n\u1eef th\u1ea7n t\u1ef1 do"
+    "message": "Statue of Liberty"
   },
   "d83d_ddfe": {
-    "message": "B\u1ea3n \u0111\u1ed3 n\u01b0\u1edbc Nh\u1eadt"
+    "message": "Map of Japan"
   },
   "d83d_ddff": {
-    "message": "T\u01b0\u1ee3ng Moyai"
+    "message": "Moyai statue"
   },
   "d83d_de00": {
-    "message": "c\u01b0\u1eddi to\u00e9t mi\u1ec7ng"
+    "message": "grin"
   },
   "d83d_de01": {
-    "message": " c\u01b0\u1eddi toe to\u00e9t v\u1edbi \u0111\u00f4i m\u1eaft c\u01b0\u1eddi"
+    "message": " grin with smiling eyes"
   },
   "d83d_de02": {
-    "message": "gi\u1ecdt n\u01b0\u1edbc m\u1eaft vui s\u01b0\u1edbng"
+    "message": "tears of joy"
   },
   "d83d_de03": {
-    "message": "c\u01b0\u1eddi m\u1edf mi\u1ec7ng"
+    "message": "open mouth smile"
   },
   "d83d_de04": {
-    "message": "c\u01b0\u1eddi h\u00e1 mi\u1ec7ng v\u1edbi \u0111\u00f4i m\u1eaft c\u01b0\u1eddi"
+    "message": "open mouth smile with smiling eyes"
   },
   "d83d_de05": {
-    "message": "c\u01b0\u1eddi to\u00e1t m\u1ed3 h\u00f4i"
+    "message": "cold sweat smile"
   },
   "d83d_de06": {
-    "message": " c\u01b0\u1eddi h\u00e1 mi\u1ec7ng v\u1edbi \u0111\u00f4i m\u1eaft nh\u1eafm"
+    "message": " open mouth smile with closed eyes"
   },
   "d83d_de07": {
-    "message": "c\u01b0\u1eddi v\u1edbi v\u1ea7ng h\u00e0o quang"
+    "message": "smile with a halo"
   },
   "d83d_de08": {
-    "message": "c\u01b0\u1eddi c\u00f3 s\u1eebng"
+    "message": "smile with horns"
   },
   "d83d_de09": {
-    "message": "m\u1eb7t nh\u00e1y m\u1eaft"
+    "message": "winking face"
   },
   "d83d_de0a": {
-    "message": "c\u01b0\u1eddi"
+    "message": "smile"
   },
   "d83d_de0b": {
-    "message": "m\u1eb7t ngon mi\u1ec7ng"
+    "message": "yummy face"
   },
   "d83d_de0c": {
-    "message": "m\u1eb7t thanh th\u1ea3n"
+    "message": "relieved face"
   },
   "d83d_de0d": {
-    "message": "m\u1eb7t c\u01b0\u1eddi"
+    "message": "smiling face"
   },
   "d83d_de0e": {
-    "message": "th\u1edd \u01a1"
+    "message": "smiling face with sunglasses"
   },
   "d83d_de0f": {
-    "message": "c\u01b0\u1eddi gi\u1ea3 t\u1ea1o"
+    "message": "smirk"
   },
   "d83d_de10": {
-    "message": "m\u1eb7t ng\u00e2y ng\u00f4"
+    "message": "deadpan face"
   },
   "d83d_de11": {
-    "message": "v\u00f4 c\u1ea3m"
+    "message": "expressionless"
   },
   "d83d_de12": {
-    "message": "m\u1eb7t bu\u1ed3n r\u1ea7u"
+    "message": "unamused"
   },
   "d83d_de13": {
-    "message": "to\u00e1t m\u1ed3 h\u00f4i"
+    "message": "face with cold sweat"
   },
   "d83d_de14": {
-    "message": "m\u1eb7t tr\u1ea7m ng\u00e2m"
+    "message": "pensive face"
   },
   "d83d_de15": {
-    "message": "m\u1eb7t b\u1ed1i r\u1ed1i"
+    "message": "confused face"
   },
   "d83d_de16": {
-    "message": "m\u1eb7t x\u1ea5u h\u1ed5"
+    "message": "confounded face"
   },
   "d83d_de17": {
-    "message": "m\u1eb7t h\u00f4n"
+    "message": "kissy face"
   },
   "d83d_de18": {
-    "message": "\u0111ang g\u1eedi n\u1ee5 h\u00f4n"
+    "message": "throwing kisses"
   },
   "d83d_de19": {
-    "message": "h\u00f4n v\u00e0 c\u01b0\u1eddi"
+    "message": "kiss and smile"
   },
   "d83d_de1a": {
-    "message": "h\u00f4n"
+    "message": "kissing"
   },
   "d83d_de1b": {
-    "message": "l\u00e8 l\u01b0\u1ee1i"
+    "message": "tongue out"
   },
   "d83d_de1c": {
-    "message": "l\u00e8 l\u01b0\u1ee1i nh\u00e1y m\u1eaft"
+    "message": "tongue out with a wink"
   },
   "d83d_de1d": {
-    "message": "d\u1eef d\u1eb1n"
+    "message": "yuck"
   },
   "d83d_de1e": {
-    "message": "th\u1ea5t v\u1ecdng"
+    "message": "disappointed"
   },
   "d83d_de1f": {
-    "message": "lo l\u1eafng"
+    "message": "worried"
   },
   "d83d_de20": {
-    "message": "t\u1ee9c gi\u1eadn"
+    "message": "angry"
   },
   "d83d_de21": {
-    "message": "h\u1eddn d\u1ed7i"
+    "message": "pouting face"
   },
   "d83d_de22": {
-    "message": "kh\u00f3c"
+    "message": "crying"
   },
   "d83d_de23": {
-    "message": "th\u1ed5i"
+    "message": "blew it"
   },
   "d83d_de24": {
-    "message": "m\u1eb7t gi\u1eadn d\u1eef"
+    "message": "look of triumph"
   },
   "d83d_de25": {
-    "message": "ph\u00f9!"
+    "message": "whew!"
   },
   "d83d_de26": {
-    "message": "m\u1eb7t cau c\u00f3"
+    "message": "frowning face"
   },
   "d83d_de27": {
-    "message": "\u0111au kh\u1ed5"
+    "message": "anguished"
   },
   "d83d_de28": {
-    "message": "s\u1ee3 h\u00e3i"
+    "message": "fearful"
   },
   "d83d_de29": {
-    "message": "m\u1ec7t l\u1eed"
+    "message": "weary"
   },
   "d83d_de2a": {
-    "message": "bu\u1ed3n ng\u1ee7"
+    "message": "sleepy"
   },
   "d83d_de2b": {
-    "message": "m\u1ec7t m\u1ecfi"
+    "message": "tired"
   },
   "d83d_de2c": {
-    "message": "nh\u0103n nh\u00f3"
+    "message": "grimace"
   },
   "d83d_de2d": {
-    "message": "kh\u00f3c \u00f2a"
+    "message": "loudly crying"
   },
   "d83d_de2e": {
-    "message": "m\u1eb7t h\u00e1 mi\u1ec7ng"
+    "message": "open mouth face"
   },
   "d83d_de2f": {
-    "message": "m\u1eb7t ng\u01a1 ng\u00e1c"
+    "message": "hushed face"
   },
   "d83d_de30": {
-    "message": "m\u1eb7t v\u1ed9i v\u00e3"
+    "message": "rushed face"
   },
   "d83d_de31": {
-    "message": "m\u1eb7t s\u1ee3 h\u00e3i"
+    "message": "fearful face"
   },
   "d83d_de32": {
-    "message": "m\u1eb7t ng\u1ea1c nhi\u00ean"
+    "message": "astonished face"
   },
   "d83d_de33": {
-    "message": "x\u00fac \u0111\u1ed9ng"
+    "message": "flushed"
   },
   "d83d_de34": {
-    "message": "ng\u1ee7"
+    "message": "sleeping"
   },
   "d83d_de35": {
-    "message": "ch\u00f3ng m\u1eb7t"
+    "message": "dizzy face"
   },
   "d83d_de36": {
-    "message": "m\u1eb7t kh\u00f4ng c\u00f3 mi\u1ec7ng"
+    "message": "no mouth face"
   },
   "d83d_de37": {
-    "message": "m\u1eb7t c\u00f3 \u0111eo m\u1eb7t n\u1ea1"
+    "message": "face with mask"
   },
   "d83d_de38": {
-    "message": "m\u1eb7t m\u00e8o r\u1ea1ng r\u1ee1"
+    "message": "grinning cat face"
   },
   "d83d_de39": {
-    "message": "n\u01b0\u1edbc m\u1eaft tr\u00ean khu\u00f4n m\u1eb7t m\u00e8o vui s\u01b0\u1edbng"
+    "message": "tears of joy cat face"
   },
   "d83d_de3a": {
-    "message": "m\u1eb7t m\u00e8o c\u01b0\u1eddi"
+    "message": "smiling cat face with open mouth"
   },
   "d83d_de3b": {
-    "message": "m\u1eb7t m\u00e8o c\u01b0\u1eddi"
+    "message": "smiling cat with heart-shaped eyes"
   },
   "d83d_de3c": {
-    "message": "m\u1eb7t m\u00e8o ch\u1ebf gi\u1ec5u"
+    "message": "wry cat face"
   },
   "d83d_de3d": {
-    "message": "m\u00e8o \u0111ang h\u00f4n"
+    "message": "kissing cat"
   },
   "d83d_de3e": {
-    "message": "m\u1eb7t m\u00e8o h\u1eddn d\u1ed7i"
+    "message": "pouting cat face"
   },
   "d83d_de3f": {
-    "message": "m\u1eb7t m\u00e8o \u0111ang kh\u00f3c"
+    "message": "crying cat face"
   },
   "d83d_de40": {
-    "message": "m\u1eb7t m\u00e8o m\u1ec7t l\u1eed"
+    "message": "weary cat face"
   },
   "d83d_de45": {
-    "message": "C\u1eed ch\u1ec9 t\u1ed3i"
+    "message": "No good gesture"
   },
   "d83d_de46": {
-    "message": "c\u1eed ch\u1ec9 t\u1ed1t"
+    "message": "OK gesture"
   },
   "d83d_de47": {
-    "message": "ti\u1ebfc nu\u1ed1i"
+    "message": "i'm sorry"
   },
   "d83d_de48": {
-    "message": "che m\u1eaft"
+    "message": "see no evil"
   },
   "d83d_de49": {
-    "message": "b\u1ecbt tai"
+    "message": "hear no evil"
   },
   "d83d_de4a": {
-    "message": "b\u1ecbt mi\u1ec7ng"
+    "message": "speak no evil"
   },
   "d83d_de4b": {
-    "message": "ng\u01b0\u1eddi h\u1ea1nh ph\u00fac"
+    "message": "happy person"
   },
   "d83d_de4c": {
-    "message": "hoan h\u00f4"
+    "message": "hooray"
   },
   "d83d_de4d": {
-    "message": "ng\u01b0\u1eddi cau c\u00f3"
+    "message": "frowning person"
   },
   "d83d_de4e": {
-    "message": "h\u1eddn d\u1ed7i"
+    "message": "pouting person"
   },
   "d83d_de4f": {
-    "message": "ch\u1eafp tay"
+    "message": "folded hands"
   },
   "d83d_de80": {
-    "message": "t\u00ean l\u1eeda"
+    "message": "rocket"
   },
   "d83d_de81": {
-    "message": "m\u00e1y bay tr\u1ef1c th\u0103ng"
+    "message": "helicopter"
   },
   "d83d_de82": {
-    "message": "\u0111\u1ea7u m\u00e1y h\u01a1i n\u01b0\u1edbc"
+    "message": "steam locomotive"
   },
   "d83d_de83": {
-    "message": "t\u00e0u"
+    "message": "electric train"
   },
   "d83d_de84": {
-    "message": "t\u00e0u cao t\u1ed1c"
+    "message": "high-speed train"
   },
   "d83d_de85": {
-    "message": "t\u00e0u cao t\u1ed1c c\u00f3 m\u0169i h\u00ecnh vi\u00ean \u0111\u1ea1n"
+    "message": "high-speed train with bullet nose"
   },
   "d83d_de86": {
-    "message": "t\u00e0u"
+    "message": "front view of train"
   },
   "d83d_de87": {
-    "message": "xe \u0111i\u1ec7n ng\u1ea7m"
+    "message": "subway"
   },
   "d83d_de88": {
-    "message": "\u0111\u01b0\u1eddng s\u1eaft lo\u1ea1i nh\u1eb9"
+    "message": "light rail"
   },
   "d83d_de89": {
-    "message": "nh\u00e0 ga"
+    "message": "train station"
   },
   "d83d_de8a": {
-    "message": "xe \u0111i\u1ec7n"
+    "message": "tram"
   },
   "d83d_de8b": {
-    "message": "t\u00e0u \u0111i\u1ec7n"
+    "message": "tram car"
   },
   "d83d_de8c": {
-    "message": "xe bu\u00fdt"
+    "message": "bus"
   },
   "d83d_de8d": {
-    "message": "xe bu\u00fdt s\u1eafp \u0111\u1ebfn"
+    "message": "oncoming bus"
   },
   "d83d_de8e": {
-    "message": "\u00f4 t\u00f4 \u0111i\u1ec7n"
+    "message": "trolleybus"
   },
   "d83d_de8f": {
-    "message": "b\u1ebfn xe bu\u00fdt"
+    "message": "bus stop"
   },
   "d83d_de90": {
-    "message": "xe bu\u00fdt nh\u1ecf"
+    "message": "minibus"
   },
   "d83d_de91": {
-    "message": "xe c\u1ee9u th\u01b0\u01a1ng"
+    "message": "ambulance"
   },
   "d83d_de92": {
-    "message": "xe ch\u1eefa ch\u00e1y"
+    "message": "fire engine"
   },
   "d83d_de93": {
-    "message": "\u00f4 t\u00f4 c\u1ea3nh s\u00e1t"
+    "message": "police car"
   },
   "d83d_de94": {
-    "message": "\u00f4 t\u00f4 c\u1ea3nh s\u00e1t s\u1eafp \u0111\u1ebfn"
+    "message": "oncoming police car"
   },
   "d83d_de95": {
     "message": "taxi"
   },
   "d83d_de96": {
-    "message": "taxi s\u1eafp \u0111\u1ebfn"
+    "message": "oncoming taxi"
   },
   "d83d_de97": {
-    "message": "\u00f4 t\u00f4"
+    "message": "car"
   },
   "d83d_de98": {
-    "message": "\u00f4 t\u00f4 s\u1eafp \u0111\u1ebfn"
+    "message": "oncoming car"
   },
   "d83d_de99": {
-    "message": "Xe d\u00e3 ngo\u1ea1i"
+    "message": "RV"
   },
   "d83d_de9a": {
-    "message": "xe ch\u1edf h\u00e0ng"
+    "message": "delivery truck"
   },
   "d83d_de9b": {
-    "message": "xe t\u1ea3i"
+    "message": "lorry"
   },
   "d83d_de9c": {
-    "message": "m\u00e1y k\u00e9o"
+    "message": "tractor"
   },
   "d83d_de9d": {
-    "message": "\u0111\u01b0\u1eddng m\u1ed9t ray"
+    "message": "monorail"
   },
   "d83d_de9e": {
-    "message": "\u0111\u01b0\u1eddng xe l\u1eeda leo n\u00fai"
+    "message": "mountain railway"
   },
   "d83d_de9f": {
-    "message": "\u0111\u01b0\u1eddng xe l\u1eeda tr\u00ean cao"
+    "message": "suspension railway"
   },
   "d83d_dea0": {
-    "message": "\u0111\u01b0\u1eddng c\u00e1p qua n\u00fai"
+    "message": "mountain cableway"
   },
   "d83d_dea1": {
-    "message": "c\u00e1p treo"
+    "message": "cable car"
   },
   "d83d_dea2": {
-    "message": "t\u00e0u"
+    "message": "ship"
   },
   "d83d_dea3": {
-    "message": "ch\u00e8o thuy\u1ec1n"
+    "message": "rowboat"
   },
   "d83d_dea4": {
-    "message": "thuy\u1ec1n t\u1ed1c \u0111\u1ed9"
+    "message": "speedboat"
   },
   "d83d_dea5": {
-    "message": "\u0111\u00e8n giao th\u00f4ng ngang"
+    "message": "horizontal traffic lights"
   },
   "d83d_dea6": {
-    "message": "\u0111\u00e8n giao th\u00f4ng d\u1ecdc"
+    "message": "vertical traffic lights"
   },
   "d83d_dea7": {
-    "message": "\u0111ang x\u00e2y d\u1ef1ng"
+    "message": "under construction"
   },
   "d83d_dea8": {
-    "message": "\u0111\u00e8n xoay"
+    "message": "revolving light"
   },
   "d83d_dea9": {
-    "message": "c\u1edd v\u1ecb tr\u00ed"
+    "message": "location flag"
   },
   "d83d_deaa": {
-    "message": "c\u1eeda"
+    "message": "door"
   },
   "d83d_deab": {
-    "message": "Bi\u1ec3u t\u01b0\u1ee3ng c\u1ea5m v\u00e0o"
+    "message": "prohibited sign"
   },
   "d83d_deac": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng h\u00fat thu\u1ed1c"
+    "message": "smoking sign"
   },
   "d83d_dead": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng c\u1ea5m h\u00fat thu\u1ed1c"
+    "message": "no smoking sign"
   },
   "d83d_deae": {
-    "message": "k\u00fd hi\u1ec7u th\u00f9ng r\u00e1c"
+    "message": "litterbox sign"
   },
   "d83d_deaf": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng kh\u00f4ng x\u1ea3 r\u00e1c"
+    "message": "don't litter sign"
   },
   "d83d_deb0": {
-    "message": "n\u01b0\u1edbc u\u1ed1ng"
+    "message": "drinking water"
   },
   "d83d_deb1": {
-    "message": "n\u01b0\u1edbc kh\u00f4ng u\u1ed1ng \u0111\u01b0\u1ee3c"
+    "message": "non-drinking water"
   },
   "d83d_deb2": {
-    "message": "xe \u0111\u1ea1p"
+    "message": "bike"
   },
   "d83d_deb3": {
-    "message": "c\u1ea5m xe \u0111\u1ea1p"
+    "message": "no bike"
   },
   "d83d_deb4": {
-    "message": "ng\u01b0\u1eddi \u0111i xe \u0111\u1ea1p"
+    "message": "bicyclist"
   },
   "d83d_deb5": {
-    "message": "ng\u01b0\u1eddi \u0111i xe \u0111\u1ea1p leo n\u00fai"
+    "message": "mountain bicyclist"
   },
   "d83d_deb6": {
-    "message": "ng\u01b0\u1eddi \u0111i b\u1ed9"
+    "message": "pedestrian"
   },
   "d83d_deb7": {
-    "message": "c\u1ea5m ng\u01b0\u1eddi \u0111i b\u1ed9"
+    "message": "no pedestrians"
   },
   "d83d_deb8": {
-    "message": "qua \u0111\u01b0\u1eddng cho tr\u1ebb em"
+    "message": "children crossing"
   },
   "d83d_deb9": {
-    "message": "Bi\u1ec3u t\u01b0\u1ee3ng nam"
+    "message": "Men sign"
   },
   "d83d_deba": {
-    "message": "Bi\u1ec3u t\u01b0\u1ee3ng n\u1eef"
+    "message": "Women sign"
   },
   "d83d_debb": {
-    "message": "k\u00fd hi\u1ec7u nh\u00e0 v\u1ec7 sinh"
+    "message": "restroom sign"
   },
   "d83d_debc": {
-    "message": "bi\u1ec3u t\u01b0\u1ee3ng tr\u1ebb em"
+    "message": "baby sign"
   },
   "d83d_debd": {
-    "message": "ph\u00f2ng v\u1ec7 sinh"
+    "message": "toilet"
   },
   "d83d_debe": {
-    "message": "nh\u00e0 v\u1ec7 sinh"
+    "message": "water closet"
   },
   "d83d_debf": {
-    "message": "v\u00f2i hoa sen"
+    "message": "shower"
   },
   "d83d_dec0": {
-    "message": "ph\u00f2ng t\u1eafm"
+    "message": "bath"
   },
   "d83d_dec1": {
-    "message": "b\u1ed3n t\u1eafm"
+    "message": "bathtub"
   },
   "d83d_dec2": {
-    "message": "ki\u1ec3m tra h\u1ed9 chi\u1ebfu"
+    "message": "passport control"
   },
   "d83d_dec3": {
-    "message": "h\u1ea3i quan"
+    "message": "customs"
   },
   "d83d_dec4": {
-    "message": "ch\u1ed7 nh\u1eadn h\u00e0nh l\u00fd"
+    "message": "baggage claim"
   },
   "d83d_dec5": {
-    "message": "h\u00e0nh l\u00fd c\u00f2n l\u1ea1i"
+    "message": "left luggage"
   },
   "de_ger_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng \u0110\u1ee9c"
@@ -2390,136 +2390,136 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng \u0110\u1ee9c Neo 2"
   },
   "dictionarytoolcategorytitle": {
-    "message": "Lo\u1ea1i"
+    "message": "Category"
   },
   "dictionarytoolcommentnewinput": {
-    "message": "Nh\u1eadn x\u00e9t"
+    "message": "Comment"
   },
   "dictionarytoolcommenttitle": {
-    "message": "Nh\u1eadn x\u00e9t"
+    "message": "Comment"
   },
   "dictionarytooldeletedictionaryconfirm": {
-    "message": "B\u1ea1n c\u00f3 mu\u1ed1n x\u00f3a [object Object] kh\u00f4ng?"
+    "message": "Do you want to delete [object Object]?"
   },
   "dictionarytooldeletedictionarytitle": {
-    "message": "X\u00f3a t\u1eeb \u0111i\u1ec3n"
+    "message": "Delete dictionary"
   },
   "dictionarytooldictionarylisttitle": {
-    "message": "T\u1eeb \u0111i\u1ec3n"
+    "message": "Dictionaries"
   },
   "dictionarytooldictionaryname": {
-    "message": "T\u00ean t\u1eeb \u0111i\u1ec3n"
+    "message": "Dictionary Name"
   },
   "dictionarytooldonebutton": {
-    "message": "Ho\u00e0n t\u1ea5t"
+    "message": "Done"
   },
   "dictionarytoolexportbutton": {
-    "message": "Xu\u00e2\u0301t"
+    "message": "Export"
   },
   "dictionarytoolimportbutton": {
-    "message": "Nh\u1eadp..."
+    "message": "Import..."
   },
   "dictionarytoolmenutitle": {
-    "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n"
+    "message": "Dictionary management"
   },
   "dictionarytoolnewdictionarynameplaceholder": {
-    "message": "T\u1eeb \u0111i\u1ec3n m\u1edbi"
+    "message": "New dictionary"
   },
   "dictionarytoolpagetitle": {
-    "message": "T\u1eeb \u0111i\u1ec3n ng\u01b0\u1eddi d\u00f9ng"
+    "message": "User dictionaries"
   },
   "dictionarytoolreadingnewinput": {
-    "message": "Ki\u1ec3u \u0111\u1ecdc m\u1edbi"
+    "message": "New reading"
   },
   "dictionarytoolreadingtitle": {
-    "message": "Ki\u1ec3u \u0111\u1ecdc"
+    "message": "Reading"
   },
   "dictionarytoolstatuserrordictionarynamecontainsinvalidcharacter": {
-    "message": "T\u00ean ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."
+    "message": "The name contains invalid character(s)."
   },
   "dictionarytoolstatuserrordictionarynameduplicated": {
-    "message": "T\u00ean \u0111\u00e3 t\u1ed3n t\u1ea1i."
+    "message": "The name already exists."
   },
   "dictionarytoolstatuserrordictionarynameempty": {
-    "message": "Vui l\u00f2ng nh\u1eadp t\u00ean t\u1eeb \u0111i\u1ec3n."
+    "message": "Please type a dictionary name."
   },
   "dictionarytoolstatuserrordictionarynametoolong": {
-    "message": "T\u00ean qu\u00e1 d\u00e0i."
+    "message": "The name is too long."
   },
   "dictionarytoolstatuserrordictionarysizelimitexceeded": {
-    "message": "Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 t\u1eeb \u0111i\u1ec3n n\u00e0o kh\u00e1c."
+    "message": "Can't create any more dictionaries."
   },
   "dictionarytoolstatuserroremptyfile": {
-    "message": "T\u1ec7p b\u1ecb tr\u1ed1ng."
+    "message": "The file is empty."
   },
   "dictionarytoolstatuserrorentrysizelimitexceeded": {
-    "message": "Kh\u00f4ng th\u1ec3 t\u1ea1o b\u1ea5t k\u1ef3 m\u1ee5c nh\u1eadp n\u00e0o kh\u00e1c trong t\u1eeb \u0111i\u1ec3n n\u00e0y."
+    "message": "Can't create any more entries in this dictionary."
   },
   "dictionarytoolstatuserrorfilenotfound": {
-    "message": "Kh\u00f4ng th\u1ec3 m\u1edf t\u1ec7p."
+    "message": "Could not open the file."
   },
   "dictionarytoolstatuserrorfilesizelimitexceeded": {
-    "message": "K\u00edch th\u01b0\u1edbc d\u1eef li\u1ec7u v\u01b0\u1ee3t qu\u00e1 gi\u1edbi h\u1ea1n k\u00edch th\u01b0\u1edbc t\u1ec7p."
+    "message": "The data size exceeds the file size limit."
   },
   "dictionarytoolstatuserrorgeneral": {
-    "message": "Thao t\u00e1c b\u1ecb l\u1ed7i."
+    "message": "The operation has failed."
   },
   "dictionarytoolstatuserrorimportinvalidentries": {
-    "message": "Kh\u00f4ng th\u1ec3 nh\u1eadp m\u1ed9t s\u1ed1 t\u1eeb."
+    "message": "Some words could not be imported."
   },
   "dictionarytoolstatuserrorimporttoomanywords": {
-    "message": "Ngu\u1ed3n nh\u1eadp ch\u1ee9a qu\u00e1 nhi\u1ec1u t\u1eeb."
+    "message": "The import source contains too many words."
   },
   "dictionarytoolstatuserrorinvalidfileformat": {
-    "message": "Kh\u00f4ng th\u1ec3 \u0111\u1ecdc t\u1ec7p."
+    "message": "Could not read the file."
   },
   "dictionarytoolstatuserrornoundohistory": {
-    "message": "Kh\u00f4ng c\u00f2n thao t\u00e1c n\u00e0o c\u00f3 th\u1ec3 ho\u00e0n t\u00e1c."
+    "message": "No more undo-able operation."
   },
   "dictionarytoolstatuserrorreadingcontainsinvalidcharacter": {
-    "message": "Ki\u1ec3u \u0111\u1ecdc ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7. B\u1ea1n c\u00f3 th\u1ec3 s\u1eed d\u1ee5ng k\u00fd t\u1ef1 ASCII, Hiragana, d\u1ea5u \u00e2m k\u00eau (\u309b), d\u1ea5u \u00e2m n\u1eeda k\u00eau (\u309c), ch\u1ea5m gi\u1eefa (\u30fb), d\u1ea5u \u00e2m k\u00e9o d\u00e0i (\u30fc), d\u1ea5u ph\u1ea9y ti\u1ebfng Nh\u1eadt (\u3001), d\u1ea5u ch\u1ea5m c\u00e2u ti\u1ebfng Nh\u1eadt (\u3002), d\u1ea5u ngo\u1eb7c vu\u00f4ng ti\u1ebfng Nh\u1eadt (\u300c\u300d\u300e\u300f) v\u00e0 d\u1ea5u g\u1ea1ch s\u00f3ng ti\u1ebfng Nh\u1eadt (\u301c) trong ki\u1ec3u \u0111\u1ecdc."
+    "message": "The reading contains invalid character(s). You can use use ASCII characters, Hiragana, voiced sound mark(\u309b), semi-voiced sound mark(\u309c), middle dot(\u30fb), prolonged sound mark(\u30fc), Japanese comma(\u3001), Japanese period(\u3002), Japanese brackets(\u300c\u300d\u300e\u300f) and Japanese wavedash(\u301c) in the reading."
   },
   "dictionarytoolstatuserrorreadingempty": {
-    "message": "Vui l\u00f2ng nh\u1eadp ki\u1ec3u \u0111\u1ecdc."
+    "message": "Please type the reading."
   },
   "dictionarytoolstatuserrorreadingtoolong": {
-    "message": "Ki\u1ec3u \u0111\u1ecdc qu\u00e1 d\u00e0i."
+    "message": "The reading is too long."
   },
   "dictionarytoolstatuserrortitleaddentry": {
-    "message": "L\u1ed7i th\u00eam m\u1ee5c nh\u1eadp"
+    "message": "Add entry error"
   },
   "dictionarytoolstatuserrortitlecreatedictionary": {
-    "message": "L\u1ed7i t\u1ea1o t\u1eeb \u0111i\u1ec3n"
+    "message": "Create dictionary error"
   },
   "dictionarytoolstatuserrortitledeletedictionary": {
-    "message": "L\u1ed7i x\u00f3a t\u1eeb \u0111i\u1ec3n"
+    "message": "Delete dictionary error"
   },
   "dictionarytoolstatuserrortitledeleteentry": {
-    "message": "L\u1ed7i x\u00f3a m\u1ee5c nh\u1eadp"
+    "message": "Delete entry error"
   },
   "dictionarytoolstatuserrortitleeditentry": {
-    "message": "L\u1ed7i ch\u1ec9nh s\u1eeda m\u1ee5c nh\u1eadp"
+    "message": "Edit entry error"
   },
   "dictionarytoolstatuserrortitleimportdata": {
-    "message": "L\u1ed7i nh\u1eadp"
+    "message": "Import error"
   },
   "dictionarytoolstatuserrortitlerenamedictionary": {
-    "message": "L\u1ed7i \u0111\u1ed5i t\u00ean t\u1eeb \u0111i\u1ec3n"
+    "message": "Rename dictionary error"
   },
   "dictionarytoolstatuserrorwordcontainsinvalidcharacter": {
-    "message": "T\u1eeb ch\u1ee9a k\u00fd t\u1ef1 kh\u00f4ng h\u1ee3p l\u1ec7."
+    "message": "The word contains invalid character(s)."
   },
   "dictionarytoolstatuserrorwordempty": {
-    "message": "Vui l\u00f2ng nh\u1eadp t\u1eeb."
+    "message": "Please type the word."
   },
   "dictionarytoolstatuserrorwordtoolong": {
-    "message": "T\u1eeb qu\u00e1 d\u00e0i."
+    "message": "The word is too long."
   },
   "dictionarytoolwordnewinput": {
-    "message": "T\u1eeb m\u1edbi"
+    "message": "New word"
   },
   "dictionarytoolwordtitle": {
-    "message": "T\u1eeb"
+    "message": "Word"
   },
   "dismiss_menu": {
     "message": "\u0111\u00f3ng menu b\u00e0n ph\u00edm"
@@ -2567,16 +2567,22 @@
     "message": "T\u1ef1 \u0111\u1ed9ng vi\u1ebft hoa"
   },
   "enable_completion": {
-    "message": "B\u1eadt T\u1ef1 \u0111\u1ed9ng \u0111i\u1ec1n"
+    "message": "B\u1eadt t\u00ednh n\u0103ng T\u1ef1 \u0111\u1ed9ng ho\u00e0n th\u00e0nh"
   },
   "enable_gesture_editing": {
-    "message": "Vu\u1ed1t t\u1eeb c\u00e1c c\u1ea1nh c\u1ee7a b\u00e0n ph\u00edm \u0111\u1ec3 di chuy\u1ec3n con tr\u1ecf ho\u1eb7c t\u1eeb ph\u00edm x\u00f3a l\u00f9i (backspace) \u0111\u1ec3 x\u00f3a to\u00e0n b\u1ed9 t\u1eeb."
+    "message": "B\u1eadt c\u1eed ch\u1ec9 vu\u1ed1t"
+  },
+  "enable_gesture_editing_desc": {
+    "message": "Vu\u1ed1t t\u1eeb c\u00e1c c\u1ea1nh c\u1ee7a b\u00e0n ph\u00edm \u0111\u1ec3 di chuy\u1ec3n con tr\u1ecf ho\u1eb7c t\u1eeb ph\u00edm x\u00f3a l\u00f9i (backspace) \u0111\u1ec3 x\u00f3a to\u00e0n b\u1ed9 t\u1eeb"
   },
   "enable_gesture_typing": {
-    "message": "Enable gesture typing. Input a word by sliding through the letters."
+    "message": "B\u1eadt nh\u1eadp b\u1eb1ng c\u1eed ch\u1ec9"
+  },
+  "enable_gesture_typing_desc": {
+    "message": "Nh\u1eadp t\u1eeb b\u1eb1ng c\u00e1ch tr\u01b0\u1ee3t qua c\u00e1c ch\u1eef c\u00e1i"
   },
   "enable_prediction": {
-    "message": "B\u1eadt truy v\u1ea5n d\u1ef1 \u0111o\u00e1n t\u1eeb ti\u1ebfp theo"
+    "message": "B\u1eadt t\u00ednh n\u0103ng d\u1ef1 \u0111o\u00e1n t\u1eeb ti\u1ebfp theo"
   },
   "enter": {
     "message": "enter"
@@ -2596,6 +2602,9 @@
   "fi_fin_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u1ea7n Lan"
   },
+  "fo_fao_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Faroe"
+  },
   "footer_docking_button": {
     "message": "k\u1ebft n\u1ed1i b\u00e0n ph\u00edm \u1ea3o"
   },
@@ -2603,13 +2612,16 @@
     "message": "chuy\u1ec3n sang bi\u1ec3u t\u01b0\u1ee3ng c\u1ea3m x\u00fac"
   },
   "footer_floating_button": {
-    "message": "l\u00e0m cho b\u00e0n ph\u00edm \u1ea3o di chuy\u1ec3n"
+    "message": "l\u00e0m cho b\u00e0n ph\u00edm \u1ea3o di chuy\u1ec3n \u0111\u01b0\u1ee3c"
   },
   "footer_handwriting_button": {
     "message": "chuy\u1ec3n sang ch\u1eef vi\u1ebft tay"
   },
   "footer_settings_button": {
     "message": "m\u1edf c\u00e0i \u0111\u1eb7t ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp"
+  },
+  "fr_bepo_fra_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm B\u00c9PO d\u00e0nh cho ti\u1ebfng Ph\u00e1p (ti\u1ebfng Ph\u00e1p)"
   },
   "fr_fra_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p"
@@ -2653,20 +2665,23 @@
   "hu_hun_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Hungary"
   },
+  "hu_qwerty_hun_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Qwerty d\u00e0nh cho ti\u1ebfng Hungary"
+  },
   "ie_ga_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Ai-len"
   },
   "ignore_correction": {
-    "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda cho"
+    "message": "B\u1ecf qua t\u00ednh n\u0103ng t\u1ef1 \u0111\u1ed9ng s\u1eeda cho"
   },
   "ignore_correction_short": {
-    "message": "B\u1ecf qua t\u00ednh n\u0103ng s\u1eeda"
+    "message": "B\u1ecf qua t\u00ednh n\u0103ng t\u1ef1 \u0111\u1ed9ng s\u1eeda"
   },
   "il_heb_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Do Th\u00e1i"
   },
   "init_lang": {
-    "message": "Ng\u00f4n ng\u1eef nh\u1eadp v\u00e0o ban \u0111\u1ea7u l\u00e0 ti\u1ebfng Trung"
+    "message": "Ng\u00f4n ng\u1eef nh\u1eadp ban \u0111\u1ea7u l\u00e0 ti\u1ebfng Trung"
   },
   "init_punc": {
     "message": "\u0110\u1ed9 r\u1ed9ng d\u1ea5u c\u00e2u ban \u0111\u1ea7u l\u00e0 \u0110\u1ea7y \u0111\u1ee7"
@@ -2686,11 +2701,14 @@
   "inputmethod_cangjie": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Th\u01b0\u01a1ng hi\u1ec7t"
   },
+  "inputmethod_cantonese": {
+    "message": "Cantonese input method"
+  },
   "inputmethod_dayi": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Dayi"
   },
   "inputmethod_hangul": {
-    "message": "Ph\u01b0\u01a1ng ph\u00e1p nh\u1eadp ti\u1ebfng H\u00e0n"
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp ti\u1ebfng H\u00e0n"
   },
   "inputmethod_pinyin": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp B\u00ednh \u00e2m"
@@ -2699,7 +2717,7 @@
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp nhanh"
   },
   "inputmethod_traditional_pinyin": {
-    "message": "Ph\u01b0\u01a1ng ph\u00e1p nh\u1eadp B\u00ednh \u00e2m cho ti\u1ebfng Trung ph\u1ed3n th\u1ec3"
+    "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp B\u00ednh \u00e2m cho ti\u1ebfng Trung ph\u1ed3n th\u1ec3"
   },
   "inputmethod_wubi": {
     "message": "Ph\u01b0\u01a1ng th\u1ee9c nh\u1eadp Ng\u0169 b\u00fat"
@@ -2773,11 +2791,17 @@
   "keyboard_ethiopic": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Ethiopic"
   },
+  "keyboard_faroese": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Faroe"
+  },
   "keyboard_finnish": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u1ea7n Lan"
   },
   "keyboard_french": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Ph\u00e1p"
+  },
+  "keyboard_french_bepo": {
+    "message": "B\u00e0n ph\u00edm B\u00c9PO d\u00e0nh cho ti\u1ebfng Ph\u00e1p"
   },
   "keyboard_georgian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Georgia"
@@ -2800,6 +2824,9 @@
   "keyboard_hungarian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Hungari"
   },
+  "keyboard_hungarian_qwerty": {
+    "message": "B\u00e0n ph\u00edm Qwerty d\u00e0nh cho ti\u1ebfng Hungary"
+  },
   "keyboard_icelandic": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Iceland"
   },
@@ -2821,6 +2848,9 @@
   "keyboard_kannada_phonetic": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Kannada (Ng\u1eef \u00e2m)"
   },
+  "keyboard_kazakh": {
+    "message": "Kazakh keyboard"
+  },
   "keyboard_kedmanee": {
     "message": "B\u00e0n ph\u00edm (Kedmanee)"
   },
@@ -2828,6 +2858,9 @@
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Khmer"
   },
   "keyboard_lao": {
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng L\u00e0o"
+  },
+  "keyboard_laothian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng L\u00e0o"
   },
   "keyboard_latin_american": {
@@ -2840,7 +2873,7 @@
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Lithuania"
   },
   "keyboard_macedonian": {
-    "message": "Macedonian keyboard"
+    "message": "B\u00e0n ph\u00edm ti\u1ebfng Macedonia"
   },
   "keyboard_malayalam_phonetic": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Malayalam (Ng\u1eef \u00e2m)"
@@ -2911,8 +2944,11 @@
   "keyboard_sinhala": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Sinhala"
   },
+  "keyboard_slovak": {
+    "message": "B\u00e0n ph\u00edm Slovak"
+  },
   "keyboard_slovakian": {
-    "message": "B\u00e0n ph\u00edm ti\u1ebfng Slovakia"
+    "message": "B\u00e0n ph\u00edm Slovak"
   },
   "keyboard_slovenian": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Slovenia"
@@ -2977,6 +3013,9 @@
   "keyboard_turkish": {
     "message": "B\u00e0n ph\u00edm ti\u1ebfng Th\u1ed5 Nh\u0129 K\u1ef3"
   },
+  "keyboard_turkish_f": {
+    "message": "B\u00e0n ph\u00edm Th\u1ed5 Nh\u0129 K\u1ef3-F"
+  },
   "keyboard_typewriter": {
     "message": "B\u00e0n ph\u00edm (M\u00e1y \u0111\u00e1nh ch\u1eef)"
   },
@@ -2997,6 +3036,9 @@
   },
   "keyboard_us_dvorak": {
     "message": "B\u00e0n ph\u00edm Dvorak Hoa K\u1ef3"
+  },
+  "keyboard_us_dvp": {
+    "message": "B\u00e0n ph\u00edm US Programmer Dvorak"
   },
   "keyboard_us_extended": {
     "message": "B\u00e0n ph\u00edm Hoa K\u1ef3 m\u1edf r\u1ed9ng"
@@ -3146,10 +3188,10 @@
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Slovakia"
   },
   "smiley": {
-    "message": "m\u1eb7t c\u01b0\u1eddi"
+    "message": "smiley"
   },
   "sometimes_auto_correct": {
-    "message": "Khi\u00eam t\u1ed1n"
+    "message": "\u0110\u01a1n gi\u1ea3n"
   },
   "sound_on_keypress": {
     "message": "\u00c2m nh\u1ea5n ph\u00edm"
@@ -3158,13 +3200,13 @@
     "message": "d\u1ea5u c\u00e1ch"
   },
   "swipe_deletion_tooltip": {
-    "message": "Swipe left to delete whole words."
+    "message": "Vu\u1ed1t sang tr\u00e1i \u0111\u1ec3 x\u00f3a to\u00e0n b\u1ed9 c\u00e1c t\u1eeb."
   },
   "swipe_restoration_tooltip": {
-    "message": "Swipe right to restore words."
+    "message": "Vu\u1ed1t sang ph\u1ea3i \u0111\u1ec3 kh\u00f4i ph\u1ee5c c\u00e1c t\u1eeb."
   },
   "swipe_selection_tooltip": {
-    "message": "Swipe left or right to move the cursor."
+    "message": "Vu\u1ed1t sang tr\u00e1i ho\u1eb7c ph\u1ea3i \u0111\u1ec3 di chuy\u1ec3n con tr\u1ecf."
   },
   "switch_to": {
     "message": "chuy\u1ec3n sang "
@@ -3186,6 +3228,9 @@
   },
   "touch_keyboard": {
     "message": "B\u00e0n ph\u00edm \u1ea3o"
+  },
+  "tr_f_tur_settings_page": {
+    "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm Th\u1ed5 Nh\u0129 K\u1ef3-F"
   },
   "tr_tur_settings_page": {
     "message": "Trang c\u00e0i \u0111\u1eb7t b\u00e0n ph\u00edm ti\u1ebfng Th\u1ed5 Nh\u0129 K\u1ef3"
@@ -3313,6 +3358,9 @@
   "user_dict_clear": {
     "message": "X\u00f3a t\u1ea5t c\u1ea3"
   },
+  "user_dict_edit": {
+    "message": "Ch\u1ec9nh s\u1eeda m\u1ee5c t\u1eeb \u0111i\u1ec3n"
+  },
   "user_dict_manage": {
     "message": "Qu\u1ea3n l\u00fd t\u1eeb \u0111i\u1ec3n c\u00e1 nh\u00e2n..."
   },
@@ -3320,10 +3368,10 @@
     "message": "T\u1eeb m\u1edbi"
   },
   "user_dict_remove": {
-    "message": "X\u00f3a m\u1ee5c \u0111\u00e3 ch\u1ecdn"
+    "message": "X\u00f3a m\u1ee5c nh\u1eadp \u0111\u00e3 ch\u1ecdn"
   },
   "user_dict_reset": {
-    "message": "\u0110\u1eb7t l\u1ea1i t\u1ea5t c\u1ea3 c\u00e1c m\u1ee5c t\u1eeb \u0111i\u1ec3n"
+    "message": "\u0110\u1eb7t l\u1ea1i t\u1ea5t c\u1ea3 c\u00e1c m\u1ee5c nh\u1eadp t\u1eeb \u0111i\u1ec3n"
   },
   "user_dict_save": {
     "message": "L\u01b0u"
@@ -3348,6 +3396,9 @@
   },
   "wait": {
     "message": "Ch\u1edd"
+  },
+  "xkb_layout": {
+    "message": "Keyboard layouts"
   },
   "zhuyin_keyboard_layout": {
     "message": "Lo\u1ea1i b\u00e0n ph\u00edm"

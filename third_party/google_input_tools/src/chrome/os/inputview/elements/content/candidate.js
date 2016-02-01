@@ -14,13 +14,13 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.Candidate');
 
 goog.require('goog.dom.classlist');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.message.Name');
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var Css = i18n.input.chrome.inputview.Css;
 var TagName = goog.dom.TagName;
 var Name = i18n.input.chrome.message.Name;

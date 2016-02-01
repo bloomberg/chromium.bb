@@ -14,8 +14,6 @@
 goog.provide('i18n.input.chrome.inputview.elements.content.SoftKey');
 
 goog.require('goog.dom.classlist');
-goog.require('goog.math.Coordinate');
-goog.require('goog.style');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.elements.Element');
 goog.require('i18n.input.chrome.inputview.util');
@@ -30,7 +28,7 @@ goog.scope(function() {
  * The base soft key class.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor

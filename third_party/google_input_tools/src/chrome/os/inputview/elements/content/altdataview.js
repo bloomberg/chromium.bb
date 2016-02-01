@@ -20,19 +20,19 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.math.Coordinate');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.WindowUtil');
 goog.require('i18n.input.chrome.inputview.Accents');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.content.Constants');
 goog.require('i18n.input.chrome.inputview.elements.Element');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.handler.Util');
 goog.require('i18n.input.chrome.inputview.util');
 
 
 goog.scope(function() {
 var Accents = i18n.input.chrome.inputview.Accents;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var Util = i18n.input.chrome.inputview.handler.Util;
 
 
@@ -192,7 +192,7 @@ AltDataView.prototype.createDom = function() {
   goog.dom.classlist.add(elem, i18n.input.chrome.inputview.Css.ALTDATA_VIEW);
   this.coverElement_ = dom.createDom(goog.dom.TagName.DIV,
       i18n.input.chrome.inputview.Css.ALTDATA_COVER);
-  dom.appendChild(document.body, this.coverElement_);
+  dom.appendChild(dom.getDocument().body, this.coverElement_);
   goog.style.setElementShown(this.coverElement_, false);
 
   this.coverElement_['view'] = this;

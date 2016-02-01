@@ -20,12 +20,12 @@ goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.MoreKeysShiftOperation');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
 goog.require('i18n.input.chrome.inputview.StateType');
 goog.require('i18n.input.chrome.inputview.SwipeDirection');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.FunctionalKey');
 goog.require('i18n.input.chrome.inputview.util');
 goog.require('i18n.input.chrome.message.ContextType');
@@ -60,7 +60,7 @@ var util = i18n.input.chrome.inputview.util;
 i18n.input.chrome.inputview.elements.content.CompactKey = function(id, text,
     hintText, stateManager, hasShift, compactKeyModel, opt_eventTarget) {
   var textCssClass = compactKeyModel.textCssClass;
-  goog.base(this, id, i18n.input.chrome.inputview.elements.ElementType.
+  goog.base(this, id, i18n.input.chrome.ElementType.
       COMPACT_KEY, text, '', opt_eventTarget, textCssClass);
 
   /**

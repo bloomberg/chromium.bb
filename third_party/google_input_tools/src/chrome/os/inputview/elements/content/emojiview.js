@@ -18,9 +18,9 @@ goog.require('goog.dom.classlist');
 goog.require('goog.positioning.AnchoredViewportPosition');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.KeysetView');
 goog.require('i18n.input.chrome.inputview.elements.content.PageIndicator');
 goog.require('i18n.input.chrome.inputview.events.EventType');
@@ -28,7 +28,7 @@ goog.require('i18n.input.chrome.inputview.handler.PointerHandler');
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var EventType = i18n.input.chrome.inputview.events.EventType;
 var KeysetView = i18n.input.chrome.inputview.elements.content.KeysetView;
 var PointerHandler = i18n.input.chrome.inputview.handler.PointerHandler;

@@ -22,7 +22,7 @@ goog.require('i18n.input.chrome.inputview.elements.Element');
 
 
 goog.scope(function() {
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var Css = i18n.input.chrome.inputview.Css;
 
 
@@ -85,6 +85,7 @@ ToolbarButton.prototype.createDom = function() {
   }
   dom.appendChild(this.iconCell, iconElem);
 };
+
 
 /** @override */
 ToolbarButton.prototype.setHighlighted = function(highlight) {

@@ -1,4 +1,4 @@
-// Copyright 2015 The ChromeOS IME Authors. All Rights Reserved.
+// Copyright 2016 The ChromeOS IME Authors. All Rights Reserved.
 // limitations under the License.
 // See the License for the specific language governing permissions and
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -11,7 +11,7 @@
 // you may not use this file except in compliance with the License.
 // Licensed under the Apache License, Version 2.0 (the "License");
 //
-goog.provide('i18n.input.chrome.inputview.FeatureName');
+goog.provide('i18n.input.chrome.FeatureName');
 
 
 /**
@@ -19,12 +19,10 @@ goog.provide('i18n.input.chrome.inputview.FeatureName');
  *
  * @enum {string}
  */
-i18n.input.chrome.inputview.FeatureName = {
+i18n.input.chrome.FeatureName = {
   // List all features.
   EXPERIMENTAL: 'experimental',
   FLOATING_VIRTUAL_KEYBOARD: 'floatingvirtualkeyboard',
-  GESTURE_SELECTION_OPTION: 'gestureselection',
-  GESTURE_DELETION_OPTION: 'gesturedeletion',
   GESTURE_EDITING_OPTION: 'gestureediting',
   GESTURE_TYPING_OPTION: 'gesturetyping',
   OPTIMIZED_LAYOUTS: 'optimized-layouts',

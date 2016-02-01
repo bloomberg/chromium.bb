@@ -26,7 +26,7 @@ goog.scope(function() {
  * The wrappered span element.
  *
  * @param {string} id The id.
- * @param {!i18n.input.chrome.inputview.elements.ElementType} type The element
+ * @param {!i18n.input.chrome.ElementType} type The element
  *     type.
  * @param {goog.events.EventTarget=} opt_eventTarget The event target.
  * @constructor

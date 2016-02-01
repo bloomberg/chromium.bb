@@ -15,13 +15,13 @@ goog.provide('i18n.input.chrome.Env');
 
 goog.require('goog.array');
 goog.require('i18n.input.chrome.Constant');
-goog.require('i18n.input.chrome.inputview.FeatureTracker');
+goog.require('i18n.input.chrome.FeatureTracker');
 goog.require('i18n.input.lang.InputTool');
 goog.require('i18n.input.lang.InputToolType');
 
 goog.scope(function() {
 var Constant = i18n.input.chrome.Constant;
-var FeatureTracker = i18n.input.chrome.inputview.FeatureTracker;
+var FeatureTracker = i18n.input.chrome.FeatureTracker;
 var InputTool = i18n.input.lang.InputTool;
 var InputToolType = i18n.input.lang.InputToolType;
 
@@ -104,7 +104,10 @@ Env.prototype.isPhysicalKeyboardAutocorrectEnabled = false;
 Env.prototype.textBeforeCursor = '';
 
 
-/** @type {Object.<{text: string, focus: number, anchor: number}>} */
+/**
+ * @type {Object.<{text: string, focus: number, anchor: number,
+ *     offset: number}>}
+ */
 Env.prototype.surroundingInfo = null;
 
 

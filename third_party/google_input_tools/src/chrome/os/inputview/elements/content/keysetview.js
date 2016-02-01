@@ -18,10 +18,10 @@ goog.require('goog.dom.classlist');
 goog.require('goog.i18n.bidi');
 goog.require('goog.style');
 goog.require('goog.ui.Container');
+goog.require('i18n.input.chrome.ElementType');
 goog.require('i18n.input.chrome.inputview.ConditionName');
 goog.require('i18n.input.chrome.inputview.Css');
 goog.require('i18n.input.chrome.inputview.SpecNodeName');
-goog.require('i18n.input.chrome.inputview.elements.ElementType');
 goog.require('i18n.input.chrome.inputview.elements.content.BackspaceKey');
 goog.require('i18n.input.chrome.inputview.elements.content.CandidateButton');
 goog.require('i18n.input.chrome.inputview.elements.content.CanvasView');
@@ -52,7 +52,7 @@ goog.scope(function() {
 
 var ConditionName = i18n.input.chrome.inputview.ConditionName;
 var SpecNodeName = i18n.input.chrome.inputview.SpecNodeName;
-var ElementType = i18n.input.chrome.inputview.elements.ElementType;
+var ElementType = i18n.input.chrome.ElementType;
 var content = i18n.input.chrome.inputview.elements.content;
 var layout = i18n.input.chrome.inputview.elements.layout;
 var Css = i18n.input.chrome.inputview.Css;
@@ -355,9 +355,11 @@ KeysetView.prototype.getKeyboardLayoutForGesture = function() {
     var width = softKeyView.softKey.getElement().clientWidth;
     var height = softKeyView.softKey.getElement().clientHeight;
     // Return the x, y positions relative to the viewport, as this is the same
-    // convention that gesture points follow.
-    var x = softKeyView.softKey.getElement().getBoundingClientRect().left;
-    var y = softKeyView.softKey.getElement().getBoundingClientRect().top;
+    // convention that gesture points follow. Note that these are the center
+    // points of the keys and not the top-left corner.
+    var rect = softKeyView.softKey.getElement().getBoundingClientRect();
+    var x = rect.left + (width / 2.0);
+    var y = rect.top + (height / 2.0);
 
     keys.push({
       'codepoint': codepoint,
@@ -711,6 +713,7 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
     case ElementType.HIDE_KEYBOARD_KEY:
     case ElementType.GLOBE_KEY:
     case ElementType.BACK_TO_KEYBOARD:
+    case ElementType.HOTROD_SWITCHER_KEY:
       elem = new content.FunctionalKey(id, type, name, iconCssClass);
       break;
     case ElementType.TAB_BAR_KEY:
@@ -769,7 +772,8 @@ KeysetView.prototype.createKey_ = function(spec, hasAltGrCharacterInTheKeyset) {
           characters);
       var enableShiftRendering = !!spec[SpecNodeName.ENABLE_SHIFT_RENDERING];
       elem = new content.CharacterKey(id, keyCode || 0,
-          characters, isLetterKey, hasAltGrCharacterInTheKeyset[isLetterKey],
+          characters, isLetterKey,
+          hasAltGrCharacterInTheKeyset[isLetterKey ? 1 : 0],
           this.dataModel_.settings.alwaysRenderAltGrCharacter,
           this.dataModel_.stateManager,
           goog.i18n.bidi.isRtlLanguage(this.languageCode),
