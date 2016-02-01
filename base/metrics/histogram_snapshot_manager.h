@@ -36,8 +36,17 @@ class BASE_EXPORT HistogramSnapshotManager {
   // Only histograms that have all the flags specified by the argument will be
   // chosen. If all histograms should be recorded, set it to
   // |Histogram::kNoFlags|.
-  void PrepareDeltas(HistogramBase::Flags flags_to_set,
-                     HistogramBase::Flags required_flags);
+  template <class ForwardHistogramIterator>
+  void PrepareDeltas(ForwardHistogramIterator begin,
+                     ForwardHistogramIterator end,
+                     HistogramBase::Flags flags_to_set,
+                     HistogramBase::Flags required_flags) {
+    for (ForwardHistogramIterator it = begin; it != end; ++it) {
+      (*it)->SetFlags(flags_to_set);
+      if (((*it)->flags() & required_flags) == required_flags)
+        PrepareDelta(**it);
+    }
+  }
 
  private:
   // Snapshot this histogram, and record the delta.

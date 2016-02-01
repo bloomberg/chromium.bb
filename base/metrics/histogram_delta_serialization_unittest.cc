@@ -18,7 +18,7 @@ TEST(HistogramDeltaSerializationTest, DeserializeHistogramAndAddSamples) {
   HistogramDeltaSerialization serializer("HistogramDeltaSerializationTest");
   std::vector<std::string> deltas;
   // Nothing was changed yet.
-  serializer.PrepareAndSerializeDeltas(&deltas);
+  serializer.PrepareAndSerializeDeltas(&deltas, true);
   EXPECT_TRUE(deltas.empty());
 
   HistogramBase* histogram = Histogram::FactoryGet(
@@ -28,7 +28,7 @@ TEST(HistogramDeltaSerializationTest, DeserializeHistogramAndAddSamples) {
   histogram->Add(100);
   histogram->Add(1000);
 
-  serializer.PrepareAndSerializeDeltas(&deltas);
+  serializer.PrepareAndSerializeDeltas(&deltas, true);
   EXPECT_FALSE(deltas.empty());
 
   HistogramDeltaSerialization::DeserializeAndAddSamples(deltas);

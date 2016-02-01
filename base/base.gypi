@@ -402,6 +402,8 @@
           'metrics/histogram_delta_serialization.h',
           'metrics/histogram_flattener.h',
           'metrics/histogram_macros.h',
+          'metrics/histogram_persistence.cc',
+          'metrics/histogram_persistence.h',
           'metrics/histogram_samples.cc',
           'metrics/histogram_samples.h',
           'metrics/histogram_snapshot_manager.cc',

@@ -10,6 +10,7 @@
 #include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_persistence.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/values.h"
@@ -20,12 +21,18 @@ namespace base {
 class StatisticsRecorderTest : public testing::Test {
  protected:
   void SetUp() override {
+    // Get this first so it never gets created in persistent storage and will
+    // not appear in the StatisticsRecorder after it is re-initialized.
+    GetCreateHistogramResultHistogram();
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
   }
 
-  void TearDown() override { UninitializeStatisticsRecorder(); }
+  void TearDown() override {
+    UninitializeStatisticsRecorder();
+    SetPersistentHistogramMemoryAllocator(nullptr);
+  }
 
   void InitializeStatisticsRecorder() {
     statistics_recorder_ = new StatisticsRecorder();
@@ -313,6 +320,23 @@ TEST_F(StatisticsRecorderTest, ToJSON) {
   // No data should be returned.
   json = StatisticsRecorder::ToJSON(query);
   EXPECT_TRUE(json.empty());
+}
+
+TEST_F(StatisticsRecorderTest, IterationTest) {
+  StatisticsRecorder::Histograms registered_histograms;
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest1", 30);
+  SetPersistentHistogramMemoryAllocator(
+      new LocalPersistentMemoryAllocator(64 << 10, 0, std::string()));
+  LOCAL_HISTOGRAM_COUNTS("TestHistogram.IterationTest2", 30);
+
+  StatisticsRecorder::HistogramIterator i1 = StatisticsRecorder::begin(true);
+  EXPECT_NE(StatisticsRecorder::end(), i1);
+  EXPECT_NE(StatisticsRecorder::end(), ++i1);
+  EXPECT_EQ(StatisticsRecorder::end(), ++i1);
+
+  StatisticsRecorder::HistogramIterator i2 = StatisticsRecorder::begin(false);
+  EXPECT_NE(StatisticsRecorder::end(), i2);
+  EXPECT_EQ(StatisticsRecorder::end(), ++i2);
 }
 
 namespace {

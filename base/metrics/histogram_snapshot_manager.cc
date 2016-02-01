@@ -22,20 +22,6 @@ HistogramSnapshotManager::~HistogramSnapshotManager() {
   STLDeleteValues(&logged_samples_);
 }
 
-void HistogramSnapshotManager::PrepareDeltas(
-    HistogramBase::Flags flag_to_set,
-    HistogramBase::Flags required_flags) {
-  StatisticsRecorder::Histograms histograms;
-  StatisticsRecorder::GetHistograms(&histograms);
-  for (StatisticsRecorder::Histograms::const_iterator it = histograms.begin();
-       histograms.end() != it;
-       ++it) {
-    (*it)->SetFlags(flag_to_set);
-    if (((*it)->flags() & required_flags) == required_flags)
-      PrepareDelta(**it);
-  }
-}
-
 void HistogramSnapshotManager::PrepareDelta(const HistogramBase& histogram) {
   DCHECK(histogram_flattener_);
 

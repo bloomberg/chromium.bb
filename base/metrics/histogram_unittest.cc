@@ -16,6 +16,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_persistence.h"
+#include "base/metrics/persistent_memory_allocator.h"
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
@@ -26,13 +28,24 @@ namespace base {
 
 class HistogramTest : public testing::Test {
  protected:
+  const int32_t kAllocatorMemorySize = 64 << 10;  // 64 KiB
+
+  HistogramTest() {}
+
   void SetUp() override {
     // Each test will have a clean state (no Histogram / BucketRanges
     // registered).
     InitializeStatisticsRecorder();
+    // By getting the results-histogram before any persistent allocator
+    // is attached, that histogram is guaranteed not to be stored in
+    // any persistent memory segment (which simplifies some tests).
+    GetCreateHistogramResultHistogram();
   }
 
-  void TearDown() override { UninitializeStatisticsRecorder(); }
+  void TearDown() override {
+    UninitializeStatisticsRecorder();
+    DestroyPersistentMemoryAllocator();
+  }
 
   void InitializeStatisticsRecorder() {
     statistics_recorder_ = new StatisticsRecorder();
@@ -43,7 +56,30 @@ class HistogramTest : public testing::Test {
     statistics_recorder_ = NULL;
   }
 
+  void CreatePersistentMemoryAllocator() {
+    if (!allocator_memory_)
+      allocator_memory_.reset(new char[kAllocatorMemorySize]);
+
+    SetPersistentHistogramMemoryAllocator(nullptr);
+    memset(allocator_memory_.get(), 0, kAllocatorMemorySize);
+    SetPersistentHistogramMemoryAllocator(
+        new PersistentMemoryAllocator(
+            allocator_memory_.get(), kAllocatorMemorySize, 0,
+            0, "HistogramAllocatorTest", false));
+    allocator_ = GetPersistentHistogramMemoryAllocator();
+  }
+
+  void DestroyPersistentMemoryAllocator() {
+    allocator_ = nullptr;
+    SetPersistentHistogramMemoryAllocator(nullptr);
+  }
+
   StatisticsRecorder* statistics_recorder_;
+  scoped_ptr<char[]> allocator_memory_;
+  PersistentMemoryAllocator* allocator_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HistogramTest);
 };
 
 // Check for basic syntax and use.
@@ -68,6 +104,92 @@ TEST_F(HistogramTest, BasicTest) {
   LOCAL_HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
   LOCAL_HISTOGRAM_COUNTS("Test3Histogram", 30);
 
+  LOCAL_HISTOGRAM_ENUMERATION("Test6Histogram", 129, 130);
+}
+
+// Check for basic syntax and use.
+TEST_F(HistogramTest, PersistentTest) {
+  CreatePersistentMemoryAllocator();
+  PersistentMemoryAllocator::MemoryInfo meminfo0;
+  allocator_->GetMemoryInfo(&meminfo0);
+
+  // Try basic construction
+  HistogramBase* histogram = Histogram::FactoryGet(
+      "TestHistogram", 1, 1000, 10,
+      HistogramBase::kIsPersistent);
+  EXPECT_TRUE(histogram);
+  histogram->CheckName("TestHistogram");
+  PersistentMemoryAllocator::MemoryInfo meminfo1;
+  allocator_->GetMemoryInfo(&meminfo1);
+  EXPECT_GT(meminfo0.free, meminfo1.free);
+
+  HistogramBase* linear_histogram = LinearHistogram::FactoryGet(
+      "TestLinearHistogram", 1, 1000, 10,
+      HistogramBase::kIsPersistent);
+  EXPECT_TRUE(linear_histogram);
+  linear_histogram->CheckName("TestLinearHistogram");
+  PersistentMemoryAllocator::MemoryInfo meminfo2;
+  allocator_->GetMemoryInfo(&meminfo2);
+  EXPECT_GT(meminfo1.free, meminfo2.free);
+
+  HistogramBase* boolean_histogram = BooleanHistogram::FactoryGet(
+      "TestBooleanHistogram", HistogramBase::kIsPersistent);
+  EXPECT_TRUE(boolean_histogram);
+  boolean_histogram->CheckName("TestBooleanHistogram");
+  PersistentMemoryAllocator::MemoryInfo meminfo3;
+  allocator_->GetMemoryInfo(&meminfo3);
+  EXPECT_GT(meminfo2.free, meminfo3.free);
+
+  std::vector<int> custom_ranges;
+  custom_ranges.push_back(1);
+  custom_ranges.push_back(5);
+  HistogramBase* custom_histogram = CustomHistogram::FactoryGet(
+      "TestCustomHistogram", custom_ranges,
+      HistogramBase::kIsPersistent);
+  EXPECT_TRUE(custom_histogram);
+  custom_histogram->CheckName("TestCustomHistogram");
+  PersistentMemoryAllocator::MemoryInfo meminfo4;
+  allocator_->GetMemoryInfo(&meminfo4);
+  EXPECT_GT(meminfo3.free, meminfo4.free);
+
+  PersistentMemoryAllocator::Iterator iter;
+  uint32_t type;
+  allocator_->CreateIterator(&iter);
+  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // Histogram
+  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // LinearHistogram
+  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // BooleanHistogram
+  EXPECT_NE(0U, allocator_->GetNextIterable(&iter, &type));  // CustomHistogram
+  EXPECT_EQ(0U, allocator_->GetNextIterable(&iter, &type));
+
+  // Create a second allocator and have it access the memory of the first.
+  scoped_ptr<HistogramBase> recovered;
+  PersistentMemoryAllocator recovery(
+      allocator_memory_.get(), kAllocatorMemorySize, 0,
+      0, std::string(), false);
+  recovery.CreateIterator(&iter);
+
+  recovered.reset(GetNextPersistentHistogram(&recovery, &iter));
+  ASSERT_TRUE(recovered);
+  recovered->CheckName("TestHistogram");
+
+  recovered.reset(GetNextPersistentHistogram(&recovery, &iter));
+  ASSERT_TRUE(recovered);
+  recovered->CheckName("TestLinearHistogram");
+
+  recovered.reset(GetNextPersistentHistogram(&recovery, &iter));
+  ASSERT_TRUE(recovered);
+  recovered->CheckName("TestBooleanHistogram");
+
+  recovered.reset(GetNextPersistentHistogram(&recovery, &iter));
+  ASSERT_TRUE(recovered);
+  recovered->CheckName("TestCustomHistogram");
+
+  recovered.reset(GetNextPersistentHistogram(&recovery, &iter));
+  EXPECT_FALSE(recovered);
+
+  // Use standard macros (but with fixed samples)
+  LOCAL_HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
+  LOCAL_HISTOGRAM_COUNTS("Test3Histogram", 30);
   LOCAL_HISTOGRAM_ENUMERATION("Test6Histogram", 129, 130);
 }
 

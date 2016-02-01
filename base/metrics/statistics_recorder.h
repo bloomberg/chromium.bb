@@ -31,7 +31,36 @@ class Lock;
 
 class BASE_EXPORT StatisticsRecorder {
  public:
+  typedef std::map<uint64_t, HistogramBase*> HistogramMap;  // Key is name-hash.
   typedef std::vector<HistogramBase*> Histograms;
+
+  // A class for iterating over the histograms held within this global resource.
+  class BASE_EXPORT HistogramIterator {
+   public:
+    HistogramIterator(const HistogramMap::iterator& iter,
+                      bool include_persistent);
+    HistogramIterator(const HistogramIterator& rhs);  // Must be copyable.
+    ~HistogramIterator();
+
+    HistogramIterator& operator++();
+    HistogramIterator operator++(int) {
+      HistogramIterator tmp(*this);
+      operator++();
+      return tmp;
+    }
+
+    bool operator==(const HistogramIterator& rhs) const {
+      return iter_ == rhs.iter_;
+    }
+    bool operator!=(const HistogramIterator& rhs) const {
+      return iter_ != rhs.iter_;
+    }
+    HistogramBase* operator*() { return iter_->second; }
+
+   private:
+    HistogramMap::iterator iter_;
+    const bool include_persistent_;
+  };
 
   // Initializes the StatisticsRecorder system. Safe to call multiple times.
   static void Initialize();
@@ -72,6 +101,10 @@ class BASE_EXPORT StatisticsRecorder {
   // safe.  It returns NULL if a matching histogram is not found.
   static HistogramBase* FindHistogram(const std::string& name);
 
+  // Support for iterating over known histograms.
+  static HistogramIterator begin(bool include_persistent);
+  static HistogramIterator end();
+
   // GetSnapshot copies some of the pointers to registered histograms into the
   // caller supplied vector (Histograms). Only histograms which have |query| as
   // a substring are copied (an empty string will process all registered
@@ -97,10 +130,6 @@ class BASE_EXPORT StatisticsRecorder {
   static OnSampleCallback FindCallback(const std::string& histogram_name);
 
  private:
-  // We keep all registered histograms in a map, indexed by the hash of the
-  // name of the histogram.
-  typedef std::map<uint64_t, HistogramBase*> HistogramMap;
-
   // We keep a map of callbacks to histograms, so that as histograms are
   // created, we can set the callback properly.
   typedef std::map<std::string, OnSampleCallback> CallbackMap;
@@ -115,6 +144,7 @@ class BASE_EXPORT StatisticsRecorder {
   friend class HistogramSnapshotManagerTest;
   friend class HistogramTest;
   friend class JsonPrefStoreTest;
+  friend class SharedHistogramTest;
   friend class SparseHistogramTest;
   friend class StatisticsRecorderTest;
   FRIEND_TEST_ALL_PREFIXES(HistogramDeltaSerializationTest,

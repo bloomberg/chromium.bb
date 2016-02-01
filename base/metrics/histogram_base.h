@@ -21,6 +21,7 @@
 
 namespace base {
 
+class BucketRanges;
 class DictionaryValue;
 class HistogramBase;
 class HistogramSamples;
@@ -80,6 +81,13 @@ class BASE_EXPORT HistogramBase {
     // histograms can be in performance critical code, and this allows us
     // to shortcut looking up the callback if it doesn't exist.
     kCallbackExists = 0x20,
+
+    // Indicates that the histogram is held in "persistent" memory and may
+    // be accessible between processes. This is only possible if such a
+    // memory segment has been created/attached, used to create a Persistent-
+    // MemoryAllocator, and that loaded into the Histogram module before this
+    // histogram is created.
+    kIsPersistent = 0x40,
 
     // Only for Histogram and its sub classes: fancy bucket-naming support.
     kHexRangePrintingFlag = 0x8000,

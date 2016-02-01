@@ -7,7 +7,10 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_persistence.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -19,6 +22,26 @@
 #else
 #include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
+
+namespace {
+
+// Check for feature enabling the use of persistent histogram storage and
+// create an appropriate allocator for such if so.
+void InstantiatePersistentHistograms() {
+  if (base::FeatureList::IsEnabled(base::kPersistentHistogramsFeature)) {
+    const std::string allocator_name("BrowserMetricsAllocator");
+    // Create persistent/shared memory and allow histograms to be stored in it.
+    // TODO(bcwhite): Update this with correct allocator and memory size.
+    base::SetPersistentHistogramMemoryAllocator(
+        new base::LocalPersistentMemoryAllocator(1 << 20,     // 1 MiB
+                                                 0x4D5B9953,  // SHA1(B..M..A..)
+                                                 allocator_name));
+    base::GetPersistentHistogramMemoryAllocator()->CreateTrackingHistograms(
+        allocator_name);
+  }
+}
+
+}  // namespace
 
 ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(
     const base::CommandLine& parsed_command_line)
@@ -40,6 +63,8 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
+  // Persistent histograms must be enabled as soon as possible.
+  InstantiatePersistentHistograms();
   // The following trials are used from renderer process.
   // Mark here so they will be sync-ed.
   base::FieldTrialList::FindValue("DisplayList2dCanvas");

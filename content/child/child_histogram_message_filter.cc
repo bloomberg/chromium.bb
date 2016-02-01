@@ -59,7 +59,10 @@ void ChildHistogramMessageFilter::UploadAllHistograms(int sequence_number) {
   }
 
   std::vector<std::string> deltas;
-  histogram_delta_serialization_->PrepareAndSerializeDeltas(&deltas);
+  // "false" to PerpareAndSerializeDeltas() indicates to *not* include
+  // histograms held in persistent storage on the assumption that they will be
+  // visible to the recipient through other means.
+  histogram_delta_serialization_->PrepareAndSerializeDeltas(&deltas, false);
   sender_->Send(
       new ChildProcessHostMsg_ChildHistogramData(sequence_number, deltas));
 

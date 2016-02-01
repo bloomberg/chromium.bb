@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "components/metrics/histogram_encoder.h"
 
 namespace cronet {
@@ -54,7 +55,11 @@ void HistogramManager::InconsistencyDetectedInLoggedCount(int amount) {
 bool HistogramManager::GetDeltas(std::vector<uint8_t>* data) {
   // Clear the protobuf between calls.
   uma_proto_.Clear();
+  // "false" to StatisticsRecorder::begin() indicates to *not* include
+  // histograms held in persistent storage on the assumption that they will be
+  // visible to the recipient through other means.
   histogram_snapshot_manager_.PrepareDeltas(
+      base::StatisticsRecorder::begin(false), base::StatisticsRecorder::end(),
       base::Histogram::kNoFlags, base::Histogram::kUmaTargetedHistogramFlag);
   int32_t data_size = uma_proto_.ByteSize();
   data->resize(data_size);

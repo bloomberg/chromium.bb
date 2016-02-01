@@ -51783,6 +51783,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.CreatePersistentHistogram.Result"
+    enum="CreatePersistentHistogramResult">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    Records attempts to create histograms in presistent space and any errors
+    encountered when doing so.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Discarded Log Events">
   <owner>asvitkine@chromium.org</owner>
   <summary>
@@ -59954,6 +59964,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
   <int value="2147483645" label="STATUS_BREAKPOINT"/>
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
+</enum>
+
+<enum name="CreatePersistentHistogramResult" type="int">
+  <int value="0" label="Histogram successfully created in persistent space."/>
+  <int value="1" label="Error: Invalid metadata pointer. (coding error)"/>
+  <int value="2" label="Error: Invalid metdata."/>
+  <int value="3" label="Error: Invalid 'ranges' array."/>
+  <int value="4" label="Error: Invalid 'counts' array."/>
+  <int value="5" label="Error: Allocator is corrupt."/>
+  <int value="6" label="Error: Allocator is full."/>
+  <int value="7" label="Error: Allocator failed (unknown error)."/>
 </enum>
 
 <enum name="CredentialFilteredType" type="int">

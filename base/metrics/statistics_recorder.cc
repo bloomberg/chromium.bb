@@ -31,6 +31,36 @@ bool HistogramNameLesser(const base::HistogramBase* a,
 
 namespace base {
 
+StatisticsRecorder::HistogramIterator::HistogramIterator(
+    const HistogramMap::iterator& iter, bool include_persistent)
+    : iter_(iter),
+      include_persistent_(include_persistent) {
+}
+
+StatisticsRecorder::HistogramIterator::HistogramIterator(
+    const HistogramIterator& rhs)
+    : iter_(rhs.iter_),
+      include_persistent_(rhs.include_persistent_) {
+}
+
+StatisticsRecorder::HistogramIterator::~HistogramIterator() {}
+
+StatisticsRecorder::HistogramIterator&
+StatisticsRecorder::HistogramIterator::operator++() {
+  const HistogramMap::iterator histograms_end = histograms_->end();
+  while (iter_ != histograms_end) {
+    ++iter_;
+    if (iter_ == histograms_end)
+      break;
+    if (!include_persistent_ && (iter_->second->flags() &
+                                 HistogramBase::kIsPersistent)) {
+      continue;
+    }
+    break;
+  }
+  return *this;
+}
+
 // static
 void StatisticsRecorder::Initialize() {
   // Ensure that an instance of the StatisticsRecorder object is created.
@@ -66,7 +96,8 @@ HistogramBase* StatisticsRecorder::RegisterOrDeleteDuplicate(
       histogram_to_return = histogram;
     } else {
       const std::string& name = histogram->histogram_name();
-      uint64_t name_hash = histogram->name_hash();
+      const uint64_t name_hash = histogram->name_hash();
+      DCHECK_NE(0U, name_hash);
       HistogramMap::iterator it = histograms_->find(name_hash);
       if (histograms_->end() == it) {
         (*histograms_)[name_hash] = histogram;
@@ -264,7 +295,7 @@ bool StatisticsRecorder::SetCallback(
     return false;
   callbacks_->insert(std::make_pair(name, cb));
 
-  HistogramMap::iterator it = histograms_->find(HashMetricName(name));
+  auto it = histograms_->find(HashMetricName(name));
   if (it != histograms_->end()) {
     DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
     it->second->SetFlags(HistogramBase::kCallbackExists);
@@ -284,7 +315,7 @@ void StatisticsRecorder::ClearCallback(const std::string& name) {
   callbacks_->erase(name);
 
   // We also clear the flag from the histogram (if it exists).
-  HistogramMap::iterator it = histograms_->find(HashMetricName(name));
+  auto it = histograms_->find(HashMetricName(name));
   if (it != histograms_->end()) {
     DCHECK_EQ(name, it->second->histogram_name()) << "hash collision";
     it->second->ClearFlags(HistogramBase::kCallbackExists);
@@ -305,7 +336,18 @@ StatisticsRecorder::OnSampleCallback StatisticsRecorder::FindCallback(
                                                 : OnSampleCallback();
 }
 
-// private static
+// static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::begin(
+    bool include_persistent) {
+  return HistogramIterator(histograms_->begin(), include_persistent);
+}
+
+// static
+StatisticsRecorder::HistogramIterator StatisticsRecorder::end() {
+  return HistogramIterator(histograms_->end(), true);
+}
+
+// static
 void StatisticsRecorder::GetSnapshot(const std::string& query,
                                      Histograms* snapshot) {
   if (lock_ == NULL)
