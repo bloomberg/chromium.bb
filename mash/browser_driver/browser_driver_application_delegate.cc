@@ -57,7 +57,7 @@ void BrowserDriverApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
 
 bool BrowserDriverApplicationDelegate::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
-  return false;
+  return true;
 }
 
 void BrowserDriverApplicationDelegate::OnAccelerator(
