@@ -30,6 +30,7 @@
 
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 
+#include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -59,26 +60,9 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
-
-class ServiceWorkerGlobalScope::SkipWaitingCallback final : public WebServiceWorkerSkipWaitingCallbacks {
-    WTF_MAKE_NONCOPYABLE(SkipWaitingCallback);
-public:
-    explicit SkipWaitingCallback(ScriptPromiseResolver* resolver)
-        : m_resolver(resolver) { }
-    ~SkipWaitingCallback() { }
-
-    void onSuccess() override
-    {
-        m_resolver->resolve();
-    }
-
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-};
 
 PassRefPtrWillBeRawPtr<ServiceWorkerGlobalScope> ServiceWorkerGlobalScope::create(ServiceWorkerThread* thread, PassOwnPtr<WorkerThreadStartupData> startupData)
 {
@@ -150,7 +134,7 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    ServiceWorkerGlobalScopeClient::from(executionContext)->skipWaiting(new SkipWaitingCallback(resolver));
+    ServiceWorkerGlobalScopeClient::from(executionContext)->skipWaiting(new CallbackPromiseAdapter<void, void>(resolver));
     return promise;
 }
 
