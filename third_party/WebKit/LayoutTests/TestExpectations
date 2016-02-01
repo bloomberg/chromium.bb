@@ -385,8 +385,6 @@ crbug.com/581661 svg/hixie/perf/002.xml [ NeedsManualRebaseline ]
 crbug.com/581661 svg/batik/text/textOnPath.svg [ NeedsManualRebaseline ]
 crbug.com/581661 svg/hixie/perf/001.xml [ NeedsManualRebaseline ]
 
-crbug.com/441840 [ Mac ] cssom/ahem-ex-units.html [ Failure ]
-
 crbug.com/530044 transforms/2d/transform-borderbox.html [ NeedsManualRebaseline ]
 
 # This directly has manual tests that don't have to run with run-webkit-tests
