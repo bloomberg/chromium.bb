@@ -108,8 +108,17 @@ public:
         unsigned specificity;
     };
 
-    bool match(const SelectorCheckingContext&, MatchResult&) const;
-    bool match(const SelectorCheckingContext&) const;
+    bool match(const SelectorCheckingContext& context, MatchResult& result) const
+    {
+        ASSERT(context.selector);
+        return matchSelector(context, result) == SelectorMatches;
+    }
+
+    bool match(const SelectorCheckingContext& context) const
+    {
+        MatchResult ignoreResult;
+        return match(context, ignoreResult);
+    }
 
     static bool matchesFocusPseudoClass(const Element&);
 

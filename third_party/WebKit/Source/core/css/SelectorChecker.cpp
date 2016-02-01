@@ -224,18 +224,6 @@ static int nthLastOfTypeIndex(Element& element, const QualifiedName& type)
     return index;
 }
 
-bool SelectorChecker::match(const SelectorCheckingContext& context, MatchResult& result) const
-{
-    ASSERT(context.selector);
-    return matchSelector(context, result) == SelectorMatches;
-}
-
-bool SelectorChecker::match(const SelectorCheckingContext& context) const
-{
-    MatchResult ignoreResult;
-    return match(context, ignoreResult);
-}
-
 // Recursive check of selectors and combinators
 // It can return 4 different values:
 // * SelectorMatches          - the selector matches the element e
