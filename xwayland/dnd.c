@@ -162,7 +162,7 @@ handle_enter(struct weston_wm *wm, xcb_client_message_event_t *client_message)
 	xcb_get_property_cookie_t cookie;
 	xcb_get_property_reply_t *reply;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return;
 

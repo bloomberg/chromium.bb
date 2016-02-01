@@ -197,7 +197,7 @@ weston_wm_get_selection_targets(struct weston_wm *wm)
 		return;
 	}
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL) {
 		free(reply);
 		return;
