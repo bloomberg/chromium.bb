@@ -81,19 +81,6 @@ void EndPlatformPaint(SkCanvas* canvas) {
     platform_device->EndPlatformPaint();
 }
 
-void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
-  if (width <= 0 || height <= 0)
-    return;
-
-  SkRect rect;
-  rect.setXYWH(SkIntToScalar(x), SkIntToScalar(y),
-               SkIntToScalar(width), SkIntToScalar(height));
-  SkPaint paint;
-  paint.setColor(SK_ColorBLACK);
-  paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
-  canvas->drawRect(rect, paint);
-}
-
 size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }

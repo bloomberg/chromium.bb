@@ -31,6 +31,21 @@ namespace skia {
 
 namespace {
 
+#if defined(OS_WIN)
+void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height) {
+  if (width <= 0 || height <= 0)
+    return;
+
+  SkRect rect;
+  rect.setXYWH(SkIntToScalar(x), SkIntToScalar(y),
+               SkIntToScalar(width), SkIntToScalar(height));
+  SkPaint paint;
+  paint.setColor(SK_ColorBLACK);
+  paint.setXfermodeMode(SkXfermode::kDstATop_Mode);
+  canvas->drawRect(rect, paint);
+}
+#endif
+
 bool IsOfColor(const SkBitmap& bitmap, int x, int y, uint32_t color) {
   // For masking out the alpha values.
   static uint32_t alpha_mask =

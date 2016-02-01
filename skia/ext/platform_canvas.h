@@ -145,9 +145,6 @@ SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 // return NULL PlatformSurface.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
-// Sets the opacity of each pixel in the specified region to be opaque.
-SK_API void MakeOpaque(SkCanvas* canvas, int x, int y, int width, int height);
-
 // These calls should surround calls to platform drawing routines, the
 // surface returned here can be used with the native platform routines.
 //
