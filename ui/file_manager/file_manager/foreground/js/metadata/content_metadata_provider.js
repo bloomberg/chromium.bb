@@ -63,14 +63,6 @@ ContentMetadataProvider.PROPERTY_NAMES = [
   'mediaTitle'
 ];
 
-
-/**
- * Watchdog timer considers there may be an error
- * if chrome.mediaGalleries.getMetadata does not responsed.
- * @const {number}
- */
-ContentMetadataProvider.MEDIA_GALLERIES_WATCHDOG_TIMEOUT = 1000; // [msec]
-
 /**
  * Path of a worker script.
  * @public {string}
@@ -174,11 +166,6 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
       if (names.indexOf('contentThumbnailUrl') !== -1) {
         metadataType = 'all';
       }
-      setTimeout(function() {
-        resolve(self.createError_(entry.toURL(),
-            'parsing metadata',
-            'chrome.mediaGalleries does not respond.'));
-      }, ContentMetadataProvider.MEDIA_GALLERIES_WATCHDOG_TIMEOUT);
       chrome.mediaGalleries.getMetadata(blob, {metadataType: metadataType},
           function(metadata) {
             self.convertMediaMetadataToMetadataItem_(entry, metadata)
