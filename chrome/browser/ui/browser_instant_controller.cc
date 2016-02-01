@@ -204,8 +204,8 @@ void BrowserInstantController::DefaultSearchProviderChanged(
     if (!instant_service->IsInstantProcess(rph->GetID()))
       continue;
 
-    if (google_base_url_domain_changed &&
-        SearchTabHelper::FromWebContents(contents)->model()->mode().is_ntp()) {
+    SearchModel* model = SearchTabHelper::FromWebContents(contents)->model();
+    if (google_base_url_domain_changed && model->mode().is_origin_ntp()) {
       // Replace the server NTP with the local NTP.
       content::NavigationController::LoadURLParams params(
           search::GetLocalInstantURL(profile()));
