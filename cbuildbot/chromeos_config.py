@@ -515,6 +515,11 @@ _brillo_boards = frozenset([
     'whirlwind',
 ])
 
+_cheets_boards = frozenset([
+    'cyan-cheets',
+    'veyron_minnie-cheets',
+])
+
 _lakitu_boards = frozenset([
     'lakitu',
     'lakitu_mobbuild',
@@ -1052,6 +1057,30 @@ def GetConfig():
       useflags=append_useflags(['-cros-debug']),
   )
 
+  android_pfq = site_config.AddTemplate(
+      'android-pfq',
+      default_hw_tests_override,
+      build_type=constants.ANDROID_PFQ_TYPE,
+      builder_class_name='android_pfq_builders.AndroidPFQBuilder',
+      uprev=False,
+      overlays=constants.BOTH_OVERLAYS,
+      manifest_version=True,
+      description='Preflight Android Uprev & Build (internal)',
+      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests_override=None,
+  )
+
+  site_config.Add(
+      'master-android-pfq',
+      android_pfq,
+      internal,
+      builder_class_name='android_pfq_builders.AndroidPFQMasterBuilder',
+      boards=[],
+      master=True,
+      push_overlays=constants.BOTH_OVERLAYS,
+  )
+
 
   # A base config for each board.
   _base_configs = dict()
@@ -1236,6 +1265,8 @@ def GetConfig():
       _base_configs['tricky'],
       hw_tests=HWTestList.SharedPoolPFQ(),
   )
+
+  _android_pfq_boards = _cheets_boards
 
   _telemetry_boards = frozenset([
       'amd64-generic',
@@ -2176,6 +2207,8 @@ def GetConfig():
         chrome_pfq, _chrome_pfq_important_boards, 'chrome-pfq')
     _CreateConfigsForBoards(
         chrome_pfq, _all_release_boards, 'chrome-pfq', important=False)
+    _CreateConfigsForBoards(
+        android_pfq, _android_pfq_boards, 'android-pfq')
     _CreateConfigsForBoards(
         _release, _critical_for_chrome_boards, config_lib.CONFIG_TYPE_RELEASE,
         critical_for_chrome=True)

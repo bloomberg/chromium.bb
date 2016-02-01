@@ -1302,6 +1302,22 @@ def ArchiveFile(file_to_archive, archive_dir):
   return filename
 
 
+class AndroidIsPinnedUprevError(failures_lib.InfrastructureFailure):
+  """Raised when we try to uprev while Android is pinned."""
+
+  def __init__(self, new_android_atom):
+    """Initialize a AndroidIsPinnedUprevError.
+
+    Args:
+      new_android_atom: The Android atom that we failed to
+                        uprev to, due to Android being pinned.
+    """
+    msg = ('Failed up uprev to Android version %s as Android was pinned.' %
+           new_android_atom)
+    super(AndroidIsPinnedUprevError, self).__init__(msg)
+    self.new_android_atom = new_android_atom
+
+
 class ChromeIsPinnedUprevError(failures_lib.InfrastructureFailure):
   """Raised when we try to uprev while chrome is pinned."""
 
@@ -1316,6 +1332,42 @@ class ChromeIsPinnedUprevError(failures_lib.InfrastructureFailure):
            new_chrome_atom)
     super(ChromeIsPinnedUprevError, self).__init__(msg)
     self.new_chrome_atom = new_chrome_atom
+
+
+def MarkAndroidAsStable(buildroot, tracking_branch, boards,
+                        android_version=None):
+  """Returns the portage atom for the revved Android ebuild - see man emerge."""
+  # TODO: Consider merging this with MarkChromeAsStable.
+  command = ['cros_mark_android_as_stable',
+             '--tracking_branch=%s' % tracking_branch]
+  if boards:
+    command.append('--boards=%s' % ':'.join(boards))
+  if android_version:
+    command.append('--force_version=%s' % android_version)
+
+  portage_atom_string = RunBuildScript(buildroot, command, chromite_cmd=True,
+                                       enter_chroot=True,
+                                       redirect_stdout=True).output.rstrip()
+  android_atom = None
+  if portage_atom_string:
+    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
+  if not android_atom:
+    logging.info('Found nothing to rev.')
+    return None
+
+  for board in boards:
+    # Sanity check: We should always be able to merge the version of
+    # Android we just unmasked.
+    try:
+      command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
+      RunBuildScript(buildroot, command, enter_chroot=True,
+                     combine_stdout_stderr=True, capture_output=True)
+    except cros_build_lib.RunCommandError:
+      logging.error('Cannot emerge-%s =%s\nIs Android pinned to an older '
+                    'version?' % (board, android_atom))
+      raise AndroidIsPinnedUprevError(android_atom)
+
+  return android_atom
 
 
 def MarkChromeAsStable(buildroot,

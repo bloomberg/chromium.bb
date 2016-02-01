@@ -46,6 +46,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'chrome-perf',
     'chrome-pfq',
     'chrome-pfq-informational',
+    'android-pfq',
     'pre-flight-branch',
     CONFIG_TYPE_FACTORY,
     CONFIG_TYPE_FIRMWARE,
@@ -73,7 +74,7 @@ _CACHED_CONFIG = None
 def IsPFQType(b_type):
   """Returns True if this build type is a PFQ."""
   return b_type in (constants.PFQ_TYPE, constants.PALADIN_TYPE,
-                    constants.CHROME_PFQ_TYPE)
+                    constants.CHROME_PFQ_TYPE, constants.ANDROID_PFQ_TYPE)
 
 
 def IsCQType(b_type):

@@ -230,17 +230,22 @@ class SimpleBuilder(generic_builders.Builder):
     self._RunStage(test_stages.BranchUtilTestStage)
     self._RunStage(artifact_stages.MasterUploadPrebuiltsStage)
 
-  def _RunDefaultTypeBuild(self):
-    """Runs through the stages of a non-special-type build."""
+  def RunEarlySyncAndSetupStages(self):
+    """Runs through the early sync and board setup stages."""
     self._RunStage(build_stages.UprevStage)
     self._RunStage(build_stages.InitSDKStage)
     self._RunStage(build_stages.RegenPortageCacheStage)
     self.RunSetupBoard()
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
+
+  def RunBuildTestStages(self):
+    """Runs through the stages to test before building."""
     self._RunStage(test_stages.BinhostTestStage)
     self._RunStage(test_stages.BranchUtilTestStage)
 
+  def RunBuildStages(self):
+    """Runs through the stages to perform the build and resulting tests."""
     # Prepare stages to run in background.  If child_configs exist then
     # run each of those here, otherwise use default config.
     builder_runs = self._run.GetUngroupedBuilderRuns()
@@ -295,6 +300,12 @@ class SimpleBuilder(generic_builders.Builder):
 
         # Kick off our background stages.
         queue.put([builder_run, board])
+
+  def _RunDefaultTypeBuild(self):
+    """Runs through the stages of a non-special-type build."""
+    self.RunEarlySyncAndSetupStages()
+    self.RunBuildTestStages()
+    self.RunBuildStages()
 
   def RunStages(self):
     """Runs through build process."""

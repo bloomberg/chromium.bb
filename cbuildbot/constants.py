@@ -380,6 +380,9 @@ PRE_CQ_LAUNCHER_TYPE = 'priest'
 # VALID_CHROME_REVISIONS for more information.
 CHROME_PFQ_TYPE = 'chrome'
 
+# Android PFQ type.  Builds and validates new versions of Android.
+ANDROID_PFQ_TYPE = 'android'
+
 # Builds from source and non-incremental.  This builds fully wipe their
 # chroot before the start of every build and no not use a BINHOST.
 BUILD_FROM_SOURCE_TYPE = 'full'
@@ -405,6 +408,7 @@ VALID_BUILD_TYPES = (
     CHROOT_BUILDER_TYPE,
     CHROOT_BUILDER_BOARD,
     CHROME_PFQ_TYPE,
+    ANDROID_PFQ_TYPE,
     PFQ_TYPE,
     PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
