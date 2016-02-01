@@ -1694,14 +1694,6 @@
    fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
 }
 {
-   bug_145712
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN5blink25NotificationPresenterImpl17requestPermissionEPN7blink22ScriptExecutionContextEN3WTF10PassRefPtrINS1_12VoidCallbackEEE
-   fun:_ZN5blink18NotificationCenter17requestPermissionEN3WTF10PassRefPtrINS_12VoidCallbackEEE
-   fun:_ZN5blink20V8NotificationCenter25requestPermissionCallbackERKN2v89ArgumentsE
-}
-{
    bug_145723
    Memcheck:Leak
    fun:_Znw*
