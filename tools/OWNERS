@@ -37,8 +37,8 @@ per-file isolate_driver.py=vadimsh@chromium.org
 
 per-file licenses.py=file://tools/copyright_scanner/OWNERS
 
-per-file profile_chrome.py=alokp@chromium.org
-per-file profile_chrome_startup.py=alokp@chromium.org
+per-file profile_chrome.py=file://tools/profile_chrome/OWNERS
+per-file profile_chrome_startup.py=file://tools/profile_chrome/OWNERS
 
 per-file remove_stale_pyc_files.py=dtu@chromium.org
 
