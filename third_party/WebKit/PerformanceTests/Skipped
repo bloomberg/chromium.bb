@@ -56,4 +56,5 @@ Animation/overlay-background-color-transitions.html
 DOM/click_webkit_user_select_none.html
 
 # Times out on reference build - crbug.com/579107
+ShadowDOM/SlotDistibutedNextPrevious.html
 ShadowDOM/v1-distribution.html
