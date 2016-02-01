@@ -1602,16 +1602,16 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
             ASSERT_WITH_SECURITY_IMPLICATION(n->isTextNode());
             int length = toLayoutText(r)->textLength();
             type = PositionAnchorType::OffsetInAnchor;
+            LayoutText* text = toLayoutText(r);
             if (style.preserveNewline()) {
-                LayoutText* text = toLayoutText(r);
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
                     if ((*text)[i] == '\n')
-                        return createVisiblePosition(PositionTemplate<Strategy>(toText(n), i));
+                        return createVisiblePosition(PositionTemplate<Strategy>(toText(n), i + text->textStartOffset()));
                 }
             }
             node = n;
-            offset = r->caretMaxOffset();
+            offset = r->caretMaxOffset() + text->textStartOffset();
             n = Strategy::next(*n, stayInsideBlock);
         } else if (Strategy::editingIgnoresContent(n) || isDisplayInsideTable(n)) {
             node = n;

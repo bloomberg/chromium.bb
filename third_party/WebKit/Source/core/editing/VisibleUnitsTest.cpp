@@ -318,7 +318,41 @@ TEST_F(VisibleUnitsTest, endOfLine)
     EXPECT_EQ(PositionInComposedTree(seven, 7), endOfLine(createVisiblePositionInComposedTree(*seven, 1)).deepEquivalent());
 }
 
-TEST_F(VisibleUnitsTest, endOfParagraph)
+TEST_F(VisibleUnitsTest, endOfParagraphFirstLetter)
+{
+    setBodyContent("<style>div::first-letter { color: red }</style><div id=sample>1ab\nde</div>");
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 0)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 1)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 2)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 3)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 4)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 5)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 6)).deepEquivalent());
+}
+
+TEST_F(VisibleUnitsTest, endOfParagraphFirstLetterPre)
+{
+    setBodyContent("<style>pre::first-letter { color: red }</style><pre id=sample>1ab\nde</pre>");
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 0)).deepEquivalent());
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 1)).deepEquivalent());
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 2)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 3)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 4)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 5)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 6)).deepEquivalent());
+}
+
+TEST_F(VisibleUnitsTest, endOfParagraphShadow)
 {
     const char* bodyContent = "<a id=host><b id=one>1</b><b id=two>22</b></a><b id=three>333</b>";
     const char* shadowContent = "<p><content select=#two></content></p><p><content select=#one></content></p>";
@@ -335,6 +369,40 @@ TEST_F(VisibleUnitsTest, endOfParagraph)
 
     EXPECT_EQ(Position(three->firstChild(), 3), endOfParagraph(createVisiblePositionInDOMTree(*two->firstChild(), 2)).deepEquivalent());
     EXPECT_EQ(PositionInComposedTree(two->firstChild(), 2), endOfParagraph(createVisiblePositionInComposedTree(*two->firstChild(), 2)).deepEquivalent());
+}
+
+TEST_F(VisibleUnitsTest, endOfParagraphSimple)
+{
+    setBodyContent("<div id=sample>1ab\nde</div>");
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 0)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 1)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 2)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 3)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 4)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 5)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 6)).deepEquivalent());
+}
+
+TEST_F(VisibleUnitsTest, endOfParagraphSimplePre)
+{
+    setBodyContent("<pre id=sample>1ab\nde</pre>");
+    updateLayoutAndStyleForPainting();
+
+    Node* sample = document().getElementById("sample");
+    Node* text = sample->firstChild();
+
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 0)).deepEquivalent());
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 1)).deepEquivalent());
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 2)).deepEquivalent());
+    EXPECT_EQ(Position(text, 3), endOfParagraph(createVisiblePositionInDOMTree(*text, 3)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 4)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 5)).deepEquivalent());
+    EXPECT_EQ(Position(text, 6), endOfParagraph(createVisiblePositionInDOMTree(*text, 6)).deepEquivalent());
 }
 
 TEST_F(VisibleUnitsTest, endOfSentence)
