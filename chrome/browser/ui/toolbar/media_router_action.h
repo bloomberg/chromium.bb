@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/browser/media/router/local_media_routes_observer.h"
+#include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -26,7 +26,7 @@ class MediaRouterDialogControllerImpl;
 // the toolbar.
 class MediaRouterAction : public ToolbarActionViewController,
                           public media_router::IssuesObserver,
-                          public media_router::LocalMediaRoutesObserver,
+                          public media_router::MediaRoutesObserver,
                           public TabStripModelObserver {
  public:
   MediaRouterAction(Browser* browser, ToolbarActionsBar* toolbar_actions_bar);
@@ -55,8 +55,10 @@ class MediaRouterAction : public ToolbarActionViewController,
   // media_router::IssuesObserver:
   void OnIssueUpdated(const media_router::Issue* issue) override;
 
-  // media_router::LocalMediaRoutesObserver:
-  void OnHasLocalDisplayRouteUpdated(bool has_local_display_route) override;
+  // media_router::MediaRoutesObserver:
+  void OnRoutesUpdated(const std::vector<media_router::MediaRoute>& routes,
+                       const std::vector<media_router::MediaRoute::Id>&
+                           joinable_route_ids) override;
 
   // ToolbarStripModelObserver:
   void ActiveTabChanged(content::WebContents* old_contents,

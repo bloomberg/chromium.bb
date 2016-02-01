@@ -123,6 +123,16 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
         new TestMediaRouterAction(
             browser(),
             browser_action_test_util_->GetToolbarActionsBar()));
+
+    local_display_route_list_.push_back(
+        media_router::MediaRoute("routeId1", fake_source1_, "sinkId1",
+                                 "description", true, std::string(), true));
+    non_local_display_route_list_.push_back(
+        media_router::MediaRoute("routeId2", fake_source1_, "sinkId2",
+                                 "description", false, std::string(), true));
+    non_local_display_route_list_.push_back(
+        media_router::MediaRoute("routeId3", fake_source2_, "sinkId3",
+                                 "description", true, std::string(), false));
   }
 
   void TearDown() override {
@@ -145,6 +155,17 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   const gfx::Image error_icon() { return error_icon_; }
   const gfx::Image idle_icon() { return idle_icon_; }
   const gfx::Image warning_icon() { return warning_icon_; }
+  const std::vector<media_router::MediaRoute>& local_display_route_list()
+      const {
+    return local_display_route_list_;
+  }
+  const std::vector<media_router::MediaRoute>& non_local_display_route_list()
+      const {
+    return non_local_display_route_list_;
+  }
+  const std::vector<media_router::MediaRoute::Id>& empty_route_id_list() const {
+    return empty_route_id_list_;
+  }
 
  private:
   // A BrowserActionTestUtil object constructed with the associated
@@ -170,6 +191,10 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
   const gfx::Image error_icon_;
   const gfx::Image idle_icon_;
   const gfx::Image warning_icon_;
+
+  std::vector<media_router::MediaRoute> local_display_route_list_;
+  std::vector<media_router::MediaRoute> non_local_display_route_list_;
+  std::vector<media_router::MediaRoute::Id> empty_route_id_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterActionUnitTest);
 };
@@ -218,12 +243,18 @@ TEST_F(MediaRouterActionUnitTest, UpdateRoutes) {
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
-  action()->OnHasLocalDisplayRouteUpdated(true);
+  action()->OnRoutesUpdated(local_display_route_list(), empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there are no local routes.
-  action()->OnHasLocalDisplayRouteUpdated(false);
+  action()->OnRoutesUpdated(non_local_display_route_list(),
+                            empty_route_id_list());
+  EXPECT_TRUE(gfx::test::AreImagesEqual(
+      idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
+
+  action()->OnRoutesUpdated(std::vector<media_router::MediaRoute>(),
+                            empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
@@ -241,12 +272,13 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Non-local routes also do not have an effect on |current_icon_|.
-  action()->OnHasLocalDisplayRouteUpdated(false);
+  action()->OnRoutesUpdated(non_local_display_route_list(),
+                            empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| since there is a local route.
-  action()->OnHasLocalDisplayRouteUpdated(true);
+  action()->OnRoutesUpdated(local_display_route_list(), empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -257,7 +289,8 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Closing a local route makes no difference to |current_icon_|.
-  action()->OnHasLocalDisplayRouteUpdated(false);
+  action()->OnRoutesUpdated(non_local_display_route_list(),
+                            empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       warning_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -267,7 +300,7 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Fatal issues still take precedent over local routes.
-  action()->OnHasLocalDisplayRouteUpdated(true);
+  action()->OnRoutesUpdated(local_display_route_list(), empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       error_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
@@ -278,7 +311,8 @@ TEST_F(MediaRouterActionUnitTest, UpdateIssuesAndRoutes) {
       active_icon(), action()->GetIcon(nullptr, gfx::Size())));
 
   // Update |current_icon_| when the local route is closed.
-  action()->OnHasLocalDisplayRouteUpdated(false);
+  action()->OnRoutesUpdated(non_local_display_route_list(),
+                            empty_route_id_list());
   EXPECT_TRUE(gfx::test::AreImagesEqual(
       idle_icon(), action()->GetIcon(nullptr, gfx::Size())));
 }
