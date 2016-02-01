@@ -22,6 +22,13 @@
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/signin/core/browser/signin_manager.h"
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 namespace media_router {
 
 namespace {
@@ -357,13 +364,18 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
                           first_run_flow_acknowledged);
   bool show_cloud_pref = false;
 #if defined(GOOGLE_CHROME_BUILD)
-  // Cloud services preference is shown if user has sync enabled.
-  // If the user enables sync after acknowledging the first run flow, this is
-  // treated as the user opting into Google services, including cloud services,
-  // if the browser is a Chrome branded build.
-  show_cloud_pref = profile->IsSyncAllowed() &&
-      !profile->GetPrefs()->GetBoolean(
-          prefs::kMediaRouterCloudServicesPrefSet);
+  // Cloud services preference is shown if user is logged in and has sync
+  // enabled. If the user enables sync after acknowledging the first run flow,
+  // this is treated as the user opting into Google services, including cloud
+  // services, if the browser is a Chrome branded build.
+  if (!profile->GetPrefs()->GetBoolean(
+          prefs::kMediaRouterCloudServicesPrefSet) &&
+      profile->IsSyncAllowed()) {
+    SigninManagerBase* signin_manager =
+        SigninManagerFactory::GetForProfile(profile);
+    show_cloud_pref = signin_manager && signin_manager->IsAuthenticated() &&
+        ProfileSyncServiceFactory::GetForProfile(profile)->IsSyncActive();
+  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
   initial_data.SetBoolean("showFirstRunFlowCloudPref", show_cloud_pref);
 

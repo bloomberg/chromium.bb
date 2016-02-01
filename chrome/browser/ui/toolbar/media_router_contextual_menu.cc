@@ -22,7 +22,11 @@
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/signin/core/browser/signin_manager.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
 MediaRouterContextualMenu::MediaRouterContextualMenu(Browser* browser)
@@ -65,9 +69,18 @@ bool MediaRouterContextualMenu::IsCommandIdEnabled(int command_id) const {
 
 bool MediaRouterContextualMenu::IsCommandIdVisible(int command_id) const {
 #if defined(GOOGLE_CHROME_BUILD)
-  // Cloud services preference is not set or used if sync is disabled.
-  if (command_id == IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE)
-    return browser_->profile()->IsSyncAllowed();
+  if (command_id == IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE) {
+    // Cloud services preference is not set or used if the user is not signed
+    // in or has disabled sync.
+    if (browser_->profile()->IsSyncAllowed()) {
+      SigninManagerBase* signin_manager =
+          SigninManagerFactory::GetForProfile(browser_->profile());
+      return signin_manager && signin_manager->IsAuthenticated() &&
+          ProfileSyncServiceFactory::GetForProfile(
+              browser_->profile())->IsSyncActive();
+    }
+    return false;
+  }
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return true;
 }
