@@ -4310,6 +4310,19 @@
   "Win7 Debug (NVIDIA)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests"
+      },
+      {
         "args": [
           "--use-gpu-in-tests"
         ],
@@ -5247,6 +5260,19 @@
   "Win7 Release (NVIDIA)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests"
+      },
+      {
         "args": [
           "--use-gpu-in-tests"
         ],
@@ -5722,19 +5748,6 @@
   },
   "Win7 Release dEQP (NVIDIA)": {
     "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:104a",
-              "os": "Windows-2008ServerR2-SP1"
-            }
-          ],
-          "shards": 4
-        },
-        "test": "angle_deqp_gles2_tests"
-      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,

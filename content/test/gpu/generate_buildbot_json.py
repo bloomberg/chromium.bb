@@ -335,6 +335,21 @@ FYI_WATERFALL = {
 }
 
 COMMON_GTESTS = {
+  # TODO(kbr): re-enable angle_deqp_gles2_tests on Linux. Currently
+  # the target is disabled in the ANGLE workspace for the GN builds.
+  'angle_deqp_gles2_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'os_types': ['win'],
+        'names': [
+          'Win7 Release (NVIDIA)',
+          'Win7 Debug (NVIDIA)',
+        ],
+      }
+    ],
+    'swarming_shards': 4
+  },
   # Until we have more capacity, run angle_end2end_tests only on the
   # FYI waterfall and the ANGLE trybots (which mirror the FYI
   # waterfall).
@@ -438,16 +453,6 @@ NON_SWARMED_GTESTS = {
 }
 
 DEQP_GTESTS = {
-  # TODO(kbr): re-enable angle_deqp_gles2_tests on Linux. Currently
-  # the target is disabled in the ANGLE workspace for the GN builds.
-  'angle_deqp_gles2_tests': {
-    'tester_configs': [
-      {
-        'os_types': ['win']
-      }
-    ],
-    'swarming_shards': 4
-  },
   'angle_deqp_gles3_tests': {
     'tester_configs': [
       {
