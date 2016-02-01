@@ -100,6 +100,17 @@ void ShellSurface::Maximize() {
   Configure();
 }
 
+void ShellSurface::Restore() {
+  TRACE_EVENT0("exo", "ShellSurface::Restore");
+
+  if (!widget_)
+    return;
+
+  widget_->Restore();
+
+  Configure();
+}
+
 void ShellSurface::SetFullscreen(bool fullscreen) {
   TRACE_EVENT1("exo", "ShellSurface::SetFullscreen", "fullscreen", fullscreen);
 
