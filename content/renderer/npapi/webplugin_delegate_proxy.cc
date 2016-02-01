@@ -540,8 +540,8 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
   transport_stores_[0].bitmap.reset();
   transport_stores_[1].bitmap.reset();
 
-  transport_stores_[0].canvas.reset();
-  transport_stores_[1].canvas.reset();
+  transport_stores_[0].canvas.clear();
+  transport_stores_[1].canvas.clear();
   transport_store_painted_ = gfx::Rect();
   front_buffer_diff_ = gfx::Rect();
 }
@@ -555,12 +555,12 @@ static size_t BitmapSizeForPluginRect(const gfx::Rect& plugin_rect) {
 
 bool WebPluginDelegateProxy::CreateLocalBitmap(
     std::vector<uint8_t>* memory,
-    scoped_ptr<SkCanvas>* canvas) {
+    skia::RefPtr<SkCanvas>* canvas) {
   const size_t size = BitmapSizeForPluginRect(plugin_rect_);
   memory->resize(size);
   if (memory->size() != size)
     return false;
-  canvas->reset(skia::CreatePlatformCanvas(
+  *canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
       plugin_rect_.width(), plugin_rect_.height(), true, &((*memory)[0]),
       skia::CRASH_ON_FAILURE));
   return true;
@@ -569,7 +569,7 @@ bool WebPluginDelegateProxy::CreateLocalBitmap(
 
 bool WebPluginDelegateProxy::CreateSharedBitmap(
     scoped_ptr<SharedMemoryBitmap>* memory,
-    scoped_ptr<SkCanvas>* canvas) {
+    skia::RefPtr<SkCanvas>* canvas) {
   *memory = ChildThreadImpl::current()
                 ->shared_bitmap_manager()
                 ->AllocateSharedMemoryBitmap(plugin_rect_.size());
@@ -577,11 +577,11 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
     return false;
   DCHECK((*memory)->shared_memory());
 #if defined(OS_POSIX)
-  canvas->reset(skia::CreatePlatformCanvas(
+  *canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
       plugin_rect_.width(), plugin_rect_.height(), true, (*memory)->pixels(),
       skia::RETURN_NULL_ON_FAILURE));
 #else
-  canvas->reset(skia::CreatePlatformCanvas(
+  *canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
       plugin_rect_.width(), plugin_rect_.height(), true,
       (*memory)->shared_memory()->handle().GetHandle(),
       skia::RETURN_NULL_ON_FAILURE));

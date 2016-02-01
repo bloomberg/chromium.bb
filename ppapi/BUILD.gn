@@ -132,6 +132,7 @@ test("ppapi_unittests") {
     "//ppapi/proxy:test_support",
     "//ppapi/shared_impl",
     "//ppapi/shared_impl:test_support",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/surface",

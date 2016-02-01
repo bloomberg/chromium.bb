@@ -27,6 +27,10 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
 
+#if !defined(OS_NACL)
+#include "skia/ext/refptr.h"
+#endif  // !defined(OS_NACL)
+
 class TransportDIB;
 
 namespace ppapi {
@@ -100,7 +104,7 @@ class PPAPI_PROXY_EXPORT PlatformImageData : public ImageData {
   scoped_ptr<TransportDIB> transport_dib_;
 
   // Null when the image isn't mapped.
-  scoped_ptr<SkCanvas> mapped_canvas_;
+  skia::RefPtr<SkCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformImageData);
 };

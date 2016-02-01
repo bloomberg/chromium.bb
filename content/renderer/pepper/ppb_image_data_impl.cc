@@ -171,7 +171,8 @@ TransportDIB* ImageDataPlatformBackend::GetTransportDIB() const {
 void* ImageDataPlatformBackend::Map() {
   if (!mapped_canvas_) {
     const bool is_opaque = false;
-    mapped_canvas_.reset(dib_->GetPlatformCanvas(width_, height_, is_opaque));
+    mapped_canvas_ =
+        skia::AdoptRef(dib_->GetPlatformCanvas(width_, height_, is_opaque));
     if (!mapped_canvas_)
       return NULL;
   }
@@ -241,7 +242,7 @@ void* ImageDataSimpleBackend::Map() {
     skia_bitmap_.setPixels(shared_memory_->memory());
     // Our platform bitmaps are set to opaque by default, which we don't want.
     skia_bitmap_.setAlphaType(kPremul_SkAlphaType);
-    skia_canvas_.reset(new SkCanvas(skia_bitmap_));
+    skia_canvas_ = skia::AdoptRef(new SkCanvas(skia_bitmap_));
     return skia_bitmap_.getAddr32(0, 0);
   }
   return shared_memory_->memory();

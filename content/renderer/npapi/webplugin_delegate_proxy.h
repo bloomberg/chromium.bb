@@ -21,6 +21,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
+#include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
@@ -124,7 +125,7 @@ class WebPluginDelegateProxy
     ~SharedBitmap();
 
     scoped_ptr<SharedMemoryBitmap> bitmap;
-    scoped_ptr<SkCanvas> canvas;
+    skia::RefPtr<SkCanvas> canvas;
   };
 
   // Message handlers for messages that proxy WebPlugin methods, which
@@ -208,12 +209,12 @@ class WebPluginDelegateProxy
   // Creates a process-local memory section and canvas. PlatformCanvas on
   // Windows only works with a DIB, not arbitrary memory.
   bool CreateLocalBitmap(std::vector<uint8_t>* memory,
-                         scoped_ptr<SkCanvas>* canvas);
+                         skia::RefPtr<SkCanvas>* canvas);
 #endif
 
   // Creates a shared memory section and canvas.
   bool CreateSharedBitmap(scoped_ptr<SharedMemoryBitmap>* memory,
-                          scoped_ptr<SkCanvas>* canvas);
+                          skia::RefPtr<SkCanvas>* canvas);
 
   // Called for cleanup during plugin destruction. Normally right before the
   // plugin window gets destroyed, or when the plugin has crashed (at which

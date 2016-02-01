@@ -15,6 +15,7 @@
 #include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/thunk/ppb_image_data_api.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 class SkBitmap;
@@ -144,7 +145,7 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   scoped_ptr<TransportDIB> dib_;
 
   // When the device is mapped, this is the image. Null when umapped.
-  scoped_ptr<SkCanvas> mapped_canvas_;
+  skia::RefPtr<SkCanvas> mapped_canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataPlatformBackend);
 };
@@ -174,7 +175,7 @@ class ImageDataSimpleBackend : public PPB_ImageData_Impl::Backend {
   scoped_ptr<base::SharedMemory> shared_memory_;
   // skia_bitmap_ is backed by shared_memory_.
   SkBitmap skia_bitmap_;
-  scoped_ptr<SkCanvas> skia_canvas_;
+  skia::RefPtr<SkCanvas> skia_canvas_;
   uint32_t map_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDataSimpleBackend);
