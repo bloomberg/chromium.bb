@@ -185,7 +185,7 @@ public:
     void restoreScrollPositionAndViewState();
 
     bool shouldContinueForNavigationPolicy(const ResourceRequest&, const SubstituteData&, DocumentLoader*, ContentSecurityPolicyDisposition,
-        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry);
+        NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry, bool isClientRedirect);
 
     DECLARE_TRACE();
 

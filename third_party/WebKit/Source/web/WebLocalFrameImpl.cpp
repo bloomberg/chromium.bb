@@ -956,7 +956,7 @@ void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl, bool ig
     WebURLRequest request = requestForReload(loadType, overrideUrl);
     if (request.isNull())
         return;
-    load(request, loadType, WebHistoryItem(), WebHistoryDifferentDocumentLoad);
+    load(request, loadType, WebHistoryItem(), WebHistoryDifferentDocumentLoad, false);
 }
 
 void WebLocalFrameImpl::reloadImage(const WebNode& webNode)
@@ -972,7 +972,7 @@ void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
 {
     // TODO(clamy): Remove this function once RenderFrame calls load for all
     // requests.
-    load(request, WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad);
+    load(request, WebFrameLoadType::Standard, WebHistoryItem(), WebHistoryDifferentDocumentLoad, false);
 }
 
 void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLoadType loadType,
@@ -981,7 +981,7 @@ void WebLocalFrameImpl::loadHistoryItem(const WebHistoryItem& item, WebHistoryLo
     // TODO(clamy): Remove this function once RenderFrame calls load for all
     // requests.
     WebURLRequest request = requestFromHistoryItem(item, cachePolicy);
-    load(request, WebFrameLoadType::BackForward, item, loadType);
+    load(request, WebFrameLoadType::BackForward, item, loadType, false);
 }
 
 void WebLocalFrameImpl::loadData(const WebData& data, const WebString& mimeType, const WebString& textEncoding, const WebURL& baseURL, const WebURL& unreachableURL, bool replace)
@@ -2112,7 +2112,7 @@ WebURLRequest WebLocalFrameImpl::requestForReload(WebFrameLoadType loadType,
 }
 
 void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webFrameLoadType,
-    const WebHistoryItem& item, WebHistoryLoadType webHistoryLoadType)
+    const WebHistoryItem& item, WebHistoryLoadType webHistoryLoadType, bool isClientRedirect)
 {
     ASSERT(frame());
     ASSERT(!request.isNull());
@@ -2125,6 +2125,8 @@ void WebLocalFrameImpl::load(const WebURLRequest& request, WebFrameLoadType webF
     }
 
     FrameLoadRequest frameRequest = FrameLoadRequest(nullptr, resourceRequest);
+    if (isClientRedirect)
+        frameRequest.setClientRedirect(ClientRedirect);
     RefPtrWillBeRawPtr<HistoryItem> historyItem = PassRefPtrWillBeRawPtr<HistoryItem>(item);
     frame()->loader().load(
         frameRequest, static_cast<FrameLoadType>(webFrameLoadType), historyItem.get(),

@@ -225,6 +225,7 @@ public:
         WebNavigationPolicy defaultPolicy;
         bool replacesCurrentHistoryItem;
         bool isHistoryNavigationInNewChildFrame;
+        bool isClientRedirect;
 
         NavigationPolicyInfo(WebURLRequest& urlRequest)
             : extraData(nullptr)
@@ -233,6 +234,7 @@ public:
             , defaultPolicy(WebNavigationPolicyIgnore)
             , replacesCurrentHistoryItem(false)
             , isHistoryNavigationInNewChildFrame(false)
+            , isClientRedirect(false)
         {
         }
     };

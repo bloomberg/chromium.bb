@@ -245,7 +245,7 @@ public:
         const override;
     WebURLRequest requestForReload(WebFrameLoadType, const WebURL&) const override;
     void load(const WebURLRequest&, WebFrameLoadType, const WebHistoryItem&,
-        WebHistoryLoadType) override;
+        WebHistoryLoadType, bool isClientRedirect) override;
     bool isLoading() const override;
     bool isResourceLoadInProgress() const override;
     bool isNavigationScheduled() const override;

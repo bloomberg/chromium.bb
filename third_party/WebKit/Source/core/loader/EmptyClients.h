@@ -215,7 +215,7 @@ public:
     void dispatchDidFinishLoad() override {}
     void dispatchDidChangeThemeColor() override {}
 
-    NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool) override;
+    NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool, bool) override;
     bool hasPendingNavigation() override;
 
     void dispatchWillSendSubmitEvent(HTMLFormElement*) override;

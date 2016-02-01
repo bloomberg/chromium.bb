@@ -95,7 +95,9 @@ public:
     // loadRequest functions in WebFrame once RenderFrame only calls loadRequest.
     virtual void load(const WebURLRequest&, WebFrameLoadType = WebFrameLoadType::Standard,
         const WebHistoryItem& = WebHistoryItem(),
-        WebHistoryLoadType = WebHistoryDifferentDocumentLoad) = 0;
+        WebHistoryLoadType = WebHistoryDifferentDocumentLoad,
+        bool isClientRedirect = false)
+        = 0;
 
     // Navigation State -------------------------------------------------------
 

@@ -99,7 +99,7 @@ public:
     virtual void dispatchDidFinishLoad() = 0;
     virtual void dispatchDidChangeThemeColor() = 0;
 
-    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry) = 0;
+    virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool shouldReplaceCurrentEntry, bool isClientRedirect) = 0;
     virtual bool hasPendingNavigation() = 0;
 
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;

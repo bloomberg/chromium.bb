@@ -1311,7 +1311,7 @@ bool FrameLoader::shouldClose(bool isReload)
 
 bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, const SubstituteData& substituteData,
     DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
-    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem)
+    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
 {
     // Don't ask if we are loading an empty URL.
     if (request.url().isEmpty() || substituteData.isValid())
@@ -1333,7 +1333,7 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
     if (isFormSubmission && !m_frame->document()->contentSecurityPolicy()->allowFormAction(request.url()))
         return false;
 
-    policy = client()->decidePolicyForNavigation(request, loader, type, policy, replacesCurrentHistoryItem);
+    policy = client()->decidePolicyForNavigation(request, loader, type, policy, replacesCurrentHistoryItem, isClientRedirect);
     if (policy == NavigationPolicyCurrentTab)
         return true;
     if (policy == NavigationPolicyIgnore)
@@ -1361,7 +1361,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setRequestContext(determineRequestContextFromNavigationType(navigationType));
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
-    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem))
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirect))
         return;
     if (!shouldClose(navigationType == NavigationTypeReload))
         return;

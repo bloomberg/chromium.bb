@@ -568,7 +568,7 @@ static bool allowCreatingBackgroundTabs()
     return userPolicy == NavigationPolicyNewBackgroundTab;
 }
 
-NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem)
+NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
 {
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
@@ -595,6 +595,7 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     navigationInfo.extraData = ds ? ds->extraData() : nullptr;
     navigationInfo.replacesCurrentHistoryItem = replacesCurrentHistoryItem;
     navigationInfo.isHistoryNavigationInNewChildFrame = isHistoryNavigationInNewChildFrame;
+    navigationInfo.isClientRedirect = isClientRedirect;
 
     WebNavigationPolicy webPolicy = m_webFrame->client()->decidePolicyForNavigation(navigationInfo);
     return static_cast<NavigationPolicy>(webPolicy);

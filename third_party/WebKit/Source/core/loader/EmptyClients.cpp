@@ -119,7 +119,7 @@ PassOwnPtr<WebFrameScheduler> EmptyChromeClient::createFrameScheduler()
     return adoptPtr(new EmptyFrameScheduler());
 }
 
-NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool)
+NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationType, NavigationPolicy, bool, bool)
 {
     return NavigationPolicyIgnore;
 }

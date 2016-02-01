@@ -897,7 +897,16 @@ class CONTENT_EXPORT RenderFrameImpl
   // PlzNavigate
   // Sends a FrameHostMsg_BeginNavigation to the browser based on the contents
   // of the WebURLRequest.
-  void BeginNavigation(blink::WebURLRequest* request);
+  // |should_replace_current_entry| indicates that the current history entry
+  // will be replaced when the navigation commits.  |is_client_redirect|
+  // indicates that the navigation originated as a client redirect.
+  // Note: those two concepts are separate. For example, a location.assign is a
+  // client redirect but it only replaces the current entry if called before
+  // load stop. location.replace on the other hand is a client redirect and
+  // always replaces the current entry.
+  void BeginNavigation(blink::WebURLRequest* request,
+                       bool should_replace_current_entry,
+                       bool is_client_redirect);
 
   // Loads a data url.
   void LoadDataURL(const CommonNavigationParams& params,
