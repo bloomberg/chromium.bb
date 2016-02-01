@@ -242,7 +242,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         super.preInflationStartup();
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
-        getWindow().setBackgroundDrawable(getBackgroundDrawable());
+        // TODO(twellington): Remove this work around when the underlying bug is fixed.
+        //                    See crbug.com/583099.
+        if (!Build.VERSION.CODENAME.equals("N")) {
+            getWindow().setBackgroundDrawable(getBackgroundDrawable());
+        }
     }
 
     @SuppressLint("NewApi")
