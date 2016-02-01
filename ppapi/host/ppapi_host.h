@@ -10,9 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -125,21 +123,21 @@ class PPAPI_HOST_EXPORT PpapiHost : public IPC::Sender, public IPC::Listener {
   // deleting these dynamically we don't need to worry about modifications
   // during iteration. If we add that capability, this should be replaced with
   // an base::ObserverList.
-  ScopedVector<HostFactory> host_factory_filters_;
+  std::vector<scoped_ptr<HostFactory>> host_factory_filters_;
 
   // Filters for instance messages. Note that since we don't support deleting
   // these dynamically we don't need to worry about modifications during
   // iteration. If we add that capability, this should be replaced with an
   // base::ObserverList.
-  ScopedVector<InstanceMessageFilter> instance_message_filters_;
+  std::vector<scoped_ptr<InstanceMessageFilter>> instance_message_filters_;
 
-  typedef std::map<PP_Resource, linked_ptr<ResourceHost> > ResourceMap;
+  typedef std::map<PP_Resource, scoped_ptr<ResourceHost>> ResourceMap;
   ResourceMap resources_;
 
   // Resources that have been created in the host and have not yet had the
   // corresponding PluginResource associated with them.
   // See PpapiHostMsg_AttachToPendingHost.
-  typedef std::map<int, linked_ptr<ResourceHost> > PendingHostResourceMap;
+  typedef std::map<int, scoped_ptr<ResourceHost>> PendingHostResourceMap;
   PendingHostResourceMap pending_resource_hosts_;
   int next_pending_resource_host_id_;
 

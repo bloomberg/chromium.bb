@@ -96,7 +96,7 @@ void ResourceTracker::DidCreateInstance(PP_Instance instance) {
   // instead.
   if (instance_map_.find(instance) != instance_map_.end())
     return;
-  instance_map_[instance] = linked_ptr<InstanceData>(new InstanceData);
+  instance_map_[instance] = make_scoped_ptr(new InstanceData);
 }
 
 void ResourceTracker::DidDeleteInstance(PP_Instance instance) {

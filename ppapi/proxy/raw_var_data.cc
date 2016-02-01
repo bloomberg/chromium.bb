@@ -44,18 +44,18 @@ struct StackEntry {
 // |visited_map| keeps track of RawVarDatas that have already been created.
 size_t GetOrCreateRawVarData(const PP_Var& var,
                              base::hash_map<int64_t, size_t>* visited_map,
-                             ScopedVector<RawVarData>* data) {
+                             std::vector<scoped_ptr<RawVarData>>* data) {
   if (VarTracker::IsVarTypeRefcounted(var.type)) {
     base::hash_map<int64_t, size_t>::iterator it = visited_map->find(
         var.value.as_id);
     if (it != visited_map->end()) {
       return it->second;
     } else {
-      data->push_back(RawVarData::Create(var.type));
+      data->push_back(make_scoped_ptr(RawVarData::Create(var.type)));
       (*visited_map)[var.value.as_id] = data->size() - 1;
     }
   } else {
-    data->push_back(RawVarData::Create(var.type));
+    data->push_back(make_scoped_ptr(RawVarData::Create(var.type)));
   }
   return data->size() - 1;
 }
@@ -96,7 +96,7 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Create(const PP_Var& var,
 
   while (!stack.empty()) {
     PP_Var current_var = stack.top().var;
-    RawVarData* current_var_data = graph->data_[stack.top().data_index];
+    RawVarData* current_var_data = graph->data_[stack.top().data_index].get();
 
     if (current_var_data->initialized()) {
       stack.pop();
@@ -195,7 +195,7 @@ scoped_ptr<RawVarDataGraph> RawVarDataGraph::Read(const IPC::Message* m,
     if (!iter->ReadInt(&type))
       return scoped_ptr<RawVarDataGraph>();
     PP_VarType var_type = static_cast<PP_VarType>(type);
-    result->data_.push_back(RawVarData::Create(var_type));
+    result->data_.push_back(make_scoped_ptr(RawVarData::Create(var_type)));
     if (!result->data_.back()->Read(var_type, m, iter))
       return scoped_ptr<RawVarDataGraph>();
   }

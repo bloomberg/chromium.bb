@@ -11,7 +11,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -107,7 +106,7 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
     // going away (otherwise, they may crash if they outlive the instance).
     ResourceSet resources;
   };
-  typedef base::hash_map<PP_Instance, linked_ptr<InstanceData> > InstanceMap;
+  typedef base::hash_map<PP_Instance, scoped_ptr<InstanceData>> InstanceMap;
 
   InstanceMap instance_map_;
 

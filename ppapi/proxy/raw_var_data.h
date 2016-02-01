@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/proxy/ppapi_param_traits.h"
@@ -86,8 +86,11 @@ class PPAPI_PROXY_EXPORT RawVarDataGraph {
   // (in order to have fast tests).
   static void SetMinimumArrayBufferSizeForShmemForTest(uint32_t threshold);
 
+ private:
   // A list of the nodes in the graph.
-  ScopedVector<RawVarData> data_;
+  std::vector<scoped_ptr<RawVarData>> data_;
+
+  DISALLOW_COPY_AND_ASSIGN(RawVarDataGraph);
 };
 
 // Abstract base class for the data contained in a PP_Var.
