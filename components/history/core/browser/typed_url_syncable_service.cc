@@ -251,8 +251,15 @@ syncer::SyncError TypedUrlSyncableService::ProcessSyncChanges(
 
     if (syncer::SyncChange::ACTION_DELETE == it->change_type()) {
       pending_deleted_urls.push_back(url);
+      if (synced_typed_urls_.find(url) != synced_typed_urls_.end()) {
+        // Delete typed url from cache.
+        synced_typed_urls_.erase(url);
+      }
       continue;
     }
+
+    // Ensure cache of server state is up to date.
+    synced_typed_urls_.insert(url);
 
     if (ShouldIgnoreUrl(url))
       continue;
