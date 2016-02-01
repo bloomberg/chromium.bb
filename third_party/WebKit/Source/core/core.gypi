@@ -771,7 +771,7 @@
             'style/ContentData.cpp',
             'style/CounterDirectives.cpp',
             'style/FillLayer.cpp',
-            'style/GridCoordinate.h',
+            'style/GridArea.h',
             'style/GridPositionsResolver.cpp',
             'style/GridPositionsResolver.h',
             'style/ComputedStyle.cpp',

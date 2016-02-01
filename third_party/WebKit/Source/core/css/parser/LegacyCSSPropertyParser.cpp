@@ -48,7 +48,7 @@
 #include "core/css/parser/CSSParserFastPaths.h"
 #include "core/css/parser/CSSParserValues.h"
 #include "core/frame/UseCounter.h"
-#include "core/style/GridCoordinate.h"
+#include "core/style/GridArea.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
@@ -2071,24 +2071,24 @@ bool CSSPropertyParser::parseGridTemplateAreasRow(NamedGridAreaMap& gridAreaMap,
 
         NamedGridAreaMap::iterator gridAreaIt = gridAreaMap.find(gridAreaName);
         if (gridAreaIt == gridAreaMap.end()) {
-            gridAreaMap.add(gridAreaName, GridCoordinate(GridSpan::translatedDefiniteGridSpan(rowCount, rowCount + 1), GridSpan::translatedDefiniteGridSpan(currentCol, lookAheadCol)));
+            gridAreaMap.add(gridAreaName, GridArea(GridSpan::translatedDefiniteGridSpan(rowCount, rowCount + 1), GridSpan::translatedDefiniteGridSpan(currentCol, lookAheadCol)));
         } else {
-            GridCoordinate& gridCoordinate = gridAreaIt->value;
+            GridArea& gridArea = gridAreaIt->value;
 
             // The following checks test that the grid area is a single filled-in rectangle.
             // 1. The new row is adjacent to the previously parsed row.
-            if (rowCount != gridCoordinate.rows.resolvedFinalPosition())
+            if (rowCount != gridArea.rows.resolvedFinalPosition())
                 return false;
 
             // 2. The new area starts at the same position as the previously parsed area.
-            if (currentCol != gridCoordinate.columns.resolvedInitialPosition())
+            if (currentCol != gridArea.columns.resolvedInitialPosition())
                 return false;
 
             // 3. The new area ends at the same position as the previously parsed area.
-            if (lookAheadCol != gridCoordinate.columns.resolvedFinalPosition())
+            if (lookAheadCol != gridArea.columns.resolvedFinalPosition())
                 return false;
 
-            gridCoordinate.rows = GridSpan::translatedDefiniteGridSpan(gridCoordinate.rows.resolvedInitialPosition(), gridCoordinate.rows.resolvedFinalPosition() + 1);
+            gridArea.rows = GridSpan::translatedDefiniteGridSpan(gridArea.rows.resolvedInitialPosition(), gridArea.rows.resolvedFinalPosition() + 1);
         }
         currentCol = lookAheadCol - 1;
     }

@@ -26,7 +26,7 @@
 #ifndef StyleGridData_h
 #define StyleGridData_h
 
-#include "core/style/GridCoordinate.h"
+#include "core/style/GridArea.h"
 #include "core/style/GridTrackSize.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "wtf/PassRefPtr.h"

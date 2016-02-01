@@ -5,7 +5,7 @@
 #include "GridPositionsResolver.h"
 
 #include "core/layout/LayoutBox.h"
-#include "core/style/GridCoordinate.h"
+#include "core/style/GridArea.h"
 #include <algorithm>
 
 namespace blink {
