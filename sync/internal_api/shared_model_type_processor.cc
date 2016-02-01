@@ -86,11 +86,53 @@ void SharedModelTypeProcessor::Start(StartCallback callback) {
   DCHECK(CalledOnValidThread());
   DVLOG(1) << "Starting " << ModelTypeToString(type_);
 
-  is_enabled_ = true;
+  if (!data_type_state_.initial_sync_done) {
+    // TODO(maxbogue): Load metadata whenever the native model is ready.
+    service_->LoadMetadata(
+        base::Bind(&SharedModelTypeProcessor::OnMetadataLoaded,
+                   base::Unretained(this), callback));
+  } else {
+    FinishStart(callback);
+  }
+}
 
-  // TODO(stanisc): At some point, this should be loaded from storage.
-  data_type_state_.progress_marker.set_data_type_id(
-      GetSpecificsFieldNumberFromModelType(type_));
+void SharedModelTypeProcessor::OnMetadataLoaded(
+    StartCallback callback,
+    syncer::SyncError error,
+    scoped_ptr<MetadataBatch> batch) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(entities_.empty());
+
+  if (error.IsSet()) {
+    callback.Run(error, nullptr);
+    return;
+  }
+
+  if (batch->GetDataTypeState().initial_sync_done) {
+    EntityMetadataMap metadata_map(batch->TakeAllMetadata());
+    for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
+      entities_.insert(std::make_pair(
+          it->second.client_tag_hash(),
+          ModelTypeEntity::CreateFromMetadata(it->first, &it->second)));
+    }
+    data_type_state_ = batch->GetDataTypeState();
+    // TODO(maxbogue): crbug.com/569642: Load data for pending commits.
+    // TODO(maxbogue): crbug.com/569642: Check for inconsistent state where
+    // we have data but no metadata?
+  } else {
+    // First time syncing; initialize metadata.
+    data_type_state_.progress_marker.set_data_type_id(
+        GetSpecificsFieldNumberFromModelType(type_));
+  }
+
+
+  FinishStart(callback);
+}
+
+void SharedModelTypeProcessor::FinishStart(StartCallback callback) {
+  DCHECK(CalledOnValidThread());
+
+  is_enabled_ = true;
 
   scoped_ptr<ActivationContext> activation_context =
       make_scoped_ptr(new ActivationContext);
@@ -283,6 +325,11 @@ void SharedModelTypeProcessor::OnUpdateReceived(
     const DataTypeState& data_type_state,
     const UpdateResponseDataList& response_list,
     const UpdateResponseDataList& pending_updates) {
+
+  if (!data_type_state_.initial_sync_done) {
+    OnInitialUpdateReceived(data_type_state, response_list, pending_updates);
+  }
+
   scoped_ptr<MetadataChangeList> metadata_changes =
       service_->CreateMetadataChangeList();
   EntityChangeList entity_changes;
@@ -393,6 +440,14 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   FlushPendingCommitRequests();
 }
 
+void SharedModelTypeProcessor::OnInitialUpdateReceived(
+    const DataTypeState& data_type_state,
+    const UpdateResponseDataList& response_list,
+    const UpdateResponseDataList& pending_updates) {
+  // TODO(maxbogue): crbug.com/569675: Generate metadata for all entities.
+  // TODO(maxbogue): crbug.com/569675: Call merge method on the service.
+}
+
 UpdateResponseDataList SharedModelTypeProcessor::GetPendingUpdates() {
   UpdateResponseDataList pending_updates_list;
   for (auto it = pending_updates_map_.begin(); it != pending_updates_map_.end();
@@ -409,9 +464,7 @@ void SharedModelTypeProcessor::ClearTransientSyncState() {
 }
 
 void SharedModelTypeProcessor::ClearSyncState() {
-  for (auto it = entities_.begin(); it != entities_.end(); ++it) {
-    it->second->ClearSyncState();
-  }
+  entities_.clear();
   pending_updates_map_.clear();
   data_type_state_ = DataTypeState();
   // TODO(stanisc): crbug.com/561830, crbug.com/573333: Update the service to

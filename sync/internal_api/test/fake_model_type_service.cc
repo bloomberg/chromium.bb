@@ -27,7 +27,9 @@ syncer::SyncError FakeModelTypeService::ApplySyncChanges(
   return syncer::SyncError();
 }
 
-void FakeModelTypeService::LoadMetadata(MetadataCallback callback) {}
+void FakeModelTypeService::LoadMetadata(MetadataCallback callback) {
+  callback.Run(syncer::SyncError(), make_scoped_ptr(new MetadataBatch()));
+}
 
 void FakeModelTypeService::GetData(ClientTagList client_tags,
                                    DataCallback callback) {}

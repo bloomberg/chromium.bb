@@ -35,6 +35,12 @@ class SYNC_EXPORT ModelTypeEntity {
       const std::string& id,
       base::Time creation_time);
 
+  // Construct an instance representing an item loaded from storage on init.
+  // This method swaps out the contents of |metadata|.
+  static scoped_ptr<ModelTypeEntity> CreateFromMetadata(
+      const std::string& client_tag,
+      sync_pb::EntityMetadata* metadata);
+
   ~ModelTypeEntity();
 
   // Returns entity's client tag.

@@ -19,6 +19,7 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/syncable_util.h"
 #include "sync/test/engine/mock_commit_queue.h"
+#include "sync/util/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer_v2 {
@@ -122,11 +123,17 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   // when receiving items.
   void SetServerEncryptionKey(const std::string& key_name);
 
+  void AddMetadataToBatch(const std::string& tag);
+
+  // Return the number of entities the processor has metadata for.
+  size_t ProcessorEntityCount() const;
+
   MockCommitQueue* mock_queue();
   SharedModelTypeProcessor* type_processor();
 
   const EntityChangeList* entity_change_list() const;
   const FakeMetadataChangeList* metadata_change_list() const;
+  MetadataBatch* metadata_batch();
 
  private:
   static std::string GenerateTagHash(const std::string& tag);
@@ -149,6 +156,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   syncer::SyncError ApplySyncChanges(
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
+  void LoadMetadata(MetadataCallback callback) override;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
@@ -166,22 +174,25 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   scoped_ptr<EntityChangeList> entity_change_list_;
   // The last received MetadataChangeList.
   scoped_ptr<FakeMetadataChangeList> metadata_change_list_;
+  scoped_ptr<MetadataBatch> metadata_batch_;
 };
 
 SharedModelTypeProcessorTest::SharedModelTypeProcessorTest()
     : mock_queue_(new MockCommitQueue()),
       mock_queue_ptr_(mock_queue_),
-      type_processor_(new SharedModelTypeProcessor(kModelType, this)) {}
+      type_processor_(new SharedModelTypeProcessor(kModelType, this)),
+      metadata_batch_(new MetadataBatch()) {}
 
 SharedModelTypeProcessorTest::~SharedModelTypeProcessorTest() {}
 
 void SharedModelTypeProcessorTest::InitializeToReadyState() {
-  // TODO(rlarocque): This should be updated to inject on-disk state.
-  // At the time this code was written, there was no support for on-disk
-  // state so this was the only way to inject a data_type_state into
-  // the |type_processor_|.
+  data_type_state_.initial_sync_done = true;
   Start();
-  OnInitialSyncDone();
+  // TODO(maxbogue): crbug.com/569642: Remove this once entity data is loaded
+  // for the normal startup flow.
+  UpdateResponseDataList empty_update_list;
+  type_processor_->OnUpdateReceived(data_type_state_, empty_update_list,
+                                    empty_update_list);
 }
 
 void SharedModelTypeProcessorTest::Start() {
@@ -339,6 +350,21 @@ void SharedModelTypeProcessorTest::SetServerEncryptionKey(
   mock_queue_->SetServerEncryptionKey(key_name);
 }
 
+void SharedModelTypeProcessorTest::AddMetadataToBatch(const std::string& tag) {
+  const std::string tag_hash = GenerateTagHash(tag);
+  base::Time creation_time = base::Time::Now();
+
+  sync_pb::EntityMetadata metadata;
+  metadata.set_client_tag_hash(tag_hash);
+  metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
+
+  metadata_batch()->AddMetadata(tag, metadata);
+}
+
+size_t SharedModelTypeProcessorTest::ProcessorEntityCount() const {
+  return type_processor_->entities_.size();
+}
+
 MockCommitQueue* SharedModelTypeProcessorTest::mock_queue() {
   return mock_queue_;
 }
@@ -355,6 +381,10 @@ const EntityChangeList* SharedModelTypeProcessorTest::entity_change_list()
 const FakeMetadataChangeList*
 SharedModelTypeProcessorTest::metadata_change_list() const {
   return metadata_change_list_.get();
+}
+
+MetadataBatch* SharedModelTypeProcessorTest::metadata_batch() {
+  return metadata_batch_.get();
 }
 
 std::string SharedModelTypeProcessorTest::GenerateTagHash(
@@ -411,6 +441,12 @@ syncer::SyncError SharedModelTypeProcessorTest::ApplySyncChanges(
   return syncer::SyncError();
 }
 
+void SharedModelTypeProcessorTest::LoadMetadata(MetadataCallback callback) {
+  metadata_batch_->SetDataTypeState(data_type_state_);
+  callback.Run(syncer::SyncError(), std::move(metadata_batch_));
+  metadata_batch_.reset(new MetadataBatch());
+}
+
 size_t SharedModelTypeProcessorTest::GetNumCommitRequestLists() {
   return mock_queue_->GetNumCommitRequestLists();
 }
@@ -430,6 +466,16 @@ CommitRequestData SharedModelTypeProcessorTest::GetLatestCommitRequestForTag(
     const std::string& tag) {
   const std::string tag_hash = GenerateTagHash(tag);
   return mock_queue_->GetLatestCommitRequestForTagHash(tag_hash);
+}
+
+TEST_F(SharedModelTypeProcessorTest, Initialize) {
+  // TODO(maxbogue): crbug.com/569642: Add data for tag1.
+  AddMetadataToBatch("tag1");
+  ASSERT_EQ(0U, ProcessorEntityCount());
+  InitializeToReadyState();
+  ASSERT_EQ(1U, ProcessorEntityCount());
+  // TODO(maxbogue): crbug.com/569642: Verify that a commit is added to the
+  // queue.
 }
 
 // Creates a new item locally.
@@ -841,7 +887,7 @@ TEST_F(SharedModelTypeProcessorTest, Stop) {
 //
 // Creates items in various states of commit and verifies they re-attempt to
 // commit on re-enable.
-TEST_F(SharedModelTypeProcessorTest, Disable) {
+TEST_F(SharedModelTypeProcessorTest, DISABLED_Disable) {
   InitializeToReadyState();
 
   FakeMetadataChangeList change_list;
@@ -863,18 +909,14 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
   // Now we re-enable.
   Restart();
 
-  // There should be nothing to commit right away, since we need to
-  // re-initialize the client state first.
-  EXPECT_EQ(0U, GetNumCommitRequestLists());
-
   // Once we're ready to commit, all three local items should consider
   // themselves uncommitted and pending for commit.
-  OnInitialSyncDone();
-  EXPECT_EQ(1U, GetNumCommitRequestLists());
-  EXPECT_EQ(3U, GetNthCommitRequestList(0).size());
-  EXPECT_TRUE(HasCommitRequestForTag("tag1"));
-  EXPECT_TRUE(HasCommitRequestForTag("tag2"));
-  EXPECT_TRUE(HasCommitRequestForTag("tag3"));
+  // TODO(maxbogue): crbug.com/569645: Fix when data is loaded.
+   EXPECT_EQ(1U, GetNumCommitRequestLists());
+   EXPECT_EQ(3U, GetNthCommitRequestList(0).size());
+   EXPECT_TRUE(HasCommitRequestForTag("tag1"));
+   EXPECT_TRUE(HasCommitRequestForTag("tag2"));
+   EXPECT_TRUE(HasCommitRequestForTag("tag3"));
 }
 
 // Test receipt of pending updates.

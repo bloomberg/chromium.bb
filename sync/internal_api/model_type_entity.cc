@@ -34,10 +34,16 @@ scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateNew(
       new ModelTypeEntity(client_tag, &metadata));
 }
 
+scoped_ptr<ModelTypeEntity> ModelTypeEntity::CreateFromMetadata(
+    const std::string& client_tag,
+    sync_pb::EntityMetadata* metadata) {
+  return scoped_ptr<ModelTypeEntity>(new ModelTypeEntity(client_tag, metadata));
+}
+
 ModelTypeEntity::ModelTypeEntity(const std::string& client_tag,
                                  sync_pb::EntityMetadata* metadata)
-    : client_tag_(client_tag), commit_requested_sequence_number_(0) {
-  DCHECK(metadata);
+    : client_tag_(client_tag),
+      commit_requested_sequence_number_(metadata->acked_sequence_number()) {
   DCHECK(metadata->has_client_tag_hash());
   metadata_.Swap(metadata);
 }

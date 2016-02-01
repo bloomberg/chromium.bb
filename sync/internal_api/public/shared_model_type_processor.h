@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/api/metadata_batch.h"
 #include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_change_processor.h"
 #include "sync/api/model_type_service.h"
@@ -92,8 +93,23 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
                         const UpdateResponseDataList& pending_updates) override;
 
  private:
+  friend class SharedModelTypeProcessorTest;
+
   using EntityMap = std::map<std::string, scoped_ptr<ModelTypeEntity>>;
   using UpdateMap = std::map<std::string, scoped_ptr<UpdateResponseData>>;
+
+  // Callback for ModelTypeService::LoadMetadata().
+  void OnMetadataLoaded(StartCallback callback,
+                        syncer::SyncError,
+                        scoped_ptr<MetadataBatch> batch);
+
+  // Complete the start process.
+  void FinishStart(StartCallback callback);
+
+  // Handle the first update received from the server after being enabled.
+  void OnInitialUpdateReceived(const DataTypeState& type_state,
+                               const UpdateResponseDataList& response_list,
+                               const UpdateResponseDataList& pending_updates);
 
   // Sends all commit requests that are due to be sent to the sync thread.
   void FlushPendingCommitRequests();
