@@ -264,7 +264,7 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/enhancedbookmarks/EnhancedBookmarkUtilsTest.java",
     "junit/src/org/chromium/chrome/browser/externalauth/ExternalAuthUtilsTest.java",
     "junit/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencerTest.java",
-    "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientConnectionHelperTest.java",
+    "junit/src/org/chromium/chrome/browser/gcore/GoogleApiClientHelperTest.java",
     "junit/src/org/chromium/chrome/browser/invalidation/InvalidationControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
