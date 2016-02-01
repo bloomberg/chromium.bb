@@ -805,6 +805,19 @@ public:
 
     template <typename VisitorDispatcher> void trace(VisitorDispatcher);
 
+    class GCForbiddenScope {
+        STACK_ALLOCATED();
+    public:
+        GCForbiddenScope()
+        {
+            Allocator::enterGCForbiddenScope();
+        }
+        ~GCForbiddenScope()
+        {
+            Allocator::leaveGCForbiddenScope();
+        }
+    };
+
 protected:
     using Base::checkUnusedSlots;
     using Base::clearUnusedSlots;

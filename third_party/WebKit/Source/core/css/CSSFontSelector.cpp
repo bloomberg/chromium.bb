@@ -83,12 +83,8 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
 
     WillBeHeapVector<RawPtrWillBeMember<CSSFontSelectorClient>> clients;
     copyToVector(m_clients, clients);
-    // TODO(sof): the null check is temporarily in place to speculatively address
-    // crbug.com/568173.
-    for (auto& client : clients) {
-        if (client)
-            client->fontsNeedUpdate(this);
-    }
+    for (auto& client : clients)
+        client->fontsNeedUpdate(this);
 }
 
 void CSSFontSelector::fontFaceInvalidated()

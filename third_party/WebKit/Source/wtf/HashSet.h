@@ -275,7 +275,11 @@ inline void copyToVector(const C& collection, W& vector)
 {
     typedef typename C::const_iterator iterator;
 
-    vector.resize(collection.size());
+    {
+        // Disallow GC across resize allocation, see crbug.com/568173
+        typename W::GCForbiddenScope scope;
+        vector.resize(collection.size());
+    }
 
     iterator it = collection.begin();
     iterator end = collection.end();

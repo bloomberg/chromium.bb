@@ -130,7 +130,11 @@ inline void copyToVector(const HashCountedSet<T, U, V, W>& collection, VectorTyp
 {
     typedef typename HashCountedSet<T, U, V, W>::const_iterator iterator;
 
-    vector.resize(collection.size());
+    {
+        // Disallow GC across resize allocation, see crbug.com/568173
+        typename VectorType::GCForbiddenScope scope;
+        vector.resize(collection.size());
+    }
 
     iterator it = collection.begin();
     iterator end = collection.end();
@@ -143,7 +147,11 @@ inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allo
 {
     typedef typename HashCountedSet<Value, HashFunctions, Traits, Allocator>::const_iterator iterator;
 
-    vector.resize(collection.size());
+    {
+        // Disallow GC across resize allocation, see crbug.com/568173
+        typename Vector<Value, inlineCapacity, VectorAllocator>::GCForbiddenScope scope;
+        vector.resize(collection.size());
+    }
 
     iterator it = collection.begin();
     iterator end = collection.end();
