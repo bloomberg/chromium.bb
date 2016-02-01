@@ -31,7 +31,8 @@ public:
             && transformType != PerspectiveType
             && transformType != Rotation3DType
             && transformType != Scale3DType
-            && transformType != Translate3DType;
+            && transformType != Translate3DType
+            && transformType != PerspectiveType;
     }
 
     String cssString() const

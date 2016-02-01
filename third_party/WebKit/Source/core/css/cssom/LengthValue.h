@@ -40,6 +40,8 @@ public:
     LengthValue* multiply(double, ExceptionState&);
     LengthValue* divide(double, ExceptionState&);
 
+    virtual bool containsPercent() const = 0;
+
     static LengthValue* parse(const String& cssString, ExceptionState&);
     static LengthValue* fromValue(double value, const String& typeStr, ExceptionState&);
     static LengthValue* fromDictionary(const CalcDictionary&, ExceptionState&);

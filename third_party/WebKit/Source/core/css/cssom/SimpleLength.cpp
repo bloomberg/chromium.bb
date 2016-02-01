@@ -15,6 +15,11 @@ PassRefPtrWillBeRawPtr<CSSValue> SimpleLength::toCSSValue() const
     return cssValuePool().createValue(m_value, LengthValue::lengthTypeToPrimitiveType(m_unit));
 }
 
+bool SimpleLength::containsPercent() const
+{
+    return lengthUnit() == LengthValue::Percent;
+}
+
 LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
     const SimpleLength* o = toSimpleLength(other);

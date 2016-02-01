@@ -69,6 +69,11 @@ StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, Excep
     return result;
 }
 
+bool StyleCalcLength::containsPercent() const
+{
+    return has(LengthValue::Percent);
+}
+
 LengthValue* StyleCalcLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(other, exceptionState);

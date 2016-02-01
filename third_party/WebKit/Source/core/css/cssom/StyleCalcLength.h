@@ -44,6 +44,8 @@ public:
 
 #undef GETTER_MACRO
 
+    bool containsPercent() const override;
+
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
     StyleValueType type() const override { return CalcLengthType; }

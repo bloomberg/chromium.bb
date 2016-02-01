@@ -3854,6 +3854,9 @@ interface Permissions
     method request
     method requestAll
     method revoke
+interface PerspectiveTransformComponent : TransformComponent
+    getter length
+    method constructor
 interface Plugin
     getter description
     getter filename

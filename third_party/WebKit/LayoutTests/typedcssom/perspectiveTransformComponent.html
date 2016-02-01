@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+
+test(function() {
+  var calcLength = new CalcLength({px: 10, percent: 3.2});
+  assert_throws(null, function() { new PerspectiveTransformComponent(calcLength) });
+}, "Constructor should throw an error for CalcLengths with a percentage type");
+
+test(function() {
+  var simpleLength = new SimpleLength(10, 'percent');
+  assert_throws(null, function() { new PerspectiveTransformComponent(simpleLength) });
+}, "Constructor should throw an error for SimpleLengths with a percentage type");
+
+test(function() {
+  var simpleLength = new SimpleLength(10, 'px');
+  var calcLength = new CalcLength({px: 10, em: 3.2});
+  var perspectiveTransformSimple = new PerspectiveTransformComponent(simpleLength);
+  var perspectiveTransformCalc = new PerspectiveTransformComponent(calcLength);
+
+  assert_equals(perspectiveTransformSimple.cssString, 'perspective(10px)');
+  assert_equals(perspectiveTransformCalc.cssString,'perspective(calc(10px + 3.2em))');
+}, "cssString should return a string of form perspective(<LengthValue.cssString()>)");
+
+</script>
+
+<body>
+</body>
