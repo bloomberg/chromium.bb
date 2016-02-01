@@ -200,6 +200,16 @@ crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-d
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
+# SK_SUPPORT_LEGACY_SAMPLER_BIAS
+crbug.com/581870 fast/borders/border-image-outset-in-shorthand.html [ NeedsRebaseline ]
+crbug.com/581870 fast/borders/border-image-outset-split-inline.html [ NeedsRebaseline ]
+crbug.com/581870 fast/borders/border-image-outset.html [ NeedsRebaseline ]
+crbug.com/581870 fast/borders/border-image-slice-constrained.html [ NeedsRebaseline ]
+crbug.com/581870 fast/gradients/border-image-gradient-sides-and-corners.html [ NeedsRebaseline ]
+crbug.com/581870 fast/writing-mode/border-image-vertical-lr.html [ NeedsRebaseline ]
+crbug.com/581870 fast/writing-mode/border-image-vertical-rl.html [ NeedsRebaseline ]
+crbug.com/581870 svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
+
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]

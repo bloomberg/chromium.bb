@@ -206,10 +206,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 //
 // Remove these as we update our sites.
 //
-#ifndef    SK_SUPPORT_LEGACY_SAMPLER_BIAS
-#   define SK_SUPPORT_LEGACY_SAMPLER_BIAS
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_GETTOPDEVICE
 #   define SK_SUPPORT_LEGACY_GETTOPDEVICE
 #endif
