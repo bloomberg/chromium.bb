@@ -184,7 +184,6 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseLegacyPosition();
     PassRefPtrWillBeRawPtr<CSSValue> parseItemPositionOverflowPosition();
-    PassRefPtrWillBeRawPtr<CSSValue> parseContentDistributionOverflowPosition();
 
     bool consumeFont(bool important);
     bool consumeSystemFont(bool important);

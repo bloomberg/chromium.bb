@@ -7,6 +7,7 @@
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSCalculationValue.h"
+#include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCounterValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCursorImageValue.h"
@@ -3148,6 +3149,45 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeShapeOutside(CSSParserTokenRange&
     return list.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeContentDistributionOverflowPosition(CSSParserTokenRange& range)
+{
+    if (identMatches<CSSValueAuto, CSSValueBaseline, CSSValueLastBaseline>(range.peek().id()))
+        return CSSContentDistributionValue::create(CSSValueInvalid, range.consumeIncludingWhitespace().id(), CSSValueInvalid);
+
+    CSSValueID distribution = CSSValueInvalid;
+    CSSValueID position = CSSValueInvalid;
+    CSSValueID overflow = CSSValueInvalid;
+    do {
+        CSSValueID id = range.peek().id();
+        if (identMatches<CSSValueSpaceBetween, CSSValueSpaceAround, CSSValueSpaceEvenly, CSSValueStretch>(id)) {
+            if (distribution != CSSValueInvalid)
+                return nullptr;
+            distribution = id;
+        } else if (identMatches<CSSValueStart, CSSValueEnd, CSSValueCenter, CSSValueFlexStart, CSSValueFlexEnd, CSSValueLeft, CSSValueRight>(id)) {
+            if (position != CSSValueInvalid)
+                return nullptr;
+            position = id;
+        } else if (identMatches<CSSValueUnsafe, CSSValueSafe>(id)) {
+            if (overflow != CSSValueInvalid)
+                return nullptr;
+            overflow = id;
+        } else {
+            return nullptr;
+        }
+        range.consumeIncludingWhitespace();
+    } while (!range.atEnd());
+
+    // The grammar states that we should have at least <content-distribution> or <content-position>.
+    if (position == CSSValueInvalid && distribution == CSSValueInvalid)
+        return nullptr;
+
+    // The grammar states that <overflow-position> must be associated to <content-position>.
+    if (overflow != CSSValueInvalid && position == CSSValueInvalid)
+        return nullptr;
+
+    return CSSContentDistributionValue::create(distribution, position, overflow);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3448,6 +3488,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeShapeOutside(m_range, m_context);
     case CSSPropertyWebkitClipPath:
         return consumeClipPath(m_range, m_context);
+    case CSSPropertyJustifyContent:
+    case CSSPropertyAlignContent:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeContentDistributionOverflowPosition(m_range);
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {

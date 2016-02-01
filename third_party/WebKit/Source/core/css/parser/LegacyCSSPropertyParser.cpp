@@ -28,7 +28,6 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBorderImage.h"
-#include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -400,10 +399,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
         validPrimitive = (id == CSSValueNone) ? true : validUnit(value, FNumber | FNonNeg);
         break;
-    case CSSPropertyJustifyContent:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseContentDistributionOverflowPosition();
-        break;
+
     case CSSPropertyJustifySelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseItemPositionOverflowPosition();
@@ -446,9 +442,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         parsedValue = parseGridTemplateAreas();
         break;
 
-    case CSSPropertyAlignContent:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseContentDistributionOverflowPosition();
         break;
 
     case CSSPropertyAlignSelf:
@@ -2167,19 +2160,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
     return parsedValues;
 }
 
-static bool isContentDistributionKeyword(CSSValueID id)
-{
-    return id == CSSValueSpaceBetween || id == CSSValueSpaceAround
-        || id == CSSValueSpaceEvenly || id == CSSValueStretch;
-}
-
-static bool isContentPositionKeyword(CSSValueID id)
-{
-    return id == CSSValueStart || id == CSSValueEnd || id == CSSValueCenter
-        || id == CSSValueFlexStart || id == CSSValueFlexEnd
-        || id == CSSValueLeft || id == CSSValueRight;
-}
-
 static bool isBaselinePositionKeyword(CSSValueID id)
 {
     return id == CSSValueBaseline || id == CSSValueLastBaseline;
@@ -2219,55 +2199,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseLegacyPosition()
 
     m_valueList->next();
     return CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id), CSSValuePair::DropIdenticalValues);
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseContentDistributionOverflowPosition()
-{
-    // auto | <baseline-position> | <content-distribution> || [ <overflow-position>? && <content-position> ]
-    // <baseline-position> = baseline | last-baseline;
-    // <content-distribution> = space-between | space-around | space-evenly | stretch;
-    // <content-position> = center | start | end | flex-start | flex-end | left | right;
-    // <overflow-position> = true | safe
-
-    // auto | <baseline-position>
-    CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueAuto || isBaselinePositionKeyword(value->id)) {
-        m_valueList->next();
-        return CSSContentDistributionValue::create(CSSValueInvalid, value->id, CSSValueInvalid);
-    }
-
-    CSSValueID distribution = CSSValueInvalid;
-    CSSValueID position = CSSValueInvalid;
-    CSSValueID overflow = CSSValueInvalid;
-    while (value) {
-        if (isContentDistributionKeyword(value->id)) {
-            if (distribution != CSSValueInvalid)
-                return nullptr;
-            distribution = value->id;
-        } else if (isContentPositionKeyword(value->id)) {
-            if (position != CSSValueInvalid)
-                return nullptr;
-            position = value->id;
-        } else if (isAlignmentOverflowKeyword(value->id)) {
-            if (overflow != CSSValueInvalid)
-                return nullptr;
-            overflow = value->id;
-        } else {
-            return nullptr;
-        }
-        value = m_valueList->next();
-    }
-
-    // The grammar states that we should have at least <content-distribution> or
-    // <content-position> ( <content-distribution> || <content-position> ).
-    if (position == CSSValueInvalid && distribution == CSSValueInvalid)
-        return nullptr;
-
-    // The grammar states that <overflow-position> must be associated to <content-position>.
-    if (overflow != CSSValueInvalid && position == CSSValueInvalid)
-        return nullptr;
-
-    return CSSContentDistributionValue::create(distribution, position, overflow);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseItemPositionOverflowPosition()
