@@ -279,7 +279,7 @@ echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | \
 
 # Compare the expected dependency list to the generate list.
 BAD_DIFF=0
-diff "$SCRIPTDIR/expected_deps_$TARGETARCH" actual || BAD_DIFF=1
+LANG=C diff -u "$SCRIPTDIR/expected_deps_$TARGETARCH" actual || BAD_DIFF=1
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
