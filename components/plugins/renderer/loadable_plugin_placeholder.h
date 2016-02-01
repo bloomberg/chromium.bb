@@ -88,7 +88,6 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   void UpdateMessage();
 
   bool LoadingBlocked() const;
-  void RecheckSizeAndMaybeUnthrottle();
 
   // Plugin creation is embedder-specific.
   virtual blink::WebPlugin* CreatePlugin() = 0;
@@ -120,10 +119,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   bool finished_loading_;
   std::string identifier_;
 
-  // Used to prevent re-entrancy during the size recheck for throttled plugins.
-  bool in_size_recheck_;
   gfx::Rect unobscured_rect_;
-  base::OneShotTimer size_update_timer_;
 
   // True if the power saver heuristic has already been run on this content.
   bool heuristic_run_before_;
