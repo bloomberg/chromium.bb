@@ -1480,7 +1480,7 @@ void RTCPeerConnectionHandler::OnIceGatheringChange(
       GetWebKitIceGatheringState(new_state);
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackIceGatheringStateChange(this, state);
-  if (client_)
+  if (!is_closed_)
     client_->didChangeICEGatheringState(state);
 }
 
@@ -1489,7 +1489,7 @@ void RTCPeerConnectionHandler::OnRenegotiationNeeded() {
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnRenegotiationNeeded");
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackOnRenegotiationNeeded(this);
-  if (client_)
+  if (!is_closed_)
     client_->negotiationNeeded();
 }
 
