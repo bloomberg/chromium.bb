@@ -1025,7 +1025,6 @@ crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Fa
 crbug.com/521124 crbug.com/571481 crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ Pass Failure ]
 
 crbug.com/581974 [ Mac10.7 Debug ] fast/text/justify-ideograph-vertical.html [ Failure ]
-crbug.com/581974 [ Win ] fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
 crbug.com/581974 [ Mac10.7 Debug ] fast/text/justify-ideograph-simple.html [ Failure ]
 crbug.com/581974 [ Mac10.7 Debug ] fast/text/justify-ideograph-complex.html [ Failure ]
 
