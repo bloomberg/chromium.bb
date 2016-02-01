@@ -635,8 +635,19 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
-    version_->DispatchActivateEvent(
+    version_->RunAfterStartWorker(
+        base::Bind(&self::DispatchActivateEventOnIOThread, this, done, result),
         CreateReceiver(BrowserThread::UI, done, result));
+  }
+
+  void DispatchActivateEventOnIOThread(const base::Closure& done,
+                                       ServiceWorkerStatusCode* result) {
+    ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    int request_id =
+        version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
+                               CreateReceiver(BrowserThread::UI, done, result));
+    version_->DispatchSimpleEvent<ServiceWorkerHostMsg_ActivateEventFinished>(
+        request_id, ServiceWorkerMsg_ActivateEvent(request_id));
   }
 
   void FetchOnIOThread(const base::Closure& done,
@@ -802,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, Activate_Rejected) {
   ActivateTestHelper("/service_worker/worker_activate_rejected.js",
-                     SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED);
+                     SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,

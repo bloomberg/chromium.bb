@@ -157,8 +157,10 @@ class CONTENT_EXPORT ServiceWorkerRegistration
 
   // This method corresponds to the [[Activate]] algorithm.
   void ActivateWaitingVersion();
+  void DispatchActivateEvent(
+      const scoped_refptr<ServiceWorkerVersion>& activating_version);
   void OnActivateEventFinished(
-      ServiceWorkerVersion* activating_version,
+      const scoped_refptr<ServiceWorkerVersion>& activating_version,
       ServiceWorkerStatusCode status);
   void OnDeleteFinished(ServiceWorkerStatusCode status);
 

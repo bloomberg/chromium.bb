@@ -241,16 +241,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
 
-  // Sends activate event to the associated embedded worker and asynchronously
-  // calls |callback| when it errors out or it gets a response from the worker
-  // to notify activation completion.
-  //
-  // This must be called when the status() is INSTALLED. Calling this changes
-  // the version's status to ACTIVATING.
-  // Upon completion, the version's status will be changed to ACTIVATED
-  // on success, or back to INSTALLED on failure.
-  void DispatchActivateEvent(const StatusCallback& callback);
-
   // Sends fetch event to the associated embedded worker and calls
   // |callback| with the response from the worker.
   //
@@ -384,7 +374,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   class PingController;
 
   enum RequestType {
-    REQUEST_ACTIVATE,
     REQUEST_FETCH,
     REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
@@ -525,8 +514,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
 
-  void DispatchActivateEventAfterStartWorker(const StatusCallback& callback);
-
   void DispatchMessageEventInternal(
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
@@ -538,8 +525,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
 
-  void OnActivateEventFinished(int request_id,
-                               blink::WebServiceWorkerEventResult result);
   void OnFetchEventFinished(int request_id,
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
@@ -668,7 +653,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message callbacks. (Update HasInflightRequests() too when you update this
   // list.)
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> activate_requests_;
   IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 

@@ -563,15 +563,13 @@ TEST_F(ServiceWorkerVersionTest, ReceiveMessageFromWorker) {
 TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
-  // Dispatch an install event.
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
-
   // Wait for the completion.
   bool status_change_called = false;
   version_->RegisterStatusChangeCallback(
       base::Bind(&VerifyCalled, &status_change_called));
 
-  base::RunLoop().RunUntilIdle();
+  // Dispatch an install event.
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::INSTALL);
 
   // Version's status must not have changed during installation.
   EXPECT_FALSE(status_change_called);
@@ -579,21 +577,22 @@ TEST_F(ServiceWorkerVersionTest, InstallAndWaitCompletion) {
 }
 
 TEST_F(ServiceWorkerVersionTest, ActivateAndWaitCompletion) {
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
+  // TODO(mek): This test (and the one above for the install event) made more
+  // sense back when ServiceWorkerVersion was responsible for updating the
+  // status. Now a better version of this test should probably be added to
+  // ServiceWorkerRegistrationTest instead.
 
-  // Dispatch an activate event.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
 
   // Wait for the completion.
   bool status_change_called = false;
   version_->RegisterStatusChangeCallback(
       base::Bind(&VerifyCalled, &status_change_called));
 
-  base::RunLoop().RunUntilIdle();
+  // Dispatch an activate event.
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::ACTIVATE);
 
   // Version's status must not have changed during activation.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_FALSE(status_change_called);
   EXPECT_EQ(ServiceWorkerVersion::ACTIVATING, version_->status());
 }
@@ -1023,10 +1022,8 @@ TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
 TEST_F(ServiceWorkerFailToStartTest, Timeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
 
-  // We could just call StartWorker but make it interesting and test
-  // starting the worker as part of dispatching an event.
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
-  version_->DispatchActivateEvent(CreateReceiverOnCurrentThread(&status));
+  // Start starting the worker.
+  version_->StartWorker(CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
 
   // Callback has not completed yet.

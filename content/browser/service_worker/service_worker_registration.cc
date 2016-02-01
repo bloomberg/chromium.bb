@@ -10,6 +10,7 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -285,9 +286,11 @@ void ServiceWorkerRegistration::ActivateWaitingVersion() {
     FOR_EACH_OBSERVER(Listener, listeners_, OnSkippedWaiting(this));
 
   // "10. Queue a task to fire an event named activate..."
-  activating_version->DispatchActivateEvent(
-      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished,
-                 this, activating_version));
+  activating_version->RunAfterStartWorker(
+      base::Bind(&ServiceWorkerRegistration::DispatchActivateEvent, this,
+                 activating_version),
+      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
+                 activating_version));
 }
 
 void ServiceWorkerRegistration::DeleteVersion(
@@ -338,8 +341,27 @@ void ServiceWorkerRegistration::RegisterRegistrationFinishedCallback(
   registration_finished_callbacks_.push_back(callback);
 }
 
+void ServiceWorkerRegistration::DispatchActivateEvent(
+    const scoped_refptr<ServiceWorkerVersion>& activating_version) {
+  if (activating_version != active_version()) {
+    OnActivateEventFinished(activating_version, SERVICE_WORKER_ERROR_FAILED);
+    return;
+  }
+
+  DCHECK_EQ(ServiceWorkerVersion::ACTIVATING, activating_version->status());
+  DCHECK_EQ(ServiceWorkerVersion::RUNNING, activating_version->running_status())
+      << "Worker stopped too soon after it was started.";
+  int request_id = activating_version->StartRequest(
+      ServiceWorkerMetrics::EventType::ACTIVATE,
+      base::Bind(&ServiceWorkerRegistration::OnActivateEventFinished, this,
+                 activating_version));
+  activating_version
+      ->DispatchSimpleEvent<ServiceWorkerHostMsg_ActivateEventFinished>(
+          request_id, ServiceWorkerMsg_ActivateEvent(request_id));
+}
+
 void ServiceWorkerRegistration::OnActivateEventFinished(
-    ServiceWorkerVersion* activating_version,
+    const scoped_refptr<ServiceWorkerVersion>& activating_version,
     ServiceWorkerStatusCode status) {
   if (!context_ || activating_version != active_version() ||
       activating_version->status() != ServiceWorkerVersion::ACTIVATING)
