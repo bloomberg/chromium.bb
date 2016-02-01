@@ -450,6 +450,16 @@ Node* Node::pseudoAwareLastChild() const
     return lastChild();
 }
 
+Node& Node::treeRoot() const
+{
+    if (isInTreeScope())
+        return treeScope().rootNode();
+    const Node* node = this;
+    while (node->parentNode())
+        node = node->parentNode();
+    return const_cast<Node&>(*node);
+}
+
 PassRefPtrWillBeRawPtr<Node> Node::insertBefore(PassRefPtrWillBeRawPtr<Node> newChild, Node* refChild, ExceptionState& exceptionState)
 {
     if (isContainerNode())

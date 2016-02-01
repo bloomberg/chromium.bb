@@ -214,6 +214,7 @@ public:
     PassRefPtrWillBeRawPtr<NodeList> childNodes();
     Node* firstChild() const;
     Node* lastChild() const;
+    Node& treeRoot() const;
 
     void remove(ExceptionState& = ASSERT_NO_EXCEPTION);
 

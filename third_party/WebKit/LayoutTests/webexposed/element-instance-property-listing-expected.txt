@@ -222,6 +222,7 @@ namespace http://www.w3.org/1999/xhtml
     property textContent
     property title
     property translate
+    property treeRoot
     property webkitMatchesSelector
     property webkitRequestFullScreen
     property webkitRequestFullscreen
@@ -1315,6 +1316,7 @@ namespace http://www.w3.org/2000/svg
     property textContent
     property title
     property translate
+    property treeRoot
     property webkitMatchesSelector
     property webkitRequestFullScreen
     property webkitRequestFullscreen

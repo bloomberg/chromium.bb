@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="host-parent">
+  <div id="host">
+  </div>
+  <div id="slotted"></div>
+</div>
+<div id="host-parent2">
+  <div id="host2">
+  </div>
+  <div id="distributed" id="distributed"></div>
+</div>
+
+<script>
+var hostParent = document.getElementById('host-parent');
+var host = document.getElementById('host');
+var slotted = document.getElementById('slotted');
+var root = host.attachShadow({mode: 'open'});
+var child = document.createElement('div');
+var grandchild = document.createElement('div');
+var slot = document.createElement('slot');
+slot.setAttribute('name', 'slot');
+slotted.setAttribute('slot', 'slot');
+child.setAttribute('id', 'child');
+grandchild.setAttribute('id', 'grandchild');
+root.appendChild(child);
+child.appendChild(grandchild);
+grandchild.appendChild(slot);
+
+test(function() {
+  assert_equals(document.treeRoot, document);
+  assert_equals(hostParent.treeRoot, document);
+  assert_equals(host.treeRoot, document);
+  assert_equals(root.treeRoot, root);
+  assert_equals(child.treeRoot, root);
+  assert_equals(grandchild.treeRoot, root);
+  assert_equals(slot.treeRoot, root);
+  assert_equals(slotted.treeRoot, document);
+}, 'Node.treeRoot returns a root of the tree that the node belongs to, or the shadow root if the tree is a shadow tree.');
+
+test(function() {
+  var nestedChild = document.createElement('div');
+  var nestedRoot = grandchild.attachShadow({mode: 'open'});
+  nestedRoot.appendChild(nestedChild);
+
+  assert_equals(nestedRoot.treeRoot, nestedRoot);
+  assert_equals(nestedChild.treeRoot, nestedRoot);
+}, 'Node.treeRoot works with a nested shadow tree.');
+
+test(function() {
+  var detached = document.createElement('div');
+  var detachedChild = document.createElement('div');
+  detached.appendChild(detachedChild);
+
+  assert_equals(detached.treeRoot, detached);
+  assert_equals(detachedChild.treeRoot, detached);
+}, 'Node.treeRoot works with a detached tree as well.');
+
+test(function() {
+  var hostParent2 = document.getElementById('host-parent2');
+  var host2 = document.getElementById('host2');
+  var distributed = document.getElementById('distributed');
+  var root2 = host2.createShadowRoot();
+  var child2 = document.createElement('div');
+  var grandchild2 = document.createElement('div');
+  var content = document.createElement('content');
+  content.setAttribute('select', '#distributed');
+  child2.setAttribute('id', 'child2');
+  grandchild2.setAttribute('id', 'grandchild2');
+  root2.appendChild(child2);
+  child2.appendChild(grandchild2);
+  grandchild2.appendChild(content);
+
+  assert_equals(hostParent2.treeRoot, document);
+  assert_equals(host2.treeRoot, document);
+  assert_equals(root2.treeRoot, root2);
+  assert_equals(child2.treeRoot, root2);
+  assert_equals(grandchild2.treeRoot, root2);
+  assert_equals(content.treeRoot, root2);
+  assert_equals(distributed.treeRoot, document);
+}, 'Node.treeRoot works with a v0 shadow tree as well.');
+
+</script>
