@@ -28,6 +28,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointerenter
 Received mouseenter
 PASS lastPointerEvent is non-null.
@@ -52,6 +53,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointermove
 Received mousemove
 PASS lastPointerEvent is non-null.
@@ -76,6 +78,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 
 --- move within target ---
 Received pointermove
@@ -102,6 +105,7 @@ PASS lastPointerEvent.x is 25
 PASS lastPointerEvent.y is 41
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointermove
 Received mousemove
 PASS lastPointerEvent is non-null.
@@ -126,6 +130,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 
 --- click each button ---
 Received pointerdown
@@ -152,6 +157,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 1
+PASS lastPointerEvent.pressure is 0.5
 Received pointerup
 Received mouseup
 PASS lastPointerEvent is non-null.
@@ -176,6 +182,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 0
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointerdown
 Received mousedown
 PASS lastPointerEvent is non-null.
@@ -200,6 +207,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 1
 PASS lastPointerEvent.buttons is 4
+PASS lastPointerEvent.pressure is 0.5
 Received pointerup
 Received mouseup
 PASS lastPointerEvent is non-null.
@@ -224,6 +232,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointerdown
 Received mousedown
 PASS lastPointerEvent is non-null.
@@ -248,6 +257,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 2
 PASS lastPointerEvent.buttons is 2
+PASS lastPointerEvent.pressure is 0.5
 Received pointerup
 Received mouseup
 PASS lastPointerEvent is non-null.
@@ -272,6 +282,7 @@ PASS lastPointerEvent.x is 23
 PASS lastPointerEvent.y is 31
 PASS lastPointerEvent.button is 2
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 
 --- click with each modifier ---
 Received pointerdown
@@ -630,6 +641,7 @@ PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 Received pointerleave
 Received mouseleave
 PASS lastPointerEvent is non-null.
@@ -654,6 +666,7 @@ PASS lastPointerEvent.x is 13
 PASS lastPointerEvent.y is 21
 PASS lastPointerEvent.button is -1
 PASS lastPointerEvent.buttons is 0
+PASS lastPointerEvent.pressure is 0
 PASS successfullyParsed is true
 
 TEST COMPLETE

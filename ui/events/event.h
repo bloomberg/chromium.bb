@@ -331,7 +331,8 @@ class EVENTS_EXPORT PointerDetails {
  public:
   PointerDetails() {}
   explicit PointerDetails(EventPointerType pointer_type)
-      : pointer_type_(pointer_type) {}
+      : pointer_type_(pointer_type),
+        force_(std::numeric_limits<float>::quiet_NaN()) {}
   PointerDetails(EventPointerType pointer_type,
                  float radius_x,
                  float radius_y,

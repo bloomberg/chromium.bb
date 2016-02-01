@@ -425,7 +425,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseEvent) {
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);
-    EXPECT_FLOAT_EQ(0.0f, webkit_event.force);
+    EXPECT_TRUE(std::isnan(webkit_event.force));
     EXPECT_EQ(123, webkit_event.x);
     EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
@@ -478,7 +478,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);
-    EXPECT_FLOAT_EQ(0.0f, webkit_event.force);
+    EXPECT_TRUE(std::isnan(webkit_event.force));
     EXPECT_EQ(123, webkit_event.x);
     EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
@@ -503,7 +503,7 @@ TEST(WebInputEventAuraTest, TestMakeWebMouseWheelEvent) {
               webkit_event.pointerType);
     EXPECT_EQ(0, webkit_event.tiltX);
     EXPECT_EQ(0, webkit_event.tiltY);
-    EXPECT_FLOAT_EQ(0.0f, webkit_event.force);
+    EXPECT_TRUE(std::isnan(webkit_event.force));
     EXPECT_EQ(123, webkit_event.x);
     EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);

@@ -39,6 +39,13 @@ EventTarget* PointerEventManager::getCapturingNode(PassRefPtrWillBeRawPtr<Pointe
     return nullptr;
 }
 
+float getPointerEventPressure(float force, int buttons)
+{
+    if (isnan(force))
+        return buttons ? 0.5 : 0;
+    return force;
+}
+
 void PointerEventManager::setIdAndType(PointerEventInit &pointerEventInit,
     const WebPointerProperties &pointerProperties)
 {
@@ -65,6 +72,8 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicStr
 
     pointerEventInit.setButton(mouseEvent.button());
     pointerEventInit.setButtons(MouseEvent::platformModifiersToButtons(mouseEvent.modifiers()));
+    pointerEventInit.setPressure(getPointerEventPressure(
+        mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.modifiers());
 
@@ -98,7 +107,6 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicStr
 
     pointerEventInit.setWidth(width);
     pointerEventInit.setHeight(height);
-    pointerEventInit.setPressure(touchPoint.force());
     pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
     pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
     pointerEventInit.setScreenX(touchPoint.screenPos().x());
@@ -107,6 +115,8 @@ PassRefPtrWillBeRawPtr<PointerEvent> PointerEventManager::create(const AtomicStr
     pointerEventInit.setClientY(clientY);
     pointerEventInit.setButton(0);
     pointerEventInit.setButtons(pointerReleasedOrCancelled ? 0 : 1);
+    pointerEventInit.setPressure(getPointerEventPressure(
+        touchPoint.force(), pointerEventInit.buttons()));
 
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
 

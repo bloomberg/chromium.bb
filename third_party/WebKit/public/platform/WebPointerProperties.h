@@ -5,6 +5,8 @@
 #ifndef WebPointerProperties_h
 #define WebPointerProperties_h
 
+#include <limits>
+
 namespace blink {
 
 // This class encapsulates the properties that are common between mouse and
@@ -17,7 +19,7 @@ public:
     WebPointerProperties()
         : button(ButtonNone)
         , id(0)
-        , force(0.f)
+        , force(std::numeric_limits<float>::quiet_NaN())
         , tiltX(0)
         , tiltY(0)
         , pointerType(PointerType::Unknown)
@@ -42,6 +44,9 @@ public:
     Button button;
 
     int id;
+
+    // The valid range is [0,1], with NaN meaning pressure is not supported by
+    // the input device.
     float force;
 
     // Tilt of a pen stylus from surface normal as plane angles in degrees,

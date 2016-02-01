@@ -625,7 +625,7 @@ TEST(EventTest, PointerEventDetailsTouch) {
             touch_event_plain.pointer_details().pointer_type());
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().radius_x());
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().radius_y());
-  EXPECT_EQ(0.0f, touch_event_plain.pointer_details().force());
+  EXPECT_TRUE(std::isnan(touch_event_plain.pointer_details().force()));
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_x());
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_y());
 
@@ -659,7 +659,7 @@ TEST(EventTest, PointerEventDetailsMouse) {
             mouse_event.pointer_details().pointer_type());
   EXPECT_EQ(0.0f, mouse_event.pointer_details().radius_x());
   EXPECT_EQ(0.0f, mouse_event.pointer_details().radius_y());
-  EXPECT_EQ(0.0f, mouse_event.pointer_details().force());
+  EXPECT_TRUE(std::isnan(mouse_event.pointer_details().force()));
   EXPECT_EQ(0.0f, mouse_event.pointer_details().tilt_x());
   EXPECT_EQ(0.0f, mouse_event.pointer_details().tilt_y());
 
@@ -668,7 +668,7 @@ TEST(EventTest, PointerEventDetailsMouse) {
             mouse_event_copy.pointer_details().pointer_type());
   EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().radius_x());
   EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().radius_y());
-  EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().force());
+  EXPECT_TRUE(std::isnan(mouse_event_copy.pointer_details().force()));
   EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().tilt_x());
   EXPECT_EQ(0.0f, mouse_event_copy.pointer_details().tilt_y());
 }

@@ -52,6 +52,7 @@ PointerEventManagerTest::PlatformTouchPointBuilder::PlatformTouchPointBuilder(
 {
     m_pointerProperties.id = id;
     m_pointerProperties.pointerType = pointerType;
+    m_pointerProperties.force = 1.0;
 }
 
 PointerEventManagerTest::PlatformMouseEventBuilder::PlatformMouseEventBuilder(

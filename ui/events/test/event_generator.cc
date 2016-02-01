@@ -370,7 +370,8 @@ void EventGenerator::GestureScrollSequenceWithCallback(
     const ScrollStepCallback& callback) {
   const int kTouchId = 5;
   base::TimeDelta timestamp = Now();
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, kTouchId, timestamp);
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, start, 0, kTouchId,
+                       timestamp, 5.0f, 5.0f, 0.0f, 1.0f);
   Dispatch(&press);
 
   callback.Run(ui::ET_GESTURE_SCROLL_BEGIN, gfx::Vector2dF());
@@ -381,14 +382,16 @@ void EventGenerator::GestureScrollSequenceWithCallback(
   for (int i = 0; i < steps; ++i) {
     location.Offset(dx, dy);
     timestamp += step_delay;
-    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(), kTouchId, timestamp);
+    ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(), 0, kTouchId,
+                        timestamp, 5.0f, 5.0f, 0.0f, 1.0f);
     move.set_location_f(location);
     move.set_root_location_f(location);
     Dispatch(&move);
     callback.Run(ui::ET_GESTURE_SCROLL_UPDATE, gfx::Vector2dF(dx, dy));
   }
 
-  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, end, kTouchId, timestamp);
+  ui::TouchEvent release(ui::ET_TOUCH_RELEASED, end, 0, kTouchId,
+                         timestamp, 5.0f, 5.0f, 0.0f, 1.0f);
   Dispatch(&release);
 
   callback.Run(ui::ET_GESTURE_SCROLL_END, gfx::Vector2dF());
