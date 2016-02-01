@@ -60,6 +60,7 @@ public:
     static bool parseDeclarationList(MutableStylePropertySet*, const String&, const CSSParserContext&);
     static PassRefPtrWillBeRawPtr<StyleRuleBase> parseRule(const String&, const CSSParserContext&, StyleSheetContents*, AllowedRulesType);
     static void parseStyleSheet(const String&, const CSSParserContext&, StyleSheetContents*);
+    static CSSSelectorList parsePageSelector(CSSParserTokenRange, StyleSheetContents*);
 
     static PassOwnPtr<Vector<double>> parseKeyframeKeyList(const String&);
 

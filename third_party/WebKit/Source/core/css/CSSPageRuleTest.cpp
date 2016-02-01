@@ -26,4 +26,29 @@ TEST(CSSPageRule, Serializing)
     }
 }
 
+TEST(CSSPageRule, selectorText)
+{
+    CSSTestHelper helper;
+
+    const char* cssRule = "@page :left { size: auto; }";
+    helper.addCSSRules(cssRule);
+    ASSERT(helper.cssRules());
+    EXPECT_EQ(1u, helper.cssRules()->length());
+
+    CSSPageRule* pageRule = toCSSPageRule(helper.cssRules()->item(0));
+    EXPECT_EQ(":left", pageRule->selectorText());
+
+    // set invalid page selector.
+    pageRule->setSelectorText(":hover");
+    EXPECT_EQ(":left", pageRule->selectorText());
+
+    // set page pseudo class selector.
+    pageRule->setSelectorText(":right");
+    EXPECT_EQ(":right", pageRule->selectorText());
+
+    // set page type selector.
+    pageRule->setSelectorText("namedpage");
+    EXPECT_EQ("namedpage", pageRule->selectorText());
+}
+
 } // namespace blink

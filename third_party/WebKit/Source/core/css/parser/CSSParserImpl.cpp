@@ -174,6 +174,48 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
         "length", string.length());
 }
 
+CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange prelude, StyleSheetContents* styleSheet)
+{
+    prelude.consumeWhitespace();
+    AtomicString typeSelector;
+    if (prelude.peek().type() == IdentToken)
+        typeSelector = prelude.consume().value();
+
+    AtomicString pseudo;
+    if (prelude.peek().type() == ColonToken) {
+        prelude.consume();
+        if (prelude.peek().type() != IdentToken)
+            return CSSSelectorList();
+        pseudo = prelude.consume().value();
+    }
+
+    prelude.consumeWhitespace();
+    if (!prelude.atEnd())
+        return CSSSelectorList(); // Parse error; extra tokens in @page header
+
+    OwnPtr<CSSParserSelector> selector;
+    if (!typeSelector.isNull() && pseudo.isNull()) {
+        selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, styleSheet->defaultNamespace()));
+    } else {
+        selector = CSSParserSelector::create();
+        if (!pseudo.isNull()) {
+            selector->setMatch(CSSSelector::PagePseudoClass);
+            selector->updatePseudoType(pseudo.lower());
+            if (selector->pseudoType() == CSSSelector::PseudoUnknown)
+                return CSSSelectorList();
+        }
+        if (!typeSelector.isNull()) {
+            selector->prependTagSelector(QualifiedName(nullAtom, typeSelector, styleSheet->defaultNamespace()));
+        }
+    }
+
+    selector->setForPage();
+    Vector<OwnPtr<CSSParserSelector>> selectorVector;
+    selectorVector.append(selector.release());
+    CSSSelectorList selectorList = CSSSelectorList::adoptSelectorVector(selectorVector);
+    return selectorList;
+}
+
 PassOwnPtr<Vector<double>> CSSParserImpl::parseKeyframeKeyList(const String& keyList)
 {
     return consumeKeyframeKeyList(CSSTokenizer::Scope(keyList).tokenRange());
@@ -538,48 +580,15 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
 PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
     // We only support a small subset of the css-page spec.
-    prelude.consumeWhitespace();
-    AtomicString typeSelector;
-    if (prelude.peek().type() == IdentToken)
-        typeSelector = prelude.consume().value();
-
-    AtomicString pseudo;
-    if (prelude.peek().type() == ColonToken) {
-        prelude.consume();
-        if (prelude.peek().type() != IdentToken)
-            return nullptr; // Parse error; expected ident token following colon in @page header
-        pseudo = prelude.consume().value();
-    }
-
-    prelude.consumeWhitespace();
-    if (!prelude.atEnd())
-        return nullptr; // Parse error; extra tokens in @page header
-
-    OwnPtr<CSSParserSelector> selector;
-    if (!typeSelector.isNull() && pseudo.isNull()) {
-        selector = CSSParserSelector::create(QualifiedName(nullAtom, typeSelector, m_styleSheet->defaultNamespace()));
-    } else {
-        selector = CSSParserSelector::create();
-        if (!pseudo.isNull()) {
-            selector->setMatch(CSSSelector::PagePseudoClass);
-            selector->updatePseudoType(pseudo.lower());
-            if (selector->pseudoType() == CSSSelector::PseudoUnknown)
-                return nullptr; // Parse error; unknown page pseudo-class
-        }
-        if (!typeSelector.isNull())
-            selector->prependTagSelector(QualifiedName(nullAtom, typeSelector, m_styleSheet->defaultNamespace()));
-    }
+    CSSSelectorList selectorList = parsePageSelector(prelude, m_styleSheet);
+    if (!selectorList.isValid())
+        return nullptr;
 
     if (m_observerWrapper) {
         unsigned endOffset = m_observerWrapper->endOffset(prelude);
         m_observerWrapper->observer().startRuleHeader(StyleRule::Page, m_observerWrapper->startOffset(prelude));
         m_observerWrapper->observer().endRuleHeader(endOffset);
     }
-
-    selector->setForPage();
-    Vector<OwnPtr<CSSParserSelector>> selectorVector;
-    selectorVector.append(selector.release());
-    CSSSelectorList selectorList = CSSSelectorList::adoptSelectorVector(selectorVector);
 
     consumeDeclarationList(block, StyleRule::Style);
 

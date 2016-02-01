@@ -37,6 +37,16 @@ CSSSelectorList CSSParser::parseSelector(const CSSParserContext& context, StyleS
     return CSSSelectorParser::parseSelector(scope.tokenRange(), context, styleSheetContents);
 }
 
+CSSSelectorList CSSParser::parsePageSelector(const CSSParserContext& context, StyleSheetContents* styleSheetContents, const String& selector)
+{
+    CSSTokenizer::Scope scope(selector);
+    CSSParserTokenRange range = scope.tokenRange();
+    const CSSParserToken* preludeStart = &range.peek();
+    while (!range.atEnd() && range.peek().type() != LeftBraceToken && range.peek().type() != SemicolonToken)
+        range.consumeComponentValue();
+    return CSSParserImpl::parsePageSelector(range.makeSubRange(preludeStart, &range.peek()), styleSheetContents);
+}
+
 PassRefPtrWillBeRawPtr<StyleRuleBase> CSSParser::parseRule(const CSSParserContext& context, StyleSheetContents* styleSheet, const String& rule)
 {
     return CSSParserImpl::parseRule(rule, context, styleSheet, CSSParserImpl::AllowImportRules);
