@@ -43,6 +43,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ViewPainter.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/geometry/FloatQuad.h"
@@ -66,7 +67,14 @@ public:
     ~HitTestLatencyRecorder()
     {
         int duration = static_cast<int>((WTF::monotonicallyIncreasingTime() - m_start) * 1000000);
-        Platform::current()->histogramCustomCounts(m_allowsChildFrameContent ? "Event.Latency.HitTestRecursive" : "Event.Latency.HitTest", duration, 0, 10000000, 100);
+
+        if (m_allowsChildFrameContent) {
+            DEFINE_STATIC_LOCAL(CustomCountHistogram, recursiveLatencyHistogram, ("Event.Latency.HitTestRecursive", 0, 10000000, 100));
+            recursiveLatencyHistogram.count(duration);
+        } else {
+            DEFINE_STATIC_LOCAL(CustomCountHistogram, latencyHistogram, ("Event.Latency.HitTest", 0, 10000000, 100));
+            latencyHistogram.count(duration);
+        }
     }
 
 private:

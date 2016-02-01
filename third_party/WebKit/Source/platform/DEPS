@@ -3,6 +3,8 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/json",
     "+base/location.h",
+    "+base/metrics/histogram.h",
+    "+base/metrics/sparse_histogram.h",
     "+base/memory",
     "+base/sys_info.h",
     "+base/time",

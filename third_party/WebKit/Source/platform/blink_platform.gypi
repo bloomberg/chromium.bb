@@ -41,6 +41,8 @@
       'FileMetadata.h',
       'FileSystemType.h',
       'FloatConversion.h',
+      'Histogram.cpp',
+      'Histogram.h',
       'HostWindow.h',
       'JSONParser.cpp',
       'JSONParser.h',
