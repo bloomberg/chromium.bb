@@ -64,6 +64,9 @@ class ImageHijackCanvas : public SkNWayCanvas {
         SkRect::MakeIWH(image->width(), image->height()), scale,
         is_decomposable, ctm.hasPerspective(), paint);
     const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
+    if (!decoded_image.image())
+      return;
+
     DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
     DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
     const SkPaint* decoded_paint = scoped_lock.decoded_paint();
@@ -104,6 +107,9 @@ class ImageHijackCanvas : public SkNWayCanvas {
                                        scale, is_decomposable,
                                        matrix.hasPerspective(), paint);
     const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
+    if (!decoded_image.image())
+      return;
+
     const SkPaint* decoded_paint = scoped_lock.decoded_paint();
 
     SkRect adjusted_src =

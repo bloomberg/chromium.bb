@@ -111,6 +111,14 @@ bool ImageDecodeController::GetTaskForImageAndRef(
   TRACE_EVENT1("disabled-by-default-cc.debug",
                "ImageDecodeController::GetTaskForImageAndRef", "key",
                key.ToString());
+
+  // If the target size is empty, we can skip this image during draw (and thus
+  // we don't need to decode it or ref it).
+  if (key.target_size().IsEmpty()) {
+    *task = nullptr;
+    return false;
+  }
+
   // If we're not going to do a scale, we will just create a task to preroll the
   // image the first time we see it. This doesn't need to account for memory.
   // TODO(vmpstr): We can also lock the original sized image, in which case it
@@ -321,12 +329,9 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
                           decoded_info.minRowBytes());
 
   // Now scale the pixels into the destination size.
-  // TODO(vmpstr): Once we support skipping images altogether, we can remove
-  // this and skip drawing images that are empty in size. crbug.com/581163
-  const gfx::Size& target_size =
-      key.target_size().IsEmpty() ? gfx::Size(1, 1) : key.target_size();
-  SkImageInfo scaled_info =
-      SkImageInfo::MakeN32Premul(target_size.width(), target_size.height());
+  DCHECK(!key.target_size().IsEmpty());
+  SkImageInfo scaled_info = SkImageInfo::MakeN32Premul(
+      key.target_size().width(), key.target_size().height());
   scoped_ptr<base::DiscardableMemory> scaled_pixels;
   {
     TRACE_EVENT0(
@@ -360,6 +365,10 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
                key.ToString());
   if (!CanHandleImage(key, draw_image))
     return DecodedDrawImage(draw_image.image(), draw_image.filter_quality());
+
+  // If the target size is empty, we can skip this image draw.
+  if (key.target_size().IsEmpty())
+    return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
 
   base::AutoLock lock(lock_);
   auto decoded_images_it = FindImage(&decoded_images_, key);
@@ -448,7 +457,7 @@ void ImageDecodeController::DrawWithImageFinished(
                "ImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
-  if (!CanHandleImage(key, image))
+  if (key.target_size().IsEmpty() || !CanHandleImage(key, image))
     return;
 
   if (decoded_image.is_at_raster_decode())

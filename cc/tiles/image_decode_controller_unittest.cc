@@ -818,5 +818,30 @@ TEST(ImageDecodeControllerTest,
   controller.UnrefImage(draw_image);
 }
 
+TEST(ImageDecodeControllerTest, ZeroSizedImagesAreSkipped) {
+  ImageDecodeController controller;
+  bool has_perspective = false;
+  bool is_decomposable = true;
+  uint64_t prepare_tiles_id = 1;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  skia::RefPtr<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(
+      image.get(), SkIRect::MakeWH(image->width(), image->height()),
+      SkSize::Make(0.f, 0.f), quality, has_perspective, is_decomposable);
+
+  scoped_refptr<ImageDecodeTask> task;
+  bool need_unref =
+      controller.GetTaskForImageAndRef(draw_image, prepare_tiles_id, &task);
+  EXPECT_FALSE(task);
+  EXPECT_FALSE(need_unref);
+
+  DecodedDrawImage decoded_draw_image =
+      controller.GetDecodedImageForDraw(draw_image);
+  EXPECT_FALSE(decoded_draw_image.image());
+
+  controller.DrawWithImageFinished(draw_image, decoded_draw_image);
+}
+
 }  // namespace
 }  // namespace cc
