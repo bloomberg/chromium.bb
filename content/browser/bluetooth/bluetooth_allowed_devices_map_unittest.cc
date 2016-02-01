@@ -24,9 +24,7 @@ const std::vector<device::BluetoothUUID> kEmptyOptionalServices =
     std::vector<device::BluetoothUUID>();
 }  // namespace
 
-class BluetoothAllowedDevicesMapTest : public testing::Test {};
-
-TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMap) {
+TEST(BluetoothAllowedDevicesMapTest, AddDeviceToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
   const std::string& device_id = allowed_devices_map.AddDevice(
@@ -39,7 +37,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMap) {
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMapTwice) {
+TEST(BluetoothAllowedDevicesMapTest, AddDeviceToMapTwice) {
   BluetoothAllowedDevicesMap allowed_devices_map;
   const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, kEmptyFilters, kEmptyOptionalServices);
@@ -55,7 +53,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceToMapTwice) {
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id1));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromSameOriginToMap) {
+TEST(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromSameOriginToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
   const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, kEmptyFilters, kEmptyOptionalServices);
@@ -76,7 +74,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromSameOriginToMap) {
             allowed_devices_map.GetDeviceAddress(kTestOrigin1, device_id2));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
+TEST(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
   const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, kEmptyFilters, kEmptyOptionalServices);
@@ -109,7 +107,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddTwoDevicesFromTwoOriginsToMap) {
             allowed_devices_map.GetDeviceAddress(kTestOrigin2, device_id2));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceFromTwoOriginsToMap) {
+TEST(BluetoothAllowedDevicesMapTest, AddDeviceFromTwoOriginsToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
   const std::string& device_id1 = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, kEmptyFilters, kEmptyOptionalServices);
@@ -125,7 +123,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddDeviceFromTwoOriginsToMap) {
             allowed_devices_map.GetDeviceAddress(kTestOrigin2, device_id1));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, AddRemoveAddDeviceToMap) {
+TEST(BluetoothAllowedDevicesMapTest, AddRemoveAddDeviceToMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
   const std::string device_id_first_time = allowed_devices_map.AddDevice(
       kTestOrigin1, kDeviceAddress1, kEmptyFilters, kEmptyOptionalServices);
@@ -138,7 +136,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, AddRemoveAddDeviceToMap) {
   EXPECT_NE(device_id_first_time, device_id_second_time);
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, RemoveDeviceFromMap) {
+TEST(BluetoothAllowedDevicesMapTest, RemoveDeviceFromMap) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
   const std::string& device_id = allowed_devices_map.AddDevice(
@@ -152,7 +150,7 @@ TEST_F(BluetoothAllowedDevicesMapTest, RemoveDeviceFromMap) {
                                      kTestOrigin1, kDeviceAddress1));
 }
 
-TEST_F(BluetoothAllowedDevicesMapTest, CorrectIdFormat) {
+TEST(BluetoothAllowedDevicesMapTest, CorrectIdFormat) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
   const std::string& device_id = allowed_devices_map.AddDevice(
