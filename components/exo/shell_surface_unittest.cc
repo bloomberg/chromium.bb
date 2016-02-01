@@ -33,22 +33,6 @@ TEST_F(ShellSurfaceTest, Maximize) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
-TEST_F(ShellSurfaceTest, Restore) {
-  gfx::Size buffer_size(256, 256);
-  scoped_ptr<Buffer> buffer(new Buffer(
-      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
-  scoped_ptr<Surface> surface(new Surface);
-  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-
-  surface->Attach(buffer.get());
-  shell_surface->Maximize();
-  shell_surface->Restore();
-  surface->Commit();
-  EXPECT_EQ(
-      buffer_size.ToString(),
-      shell_surface->GetWidget()->GetWindowBoundsInScreen().size().ToString());
-}
-
 TEST_F(ShellSurfaceTest, SetFullscreen) {
   gfx::Size buffer_size(256, 256);
   scoped_ptr<Buffer> buffer(new Buffer(

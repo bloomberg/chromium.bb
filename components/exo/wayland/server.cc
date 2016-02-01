@@ -872,7 +872,7 @@ void xdg_surface_set_maximized(wl_client* client, wl_resource* resource) {
 }
 
 void xdg_surface_unset_maximized(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->Restore();
+  NOTIMPLEMENTED();
 }
 
 void xdg_surface_set_fullscreen(wl_client* client,
