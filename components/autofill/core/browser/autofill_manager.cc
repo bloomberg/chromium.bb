@@ -441,9 +441,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
           GetProfileSuggestions(*form_structure, field, *autofill_field);
     }
     if (!suggestions.empty()) {
-      // Don't provide credit card suggestions for non-secure pages. However,
-      // do provide a warning to the user. This will generate warnings on pages
-      // with mixed content (which includes forms with an http target).
+      // Don't provide credit card suggestions for non-secure pages, but do
+      // provide them for secure pages with passive mixed content (see impl. of
+      // IsContextSecure).
       if (is_filling_credit_card &&
           !client_->IsContextSecure(form_structure->source_url())) {
         Suggestion warning_suggestion(l10n_util::GetStringUTF16(

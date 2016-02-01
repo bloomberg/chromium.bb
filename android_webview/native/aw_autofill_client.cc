@@ -192,9 +192,9 @@ bool AwAutofillClient::IsContextSecure(const GURL& form_origin) {
   // Note: The implementation below is a copy of the one in
   // ChromeAutofillClient::IsContextSecure, and should be kept in sync
   // until crbug.com/505388 gets implemented.
-  return ssl_status.security_style ==
-      content::SECURITY_STYLE_AUTHENTICATED &&
-      ssl_status.content_status == content::SSLStatus::NORMAL_CONTENT;
+  return ssl_status.security_style == content::SECURITY_STYLE_AUTHENTICATED &&
+         !(ssl_status.content_status &
+           content::SSLStatus::RAN_INSECURE_CONTENT);
 }
 
 void AwAutofillClient::SuggestionSelected(JNIEnv* env,

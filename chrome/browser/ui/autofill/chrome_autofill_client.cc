@@ -384,9 +384,9 @@ bool ChromeAutofillClient::IsContextSecure(const GURL& form_origin) {
   ssl_status = navigation_entry->GetSSL();
   // Note: If changing the implementation below, also change
   // AwAutofillClient::IsContextSecure. See crbug.com/505388
-  return ssl_status.security_style ==
-      content::SECURITY_STYLE_AUTHENTICATED &&
-      ssl_status.content_status == content::SSLStatus::NORMAL_CONTENT;
+  return ssl_status.security_style == content::SECURITY_STYLE_AUTHENTICATED &&
+         !(ssl_status.content_status &
+           content::SSLStatus::RAN_INSECURE_CONTENT);
 }
 
 }  // namespace autofill
