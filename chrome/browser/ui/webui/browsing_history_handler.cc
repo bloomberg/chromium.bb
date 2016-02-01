@@ -234,17 +234,10 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
   // the monthly view.
   result->SetString("dateShort", base::TimeFormatShortDate(time));
 
-  base::string16 snippet_string;
-  base::string16 date_relative_day;
-  base::string16 date_time_of_day;
-  bool is_blocked_visit = false;
-  int host_filtering_behavior = -1;
-
   // Only pass in the strings we need (search results need a shortdate
-  // and snippet, browse results need day and time information). Makes sure that
-  // values of result are never undefined
+  // and snippet, browse results need day and time information).
   if (is_search_result) {
-    snippet_string = snippet;
+    result->SetString("snippet", snippet);
   } else {
     base::Time midnight = base::Time::Now().LocalMidnight();
     base::string16 date_str = ui::TimeFormat::RelativeDate(time, &midnight);
@@ -256,9 +249,10 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
           date_str,
           base::TimeFormatFriendlyDate(time));
     }
-    date_relative_day = date_str;
-    date_time_of_day = base::TimeFormatTimeOfDay(time);
+    result->SetString("dateRelativeDay", date_str);
+    result->SetString("dateTimeOfDay", base::TimeFormatTimeOfDay(time));
   }
+  result->SetBoolean("starred", bookmark_model->IsBookmarked(url));
 
   std::string device_name;
   std::string device_type;
@@ -273,17 +267,11 @@ scoped_ptr<base::DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
         supervised_user_service->GetURLFilterForUIThread();
     int filtering_behavior =
         url_filter->GetFilteringBehaviorForURL(url.GetWithEmptyPath());
-    is_blocked_visit = blocked_visit;
-    host_filtering_behavior = filtering_behavior;
+    result->SetInteger("hostFilteringBehavior", filtering_behavior);
+
+    result->SetBoolean("blockedVisit", blocked_visit);
   }
 #endif
-
-  result->SetString("dateTimeOfDay", date_time_of_day);
-  result->SetString("dateRelativeDay", date_relative_day);
-  result->SetString("snippet", snippet_string);
-  result->SetBoolean("starred", bookmark_model->IsBookmarked(url));
-  result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
-  result->SetBoolean("blockedVisit", is_blocked_visit);
 
   return result;
 }
@@ -378,10 +366,6 @@ void BrowsingHistoryHandler::QueryHistory(
 
   history::WebHistoryService* web_history =
       WebHistoryServiceFactory::GetForProfile(profile);
-
-  // Set this to false until the results actually arrive.
-  results_info_value_.SetBoolean("hasSyncedResults", false);
-
   if (web_history) {
     web_history_query_results_.clear();
     web_history_request_ = web_history->QueryHistory(
@@ -395,6 +379,9 @@ void BrowsingHistoryHandler::QueryHistory(
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
         this, &BrowsingHistoryHandler::WebHistoryTimeout);
+
+    // Set this to false until the results actually arrive.
+    results_info_value_.SetBoolean("hasSyncedResults", false);
   }
 }
 

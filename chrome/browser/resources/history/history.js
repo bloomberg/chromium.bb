@@ -46,6 +46,39 @@ var SupervisedUserFilteringBehavior = {
 };
 
 /**
+ * The type of the history result object. The definition is based on
+ * chrome/browser/ui/webui/history_ui.cc:
+ *     BrowsingHistoryHandler::HistoryEntry::ToValue()
+ * @typedef {{allTimestamps: Array<number>,
+ *            blockedVisit: (boolean|undefined),
+ *            dateRelativeDay: (string|undefined),
+ *            dateShort: string,
+ *            dateTimeOfDay: (string|undefined),
+ *            deviceName: string,
+ *            deviceType: string,
+ *            domain: string,
+ *            hostFilteringBehavior: (number|undefined),
+ *            snippet: (string|undefined),
+ *            starred: boolean,
+ *            time: number,
+ *            title: string,
+ *            url: string}}
+ */
+var HistoryEntry;
+
+/**
+ * The type of the history results info object. The definition is based on
+ * chrome/browser/ui/webui/history_ui.cc:
+ *     BrowsingHistoryHandler::QueryComplete()
+ * @typedef {{finished: boolean,
+ *            hasSyncedResults: (boolean|undefined),
+ *            queryEndTime: string,
+ *            queryStartTime: string,
+ *            term: string}}
+ */
+var HistoryQuery;
+
+/**
  * Returns true if the mobile (non-desktop) version is being shown.
  * @return {boolean} true if the mobile version is being shown.
  */
@@ -111,19 +144,19 @@ function Visit(result, continued, model) {
 
   // See comment in BrowsingHistoryHandler::QueryComplete - we won't always
   // get all of these.
-  this.dateRelativeDay = result.dateRelativeDay;
-  this.dateTimeOfDay = result.dateTimeOfDay;
-  this.dateShort = result.dateShort;
+  this.dateRelativeDay = result.dateRelativeDay || '';
+  this.dateTimeOfDay = result.dateTimeOfDay || '';
+  this.dateShort = result.dateShort || '';
 
   // Shows the filtering behavior for that host (only used for supervised
   // users).
   // A value of |SupervisedUserFilteringBehavior.ALLOW| is not displayed so it
   // is used as the default value.
   this.hostFilteringBehavior = SupervisedUserFilteringBehavior.ALLOW;
-  if (result.hostFilteringBehavior)
+  if (typeof result.hostFilteringBehavior != 'undefined')
     this.hostFilteringBehavior = result.hostFilteringBehavior;
 
-  this.blockedVisit = result.blockedVisit;
+  this.blockedVisit = result.blockedVisit || false;
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
