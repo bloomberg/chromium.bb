@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <vector>
 
+#include "base/macros.h"
 #include "tools/battor_agent/battor_protocol_types.h"
 
 namespace battor {
@@ -45,6 +46,8 @@ class BattOrSampleConverter {
   // The baseline current and voltage calculated from the calibration frame.
   double baseline_current_;
   double baseline_voltage_;
+
+  DISALLOW_COPY_AND_ASSIGN(BattOrSampleConverter);
 };
 
 }  // namespace battor
