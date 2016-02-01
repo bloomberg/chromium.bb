@@ -1,11 +1,13 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 from telemetry.story import story_set as story_set_module
 
 import sys
 
 from gpu_tests import gpu_test_base
+
 
 class PixelTestsPage(gpu_test_base.PageBase):
 

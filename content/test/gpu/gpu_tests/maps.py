@@ -19,6 +19,7 @@ from telemetry.page import page_test
 from telemetry import story as story_module
 from telemetry.story import story_set as story_set_module
 
+
 class MapsValidator(cloud_storage_test_base.ValidatorBase):
   def __init__(self):
     super(MapsValidator, self).__init__()

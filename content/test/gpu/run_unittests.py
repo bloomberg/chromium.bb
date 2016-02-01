@@ -18,6 +18,7 @@ path_util.AddDirToPathIfNeeded(path_util.GetChromiumSrcDir(), 'tools',
 
 from telemetry.testing import unittest_runner
 
+
 def main():
   return unittest_runner.Run(gpu_project_config.CONFIG, no_browser=True)
 
