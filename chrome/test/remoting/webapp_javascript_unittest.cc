@@ -12,11 +12,16 @@
 
 namespace remoting {
 
-// Flakily times out on Win7 Tests (dbg) and Linux Tests (dbg)(1):
-// https://crbug.com/504204. Recently completely broken on
-// Linux: https://crbug.com/582005
+// Disable test on (dbg) as it takes longer than 30s to complete.
+// https://crbug.com/504204.
+#if (!defined(NDEBUG))
+#define MAYBE_Remoting_Webapp_Js_Unittest DISABLED_Remoting_Webapp_Js_Unittest
+#else
+#define MAYBE_Remoting_Webapp_Js_Unittest Remoting_Webapp_Js_Unittest
+#endif
+
 IN_PROC_BROWSER_TEST_F(QUnitBrowserTestRunner,
-                       DISABLED_Remoting_Webapp_Js_Unittest) {
+                       MAYBE_Remoting_Webapp_Js_Unittest) {
   base::FilePath base_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_EXE, &base_dir));
 

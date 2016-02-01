@@ -69,7 +69,7 @@ remoting_unit_test_out_dir = "$root_out_dir/remoting/unittests"
 group("unit_tests") {
   data_deps = [
     ":blanketjs",
-    ":build_unittest",
+    ":unittest_html",
     ":js_files",
     ":qunit",
     ":sinonjs",
@@ -116,27 +116,11 @@ copy("qunit") {
   ]
 }
 
-action("build_unittest") {
-  script = "build-html.py"
-  outputs = [
-    "$remoting_unit_test_out_dir/unittests.html",
-  ]
-
-  # Create a file that contains a list of all the JavaScript files needed
-  # to build the unit test page. This is needed to avoid problems on platforms
-  # that limit the size of a command line.
-  file_list = "$target_gen_dir/remoting_webapp_unittest_files.txt"
-  files = rebase_path(remoting_webapp_unittests_all_js_files, root_build_dir)
-  write_file(file_list, files)
-
-  args =
-      rebase_path(outputs, root_build_dir) + [
-        rebase_path(remoting_webapp_unittests_template_main, root_build_dir),
-        "--exclude-js",
-      ] +
-      rebase_path(remoting_webapp_unittests_exclude_js_files, root_build_dir) +
-      [
-        "--js-list-file",
-        rebase_path(file_list, root_build_dir),
-      ] + [ "--instrument-js" ] + rebase_path(webapp_js_files, root_build_dir)
+build_webapp_html("unittest_html") {
+  html_template_file = remoting_webapp_unittests_template_main
+  html_template_include_files = []
+  js_files = remoting_webapp_unittests_all_js_files
+  html_output = "$remoting_unit_test_out_dir/unittests.html"
+  exclude_js = remoting_webapp_unittests_exclude_js_files
+  instrument_js = webapp_js_files
 }

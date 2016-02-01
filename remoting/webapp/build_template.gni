@@ -52,7 +52,8 @@ template("build_locales_listfile") {
 template("build_webapp_html") {
   target_jscompile = ""
 
-  if (enable_remoting_jscompile) {
+  # Do not enable JSCompile on instrumented builds.
+  if (enable_remoting_jscompile && invoker.instrument_js == []) {
     target_jscompile = "${target_name}_jscompile"
     target_jscompile_stamp = "$target_gen_dir/${target_jscompile}.stamp"
     action(target_jscompile) {
@@ -91,8 +92,17 @@ template("build_webapp_html") {
     html_template_include_files = invoker.html_template_include_files
     js_files = invoker.js_files
     html_output = invoker.html_output
+    exclude_js = invoker.exclude_js
+    instrument_js = invoker.instrument_js
 
     script = rebase_path("//remoting/webapp/build-html.py", root_build_dir)
+
+    # Create a file that contains a list of all the JavaScript files needed
+    # to build the unit test page. This is needed to avoid problems on platforms
+    # that limit the size of a command line.
+    file_list = "$target_gen_dir/${target_name}_files.txt"
+    files = rebase_path(js_files, root_build_dir)
+    write_file(file_list, files)
 
     inputs = [ html_template_file ] + html_template_include_files + js_files
 
@@ -115,7 +125,17 @@ template("build_webapp_html") {
       rebase_path(remoting_dir, root_build_dir),
     ]
     args += [ "--templates" ] + html_template_include_files
-    args += [ "--js" ] + rebase_path(js_files, remoting_dir)
+    args += [
+      "--js-list-file",
+      rebase_path(file_list, root_build_dir),
+    ]
+    args += [ "--templates" ] + html_template_include_files
+    args += [
+      "--js-list-file",
+      rebase_path(file_list, root_build_dir),
+    ]
+    args += [ "--exclude-js" ] + rebase_path(exclude_js, root_build_dir)
+    args += [ "--instrument-js" ] + rebase_path(instrument_js, root_build_dir)
   }
 }
 
@@ -135,6 +155,8 @@ template("desktop_remoting_webapp") {
     html_template_include_files = []
     js_files = remoting_webapp_background_html_all_js_files
     html_output = background_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   message_window_html = target_name + "_message_window_html"
@@ -146,6 +168,8 @@ template("desktop_remoting_webapp") {
     html_template_include_files = []
     js_files = remoting_webapp_message_window_html_all_js_files
     html_output = message_window_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   wcs_sandbox_html = target_name + "_wcs_sandbox_html"
@@ -156,6 +180,8 @@ template("desktop_remoting_webapp") {
     html_template_include_files = []
     js_files = remoting_webapp_wcs_sandbox_html_all_js_files
     html_output = wcs_sandbox_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   main_html = target_name + "_main_html"
@@ -166,6 +192,8 @@ template("desktop_remoting_webapp") {
     html_template_include_files = remoting_webapp_template_files
     js_files = remoting_webapp_crd_main_html_all_js_files
     html_output = main_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   public_session_html = target_name + "_public_session_html"
@@ -177,6 +205,8 @@ template("desktop_remoting_webapp") {
     html_template_include_files = remoting_webapp_public_session_template_files
     js_files = remoting_webapp_public_session_html_all_js_files
     html_output = public_session_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   action(target_name) {
@@ -421,6 +451,8 @@ template("app_remoting_shared_module") {
     html_template_include_files = []
     js_files = ar_feedback_consent_html_all_js_files
     html_output = feedback_consent_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   loading_window_html = target_name + "_loading_window_html"
@@ -435,6 +467,8 @@ template("app_remoting_shared_module") {
     # is shared.
     js_files = remoting_webapp_message_window_html_all_js_files
     html_output = loading_window_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   message_window_html = target_name + "_message_window_html"
@@ -446,6 +480,8 @@ template("app_remoting_shared_module") {
     html_template_include_files = []
     js_files = remoting_webapp_message_window_html_all_js_files
     html_output = message_window_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   wcs_sandbox_html = target_name + "_wcs_sandbox_html"
@@ -456,6 +492,8 @@ template("app_remoting_shared_module") {
     html_template_include_files = []
     js_files = remoting_webapp_wcs_sandbox_html_all_js_files
     html_output = wcs_sandbox_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   background_html = target_name + "_background_html"
@@ -467,6 +505,8 @@ template("app_remoting_shared_module") {
     html_template_include_files = []
     js_files = ar_background_html_js_files
     html_output = background_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   main_html = target_name + "_main_html"
@@ -477,6 +517,8 @@ template("app_remoting_shared_module") {
     html_template_include_files = ar_main_template_files
     js_files = ar_main_js_files
     html_output = main_html_output
+    exclude_js = []
+    instrument_js = []
   }
 
   action(target_name) {

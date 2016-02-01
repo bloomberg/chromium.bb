@@ -74,7 +74,7 @@ QUnit.test('success',
       assert.equal(checker.getState(), state);
     }
 
-    return base.SpyPromise.run(function() {
+    return Promise.resolve().then(function() {
       fakeXhr.respond(200);
     }).then(function() {
       sinon.assert.notCalled(onStateChange);
@@ -98,7 +98,7 @@ QUnit.test('http response after connected',
 
     // Verify that DnsBlackholeChecker stays in HANDSHAKE state even if the
     // signal strategy has connected.
-    return base.SpyPromise.run(function() {
+    return Promise.resolve().then(function() {
       signalStrategy.setStateForTesting(
           remoting.SignalStrategy.State.CONNECTED);
     }).then(function() {
@@ -107,7 +107,7 @@ QUnit.test('http response after connected',
 
       // Verify that DnsBlackholeChecker goes to CONNECTED state after the
       // the HTTP request has succeeded.
-      return base.SpyPromise.run(function() {
+      return Promise.resolve().then(function() {
         fakeXhr.respond(200);
       });
     }).then(function() {
@@ -123,7 +123,7 @@ QUnit.test('connect failed',
       sinon.assert.calledWith(onStateChange, state);
     };
 
-    return base.SpyPromise.run(function() {
+    return Promise.resolve().then(function() {
       fakeXhr.respond(200);
     }).then(function() {
       sinon.assert.notCalled(onStateChange);
@@ -146,7 +146,7 @@ QUnit.test('blocked',
           'checker state is still FAILED');
     };
 
-    return base.SpyPromise.run(function() {
+    return Promise.resolve().then(function() {
       fakeXhr.respond(400);
     }).then(function() {
       sinon.assert.calledWith(
@@ -175,7 +175,7 @@ QUnit.test('blocked after connected',
 
     // Verify that DnsBlackholeChecker stays in HANDSHAKE state even
     // if the signal strategy has connected.
-    return base.SpyPromise.run(function() {
+    return Promise.resolve().then(function() {
       signalStrategy.setStateForTesting(
           remoting.SignalStrategy.State.CONNECTED);
     }).then(function() {
@@ -184,7 +184,7 @@ QUnit.test('blocked after connected',
 
       // Verify that DnsBlackholeChecker goes to FAILED state after it
       // gets the blocked HTTP response.
-      return base.SpyPromise.run(function() {
+      return Promise.resolve().then(function() {
         fakeXhr.respond(400);
       });
     }).then(function() {
