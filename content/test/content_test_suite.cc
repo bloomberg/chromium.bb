@@ -12,6 +12,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -99,8 +100,11 @@ void ContentTestSuite::Initialize() {
   bool is_child_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kTestChildProcess);
   if (!is_child_process) {
+    gpu::GPUInfo gpu_info;
+    gpu::CollectBasicGraphicsInfo(&gpu_info);
+    gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
+                                      base::CommandLine::ForCurrentProcess());
     gfx::GLSurfaceTestSupport::InitializeOneOff();
-    gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   }
 #endif
   testing::TestEventListeners& listeners =

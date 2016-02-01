@@ -309,6 +309,10 @@ int GpuMain(const MainFunctionParams& parameters) {
       // (Chrome OS, Android) or where workarounds may be dependent on GL_VENDOR
       // and GL_RENDERER strings which are lazily computed (Linux).
       if (!command_line.HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
+        // TODO: this can not affect disabled extensions, since they're already
+        // initialized in the bindings. This should be moved before bindings
+        // initialization. However, populating GPUInfo fully works only on
+        // Android. Other platforms would need the bindings to query GL strings.
         gpu::ApplyGpuDriverBugWorkarounds(
             gpu_info, const_cast<base::CommandLine*>(&command_line));
       }

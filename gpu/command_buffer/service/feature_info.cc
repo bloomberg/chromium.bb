@@ -522,10 +522,9 @@ void FeatureInfo::InitializeFeatures() {
   // sized formats GL_SRGB8 and GL_SRGB8_ALPHA8. Also, SRGB_EXT isn't a valid
   // <format> in this case. So, even with GLES3 explicitly check for
   // GL_EXT_sRGB.
-  if (!workarounds_.disable_ext_srgb &&
-      (((gl_version_info_->is_es3 ||
-         extensions.Contains("GL_OES_rgb8_rgba8")) &&
-        extensions.Contains("GL_EXT_sRGB")) || gfx::HasDesktopGLFeatures())) {
+  if (((gl_version_info_->is_es3 || extensions.Contains("GL_OES_rgb8_rgba8")) &&
+       extensions.Contains("GL_EXT_sRGB")) ||
+      gfx::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_sRGB");
     validators_.texture_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
@@ -1188,7 +1187,6 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_gl_path_rendering_switch_ &&
-      !workarounds_.disable_gl_path_rendering &&
       extensions.Contains("GL_NV_path_rendering")) {
     bool has_dsa = gl_version_info_->IsAtLeastGL(4, 5) ||
                    extensions.Contains("GL_EXT_direct_state_access");
@@ -1207,7 +1205,6 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   if (enable_gl_path_rendering_switch_ &&
-      !workarounds_.disable_gl_path_rendering &&
       extensions.Contains("GL_NV_framebuffer_mixed_samples")) {
     AddExtensionString("GL_CHROMIUM_framebuffer_mixed_samples");
     feature_flags_.chromium_framebuffer_mixed_samples = true;

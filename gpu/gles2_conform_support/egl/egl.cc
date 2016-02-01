@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/gles2_conform_support/egl/display.h"
 #include "ui/gl/gl_context.h"
@@ -135,7 +136,9 @@ EGLAPI EGLBoolean EGLAPIENTRY eglInitialize(EGLDisplay dpy,
     // argc, argv in CommandLine::Init(argc, argv).
     command_line->InitFromArgv(argv);
     if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
-      gpu::ApplyGpuDriverBugWorkarounds(command_line);
+      gpu::GPUInfo gpu_info;
+      gpu::CollectBasicGraphicsInfo(&gpu_info);
+      gpu::ApplyGpuDriverBugWorkarounds(gpu_info, command_line);
     }
 
     gfx::GLSurface::InitializeOneOff();

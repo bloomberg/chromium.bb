@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.41",
+  "version": "8.42",
   "entries": [
     {
       "id": 1,
@@ -1439,9 +1439,7 @@ LONG_STRING_CONST(
         "op": "<",
         "value": "346"
       },
-      "features": [
-        "disable_gl_path_rendering"
-      ]
+      "disabled_extensions": ["GL_NV_path_rendering"]
     },
     {
       "id": 124,
@@ -1582,9 +1580,7 @@ LONG_STRING_CONST(
         }
       },
       "gl_vendor": "Qualcomm.*",
-      "features": [
-        "disable_ext_srgb"
-      ]
+      "disabled_extensions": ["GL_EXT_sRGB"]
     },
     {
       "id": 135,
@@ -1635,9 +1631,7 @@ LONG_STRING_CONST(
         "op": "<",
         "value": "346"
       },
-      "features": [
-        "disable_gl_path_rendering"
-      ]
+      "disabled_extensions": ["GL_NV_path_rendering"]
     },
     {
       "id": 139,
@@ -1670,9 +1664,7 @@ LONG_STRING_CONST(
       },
       "gl_vendor": "Qualcomm",
       "gl_renderer": "Adreno \\(TM\\) 4.*", // Originally on 418.
-      "features": [
-        "disable_ext_srgb"
-      ]
+      "disabled_extensions": ["GL_EXT_sRGB"]
     },
     {
       "id": 141,

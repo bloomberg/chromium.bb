@@ -12,6 +12,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gl/gl_surface.h"
@@ -29,9 +30,12 @@ int RunHelper(base::TestSuite* testSuite) {
 #else
   base::MessageLoopForIO message_loop;
 #endif
+  gpu::GPUInfo gpu_info;
+  gpu::CollectBasicGraphicsInfo(&gpu_info);
+  gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
+                                    base::CommandLine::ForCurrentProcess());
   gfx::GLSurface::InitializeOneOff();
   ::gles2::Initialize();
-  gpu::ApplyGpuDriverBugWorkarounds(base::CommandLine::ForCurrentProcess());
   return testSuite->Run();
 }
 
