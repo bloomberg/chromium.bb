@@ -701,7 +701,8 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 // wl_shell_interface:
 
 void HandleShellSurfaceConfigureCallback(wl_resource* resource,
-                                         const gfx::Size& size) {
+                                         const gfx::Size& size,
+                                         bool activated) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
 }
@@ -926,15 +927,22 @@ void xdg_shell_use_unstable_version(wl_client* client,
 }
 
 void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
-                                       const gfx::Size& size) {
-  // TODO(reveman): Include the shell surface state (maximized, active, etc.)
-  // and make sure this configure callback is called when any of that state
-  // changes.
+                                       const gfx::Size& size,
+                                       bool activated) {
+  // TODO(reveman): Include the shell surface state (maximized, etc.) and make
+  // sure this configure callback is called when any of that state changes.
   wl_array states;
   wl_array_init(&states);
+  if (activated) {
+    xdg_surface_state* value = static_cast<xdg_surface_state*>(
+        wl_array_add(&states, sizeof(xdg_surface_state)));
+    DCHECK(value);
+    *value = XDG_SURFACE_STATE_ACTIVATED;
+  }
   xdg_surface_send_configure(resource, size.width(), size.height(), &states,
                              wl_display_next_serial(wl_client_get_display(
                                  wl_resource_get_client(resource))));
+  wl_array_release(&states);
 }
 
 void xdg_shell_get_xdg_surface(wl_client* client,

@@ -17,6 +17,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_client.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(std::string*)
 
@@ -71,6 +72,7 @@ class ShellSurfaceWidget : public views::Widget {
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(std::string*, kApplicationIdKey, nullptr)
 
 ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
+  ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
   surface_->Show();
@@ -78,6 +80,7 @@ ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
 }
 
 ShellSurface::~ShellSurface() {
+  ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   if (surface_) {
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
@@ -94,8 +97,7 @@ void ShellSurface::Maximize() {
 
   widget_->Maximize();
 
-  if (!configure_callback_.is_null())
-    configure_callback_.Run(widget_->GetWindowBoundsInScreen().size());
+  Configure();
 }
 
 void ShellSurface::Restore() {
@@ -118,8 +120,7 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
 
   widget_->SetFullscreen(fullscreen);
 
-  if (!configure_callback_.is_null())
-    configure_callback_.Run(widget_->GetWindowBoundsInScreen().size());
+  Configure();
 }
 
 void ShellSurface::SetTitle(const base::string16& title) {
@@ -262,6 +263,22 @@ gfx::Size ShellSurface::GetPreferredSize() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// aura::client::ActivationChangeObserver overrides:
+
+void ShellSurface::OnWindowActivated(
+    aura::client::ActivationChangeObserver::ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (!widget_)
+    return;
+
+  if (gained_active == widget_->GetNativeWindow() ||
+      lost_active == widget_->GetNativeWindow()) {
+    Configure();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
 void ShellSurface::CreateShellSurfaceWidget() {
@@ -287,6 +304,14 @@ void ShellSurface::CreateShellSurfaceWidget() {
   // The position of a top-level shell surface is managed by Ash.
   ash::wm::GetWindowState(widget_->GetNativeWindow())
       ->set_window_position_managed(true);
+}
+
+void ShellSurface::Configure() {
+  if (configure_callback_.is_null())
+    return;
+
+  configure_callback_.Run(widget_->GetWindowBoundsInScreen().size(),
+                          widget_->IsActive());
 }
 
 }  // namespace exo

@@ -155,8 +155,12 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   EXPECT_FALSE(shell_surface.get());
 }
 
-void Configure(gfx::Size* suggested_size, const gfx::Size& size) {
+void Configure(gfx::Size* suggested_size,
+               bool* is_active,
+               const gfx::Size& size,
+               bool activated) {
   *suggested_size = size;
+  *is_active = activated;
 }
 
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
@@ -164,14 +168,26 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   gfx::Size suggested_size;
+  bool is_active = false;
   shell_surface->set_configure_callback(
-      base::Bind(&Configure, base::Unretained(&suggested_size)));
+      base::Bind(&Configure, base::Unretained(&suggested_size),
+                 base::Unretained(&is_active)));
   shell_surface->Maximize();
   EXPECT_EQ(CurrentContext()->bounds().width(), suggested_size.width());
 
   shell_surface->SetFullscreen(true);
   EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
             suggested_size.ToString());
+
+  gfx::Size buffer_size(64, 64);
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->Activate();
+  EXPECT_TRUE(is_active);
+  shell_surface->GetWidget()->Deactivate();
+  EXPECT_FALSE(is_active);
 }
 
 }  // namespace
