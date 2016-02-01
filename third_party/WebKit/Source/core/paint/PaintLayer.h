@@ -665,6 +665,9 @@ public:
     bool needsPaintPhaseFloat() const { return m_needsPaintPhaseFloat; }
     void setNeedsPaintPhaseFloat() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseFloat = true; }
 
+    bool needsPaintPhaseDescendantBlockBackgrounds() const { return m_needsPaintPhaseDescendantBlockBackgrounds; }
+    void setNeedsPaintPhaseDescendantBlockBackgrounds() { ASSERT(isSelfPaintingLayer()); m_needsPaintPhaseDescendantBlockBackgrounds = true; }
+
     PaintTiming* paintTiming();
 
     ClipRectsCache* clipRectsCache() const { return m_clipRectsCache.get(); }
@@ -813,6 +816,7 @@ private:
 
     unsigned m_needsPaintPhaseDescendantOutlines : 1;
     unsigned m_needsPaintPhaseFloat : 1;
+    unsigned m_needsPaintPhaseDescendantBlockBackgrounds : 1;
 
     // These bitfields are part of ancestor/descendant dependent compositing inputs.
     unsigned m_hasDescendantWithClipPath : 1;

@@ -1471,6 +1471,14 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(PaintInvalidationStat
     if (isFloating())
         paintInvalidationState.enclosingSelfPaintingLayer(*this).setNeedsPaintPhaseFloat();
 
+    if (hasBoxDecorationBackground()
+        // We also paint overflow controls in background phase.
+        || (hasOverflowClip() && scrollableArea()->hasOverflowControls())) {
+        PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
+        if (layer.layoutObject() != this)
+            layer.setNeedsPaintPhaseDescendantBlockBackgrounds();
+    }
+
     PaintInvalidationReason fullInvalidationReason = fullPaintInvalidationReason();
     // If the current paint invalidation reason is PaintInvalidationDelayedFull, then this paint invalidation can delayed if the
     // LayoutBox in question is not on-screen. The logic to decide whether this is appropriate exists at the site of the original

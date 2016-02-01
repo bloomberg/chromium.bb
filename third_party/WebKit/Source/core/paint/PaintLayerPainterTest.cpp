@@ -284,8 +284,6 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline)
     EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), outlineDiv, DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 }
 
-// TODO(wangxianzhu): This test weirdly caused memory leaks of a chromium content_browsertests test.
-// Figure out the issue and enable this test.
 TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
 {
     AtomicString styleWithoutFloat = "width: 50px; height: 50px; background-color: green";
@@ -319,6 +317,48 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat)
     EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
     paint();
     EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), floatDiv, DisplayItem::BoxDecorationBackground));
+}
+
+TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground)
+{
+    AtomicString styleWithoutBackground = "width: 50px; height: 50px";
+    AtomicString styleWithBackground = "background: blue; " + styleWithoutBackground;
+    setBodyInnerHTML(
+        "<div id='self-painting-layer' style='position: absolute'>"
+        "  <div id='non-self-painting-layer' style='overflow: hidden'>"
+        "    <div>"
+        "      <div id='background'></div>"
+        "    </div>"
+        "  </div>"
+        "</div>");
+    LayoutObject& backgroundDiv = *document().getElementById("background")->layoutObject();
+    toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithoutBackground);
+    document().view()->updateAllLifecyclePhases();
+
+    LayoutBlock& selfPaintingLayerObject = *toLayoutBlock(document().getElementById("self-painting-layer")->layoutObject());
+    PaintLayer& selfPaintingLayer = *selfPaintingLayerObject.layer();
+    ASSERT_TRUE(selfPaintingLayer.isSelfPaintingLayer());
+    PaintLayer& nonSelfPaintingLayer = *toLayoutBoxModelObject(document().getElementById("non-self-painting-layer")->layoutObject())->layer();
+    ASSERT_FALSE(nonSelfPaintingLayer.isSelfPaintingLayer());
+    ASSERT_TRUE(&nonSelfPaintingLayer == backgroundDiv.enclosingLayer());
+
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+
+    // Background on the self-painting-layer node itself doesn't affect PaintPhaseDescendantBlockBackgrounds.
+    toHTMLElement(selfPaintingLayerObject.node())->setAttribute(HTMLNames::styleAttr, "position: absolute; background: green");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), selfPaintingLayerObject, DisplayItem::BoxDecorationBackground));
+
+    // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant on the same layer has Background.
+    toHTMLElement(backgroundDiv.node())->setAttribute(HTMLNames::styleAttr, styleWithBackground);
+    updateLifecyclePhasesBeforePaint();
+    EXPECT_TRUE(selfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+    EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
+    paint();
+    EXPECT_TRUE(displayItemListContains(rootPaintController().displayItemList(), backgroundDiv, DisplayItem::BoxDecorationBackground));
 }
 
 } // namespace blink

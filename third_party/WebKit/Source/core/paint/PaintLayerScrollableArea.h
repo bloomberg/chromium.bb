@@ -262,6 +262,7 @@ public:
     bool updateAfterCompositingChange() override;
 
     bool hasScrollbar() const { return hasHorizontalScrollbar() || hasVerticalScrollbar(); }
+    bool hasOverflowControls() const { return hasScrollbar() || scrollCorner() || resizer(); }
 
     LayoutScrollbarPart* scrollCorner() const override { return m_scrollCorner; }
 
