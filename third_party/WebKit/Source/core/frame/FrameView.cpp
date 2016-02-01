@@ -2583,10 +2583,8 @@ void FrameView::updateStyleAndLayoutIfNeededRecursive()
     for (const auto& frameView : frameViews)
         frameView->updateStyleAndLayoutIfNeededRecursive();
 
-    // When an <iframe> gets composited, it triggers an extra style recalc in its containing FrameView.
-    // To avoid pushing an invalid tree for display, we have to check for this case and do another
-    // style recalc. The extra style recalc needs to happen after our child <iframes> were updated.
-    // FIXME: We shouldn't be triggering an extra style recalc in the first place.
+    // When SVG filters are invalidated using Document::scheduleSVGFilterLayerUpdateHack() they may trigger an
+    // extra style recalc. See PaintLayer::filterNeedsPaintInvalidation().
     if (m_frame->document()->hasSVGFilterElementsRequiringLayerUpdate()) {
         m_frame->document()->updateLayoutTreeIfNeeded();
 

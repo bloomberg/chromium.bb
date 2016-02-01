@@ -2671,9 +2671,13 @@ void PaintLayer::filterNeedsPaintInvalidation()
     {
         DeprecatedScheduleStyleRecalcDuringLayout marker(layoutObject()->document().lifecycle());
         // It's possible for scheduleSVGFilterLayerUpdateHack to schedule a style recalc, which
-        // is a problem because this function can be called while performing layout.
-        // Presumably this represents an illegal data flow of layout or compositing
-        // information into the style system.
+        // is a problem because this function can be called right before performing layout but
+        // after style recalc.
+        //
+        // See LayoutView::layout() and the call to
+        // invalidateSVGRootsWithRelativeLengthDescendents(). This violation is worked around
+        // in FrameView::updateStyleAndLayoutIfNeededRecursive() by doing an extra style recalc
+        // and layout in case it's needed.
         toElement(layoutObject()->node())->scheduleSVGFilterLayerUpdateHack();
     }
 
