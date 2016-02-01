@@ -27,6 +27,6 @@ uplow Zz 1356
 
 sign . 46
 emphclass italic
-emphword italic 46
+begemphword italic 46
 
 correct "foo" "foobar"

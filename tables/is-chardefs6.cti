@@ -156,9 +156,9 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-firstletteremph italic 4-34
-lastletteremph italic 34-4
+begemph italic 4-34
+endemph italic 34-4
 
-firstletteremph bold 4-456
-lastletteremph bold 456-4
+begemph bold 4-456
+endemph bold 456-4
 

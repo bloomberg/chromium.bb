@@ -227,11 +227,11 @@ begcapsword 46-46
 emphclass italic
 emphclass underline
 emphclass bold
-firstwordemph italic 456-456
+begemphphrase italic 456-456
 lastwordemphbefore italic 456
-firstletteremph italic 456
-singleletteremph italic 456
-firstwordemph bold 456-456
+begemph italic 456
+emphletter italic 456
+begemphphrase bold 456-456
 lastwordemphbefore bold 456
 
 litdigit 0 3456				zéro

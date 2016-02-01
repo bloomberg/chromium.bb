@@ -27,10 +27,10 @@ endcapsword 6-3
 emphclass italic
 emphclass underline
 emphclass bold
-firstletteremph italic 46-2356
-lastletteremph italic 46-3
-firstletteremph bold 45-2356
-lastletteremph bold 45-3
+begemph italic 46-2356
+endemph italic 46-3
+begemph bold 45-2356
+endemph bold 45-3
 
 # the decimal digits
 include litdigits6Dots.uti

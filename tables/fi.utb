@@ -146,22 +146,22 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-firstwordemph underline 346-346
+begemphphrase underline 346-346
 lastwordemphbefore underline 346
-firstletteremph underline 346
-lastletteremph underline 346
+begemph underline 346
+endemph underline 346
 lenemphphrase underline 3
 
-firstwordemph bold 346-346
+begemphphrase bold 346-346
 lastwordemphbefore bold 346
-firstletteremph bold 346
-lastletteremph bold 346
+begemph bold 346
+endemph bold 346
 lenemphphrase bold 3
 
-firstwordemph italic 46-46
+begemphphrase italic 46-46
 lastwordemphbefore italic 46
-firstletteremph italic 46
-lastletteremph italic 46
+begemph italic 46
+endemph italic 46
 lenemphphrase italic 3
 
 # Longer number expressions

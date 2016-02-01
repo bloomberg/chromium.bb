@@ -244,12 +244,12 @@ static const char *opcodeNames[CTO_None] = {
   "seqafterchars",
   "seqafterpattern",
   "emphclass",
-  "singleletteremph",
-  "emphword",
-  "emphwordstop",
-  "firstletteremph",
-  "lastletteremph",
-  "firstwordemph",
+  "emphletter",
+  "begemphword",
+  "endemphword",
+  "begemph",
+  "endemph",
+  "begemphphrase",
   "lastwordemphbefore",
   "lastwordemphafter",
   "lenemphphrase",
@@ -4022,12 +4022,12 @@ doOpcode:
   opcode = getOpcode (nested, &token);
   
   /* these 9 general purpose emphasis opcodes are compiled further down to more specific internal opcodes:
-   * - singleletteremph
-   * - emphword
-   * - emphwordstop
-   * - firstletteremph
-   * - lastletteremph
-   * - firstwordemph
+   * - emphletter
+   * - begemphword
+   * - endemphword
+   * - begemph
+   * - endemph
+   * - begemphphrase
    * - lastwordemphbefore
    * - lastwordemphafter
    * - lenemphphrase
@@ -4054,7 +4054,6 @@ doOpcode:
 	      {
 		switch (i)
 		  {
-		  case 0:
 		    /* For backwards compatibility (i.e. because programs will assume the first 3
 		     * typeform bits are `italic', `underline' and `bold') we require that the first
 		     * 3 emphclass definitions are (in that order):
@@ -4071,6 +4070,7 @@ doOpcode:
 		     * emphasis the recommended way (i.e. by looking up the supported typeforms in
 		     * the documentation or API) so that we can drop this restriction.
 		    */
+		  case 0:
 		    if (strcmp(s, "italic") != 0)
 		      {
 			logMessage (LOG_ERROR, "First emphasis class must be \"italic\" but got %s", s);

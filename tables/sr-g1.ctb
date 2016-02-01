@@ -46,21 +46,21 @@ emphclass bold
 
 lastwordemphafter italic 6-3
 lenemphphrase italic 1
-firstletteremph italic 6-456
-lastletteremph italic 6-3
-singleletteremph italic 456
+begemph italic 6-456
+endemph italic 6-3
+emphletter italic 456
 
 lastwordemphafter bold 6-3
 lenemphphrase bold 1
-firstletteremph bold 6-456
-lastletteremph bold 6-3
-singleletteremph bold 456
+begemph bold 6-456
+endemph bold 6-3
+emphletter bold 456
 
 lastwordemphafter underline 6-3
 lenemphphrase underline 1
-firstletteremph underline 6-456
-lastletteremph underline 6-3
-singleletteremph underline 456
+begemph underline 6-456
+endemph underline 6-3
+emphletter underline 456
 
 #----------- SPECIAL SYLLABLES ------------------------------------------------
 always \x0044\x017D 12456			# LATIN CAPITAL LETTER D + LATIN CAPITAL LETTER Z WITH CARON

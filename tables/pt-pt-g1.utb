@@ -156,12 +156,12 @@ begcapsword 46-46
 emphclass italic
 emphclass underline
 emphclass bold
-firstletteremph italic 35
-firstletteremph bold 35
-firstletteremph underline 35
-lastletteremph italic 35
-lastletteremph bold 35
-lastletteremph underline 35
+begemph italic 35
+begemph bold 35
+begemph underline 35
+endemph italic 35
+endemph bold 35
+endemph underline 35
 begcomp 5-2
 endcomp 5-2
 

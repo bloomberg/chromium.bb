@@ -33,4 +33,4 @@ uplow Zz 1356
 sign ~ 45
 sign , 2
 
-emphword foo 45-2
+begemphword foo 45-2

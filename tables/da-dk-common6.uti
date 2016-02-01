@@ -86,20 +86,20 @@ emphclass italic
 emphclass underline
 emphclass bold
 
-firstwordemph italic 56
+begemphphrase italic 56
 lastwordemphafter italic 56
-firstletteremph italic 56
-lastletteremph italic 56
+begemph italic 56
+endemph italic 56
 
-firstwordemph bold 56
+begemphphrase bold 56
 lastwordemphafter bold 56
-firstletteremph bold 56
-lastletteremph bold 56
+begemph bold 56
+endemph bold 56
 
-firstwordemph underline 56
+begemphphrase underline 56
 lastwordemphafter underline 56
-firstletteremph underline 56
-lastletteremph underline 56
+begemph underline 56
+endemph underline 56
 
 capsletter 46
 begcapsword 456

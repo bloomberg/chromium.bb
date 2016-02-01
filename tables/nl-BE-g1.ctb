@@ -42,23 +42,23 @@ emphclass bold
 
 lenemphphrase italic 3
 lastwordemphbefore italic 456
-firstletteremph italic 456
-lastletteremph italic 6
-firstwordemph italic 456-456
+begemph italic 456
+endemph italic 6
+begemphphrase italic 456-456
 
 # vet
 lenemphphrase bold 3
 lastwordemphbefore bold 456
-firstletteremph bold 456
-lastletteremph bold 6
-firstwordemph bold 456-456
+begemph bold 456
+endemph bold 6
+begemphphrase bold 456-456
 
 # onderstreept
 lenemphphrase underline 3
 lastwordemphbefore underline 456
-firstletteremph underline 456
-lastletteremph underline 6
-firstwordemph underline 456-456
+begemph underline 456
+endemph underline 6
+begemphphrase underline 456-456
 
 # ----------------------------------------------------------------------------------------------
 # Special symbol opcodes

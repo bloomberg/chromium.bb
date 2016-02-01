@@ -130,8 +130,8 @@ sign \x20AC 4-15					# 8364 Euro sign anywhere else
 numsign 3456  number sign, just a dots operand
 capsletter 45
 emphclass italic
-firstletteremph italic 456
-firstwordemph italic 456
+begemph italic 456
+begemphphrase italic 456
 
 # the decimal digits
 include litdigits6Dots.uti

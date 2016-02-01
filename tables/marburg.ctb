@@ -44,8 +44,8 @@ endcapsword 6-3
 emphclass italic
 emphclass underline
 emphclass bold
-singleletteremph italic 4
-singleletteremph bold 4
+emphletter italic 4
+emphletter bold 4
 
 # litdigit opcodes must be in this table, not the single-cell table.
 include litdigits6Dots.uti

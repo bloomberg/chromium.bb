@@ -35,10 +35,10 @@ endcapsword 6-3
 emphclass italic
 emphclass underline
 emphclass bold
-firstletteremph italic 46
-lastletteremph italic 46-3
-firstletteremph bold 46-46
-lastletteremph bold 46-3
+begemph italic 46
+endemph italic 46-3
+begemph bold 46-46
+endemph bold 46-3
 begcomp 6-346
 endcomp 6-346
 

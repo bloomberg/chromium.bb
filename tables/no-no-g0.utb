@@ -23,19 +23,19 @@ emphclass bold
 lenemphphrase italic 1
 lenemphphrase bold 1
 
-firstwordemph italic 23
-firstletteremph italic 23
-firstwordemph bold 6-3
-firstletteremph bold 6-3
-firstwordemph underline 456
-firstletteremph underline 456
+begemphphrase italic 23
+begemph italic 23
+begemphphrase bold 6-3
+begemph bold 6-3
+begemphphrase underline 456
+begemph underline 456
 
 lastwordemphafter italic 56
-lastletteremph italic 56
+endemph italic 56
 lastwordemphafter bold 6-3
-lastletteremph bold 6-3
+endemph bold 6-3
 lastwordemphafter underline 456
-lastletteremph underline 456
+endemph underline 456
 
 midnum , 2
 midnum . 3

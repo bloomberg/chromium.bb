@@ -38,17 +38,17 @@ endcapsword 6-3
 emphclass italic
 emphclass underline
 emphclass bold
-firstwordemph italic 46-2356 # Start of italicized passage.
+begemphphrase italic 46-2356 # Start of italicized passage.
 lastwordemphafter italic 46-3
 lenemphphrase italic 3 # Defines italicized passage length.
-singleletteremph italic 46-23
-firstwordemph bold 45-2356 # Boldface passage.
+emphletter italic 46-23
+begemphphrase bold 45-2356 # Boldface passage.
 lastwordemphafter bold 45-3
 lenemphphrase bold 3
-singleletteremph bold 45-23
-firstwordemph underline 456-2356 # Underlined passage.
+emphletter bold 45-23
+begemphphrase underline 456-2356 # Underlined passage.
 lastwordemphafter underline 456-3
-singleletteremph underline 456-23
+emphletter underline 456-23
 lenemphphrase underline 3
 # Todo: add singlewordemph italic, singlewordemph bold, singlewordemph underline and possible ones for scripts and transcriber typeforms.
 # For singleword forms, check if and only if one word has this typeform.
