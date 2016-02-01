@@ -377,12 +377,6 @@ public:
     virtual WebWaitableEvent* waitMultipleEvents(const WebVector<WebWaitableEvent*>& events) { return nullptr; }
 
 
-    // Profiling -----------------------------------------------------------
-
-    virtual void decrementStatsCounter(const char* name) { }
-    virtual void incrementStatsCounter(const char* name) { }
-
-
     // Resources -----------------------------------------------------------
 
     // Returns a blob of data corresponding to the named resource.

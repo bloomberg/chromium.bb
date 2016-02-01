@@ -580,12 +580,6 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
   return web_events[idx];
 }
 
-void BlinkPlatformImpl::decrementStatsCounter(const char* name) {
-}
-
-void BlinkPlatformImpl::incrementStatsCounter(const char* name) {
-}
-
 void BlinkPlatformImpl::histogramCustomCounts(
     const char* name, int sample, int min, int max, int bucket_count) {
   // Copied from histogram macro, but without the static variable caching

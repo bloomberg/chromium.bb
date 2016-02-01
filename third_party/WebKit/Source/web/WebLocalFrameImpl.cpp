@@ -246,9 +246,6 @@ namespace blink {
 
 static int frameCount = 0;
 
-// Key for a StatsCounter tracking how many WebFrames are active.
-static const char webFrameActiveCount[] = "WebFrameActiveCount";
-
 static void frameContentAsPlainText(size_t maxChars, LocalFrame* frame, StringBuilder& output)
 {
     Document* document = frame->document();
@@ -1691,7 +1688,6 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_selfKeepAlive(this)
 #endif
 {
-    Platform::current()->incrementStatsCounter(webFrameActiveCount);
     frameCount++;
 }
 
@@ -1704,7 +1700,6 @@ WebLocalFrameImpl::~WebLocalFrameImpl()
 {
     // The widget for the frame, if any, must have already been closed.
     ASSERT(!m_frameWidget);
-    Platform::current()->decrementStatsCounter(webFrameActiveCount);
     frameCount--;
 
 #if !ENABLE(OILPAN)

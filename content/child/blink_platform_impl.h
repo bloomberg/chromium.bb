@@ -109,8 +109,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       blink::WebWaitableEvent::InitialState state) override;
   blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events) override;
-  void decrementStatsCounter(const char* name) override;
-  void incrementStatsCounter(const char* name) override;
   void histogramCustomCounts(const char* name,
                              int sample,
                              int min,
