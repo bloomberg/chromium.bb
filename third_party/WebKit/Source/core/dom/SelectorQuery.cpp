@@ -120,11 +120,13 @@ void SelectorDataList::initialize(const CSSSelectorList& selectorList)
 
 inline bool SelectorDataList::selectorMatches(const CSSSelector& selector, Element& element, const ContainerNode& rootNode) const
 {
-    SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
-    SelectorChecker::SelectorCheckingContext selectorCheckingContext(&element, SelectorChecker::VisitedMatchDisabled);
-    selectorCheckingContext.selector = &selector;
-    selectorCheckingContext.scope = &rootNode;
-    return selectorChecker.match(selectorCheckingContext);
+    SelectorChecker::Init init;
+    init.mode = SelectorChecker::QueryingRules;
+    SelectorChecker checker(init);
+    SelectorChecker::SelectorCheckingContext context(&element, SelectorChecker::VisitedMatchDisabled);
+    context.selector = &selector;
+    context.scope = &rootNode;
+    return checker.match(context);
 }
 
 bool SelectorDataList::matches(Element& targetElement) const

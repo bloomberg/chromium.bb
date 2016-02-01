@@ -63,11 +63,6 @@ namespace blink {
 
 using namespace HTMLNames;
 
-SelectorChecker::SelectorChecker(Mode mode)
-    : m_mode(mode)
-{
-}
-
 static bool isFrameFocused(const Element& element)
 {
     return element.document().frame() && element.document().frame()->selection().isFocusedAndActive();
@@ -295,7 +290,7 @@ SelectorChecker::Match SelectorChecker::matchForSubSelector(const SelectorChecki
     SelectorCheckingContext nextContext = prepareNextContextForRelation(context);
 
     PseudoId dynamicPseudo = result.dynamicPseudo;
-    nextContext.hasScrollbarPseudo = dynamicPseudo != NOPSEUDO && (context.scrollbar || dynamicPseudo == SCROLLBAR_CORNER || dynamicPseudo == RESIZER);
+    nextContext.hasScrollbarPseudo = dynamicPseudo != NOPSEUDO && (m_scrollbar || dynamicPseudo == SCROLLBAR_CORNER || dynamicPseudo == RESIZER);
     nextContext.hasSelectionPseudo = dynamicPseudo == SELECTION;
     nextContext.isSubSelector = true;
     return matchSelector(nextContext, result);
@@ -413,7 +408,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowPseudo:
         {
-            if (!context.isUARule && context.selector->pseudoType() == CSSSelector::PseudoShadow)
+            if (!m_isUARule && context.selector->pseudoType() == CSSSelector::PseudoShadow)
                 UseCounter::countDeprecation(context.element->document(), UseCounter::CSSSelectorPseudoShadow);
             // If we're in the same tree-scope as the scoping element, then following a shadow descendant combinator would escape that and thus the scope.
             if (context.scope && context.scope->shadowHost() && context.scope->shadowHost()->treeScope() == context.element->treeScope())
@@ -430,7 +425,7 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
 
     case CSSSelector::ShadowDeep:
         {
-            if (!context.isUARule)
+            if (!m_isUARule)
                 UseCounter::countDeprecation(context.element->document(), UseCounter::CSSDeepCombinator);
             if (ShadowRoot* root = context.element->containingShadowRoot()) {
                 if (root->type() == ShadowRootType::UserAgent)
@@ -726,7 +721,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
             if (m_mode == ResolvingStyle) {
                 element.setStyleAffectedByEmpty();
                 if (context.inRightmostCompound)
-                    context.elementStyle->setEmptyState(result);
+                    m_elementStyle->setEmptyState(result);
                 else if (element.computedStyle() && (element.document().styleEngine().usesSiblingRules() || element.computedStyle()->unique()))
                     element.mutableComputedStyle()->setEmptyState(result);
             }
@@ -852,9 +847,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoDrag:
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
-                context.elementStyle->setAffectedByDrag();
+                m_elementStyle->setAffectedByDrag();
             } else {
-                context.elementStyle->setUnique();
+                m_elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByDrag();
             }
         }
@@ -862,9 +857,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoFocus:
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
-                context.elementStyle->setAffectedByFocus();
+                m_elementStyle->setAffectedByFocus();
             } else {
-                context.elementStyle->setUnique();
+                m_elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByFocus();
             }
         }
@@ -872,9 +867,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoHover:
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
-                context.elementStyle->setAffectedByHover();
+                m_elementStyle->setAffectedByHover();
             } else {
-                context.elementStyle->setUnique();
+                m_elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByHover();
             }
         }
@@ -886,9 +881,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoActive:
         if (m_mode == ResolvingStyle) {
             if (context.inRightmostCompound) {
-                context.elementStyle->setAffectedByActive();
+                m_elementStyle->setAffectedByActive();
             } else {
-                context.elementStyle->setUnique();
+                m_elementStyle->setUnique();
                 element.setChildrenOrSiblingsAffectedByActive();
             }
         }
@@ -997,9 +992,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
     case CSSSelector::PseudoHostContext:
         return checkPseudoHost(context, result);
     case CSSSelector::PseudoSpatialNavigationFocus:
-        return context.isUARule && matchesSpatialNavigationFocusPseudoClass(element);
+        return m_isUARule && matchesSpatialNavigationFocusPseudoClass(element);
     case CSSSelector::PseudoListBox:
-        return context.isUARule && matchesListBoxPseudoClass(element);
+        return m_isUARule && matchesListBoxPseudoClass(element);
     case CSSSelector::PseudoWindowInactive:
         if (!context.hasSelectionPseudo)
             return false;
@@ -1138,8 +1133,6 @@ bool SelectorChecker::checkPseudoHost(const SelectorCheckingContext& context, Ma
 bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& context, MatchResult& result) const
 {
     const CSSSelector& selector = *context.selector;
-    LayoutScrollbar* scrollbar = context.scrollbar;
-    ScrollbarPart part = context.scrollbarPart;
 
     if (selector.pseudoType() == CSSSelector::PseudoNot)
         return checkPseudoNot(context, result);
@@ -1149,71 +1142,71 @@ bool SelectorChecker::checkScrollbarPseudoClass(const SelectorCheckingContext& c
     if (selector.pseudoType() == CSSSelector::PseudoWindowInactive)
         return !context.element->document().page()->focusController().isActive();
 
-    if (!scrollbar)
+    if (!m_scrollbar)
         return false;
 
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoEnabled:
-        return scrollbar->enabled();
+        return m_scrollbar->enabled();
     case CSSSelector::PseudoDisabled:
-        return !scrollbar->enabled();
+        return !m_scrollbar->enabled();
     case CSSSelector::PseudoHover:
         {
-            ScrollbarPart hoveredPart = scrollbar->hoveredPart();
-            if (part == ScrollbarBGPart)
+            ScrollbarPart hoveredPart = m_scrollbar->hoveredPart();
+            if (m_scrollbarPart == ScrollbarBGPart)
                 return hoveredPart != NoPart;
-            if (part == TrackBGPart)
+            if (m_scrollbarPart == TrackBGPart)
                 return hoveredPart == BackTrackPart || hoveredPart == ForwardTrackPart || hoveredPart == ThumbPart;
-            return part == hoveredPart;
+            return m_scrollbarPart == hoveredPart;
         }
     case CSSSelector::PseudoActive:
         {
-            ScrollbarPart pressedPart = scrollbar->pressedPart();
-            if (part == ScrollbarBGPart)
+            ScrollbarPart pressedPart = m_scrollbar->pressedPart();
+            if (m_scrollbarPart == ScrollbarBGPart)
                 return pressedPart != NoPart;
-            if (part == TrackBGPart)
+            if (m_scrollbarPart == TrackBGPart)
                 return pressedPart == BackTrackPart || pressedPart == ForwardTrackPart || pressedPart == ThumbPart;
-            return part == pressedPart;
+            return m_scrollbarPart == pressedPart;
         }
     case CSSSelector::PseudoHorizontal:
-        return scrollbar->orientation() == HorizontalScrollbar;
+        return m_scrollbar->orientation() == HorizontalScrollbar;
     case CSSSelector::PseudoVertical:
-        return scrollbar->orientation() == VerticalScrollbar;
+        return m_scrollbar->orientation() == VerticalScrollbar;
     case CSSSelector::PseudoDecrement:
-        return part == BackButtonStartPart || part == BackButtonEndPart || part == BackTrackPart;
+        return m_scrollbarPart == BackButtonStartPart || m_scrollbarPart == BackButtonEndPart || m_scrollbarPart == BackTrackPart;
     case CSSSelector::PseudoIncrement:
-        return part == ForwardButtonStartPart || part == ForwardButtonEndPart || part == ForwardTrackPart;
+        return m_scrollbarPart == ForwardButtonStartPart || m_scrollbarPart == ForwardButtonEndPart || m_scrollbarPart == ForwardTrackPart;
     case CSSSelector::PseudoStart:
-        return part == BackButtonStartPart || part == ForwardButtonStartPart || part == BackTrackPart;
+        return m_scrollbarPart == BackButtonStartPart || m_scrollbarPart == ForwardButtonStartPart || m_scrollbarPart == BackTrackPart;
     case CSSSelector::PseudoEnd:
-        return part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart;
+        return m_scrollbarPart == BackButtonEndPart || m_scrollbarPart == ForwardButtonEndPart || m_scrollbarPart == ForwardTrackPart;
     case CSSSelector::PseudoDoubleButton:
         {
-            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
-            if (part == BackButtonStartPart || part == ForwardButtonStartPart || part == BackTrackPart)
+            WebScrollbarButtonsPlacement buttonsPlacement = m_scrollbar->theme().buttonsPlacement();
+            if (m_scrollbarPart == BackButtonStartPart || m_scrollbarPart == ForwardButtonStartPart || m_scrollbarPart == BackTrackPart)
                 return buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth;
-            if (part == BackButtonEndPart || part == ForwardButtonEndPart || part == ForwardTrackPart)
+            if (m_scrollbarPart == BackButtonEndPart || m_scrollbarPart == ForwardButtonEndPart || m_scrollbarPart == ForwardTrackPart)
                 return buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd || buttonsPlacement == WebScrollbarButtonsPlacementDoubleBoth;
             return false;
         }
     case CSSSelector::PseudoSingleButton:
         {
-            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
-            if (part == BackButtonStartPart || part == ForwardButtonEndPart || part == BackTrackPart || part == ForwardTrackPart)
+            WebScrollbarButtonsPlacement buttonsPlacement = m_scrollbar->theme().buttonsPlacement();
+            if (m_scrollbarPart == BackButtonStartPart || m_scrollbarPart == ForwardButtonEndPart || m_scrollbarPart == BackTrackPart || m_scrollbarPart == ForwardTrackPart)
                 return buttonsPlacement == WebScrollbarButtonsPlacementSingle;
             return false;
         }
     case CSSSelector::PseudoNoButton:
         {
-            WebScrollbarButtonsPlacement buttonsPlacement = scrollbar->theme().buttonsPlacement();
-            if (part == BackTrackPart)
+            WebScrollbarButtonsPlacement buttonsPlacement = m_scrollbar->theme().buttonsPlacement();
+            if (m_scrollbarPart == BackTrackPart)
                 return buttonsPlacement == WebScrollbarButtonsPlacementNone || buttonsPlacement == WebScrollbarButtonsPlacementDoubleEnd;
-            if (part == ForwardTrackPart)
+            if (m_scrollbarPart == ForwardTrackPart)
                 return buttonsPlacement == WebScrollbarButtonsPlacementNone || buttonsPlacement == WebScrollbarButtonsPlacementDoubleStart;
             return false;
         }
     case CSSSelector::PseudoCornerPresent:
-        return scrollbar->scrollableArea() && scrollbar->scrollableArea()->isScrollCornerVisible();
+        return m_scrollbar->scrollableArea() && m_scrollbar->scrollableArea()->isScrollCornerVisible();
     default:
         return false;
     }

@@ -121,11 +121,13 @@ bool HTMLContentElement::validateSelect() const
 // dynamic restyle flags on elements.
 bool HTMLContentElement::matchSelector(Element& element) const
 {
-    SelectorChecker selectorChecker(SelectorChecker::QueryingRules);
+    SelectorChecker::Init init;
+    init.mode = SelectorChecker::QueryingRules;
+    SelectorChecker checker(init);
     SelectorChecker::SelectorCheckingContext context(&element, SelectorChecker::VisitedMatchDisabled);
     for (const CSSSelector* selector = selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
         context.selector = selector;
-        if (selectorChecker.match(context))
+        if (checker.match(context))
             return true;
     }
     return false;

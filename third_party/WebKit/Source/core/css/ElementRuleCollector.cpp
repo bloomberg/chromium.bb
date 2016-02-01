@@ -126,14 +126,16 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
     if (!rules)
         return;
 
-    SelectorChecker checker(m_mode);
-    SelectorChecker::SelectorCheckingContext checkerContext(m_context.element(), SelectorChecker::VisitedMatchEnabled);
-    checkerContext.elementStyle = m_style.get();
-    checkerContext.scope = matchRequest.scope;
-    checkerContext.pseudoId = m_pseudoStyleRequest.pseudoId;
-    checkerContext.scrollbar = m_pseudoStyleRequest.scrollbar;
-    checkerContext.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
-    checkerContext.isUARule = m_matchingUARules;
+    SelectorChecker::Init init;
+    init.mode = m_mode;
+    init.isUARule = m_matchingUARules;
+    init.elementStyle = m_style.get();
+    init.scrollbar = m_pseudoStyleRequest.scrollbar;
+    init.scrollbarPart = m_pseudoStyleRequest.scrollbarPart;
+    SelectorChecker checker(init);
+    SelectorChecker::SelectorCheckingContext context(m_context.element(), SelectorChecker::VisitedMatchEnabled);
+    context.scope = matchRequest.scope;
+    context.pseudoId = m_pseudoStyleRequest.pseudoId;
 
     unsigned rejected = 0;
     unsigned fastRejected = 0;
@@ -157,8 +159,8 @@ void ElementRuleCollector::collectMatchingRulesForList(const RuleDataListType* r
             continue;
 
         SelectorChecker::MatchResult result;
-        checkerContext.selector = &ruleData.selector();
-        if (!checker.match(checkerContext, result)) {
+        context.selector = &ruleData.selector();
+        if (!checker.match(context, result)) {
             rejected++;
             continue;
         }
