@@ -53,8 +53,6 @@ source_set("browser") {
     "autofill/form_suggestion_view_client.h",
     "autofill/personal_data_manager_factory.cc",
     "autofill/personal_data_manager_factory.h",
-    "bookmarks/bookmark_client_factory.cc",
-    "bookmarks/bookmark_client_factory.h",
     "bookmarks/bookmark_client_impl.cc",
     "bookmarks/bookmark_client_impl.h",
     "bookmarks/bookmark_model_factory.cc",

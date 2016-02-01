@@ -183,8 +183,6 @@
         'browser/autofill/form_suggestion_view_client.h',
         'browser/autofill/personal_data_manager_factory.cc',
         'browser/autofill/personal_data_manager_factory.h',
-        'browser/bookmarks/bookmark_client_factory.cc',
-        'browser/bookmarks/bookmark_client_factory.h',
         'browser/bookmarks/bookmark_client_impl.cc',
         'browser/bookmarks/bookmark_client_impl.h',
         'browser/bookmarks/bookmark_model_factory.cc',

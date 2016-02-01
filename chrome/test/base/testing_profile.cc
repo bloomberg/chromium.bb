@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
-#include "chrome/browser/bookmarks/chrome_bookmark_client_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -213,10 +212,9 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(
 
 scoped_ptr<KeyedService> BuildBookmarkModel(content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  ChromeBookmarkClient* bookmark_client =
-      ChromeBookmarkClientFactory::GetForProfile(profile);
-  scoped_ptr<BookmarkModel> bookmark_model(new BookmarkModel(bookmark_client));
-  bookmark_client->Init(bookmark_model.get());
+  scoped_ptr<BookmarkModel> bookmark_model(
+      new BookmarkModel(make_scoped_ptr(new ChromeBookmarkClient(
+          profile, ManagedBookmarkServiceFactory::GetForProfile(profile)))));
   bookmark_model->Load(profile->GetPrefs(),
                        profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
                        profile->GetPath(),
@@ -591,8 +589,6 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
   }
   ManagedBookmarkServiceFactory::GetInstance()->SetTestingFactory(
       this, ManagedBookmarkServiceFactory::GetDefaultFactory());
-  ChromeBookmarkClientFactory::GetInstance()->SetTestingFactory(
-      this, ChromeBookmarkClientFactory::GetDefaultFactory());
   // This creates the BookmarkModel.
   ignore_result(BookmarkModelFactory::GetInstance()->SetTestingFactoryAndUse(
       this, BuildBookmarkModel));

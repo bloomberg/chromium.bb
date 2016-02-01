@@ -8,6 +8,8 @@
 
 namespace bookmarks {
 
+void BookmarkClient::Init(BookmarkModel* model) {}
+
 bool BookmarkClient::PreferTouchIcon() {
   return false;
 }

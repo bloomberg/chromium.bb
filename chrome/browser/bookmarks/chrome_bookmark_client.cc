@@ -32,11 +32,6 @@ void ChromeBookmarkClient::Init(bookmarks::BookmarkModel* model) {
     managed_bookmark_service_->BookmarkModelCreated(model);
 }
 
-void ChromeBookmarkClient::Shutdown() {
-  managed_bookmark_service_ = nullptr;
-  BookmarkClient::Shutdown();
-}
-
 bool ChromeBookmarkClient::PreferTouchIcon() {
   return false;
 }

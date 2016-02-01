@@ -172,7 +172,6 @@ class BookmarkProviderTest : public testing::Test {
   void SetUp() override;
 
   base::MessageLoop message_loop_;
-  bookmarks::TestBookmarkClient bookmark_client_;
   scoped_ptr<MockAutocompleteProviderClient> provider_client_;
   scoped_ptr<BookmarkModel> model_;
   scoped_refptr<BookmarkProvider> provider_;
@@ -183,7 +182,7 @@ class BookmarkProviderTest : public testing::Test {
 };
 
 BookmarkProviderTest::BookmarkProviderTest() {
-  model_ = bookmark_client_.CreateModel();
+  model_ = bookmarks::TestBookmarkClient::CreateModel();
 }
 
 void BookmarkProviderTest::SetUp() {

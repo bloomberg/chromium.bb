@@ -270,7 +270,7 @@ class BookmarkModelTest : public testing::Test,
     int64_t node_id;
   };
 
-  BookmarkModelTest() : model_(client_.CreateModel()) {
+  BookmarkModelTest() : model_(TestBookmarkClient::CreateModel()) {
     model_->AddObserver(this);
     ClearCounts();
   }
@@ -423,13 +423,16 @@ class BookmarkModelTest : public testing::Test,
   int AllNodesRemovedObserverCount() const { return all_bookmarks_removed_; }
 
   BookmarkPermanentNode* ReloadModelWithExtraNode() {
+    model_->RemoveObserver(this);
+
     BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
     BookmarkPermanentNodeList extra_nodes;
     extra_nodes.push_back(extra_node);
-    client_.SetExtraNodesToLoad(std::move(extra_nodes));
 
-    model_->RemoveObserver(this);
-    model_ = client_.CreateModel();
+    scoped_ptr<TestBookmarkClient> client(new TestBookmarkClient);
+    client->SetExtraNodesToLoad(std::move(extra_nodes));
+
+    model_ = TestBookmarkClient::CreateModelWithClient(std::move(client));
     model_->AddObserver(this);
     ClearCounts();
 
@@ -440,7 +443,6 @@ class BookmarkModelTest : public testing::Test,
   }
 
  protected:
-  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   ObserverDetails observer_details_;
   std::vector<NodeRemovalDetail> node_removal_details_;
@@ -1231,10 +1233,9 @@ TEST(BookmarkModelTest2, CreateAndRestore) {
     { "a [ b ]", "" },
     { "a b c [ d e [ f ] ]", "g h i [ j k [ l ] ]"},
   };
-  TestBookmarkClient client;
   scoped_ptr<BookmarkModel> model;
   for (size_t i = 0; i < arraysize(data); ++i) {
-    model = client.CreateModel();
+    model = TestBookmarkClient::CreateModel();
 
     TestNode bbn;
     PopulateNodeFromString(data[i].bbn_contents, &bbn);
@@ -1260,7 +1261,7 @@ TEST(BookmarkModelTest2, CreateAndRestore) {
 class BookmarkModelFaviconTest : public testing::Test,
                                  public BookmarkModelObserver {
  public:
-  BookmarkModelFaviconTest() : model_(client_.CreateModel()) {
+  BookmarkModelFaviconTest() : model_(TestBookmarkClient::CreateModel()) {
     model_->AddObserver(this);
   }
 
@@ -1325,7 +1326,6 @@ class BookmarkModelFaviconTest : public testing::Test,
       const std::set<GURL>& removed_urls) override {
   }
 
-  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
   std::vector<const BookmarkNode*> updated_nodes_;
 

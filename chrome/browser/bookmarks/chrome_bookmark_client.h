@@ -33,12 +33,8 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
       bookmarks::ManagedBookmarkService* managed_bookmark_service);
   ~ChromeBookmarkClient() override;
 
-  void Init(bookmarks::BookmarkModel* model);
-
-  // KeyedService:
-  void Shutdown() override;
-
   // bookmarks::BookmarkClient:
+  void Init(bookmarks::BookmarkModel* model) override;
   bool PreferTouchIcon() override;
   base::CancelableTaskTracker::TaskId GetFaviconImageForPageURL(
       const GURL& page_url,

@@ -71,7 +71,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   void SetUp() override {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    bookmark_client_.reset(new bookmarks::TestBookmarkClient());
     history_service_.reset(new HistoryMock());
     profile_sync_factory_.reset(
         new SyncApiComponentFactoryMock(model_associator_,
@@ -88,7 +87,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   };
 
   void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
-    bookmark_model_.reset(new BookmarkModel(bookmark_client_.get()));
+    bookmark_model_.reset(new BookmarkModel(
+        make_scoped_ptr(new bookmarks::TestBookmarkClient())));
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
       bookmark_model_->Load(&prefs, std::string(), base::FilePath(),
@@ -136,7 +136,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   base::MessageLoop message_loop_;
   scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
-  scoped_ptr<bookmarks::TestBookmarkClient> bookmark_client_;
   scoped_ptr<BookmarkModel> bookmark_model_;
   scoped_ptr<HistoryMock> history_service_;
   sync_driver::FakeSyncService service_;

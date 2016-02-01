@@ -13,7 +13,6 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/undo/bookmark_undo_service.h"
-#include "ios/chrome/browser/bookmarks/bookmark_client_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
@@ -48,7 +47,6 @@ BookmarkModelFactory::BookmarkModelFactory()
     : BrowserStateKeyedServiceFactory(
           "BookmarkModel",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(BookmarkClientFactory::GetInstance());
   DependsOn(ios::BookmarkUndoServiceFactory::GetInstance());
   DependsOn(ios::StartupTaskRunnerServiceFactory::GetInstance());
 }
@@ -64,10 +62,9 @@ scoped_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  BookmarkClientImpl* bookmark_client =
-      BookmarkClientFactory::GetForBrowserState(browser_state);
   scoped_ptr<bookmarks::BookmarkModel> bookmark_model(
-      new bookmarks::BookmarkModel(bookmark_client));
+      new bookmarks::BookmarkModel(
+          make_scoped_ptr(new BookmarkClientImpl(browser_state))));
   bookmark_model->Load(
       browser_state->GetPrefs(),
       browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),

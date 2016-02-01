@@ -57,7 +57,7 @@ class BookmarkClientMock : public TestBookmarkClient {
 
 class BookmarkIndexTest : public testing::Test {
  public:
-  BookmarkIndexTest() : model_(client_.CreateModel()) {}
+  BookmarkIndexTest() : model_(TestBookmarkClient::CreateModel()) {}
 
   typedef std::pair<std::string, std::string> TitleAndURL;
 
@@ -137,7 +137,6 @@ class BookmarkIndexTest : public testing::Test {
   }
 
  protected:
-  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
 
  private:
@@ -212,7 +211,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatching) {
     ExpectMatches(data[i].query, query_parser::MatchingAlgorithm::DEFAULT,
                   expected);
 
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
   }
 }
 
@@ -274,7 +273,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingAlwaysPrefixSearch) {
                   query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
                   expected);
 
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
   }
 }
 
@@ -323,7 +322,7 @@ TEST_F(BookmarkIndexTest, GetBookmarksMatchingWithURLs) {
   };
 
   for (size_t i = 0; i < arraysize(data); ++i) {
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
     std::vector<TitleAndURL> bookmarks;
     bookmarks.push_back(TitleAndURL(data[i].title, data[i].url));
     AddBookmarks(bookmarks);
@@ -361,7 +360,7 @@ TEST_F(BookmarkIndexTest, Normalization) {
     std::vector<BookmarkMatch> matches;
     model_->GetBookmarksMatching(UTF8ToUTF16(data[i].query), 10, &matches);
     EXPECT_EQ(1u, matches.size());
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
   }
 }
 
@@ -398,7 +397,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsTitles) {
     ExpectMatchPositions(matches[0].title_match_positions,
                          expected_title_matches);
 
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
   }
 }
 
@@ -434,7 +433,7 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
   };
 
   for (size_t i = 0; i < arraysize(data); ++i) {
-    model_ = client_.CreateModel();
+    model_ = TestBookmarkClient::CreateModel();
     std::vector<TitleAndURL> bookmarks;
     TitleAndURL bookmark("123456", data[i].url);
     bookmarks.push_back(bookmark);
@@ -527,8 +526,8 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
   for (size_t i = 0; i < arraysize(data); ++i)
     typed_count_map.insert(std::make_pair(data[i].url, data[i].typed_count));
 
-  BookmarkClientMock client(typed_count_map);
-  scoped_ptr<BookmarkModel> model = client.CreateModel();
+  scoped_ptr<BookmarkModel> model = TestBookmarkClient::CreateModelWithClient(
+      make_scoped_ptr(new BookmarkClientMock(typed_count_map)));
 
   for (size_t i = 0; i < arraysize(data); ++i)
     // Populate the BookmarkIndex.

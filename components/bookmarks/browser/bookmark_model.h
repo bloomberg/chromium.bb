@@ -72,7 +72,7 @@ class BookmarkModel : public BookmarkUndoProvider,
     base::string16 title;
   };
 
-  explicit BookmarkModel(BookmarkClient* client);
+  explicit BookmarkModel(scoped_ptr<BookmarkClient> client);
   ~BookmarkModel() override;
 
   // KeyedService:
@@ -310,7 +310,7 @@ class BookmarkModel : public BookmarkUndoProvider,
                          const GURL& icon_url);
 
   // Returns the client used by this BookmarkModel.
-  BookmarkClient* client() const { return client_; }
+  BookmarkClient* client() const { return client_.get(); }
 
   void SetUndoDelegate(BookmarkUndoDelegate* undo_delegate);
 
@@ -421,7 +421,7 @@ class BookmarkModel : public BookmarkUndoProvider,
 
   BookmarkUndoDelegate* undo_delegate() const;
 
-  BookmarkClient* const client_;
+  scoped_ptr<BookmarkClient> client_;
 
   // Whether the initial set of data has been loaded.
   bool loaded_;

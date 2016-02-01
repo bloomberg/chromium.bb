@@ -764,7 +764,6 @@ class OfflinePageModelBookmarkChangeTest :
   }
 
  private:
-  bookmarks::TestBookmarkClient bookmark_client_;
   scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
   bookmarks::BookmarkUndoProvider* bookmark_undo_provider_;
   const bookmarks::BookmarkNode* removed_bookmark_parent_;
@@ -774,11 +773,10 @@ class OfflinePageModelBookmarkChangeTest :
 
 OfflinePageModelBookmarkChangeTest::OfflinePageModelBookmarkChangeTest()
     : OfflinePageModelTest(),
-      bookmark_model_(bookmark_client_.CreateModel()),
+      bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
       bookmark_undo_provider_(nullptr),
       removed_bookmark_parent_(nullptr),
-      removed_bookmark_index_(-1) {
-}
+      removed_bookmark_index_(-1) {}
 
 OfflinePageModelBookmarkChangeTest::~OfflinePageModelBookmarkChangeTest() {
 }

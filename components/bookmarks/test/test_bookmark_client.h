@@ -20,9 +20,12 @@ class TestBookmarkClient : public BookmarkClient {
   TestBookmarkClient();
   ~TestBookmarkClient() override;
 
-  // Create a BookmarkModel using this object as its client. The returned
-  // BookmarkModel* is owned by the caller.
-  scoped_ptr<BookmarkModel> CreateModel();
+  // Returns a new BookmarkModel using a TestBookmarkClient.
+  static scoped_ptr<BookmarkModel> CreateModel();
+
+  // Returns a new BookmarkModel using |client|.
+  static scoped_ptr<BookmarkModel> CreateModelWithClient(
+      scoped_ptr<BookmarkClient> client);
 
   // Sets the list of extra nodes to be returned by the next call to
   // CreateModel() or GetLoadExtraNodesCallback().

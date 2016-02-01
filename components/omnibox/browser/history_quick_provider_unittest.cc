@@ -201,7 +201,7 @@ class QuitTask : public history::HistoryDBTask {
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient() {
-    bookmark_model_ = bookmark_client_.CreateModel();
+    bookmark_model_ = bookmarks::TestBookmarkClient::CreateModel();
     set_template_url_service(
         make_scoped_ptr(new TemplateURLService(nullptr, 0)));
   }
@@ -233,7 +233,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   }
 
  private:
-  bookmarks::TestBookmarkClient bookmark_client_;
   scoped_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSchemeClassifier scheme_classifier_;
   SearchTermsData search_terms_data_;

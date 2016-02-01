@@ -24,12 +24,13 @@ struct UserMetricsAction;
 
 namespace bookmarks {
 
+class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
 
 // This class abstracts operations that depends on the embedder's environment,
 // e.g. Chrome.
-class BookmarkClient : public KeyedService {
+class BookmarkClient {
  public:
   // Types representing a set of BookmarkNode and a mapping from BookmarkNode
   // to the number of time the corresponding URL has been typed by the user in
@@ -37,6 +38,11 @@ class BookmarkClient : public KeyedService {
   typedef std::set<const BookmarkNode*> NodeSet;
   typedef std::pair<const BookmarkNode*, int> NodeTypedCountPair;
   typedef std::vector<NodeTypedCountPair> NodeTypedCountPairs;
+
+  virtual ~BookmarkClient() {}
+
+  // Called during initialization of BookmarkModel.
+  virtual void Init(BookmarkModel* model);
 
   // Returns true if the embedder favors touch icons over favicons.
   virtual bool PreferTouchIcon();
@@ -55,7 +61,7 @@ class BookmarkClient : public KeyedService {
       const favicon_base::FaviconImageCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-    // Returns true if the embedder supports typed count for URL.
+  // Returns true if the embedder supports typed count for URL.
   virtual bool SupportsTypedCountForNodes();
 
   // Retrieves the number of time each BookmarkNode URL has been typed in
@@ -87,9 +93,6 @@ class BookmarkClient : public KeyedService {
   // should give the client a means to temporarily disable those checks.
   // http://crbug.com/49598
   virtual bool CanBeEditedByUser(const BookmarkNode* node) = 0;
-
- protected:
-  ~BookmarkClient() override {}
 };
 
 }  // namespace bookmarks

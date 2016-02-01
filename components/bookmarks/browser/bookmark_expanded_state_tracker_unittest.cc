@@ -31,7 +31,6 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   TestingPrefServiceSimple prefs_;
-  TestBookmarkClient client_;
   scoped_ptr<BookmarkModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkExpandedStateTrackerTest);
@@ -45,7 +44,7 @@ void BookmarkExpandedStateTrackerTest::SetUp() {
   prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes,
                                       new base::ListValue);
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-  model_.reset(new BookmarkModel(&client_));
+  model_.reset(new BookmarkModel(make_scoped_ptr(new TestBookmarkClient())));
   model_->Load(&prefs_, std::string(), base::FilePath(),
                base::ThreadTaskRunnerHandle::Get(),
                base::ThreadTaskRunnerHandle::Get());
