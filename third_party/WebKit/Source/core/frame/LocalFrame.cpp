@@ -334,6 +334,10 @@ void LocalFrame::detach(FrameDetachType type)
     m_loader.stopAllLoaders();
     m_loader.detach();
     document()->detach();
+    // This is the earliest that scripting can be disabled:
+    // - FrameLoader::detach() can fire XHR abort events
+    // - Document::detach()'s deferred widget updates can run script.
+    ScriptForbiddenScope forbidScript;
     m_loader.clear();
     if (!client())
         return;
@@ -342,7 +346,6 @@ void LocalFrame::detach(FrameDetachType type)
     // Notify ScriptController that the frame is closing, since its cleanup ends up calling
     // back to FrameLoaderClient via WindowProxy.
     script().clearForClose();
-    ScriptForbiddenScope forbidScript;
     setView(nullptr);
     willDetachFrameHost();
     InspectorInstrumentation::frameDetachedFromParent(this);
