@@ -1623,6 +1623,8 @@
             'frame/DOMWindowTimers.h',
             'frame/DeprecatedScheduleStyleRecalcDuringLayout.cpp',
             'frame/DeprecatedScheduleStyleRecalcDuringLayout.h',
+            'frame/Deprecation.cpp',
+            'frame/Deprecation.h',
             'frame/DeviceSingleWindowEventController.cpp',
             'frame/DeviceSingleWindowEventController.h',
             'frame/EventHandlerRegistry.cpp',

@@ -45,6 +45,7 @@ namespace blink {
 
 class ChromeClient;
 class ConsoleMessageStorage;
+class Deprecation;
 class EventHandlerRegistry;
 class Page;
 class PageScaleConstraintsSet;
@@ -72,6 +73,7 @@ public:
     Settings& settings() const;
     ChromeClient& chromeClient() const;
     UseCounter& useCounter() const;
+    Deprecation& deprecation() const;
 
     // Corresponds to pixel density of the device where this Page is
     // being displayed. In multi-monitor setups this can vary between pages.
