@@ -130,7 +130,7 @@ TEST_F(MediaStreamRemoteVideoSourceTest, StartTrack) {
   EXPECT_CALL(sink, OnVideoFrame()).WillOnce(
       RunClosure(quit_closure));
   cricket::WebRtcVideoFrame webrtc_frame;
-  webrtc_frame.InitToBlack(320, 240, 1, 1, 1);
+  webrtc_frame.InitToBlack(320, 240, 1);
   source()->RenderInterfaceForTest()->RenderFrame(&webrtc_frame);
   run_loop.Run();
 

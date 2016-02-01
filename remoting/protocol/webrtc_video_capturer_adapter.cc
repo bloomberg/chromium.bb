@@ -176,7 +176,7 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
 
     scoped_ptr<cricket::WebRtcVideoFrame> webrtc_frame(
         new cricket::WebRtcVideoFrame());
-    webrtc_frame->InitToEmptyBuffer(width, height, 1, 1, 0);
+    webrtc_frame->InitToEmptyBuffer(width, height, 0);
     yuv_frame_ = std::move(webrtc_frame);
 
     // Set updated_region so the whole frame is converted to YUV below.
