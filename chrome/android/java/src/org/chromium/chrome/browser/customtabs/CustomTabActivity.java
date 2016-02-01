@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.IBinder;
+import android.os.StrictMode;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
@@ -578,7 +579,16 @@ public class CustomTabActivity extends ChromeActivity {
             }
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+
+            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581860
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            StrictMode.allowThreadDiskWrites();
+            try {
+                startActivity(intent);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
+
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
             return true;
         } else if (id == R.id.find_in_page_id) {

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.StrictMode;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -58,7 +59,17 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             MenuItem openInChromeItem = menu.findItem(R.id.open_in_browser_id);
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(SAMPLE_URL));
             PackageManager pm = mActivity.getPackageManager();
-            ResolveInfo info = pm.resolveActivity(intent, 0);
+            ResolveInfo info = null;
+
+            // Temporarily allowing disk access while fixing. TODO: http://crbug.com/581856
+            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+            StrictMode.allowThreadDiskWrites();
+            try {
+                info = pm.resolveActivity(intent, 0);
+            } finally {
+                StrictMode.setThreadPolicy(oldPolicy);
+            }
+
             String menuItemTitle = info != null && info.match != 0
                     ? mActivity.getString(
                             R.string.menu_open_in_product, info.loadLabel(pm).toString())
