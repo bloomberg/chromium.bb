@@ -10,7 +10,6 @@
 #include <deque>
 
 #include "base/mac/scoped_cftyperef.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -33,14 +32,23 @@ class CALayerPartialDamageTree {
  private:
   class OverlayPlane;
 
-  void UpdateRootAndPartialDamagePlanes(CALayerPartialDamageTree* old_tree,
-                                        const gfx::RectF& pixel_damage_rect);
-  void UpdateRootAndPartialDamageCALayers(CALayer* superlayer,
-                                          float scale_factor);
+  // This will populate |partial_damage_planes_|, potentially re-using the
+  // CALayers and |partial_damage_planes_| from |old_tree|. After this function
+  // completes, the back() of |partial_damage_planes_| is the plane that will
+  // be updated this frame (and if it is empty, then the root plane will be
+  // updated).
+  void UpdatePartialDamagePlanes(CALayerPartialDamageTree* old_tree,
+                                 const gfx::Rect& pixel_damage_rect);
+
+  void UpdateRootAndPartialDamagePlanes(
+      scoped_ptr<CALayerPartialDamageTree> old_tree,
+      const gfx::Rect& pixel_damage_rect);
+
+  void UpdateCALayers(CALayer* superlayer, float scale_factor);
 
   const bool allow_partial_swap_;
-  linked_ptr<OverlayPlane> root_plane_;
-  std::deque<linked_ptr<OverlayPlane>> partial_damage_planes_;
+  scoped_ptr<OverlayPlane> root_plane_;
+  std::deque<scoped_ptr<OverlayPlane>> partial_damage_planes_;
 };
 
 }  // content

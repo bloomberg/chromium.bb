@@ -31,16 +31,13 @@ const size_t kMaximumPartialDamageLayers = 8;
 
 class CALayerPartialDamageTree::OverlayPlane {
  public:
-  static linked_ptr<OverlayPlane> CreateWithFrameRect(
-      int z_order,
-      base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-      const gfx::RectF& pixel_frame_rect,
-      const gfx::RectF& contents_rect) {
-    gfx::Transform transform;
-    transform.Translate(pixel_frame_rect.x(), pixel_frame_rect.y());
-    return linked_ptr<OverlayPlane>(
-        new OverlayPlane(z_order, io_surface, contents_rect, pixel_frame_rect));
-  }
+  OverlayPlane(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+               const gfx::Rect& pixel_frame_rect,
+               const gfx::RectF& contents_rect)
+      : io_surface(io_surface),
+        contents_rect(contents_rect),
+        pixel_frame_rect(pixel_frame_rect),
+        layer_needs_update(true) {}
 
   ~OverlayPlane() {
     [ca_layer setContents:nil];
@@ -48,10 +45,9 @@ class CALayerPartialDamageTree::OverlayPlane {
     ca_layer.reset();
   }
 
-  const int z_order;
   const base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   const gfx::RectF contents_rect;
-  const gfx::RectF pixel_frame_rect;
+  const gfx::Rect pixel_frame_rect;
   bool layer_needs_update;
   base::scoped_nsobject<CALayer> ca_layer;
 
@@ -64,7 +60,7 @@ class CALayerPartialDamageTree::OverlayPlane {
       [ca_layer setOpaque:YES];
 
       id new_contents = static_cast<id>(io_surface.get());
-      if ([ca_layer contents] == new_contents && z_order == 0)
+      if ([ca_layer contents] == new_contents)
         [ca_layer setContentsChanged];
       else
         [ca_layer setContents:new_contents];
@@ -100,120 +96,135 @@ class CALayerPartialDamageTree::OverlayPlane {
   }
 
  private:
-  OverlayPlane(int z_order,
-               base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-               const gfx::RectF& contents_rect,
-               const gfx::RectF& pixel_frame_rect)
-      : z_order(z_order),
-        io_surface(io_surface),
-        contents_rect(contents_rect),
-        pixel_frame_rect(pixel_frame_rect),
-        layer_needs_update(true) {}
 };
 
-void CALayerPartialDamageTree::UpdateRootAndPartialDamagePlanes(
+void CALayerPartialDamageTree::UpdatePartialDamagePlanes(
     CALayerPartialDamageTree* old_tree,
-    const gfx::RectF& pixel_damage_rect) {
-  // This is the plane that will be updated this frame. It may be the root plane
-  // or a child plane.
-  linked_ptr<OverlayPlane> plane_for_swap;
+    const gfx::Rect& pixel_damage_rect) {
+  // Don't create partial damage layers if partial swap is disabled.
+  if (!allow_partial_swap_)
+    return;
+  // Only create partial damage layers when building on top of an existing tree.
+  if (!old_tree)
+    return;
+  // If the frame size has changed, discard all of the old partial damage
+  // layers.
+  if (old_tree->root_plane_->pixel_frame_rect != root_plane_->pixel_frame_rect)
+    return;
+  // If there is full damage, discard all of the old partial damage layers.
+  if (pixel_damage_rect == root_plane_->pixel_frame_rect)
+    return;
 
-  // If the frame's size changed, if we haven't updated the root layer, if
-  // we have full damage, or if we don't support remote layers, then use the
-  // root layer directly.
-  if (!allow_partial_swap_ || !old_tree ||
-      old_tree->root_plane_->pixel_frame_rect !=
-          root_plane_->pixel_frame_rect ||
-      pixel_damage_rect == root_plane_->pixel_frame_rect) {
-    plane_for_swap = root_plane_;
+  // If there is no damage, don't change anything.
+  if (pixel_damage_rect.IsEmpty()) {
+    std::swap(partial_damage_planes_, old_tree->partial_damage_planes_);
+    return;
   }
 
-  // Walk though the old tree's partial damage layers and see if there is one
-  // that is appropriate to re-use.
-  if (!plane_for_swap.get() && !pixel_damage_rect.IsEmpty()) {
-    gfx::RectF plane_to_reuse_dip_enlarged_rect;
+  // Find the last partial damage plane to re-use the CALayer from. Grow the
+  // new rect for this layer to include this damage, and all nearby partial
+  // damage layers.
+  scoped_ptr<OverlayPlane> plane_for_swap;
+  {
+    auto plane_to_reuse_iter = old_tree->partial_damage_planes_.end();
+    gfx::Rect plane_to_reuse_enlarged_pixel_damage_rect;
 
-    // Find the last partial damage plane to re-use the CALayer from. Grow the
-    // new rect for this layer to include this damage, and all nearby partial
-    // damage layers.
-    linked_ptr<OverlayPlane> plane_to_reuse;
-    for (auto& old_plane : old_tree->partial_damage_planes_) {
-      gfx::RectF dip_enlarged_rect = old_plane->pixel_frame_rect;
-      dip_enlarged_rect.Union(pixel_damage_rect);
+    for (auto old_plane_iter = old_tree->partial_damage_planes_.begin();
+         old_plane_iter != old_tree->partial_damage_planes_.end();
+         ++old_plane_iter) {
+      gfx::Rect enlarged_pixel_damage_rect =
+          (*old_plane_iter)->pixel_frame_rect;
+      enlarged_pixel_damage_rect.Union(pixel_damage_rect);
 
       // Compute the fraction of the pixels that would not be updated by this
       // swap. If it is too big, try another layer.
-      float waste_fraction = dip_enlarged_rect.size().GetArea() * 1.f /
+      float waste_fraction = enlarged_pixel_damage_rect.size().GetArea() * 1.f /
                              pixel_damage_rect.size().GetArea();
       if (waste_fraction > kMaximumPartialDamageWasteFraction)
         continue;
 
-      plane_to_reuse = old_plane;
-      plane_to_reuse_dip_enlarged_rect.Union(dip_enlarged_rect);
+      plane_to_reuse_iter = old_plane_iter;
+      plane_to_reuse_enlarged_pixel_damage_rect.Union(
+          enlarged_pixel_damage_rect);
     }
-
-    if (plane_to_reuse.get()) {
-      gfx::RectF enlarged_contents_rect = plane_to_reuse_dip_enlarged_rect;
+    if (plane_to_reuse_iter != old_tree->partial_damage_planes_.end()) {
+      gfx::RectF enlarged_contents_rect =
+          gfx::RectF(plane_to_reuse_enlarged_pixel_damage_rect);
       enlarged_contents_rect.Scale(1. / root_plane_->pixel_frame_rect.width(),
                                    1. / root_plane_->pixel_frame_rect.height());
 
-      plane_for_swap = OverlayPlane::CreateWithFrameRect(
-          0, root_plane_->io_surface, plane_to_reuse_dip_enlarged_rect,
-          enlarged_contents_rect);
+      plane_for_swap.reset(new OverlayPlane(
+          root_plane_->io_surface, plane_to_reuse_enlarged_pixel_damage_rect,
+          enlarged_contents_rect));
 
-      plane_for_swap->TakeCALayerFrom(plane_to_reuse.get());
-      if (plane_to_reuse != old_tree->partial_damage_planes_.back())
+      plane_for_swap->TakeCALayerFrom((*plane_to_reuse_iter).get());
+      if (*plane_to_reuse_iter != old_tree->partial_damage_planes_.back()) {
+        CALayer* superlayer = [plane_for_swap->ca_layer superlayer];
         [plane_for_swap->ca_layer removeFromSuperlayer];
+        [superlayer addSublayer:plane_for_swap->ca_layer];
+      }
     }
   }
 
   // If we haven't found an appropriate layer to re-use, create a new one, if
   // we haven't already created too many.
-  if (!plane_for_swap.get() && !pixel_damage_rect.IsEmpty() &&
+  if (!plane_for_swap.get() &&
       old_tree->partial_damage_planes_.size() < kMaximumPartialDamageLayers) {
     gfx::RectF contents_rect = gfx::RectF(pixel_damage_rect);
     contents_rect.Scale(1. / root_plane_->pixel_frame_rect.width(),
                         1. / root_plane_->pixel_frame_rect.height());
-    plane_for_swap = OverlayPlane::CreateWithFrameRect(
-        0, root_plane_->io_surface, pixel_damage_rect, contents_rect);
+    plane_for_swap.reset(new OverlayPlane(root_plane_->io_surface,
+                                          pixel_damage_rect, contents_rect));
   }
 
-  // And if we still don't have a layer, use the root layer.
-  if (!plane_for_swap.get() && !pixel_damage_rect.IsEmpty())
-    plane_for_swap = root_plane_;
+  // And if we still don't have a layer, do full damage.
+  if (!plane_for_swap.get())
+    return;
 
   // Walk all old partial damage planes. Remove anything that is now completely
   // covered, and move everything else into the new |partial_damage_planes_|.
-  if (old_tree) {
-    for (auto& old_plane : old_tree->partial_damage_planes_) {
-      // Intersect the planes' frames with the new root plane to ensure that
-      // they don't get kept alive inappropriately.
-      gfx::RectF old_plane_frame_rect = old_plane->pixel_frame_rect;
-      old_plane_frame_rect.Intersect(root_plane_->pixel_frame_rect);
+  for (auto& old_plane : old_tree->partial_damage_planes_) {
+    if (!old_plane.get())
+      continue;
+    // Intersect the planes' frames with the new root plane to ensure that
+    // they don't get kept alive inappropriately.
+    gfx::Rect old_plane_frame_rect = old_plane->pixel_frame_rect;
+    old_plane_frame_rect.Intersect(root_plane_->pixel_frame_rect);
 
-      bool old_plane_covered_by_swap = false;
-      if (plane_for_swap.get() &&
-          plane_for_swap->pixel_frame_rect.Contains(old_plane_frame_rect)) {
-        old_plane_covered_by_swap = true;
-      }
-      if (!old_plane_covered_by_swap) {
-        DCHECK(old_plane->ca_layer);
-        partial_damage_planes_.push_back(old_plane);
-      }
+    bool old_plane_covered_by_swap = false;
+    if (plane_for_swap.get() &&
+        plane_for_swap->pixel_frame_rect.Contains(old_plane_frame_rect)) {
+      old_plane_covered_by_swap = true;
     }
-    if (plane_for_swap != root_plane_)
-      root_plane_ = old_tree->root_plane_;
+    if (!old_plane_covered_by_swap) {
+      DCHECK(old_plane->ca_layer);
+      partial_damage_planes_.push_back(std::move(old_plane));
+    }
   }
 
-  // Finally, add the new swap's plane at the back of the list, if it exists.
-  if (plane_for_swap.get() && plane_for_swap != root_plane_) {
-    partial_damage_planes_.push_back(plane_for_swap);
+  partial_damage_planes_.push_back(std::move(plane_for_swap));
+}
+
+void CALayerPartialDamageTree::UpdateRootAndPartialDamagePlanes(
+    scoped_ptr<CALayerPartialDamageTree> old_tree,
+    const gfx::Rect& pixel_damage_rect) {
+  // First update the partial damage tree.
+  UpdatePartialDamagePlanes(old_tree.get(), pixel_damage_rect);
+  if (old_tree) {
+    if (partial_damage_planes_.empty()) {
+      // If there are no partial damage planes, then we will be updating the
+      // root layer. Take the CALayer from the old tree.
+      root_plane_->TakeCALayerFrom(old_tree->root_plane_.get());
+    } else {
+      // If there is a partial damage tree, then just take the old plane
+      // from the previous frame, so that there is no update to it.
+      root_plane_.swap(old_tree->root_plane_);
+    }
   }
 }
 
-void CALayerPartialDamageTree::UpdateRootAndPartialDamageCALayers(
-    CALayer* superlayer,
-    float scale_factor) {
+void CALayerPartialDamageTree::UpdateCALayers(CALayer* superlayer,
+                                              float scale_factor) {
   if (!allow_partial_swap_) {
     DCHECK(partial_damage_planes_.empty());
     return;
@@ -221,6 +232,7 @@ void CALayerPartialDamageTree::UpdateRootAndPartialDamageCALayers(
 
   // Allocate and update CALayers for the backbuffer and partial damage layers.
   if (!root_plane_->ca_layer) {
+    DCHECK(partial_damage_planes_.empty());
     root_plane_->ca_layer.reset([[CALayer alloc] init]);
     [superlayer setSublayers:nil];
     [superlayer addSublayer:root_plane_->ca_layer];
@@ -245,8 +257,8 @@ CALayerPartialDamageTree::CALayerPartialDamageTree(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Rect& pixel_frame_rect)
     : allow_partial_swap_(allow_partial_swap) {
-  root_plane_ = OverlayPlane::CreateWithFrameRect(
-      0, io_surface, gfx::RectF(pixel_frame_rect), gfx::RectF(0, 0, 1, 1));
+  root_plane_.reset(
+      new OverlayPlane(io_surface, pixel_frame_rect, gfx::RectF(0, 0, 1, 1)));
 }
 
 CALayerPartialDamageTree::~CALayerPartialDamageTree() {}
@@ -261,9 +273,8 @@ void CALayerPartialDamageTree::CommitCALayers(
     scoped_ptr<CALayerPartialDamageTree> old_tree,
     float scale_factor,
     const gfx::Rect& pixel_damage_rect) {
-  UpdateRootAndPartialDamagePlanes(old_tree.get(),
-                                   gfx::RectF(pixel_damage_rect));
-  UpdateRootAndPartialDamageCALayers(superlayer, scale_factor);
+  UpdateRootAndPartialDamagePlanes(std::move(old_tree), pixel_damage_rect);
+  UpdateCALayers(superlayer, scale_factor);
 }
 
 }  // namespace content
