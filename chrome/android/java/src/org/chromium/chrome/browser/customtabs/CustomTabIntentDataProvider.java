@@ -76,7 +76,7 @@ public class CustomTabIntentDataProvider {
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);
-        retrieveBottomBarColor(intent, context);
+        retrieveBottomBarColor(intent);
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
                 intent, CustomTabsIntent.EXTRA_ENABLE_URLBAR_HIDING, true);
         mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_KEEP_ALIVE);
@@ -147,10 +147,10 @@ public class CustomTabIntentDataProvider {
     /**
      * Must be called after calling {@link #retrieveToolbarColor(Intent, Context)}.
      */
-    private void retrieveBottomBarColor(Intent intent, Context context) {
+    private void retrieveBottomBarColor(Intent intent) {
         int defaultColor = mToolbarColor;
         int color = IntentUtils.safeGetIntExtra(intent,
-                CustomTabsIntent.EXTRA_CUSTOM_ACTION_BAR_COLOR, defaultColor);
+                CustomTabsIntent.EXTRA_SECONDARY_ACTION_BAR_COLOR, defaultColor);
         mBottomBarColor = removeTransparencyFromColor(color, defaultColor);
     }
 
