@@ -54,6 +54,7 @@
 }
 
 #first-run-cloud-checkbox,
+#first-run-flow-cloud-pref,
 #first-run-text {
   font-size: 1.0em;
   line-height: 1.5em;
@@ -64,6 +65,10 @@
 #first-run-title {
   color: white;
   padding-bottom: 24px;
+}
+
+#first-run-cloud-checkbox::shadow #checkboxLabel {
+  -webkit-padding-start: 16px;
 }
 
 #first-run-flow {
