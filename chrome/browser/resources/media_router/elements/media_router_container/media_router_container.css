@@ -103,11 +103,9 @@
 }
 
 paper-checkbox {
-  --paper-checkbox-checked-color: rgb(33, 150, 243);
-  --paper-checkbox-checked-ink-color: rgb(33, 150, 243);
-  --paper-checkbox-label-color: white;
+  --paper-checkbox-checked-color: white;
+  --paper-checkbox-checkmark-color: rgb(33, 150, 243);
   --paper-checkbox-unchecked-color: white;
-  --paper-checkbox-unchecked-ink-color: white;
 }
 
 paper-item {
