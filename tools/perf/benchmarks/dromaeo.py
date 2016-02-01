@@ -134,7 +134,6 @@ class DromaeoDomCoreAttr(_DromaeoBenchmark):
     return 'dromaeo.domcoreattr'
 
 
-@benchmark.Disabled('xp')  # crbug.com/501625
 class DromaeoDomCoreModify(_DromaeoBenchmark):
   """Dromaeo DOMCore modify JavaScript benchmark.
 
@@ -232,11 +231,10 @@ class DromaeoJslibEventPrototype(_DromaeoBenchmark):
     return 'dromaeo.jslibeventprototype'
 
 
-# xp: crbug.com/389731
 # win7: http://crbug.com/479796
 # android: http://crbug.com/503138
-# win8: crbug.com/529330
-@benchmark.Disabled('xp', 'win7', 'android', 'win8')
+# win8: http://crbug.com/529330
+@benchmark.Disabled('win7', 'android', 'win8')
 class DromaeoJslibModifyJquery(_DromaeoBenchmark):
   """Dromaeo JSLib modify jquery JavaScript benchmark.
 

@@ -164,8 +164,7 @@ class BlinkPerfCSS(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Disabled('xp',  # http://crbug.com/488059
-                    'android',  # http://crbug.com/496707
+@benchmark.Disabled('android',  # http://crbug.com/496707
                     'reference')  # http://crbug.com/576779
 class BlinkPerfCanvas(perf_benchmark.PerfBenchmark):
   tag = 'canvas'

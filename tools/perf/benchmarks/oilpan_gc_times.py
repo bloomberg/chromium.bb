@@ -27,7 +27,6 @@ class OilpanGCTimesBlinkPerfStress(perf_benchmark.PerfBenchmark):
     return blink_perf.CreateStorySetFromPath(path, blink_perf.SKIPPED_FILE)
 
 
-@benchmark.Disabled('xp')  # crbug.com/527427
 class OilpanGCTimesSmoothnessAnimation(perf_benchmark.PerfBenchmark):
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.ToughAnimationCasesPageSet

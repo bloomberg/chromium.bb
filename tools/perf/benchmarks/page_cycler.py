@@ -107,7 +107,6 @@ class PageCyclerIntlJaZh(_PageCycler):
         value, is_first_result) and value.name != filtered_name)
 
 
-@benchmark.Disabled('xp')  # crbug.com/434366
 class PageCyclerIntlKoThVi(_PageCycler):
   """Page load time for a variety of pages in Korean, Thai and Vietnamese.
 

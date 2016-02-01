@@ -36,11 +36,10 @@ class _MSEMeasurement(page_test.PageTest):
 
 
 # android: See media.android.tough_video_cases below
-# xp: crbug.com/475191
 # win8: crbug.com/531618
 # win7: crbug.com/555079
 # crbug.com/565180: Only include cases that report time_to_play
-@benchmark.Disabled('android', 'xp', 'win8', 'win7')
+@benchmark.Disabled('android', 'win8', 'win7')
 class Media(perf_benchmark.PerfBenchmark):
   """Obtains media metrics for key user scenarios."""
   test = media.Media
@@ -51,7 +50,7 @@ class Media(perf_benchmark.PerfBenchmark):
     return 'media.tough_video_cases'
 
 # crbug.com/565180: Only include cases that don't report time_to_play
-@benchmark.Disabled('android', 'xp', 'win8', 'win7')
+@benchmark.Disabled('android', 'win8', 'win7')
 class MediaExtra(perf_benchmark.PerfBenchmark):
   """Obtains extra media metrics for key user scenarios."""
   test = media.Media
@@ -62,7 +61,7 @@ class MediaExtra(perf_benchmark.PerfBenchmark):
     return 'media.tough_video_cases_extra'
 
 
-@benchmark.Disabled('android', 'mac', 'xp')
+@benchmark.Disabled('android', 'mac')
 class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
   """Obtains media metrics under different network simulations."""
   test = media.Media

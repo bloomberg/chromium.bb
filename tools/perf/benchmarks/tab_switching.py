@@ -87,8 +87,7 @@ class TabSwitchingToughEnergyCases(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Enabled('has tabs')
-@benchmark.Disabled('android', # http://crbug.com/460084
-                    'xp') # http://crbug.com/532153
+@benchmark.Disabled('android')  # http://crbug.com/460084
 class TabSwitchingToughImageCases(perf_benchmark.PerfBenchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 
