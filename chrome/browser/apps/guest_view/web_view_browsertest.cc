@@ -44,6 +44,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -363,7 +364,7 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 // the site isolation bots, and then look at re-enabling WebViewFocusTest when
 // that happens.
 // https://crbug.com/503751
-class WebViewTest : public extensions::PlatformAppBrowserTest {
+class WebViewTestBase : public extensions::PlatformAppBrowserTest {
  protected:
   void SetUp() override {
     if (UsesFakeSpeech()) {
@@ -506,22 +507,20 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         LOG(ERROR) << "FAILED TO START TEST SERVER.";
         return;
       }
-      embedded_test_server()->RegisterRequestHandler(
-          base::Bind(&WebViewTest::RedirectResponseHandler,
-                    kRedirectResponsePath,
-                    embedded_test_server()->GetURL(kRedirectResponseFullPath)));
-
-      embedded_test_server()->RegisterRequestHandler(
-          base::Bind(&WebViewTest::EmptyResponseHandler, kEmptyResponsePath));
-
-      embedded_test_server()->RegisterRequestHandler(
-          base::Bind(
-              &WebViewTest::UserAgentResponseHandler,
-              kUserAgentRedirectResponsePath,
-              embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+      embedded_test_server()->RegisterRequestHandler(base::Bind(
+          &WebViewTestBase::RedirectResponseHandler, kRedirectResponsePath,
+          embedded_test_server()->GetURL(kRedirectResponseFullPath)));
 
       embedded_test_server()->RegisterRequestHandler(base::Bind(
-          &WebViewTest::CacheControlResponseHandler, kCacheResponsePath));
+          &WebViewTestBase::EmptyResponseHandler, kEmptyResponsePath));
+
+      embedded_test_server()->RegisterRequestHandler(base::Bind(
+          &WebViewTestBase::UserAgentResponseHandler,
+          kUserAgentRedirectResponsePath,
+          embedded_test_server()->GetURL(kRedirectResponseFullPath)));
+
+      embedded_test_server()->RegisterRequestHandler(base::Bind(
+          &WebViewTestBase::CacheControlResponseHandler, kCacheResponsePath));
     }
 
     LoadAndLaunchPlatformApp(app_location.c_str(), "Launched");
@@ -694,10 +693,11 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     return manager;
   }
 
-  WebViewTest() : guest_web_contents_(NULL),
-                  embedder_web_contents_(NULL) {
+  WebViewTestBase() : guest_web_contents_(NULL), embedder_web_contents_(NULL) {
     GuestViewManager::set_factory_for_testing(&factory_);
   }
+
+  ~WebViewTestBase() override {}
 
  protected:
   scoped_refptr<content::FrameWatcher> frame_watcher_;
@@ -708,8 +708,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         testing::UnitTest::GetInstance()->current_test_info();
 
     // SpeechRecognition test specific SetUp.
-    return !strcmp(test_info->name(),
-                   "SpeechRecognitionAPI_HasPermissionAllow");
+    const char* name = "SpeechRecognitionAPI_HasPermissionAllow";
+    return !strncmp(test_info->name(), name, strlen(name));
   }
 
   scoped_ptr<content::FakeSpeechRecognitionManager>
@@ -721,18 +721,45 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   content::WebContents* embedder_web_contents_;
 };
 
+class WebViewTest : public WebViewTestBase,
+                    public testing::WithParamInterface<bool> {
+ public:
+  WebViewTest() {}
+  ~WebViewTest() override {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewTestBase::SetUpCommandLine(command_line);
+
+    bool use_cross_process_frames_for_guests = GetParam();
+    if (use_cross_process_frames_for_guests)
+      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewTest, testing::Bool());
+
 // The following test suits are created to group tests based on specific
 // features of <webview>.
-// These features current would not work with --site-per-process and is
-// disabled on site isolation FYI bots.
+// These features current would not work with
+// --use-cross-process-frames-for-guest and is disabled on
+// UseCrossProcessFramesForGuests.
 class WebViewNewWindowTest : public WebViewTest {};
-class WebViewSizeTest : public WebViewTest {};
-class WebViewSpeechAPITest : public WebViewTest {};
-class WebViewVisibilityTest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        WebViewNewWindowTest,
+                        testing::Values(false));
 
-// Test suite that containts tests that are meant to run with and without
-// --site-per-process.
-class WebViewCommonTest : public extensions::PlatformAppBrowserTest {};
+class WebViewSizeTest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewSizeTest, testing::Values(false));
+
+class WebViewSpeechAPITest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        WebViewSpeechAPITest,
+                        testing::Values(false));
+
+class WebViewVisibilityTest : public WebViewTest {};
+INSTANTIATE_TEST_CASE_P(WebViewTests,
+                        WebViewVisibilityTest,
+                        testing::Values(false));
 
 class WebViewDPITest : public WebViewTest {
  protected:
@@ -744,6 +771,7 @@ class WebViewDPITest : public WebViewTest {
 
   static float scale() { return 2.0f; }
 };
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewDPITest, testing::Bool());
 
 class WebViewWithZoomForDSFTest : public WebViewTest {
  protected:
@@ -783,7 +811,7 @@ class WebContentsAudioMutedObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsAudioMutedObserver);
 };
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesWhileAttached) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, AudioMutesWhileAttached) {
   LoadAppWithGuest("web_view/simple");
 
   content::WebContents* embedder = GetEmbedderWebContents();
@@ -801,7 +829,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesWhileAttached) {
   EXPECT_FALSE(guest->IsAudioMuted());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesOnAttach) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, AudioMutesOnAttach) {
   LoadAndLaunchPlatformApp("web_view/app_creates_webview",
                            "WebViewTest.LAUNCHED");
   content::WebContents* embedder = GetEmbedderWebContents();
@@ -822,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AudioMutesOnAttach) {
 }
 
 // This test verifies that hiding the guest triggers WebContents::WasHidden().
-IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
+IN_PROC_BROWSER_TEST_P(WebViewVisibilityTest, GuestVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
 
   scoped_refptr<content::MessageLoopRunner> loop_runner(
@@ -837,7 +865,7 @@ IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, GuestVisibilityChanged) {
 }
 
 // This test verifies that hiding the embedder also hides the guest.
-IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, EmbedderVisibilityChanged) {
+IN_PROC_BROWSER_TEST_P(WebViewVisibilityTest, EmbedderVisibilityChanged) {
   LoadAppWithGuest("web_view/visibility_changed");
 
   scoped_refptr<content::MessageLoopRunner> loop_runner(
@@ -853,7 +881,7 @@ IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, EmbedderVisibilityChanged) {
 
 // This test verifies that reloading the embedder reloads the guest (and doest
 // not crash).
-IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadEmbedder) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadEmbedder) {
   // Just load a guest from other test, we do not want to add a separate
   // platform_app for this test.
   LoadAppWithGuest("web_view/visibility_changed");
@@ -864,7 +892,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadEmbedder) {
   ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, AcceptTouchEvents) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, AcceptTouchEvents) {
+  // TODO(lfg): Fix touch events for OOPIF-based webview.
+  // https://crbug.com/581892
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   LoadAppWithGuest("web_view/accept_touch_events");
 
   content::RenderViewHost* embedder_rvh =
@@ -894,14 +927,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AcceptTouchEvents) {
 
 // This test ensures JavaScript errors ("Cannot redefine property") do not
 // happen when a <webview> is removed from DOM and added back.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       AddRemoveWebView_AddRemoveWebView) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, AddRemoveWebView_AddRemoveWebView) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/addremove"))
       << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, AutoSize) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, AutoSize) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/299507
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -913,7 +945,7 @@ IN_PROC_BROWSER_TEST_F(WebViewSizeTest, AutoSize) {
 }
 
 // Test for http://crbug.com/419611.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DisplayNoneSetSrc) {
   LoadAndLaunchPlatformApp("web_view/display_none_set_src",
                            "WebViewTest.LAUNCHED");
   // Navigate the guest while it's in "display: none" state.
@@ -932,83 +964,83 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DisplayNoneSetSrc) {
 
 // Checks that {allFrames: true} injects script correctly to subframes
 // inside <webview>.
-IN_PROC_BROWSER_TEST_F(WebViewTest, ExecuteScript) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ExecuteScript) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "execute_script")) << message_;
 }
 
 // http://crbug.com/326332
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest,
                        DISABLED_Shim_TestAutosizeAfterNavigation) {
   TestHelper("testAutosizeAfterNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAllowTransparencyAttribute) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAllowTransparencyAttribute) {
   TestHelper("testAllowTransparencyAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeHeight) {
+IN_PROC_BROWSER_TEST_P(WebViewDPITest, Shim_TestAutosizeHeight) {
   TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewWithZoomForDSFTest, Shim_TestAutosizeHeight) {
+IN_PROC_BROWSER_TEST_P(WebViewWithZoomForDSFTest, Shim_TestAutosizeHeight) {
   TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeHeight) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestAutosizeHeight) {
   TestHelper("testAutosizeHeight", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeBeforeNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewDPITest, Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewWithZoomForDSFTest,
+IN_PROC_BROWSER_TEST_P(WebViewWithZoomForDSFTest,
                        Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeBeforeNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestAutosizeBeforeNavigation) {
   TestHelper("testAutosizeBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewDPITest, Shim_TestAutosizeRemoveAttributes) {
+IN_PROC_BROWSER_TEST_P(WebViewDPITest, Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewWithZoomForDSFTest,
+IN_PROC_BROWSER_TEST_P(WebViewWithZoomForDSFTest,
                        Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestAutosizeRemoveAttributes) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestAutosizeRemoveAttributes) {
   TestHelper("testAutosizeRemoveAttributes", "web_view/shim", NO_TEST_SERVER);
 }
 
 // This test is disabled due to being flaky. http://crbug.com/282116
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest,
                        DISABLED_Shim_TestAutosizeWithPartialAttributes) {
   TestHelper("testAutosizeWithPartialAttributes",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAPIMethodExistence) {
   TestHelper("testAPIMethodExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIExistence) {
   TestHelper("testWebRequestAPIExistence", "web_view/shim", NO_TEST_SERVER);
 }
 
 // Tests that addListener call succeeds on webview's WebRequest API events.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIAddListener) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIAddListener) {
   TestHelper("testWebRequestAPIAddListener", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIErrorOccurred) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIErrorOccurred) {
   TestHelper("testWebRequestAPIErrorOccurred", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -1018,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIErrorOccurred) {
 #else
 #define MAYBE_Shim_TestChromeExtensionURL Shim_TestChromeExtensionURL
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestChromeExtensionURL) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_Shim_TestChromeExtensionURL) {
   TestHelper("testChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
@@ -1030,123 +1062,123 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_Shim_TestChromeExtensionURL) {
 #define MAYBE_Shim_TestChromeExtensionRelativePath \
     Shim_TestChromeExtensionRelativePath
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        MAYBE_Shim_TestChromeExtensionRelativePath) {
   TestHelper("testChromeExtensionRelativePath",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
   TestHelper("testDisplayNoneWebviewLoad", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
   TestHelper("testDisplayNoneWebviewRemoveChild",
              "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisplayBlock) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayBlock) {
   TestHelper("testDisplayBlock", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestInlineScriptFromAccessibleResources) {
   TestHelper("testInlineScriptFromAccessibleResources",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
   TestHelper("testInvalidChromeExtensionURL", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestEventName) {
   TestHelper("testEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestOnEventProperty) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestOnEventProperty) {
   TestHelper("testOnEventProperties", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadProgressEvent) {
   TestHelper("testLoadProgressEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDestroyOnEventListener) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDestroyOnEventListener) {
   TestHelper("testDestroyOnEventListener", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestCannotMutateEventName) {
   TestHelper("testCannotMutateEventName", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionChangeAfterNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestPartitionChangeAfterNavigation) {
   TestHelper("testPartitionChangeAfterNavigation",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestPartitionRemovalAfterNavigationFails) {
   TestHelper("testPartitionRemovalAfterNavigationFails",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddContentScript) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddContentScript) {
   TestHelper("testAddContentScript", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddMultipleContentScripts) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddMultipleContentScripts) {
   TestHelper("testAddMultipleContentScripts", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     Shim_TestAddContentScriptWithSameNameShouldOverwriteTheExistingOne) {
   TestHelper("testAddContentScriptWithSameNameShouldOverwriteTheExistingOne",
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     Shim_TestAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
   TestHelper("testAddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView",
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddAndRemoveContentScripts) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddAndRemoveContentScripts) {
   TestHelper("testAddAndRemoveContentScripts", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
                        Shim_TestAddContentScriptsWithNewWindowAPI) {
   TestHelper("testAddContentScriptsWithNewWindowAPI", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     Shim_TestContentScriptIsInjectedAfterTerminateAndReloadWebView) {
   TestHelper("testContentScriptIsInjectedAfterTerminateAndReloadWebView",
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestContentScriptExistsAsLongAsWebViewTagExists) {
   TestHelper("testContentScriptExistsAsLongAsWebViewTagExists", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAddContentScriptWithCode) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddContentScriptWithCode) {
   TestHelper("testAddContentScriptWithCode", "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestExecuteScriptFail) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/266185
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -1156,11 +1188,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
   TestHelper("testExecuteScriptFail", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScript) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestExecuteScript) {
   TestHelper("testExecuteScript", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
   TestHelper("testExecuteScriptIsAbortedWhenWebViewSourceIsChanged",
@@ -1168,7 +1200,7 @@ IN_PROC_BROWSER_TEST_F(
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsInvalid) {
   TestHelper("testExecuteScriptIsAbortedWhenWebViewSourceIsInvalid",
@@ -1176,108 +1208,107 @@ IN_PROC_BROWSER_TEST_F(
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestTerminateAfterExit) {
   TestHelper("testTerminateAfterExit", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAssignSrcAfterCrash) {
   TestHelper("testAssignSrcAfterCrash", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestNavOnConsecutiveSrcAttributeChanges) {
   TestHelper("testNavOnConsecutiveSrcAttributeChanges",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
   TestHelper("testNavOnSrcAttributeChange", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigateAfterResize) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNavigateAfterResize) {
   TestHelper("testNavigateAfterResize", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNestedCrossOriginSubframes) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNestedCrossOriginSubframes) {
   TestHelper("testNestedCrossOriginSubframes",
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNestedSubframes) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNestedSubframes) {
   TestHelper("testNestedSubframes", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestRemoveSrcAttribute) {
   TestHelper("testRemoveSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReassignSrcAttribute) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestReassignSrcAttribute) {
   TestHelper("testReassignSrcAttribute", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindow) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, Shim_TestNewWindow) {
   TestHelper("testNewWindow", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindowTwoListeners) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, Shim_TestNewWindowTwoListeners) {
   TestHelper("testNewWindowTwoListeners", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest,
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest,
                        Shim_TestNewWindowNoPreventDefault) {
   TestHelper("testNewWindowNoPreventDefault",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, Shim_TestNewWindowNoReferrerLink) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, Shim_TestNewWindowNoReferrerLink) {
   TestHelper("testNewWindowNoReferrerLink", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestContentLoadEvent) {
   TestHelper("testContentLoadEvent", "web_view/shim", NO_TEST_SERVER);
 }
 
 // TODO(fsamuel): Enable this test once <webview> can run in a detached state.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       Shim_TestContentLoadEventWithDisplayNone) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestContentLoadEventWithDisplayNone) {
   TestHelper("testContentLoadEventWithDisplayNone",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDeclarativeWebRequestAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDeclarativeWebRequestAPI) {
   TestHelper("testDeclarativeWebRequestAPI",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestDeclarativeWebRequestAPISendMessage) {
   TestHelper("testDeclarativeWebRequestAPISendMessage",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPI) {
   TestHelper("testWebRequestAPI", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIWithHeaders) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIWithHeaders) {
   TestHelper("testWebRequestAPIWithHeaders",
              "web_view/shim",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
   TestHelper("testWebRequestAPIGoogleProperty",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    WebViewTest, Shim_TestWebRequestListenerSurvivesReparenting) {
+IN_PROC_BROWSER_TEST_P(WebViewTest,
+                       Shim_TestWebRequestListenerSurvivesReparenting) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/309451.
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -1289,62 +1320,62 @@ IN_PROC_BROWSER_TEST_F(
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadStartLoadRedirect) {
   TestHelper("testLoadStartLoadRedirect", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestLoadAbortChromeExtensionURLWrongPartition) {
   TestHelper("testLoadAbortChromeExtensionURLWrongPartition",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortEmptyResponse) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortEmptyResponse) {
   TestHelper("testLoadAbortEmptyResponse", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalChromeURL) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortIllegalChromeURL) {
   TestHelper("testLoadAbortIllegalChromeURL",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
   TestHelper("testLoadAbortIllegalFileURL", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalJavaScriptURL) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortIllegalJavaScriptURL) {
   TestHelper("testLoadAbortIllegalJavaScriptURL",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortInvalidNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortInvalidNavigation) {
   TestHelper("testLoadAbortInvalidNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortNonWebSafeScheme) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadAbortNonWebSafeScheme) {
   TestHelper("testLoadAbortNonWebSafeScheme", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReload) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestReload) {
   TestHelper("testReload", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReloadAfterTerminate) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestReloadAfterTerminate) {
   TestHelper("testReloadAfterTerminate", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestGetProcessId) {
   TestHelper("testGetProcessId", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewVisibilityTest, Shim_TestHiddenBeforeNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewVisibilityTest, Shim_TestHiddenBeforeNavigation) {
   TestHelper("testHiddenBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestRemoveWebviewOnExit) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
 
   // Launch the app and wait until it's ready to load a test.
@@ -1393,26 +1424,26 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 
 // Remove <webview> immediately after navigating it.
 // This is a regression test for http://crbug.com/276023.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewAfterNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestRemoveWebviewAfterNavigation) {
   TestHelper("testRemoveWebviewAfterNavigation",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNavigationToExternalProtocol) {
   TestHelper("testNavigationToExternalProtocol",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest,
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest,
                        Shim_TestResizeWebviewWithDisplayNoneResizesContent) {
   TestHelper("testResizeWebviewWithDisplayNoneResizesContent",
              "web_view/shim",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
   TestHelper("testResizeWebviewResizesContent",
              "web_view/shim",
              NO_TEST_SERVER);
@@ -1420,7 +1451,7 @@ IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
 
 // This test makes sure the browser process does not crash if app is closed
 // while an interstitial page is being shown in guest.
-IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/297014
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -1436,7 +1467,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
 
 // This test makes sure the browser process does not crash if browser is shut
 // down while an interstitial page is being shown in guest.
-IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardownOnBrowserShutdown) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardownOnBrowserShutdown) {
 #if defined(OS_WIN)
   // http://crbug.com/297014
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -1456,7 +1487,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardownOnBrowserShutdown) {
   chrome::CloseAllBrowsers();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
 }
@@ -1464,7 +1495,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
 // This test verifies that prerendering has been disabled inside <webview>.
 // This test is here rather than in PrerenderBrowserTest for testing convenience
 // only. If it breaks then this is a bug in the prerenderer.
-IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, NoPrerenderer) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   content::WebContents* guest_web_contents =
       LoadGuest(
@@ -1481,7 +1512,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPrerenderer) {
 
 // Verify that existing <webview>'s are detected when the task manager starts
 // up.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerExistingWebView) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagerExistingWebView) {
   // This test is for the old implementation of the task manager. We must
   // explicitly disable the new one.
   task_manager::browsertest_util::EnableOldTaskManager();
@@ -1507,7 +1538,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerExistingWebView) {
 }
 
 // Verify that the task manager notices the creation of new <webview>'s.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagerNewWebView) {
   // This test is for the old implementation of the task manager. We must
   // explicitly disable the new one.
   task_manager::browsertest_util::EnableOldTaskManager();
@@ -1536,7 +1567,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagerNewWebView) {
 // the main browser window to a page that sets a cookie and loads an app with
 // multiple webview tags. Each tag sets a cookie and the test checks the proper
 // storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, CookieIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // Navigate the browser to a page which writes a sample cookie
   // The cookie is "testCookie=1"
@@ -1561,7 +1592,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, CookieIsolation) {
 
 // This tests that in-memory storage partitions are reset on browser restart,
 // but persistent ones maintain state for cookies and HTML5 storage.
-IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -1579,7 +1610,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_StoragePersistence) {
 
 // This is the post-reset portion of the StoragePersistence test.  See
 // PRE_StoragePersistence for main comment.
-IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
@@ -1599,7 +1630,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, StoragePersistence) {
 // loads an app with multiple webview tags and each tag sets DOM storage
 // entries, which the test checks to ensure proper storage isolation is
 // enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DOMStorageIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   GURL navigate_to_url = embedded_test_server()->GetURL(
@@ -1633,7 +1664,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
 // This tests IndexedDB isolation for packaged apps with webview tags. It loads
 // an app with multiple webview tags and each tag creates an IndexedDB record,
 // which the test checks to ensure proper storage isolation is enforced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, IndexedDBIsolation) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/web_view/isolation_indexeddb")) << message_;
@@ -1648,36 +1679,37 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, IndexedDBIsolation) {
 #else
 #define MAYBE_CloseOnLoadcommit CloseOnLoadcommit
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_CloseOnLoadcommit) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_CloseOnLoadcommit) {
   LoadAndLaunchPlatformApp("web_view/close_on_loadcommit",
                            "done-close-on-loadcommit");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIDeny_TestDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIDeny_TestDeny) {
   MediaAccessAPIDenyTestHelper("testDeny");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        MediaAccessAPIDeny_TestDenyThenAllowThrows) {
   MediaAccessAPIDenyTestHelper("testDenyThenAllowThrows");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        MediaAccessAPIDeny_TestDenyWithPreventDefault) {
   MediaAccessAPIDenyTestHelper("testDenyWithPreventDefault");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        MediaAccessAPIDeny_TestNoListenersImplyDeny) {
   MediaAccessAPIDenyTestHelper("testNoListenersImplyDeny");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        MediaAccessAPIDeny_TestNoPreventDefaultImpliesDeny) {
   MediaAccessAPIDenyTestHelper("testNoPreventDefaultImpliesDeny");
 }
 
-void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
+void WebViewTestBase::MediaAccessAPIAllowTestHelper(
+    const std::string& test_name) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/media_access/allow", "Launched");
 
@@ -1698,7 +1730,7 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   mock->WaitForRequestMediaPermission();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of CURRENT_TAB will
@@ -1723,7 +1755,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
 
 // A navigation to a web-safe URL should succeed, even if it is not renderer-
 // initiated, such as a navigation from the PDF viewer.
-IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of CURRENT_TAB will
@@ -1742,7 +1774,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
   EXPECT_EQ(test_url, GetGuestWebContents()->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
   LoadAppWithGuest("web_view/simple");
 
   // Verify that OpenURLFromTab with a window disposition of NEW_BACKGROUND_TAB
@@ -1771,7 +1803,7 @@ IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
             new_guest_web_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuInspectElement) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuInspectElement) {
   LoadAppWithGuest("web_view/context_menus/basic");
   content::WebContents* guest_web_contents = GetGuestWebContents();
   ASSERT_TRUE(guest_web_contents);
@@ -1788,7 +1820,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuInspectElement) {
 // load chrome://settings/languages in a browser window. This is a browser-
 // initiated operation and so we expect this to succeed if the embedder is
 // allowed to perform the operation.
-IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuLanguageSettings) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenuLanguageSettings) {
   LoadAppWithGuest("web_view/context_menus/basic");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -1812,7 +1844,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenuLanguageSettings) {
             new_contents->GetVisibleURL());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_Basic) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_Basic) {
   LoadAppWithGuest("web_view/context_menus/basic");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -1875,7 +1907,12 @@ static bool ContextMenuNotificationCallback(
   return true;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_PreventDefault) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ContextMenusAPI_PreventDefault) {
+  // TODO(lfg): Fix context menu APIs on OOPIF-based webview.
+  // https://crbug.com/581894
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   LoadAppWithGuest("web_view/context_menus/basic");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -1907,7 +1944,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ContextMenusAPI_PreventDefault) {
 
 // Tests that a context menu is created when right-clicking in the webview. This
 // also tests that the 'contextmenu' event is handled correctly.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TestContextMenu) {
+  // TODO(lfg): Fix context menu APIs on OOPIF-based webview.
+  // https://crbug.com/581894
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   LoadAppWithGuest("web_view/context_menus/basic");
   content::WebContents* guest_web_contents = GetGuestWebContents();
 
@@ -1922,23 +1964,23 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestContextMenu) {
   menu_observer.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllow) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestAllow) {
   MediaAccessAPIAllowTestHelper("testAllow");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAndThenDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestAllowAndThenDeny) {
   MediaAccessAPIAllowTestHelper("testAllowAndThenDeny");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowTwice) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestAllowTwice) {
   MediaAccessAPIAllowTestHelper("testAllowTwice");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestAllowAsync) {
   MediaAccessAPIAllowTestHelper("testAllowAsync");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestCheck) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MediaAccessAPIAllow_TestCheck) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   LoadAndLaunchPlatformApp("web_view/media_access/check", "Launched");
 
@@ -1960,14 +2002,22 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MediaAccessAPIAllow_TestCheck) {
 
 // Checks that window.screenX/screenY/screenLeft/screenTop works correctly for
 // guests.
-IN_PROC_BROWSER_TEST_F(WebViewTest, ScreenCoordinates) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ScreenCoordinates) {
+  // TODO(lfg): https://crbug.com/581897
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "screen_coordinates"))
           << message_;
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(WebViewTest, ChromeVoxInjection) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ChromeVoxInjection) {
+  // TODO(lfg): https://crbug.com/583071
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   EXPECT_FALSE(
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
 
@@ -1992,7 +2042,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ChromeVoxInjection) {
 #else
 #define MAYBE_TearDownTest TearDownTest
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_TearDownTest) {
   const extensions::Extension* extension =
       LoadAndLaunchPlatformApp("web_view/simple", "WebViewTest.LAUNCHED");
   extensions::AppWindow* window = NULL;
@@ -2010,13 +2060,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
 // platform app) does not have geolocation permission for this test.
 // No matter what the API does, geolocation permission would be denied.
 // Note that the test name prefix must be "GeolocationAPI".
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
   TestHelper("testDenyDenies",
              "web_view/geolocation/embedder_has_no_permission",
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
   TestHelper("testDenyDenies",
              "web_view/geolocation/embedder_has_no_permission",
              NEEDS_TEST_SERVER);
@@ -2034,7 +2084,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 //
 // GeolocationAPI* test 1 of 3.
 // Currently disabled until crbug.com/526788 is fixed.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        DISABLED_GeolocationAPIEmbedderHasAccessAllow) {
   TestHelper("testAllow",
              "web_view/geolocation/embedder_has_permission",
@@ -2042,7 +2092,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 }
 
 // GeolocationAPI* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
   TestHelper("testDeny",
              "web_view/geolocation/embedder_has_permission",
              NEEDS_TEST_SERVER);
@@ -2050,7 +2100,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 
 // GeolocationAPI* test 3 of 3.
 // Currently disabled until crbug.com/526788 is fixed.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     DISABLED_GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
@@ -2061,13 +2111,13 @@ IN_PROC_BROWSER_TEST_F(
 // Tests that
 // BrowserPluginGeolocationPermissionContext::CancelGeolocationPermissionRequest
 // is handled correctly (and does not crash).
-IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPICancelGeolocation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, GeolocationAPICancelGeolocation) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
         "platform_apps/web_view/geolocation/cancel_request")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationRequestGone) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DISABLED_GeolocationRequestGone) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest(
         "platform_apps/web_view/geolocation/geolocation_request_gone"))
@@ -2077,17 +2127,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_GeolocationRequestGone) {
 // In following FilesystemAPIRequestFromMainThread* tests, guest request
 // filesystem access from main thread of the guest.
 // FileSystemAPIRequestFromMainThread* test 1 of 3
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromMainThreadAllow) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, FileSystemAPIRequestFromMainThreadAllow) {
   TestHelper("testAllow", "web_view/filesystem/main", NEEDS_TEST_SERVER);
 }
 
 // FileSystemAPIRequestFromMainThread* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromMainThreadDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, FileSystemAPIRequestFromMainThreadDeny) {
   TestHelper("testDeny", "web_view/filesystem/main", NEEDS_TEST_SERVER);
 }
 
 // FileSystemAPIRequestFromMainThread* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        FileSystemAPIRequestFromMainThreadDefaultAllow) {
   TestHelper("testDefaultAllow", "web_view/filesystem/main", NEEDS_TEST_SERVER);
 }
@@ -2095,17 +2145,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 // In following FilesystemAPIRequestFromWorker* tests, guest create a worker
 // to request filesystem access from worker thread.
 // FileSystemAPIRequestFromWorker* test 1 of 3
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromWorkerAllow) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, FileSystemAPIRequestFromWorkerAllow) {
   TestHelper("testAllow", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
 }
 
 // FileSystemAPIRequestFromWorker* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest, FileSystemAPIRequestFromWorkerDeny) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, FileSystemAPIRequestFromWorkerDeny) {
   TestHelper("testDeny", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
 }
 
 // FileSystemAPIRequestFromWorker* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        FileSystemAPIRequestFromWorkerDefaultAllow) {
   TestHelper(
       "testDefaultAllow", "web_view/filesystem/worker", NEEDS_TEST_SERVER);
@@ -2115,7 +2165,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 // embedder contains a single webview guest. The guest creates a shared worker
 // to request filesystem access from worker thread.
 // FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 1 of 3
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestAllow) {
   TestHelper("testAllow",
@@ -2124,7 +2174,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestDeny) {
   TestHelper("testDeny",
@@ -2133,7 +2183,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuest* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfSingleWebViewGuestDefaultAllow) {
   TestHelper(
@@ -2146,7 +2196,7 @@ IN_PROC_BROWSER_TEST_F(
 // embedder contains mutiple webview guests. Each guest creates a shared worker
 // to request filesystem access from worker thread.
 // FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 1 of 3
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsAllow) {
   TestHelper("testAllow",
@@ -2155,7 +2205,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 2 of 3.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsDeny) {
   TestHelper("testDeny",
@@ -2164,7 +2214,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuests* test 3 of 3.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     FileSystemAPIRequestFromSharedWorkerOfMultiWebViewGuestsDefaultAllow) {
   TestHelper(
@@ -2173,7 +2223,7 @@ IN_PROC_BROWSER_TEST_F(
       NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ClearData) {
 #if defined(OS_WIN)
   // Flaky on XP bot http://crbug.com/282674
   if (base::win::GetVersion() <= base::win::VERSION_XP)
@@ -2193,17 +2243,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ClearData) {
 #else
 #define MAYBE_ClearDataCache ClearDataCache
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ClearDataCache) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_ClearDataCache) {
   TestHelper("testClearCache", "web_view/clear_data_cache", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ConsoleMessage) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, ConsoleMessage) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "console_messages"))
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, DownloadPermission) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   content::WebContents* guest_web_contents =
       LoadGuest("/extensions/platform_apps/web_view/download/guest.html",
@@ -2238,7 +2288,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadPermission) {
 
 // This test makes sure loading <webview> does not crash when there is an
 // extension which has content script whitelisted/forced.
-IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, WhitelistedContentScript) {
   // Whitelist the extension for running content script we are going to load.
   extensions::ExtensionsClient::ScriptingWhitelist whitelist;
   const std::string extension_id = "imeongpbjoodlnmlakaldhlcmijmhpbb";
@@ -2257,7 +2307,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
                            "TEST_PASSED");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToExtensionFromGuest) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, SendMessageToExtensionFromGuest) {
   // Load the extension as a normal, non-component extension.
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII(
@@ -2268,7 +2318,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToExtensionFromGuest) {
              NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, SendMessageToComponentExtensionFromGuest) {
   const extensions::Extension* component_extension =
       LoadExtensionAsComponent(test_data_dir_.AppendASCII(
           "platform_apps/web_view/extension_api/component_extension"));
@@ -2299,17 +2349,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SendMessageToComponentExtensionFromGuest) {
       content::WebContents::FromRenderFrameHost(guest_rfh)));
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentReady) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, SetPropertyOnDocumentReady) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_ready"))
                   << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, SetPropertyOnDocumentInteractive) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, SetPropertyOnDocumentInteractive) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/document_interactive"))
                   << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+IN_PROC_BROWSER_TEST_P(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_HasPermissionAllow) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
@@ -2317,7 +2367,7 @@ IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+IN_PROC_BROWSER_TEST_P(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_HasPermissionDeny) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/speech_recognition_api",
@@ -2325,7 +2375,7 @@ IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
           << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
+IN_PROC_BROWSER_TEST_P(WebViewSpeechAPITest,
                        SpeechRecognitionAPI_NoPermission) {
   ASSERT_TRUE(
       RunPlatformAppTestWithArg("platform_apps/web_view/common",
@@ -2334,51 +2384,51 @@ IN_PROC_BROWSER_TEST_F(WebViewSpeechAPITest,
 }
 
 // Tests overriding user agent.
-IN_PROC_BROWSER_TEST_F(WebViewTest, UserAgent) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, UserAgent) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
               "platform_apps/web_view/common", "useragent")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, UserAgent_NewWindow) {
+IN_PROC_BROWSER_TEST_P(WebViewNewWindowTest, UserAgent_NewWindow) {
   ASSERT_TRUE(RunPlatformAppTestWithArg(
               "platform_apps/web_view/common",
               "useragent_newwindow")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, NoPermission) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/nopermission"))
                   << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Dialog_TestAlertDialog) {
   TestHelper("testAlertDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestConfirmDialog) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TestConfirmDialog) {
   TestHelper("testConfirmDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogCancel) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Dialog_TestConfirmDialogCancel) {
   TestHelper("testConfirmDialogCancel", "web_view/dialog", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
   TestHelper("testConfirmDialogDefaultCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Dialog_TestPromptDialog) {
   TestHelper("testPromptDialog", "web_view/dialog", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, NoContentSettingsAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, NoContentSettingsAPI) {
   // Load the extension.
   const extensions::Extension* content_settings_extension =
       LoadExtension(
@@ -2396,12 +2446,13 @@ class WebViewPluginTest : public WebViewTest {
     ASSERT_TRUE(ppapi::RegisterTestPlugin(command_line));
   }
 };
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewPluginTest, testing::Bool());
 
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
+IN_PROC_BROWSER_TEST_P(WebViewPluginTest, TestLoadPluginEvent) {
   TestHelper("testPluginLoadPermission", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginInternalResource) {
+IN_PROC_BROWSER_TEST_P(WebViewPluginTest, TestLoadPluginInternalResource) {
   const char kTestMimeType[] = "application/pdf";
   const char kTestFileType[] = "pdf";
   content::WebPluginInfo plugin_info;
@@ -2424,48 +2475,49 @@ class WebViewCaptureTest : public WebViewTest {
     WebViewTest::SetUp();
   }
 };
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewCaptureTest, testing::Bool());
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestZoomAPI) {
   TestHelper("testZoomAPI", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFindAPI) {
   TestHelper("testFindAPI", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFindAPI_findupdate) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFindAPI_findupdate) {
   TestHelper("testFindAPI_findupdate", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadDataAPI) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestLoadDataAPI) {
   TestHelper("testLoadDataAPI", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 // This test verifies that the resize and contentResize events work correctly.
-IN_PROC_BROWSER_TEST_F(WebViewSizeTest, Shim_TestResizeEvents) {
+IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeEvents) {
   TestHelper("testResizeEvents", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPerOriginZoomMode) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestPerOriginZoomMode) {
   TestHelper("testPerOriginZoomMode", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPerViewZoomMode) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestPerViewZoomMode) {
   TestHelper("testPerViewZoomMode", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisabledZoomMode) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisabledZoomMode) {
   TestHelper("testDisabledZoomMode", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomBeforeNavigation) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestZoomBeforeNavigation) {
   TestHelper("testZoomBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
 }
 
 // This test verify that the set of rules registries of a webview will be
 // removed from RulesRegistryService after the webview is gone.
 // http://crbug.com/438327
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     WebViewTest,
     DISABLED_Shim_TestRulesRegistryIDAreRemovedAfterWebViewIsGone) {
   LoadAppWithGuest("web_view/rules_registry");
@@ -2508,7 +2560,7 @@ IN_PROC_BROWSER_TEST_F(
       rules_registry_id, "ui").get());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
   LoadAppWithGuest("web_view/rules_registry");
 
   content::WebContents* guest_web_contents = GetGuestWebContents();
@@ -2536,20 +2588,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_WebViewWebRequestRegistryHasNoCache) {
 }
 
 // This test verifies that webview.contentWindow works inside an iframe.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebViewInsideFrame) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebViewInsideFrame) {
   LoadAppWithGuest("web_view/inside_iframe");
 }
 
 // <webview> screenshot capture fails with ubercomp.
 // See http://crbug.com/327035.
-IN_PROC_BROWSER_TEST_F(WebViewCaptureTest,
-                       DISABLED_Shim_ScreenshotCapture) {
+IN_PROC_BROWSER_TEST_P(WebViewCaptureTest, DISABLED_Shim_ScreenshotCapture) {
   TestHelper("testScreenshotCapture", "web_view/shim", NO_TEST_SERVER);
 }
 
 // Tests that browser process does not crash when loading plugin inside
 // <webview> with content settings set to CONTENT_SETTING_BLOCK.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TestPlugin) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
     ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                CONTENT_SETTING_BLOCK);
@@ -2564,14 +2615,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TestPlugin) {
 #else
 #define MAYBE_WebViewInBackgroundPage WebViewInBackgroundPage
 #endif
-IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_WebViewInBackgroundPage) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_WebViewInBackgroundPage) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("platform_apps/web_view/background"))
       << message_;
 }
 
 // This test verifies that the allowtransparency attribute properly propagates.
-IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
   LoadAppWithGuest("web_view/simple");
 
   ASSERT_TRUE(GetGuestWebContents());
@@ -2581,19 +2632,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AllowTransparencyAndAllowScalingPropagate) {
   ASSERT_TRUE(guest->allow_scaling());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewCommonTest, BasicPostMessage) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, BasicPostMessage) {
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/post_message/basic"))
       << message_;
 }
 
 // Tests that webviews do get garbage collected.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGarbageCollect) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestGarbageCollect) {
   TestHelper("testGarbageCollect", "web_view/shim", NO_TEST_SERVER);
   GetGuestViewManager()->WaitForSingleViewGarbageCollected();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCloseNewWindowCleanup) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestCloseNewWindowCleanup) {
   TestHelper("testCloseNewWindowCleanup", "web_view/shim", NEEDS_TEST_SERVER);
   auto gvm = GetGuestViewManager();
   gvm->WaitForLastGuestDeleted();
@@ -2602,11 +2653,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCloseNewWindowCleanup) {
 
 // Ensure that focusing a WebView while it is already focused does not blur the
 // guest content.
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFocusWhileFocused) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFocusWhileFocused) {
   TestHelper("testFocusWhileFocused", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, NestedGuestContainerBounds) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, NestedGuestContainerBounds) {
+  // TODO(lfg): https://crbug.com/581898
+  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+    return;
+
   TestHelper("testPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
@@ -2629,13 +2684,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NestedGuestContainerBounds) {
             mime_handler_view_container_bounds.origin());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestMailtoLink) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestMailtoLink) {
   TestHelper("testMailtoLink", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 // Tests that a renderer navigation from an unattached guest that results in a
 // server redirect works properly.
-IN_PROC_BROWSER_TEST_F(WebViewTest,
+IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestRendererNavigationRedirectWhileUnattached) {
   TestHelper("testRendererNavigationRedirectWhileUnattached",
              "web_view/shim", NEEDS_TEST_SERVER);
@@ -2643,16 +2698,25 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
 
 // Tests that a WebView accessible resource can actually be loaded from a
 // webpage in a WebView.
-IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewAccessibleResource) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewAccessibleResource) {
   TestHelper("testLoadWebviewAccessibleResource",
              "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
 }
 
-class WebViewGuestScrollTest : public WebViewTest,
-                               public ::testing::WithParamInterface<bool> {
+class WebViewGuestScrollTest
+    : public WebViewTestBase,
+      public testing::WithParamInterface<testing::tuple<bool, bool>> {
  protected:
   WebViewGuestScrollTest() {}
   ~WebViewGuestScrollTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewTestBase::SetUpCommandLine(command_line);
+
+    if (testing::get<0>(GetParam())) {
+      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
+    }
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewGuestScrollTest);
@@ -2661,10 +2725,10 @@ class WebViewGuestScrollTest : public WebViewTest,
 class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    WebViewGuestScrollTest::SetUpCommandLine(command_line);
+
     command_line->AppendSwitchASCII(switches::kTouchEvents,
                                     switches::kTouchEventsEnabled);
-
-    WebViewTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -2693,14 +2757,14 @@ class ScrollWaiter {
 // different ack results in between these two cases.
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
                         WebViewGuestScrollTest,
-                        ::testing::Bool());
+                        testing::Combine(testing::Bool(), testing::Bool()));
 
 // Flaky on all platforms, see http://crbug.com/544782.
 IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
                        DISABLED_TestGuestWheelScrollsBubble) {
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
-  if (GetParam())
+  if (testing::get<1>(GetParam()))
     SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
@@ -2776,7 +2840,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
 
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
                         WebViewGuestScrollTouchTest,
-                        ::testing::Bool());
+                        testing::Combine(testing::Bool(), testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
                        TestGuestGestureScrollsBubble) {
@@ -2791,7 +2855,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
 
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
-  if (GetParam())
+  if (testing::get<1>(GetParam()))
     SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
@@ -2896,10 +2960,11 @@ class WebViewFocusTest : public WebViewTest {
  private:
   scoped_refptr<content::FrameWatcher> frame_watcher_;
 };
+INSTANTIATE_TEST_CASE_P(WebViewTests, WebViewFocusTest, testing::Values(false));
 
 // The following test verifies that a views::WebView hosting an embedder
 // gains focus on touchstart.
-IN_PROC_BROWSER_TEST_F(WebViewFocusTest, TouchFocusesEmbedder) {
+IN_PROC_BROWSER_TEST_P(WebViewFocusTest, TouchFocusesEmbedder) {
   LoadAppWithGuest("web_view/accept_touch_events");
 
   content::WebContents* web_contents = GetEmbedderWebContents();
@@ -3000,7 +3065,7 @@ bool HasExpectedGuestTask(
 }  // namespace
 
 // Tests that the pre-existing WebViews are provided to the task manager.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPreExistingWebViews) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagementPreExistingWebViews) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Browser tests start with a single tab.
@@ -3024,7 +3089,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPreExistingWebViews) {
 }
 
 // Tests that the post-existing WebViews are provided to the task manager.
-IN_PROC_BROWSER_TEST_F(WebViewTest, TaskManagementPostExistingWebViews) {
+IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagementPostExistingWebViews) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Browser tests start with a single tab.
