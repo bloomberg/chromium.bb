@@ -1393,7 +1393,6 @@ interface Event
     getter cancelBubble
     getter cancelable
     getter currentTarget
-    getter deepPath
     getter defaultPrevented
     getter eventPhase
     getter path
@@ -1404,6 +1403,7 @@ interface Event
     getter timeStamp
     getter type
     method constructor
+    method deepPath
     method initEvent
     method preventDefault
     method stopImmediatePropagation
