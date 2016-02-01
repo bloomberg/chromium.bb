@@ -135,6 +135,7 @@ FYI_WATERFALL = {
   'builders': [
     'GPU Win Builder',
     'GPU Win Builder (dbg)',
+    'GPU Win x64 Builder',
     'GPU Mac Builder',
     'GPU Mac Builder (dbg)',
     'GPU Linux Builder',
@@ -189,6 +190,15 @@ FYI_WATERFALL = {
     },
     'Win7 Release dEQP (NVIDIA)': {
       'deqp': True,
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': {
         'gpu': '10de:104a',
         'os': 'Windows-2008ServerR2-SP1'
