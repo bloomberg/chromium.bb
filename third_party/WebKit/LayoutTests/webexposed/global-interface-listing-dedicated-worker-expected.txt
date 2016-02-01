@@ -146,6 +146,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter cancelBubble
 [Worker]     getter cancelable
 [Worker]     getter currentTarget
+[Worker]     getter deepPath
 [Worker]     getter defaultPrevented
 [Worker]     getter eventPhase
 [Worker]     getter path
@@ -156,7 +157,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter timeStamp
 [Worker]     getter type
 [Worker]     method constructor
-[Worker]     method deepPath
 [Worker]     method initEvent
 [Worker]     method preventDefault
 [Worker]     method stopImmediatePropagation
