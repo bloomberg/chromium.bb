@@ -29,6 +29,7 @@ declare_args() {
   ozone_platform_ozonex = false
   ozone_platform_headless = false
   ozone_platform_x11 = false
+  ozone_platform_wayland = false
 
   if (ozone_auto_platforms) {
     # Use headless as the default platform.

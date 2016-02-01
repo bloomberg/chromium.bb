@@ -250,5 +250,10 @@
         'platform/headless/headless.gypi',
       ],
     }],
+    ['<(ozone_platform_wayland) == 1', {
+      'includes': [
+        'platform/wayland/wayland.gypi',
+      ],
+    }],
   ],
 }

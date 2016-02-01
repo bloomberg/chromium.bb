@@ -1579,6 +1579,7 @@
     'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
     'ozone_platform_headless%': 0,
+    'ozone_platform_wayland%': 0,
 
     # Experiment: http://crbug.com/426914
     'envoy%': 0,

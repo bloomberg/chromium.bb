@@ -57,6 +57,10 @@ MediaOzonePlatform* CreateMediaOzonePlatformHeadless() {
   return new MediaOzonePlatformStub;
 }
 
+MediaOzonePlatform* CreateMediaOzonePlatformWayland() {
+  return new MediaOzonePlatformStub;
+}
+
 MediaOzonePlatform::MediaOzonePlatform() {
   CHECK(!instance_) << "There should only be a single MediaOzonePlatform.";
   instance_ = this;
