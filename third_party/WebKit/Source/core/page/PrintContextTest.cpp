@@ -77,13 +77,8 @@ private:
 class PrintContextTest : public RenderingTest {
 protected:
     explicit PrintContextTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient = nullptr)
-        : RenderingTest(frameLoaderClient) { }
-
-    void SetUp() override
-    {
-        RenderingTest::SetUp();
-        m_printContext = adoptPtrWillBeNoop(new MockPrintContext(document().frame()));
-    }
+        : RenderingTest(frameLoaderClient)
+        , m_printContext(adoptPtrWillBeNoop(new MockPrintContext(document().frame()))) { }
 
     MockPrintContext& printContext() { return *m_printContext.get(); }
 
