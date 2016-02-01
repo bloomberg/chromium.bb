@@ -381,11 +381,6 @@ class ServiceWorkerURLRequestJobTest
     provider_host_->NotifyControllerLost();
   }
 
-  GURL GetRequestingOrigin() override {
-    CHECK(provider_host_);
-    return provider_host_->document_url().GetOrigin();
-  }
-
   TestBrowserThreadBundle thread_bundle_;
 
   scoped_ptr<TestBrowserContext> browser_context_;

@@ -92,9 +92,6 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
     // Called to signal that loading failed, and that the resource being loaded
     // was a main resource.
     virtual void MainResourceLoadFailed() {}
-
-    // Returns the origin of the page/context which initiated this request.
-    virtual GURL GetRequestingOrigin() = 0;
   };
 
   ServiceWorkerURLRequestJob(

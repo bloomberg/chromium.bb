@@ -107,7 +107,6 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   bool RequestStillValid(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
   void MainResourceLoadFailed() override;
-  GURL GetRequestingOrigin() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job, except for timing information.

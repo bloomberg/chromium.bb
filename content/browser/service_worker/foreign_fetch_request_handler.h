@@ -109,7 +109,6 @@ class CONTENT_EXPORT ForeignFetchRequestHandler
       base::TimeTicks service_worker_ready_time) override;
   ServiceWorkerVersion* GetServiceWorkerVersion(
       ServiceWorkerMetrics::URLRequestJobResult* result) override;
-  GURL GetRequestingOrigin() override;
 
   // Sets |job_| to nullptr, and clears all extra response info associated with
   // that job.

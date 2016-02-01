@@ -604,7 +604,8 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     // we returns a fall_back_required response to the renderer.
     if ((request_mode_ == FETCH_REQUEST_MODE_CORS ||
          request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
-        delegate_->GetRequestingOrigin() != request()->url().GetOrigin()) {
+        !request()->initiator().IsSameOriginWith(
+            url::Origin(request()->url()))) {
       fall_back_required_ = true;
       RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
       CreateResponseHeader(

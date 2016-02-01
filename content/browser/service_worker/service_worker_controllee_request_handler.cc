@@ -452,11 +452,6 @@ void ServiceWorkerControlleeRequestHandler::MainResourceLoadFailed() {
   provider_host_->NotifyControllerLost();
 }
 
-GURL ServiceWorkerControlleeRequestHandler::GetRequestingOrigin() {
-  DCHECK(provider_host_);
-  return provider_host_->document_url().GetOrigin();
-}
-
 void ServiceWorkerControlleeRequestHandler::ClearJob() {
   job_.reset();
   was_fetched_via_service_worker_ = false;

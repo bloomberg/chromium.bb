@@ -214,11 +214,6 @@ ServiceWorkerVersion* ForeignFetchRequestHandler::GetServiceWorkerVersion(
   return target_worker_.get();
 }
 
-GURL ForeignFetchRequestHandler::GetRequestingOrigin() {
-  // TODO(mek): Implement this.
-  return GURL();
-}
-
 void ForeignFetchRequestHandler::ClearJob() {
   job_.reset();
   target_worker_ = nullptr;
