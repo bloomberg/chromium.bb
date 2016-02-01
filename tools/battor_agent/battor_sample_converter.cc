@@ -91,4 +91,18 @@ BattOrSample BattOrSampleConverter::ToSample(const RawBattOrSample& sample,
   return BattOrSample{time_ms, voltage, current};
 }
 
+BattOrSample BattOrSampleConverter::MinSample() const {
+  // Create a minimum raw sample.
+  RawBattOrSample sample_raw = {kAnalogDigitalConverterMinValue,
+                                kAnalogDigitalConverterMinValue};
+  return ToSample(sample_raw, 0);
+}
+
+BattOrSample BattOrSampleConverter::MaxSample() const {
+  // Create a maximum raw sample.
+  RawBattOrSample sample_raw = {kAnalogDigitalConverterMaxValue,
+                                kAnalogDigitalConverterMaxValue};
+  return ToSample(sample_raw, 0);
+}
+
 }  // namespace battor

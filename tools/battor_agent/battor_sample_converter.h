@@ -32,6 +32,12 @@ class BattOrSampleConverter {
   BattOrSample ToSample(const RawBattOrSample& sample,
                         size_t sample_number) const;
 
+  // Returns the lowest magnitude sample that the BattOr can collect.
+  BattOrSample MinSample() const;
+
+  // Returns the highest magnitude sample that the BattOr can collect.
+  BattOrSample MaxSample() const;
+
  private:
   // The BattOr's EEPROM, which stores some conversion parameters we need.
   BattOrEEPROM eeprom_;

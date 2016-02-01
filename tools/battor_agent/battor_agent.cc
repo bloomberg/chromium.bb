@@ -436,6 +436,20 @@ std::string BattOrAgent::SamplesToString() {
 
   std::stringstream trace_stream;
   trace_stream << std::fixed;
+
+  // Create a header that indicates the BattOr's parameters for these samples.
+  BattOrSample min_sample = converter.MinSample();
+  BattOrSample max_sample = converter.MaxSample();
+  trace_stream << "# BattOr" << std::endl
+               << std::setprecision(1)
+               << "# voltage_range [" <<  min_sample.voltage_mV << ", "
+               << max_sample.voltage_mV << "] mV" << std::endl
+               << "# current_range [" << min_sample.current_mA << ", "
+               << max_sample.current_mA << "] mA" << std::endl
+               << "# sample_rate " << battor_eeprom_->sd_sample_rate << " Hz"
+               << ", gain " << battor_eeprom_->low_gain << "x" << std::endl;
+
+  // Create a string representation of the BattOr samples.
   for (size_t i = 0; i < samples_.size(); i++) {
     BattOrSample sample = converter.ToSample(samples_[i], i);
     trace_stream << std::setprecision(2) << sample.time_ms << " "

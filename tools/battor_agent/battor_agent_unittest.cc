@@ -457,8 +457,12 @@ TEST_F(BattOrAgentTest, StopTracing) {
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
-  EXPECT_EQ("0.00 -0.3 -0.6\n1.00 0.3 0.6\n2.00 0.9 1.8\n3.00 -0.3 -0.6\n",
-            GetTrace());
+  EXPECT_EQ(
+      "# BattOr\n# voltage_range [-2401.8, 2398.2] mV\n# "
+      "current_range [-1200.9, 1199.1] mA\n"
+      "# sample_rate 1000 Hz, gain 1.0x\n"
+      "0.00 -0.3 -0.6\n1.00 0.3 0.6\n2.00 0.9 1.8\n3.00 -0.3 -0.6\n",
+      GetTrace());
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsWithoutConnection) {
