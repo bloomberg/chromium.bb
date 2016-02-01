@@ -4075,6 +4075,7 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "First emphasis class must be \"italic\" but got %s", s);
 			errorCount++;
+			free(s);
 			return 0;
 		      }
 		    break;
@@ -4083,6 +4084,7 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "Second emphasis class must be \"underline\" but got %s", s);
 			errorCount++;
+			free(s);
 			return 0;
 		      }
 		    break;
@@ -4091,6 +4093,7 @@ doOpcode:
 		      {
 			logMessage (LOG_ERROR, "Third emphasis class must be \"bold\" but got %s", s);
 			errorCount++;
+			free(s);
 			return 0;
 		      }
 		    break;
