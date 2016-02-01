@@ -46,14 +46,14 @@ Otherwise: Writes command-line file.
   def print_args():
     def read_flags(device):
       try:
-        return device.ReadFile(args.device_path, as_root=as_root)
+        return device.ReadFile(args.device_path, as_root=as_root).rstrip()
       except device_errors.AdbCommandFailedError:
-        return '\n'  # File might not exist.
+        return ''  # File might not exist.
 
     descriptions = all_devices.pMap(lambda d: d.build_description).pGet(None)
     flags = all_devices.pMap(read_flags).pGet(None)
     for d, desc, flags in zip(devices, descriptions, flags):
-      print '  %s (%s): %s' % (d, desc, flags),
+      print '  %s (%s): %r' % (d, desc, flags)
 
   # No args == print flags.
   if not remote_args:
