@@ -41,6 +41,7 @@ void CopyTraceEventParameter(char** buffer,
 
 TraceEvent::TraceEvent()
     : duration_(TimeDelta::FromInternalValue(-1)),
+      scope_(trace_event_internal::kGlobalScope),
       id_(0u),
       category_group_enabled_(NULL),
       name_(NULL),
@@ -59,6 +60,7 @@ void TraceEvent::CopyFrom(const TraceEvent& other) {
   timestamp_ = other.timestamp_;
   thread_timestamp_ = other.thread_timestamp_;
   duration_ = other.duration_;
+  scope_ = other.scope_;
   id_ = other.id_;
   category_group_enabled_ = other.category_group_enabled_;
   name_ = other.name_;
@@ -85,6 +87,7 @@ void TraceEvent::Initialize(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     unsigned long long bind_id,
     int num_args,
@@ -96,6 +99,7 @@ void TraceEvent::Initialize(
   timestamp_ = timestamp;
   thread_timestamp_ = thread_timestamp;
   duration_ = TimeDelta::FromInternalValue(-1);
+  scope_ = scope;
   id_ = id;
   category_group_enabled_ = category_group_enabled;
   name_ = name;
@@ -126,7 +130,7 @@ void TraceEvent::Initialize(
   bool copy = !!(flags & TRACE_EVENT_FLAG_COPY);
   size_t alloc_size = 0;
   if (copy) {
-    alloc_size += GetAllocLength(name);
+    alloc_size += GetAllocLength(name) + GetAllocLength(scope);
     for (i = 0; i < num_args; ++i) {
       alloc_size += GetAllocLength(arg_names_[i]);
       if (arg_types_[i] == TRACE_VALUE_TYPE_STRING)
@@ -153,6 +157,7 @@ void TraceEvent::Initialize(
     const char* end = ptr + alloc_size;
     if (copy) {
       CopyTraceEventParameter(&ptr, &name_, end);
+      CopyTraceEventParameter(&ptr, &scope_, end);
       for (i = 0; i < num_args; ++i) {
         CopyTraceEventParameter(&ptr, &arg_names_[i], end);
       }
@@ -354,8 +359,11 @@ void TraceEvent::AppendAsJSON(
 
   // If id_ is set, print it out as a hex string so we don't loose any
   // bits (it might be a 64-bit pointer).
-  if (flags_ & TRACE_EVENT_FLAG_HAS_ID)
+  if (flags_ & TRACE_EVENT_FLAG_HAS_ID) {
+    if (scope_ != trace_event_internal::kGlobalScope)
+      StringAppendF(out, ",\"scope\":\"%s\"", scope_);
     StringAppendF(out, ",\"id\":\"0x%" PRIx64 "\"", static_cast<uint64_t>(id_));
+  }
 
   if (flags_ & TRACE_EVENT_FLAG_BIND_TO_ENCLOSING)
     StringAppendF(out, ",\"bp\":\"e\"");

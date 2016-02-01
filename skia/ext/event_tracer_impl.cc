@@ -48,8 +48,9 @@ SkEventTracer::Handle
                                          const uint64_t* argValues,
                                          uint8_t flags) {
   base::trace_event::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT(
-      phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes,
-      (const long long unsigned int*)argValues, NULL, flags);
+      phase, categoryEnabledFlag, name, trace_event_internal::kGlobalScope, id,
+      numArgs, argNames, argTypes, (const long long unsigned int*)argValues,
+      NULL, flags);
       SkEventTracer::Handle result;
       memcpy(&result, &handle, sizeof(result));
       return result;

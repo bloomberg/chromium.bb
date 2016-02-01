@@ -101,7 +101,7 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const scoped_refptr<base::trace_event::ConvertableToTraceFormat>* convertables, unsigned flags)
 {
     base::TimeTicks timestampTimeTicks = base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
-    base::trace_event::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase, categoryEnabledFlag, name, id, bindId, base::PlatformThread::CurrentId(), timestampTimeTicks, numArgs, argNames, argTypes, argValues, convertables, flags);
+    base::trace_event::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase, categoryEnabledFlag, name, trace_event_internal::kGlobalScope, id, bindId, base::PlatformThread::CurrentId(), timestampTimeTicks, numArgs, argNames, argTypes, argValues, convertables, flags);
     TraceEvent::TraceEventHandle result;
     memcpy(&result, &handle, sizeof(result));
     return result;

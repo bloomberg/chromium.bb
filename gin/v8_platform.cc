@@ -84,7 +84,8 @@ uint64_t V8Platform::AddTraceEvent(char phase,
                                    unsigned int flags) {
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
-          phase, category_enabled_flag, name, id, bind_id, num_args, arg_names,
+          phase, category_enabled_flag, name,
+          trace_event_internal::kGlobalScope, id, bind_id, num_args, arg_names,
           arg_types, (const long long unsigned int*)arg_values, NULL, flags);
   uint64_t result;
   memcpy(&result, &handle, sizeof(result));

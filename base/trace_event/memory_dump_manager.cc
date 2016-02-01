@@ -20,6 +20,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/memory_dump_session_state.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "build/build_config.h"
 
@@ -493,7 +494,8 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
     TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_PROCESS_ID(
         TRACE_EVENT_PHASE_MEMORY_DUMP,
         TraceLog::GetCategoryGroupEnabled(kTraceCategory), event_name,
-        dump_guid, pid, kTraceEventNumArgs, kTraceEventArgNames,
+        trace_event_internal::kGlobalScope, dump_guid, pid,
+        kTraceEventNumArgs, kTraceEventArgNames,
         kTraceEventArgTypes, nullptr /* arg_values */, &event_value,
         TRACE_EVENT_FLAG_HAS_ID);
   }

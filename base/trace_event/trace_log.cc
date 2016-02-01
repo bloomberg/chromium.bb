@@ -140,6 +140,7 @@ void InitializeMetadataEvent(TraceEvent* trace_event,
       TRACE_EVENT_PHASE_METADATA,
       &g_category_group_enabled[g_category_metadata],
       metadata_name,
+      trace_event_internal::kGlobalScope,  // scope
       trace_event_internal::kNoId,  // id
       trace_event_internal::kNoId,  // bind_id
       num_args,
@@ -1053,6 +1054,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     int num_args,
     const char** arg_names,
@@ -1066,6 +1068,7 @@ TraceEventHandle TraceLog::AddTraceEvent(
       phase,
       category_group_enabled,
       name,
+      scope,
       id,
       trace_event_internal::kNoId,  // bind_id
       thread_id,
@@ -1082,6 +1085,7 @@ TraceEventHandle TraceLog::AddTraceEventWithBindId(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     unsigned long long bind_id,
     int num_args,
@@ -1096,6 +1100,7 @@ TraceEventHandle TraceLog::AddTraceEventWithBindId(
       phase,
       category_group_enabled,
       name,
+      scope,
       id,
       bind_id,
       thread_id,
@@ -1112,6 +1117,7 @@ TraceEventHandle TraceLog::AddTraceEventWithProcessId(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     int process_id,
     int num_args,
@@ -1125,6 +1131,7 @@ TraceEventHandle TraceLog::AddTraceEventWithProcessId(
       phase,
       category_group_enabled,
       name,
+      scope,
       id,
       trace_event_internal::kNoId,  // bind_id
       process_id,
@@ -1143,6 +1150,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     int thread_id,
     const TimeTicks& timestamp,
@@ -1156,6 +1164,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       phase,
       category_group_enabled,
       name,
+      scope,
       id,
       trace_event_internal::kNoId,  // bind_id
       thread_id,
@@ -1172,6 +1181,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
+    const char* scope,
     unsigned long long id,
     unsigned long long bind_id,
     int thread_id,
@@ -1278,6 +1288,7 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                               phase,
                               category_group_enabled,
                               name,
+                              scope,
                               id,
                               bind_id,
                               num_args,
@@ -1324,8 +1335,8 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
       event_callback(
           offset_event_timestamp,
           phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN : phase,
-          category_group_enabled, name, id, num_args, arg_names, arg_types,
-          arg_values, flags);
+          category_group_enabled, name, scope, id, num_args, arg_names,
+          arg_types, arg_values, flags);
     }
   }
 
@@ -1359,6 +1370,7 @@ void TraceLog::AddMetadataEvent(
       0,  // thread_id
       TimeTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
       &g_category_group_enabled[g_category_metadata], name,
+      trace_event_internal::kGlobalScope,  // scope
       trace_event_internal::kNoId,  // id
       trace_event_internal::kNoId,  // bind_id
       num_args, arg_names, arg_types, arg_values, convertable_values, flags);
@@ -1469,9 +1481,10 @@ void TraceLog::UpdateTraceEventDuration(
     EventCallback event_callback = reinterpret_cast<EventCallback>(
         subtle::NoBarrier_Load(&event_callback_));
     if (event_callback) {
-      event_callback(now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
-                     trace_event_internal::kNoId, 0,
-                     nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
+      event_callback(
+        now, TRACE_EVENT_PHASE_END, category_group_enabled, name,
+        trace_event_internal::kGlobalScope, trace_event_internal::kNoId, 0,
+        nullptr, nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
     }
   }
 }
@@ -1729,6 +1742,7 @@ ScopedTraceBinaryEfficient::ScopedTraceBinaryEfficient(
             TRACE_EVENT_PHASE_COMPLETE,
             category_group_enabled_,
             name,
+            trace_event_internal::kGlobalScope,  // scope
             trace_event_internal::kNoId,  // id
             static_cast<int>(base::PlatformThread::CurrentId()),  // thread_id
             base::TimeTicks::Now(),
