@@ -37,15 +37,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
     WebRuntimeFeatures::enablePrefixedEncryptedMedia(false);
     WebRuntimeFeatures::enableEncryptedMedia(false);
   }
-  // WebAudio is enabled by default but only when the MediaCodec API
-  // is available.
-  AndroidCpuFamily cpu_family = android_getCpuFamily();
-  WebRuntimeFeatures::enableWebAudio(
-      media::MediaCodecUtil::IsMediaCodecAvailable() &&
-      ((cpu_family == ANDROID_CPU_FAMILY_ARM) ||
-       (cpu_family == ANDROID_CPU_FAMILY_ARM64) ||
-       (cpu_family == ANDROID_CPU_FAMILY_X86) ||
-       (cpu_family == ANDROID_CPU_FAMILY_MIPS)));
 
   // Android does not have support for PagePopup
   WebRuntimeFeatures::enablePagePopup(false);
@@ -105,16 +96,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableSharedWorkers))
     WebRuntimeFeatures::enableSharedWorker(false);
 
-#if defined(OS_ANDROID)
-  // WebAudio is enabled by default on ARM and X86, if the MediaCodec
-  // API is available.
-  WebRuntimeFeatures::enableWebAudio(
-      !command_line.HasSwitch(switches::kDisableWebAudio) &&
-      media::MediaCodecUtil::IsMediaCodecAvailable());
-#else
   if (command_line.HasSwitch(switches::kDisableWebAudio))
     WebRuntimeFeatures::enableWebAudio(false);
-#endif
 
   if (command_line.HasSwitch(switches::kDisableSpeechAPI))
     WebRuntimeFeatures::enableScriptedSpeech(false);
