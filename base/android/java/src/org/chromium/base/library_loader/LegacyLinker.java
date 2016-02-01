@@ -113,8 +113,8 @@ class LegacyLinker extends Linker {
                 mBrowserUsesSharedRelro = true;
                 break;
             default:
-                assert false : "Unreached";
-                break;
+                Log.wtf(TAG, "FATAL: illegal shared RELRO config");
+                throw new AssertionError();
         }
 
         mInitialized = true;
