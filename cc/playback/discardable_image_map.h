@@ -28,14 +28,6 @@ SkRect MapRect(const SkMatrix& matrix, const SkRect& src);
 // and false on failure.
 bool ExtractScale(const SkMatrix& matrix, SkSize* scale);
 
-// Helper function to compute the new rect bounds adjusted for both the current
-// paint and all of the saved paints. Returns true on success and false on
-// failure.
-bool ComputeRectBoundsFromPaint(const SkRect& rect,
-                                const SkPaint* current_paint,
-                                const std::vector<const SkPaint*>& saved_paints,
-                                SkRect* paint_bounds);
-
 // This class is used for generating discardable images data (see DrawImage
 // for the type of data it stores). It allows the client to query a particular
 // rect and get back a list of DrawImages in that rect.

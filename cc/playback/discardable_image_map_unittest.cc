@@ -14,6 +14,7 @@
 #include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "ui/gfx/geometry/rect.h"
@@ -322,6 +323,33 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image.get());
   EXPECT_EQ(gfx::Rect(0, 0, 1 << 25, 1 << 25), images[0].image_rect);
+}
+
+TEST_F(DiscardableImageMapTest, PaintDestroyedWhileImageIsDrawn) {
+  gfx::Rect visible_rect(2048, 2048);
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+
+  skia::RefPtr<SkImage> discardable_image;
+  discardable_image = CreateDiscardableImage(gfx::Size(10, 10));
+
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    {
+      scoped_ptr<SkPaint> paint(new SkPaint());
+      generator.canvas()->saveLayer(gfx::RectToSkRect(visible_rect),
+                                    paint.get());
+    }
+    generator.canvas()->drawImage(discardable_image.get(), 0, 0, nullptr);
+    generator.canvas()->restore();
+  }
+
+  std::vector<PositionDrawImage> images =
+      GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  EXPECT_EQ(1u, images.size());
+  EXPECT_TRUE(images[0].image == discardable_image.get());
 }
 
 }  // namespace cc

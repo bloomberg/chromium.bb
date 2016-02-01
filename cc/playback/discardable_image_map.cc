@@ -35,28 +35,6 @@ bool ExtractScale(const SkMatrix& matrix, SkSize* scale) {
   return true;
 }
 
-bool ComputeRectBoundsFromPaint(const SkRect& rect,
-                                const SkPaint* current_paint,
-                                const std::vector<const SkPaint*>& saved_paints,
-                                SkRect* paint_bounds) {
-  *paint_bounds = rect;
-  if (current_paint) {
-    if (!current_paint->canComputeFastBounds())
-      return false;
-    *paint_bounds =
-        current_paint->computeFastBounds(*paint_bounds, paint_bounds);
-  }
-
-  for (const auto* paint : base::Reversed(saved_paints)) {
-    if (!paint)
-      continue;
-    if (!paint->canComputeFastBounds())
-      return false;
-    *paint_bounds = paint->computeFastBounds(*paint_bounds, paint_bounds);
-  }
-  return true;
-}
-
 namespace {
 
 // We're using an NWay canvas with no added canvases, so in effect
@@ -117,12 +95,12 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   }
 
   SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
-    saved_paints_.push_back(rec.fPaint);
+    saved_paints_.push_back(*rec.fPaint);
     return SkNWayCanvas::getSaveLayerStrategy(rec);
   }
 
   void willSave() override {
-    saved_paints_.push_back(nullptr);
+    saved_paints_.push_back(SkPaint());
     return SkNWayCanvas::willSave();
   }
 
@@ -133,6 +111,25 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   }
 
  private:
+  bool ComputePaintBounds(const SkRect& rect,
+                          const SkPaint* current_paint,
+                          SkRect* paint_bounds) {
+    *paint_bounds = rect;
+    if (current_paint) {
+      if (!current_paint->canComputeFastBounds())
+        return false;
+      *paint_bounds =
+          current_paint->computeFastBounds(*paint_bounds, paint_bounds);
+    }
+
+    for (const auto& paint : base::Reversed(saved_paints_)) {
+      if (!paint.canComputeFastBounds())
+        return false;
+      *paint_bounds = paint.computeFastBounds(*paint_bounds, paint_bounds);
+    }
+    return true;
+  }
+
   void AddImage(const SkImage* image,
                 const SkRect& src_rect,
                 const SkRect& rect,
@@ -166,15 +163,9 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
                        gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect))));
   }
 
-  bool ComputePaintBounds(const SkRect& rect,
-                          const SkPaint* paint,
-                          SkRect* paint_bounds) {
-    return ComputeRectBoundsFromPaint(rect, paint, saved_paints_, paint_bounds);
-  }
-
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
   const SkRect canvas_bounds_;
-  std::vector<const SkPaint*> saved_paints_;
+  std::vector<SkPaint> saved_paints_;
 };
 
 }  // namespace
