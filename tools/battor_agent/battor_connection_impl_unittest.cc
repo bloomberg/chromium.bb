@@ -198,7 +198,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageInvalidType) {
 
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
-      UINT8_MAX,
+      static_cast<char>(UINT8_MAX),
       BATTOR_CONTROL_BYTE_ESCAPE,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       0x04,
