@@ -1386,6 +1386,8 @@ crbug.com/572723 [ Mac10.7 Release ] inspector/sources/debugger/debugger-complet
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
+crbug.com/463358 [ Mac ] svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
+
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
