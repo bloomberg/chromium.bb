@@ -954,9 +954,9 @@ void MediaStreamManager::StartMonitoringOnUIThread() {
   // fixed.
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "458404 MediaStreamManager::GetWorkerTaskRunner"));
+          "458404 MediaStreamManager::GetTaskRunner"));
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      audio_manager_->GetWorkerTaskRunner();
+      audio_manager_->GetTaskRunner();
   // TODO(erikchen): Remove ScopedTracker below once crbug.com/458404 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile3(
@@ -1533,7 +1533,7 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 1"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!device_task_runner_.get());
-  device_task_runner_ = audio_manager_->GetWorkerTaskRunner();
+  device_task_runner_ = audio_manager_->GetTaskRunner();
 
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
   // fixed.
