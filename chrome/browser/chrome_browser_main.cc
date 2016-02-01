@@ -1626,11 +1626,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       BrowserThread::IO,
       FROM_HERE,
       base::Bind(nacl::NaClProcessHost::EarlyStartup));
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-  BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-                          base::Bind(nacl::NaClProcessHost::EarlyZygoteLaunch));
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 #endif  // !defined(DISABLE_NACL)
 
   // Make sure initial prefs are recorded

@@ -104,7 +104,7 @@ class UtilitySandboxedProcessLauncherDelegate
   ZygoteHandle* GetZygote() override {
     if (no_sandbox_ || !exposed_dir_.empty())
       return nullptr;
-    return &g_utility_zygote;
+    return GetGenericZygote();
   }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   base::EnvironmentMap GetEnvironment() override { return env_; }

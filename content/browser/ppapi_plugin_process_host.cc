@@ -121,7 +121,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
         .GetSwitchValueNative(switches::kPpapiPluginLauncher);
     if (is_broker_ || !plugin_launcher.empty())
       return nullptr;
-    return &g_ppapi_zygote;
+    return GetGenericZygote();
   }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 

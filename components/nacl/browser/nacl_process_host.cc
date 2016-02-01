@@ -186,7 +186,9 @@ class NaClSandboxedProcessLauncherDelegate
   }
 #elif defined(OS_POSIX)
 #if !defined(OS_MACOSX)
-  content::ZygoteHandle* GetZygote() override { return &g_nacl_zygote; }
+  content::ZygoteHandle* GetZygote() override {
+    return content::GetGenericZygote();
+  }
 #endif  // !defined(OS_MACOSX)
 
   base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }

@@ -14,4 +14,9 @@ ZygoteHandle CreateZygote() {
   return zygote;
 }
 
+ZygoteHandle* GetGenericZygote() {
+  static ZygoteHandle zygote;
+  return &zygote;
+}
+
 }  // namespace content

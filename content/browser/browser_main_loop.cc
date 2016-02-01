@@ -156,9 +156,10 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 
 #if !defined(OS_ANDROID)
-#include "content/browser/ppapi_plugin_process_host.h"
-#endif
-#endif
+#include "content/public/browser/zygote_handle_linux.h"
+#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
+
 
 #if defined(ENABLE_PLUGINS)
 #include "content/browser/plugin_service_impl.h"
@@ -222,9 +223,8 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
   // Tickle the sandbox host and zygote host so they fork now.
   RenderSandboxHostLinux::GetInstance()->Init();
   ZygoteHostImpl::GetInstance()->Init(sandbox_binary.value());
+  *GetGenericZygote() = CreateZygote();
   RenderProcessHostImpl::EarlyZygoteLaunch();
-  PpapiPluginProcessHost::EarlyZygoteLaunch();
-  UtilityProcessHostImpl::EarlyZygoteLaunch();
 }
 #endif
 

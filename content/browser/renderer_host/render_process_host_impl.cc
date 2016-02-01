@@ -409,7 +409,7 @@ class RendererSandboxedProcessLauncherDelegate
         browser_command_line.GetSwitchValueNative(switches::kRendererCmdPrefix);
     if (!renderer_prefix.empty())
       return nullptr;
-    return &g_render_zygote;
+    return GetGenericZygote();
   }
 #endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
@@ -545,12 +545,11 @@ void RenderProcessHost::SetMaxRendererProcessCount(size_t count) {
 // static
 void RenderProcessHostImpl::EarlyZygoteLaunch() {
   DCHECK(!g_render_zygote);
-  g_render_zygote = CreateZygote();
   // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
   // proxy. It is currently done this way due to concerns about race
   // conditions.
   ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
-      g_render_zygote->GetSandboxStatus());
+      (*GetGenericZygote())->GetSandboxStatus());
 }
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
