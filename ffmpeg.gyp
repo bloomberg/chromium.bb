@@ -377,6 +377,14 @@
               ],
             }],  # OS == "mac"
             ['OS == "win"', {
+              # Disable /analyze because of internal compiler error on log.c
+              # with VS 2015 Update 1 when building with /analyze:
+              # https://connect.microsoft.com/VisualStudio/feedback/details/2299303
+              'msvs_settings': {
+                'VCCLCompilerTool': {
+                  'AdditionalOptions!': [ '/analyze:WX-' ]
+                },
+              },
               # TODO(dalecurtis): We should fix these.  http://crbug.com/154421
               'msvs_disabled_warnings': [
                 4996, 4018, 4090, 4305, 4133, 4146, 4554, 4028, 4334, 4101, 4102,
