@@ -66,6 +66,12 @@ BUILD_TYPE = 'Release'
 BUILD_DIR = os.path.join(REPOSITORY_ROOT, 'out', BUILD_TYPE)
 QUIC_SERVER = os.path.join(BUILD_DIR, 'quic_server')
 QUIC_CLIENT = os.path.join(BUILD_DIR, 'quic_client')
+CERT_PATH = os.path.join('net', 'data', 'ssl', 'certificates')
+QUIC_CERT_DIR = os.path.join(REPOSITORY_ROOT, CERT_PATH)
+QUIC_CERT_HOST = 'test.example.com'
+QUIC_CERT_FILENAME = 'quic_%s.crt' % QUIC_CERT_HOST
+QUIC_CERT = os.path.join(QUIC_CERT_DIR, QUIC_CERT_FILENAME)
+QUIC_KEY = os.path.join(QUIC_CERT_DIR, 'quic_%s.key.pkcs8' % QUIC_CERT_HOST)
 APP_APK = os.path.join(BUILD_DIR, 'apks', 'CronetPerfTest.apk')
 APP_PACKAGE = 'org.chromium.net'
 APP_ACTIVITY = '.CronetPerfTestActivity'
@@ -98,6 +104,8 @@ BENCHMARK_CONFIG = {
   'QUIC_PORT': 9001,
   # Maximum read/write buffer size to use.
   'MAX_BUFFER_SIZE': 16384,
+  'HOST': QUIC_CERT_HOST,
+  'QUIC_CERT_FILE': QUIC_CERT_FILENAME,
 }
 # Add benchmark config to global state for easy access.
 globals().update(BENCHMARK_CONFIG)
@@ -130,7 +138,7 @@ class CronetPerfTestAndroidStory(android.AndroidStory):
     self._device = device
     device.RunShellCommand('rm %s' % DONE_FILE)
     config = BENCHMARK_CONFIG
-    config['HOST'] = GetServersHost(device)
+    config['HOST_IP'] = GetServersHost(device)
     start_intent = intent.Intent(
         package=APP_PACKAGE,
         activity=APP_ACTIVITY,
@@ -210,19 +218,23 @@ class QuicServer:
     self._process = pexpect.spawn(QUIC_SERVER,
                                   ['--quic_in_memory_cache_dir=%s' %
                                       self._quic_server_doc_root,
+                                   '--certificate_file=%s' % QUIC_CERT,
+                                   '--key_file=%s' % QUIC_KEY,
                                    '--port=%d' % QUIC_PORT])
     assert self._process != None
     # Wait for quic_server to start serving.
     waited_s = 0
-    while subprocess.call([QUIC_CLIENT,
-                           '--host=%s' % GetServersHost(device),
-                           '--port=%d' % QUIC_PORT,
-                           'http://%s:%d/%s' % (GetServersHost(device),
-                                                QUIC_PORT, SMALL_RESOURCE)],
+    while subprocess.call(['lsof', '-i', 'udp:%d' % QUIC_PORT, '-p',
+                           '%d' % self._process.pid],
                           stdout=open(os.devnull, 'w')) != 0:
       sleep(0.1)
       waited_s += 0.1
       assert waited_s < 5, "quic_server failed to start after %fs" % waited_s
+    # Push certificate to device.
+    cert = open(QUIC_CERT, 'r').read()
+    device_cert_path = os.path.join(device.GetExternalStoragePath(), CERT_PATH)
+    device.RunShellCommand('mkdir -p %s' % device_cert_path)
+    device.WriteFile(os.path.join(device_cert_path, QUIC_CERT_FILENAME), cert)
 
   def ShutdownQuicServer(self):
     if self._process:
@@ -261,7 +273,7 @@ def GenerateQuicTestResources(device):
   os.rename(os.path.join(quic_server_doc_root,
                          "%s:%d" % (GetServersHost(device), HTTP_PORT)),
             os.path.join(quic_server_doc_root,
-                         "%s:%d" % (GetServersHost(device), QUIC_PORT)))
+                         "%s:%d" % (QUIC_CERT_HOST, QUIC_PORT)))
   return quic_server_doc_root
 
 
@@ -310,10 +322,13 @@ def main():
   # Chromium checkout in Telemetry.
   perf_config_file = os.path.join(REPOSITORY_ROOT, 'tools', 'perf', 'core',
       'binary_dependencies.json')
+  with open(perf_config_file, "w") as config_file:
+    config_file.write('{"config_type": "BaseConfig"}')
   runner_config = benchmark_runner.ProjectConfig(
       top_level_dir=top_level_dir,
       benchmark_dirs=[top_level_dir],
-      client_config=perf_config_file)
+      client_config=perf_config_file,
+      default_chrome_root=REPOSITORY_ROOT)
   sys.argv.insert(1, 'run')
   sys.argv.insert(2, 'run.CronetPerfTestBenchmark')
   sys.argv.insert(3, '--android-rndis')

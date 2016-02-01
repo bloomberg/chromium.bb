@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread.h"
+#include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/QuicTestServer_jni.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"
@@ -23,7 +24,6 @@ namespace cronet {
 
 namespace {
 
-static const char kServerHost[] = "test.example.com";
 static const int kServerPort = 6121;
 
 base::Thread* g_quic_server_thread = nullptr;
@@ -39,7 +39,7 @@ void StartOnServerThread(const base::FilePath& test_files_root) {
   net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
       file_dir.value());
   net::IPAddressNumber ip;
-  net::ParseIPLiteralToNumber(kServerHost, &ip);
+  net::ParseIPLiteralToNumber(kFakeQuicDomain, &ip);
   net::QuicConfig config;
 
   // Set up server certs.
@@ -98,7 +98,7 @@ void ShutdownQuicTestServer(JNIEnv* env,
 ScopedJavaLocalRef<jstring> GetServerHost(
     JNIEnv* env,
     const JavaParamRef<jclass>& /*jcaller*/) {
-  return base::android::ConvertUTF8ToJavaString(env, kServerHost);
+  return base::android::ConvertUTF8ToJavaString(env, kFakeQuicDomain);
 }
 
 int GetServerPort(JNIEnv* env, const JavaParamRef<jclass>& /*jcaller*/) {

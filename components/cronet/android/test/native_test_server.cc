@@ -18,13 +18,10 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/cronet/android/cronet_url_request_context_adapter.h"
-#include "components/cronet/android/url_request_context_adapter.h"
+#include "components/cronet/android/test/cronet_test_util.h"
 #include "jni/NativeTestServer_jni.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/url_util.h"
-#include "net/dns/host_resolver_impl.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -40,12 +37,6 @@ const char kEchoHeaderPath[] = "/echo_header";
 const char kEchoAllHeadersPath[] = "/echo_all_headers";
 const char kEchoMethodPath[] = "/echo_method";
 const char kRedirectToEchoBodyPath[] = "/redirect_to_echo_body";
-const char kFakeSdchDomain[] = "fake.sdch.domain";
-// Host used in QuicTestServer. This must match the certificate used
-// (quic_test.example.com.crt and quic_test.example.com.key.pkcs8), and
-// the file served (
-// components/cronet/android/test/assets/test/quic_data/simple.txt).
-const char kFakeQuicDomain[] = "test.example.com";
 // Path that advertises the dictionary passed in query params if client
 // supports Sdch encoding. E.g. /sdch/index?q=LeQxM80O will make the server
 // responds with "Get-Dictionary: /sdch/dict/LeQxM80O".
@@ -169,31 +160,6 @@ scoped_ptr<net::test_server::HttpResponse> SdchRequestHandler(
   return scoped_ptr<net::test_server::BasicHttpResponse>();
 }
 
-void RegisterHostResolverProcHelper(
-    net::URLRequestContext* url_request_context) {
-  net::HostResolverImpl* resolver =
-      static_cast<net::HostResolverImpl*>(url_request_context->host_resolver());
-  scoped_refptr<net::RuleBasedHostResolverProc> proc =
-      new net::RuleBasedHostResolverProc(NULL);
-  proc->AddRule(kFakeSdchDomain, "127.0.0.1");
-  proc->AddRule(kFakeQuicDomain, "127.0.0.1");
-  resolver->set_proc_params_for_test(
-      net::HostResolverImpl::ProcTaskParams(proc.get(), 1u));
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_NativeTestServer_onHostResolverProcRegistered(env);
-}
-
-void RegisterHostResolverProcOnNetworkThread(
-    CronetURLRequestContextAdapter* context_adapter) {
-  RegisterHostResolverProcHelper(context_adapter->GetURLRequestContext());
-}
-
-// TODO(xunjieli): Delete this once legacy API is removed.
-void RegisterHostResolverProcOnNetworkThreadLegacyAPI(
-    URLRequestContextAdapter* context_adapter) {
-  RegisterHostResolverProcHelper(context_adapter->GetURLRequestContext());
-}
-
 }  // namespace
 
 jboolean StartNativeTestServer(JNIEnv* env,
@@ -213,25 +179,6 @@ jboolean StartNativeTestServer(JNIEnv* env,
   // handle.
   g_test_server->ServeFilesFromDirectory(test_files_root);
   return g_test_server->Start();
-}
-
-void RegisterHostResolverProc(JNIEnv* env,
-                              const JavaParamRef<jclass>& jcaller,
-                              jlong jadapter,
-                              jboolean jlegacy_api) {
-  if (jlegacy_api == JNI_TRUE) {
-    URLRequestContextAdapter* context_adapter =
-        reinterpret_cast<URLRequestContextAdapter*>(jadapter);
-    context_adapter->PostTaskToNetworkThread(
-        FROM_HERE, base::Bind(&RegisterHostResolverProcOnNetworkThreadLegacyAPI,
-                              base::Unretained(context_adapter)));
-  } else {
-    CronetURLRequestContextAdapter* context_adapter =
-        reinterpret_cast<CronetURLRequestContextAdapter*>(jadapter);
-    context_adapter->PostTaskToNetworkThread(
-        FROM_HERE, base::Bind(&RegisterHostResolverProcOnNetworkThread,
-                              base::Unretained(context_adapter)));
-  }
 }
 
 void ShutdownNativeTestServer(JNIEnv* env,
