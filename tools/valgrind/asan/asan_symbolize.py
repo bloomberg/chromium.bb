@@ -172,6 +172,8 @@ class StringEncoder(json.JSONEncoder):
 
   def encode(self, s):
     assert(isinstance(s, basestring))
+    # Don't die on invalid utf-8 sequences.
+    s = s.decode('utf-8', 'replace')
     encoded = json.JSONEncoder.encode(self, s)
     assert(len(encoded) >= 2)
     assert(encoded[0] == '"')
@@ -184,7 +186,6 @@ class StringEncoder(json.JSONEncoder):
 
 class JSONTestRunSymbolizer(object):
   def __init__(self, symbolization_loop):
-    self.string_encoder = StringEncoder()
     self.symbolization_loop = symbolization_loop
 
   def symbolize_snippet(self, snippet):
