@@ -26,20 +26,20 @@ public:
 } // namespace
 
 RenderingTest::RenderingTest(PassOwnPtrWillBeRawPtr<FrameLoaderClient> frameLoaderClient)
+    : m_frameLoaderClient(frameLoaderClient) { }
+
+void RenderingTest::SetUp()
 {
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<FakeChromeClient>, chromeClient, (FakeChromeClient::create()));
     pageClients.chromeClient = chromeClient.get();
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, frameLoaderClient, settingOverrider());
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), &pageClients, m_frameLoaderClient.release(), settingOverrider());
 
     Settings::setMockScrollbarsEnabled(true);
     RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(true);
     EXPECT_TRUE(ScrollbarTheme::theme().usesOverlayScrollbars());
-}
 
-void RenderingTest::SetUp()
-{
     // This ensures that the minimal DOM tree gets attached
     // correctly for tests that don't call setBodyInnerHTML.
     document().view()->updateAllLifecyclePhases();
@@ -63,8 +63,8 @@ Document& RenderingTest::setupChildIframe(const AtomicString& iframeElementId, c
 {
 
     HTMLIFrameElement& iframe = *toHTMLIFrameElement(document().getElementById(iframeElementId));
-    m_frameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
-    m_subframe = LocalFrame::create(m_frameLoaderClient.get(), document().frame()->host(), &iframe);
+    m_childFrameLoaderClient = FrameLoaderClientWithParent::create(document().frame());
+    m_subframe = LocalFrame::create(m_childFrameLoaderClient.get(), document().frame()->host(), &iframe);
     m_subframe->setView(FrameView::create(m_subframe.get(), IntSize(500, 500)));
     m_subframe->init();
     m_subframe->view()->setParentVisible(true);

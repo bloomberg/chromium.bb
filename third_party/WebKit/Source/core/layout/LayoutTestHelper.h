@@ -53,6 +53,7 @@ protected:
 private:
     RefPtrWillBePersistent<LocalFrame> m_subframe;
     OwnPtrWillBePersistent<FrameLoaderClient> m_frameLoaderClient;
+    OwnPtrWillBePersistent<FrameLoaderClient> m_childFrameLoaderClient;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
