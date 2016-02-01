@@ -434,6 +434,11 @@ goog.require('__crWeb.message');
     return anchor.href;
   };
 
+  __gCrWeb['sendFaviconsToHost'] = function() {
+    __gCrWeb.message.invokeOnHost({'command': 'document.favicons',
+                                   'favicons': __gCrWeb.common.getFavicons()});
+  }
+
   // Tracks whether user is in the middle of scrolling/dragging. If user is
   // scrolling, ignore window.scrollTo() until user stops scrolling.
   var webViewScrollViewIsDragging_ = false;

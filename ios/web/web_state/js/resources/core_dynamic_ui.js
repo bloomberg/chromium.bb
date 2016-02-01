@@ -116,8 +116,7 @@ __gCrWeb.core_dynamic = {};
     var loaded_ = function() {
       invokeOnHost_({'command': 'document.loaded'});
       // Send the favicons to the browser.
-      invokeOnHost_({'command': 'document.favicons',
-                    'favicons': __gCrWeb.common.getFavicons()});
+      __gCrWeb.sendFaviconsToHost();
       // Add placeholders for plugin content.
       if (__gCrWeb.common.updatePluginPlaceholders())
         __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});

@@ -2426,6 +2426,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                               context:(NSDictionary*)context {
   [self checkForUnexpectedURLChange];
 
+  // Because hash changes don't trigger |-didFinishNavigation|, fetch favicons
+  // for the new page manually.
+  [self evaluateJavaScript:@"__gCrWeb.sendFaviconsToHost();"
+       stringResultHandler:nil];
+
   // Notify the observers.
   _webStateImpl->OnUrlHashChanged();
   return YES;

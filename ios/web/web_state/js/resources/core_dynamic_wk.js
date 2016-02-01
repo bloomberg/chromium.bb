@@ -41,8 +41,7 @@ __gCrWeb.core_dynamic = {};
    */
   __gCrWeb.didFinishNavigation = function() {
     // Send the favicons to the browser.
-    __gCrWeb.message.invokeOnHost({'command': 'document.favicons',
-                                   'favicons': __gCrWeb.common.getFavicons()});
+    __gCrWeb.sendFaviconsToHost();
     // Add placeholders for plugin content.
     if (__gCrWeb.common.updatePluginPlaceholders())
       __gCrWeb.message.invokeOnHost({'command': 'addPluginPlaceholders'});
