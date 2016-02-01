@@ -46,9 +46,7 @@ PassRefPtrWillBeRawPtr<SVGTransform> SVGTransformList::consolidate()
     if (!concatenate(matrix))
         return SVGTransform::create();
 
-    RefPtrWillBeRawPtr<SVGTransform> transform = SVGTransform::create(matrix);
-    clear();
-    return appendItem(transform);
+    return initialize(SVGTransform::create(matrix));
 }
 
 bool SVGTransformList::concatenate(AffineTransform& result) const
@@ -74,111 +72,122 @@ const LChar rotateDesc[] =  {'r', 'o', 't', 'a', 't', 'e'};
 const LChar matrixDesc[] =  {'m', 'a', 't', 'r', 'i', 'x'};
 
 template<typename CharType>
-bool parseAndSkipTransformType(const CharType*& ptr, const CharType* end, SVGTransformType& type)
+SVGTransformType parseAndSkipTransformType(const CharType*& ptr, const CharType* end)
 {
     if (ptr >= end)
-        return false;
+        return SVG_TRANSFORM_UNKNOWN;
 
     if (*ptr == 's') {
         if (skipString(ptr, end, skewXDesc, WTF_ARRAY_LENGTH(skewXDesc)))
-            type = SVG_TRANSFORM_SKEWX;
-        else if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
-            type = SVG_TRANSFORM_SKEWY;
-        else if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
-            type = SVG_TRANSFORM_SCALE;
-        else
-            return false;
-    } else if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc))) {
-        type = SVG_TRANSFORM_TRANSLATE;
-    } else if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc))) {
-        type = SVG_TRANSFORM_ROTATE;
-    } else if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc))) {
-        type = SVG_TRANSFORM_MATRIX;
-    } else {
-        return false;
+            return SVG_TRANSFORM_SKEWX;
+        if (skipString(ptr, end, skewYDesc, WTF_ARRAY_LENGTH(skewYDesc)))
+            return SVG_TRANSFORM_SKEWY;
+        if (skipString(ptr, end, scaleDesc, WTF_ARRAY_LENGTH(scaleDesc)))
+            return SVG_TRANSFORM_SCALE;
+
+        return SVG_TRANSFORM_UNKNOWN;
     }
-    return true;
-}
+    if (skipString(ptr, end, translateDesc, WTF_ARRAY_LENGTH(translateDesc)))
+        return SVG_TRANSFORM_TRANSLATE;
+    if (skipString(ptr, end, rotateDesc, WTF_ARRAY_LENGTH(rotateDesc)))
+        return SVG_TRANSFORM_ROTATE;
+    if (skipString(ptr, end, matrixDesc, WTF_ARRAY_LENGTH(matrixDesc)))
+        return SVG_TRANSFORM_MATRIX;
 
-template<typename CharType>
-int parseTransformParamList(const CharType*& ptr, const CharType* end, float* values, int required, int optional)
-{
-    int parsedParams = 0;
-    int maxPossibleParams = required + optional;
-
-    bool trailingDelimiter = false;
-
-    skipOptionalSVGSpaces(ptr, end);
-    while (parsedParams < maxPossibleParams) {
-        if (!parseNumber(ptr, end, values[parsedParams], DisallowWhitespace))
-            break;
-
-        ++parsedParams;
-
-        if (skipOptionalSVGSpaces(ptr, end) && *ptr == ',') {
-            ++ptr;
-            skipOptionalSVGSpaces(ptr, end);
-
-            trailingDelimiter = true;
-        } else {
-            trailingDelimiter = false;
-        }
-    }
-
-    if (trailingDelimiter || !(parsedParams == required || parsedParams == maxPossibleParams))
-        return -1;
-
-    return parsedParams;
+    return SVG_TRANSFORM_UNKNOWN;
 }
 
 // These should be kept in sync with enum SVGTransformType
-const int requiredValuesForType[] =  {0, 6, 1, 1, 1, 1, 1};
-const int optionalValuesForType[] =  {0, 0, 1, 1, 2, 0, 0};
+const unsigned requiredValuesForType[] =  {0, 6, 1, 1, 1, 1, 1};
+const unsigned optionalValuesForType[] =  {0, 0, 1, 1, 2, 0, 0};
+static_assert(SVG_TRANSFORM_UNKNOWN == 0, "index of SVG_TRANSFORM_UNKNOWN has changed");
+static_assert(SVG_TRANSFORM_MATRIX == 1, "index of SVG_TRANSFORM_MATRIX has changed");
+static_assert(SVG_TRANSFORM_TRANSLATE == 2, "index of SVG_TRANSFORM_TRANSLATE has changed");
+static_assert(SVG_TRANSFORM_SCALE == 3, "index of SVG_TRANSFORM_SCALE has changed");
+static_assert(SVG_TRANSFORM_ROTATE == 4, "index of SVG_TRANSFORM_ROTATE has changed");
+static_assert(SVG_TRANSFORM_SKEWX == 5, "index of SVG_TRANSFORM_SKEWX has changed");
+static_assert(SVG_TRANSFORM_SKEWY == 6, "index of SVG_TRANSFORM_SKEWY has changed");
+static_assert(WTF_ARRAY_LENGTH(requiredValuesForType) - 1 == SVG_TRANSFORM_SKEWY, "the number of transform types have changed");
+static_assert(WTF_ARRAY_LENGTH(requiredValuesForType) == WTF_ARRAY_LENGTH(optionalValuesForType), "the arrays should have the same number of elements");
+
+const unsigned kMaxTransformArguments = 6;
+
+using TransformArguments = Vector<float, kMaxTransformArguments>;
 
 template<typename CharType>
-PassRefPtrWillBeRawPtr<SVGTransform> parseTransformOfType(unsigned type, const CharType*& ptr, const CharType* end)
+int parseTransformArgumentsForType(
+    SVGTransformType type,
+    const CharType*& ptr, const CharType* end,
+    TransformArguments& arguments)
 {
-    if (type == SVG_TRANSFORM_UNKNOWN)
-        return nullptr;
+    const size_t required = requiredValuesForType[type];
+    const size_t optional = optionalValuesForType[type];
+    const size_t maxPossibleParams = required + optional;
+    ASSERT(maxPossibleParams <= kMaxTransformArguments);
+    ASSERT(arguments.isEmpty());
 
-    int valueCount = 0;
-    float values[] = {0, 0, 0, 0, 0, 0};
-    if ((valueCount = parseTransformParamList(ptr, end, values, requiredValuesForType[type], optionalValuesForType[type])) < 0) {
-        return nullptr;
+    bool trailingDelimiter = false;
+
+    while (arguments.size() < maxPossibleParams) {
+        float argumentValue = 0;
+        if (!parseNumber(ptr, end, argumentValue, AllowLeadingWhitespace))
+            break;
+
+        arguments.append(argumentValue);
+        trailingDelimiter = false;
+
+        if (arguments.size() == maxPossibleParams)
+            break;
+
+        if (skipOptionalSVGSpaces(ptr, end) && *ptr == ',') {
+            ++ptr;
+            trailingDelimiter = true;
+        }
     }
 
-    RefPtrWillBeRawPtr<SVGTransform> transform = SVGTransform::create();
+    if (trailingDelimiter || !(arguments.size() == required || arguments.size() == maxPossibleParams))
+        return -1;
 
+    return safeCast<int>(arguments.size());
+}
+
+PassRefPtrWillBeRawPtr<SVGTransform> createTransformFromValues(SVGTransformType type, const TransformArguments& arguments)
+{
+    RefPtrWillBeRawPtr<SVGTransform> transform = SVGTransform::create();
     switch (type) {
     case SVG_TRANSFORM_SKEWX:
-        transform->setSkewX(values[0]);
+        transform->setSkewX(arguments[0]);
         break;
     case SVG_TRANSFORM_SKEWY:
-        transform->setSkewY(values[0]);
+        transform->setSkewY(arguments[0]);
         break;
     case SVG_TRANSFORM_SCALE:
-        if (valueCount == 1) // Spec: if only one param given, assume uniform scaling
-            transform->setScale(values[0], values[0]);
+        // Spec: if only one param given, assume uniform scaling.
+        if (arguments.size() == 1)
+            transform->setScale(arguments[0], arguments[0]);
         else
-            transform->setScale(values[0], values[1]);
+            transform->setScale(arguments[0], arguments[1]);
         break;
     case SVG_TRANSFORM_TRANSLATE:
-        if (valueCount == 1) // Spec: if only one param given, assume 2nd param to be 0
-            transform->setTranslate(values[0], 0);
+        // Spec: if only one param given, assume 2nd param to be 0.
+        if (arguments.size() == 1)
+            transform->setTranslate(arguments[0], 0);
         else
-            transform->setTranslate(values[0], values[1]);
+            transform->setTranslate(arguments[0], arguments[1]);
         break;
     case SVG_TRANSFORM_ROTATE:
-        if (valueCount == 1)
-            transform->setRotate(values[0], 0, 0);
+        if (arguments.size() == 1)
+            transform->setRotate(arguments[0], 0, 0);
         else
-            transform->setRotate(values[0], values[1], values[2]);
+            transform->setRotate(arguments[0], arguments[1], arguments[2]);
         break;
     case SVG_TRANSFORM_MATRIX:
-        transform->setMatrix(AffineTransform(values[0], values[1], values[2], values[3], values[4], values[5]));
+        transform->setMatrix(AffineTransform(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4], arguments[5]));
+        break;
+    case SVG_TRANSFORM_UNKNOWN:
+        ASSERT_NOT_REACHED();
         break;
     }
-
     return transform.release();
 }
 
@@ -190,36 +199,34 @@ bool SVGTransformList::parseInternal(const CharType*& ptr, const CharType* end)
     clear();
 
     bool delimParsed = false;
-    while (ptr < end) {
+    while (skipOptionalSVGSpaces(ptr, end)) {
         delimParsed = false;
-        SVGTransformType transformType = SVG_TRANSFORM_UNKNOWN;
-        skipOptionalSVGSpaces(ptr, end);
 
-        if (!parseAndSkipTransformType(ptr, end, transformType))
+        SVGTransformType transformType = parseAndSkipTransformType(ptr, end);
+        if (transformType == SVG_TRANSFORM_UNKNOWN)
             return false;
 
         if (!skipOptionalSVGSpaces(ptr, end) || *ptr != '(')
             return false;
         ptr++;
 
-        RefPtrWillBeRawPtr<SVGTransform> transform = parseTransformOfType(transformType, ptr, end);
-        if (!transform)
+        TransformArguments arguments;
+        int valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        if (valueCount < 0)
             return false;
+        ASSERT(static_cast<unsigned>(valueCount) >= requiredValuesForType[transformType]);
 
         if (!skipOptionalSVGSpaces(ptr, end) || *ptr != ')')
             return false;
         ptr++;
 
-        append(transform.release());
+        append(createTransformFromValues(transformType, arguments));
 
-        skipOptionalSVGSpaces(ptr, end);
-        if (ptr < end && *ptr == ',') {
-            delimParsed = true;
+        if (skipOptionalSVGSpaces(ptr, end) && *ptr == ',') {
             ++ptr;
-            skipOptionalSVGSpaces(ptr, end);
+            delimParsed = true;
         }
     }
-
     return !delimParsed;
 }
 
@@ -237,17 +244,14 @@ SVGTransformType parseTransformType(const String& string)
 {
     if (string.isEmpty())
         return SVG_TRANSFORM_UNKNOWN;
-    SVGTransformType type = SVG_TRANSFORM_UNKNOWN;
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        parseAndSkipTransformType(ptr, end, type);
-    } else {
-        const UChar* ptr = string.characters16();
-        const UChar* end = ptr + string.length();
-        parseAndSkipTransformType(ptr, end, type);
+        return parseAndSkipTransformType(ptr, end);
     }
-    return type;
+    const UChar* ptr = string.characters16();
+    const UChar* end = ptr + string.length();
+    return parseAndSkipTransformType(ptr, end);
 }
 
 String SVGTransformList::valueAsString() const
@@ -300,21 +304,25 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(cons
 
 PassRefPtrWillBeRawPtr<SVGTransformList> SVGTransformList::create(SVGTransformType transformType, const String& value)
 {
-    RefPtrWillBeRawPtr<SVGTransform> transform = nullptr;
+    TransformArguments arguments;
+    bool atEndOfValue = false;
+    int valueCount = -1;
     if (value.isEmpty()) {
     } else if (value.is8Bit()) {
         const LChar* ptr = value.characters8();
         const LChar* end = ptr + value.length();
-        transform = parseTransformOfType(transformType, ptr, end);
+        valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        atEndOfValue = !skipOptionalSVGSpaces(ptr, end);
     } else {
         const UChar* ptr = value.characters16();
         const UChar* end = ptr + value.length();
-        transform = parseTransformOfType(transformType, ptr, end);
+        valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        atEndOfValue = !skipOptionalSVGSpaces(ptr, end);
     }
 
     RefPtrWillBeRawPtr<SVGTransformList> svgTransformList = SVGTransformList::create();
-    if (transform)
-        svgTransformList->append(transform);
+    if (atEndOfValue && valueCount > 0)
+        svgTransformList->append(createTransformFromValues(transformType, arguments));
     return svgTransformList.release();
 }
 
@@ -332,8 +340,7 @@ void SVGTransformList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGEle
     RefPtrWillBeRawPtr<SVGTransform> toTransform = otherList->at(0);
 
     ASSERT(fromTransform->transformType() == toTransform->transformType());
-    clear();
-    append(SVGTransformDistance::addSVGTransforms(fromTransform, toTransform));
+    initialize(SVGTransformDistance::addSVGTransforms(fromTransform, toTransform));
 }
 
 void SVGTransformList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
