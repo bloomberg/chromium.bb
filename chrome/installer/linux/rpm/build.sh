@@ -126,11 +126,21 @@ do_package() {
     exit $BAD_DIFF
   fi
 
-  # libgdk_pixbuf is added in LSB 3.2 and no longer explicitly required.
-  # libcairo, libpangocairo, libasound are in LSB 4. and no longer explicitly
-  # required.
+  # lsb implies many dependencies.
+  #
+  # libcurl was for NPAPI Flash. TODO(thestig): Remove?
+  #
+  # nss (bundled) is optional in LSB 4.0. Also specify a more recent version
+  # for security and stability updates.
+  #
+  # libstdc++.so.6 is for C++11 support.
+  #
+  # wget is for uploading crash reports with Breakpad.
+  #
   # xdg-utils is still optional in LSB 4.0.
-  # nss (bundled) is optional in LSB 4.0.
+  #
+  # zlib may not need to be there. It should be included with LSB.
+  # TODO(thestig): Figure out why there is an entry for zlib.
   #
   # We want to depend on the system SSL certs so wget can upload crash reports
   # securely, but there's no common capability between the distros. Bugs filed:
@@ -140,9 +150,12 @@ do_package() {
   #
   # We want to depend on liberation-fonts as well, but there is no such package
   # for Fedora. https://bugzilla.redhat.com/show_bug.cgi?id=1252564
+  # TODO(thestig): Use the liberation-fonts package once its available on all
+  # supported distros.
   DEPENDS="lsb >= 4.0, \
   libcurl.so.4${EMPTY_VERSION}${PKG_ARCH}, \
-  libnss3.so(NSS_3.14.3)${PKG_ARCH}, \
+  libnss3.so(NSS_3.19.1)${PKG_ARCH}, \
+  libstdc++.so.6(GLIBCXX_3.4.18)${PKG_ARCH}, \
   wget, \
   xdg-utils, \
   zlib, \
