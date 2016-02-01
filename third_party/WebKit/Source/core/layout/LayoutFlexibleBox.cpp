@@ -721,28 +721,28 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         UseCounter::count(document(), UseCounter::AspectRatioFlexItem);
 
     Length flexBasis = flexBasisForChild(child);
-    if (!mainAxisLengthIsDefinite(child, flexBasis)) {
-        LayoutUnit mainAxisExtent;
-        if (childFlexBaseSizeRequiresLayout(child)) {
-            if (childLayoutType == NeverLayout)
-                return LayoutUnit();
+    if (mainAxisLengthIsDefinite(child, flexBasis))
+        return std::max(LayoutUnit(), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
 
-            if (child.needsLayout() || childLayoutType == ForceLayout || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
-                child.forceChildLayout();
-                m_intrinsicSizeAlongMainAxis.set(&child, hasOrthogonalFlow(child) ? child.logicalHeight() : child.logicalWidth());
-            }
-            mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
-        } else {
-            // We don't need to add scrollbarLogicalWidth here. For overflow: scroll, the preferred width
-            // already includes the scrollbar size (via intrinsicScrollbarLogicalWidth()). For overflow: auto,
-            // childFlexBaseSizeRequiresLayout returns true and we handle that via the other branch
-            // of this if.
-            mainAxisExtent = child.maxPreferredLogicalWidth();
+    LayoutUnit mainAxisExtent;
+    if (childFlexBaseSizeRequiresLayout(child)) {
+        if (childLayoutType == NeverLayout)
+            return LayoutUnit();
+
+        if (child.needsLayout() || childLayoutType == ForceLayout || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
+            child.forceChildLayout();
+            m_intrinsicSizeAlongMainAxis.set(&child, hasOrthogonalFlow(child) ? child.logicalHeight() : child.logicalWidth());
         }
-        ASSERT(mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child) >= 0);
-        return mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child);
+        mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
+    } else {
+        // We don't need to add scrollbarLogicalWidth here. For overflow: scroll, the preferred width
+        // already includes the scrollbar size (via intrinsicScrollbarLogicalWidth()). For overflow: auto,
+        // childFlexBaseSizeRequiresLayout returns true and we handle that via the other branch
+        // of this if.
+        mainAxisExtent = child.maxPreferredLogicalWidth();
     }
-    return std::max(LayoutUnit(), computeMainAxisExtentForChild(child, MainOrPreferredSize, flexBasis));
+    ASSERT(mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child) >= 0);
+    return mainAxisExtent - mainAxisBorderAndPaddingExtentForChild(child);
 }
 
 void LayoutFlexibleBox::layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
