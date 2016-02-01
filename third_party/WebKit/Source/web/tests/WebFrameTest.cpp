@@ -7887,8 +7887,9 @@ TEST_P(DeviceEmulationTest, PointerAndHoverTypes)
 }
 
 class WebLocalFrameScope final {
+    WTF_MAKE_NONCOPYABLE(WebLocalFrameScope);
 public:
-    WebLocalFrameScope(WebLocalFrame* localFrame)
+    explicit WebLocalFrameScope(WebLocalFrame* localFrame)
         : m_localFrame(localFrame)
     {
     }
@@ -7920,10 +7921,10 @@ TEST_P(ParameterizedWebFrameTest, CreateLocalChildWithPreviousSibling)
     view->setMainFrame(remoteClient.frame());
     WebRemoteFrame* parent = view->mainFrame()->toWebRemoteFrame();
 
-    WebLocalFrameScope secondFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties());
-    WebLocalFrameScope fourthFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties());
-    WebLocalFrameScope thirdFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties());
-    WebLocalFrameScope firstFrame = parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties());
+    WebLocalFrameScope secondFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties()));
+    WebLocalFrameScope fourthFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties()));
+    WebLocalFrameScope thirdFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, secondFrame, WebFrameOwnerProperties()));
+    WebLocalFrameScope firstFrame(parent->createLocalChild(WebTreeScopeType::Document, "", WebSandboxFlags::None, nullptr, nullptr, WebFrameOwnerProperties()));
 
     EXPECT_EQ(firstFrame, parent->firstChild());
     EXPECT_EQ(nullptr, firstFrame->previousSibling());
