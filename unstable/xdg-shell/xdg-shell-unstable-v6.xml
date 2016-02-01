@@ -45,6 +45,8 @@
 	     summary="the client specified an invalid popup parent surface"/>
       <entry name="invalid_surface_state" value="4"
 	     summary="the client provided an invalid surface state"/>
+      <entry name="invalid_positioner" value="5"
+	     summary="the client provided an invalid positioner"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -55,6 +57,15 @@
 	still alive created by this xdg_shell object instance is illegal
 	and will result in a protocol error.
       </description>
+    </request>
+
+    <request name="create_positioner">
+      <description summary="create a positioner object">
+	Create a positioner object. A positioner object is used to position
+	surfaces relative to some parent surface. See the interface description
+	and xdg_surface.get_popup for details.
+      </description>
+      <arg name="id" type="new_id" interface="zxdg_positioner_v6"/>
     </request>
 
     <request name="get_xdg_surface">
@@ -99,6 +110,235 @@
       </description>
       <arg name="serial" type="uint" summary="pass this to the pong request"/>
     </event>
+  </interface>
+
+  <interface name="zxdg_positioner_v6" version="1">
+    <description summary="child surface positioner">
+      The xdg_positioner provides a collection of rules for the placement of a
+      child surface relative to a parent surface. Rules can be defined to ensure
+      the child surface remains within the visible area's borders, and to
+      specify how the child surface changes its position, such as sliding along
+      an axis, or flipping around a rectangle.
+
+      See the various requests for details about possible rules.
+
+      At the time of the request, the compositor makes a copy of the rules
+      specified by the xdg_positioner. Thus, after the request is complete the
+      xdg_positioner object can be destroyed or reused; further changes to the
+      object will have no effect on previous usages.
+
+      For an xdg_positioner object to be considered complete, it must have a
+      non-zero size set by set_size, and a non-zero anchor rectangle set by
+      set_anchor_rect. Passing an incomplete xdg_positioner object when
+      positioning a surface raises an error.
+    </description>
+
+    <enum name="error">
+      <entry name="invalid_input" value="0" summary="invalid input provided"/>
+    </enum>
+
+    <request name="destroy" type="destructor">
+      <description summary="destroy the xdg_positioner object">
+	Notify the compositor that the xdg_positioner will no longer be used.
+      </description>
+    </request>
+
+    <request name="set_size">
+      <description summary="set the size of the to-be positioned rectangle">
+	Set the size of the surface that is to be positioned with the positioner
+	object. The size is in surface-local coordinates and corresponds to the
+	window geometry. See xdg_surface.set_window_geometry.
+
+	If a zero or negative size is set the invalid_input error is raised.
+      </description>
+      <arg name="width" type="int" summary="width of positioned rectangle"/>
+      <arg name="height" type="int" summary="height of positioned rectangle"/>
+    </request>
+
+    <request name="set_anchor_rect">
+      <description summary="set the anchor rectangle within the parent surface">
+	Specify the anchor rectangle within the parent surface that the child
+	surface will be placed relative to. The rectangle is relative to the
+	window geometry as defined by xdg_surface.set_window_geometry of the
+	parent surface. The rectangle must be at least 1x1 large.
+
+	When the xdg_positioner object is used to position a child surface, the
+	anchor rectangle may not extend outside the window geometry of the
+	positioned child's parent surface.
+
+	If a zero or negative size is set the invalid_input error is raised.
+      </description>
+      <arg name="x" type="int" summary="x position of anchor rectangle"/>
+      <arg name="y" type="int" summary="y position of anchor rectangle"/>
+      <arg name="width" type="int" summary="width of anchor rectangle"/>
+      <arg name="height" type="int" summary="height of anchor rectangle"/>
+    </request>
+
+    <enum name="anchor" bitfield="true">
+      <entry name="none" value="0"
+	     summary="the center of the anchor rectangle"/>
+      <entry name="top" value="1"
+	     summary="the top edge of the anchor rectangle"/>
+      <entry name="bottom" value="2"
+	     summary="the bottom edge of the anchor rectangle"/>
+      <entry name="left" value="4"
+	     summary="the left edge of the anchor rectangle"/>
+      <entry name="right" value="8"
+	     summary="the right edge of the anchor rectangle"/>
+    </enum>
+
+    <request name="set_anchor">
+      <description summary="set anchor rectangle anchor edges">
+	Defines a set of edges for the anchor rectangle. These are used to
+	derive an anchor point that the child surface will be positioned
+	relative to. If two orthogonal edges are specified (e.g. 'top' and
+	'left'), then the anchor point will be the intersection of the edges
+	(e.g. the top left position of the rectangle); otherwise, the derived
+	anchor point will be centered on the specified edge, or in the center of
+	the anchor rectangle if no edge is specified.
+
+	If two parallel anchor edges are specified (e.g. 'left' and 'right'),
+	the invalid_input error is raised.
+      </description>
+      <arg name="anchor" type="uint" enum="anchor"
+	   summary="bit mask of anchor edges"/>
+    </request>
+
+    <enum name="gravity" bitfield="true">
+      <entry name="none" value="0"
+	     summary="center over the anchor edge"/>
+      <entry name="top" value="1"
+	     summary="position above the anchor edge"/>
+      <entry name="bottom" value="2"
+	     summary="position below the anchor edge"/>
+      <entry name="left" value="4"
+	     summary="position to the left of the anchor edge"/>
+      <entry name="right" value="8"
+	     summary="position to the right of the anchor edge"/>
+    </enum>
+
+    <request name="set_gravity">
+      <description summary="set child surface gravity">
+	Defines in what direction a surface should be positioned, relative to
+	the anchor point of the parent surface. If two orthogonal gravities are
+	specified (e.g. 'bottom' and 'right'), then the child surface will be
+	placed in the specified direction; otherwise, the child surface will be
+	centered over the anchor point on any axis that had no gravity
+	specified.
+
+	If two parallel gravities are specified (e.g. 'left' and 'right'), the
+	invalid_input error is raised.
+      </description>
+      <arg name="gravity" type="uint" enum="gravity"
+	   summary="bit mask of gravity directions"/>
+    </request>
+
+    <enum name="constraint_adjustment" bitfield="true">
+      <entry name="none" value="0">
+	<description summary="don't move the child surface when constrained">
+	  Don't alter the surface position even if it is constrained on some
+	  axis, for example partially outside the edge of a monitor.
+	</description>
+      </entry>
+      <entry name="slide_x" value="1">
+	<description summary="move along the x axis until unconstrained">
+	  Slide the surface along the x axis until it is no longer constrained.
+
+	  First try to slide towards the direction of the gravity on the x axis
+	  until either the edge in the opposite direction of the gravity is
+	  unconstrained or the edge in the direction of the gravity is
+	  constrained.
+
+	  Then try to slide towards the opposite direction of the gravity on the
+	  x axis until either the edge in the direction of the gravity is
+	  unconstrained or the edge in the opposite direction of the gravity is
+	  constrained.
+
+	  If 'slide_x' is combined with 'flip_x', 'flip_x' takes precedence.
+	</description>
+      </entry>
+      <entry name="slide_y" value="2">
+	<description summary="move along the y axis until unconstrained">
+	  Slide the surface along the y axis until it is no longer constrained.
+
+	  First try to slide towards the direction of the gravity on the y axis
+	  until either the edge in the opposite direction of the gravity is
+	  unconstrained or the edge in the direction of the gravity is
+	  constrained.
+
+	  Then try to slide towards the opposite direction of the gravity on the
+	  y axis until either the edge in the direction of the gravity is
+	  unconstrained or the edge in the opposite direction of the gravity is
+	  constrained.
+
+	  If 'slide_y' is combined with 'flip_y', 'flip_y' takes precedence.
+	</description>
+      </entry>
+      <entry name="flip_x" value="4">
+	<description summary="invert the anchor and gravity on the x axis">
+	  Invert the anchor and gravity on the x axis if the surface is
+	  constrained on the x axis. For example, if the left edge of the
+	  surface is constrained, the gravity is 'left' and the anchor is
+	  'left', change the gravity to 'right' and the anchor to 'right'.
+
+	  If the adjusted position also ends up being constrained, the resulting
+	  position will be the one before the adjustment. If the resulting
+	  position is still constrained, and 'flip_x' is combined with
+	  'slide_x', the position is adjusted according to 'slide_x'.
+	</description>
+      </entry>
+      <entry name="flip_y" value="8">
+	<description summary="invert the anchor and gravity on the y axis">
+	  Invert the anchor and gravity on the y axis if the surface is
+	  constrained on the y axis. For example, if the bottom edge of the
+	  surface is constrained, the gravity is 'bottom' and the anchor is
+	  'bottom', change the gravity to 'top' and the anchor to 'top'.
+
+	  If the adjusted position also ends up being constrained, the resulting
+	  position will be the one before the adjustment. If the resulting
+	  position is still constrained, and 'flip_y' is combined with
+	  'slide_y', the position is adjusted according to 'slide_y'.
+	</description>
+      </entry>
+    </enum>
+
+    <request name="set_constraint_adjustment">
+      <description summary="set the adjustment to be done when constrained">
+	Specify how the window should be positioned if the originally intended
+	position caused the surface to be constrained, meaning at least
+	partially outside positioning boundaries set by the compositor. The
+	adjustment is set by constructing a bitmask describing the adjustment to
+	be made when the surface is constrained on that axis.
+
+	If no bit for one axis is set, the compositor will assume that the child
+	surface should not change its position on that axis when constrained.
+
+	If more than one bit for one axis is set, the order of how adjustments
+	are applied is specified in the corresponding adjustment descriptions.
+
+	The default adjustment is none.
+      </description>
+      <arg name="constraint_adjustment" type="uint"
+	   summary="bit mask of constraint adjustments"/>
+    </request>
+
+    <request name="set_offset">
+      <description summary="set surface position offset">
+	Specify the surface position offset relative to the position of the
+	anchor on the anchor rectangle and the anchor on the surface. For
+	example if the anchor of the anchor rectangle is at (x, y), the surface
+	has the gravity bottom|right, and the offset is (ox, oy), the calculated
+	surface position will be (x + ox, y + oy). The offset position of the
+	surface is the one used for constraint testing. See
+	set_constraint_adjustment.
+
+	An example use case is placing a popup menu on top of a user interface
+	element, while aligning the user interface element of the parent surface
+	with some user interface element placed somewhere in the popup surface.
+      </description>
+      <arg name="x" type="int" summary="surface position x offset"/>
+      <arg name="y" type="int" summary="surface position y offset"/>
+    </request>
   </interface>
 
   <interface name="zxdg_surface_v6" version="1">
@@ -169,8 +409,7 @@
       </description>
       <arg name="id" type="new_id" interface="zxdg_popup_v6"/>
       <arg name="parent" type="object" interface="zxdg_surface_v6"/>
-      <arg name="x" type="int"/>
-      <arg name="y" type="int"/>
+      <arg name="positioner" type="object" interface="zxdg_positioner_v6"/>
     </request>
 
     <request name="set_window_geometry">
@@ -734,7 +973,7 @@
 	button press, key press, or touch down event. The serial number of the
 	event should be passed as 'serial'.
 
-	The parent of a grabbing popup must either be a xdg_toplevel surface or
+	The parent of a grabbing popup must either be an xdg_toplevel surface or
 	another xdg_popup with an explicit grab. If the parent is another
 	xdg_popup it means that the popups are nested, with this popup now being
 	the topmost popup.
@@ -768,6 +1007,22 @@
 	   summary="the wl_seat of the user event"/>
       <arg name="serial" type="uint" summary="the serial of the user event"/>
     </request>
+
+    <event name="configure">
+      <description summary="configure the popup surface">
+	This event asks the popup surface to configure itself given the
+	configuration. The configured state should not be applied immediately.
+	See xdg_surface.configure for details.
+
+	The x and y arguments represent the position the popup was placed at
+	given the xdg_positioner rule, relative to the upper left corner of the
+	window geometry of the parent surface.
+      </description>
+      <arg name="x" type="int"
+	   summary="x position relative to parent surface window geometry"/>
+      <arg name="y" type="int"
+	   summary="y position relative to parent surface window geometry"/>
+    </event>
 
     <event name="popup_done">
       <description summary="popup interaction is done">
