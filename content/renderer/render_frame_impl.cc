@@ -5335,14 +5335,6 @@ void RenderFrameImpl::NavigateInternal(
   pending_navigation_params_->common_params.navigation_start =
       base::TimeTicks();
 
-  // Unless the load is a WebFrameLoadType::Standard, this should remain
-  // uninitialized. It will be updated when the load type is determined to be
-  // Standard, or after the previous document's unload handler has been
-  // triggered. This occurs in UpdateNavigationState.
-  // TODO(csharrison) See if we can always use the browser timestamp.
-  pending_navigation_params_->common_params.navigation_start =
-      base::TimeTicks();
-
   // Create parameters for a standard navigation.
   blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
   blink::WebHistoryLoadType history_load_type =
