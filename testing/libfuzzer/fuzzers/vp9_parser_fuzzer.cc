@@ -7,7 +7,7 @@
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   media::Vp9Parser parser;
-  parser.SetStream(data, size);
+  parser.SetStream(data, static_cast<off_t>(size));
   while (true) {
     media::Vp9FrameHeader fhdr;
     if (media::Vp9Parser::kOk != parser.ParseNextFrame(&fhdr)) {

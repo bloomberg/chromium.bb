@@ -91,7 +91,9 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
     codepage = const_cast<char*>(kConverters[index]);
   }
 
-  icu::UnicodeString unicode_string(buffer.data(), size, codepage);
+  icu::UnicodeString unicode_string(buffer.data(),
+                                    static_cast<int>(size),
+                                    codepage);
 
   return 0;
 }
