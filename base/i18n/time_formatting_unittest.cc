@@ -39,7 +39,13 @@ base::string16 GetShortTimeZone(const Time& time) {
   return base::string16(name.getBuffer(), name.length());
 }
 
-TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
+#if defined(OS_ANDROID)
+#define MAYBE_TimeFormatTimeOfDayDefault12h \
+  DISABLED_TimeFormatTimeOfDayDefault12h
+#else
+#define MAYBE_TimeFormatTimeOfDayDefault12h TimeFormatTimeOfDayDefault12h
+#endif
+TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault12h) {
   // Test for a locale defaulted to 12h clock.
   // As an instance, we use third_party/icu/source/data/locales/en.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
@@ -75,7 +81,13 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault12h) {
                                                  kDropAmPm));
 }
 
-TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
+#if defined(OS_ANDROID)
+#define MAYBE_TimeFormatTimeOfDayDefault24h \
+  DISABLED_TimeFormatTimeOfDayDefault24h
+#else
+#define MAYBE_TimeFormatTimeOfDayDefault24h TimeFormatTimeOfDayDefault24h
+#endif
+TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayDefault24h) {
   // Test for a locale defaulted to 24h clock.
   // As an instance, we use third_party/icu/source/data/locales/en_GB.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
@@ -111,7 +123,12 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayDefault24h) {
                                                  kDropAmPm));
 }
 
-TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
+#if defined(OS_ANDROID)
+#define MAYBE_TimeFormatTimeOfDayJP DISABLED_TimeFormatTimeOfDayJP
+#else
+#define MAYBE_TimeFormatTimeOfDayJP TimeFormatTimeOfDayJP
+#endif
+TEST(TimeFormattingTest, MAYBE_TimeFormatTimeOfDayJP) {
   // Test for a locale that uses different mark than "AM" and "PM".
   // As an instance, we use third_party/icu/source/data/locales/ja.txt.
   test::ScopedRestoreICUDefaultLocale restore_locale;
@@ -145,7 +162,12 @@ TEST(TimeFormattingTest, TimeFormatTimeOfDayJP) {
                                                  kDropAmPm));
 }
 
-TEST(TimeFormattingTest, TimeFormatDateUS) {
+#if defined(OS_ANDROID)
+#define MAYBE_TimeFormatDateUS DISABLED_TimeFormatDateUS
+#else
+#define MAYBE_TimeFormatDateUS TimeFormatDateUS
+#endif
+TEST(TimeFormattingTest, MAYBE_TimeFormatDateUS) {
   // See third_party/icu/source/data/locales/en.txt.
   // The date patterns are "EEEE, MMMM d, y", "MMM d, y", and "M/d/yy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
@@ -168,7 +190,12 @@ TEST(TimeFormattingTest, TimeFormatDateUS) {
             TimeFormatFriendlyDate(time));
 }
 
-TEST(TimeFormattingTest, TimeFormatDateGB) {
+#if defined(OS_ANDROID)
+#define MAYBE_TimeFormatDateGB DISABLED_TimeFormatDateGB
+#else
+#define MAYBE_TimeFormatDateGB TimeFormatDateGB
+#endif
+TEST(TimeFormattingTest, MAYBE_TimeFormatDateGB) {
   // See third_party/icu/source/data/locales/en_GB.txt.
   // The date patterns are "EEEE, d MMMM y", "d MMM y", and "dd/MM/yyyy".
   test::ScopedRestoreICUDefaultLocale restore_locale;
