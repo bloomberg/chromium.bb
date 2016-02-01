@@ -142,12 +142,25 @@ void MinidumpGenerator::GatherSystemInformation() {
     CFRelease(read_stream);
     return;
   }
-  CFDataRef data = NULL;
-  CFIndex num_bytes_read = 0;
-  const UInt8 *data_bytes =
-    CFReadStreamGetBuffer(read_stream, 0, &num_bytes_read);
-  if (data_bytes) {
-    data = CFDataCreate(NULL, data_bytes, num_bytes_read);
+  CFMutableDataRef data = NULL;
+  while (true) {
+    // Actual data file tests: Mac at 480 bytes and iOS at 413 bytes.
+    const CFIndex kMaxBufferLength = 1024;
+    UInt8 data_bytes[kMaxBufferLength];
+    CFIndex num_bytes_read =
+      CFReadStreamRead(read_stream, data_bytes, kMaxBufferLength);
+    if (num_bytes_read < 0) {
+      if (data) {
+        CFRelease(data);
+        data = NULL;
+      }
+      break;
+    } else if (num_bytes_read == 0) {
+      break;
+    } else if (!data) {
+      data = CFDataCreateMutable(NULL, 0);
+    }
+    CFDataAppendBytes(data, data_bytes, num_bytes_read);
   }
   CFReadStreamClose(read_stream);
   CFRelease(read_stream);
