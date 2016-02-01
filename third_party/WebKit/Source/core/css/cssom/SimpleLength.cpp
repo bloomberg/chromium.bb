@@ -10,18 +10,9 @@
 
 namespace blink {
 
-String SimpleLength::cssString() const
-{
-    StringBuilder s;
-    s.appendNumber(m_value);
-    s.append(unit());
-    return s.toString();
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> SimpleLength::toCSSValue() const
 {
-    // TODO: Don't re-parse the unit.
-    return cssValuePool().createValue(m_value, CSSPrimitiveValue::fromName(unit()));
+    return cssValuePool().createValue(m_value, LengthValue::lengthTypeToPrimitiveType(m_unit));
 }
 
 LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)

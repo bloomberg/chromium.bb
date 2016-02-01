@@ -50,7 +50,8 @@ protected:
     LengthValue() {}
 
     static LengthUnit lengthUnitFromName(const String&);
-    static const String& lengthTypeToString(LengthUnit type);
+    static const String& lengthTypeToString(LengthUnit);
+    static CSSPrimitiveValue::UnitType lengthTypeToPrimitiveType(LengthUnit);
 
     virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);
     virtual LengthValue* subtractInternal(const LengthValue* other, ExceptionState&);

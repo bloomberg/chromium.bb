@@ -161,6 +161,45 @@ const String& LengthValue::lengthTypeToString(LengthValue::LengthUnit unit)
     }
 }
 
+CSSPrimitiveValue::UnitType LengthValue::lengthTypeToPrimitiveType(LengthValue::LengthUnit unit)
+{
+    switch (unit) {
+    case Px:
+        return CSSPrimitiveValue::UnitType::Pixels;
+    case Percent:
+        return CSSPrimitiveValue::UnitType::Percentage;
+    case Em:
+        return CSSPrimitiveValue::UnitType::Ems;
+    case Ex:
+        return CSSPrimitiveValue::UnitType::Exs;
+    case Ch:
+        return CSSPrimitiveValue::UnitType::Chs;
+    case Rem:
+        return CSSPrimitiveValue::UnitType::Rems;
+    case Vw:
+        return CSSPrimitiveValue::UnitType::ViewportWidth;
+    case Vh:
+        return CSSPrimitiveValue::UnitType::ViewportHeight;
+    case Vmin:
+        return CSSPrimitiveValue::UnitType::ViewportMin;
+    case Vmax:
+        return CSSPrimitiveValue::UnitType::ViewportMax;
+    case Cm:
+        return CSSPrimitiveValue::UnitType::Centimeters;
+    case Mm:
+        return CSSPrimitiveValue::UnitType::Millimeters;
+    case In:
+        return CSSPrimitiveValue::UnitType::Inches;
+    case Pc:
+        return CSSPrimitiveValue::UnitType::Picas;
+    case Pt:
+        return CSSPrimitiveValue::UnitType::Points;
+    default:
+        ASSERT_NOT_REACHED();
+        return CSSPrimitiveValue::UnitType::Pixels;
+    }
+}
+
 LengthValue* LengthValue::addInternal(const LengthValue*, ExceptionState&)
 {
     ASSERT_NOT_REACHED();

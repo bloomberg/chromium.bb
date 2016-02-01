@@ -27,7 +27,6 @@ public:
 
     const String& keywordValue() const;
 
-    String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 private:

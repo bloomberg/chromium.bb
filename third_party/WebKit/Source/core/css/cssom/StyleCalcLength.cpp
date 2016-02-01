@@ -124,29 +124,6 @@ LengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exception
     return result;
 }
 
-String StyleCalcLength::cssString() const
-{
-    StringBuilder builder;
-    builder.appendLiteral("calc(");
-    for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-        LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-        if (has(lengthUnit)) {
-            double value = get(lengthUnit);
-            if (value >= 0 && i > 0) {
-                builder.appendLiteral(" + ");
-            } else if (value < 0 && i > 0) {
-                builder.appendLiteral(" - ");
-            } else if (value < 0) {
-                builder.append('-');
-            }
-            builder.appendNumber(std::abs(get(lengthUnit)));
-            builder.append(lengthTypeToString(lengthUnit));
-        }
-    }
-    builder.append(')');
-    return builder.toString();
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> StyleCalcLength::toCSSValue() const
 {
     // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
@@ -154,20 +131,14 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleCalcLength::toCSSValue() const
     for (unsigned i = 0; i < LengthUnit::Count; ++i) {
         LengthUnit lengthUnit = static_cast<LengthUnit>(i);
         if (!has(lengthUnit))
-            break;
+            continue;
         double value = get(lengthUnit);
-        CSSPrimitiveValue::UnitType primitiveUnit;
-        if (lengthUnit == LengthUnit::Percent) {
-            primitiveUnit = CSSPrimitiveValue::UnitType::Percentage;
-        } else {
-            // TODO: Don't re-parse the unit here.
-            primitiveUnit = CSSPrimitiveValue::fromName(lengthTypeToString(lengthUnit));
-        }
+        CSSPrimitiveValue::UnitType primitiveUnit = lengthTypeToPrimitiveType(lengthUnit);
         if (node) {
             node = CSSCalcValue::createExpressionNode(
                 node,
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, primitiveUnit)),
-                CalcAdd);
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(std::abs(value), primitiveUnit)),
+                value >= 0 ? CalcAdd : CalcSubtract);
         } else {
             node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, primitiveUnit));
         }
