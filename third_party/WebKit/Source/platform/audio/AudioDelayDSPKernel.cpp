@@ -119,7 +119,10 @@ void AudioDelayDSPKernel::process(const float* source, float* destination, size_
     for (unsigned i = 0; i < framesToProcess; ++i) {
         if (sampleAccurate) {
             delayTime = delayTimes[i];
-            delayTime = clampTo(delayTime, 0.0, maxTime);
+            if (std::isnan(delayTime))
+                delayTime = maxTime;
+            else
+                delayTime = clampTo(delayTime, 0.0, maxTime);
             m_currentDelayTime = delayTime;
         } else {
             // Approach desired delay time.
