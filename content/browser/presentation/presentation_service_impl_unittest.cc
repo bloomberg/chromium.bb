@@ -801,18 +801,14 @@ TEST_F(PresentationServiceImplTest, MaxPendingJoinSessionRequests) {
   SaveQuitClosureAndRunLoop();
 }
 
-#if defined(OS_ANDROID)
-#define MAYBE_ScreenAvailabilityNotSupported DISABLED_ScreenAvailabilityNotSupported
-#else
-#define MAYBE_ScreenAvailabilityNotSupported ScreenAvailabilityNotSupported
-#endif
-// Flaky on some android bots, see crbug.com/581878.
-TEST_F(PresentationServiceImplTest, MAYBE_ScreenAvailabilityNotSupported) {
+TEST_F(PresentationServiceImplTest, ScreenAvailabilityNotSupported) {
   mock_delegate_.set_screen_availability_listening_supported(false);
+  base::RunLoop run_loop;
   EXPECT_CALL(mock_client_,
-              OnScreenAvailabilityNotSupported(Eq(kPresentationUrl)));
-
+              OnScreenAvailabilityNotSupported(Eq(kPresentationUrl)))
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   ListenForScreenAvailabilityAndWait(kPresentationUrl, false);
+  run_loop.Run();
 }
 
 }  // namespace content
