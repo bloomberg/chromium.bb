@@ -386,9 +386,6 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
 
         // Forces a precise GC at the end of the current event loop.
         if (ThreadState::current()) {
-            // Temporary asserts to diagnose crbug.com/571207's failure to transition
-            // to FullGCScheduled.
-            RELEASE_ASSERT(!ThreadState::current()->isSweepingInProgress());
             RELEASE_ASSERT(!ThreadState::current()->isInGC());
             ThreadState::current()->setGCState(ThreadState::FullGCScheduled);
         }
