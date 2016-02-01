@@ -24,11 +24,10 @@ var tmiModeExpanded = false;
  */
 function loadShowDetailsFromPrefs(showDetails) {
   tmiModeExpanded = showDetails;
-  $('collapse').style.display =
-      showDetails ? 'inline' : 'none';
-  $('expand').style.display =
-      showDetails ? 'none' : 'inline';
-
+  // TODO(dpapad): Use setAttribute()/removeAttribute() with 'hidden' instead of
+  // style.display.
+  $('collapse').style.display = showDetails ? 'inline' : 'none';
+  $('expand').style.display = showDetails ? 'none' : 'inline';
   document.body.className = showDetails ? 'show-in-tmi-mode' : 'hide-tmi-mode';
 }
 
@@ -317,8 +316,10 @@ Promise.all([
   whenBrowserProxyReady
 ]).then(function(results) {
   var browserProxy = results[1];
-  browserProxy.getPluginsData().then(returnPluginsData);
   browserProxy.getShowDetails().then(function(response) {
+    // Set the |tmiModeExpanded| first otherwise the UI flickers when
+    // returnPlignsData executes.
     loadShowDetailsFromPrefs(response.show_details);
-  });
+    return browserProxy.getPluginsData();
+  }).then(returnPluginsData);
 });
