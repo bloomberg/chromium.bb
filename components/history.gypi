@@ -188,6 +188,8 @@
         'history/core/test/history_client_fake_bookmarks.cc',
         'history/core/test/history_client_fake_bookmarks.h',
         'history/core/test/history_unittest_base.cc',
+        'history/core/test/history_service_test_util.cc',
+        'history/core/test/history_service_test_util.h',
         'history/core/test/history_unittest_base.h',
         'history/core/test/test_history_database.cc',
         'history/core/test/test_history_database.h',

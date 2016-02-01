@@ -16,10 +16,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/history/core/test/test_history_database.h"
+#include "components/history/core/test/history_service_test_util.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -41,6 +40,8 @@ using base::Time;
 using base::TimeDelta;
 
 namespace {
+
+const char kDefaultAcceptLanguages[] = "en-US,en,ko";
 
 struct TestURLInfo {
   const char* url;
@@ -153,30 +154,15 @@ struct TestURLInfo {
   {"http://7.com/5a", "Five A", 8, 0, 64},  // never typed.
 };
 
-class QuitTask : public history::HistoryDBTask {
- public:
-  QuitTask() {}
-
-  bool RunOnDBThread(history::HistoryBackend* backend,
-                     history::HistoryDatabase* db) override {
-    return true;
-  }
-
-  void DoneRunOnMainThread() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
-
- private:
-  ~QuitTask() override {}
-
-  DISALLOW_COPY_AND_ASSIGN(QuitTask);
-};
-
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
-  FakeAutocompleteProviderClient() {
+  FakeAutocompleteProviderClient(bool create_history_db) {
     set_template_url_service(
         make_scoped_ptr(new TemplateURLService(nullptr, 0)));
+    if (history_dir_.CreateUniqueTempDir()) {
+      history_service_ = history::CreateHistoryService(
+          history_dir_.path(), kDefaultAcceptLanguages, create_history_db);
+    }
   }
 
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
@@ -188,13 +174,14 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   }
 
   history::HistoryService* GetHistoryService() override {
-    return &history_service_;
+    return history_service_.get();
   }
 
  private:
   TestSchemeClassifier scheme_classifier_;
   SearchTermsData search_terms_data_;
-  history::HistoryService history_service_;
+  base::ScopedTempDir history_dir_;
+  scoped_ptr<history::HistoryService> history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeAutocompleteProviderClient);
 };
@@ -223,13 +210,11 @@ class HistoryURLProviderTest : public testing::Test,
 
  protected:
   // testing::Test
-  void SetUp() override {
-    ASSERT_TRUE(SetUpImpl(false));
-  }
+  void SetUp() override { ASSERT_TRUE(SetUpImpl(true)); }
   void TearDown() override;
 
   // Does the real setup.
-  bool SetUpImpl(bool no_db) WARN_UNUSED_RESULT;
+  bool SetUpImpl(bool create_history_db) WARN_UNUSED_RESULT;
 
   // Fills test data into the history system.
   void FillData();
@@ -255,15 +240,9 @@ class HistoryURLProviderTest : public testing::Test,
                    expected_urls, num_results, &type);
   }
 
-  // Helper functions to initialize the HistoryService.
-  bool InitializeHistoryService(bool delete_file, bool no_db);
-  void BlockUntilHistoryProcessesPendingRequests();
-
   base::MessageLoop message_loop_;
-  base::ScopedTempDir history_dir_;
   ACMatches matches_;
   scoped_ptr<FakeAutocompleteProviderClient> client_;
-  history::HistoryService* history_service_;
   scoped_refptr<HistoryURLProvider> autocomplete_;
   // Should the matches be sorted and duplicates removed?
   bool sort_matches_;
@@ -274,9 +253,7 @@ class HistoryURLProviderTest : public testing::Test,
 
 class HistoryURLProviderTestNoDB : public HistoryURLProviderTest {
  protected:
-  void SetUp() override {
-    ASSERT_TRUE(SetUpImpl(true));
-  }
+  void SetUp() override { ASSERT_TRUE(SetUpImpl(false)); }
 };
 
 class HistoryURLProviderTestNoSearchProvider : public HistoryURLProviderTest {
@@ -297,38 +274,12 @@ void HistoryURLProviderTest::OnProviderUpdate(bool updated_matches) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-bool HistoryURLProviderTest::InitializeHistoryService(
-    bool delete_file, bool no_db) {
-  if (!history_dir_.CreateUniqueTempDir())
-    return false;
-
-  history_service_ = client_->GetHistoryService();
-  if (!history_service_->Init(
-          no_db, std::string(),
-          history::TestHistoryDatabaseParamsForPath(history_dir_.path())))
-    return false;
-
-  if (!no_db)
-    BlockUntilHistoryProcessesPendingRequests();
-
-  return true;
-}
-
-void HistoryURLProviderTest::BlockUntilHistoryProcessesPendingRequests() {
-  base::CancelableTaskTracker tracker;
-  client_->GetHistoryService()->ScheduleDBTask(
-      scoped_ptr<history::HistoryDBTask>(new QuitTask()), &tracker);
-  base::MessageLoop::current()->Run();
-}
-
-bool HistoryURLProviderTest::SetUpImpl(bool no_db) {
-  client_.reset(new FakeAutocompleteProviderClient());
-
-  if (!InitializeHistoryService(true, no_db))
+bool HistoryURLProviderTest::SetUpImpl(bool create_history_db) {
+  client_.reset(new FakeAutocompleteProviderClient(create_history_db));
+  if (!client_->GetHistoryService())
     return false;
   EXPECT_CALL(*client_, GetAcceptLanguages())
-      .WillRepeatedly(testing::Return("en-US,en,ko"));
-
+      .WillRepeatedly(testing::Return(kDefaultAcceptLanguages));
   autocomplete_ = new HistoryURLProvider(client_.get(), this);
   FillData();
   return true;
@@ -351,16 +302,16 @@ void HistoryURLProviderTest::FillData() {
   for (size_t i = 0; i < arraysize(test_db); ++i) {
     const TestURLInfo& cur = test_db[i];
     const GURL current_url(cur.url);
-    history_service_->AddPageWithDetails(
+    client_->GetHistoryService()->AddPageWithDetails(
         current_url, base::UTF8ToUTF16(cur.title), cur.visit_count,
         cur.typed_count, now - TimeDelta::FromDays(cur.age_in_days), false,
         history::SOURCE_BROWSED);
   }
 
-  history_service_->AddPageWithDetails(
+  client_->GetHistoryService()->AddPageWithDetails(
       GURL("http://pa/"), base::UTF8ToUTF16("pa"), 0, 0,
       Time::Now() -
-      TimeDelta::FromDays(history::kLowQualityMatchAgeLimitInDays - 1),
+          TimeDelta::FromDays(history::kLowQualityMatchAgeLimitInDays - 1),
       false, history::SOURCE_BROWSED);
 }
 
@@ -548,9 +499,9 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
     {"http://redirects/C", 10}
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    history_service_->AddPageWithDetails(GURL(test_cases[i].url),
-        ASCIIToUTF16("Title"), test_cases[i].count, test_cases[i].count,
-        Time::Now(), false, history::SOURCE_BROWSED);
+    client_->GetHistoryService()->AddPageWithDetails(
+        GURL(test_cases[i].url), ASCIIToUTF16("Title"), test_cases[i].count,
+        test_cases[i].count, Time::Now(), false, history::SOURCE_BROWSED);
   }
 
   // Create a B->C->A redirect chain, but set the visit counts such that they
@@ -561,9 +512,9 @@ TEST_F(HistoryURLProviderTest, CullRedirects) {
   redirects_to_a.push_back(GURL(test_cases[1].url));
   redirects_to_a.push_back(GURL(test_cases[2].url));
   redirects_to_a.push_back(GURL(test_cases[0].url));
-  history_service_->AddPage(GURL(test_cases[0].url), base::Time::Now(),
-      NULL, 0, GURL(), redirects_to_a, ui::PAGE_TRANSITION_TYPED,
-      history::SOURCE_BROWSED, true);
+  client_->GetHistoryService()->AddPage(
+      GURL(test_cases[0].url), base::Time::Now(), NULL, 0, GURL(),
+      redirects_to_a, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, true);
 
   // Because all the results are part of a redirect chain with other results,
   // all but the first one (A) should be culled. We should get the default
@@ -697,7 +648,8 @@ TEST_F(HistoryURLProviderTest, Fixup) {
 // second passes.
 TEST_F(HistoryURLProviderTest, EmptyVisits) {
   // Wait for history to create the in memory DB.
-  BlockUntilHistoryProcessesPendingRequests();
+  history::BlockUntilHistoryProcessesPendingRequests(
+      client_->GetHistoryService());
 
   AutocompleteInput input(
       ASCIIToUTF16("pa"), base::string16::npos, std::string(), GURL(),
@@ -973,9 +925,10 @@ TEST_F(HistoryURLProviderTest, CullSearchResults) {
     {"http://foobar.com/", 10}
   };
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    history_service_->AddPageWithDetails(GURL(test_cases[i].url),
-        base::UTF8ToUTF16("Title"), test_cases[i].count, test_cases[i].count,
-        Time::Now(), false, history::SOURCE_BROWSED);
+    client_->GetHistoryService()->AddPageWithDetails(
+        GURL(test_cases[i].url), base::UTF8ToUTF16("Title"),
+        test_cases[i].count, test_cases[i].count, Time::Now(), false,
+        history::SOURCE_BROWSED);
   }
 
   // We should not see search URLs when typing a previously used query.

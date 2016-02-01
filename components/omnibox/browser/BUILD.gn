@@ -161,6 +161,8 @@ static_library("test_support") {
   sources = [
     "history_index_restore_observer.cc",
     "history_index_restore_observer.h",
+    "in_memory_url_index_test_util.cc",
+    "in_memory_url_index_test_util.h",
     "mock_autocomplete_provider_client.cc",
     "mock_autocomplete_provider_client.h",
     "test_scheme_classifier.cc",
@@ -170,6 +172,7 @@ static_library("test_support") {
   deps = [
     ":browser",
     "//base",
+    "//components/history/core/browser",
     "//components/metrics/proto",
     "//components/search_engines",
     "//net",

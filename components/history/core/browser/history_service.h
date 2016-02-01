@@ -581,10 +581,13 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   friend class ::HistoryQuickProviderTest;
   friend class HistoryServiceTest;
   friend class ::HistoryURLProvider;
-  friend class ::HistoryURLProviderTest;
   friend class ::InMemoryURLIndexTest;
   friend class ::SyncBookmarkDataTypeControllerTest;
   friend class ::TestingProfile;
+  friend scoped_ptr<HistoryService> CreateHistoryService(
+      const base::FilePath& history_dir,
+      const std::string& accept_languages,
+      bool create_db);
 
   // Called on shutdown, this will tell the history backend to complete and
   // will release pointers to it. No other functions should be called once

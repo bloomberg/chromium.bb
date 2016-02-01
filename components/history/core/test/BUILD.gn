@@ -13,6 +13,8 @@ static_library("test") {
     "history_backend_db_base_test.h",
     "history_client_fake_bookmarks.cc",
     "history_client_fake_bookmarks.h",
+    "history_service_test_util.cc",
+    "history_service_test_util.h",
     "history_unittest_base.cc",
     "history_unittest_base.h",
     "test_history_database.cc",
