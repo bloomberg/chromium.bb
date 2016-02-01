@@ -494,7 +494,7 @@ handleMultind ()
     return 0;
   switch (multindRule->charsdots[multindRule->charslen - doingMultind])
     {
-    case CTO_SingleLetterCaps: // FIXME: make sure this works
+    case CTO_SingleLetterCapsRule: // FIXME: make sure this works
       found = findBrailleIndicatorRule (table->singleLetterCaps);
       break;
     // NOTE:  following fixme is based on the names at the time of
@@ -505,10 +505,10 @@ handleMultind ()
     //        table->beginCapitalSign and table->endCapitalSign.
     //        These are actually compiled with firstlettercaps/lastlettercaps.
     //        Which to use here?
-    case CTO_FirstLetterCaps:
+    case CTO_FirstLetterCapsRule:
       found = findBrailleIndicatorRule (table->firstLetterCaps);
       break;
-    case CTO_LastLetterCaps:
+    case CTO_LastLetterCapsRule:
       found = findBrailleIndicatorRule (table->lastLetterCaps);
       break;
     case CTO_LetterSign:
@@ -517,32 +517,32 @@ handleMultind ()
     case CTO_NumberSign:
       found = findBrailleIndicatorRule (table->numberSign);
       break;
-    case CTO_LastWordItalBefore:
+    case CTO_LastWordItalBeforeRule:
       found = findBrailleIndicatorRule (table->lastWordItalBefore);
       break;
-    case CTO_FirstLetterItal:
+    case CTO_FirstLetterItalRule:
       found = findBrailleIndicatorRule (table->firstLetterItal);
       break;
-    case CTO_LastLetterItal:
+    case CTO_LastLetterItalRule:
       found = findBrailleIndicatorRule (table->lastLetterItal);
       break;
-    case CTO_LastWordBoldBefore:
-      found = findBrailleIndicatorRule (table->lastWordBoldBefore);
-      break;
-    case CTO_FirstLetterBold:
-      found = findBrailleIndicatorRule (table->firstLetterBold);
-      break;
-    case CTO_LastLetterBold:
-      found = findBrailleIndicatorRule (table->lastLetterBold);
-      break;
-    case CTO_LastWordUnderBefore:
+    case CTO_LastWordUnderBeforeRule:
       found = findBrailleIndicatorRule (table->lastWordUnderBefore);
       break;
-    case CTO_FirstLetterUnder:
+    case CTO_FirstLetterUnderRule:
       found = findBrailleIndicatorRule (table->firstLetterUnder);
       break;
-    case CTO_LastLetterUnder:
+    case CTO_LastLetterUnderRule:
       found = findBrailleIndicatorRule (table->lastLetterUnder);
+      break;
+    case CTO_LastWordBoldBeforeRule:
+      found = findBrailleIndicatorRule (table->lastWordBoldBefore);
+      break;
+    case CTO_FirstLetterBoldRule:
+      found = findBrailleIndicatorRule (table->firstLetterBold);
+      break;
+    case CTO_LastLetterBoldRule:
+      found = findBrailleIndicatorRule (table->lastLetterBold);
       break;
     case CTO_BegComp:
       found = findBrailleIndicatorRule (table->begComp);
