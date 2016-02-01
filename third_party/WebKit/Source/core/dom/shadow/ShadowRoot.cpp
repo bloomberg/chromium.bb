@@ -29,7 +29,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverParentScope.h"
+#include "core/css/resolver/StyleSharingDepthScope.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
@@ -138,7 +138,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // ShadowRoot doesn't support custom callbacks.
     ASSERT(!hasCustomStyleCallbacks());
 
-    StyleResolverParentScope parentScope(*this);
+    StyleSharingDepthScope sharingScope(*this);
 
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
@@ -152,7 +152,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
 
 void ShadowRoot::attach(const AttachContext& context)
 {
-    StyleResolverParentScope parentScope(*this);
+    StyleSharingDepthScope sharingScope(*this);
     DocumentFragment::attach(context);
 }
 

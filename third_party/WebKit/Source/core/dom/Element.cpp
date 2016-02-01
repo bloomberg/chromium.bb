@@ -44,9 +44,10 @@
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/resolver/SelectorFilterParentScope.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/css/resolver/StyleResolverParentScope.h"
 #include "core/css/resolver/StyleResolverStats.h"
+#include "core/css/resolver/StyleSharingDepthScope.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CSSSelectorWatch.h"
@@ -1576,7 +1577,8 @@ void Element::attach(const AttachContext& context)
         }
     }
 
-    StyleResolverParentScope parentScope(*this);
+    SelectorFilterParentScope filterScope(*this);
+    StyleSharingDepthScope sharingScope(*this);
 
     createPseudoElementIfNeeded(BEFORE);
 
@@ -1745,7 +1747,8 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
     if ((change >= UpdatePseudoElements && change < Reattach) || childNeedsStyleRecalc()) {
-        StyleResolverParentScope parentScope(*this);
+        SelectorFilterParentScope filterScope(*this);
+        StyleSharingDepthScope sharingScope(*this);
 
         updatePseudoElement(BEFORE, change);
 

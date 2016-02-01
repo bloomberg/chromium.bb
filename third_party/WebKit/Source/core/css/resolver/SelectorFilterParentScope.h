@@ -2,77 +2,70 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleResolverParentScope_h
-#define StyleResolverParentScope_h
+#ifndef SelectorFilterParentScope_h
+#define SelectorFilterParentScope_h
 
 #include "core/css/SelectorFilter.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/shadow/ShadowRoot.h"
 
 namespace blink {
 
 // Maintains the parent element stack (and bloom filter) inside recalcStyle.
-class StyleResolverParentScope final {
+class SelectorFilterParentScope final {
     STACK_ALLOCATED();
 public:
-    explicit StyleResolverParentScope(Node& parent);
-    ~StyleResolverParentScope();
+    explicit SelectorFilterParentScope(Element& parent);
+    ~SelectorFilterParentScope();
 
     static void ensureParentStackIsPushed();
 
 private:
     void pushParentIfNeeded();
-    Node& parent() const { return *m_parent; }
 
-    RawPtrWillBeMember<Node> m_parent;
+    RawPtrWillBeMember<Element> m_parent;
     bool m_pushed;
-    StyleResolverParentScope* m_previous;
+    SelectorFilterParentScope* m_previous;
     RawPtrWillBeMember<StyleResolver> m_resolver;
 
-    static StyleResolverParentScope* s_currentScope;
+    static SelectorFilterParentScope* s_currentScope;
 };
 
-inline StyleResolverParentScope::StyleResolverParentScope(Node& parent)
+inline SelectorFilterParentScope::SelectorFilterParentScope(Element& parent)
     : m_parent(parent)
     , m_pushed(false)
     , m_previous(s_currentScope)
     , m_resolver(parent.document().styleResolver())
 {
     ASSERT(parent.document().inStyleRecalc());
-    ASSERT(parent.isElementNode() || parent.isShadowRoot());
     s_currentScope = this;
-    m_resolver->increaseStyleSharingDepth();
 }
 
-inline StyleResolverParentScope::~StyleResolverParentScope()
+inline SelectorFilterParentScope::~SelectorFilterParentScope()
 {
     s_currentScope = m_previous;
-    m_resolver->decreaseStyleSharingDepth();
     if (!m_pushed)
         return;
-    if (parent().isElementNode())
-        m_resolver->selectorFilter().popParent(toElement(parent()));
+    m_resolver->selectorFilter().popParent(*m_parent);
 }
 
-inline void StyleResolverParentScope::ensureParentStackIsPushed()
+inline void SelectorFilterParentScope::ensureParentStackIsPushed()
 {
     if (s_currentScope)
         s_currentScope->pushParentIfNeeded();
 }
 
-inline void StyleResolverParentScope::pushParentIfNeeded()
+inline void SelectorFilterParentScope::pushParentIfNeeded()
 {
     if (m_pushed)
         return;
     if (m_previous)
         m_previous->pushParentIfNeeded();
-    if (parent().isElementNode())
-        m_resolver->selectorFilter().pushParent(toElement(parent()));
+    m_resolver->selectorFilter().pushParent(*m_parent);
     m_pushed = true;
 }
 
 } // namespace blink
 
-#endif // StyleResolverParentScope_h
+#endif // SelectorFilterParentScope_h

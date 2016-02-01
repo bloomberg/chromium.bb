@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/resolver/StyleResolverParentScope.h"
+#include "core/css/resolver/SelectorFilterParentScope.h"
 
 namespace blink {
 
-StyleResolverParentScope* StyleResolverParentScope::s_currentScope = 0;
+SelectorFilterParentScope* SelectorFilterParentScope::s_currentScope = 0;
 
 } // namespace blink

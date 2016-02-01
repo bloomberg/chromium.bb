@@ -64,9 +64,9 @@
 #include "core/css/resolver/MatchResult.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
+#include "core/css/resolver/SelectorFilterParentScope.h"
 #include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
-#include "core/css/resolver/StyleResolverParentScope.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -578,7 +578,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     document().styleEngine().incStyleForElementCount();
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(), elementsStyled, 1);
 
-    StyleResolverParentScope::ensureParentStackIsPushed();
+    SelectorFilterParentScope::ensureParentStackIsPushed();
 
     ElementResolveContext elementContext(*element);
 
@@ -763,7 +763,7 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     ASSERT(pseudoStyleRequest.pseudoId != FIRST_LINE_INHERITED);
     ASSERT(state.parentStyle());
 
-    StyleResolverParentScope::ensureParentStackIsPushed();
+    SelectorFilterParentScope::ensureParentStackIsPushed();
 
     Element* pseudoElement = element.pseudoElement(pseudoStyleRequest.pseudoId);
 
