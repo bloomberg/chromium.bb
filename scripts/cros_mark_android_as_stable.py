@@ -1,0 +1,353 @@
+# Copyright 2016 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""This module uprevs Android for cbuildbot.
+
+After calling, it prints outs ANDROID_VERSION_ATOM=(version atom string).  A
+caller could then use this atom with emerge to build the newly uprevved version
+of Android e.g.
+
+./cros_mark_android_as_stable
+Returns chromeos-base/android-container-2559197
+
+emerge-veyron_minnie-cheets =chromeos-base/android-container-2559197-r1
+"""
+
+from __future__ import print_function
+
+import filecmp
+import glob
+import os
+
+from chromite.cbuildbot import constants
+from chromite.lib import commandline
+from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
+from chromite.lib import git
+from chromite.lib import gs
+from chromite.lib import portage_util
+from chromite.scripts import cros_mark_as_stable
+
+
+# Dir where all the action happens.
+_OVERLAY_DIR = '%(srcroot)s/private-overlays/project-cheets-private/'
+
+_GIT_COMMIT_MESSAGE = ('Marking latest for %(android_pn)s ebuild '
+                       'with version %(android_version)s as stable.')
+
+# URLs that print lists of Android revisions between two build ids.
+_ANDROID_VERSION_URL = ('http://android-build-uber.corp.google.com/repo.html?'
+                        'last_bid=%(old)s&bid=%(new)s&branch=%(branch)s')
+
+
+def IsBuildIdValid(bucket_url, build_branch, build_id):
+  """Checks that a specific build_id is valid.
+
+  Looks for that build_id for all builds. Confirms that the subpath can
+  be found and that the zip file is present in that subdirectory.
+
+  Args:
+    bucket_url: URL of Android build gs bucket
+    build_branch: branch of Android builds
+    build_id: A string. The Android build id number to check.
+
+  Returns:
+    Returns subpaths dictionary if build_id is valid.
+    None if the build_id is not valid.
+  """
+  gs_context = gs.GSContext()
+  subpaths_dict = {}
+  for build, target in constants.ANDROID_BUILD_TARGETS.iteritems():
+    build_dir = '%s-%s' % (build_branch, target)
+    build_id_path = os.path.join(bucket_url, build_dir, build_id)
+
+    # Find name of subpath.
+    try:
+      subpaths = gs_context.List(build_id_path)
+    except gs.GSNoSuchKey:
+      logging.warn(
+          'Directory [%s] does not contain any subpath, ignoring it.',
+          build_id_path)
+      return None
+    if len(subpaths) > 1:
+      logging.warn(
+          'Directory [%s] contains more than one subpath, ignoring it.',
+          build_id_path)
+      return None
+
+    subpath_dir = subpaths[0].url.rstrip('/')
+    subpath_name = os.path.basename(subpath_dir)
+
+    # Look for a zipfile ending in the build_id number.
+    try:
+      for zipfile in gs_context.List(subpath_dir):
+        if zipfile.url.endswith('-%s.zip' % (build_id)):
+          break
+    except gs.GSNoSuchKey:
+      logging.warn(
+          'Did not find a zipfile for build id [%s] in directory [%s].',
+          build_id, subpath_dir)
+      return None
+
+    # Record subpath for the build.
+    subpaths_dict[build] = subpath_name
+
+  # If we got here, it means we found an appropriate build for all platforms.
+  return subpaths_dict
+
+
+def GetLatestBuild(bucket_url, build_branch):
+  """Searches the gs bucket for the latest green build.
+
+  Args:
+    bucket_url: URL of Android build gs bucket
+    build_branch: branch of Android builds
+
+  Returns:
+    Tuple of (latest version string, subpaths dictionary)
+    If no latest build can be found, returns None, None
+  """
+  gs_context = gs.GSContext()
+  common_build_ids = None
+  # Find builds for each target.
+  for target in constants.ANDROID_BUILD_TARGETS.itervalues():
+    build_dir = '-'.join((build_branch, target))
+    base_path = os.path.join(bucket_url, build_dir)
+    build_ids = []
+    for gs_result in gs_context.List(base_path):
+      # Remove trailing slashes and get the base name, which is the build_id.
+      build_id = os.path.basename(gs_result.url.rstrip('/'))
+      if not build_id.isdigit():
+        logging.warn('Directory [%s] does not look like a valid build_id.',
+                     gs_result.url)
+        continue
+      build_ids.append(build_id)
+
+    # Update current list of builds.
+    if common_build_ids is None:
+      # First run, populate it with the first platform.
+      common_build_ids = set(build_ids)
+    else:
+      # Already populated, find the ones that are common.
+      common_build_ids.intersection_update(build_ids)
+
+  if common_build_ids is None:
+    logging.warn('Did not find a build_id common to all platforms.')
+    return None, None
+
+  # Otherwise, find the most recent one that is valid.
+  for build_id in sorted(common_build_ids, key=int, reverse=True):
+    subpaths = IsBuildIdValid(bucket_url, build_branch, build_id)
+    if subpaths:
+      return build_id, subpaths
+
+  # If not found, no build_id is valid.
+  logging.warn('Did not find a build_id valid on all platforms.')
+  return None, None
+
+
+def FindAndroidCandidates(package_dir):
+  """Return a tuple of Android's unstable ebuild and stable ebuilds.
+
+  Args:
+    package_dir: The path to where the package ebuild is stored.
+
+  Returns:
+    Tuple [unstable_ebuild, stable_ebuilds].
+
+  Raises:
+    Exception: if no unstable ebuild exists for Android.
+  """
+  stable_ebuilds = []
+  unstable_ebuilds = []
+  for path in glob.glob(os.path.join(package_dir, '*.ebuild')):
+    ebuild = portage_util.EBuild(path)
+    if ebuild.version == '9999':
+      unstable_ebuilds.append(ebuild)
+    else:
+      stable_ebuilds.append(ebuild)
+
+  # Apply some sanity checks.
+  if not unstable_ebuilds:
+    raise Exception('Missing 9999 ebuild for %s' % package_dir)
+  if not stable_ebuilds:
+    logging.warning('Missing stable ebuild for %s' % package_dir)
+
+  return portage_util.BestEBuild(unstable_ebuilds), stable_ebuilds
+
+
+def GetAndroidRevisionListLink(build_branch, old_android, new_android):
+  """Returns a link to the list of revisions between two Android versions
+
+  Given two AndroidEBuilds, generate a link to a page that prints the
+  Android changes between those two revisions, inclusive.
+
+  Args:
+    build_branch: branch of Android builds
+    old_android: ebuild for the version to diff from
+    new_android: ebuild for the version to which to diff
+
+  Returns:
+    The desired URL.
+  """
+  return _ANDROID_VERSION_URL % {'branch': build_branch,
+                                 'old': old_android.version,
+                                 'new': new_android.version}
+
+
+def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
+                              android_version, subpaths_dict,
+                              package_dir, build_branch):
+  r"""Uprevs the Android ebuild.
+
+  This is the main function that uprevs from a stable candidate
+  to its new version.
+
+  Args:
+    stable_candidate: ebuild that corresponds to the stable ebuild we are
+      revving from.  If None, builds the a new ebuild given the version
+      with revision set to 1.
+    unstable_ebuild: ebuild corresponding to the unstable ebuild for Android.
+    android_pn: package name.
+    android_version: The \d+ build id of Android.
+    subpaths_dict: Mapping of build to subpath
+    package_dir: Path to the android-container package dir.
+    build_branch: branch of Android builds
+
+  Returns:
+    Full portage version atom (including rc's, etc) that was revved.
+  """
+  def IsTheNewEBuildRedundant(new_ebuild, stable_ebuild):
+    """Returns True if the new ebuild is redundant.
+
+    This is True if there if the current stable ebuild is the exact same copy
+    of the new one.
+    """
+    if not stable_ebuild:
+      return False
+
+    if stable_candidate.version == new_ebuild.version:
+      return filecmp.cmp(
+          new_ebuild.ebuild_path, stable_ebuild.ebuild_path, shallow=False)
+
+  # Case where we have the last stable candidate with same version just rev.
+  if stable_candidate and stable_candidate.version == android_version:
+    new_ebuild_path = '%s-r%d.ebuild' % (
+        stable_candidate.ebuild_path_no_revision,
+        stable_candidate.current_revision + 1)
+  else:
+    pf = '%s-%s-r1' % (android_pn, android_version)
+    new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
+
+  variables = {'ANDROID_BUILD_ID': android_version}
+  for build, subpath in subpaths_dict.iteritems():
+    variables[build + '_SUBPATH'] = subpath
+
+  portage_util.EBuild.MarkAsStable(
+      unstable_ebuild.ebuild_path, new_ebuild_path,
+      variables, make_stable=True)
+  new_ebuild = portage_util.EBuild(new_ebuild_path)
+
+  # Determine whether this is ebuild is redundant.
+  if IsTheNewEBuildRedundant(new_ebuild, stable_candidate):
+    msg = 'Previous ebuild with same version found and ebuild is redundant.'
+    logging.info(msg)
+    os.unlink(new_ebuild_path)
+    return None
+
+  if stable_candidate:
+    logging.PrintBuildbotLink('Android revisions',
+                              GetAndroidRevisionListLink(build_branch,
+                                                         stable_candidate,
+                                                         new_ebuild))
+
+  git.RunGit(package_dir, ['add', new_ebuild_path])
+  if stable_candidate and not stable_candidate.IsSticky():
+    git.RunGit(package_dir, ['rm', stable_candidate.ebuild_path])
+
+  # Update ebuild manifest and git add it.
+  gen_manifest_cmd = ['ebuild', new_ebuild_path, 'manifest', '--force']
+  cros_build_lib.RunCommand(gen_manifest_cmd,
+                            extra_env=None, print_cmd=True)
+  git.RunGit(package_dir, ['add', 'Manifest'])
+
+  portage_util.EBuild.CommitChange(
+      _GIT_COMMIT_MESSAGE % {'android_pn': android_pn,
+                             'android_version': android_version},
+      package_dir)
+
+  return '%s-%s' % (new_ebuild.package, new_ebuild.version)
+
+
+def GetParser():
+  """Creates the argument parser."""
+  parser = commandline.ArgumentParser()
+  parser.add_argument('-b', '--boards')
+  parser.add_argument('--android_bucket_url',
+                      default=constants.ANDROID_BUCKET_URL)
+  parser.add_argument('--android_build_branch',
+                      default=constants.ANDROID_BUILD_BRANCH)
+  parser.add_argument('-f', '--force_version',
+                      help='Android build id to use')
+  parser.add_argument('-s', '--srcroot',
+                      default=os.path.join(os.environ['HOME'], 'trunk', 'src'),
+                      help='Path to the src directory')
+  parser.add_argument('-t', '--tracking_branch', default='cros/master',
+                      help='Branch we are tracking changes against')
+  return parser
+
+
+def main(argv):
+  parser = GetParser()
+  options = parser.parse_args(argv)
+  options.Freeze()
+
+  overlay_dir = os.path.abspath(_OVERLAY_DIR % {'srcroot': options.srcroot})
+  android_package_dir = os.path.join(overlay_dir, constants.ANDROID_CP)
+  version_to_uprev = None
+  subpaths = None
+
+  (unstable_ebuild, stable_ebuilds) = FindAndroidCandidates(android_package_dir)
+
+  if options.force_version:
+    version_to_uprev = options.force_version
+    subpaths = IsBuildIdValid(options.android_bucket_url,
+                              options.android_build_branch, version_to_uprev)
+    if not subpaths:
+      logging.error('Requested build %s is not valid' % version_to_uprev)
+  else:
+    version_to_uprev, subpaths = GetLatestBuild(options.android_bucket_url,
+                                                options.android_build_branch)
+
+  stable_candidate = portage_util.BestEBuild(stable_ebuilds)
+
+  if stable_candidate:
+    logging.info('Stable candidate found %s' % stable_candidate)
+  else:
+    logging.info('No stable candidate found.')
+
+  tracking_branch = 'remotes/m/%s' % os.path.basename(options.tracking_branch)
+  existing_branch = git.GetCurrentBranch(android_package_dir)
+  work_branch = cros_mark_as_stable.GitBranch(constants.STABLE_EBUILD_BRANCH,
+                                              tracking_branch,
+                                              android_package_dir)
+  work_branch.CreateBranch()
+
+  # In the case of uprevving overlays that have patches applied to them,
+  # include the patched changes in the stabilizing branch.
+  if existing_branch:
+    git.RunGit(overlay_dir, ['rebase', existing_branch])
+
+  android_version_atom = MarkAndroidEBuildAsStable(
+      stable_candidate, unstable_ebuild, constants.ANDROID_PN,
+      version_to_uprev, subpaths, android_package_dir,
+      options.android_build_branch)
+  if android_version_atom:
+    if options.boards:
+      cros_mark_as_stable.CleanStalePackages(options.srcroot,
+                                             options.boards.split(':'),
+                                             [android_version_atom])
+
+    # Explicit print to communicate to caller.
+    print('ANDROID_VERSION_ATOM=%s' % android_version_atom)

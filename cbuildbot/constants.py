@@ -245,6 +245,13 @@ INTERNAL_GERRIT_HOST = GOB_HOST % INTERNAL_GERRIT_INSTANCE
 INTERNAL_GOB_URL = 'https://%s' % INTERNAL_GOB_HOST
 INTERNAL_GERRIT_URL = 'https://%s' % INTERNAL_GERRIT_HOST
 
+ANDROID_BUCKET_URL = 'gs://android-build-chromeos/builds'
+ANDROID_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
+ANDROID_BUILD_TARGETS = {
+    'ARM': 'linux-minnie_cheets-userdebug',
+    'X86': 'linux-cheets_x86-userdebug',
+}
+
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')
 
@@ -334,6 +341,13 @@ CHROME_REV_STICKY = 'stable_release'
 CHROME_REV_LOCAL = 'local'
 VALID_CHROME_REVISIONS = [CHROME_REV_TOT, CHROME_REV_LATEST,
                           CHROME_REV_STICKY, CHROME_REV_LOCAL, CHROME_REV_SPEC]
+
+
+# Constants for uprevving Android.
+
+# Portage category and package name for Chrome.
+ANDROID_PN = 'android-container'
+ANDROID_CP = 'chromeos-base/%s' % ANDROID_PN
 
 
 # Build types supported.
