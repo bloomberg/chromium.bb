@@ -16,13 +16,13 @@ var bitmapHeight;
 var newImage;
 var newImageBitmap;
 var image = new ImageData(new Uint8ClampedArray(
-			[255, 0, 0, 255,
-                        0, 255, 0, 255,
-			255, 255, 255, 127,
-			0, 0, 0, 64,
-			12, 34, 56, 64,
-			12, 34, 56, 127]),
-		        imageWidth, imageHeight);
+                    [255, 0, 0, 255,
+                    0, 255, 0, 255,
+                    255, 255, 255, 127,
+                    0, 0, 0, 64,
+                    12, 34, 56, 64,
+                    12, 34, 56, 127]),
+                    imageWidth, imageHeight);
 var context = document.getElementById("canvas").getContext("2d");
 
 createImageBitmap(image).then(imageBitmap => {
@@ -48,6 +48,13 @@ createImageBitmap(image).then(imageBitmap => {
   }, () => {
       testPassed("createImageBitmap from a neutered ImageBitmap was rejected");
   });
+
+  try {
+    worker.postMessage({data:imageBitmap});
+    testFailed("Apply structured cloning succeed, expected to fail");
+  } catch(e) {
+    testPassed("Apply structured cloning to a neutered ImageBitmap should throw an exception: " + e);
+  }
 });
 
 worker.onmessage = function(e) {
