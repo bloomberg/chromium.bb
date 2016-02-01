@@ -174,7 +174,13 @@
       },
       {
         "swarming": {
-          "can_use_on_swarming_builders": true
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "build.id": "KTU84P",
+              "product.board": "hammerhead"
+            }
+          ]
         },
         "test": "content_browsertests"
       },
