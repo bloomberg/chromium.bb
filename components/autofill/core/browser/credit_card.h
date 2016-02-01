@@ -203,8 +203,9 @@ class CreditCard : public AutofillDataModel {
   base::string16 Expiration4DigitYearAsString() const;
   base::string16 Expiration2DigitYearAsString() const;
 
-  // Sets |expiration_month_| to the integer conversion of |text|.
-  void SetExpirationMonthFromString(const base::string16& text,
+  // Sets |expiration_month_| to the integer conversion of |text| and returns
+  // whether the operation was successful.
+  bool SetExpirationMonthFromString(const base::string16& text,
                                     const std::string& app_locale);
 
   // Sets |expiration_year_| to the integer conversion of |text|.

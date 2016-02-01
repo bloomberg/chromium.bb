@@ -1164,7 +1164,8 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
   return WebFormElementToFormData(
       form_element, WebFormControlElement(),
       static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                          form_util::EXTRACT_OPTION_TEXT),
+                                          form_util::EXTRACT_OPTION_TEXT |
+                                          form_util::EXTRACT_OPTIONS),
       data, NULL);
 }
 

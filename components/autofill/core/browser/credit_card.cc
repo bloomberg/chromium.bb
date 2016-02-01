@@ -379,7 +379,7 @@ bool CreditCard::SetInfo(const AutofillType& type,
   if (storable_type == CREDIT_CARD_NUMBER)
     SetRawInfo(storable_type, StripSeparators(value));
   else if (storable_type == CREDIT_CARD_EXP_MONTH)
-    SetExpirationMonthFromString(value, app_locale);
+    return SetExpirationMonthFromString(value, app_locale);
   else
     SetRawInfo(storable_type, value);
 
@@ -675,13 +675,17 @@ base::string16 CreditCard::Expiration2DigitYearAsString() const {
   return base::IntToString16(Expiration2DigitYear());
 }
 
-void CreditCard::SetExpirationMonthFromString(const base::string16& text,
+bool CreditCard::SetExpirationMonthFromString(const base::string16& text,
                                               const std::string& app_locale) {
+  base::string16 trimmed;
+  base::TrimWhitespace(text, base::TRIM_ALL, &trimmed);
+
   int month = 0;
-  if (!text.empty() && !ConvertMonth(text, app_locale, &month))
-    return;
+  if (!ConvertMonth(trimmed, app_locale, &month))
+    return false;
 
   SetExpirationMonth(month);
+  return true;
 }
 
 void CreditCard::SetExpirationYearFromString(const base::string16& text) {

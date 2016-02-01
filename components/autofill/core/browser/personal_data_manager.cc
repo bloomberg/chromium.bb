@@ -1345,13 +1345,26 @@ bool PersonalDataManager::ImportCreditCard(
     types_seen.insert(server_field_type);
 
     // If |field| is an HTML5 month input, handle it as a special case.
-    // Otherwise, CreditCard handles storing the |value| according to
-    // |field_type|.
     if (base::LowerCaseEqualsASCII(field->form_control_type, "month")) {
       DCHECK_EQ(CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR, server_field_type);
       candidate_credit_card.SetInfoForMonthInputType(value);
-    } else {
-      candidate_credit_card.SetInfo(field_type, value, app_locale_);
+      continue;
+    }
+
+    // CreditCard handles storing the |value| according to |field_type|.
+    bool saved = candidate_credit_card.SetInfo(field_type, value, app_locale_);
+
+    // Saving with the option text (here |value|) may fail for the expiration
+    // month. Attempt to save with the option value. First find the index of the
+    // option text in the select options and try the corresponding value.
+    if (!saved && server_field_type == CREDIT_CARD_EXP_MONTH) {
+      for (size_t i = 0; i < field->option_contents.size(); ++i) {
+        if (value == field->option_contents[i]) {
+          candidate_credit_card.SetInfo(field_type, field->option_values[i],
+                                        app_locale_);
+          break;
+        }
+      }
     }
   }
 
