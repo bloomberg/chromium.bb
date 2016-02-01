@@ -52,6 +52,9 @@ GAIAInfoUpdateService::~GAIAInfoUpdateService() {
 }
 
 void GAIAInfoUpdateService::Update() {
+  // UMA Profile Metrics should be logged regularly.
+  ProfileMetrics::LogNumberOfProfiles(g_browser_process->profile_manager());
+
   // The user must be logged in.
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
@@ -210,11 +213,6 @@ void GAIAInfoUpdateService::ScheduleNextUpdate() {
     delta = base::TimeDelta::FromSeconds(kMinUpdateIntervalSeconds);
   else
     delta = desired_delta - update_delta;
-
-  // UMA Profile Metrics should be logged regularly.  Logging is not performed
-  // in Update() because it is a public method and may be called at any time.
-  // These metrics should logged only on this schedule.
-  ProfileMetrics::LogNumberOfProfiles(g_browser_process->profile_manager());
 
   timer_.Start(FROM_HERE, delta, this, &GAIAInfoUpdateService::Update);
 }
