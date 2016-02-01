@@ -50,7 +50,7 @@ public:
     void setContentFrame(Frame&);
     void clearContentFrame();
 
-    virtual void disconnectContentFrame();
+    void disconnectContentFrame();
 
     // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
     // except for HTMLObjectElement and HTMLEmbedElement which may return any
