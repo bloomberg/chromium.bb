@@ -86352,6 +86352,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Media"/>
   <suffix name="Manifest"/>
   <affected-histogram name="Blink.MemoryCache.RevalidationPolicy"/>
+  <affected-histogram name="Blink.MemoryCache.RevalidationPolicy.Preload"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SafeBrowsingLists" separator=".">
