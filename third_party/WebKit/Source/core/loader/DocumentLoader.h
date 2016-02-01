@@ -122,7 +122,6 @@ public:
 
     ApplicationCacheHost* applicationCacheHost() const { return m_applicationCacheHost.get(); }
 
-    bool isRedirect() const { return m_redirectChain.size() > 1; }
     void clearRedirectChain();
     void appendRedirect(const KURL&);
 
