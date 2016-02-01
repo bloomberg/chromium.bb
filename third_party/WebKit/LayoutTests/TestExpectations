@@ -280,10 +280,9 @@ crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/trustedeventsdefaultaction/fast/events/click-count.html [ Pass Failure ]
 crbug.com/542541 [ Debug ] virtual/pointerevent/fast/events/click-count.html [ Pass Failure ]
 
-# TODO(wkorman): crbug.com/577300 Uncomment the scalefactor expectations below once rebaseline bot is fixed.
-crbug.com/495750 virtual/scalefactor200/fast/hidpi/static [ NeedsManualRebaseline ]
-crbug.com/495750 virtual/scalefactor150/fast/hidpi/static [ NeedsManualRebaseline ]
-crbug.com/495750 [ Win Linux ] virtual/scalefactor200withzoom/fast/hidpi/static [ NeedsManualRebaseline ]
+crbug.com/495750 virtual/scalefactor200/fast/hidpi/static [ NeedsRebaseline ]
+crbug.com/495750 virtual/scalefactor150/fast/hidpi/static [ NeedsRebaseline ]
+crbug.com/495750 [ Win Linux ] virtual/scalefactor200withzoom/fast/hidpi/static [ NeedsRebaseline ]
 crbug.com/495750 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 # TODO(oshima): Fix the popup's size adjustmenet.
 crbug.com/495750 virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
