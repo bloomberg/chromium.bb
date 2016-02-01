@@ -29,6 +29,9 @@ class AutocompleteClassifier : public KeyedService {
       scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier);
   ~AutocompleteClassifier() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
   // Given some string |text| that the user wants to use for navigation,
   // determines how it should be interpreted.
   // |prefer_keyword| should be true the when keyword UI is onscreen; see
@@ -54,9 +57,6 @@ class AutocompleteClassifier : public KeyedService {
                 GURL* alternate_nav_url);
 
  private:
-  // KeyedService:
-  void Shutdown() override;
-
   scoped_ptr<AutocompleteController> controller_;
   scoped_ptr<AutocompleteSchemeClassifier> scheme_classifier_;
 

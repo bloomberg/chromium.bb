@@ -5,21 +5,25 @@
 #include <stddef.h>
 
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
-#include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
-#include "chrome/test/base/testing_profile.h"
+#include "components/omnibox/browser/autocomplete_classifier.h"
+#include "components/omnibox/browser/autocomplete_controller.h"
+#include "components/omnibox/browser/autocomplete_scheme_classifier.h"
+#include "components/omnibox/browser/mock_autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_client.h"
+#include "components/omnibox/browser/omnibox_edit_controller.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/template_url_service_client.h"
+#include "components/sessions/core/session_id.h"
 #include "components/toolbar/test_toolbar_model.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
 using base::UTF8ToUTF16;
-using content::WebContents;
 
 namespace {
 
@@ -99,14 +103,14 @@ class TestingOmniboxView : public OmniboxView {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
 
-class TestingOmniboxEditController : public ChromeOmniboxEditController {
+class TestingOmniboxEditController : public OmniboxEditController {
  public:
   explicit TestingOmniboxEditController(ToolbarModel* toolbar_model)
-      : ChromeOmniboxEditController(NULL), toolbar_model_(toolbar_model) {}
+      : toolbar_model_(toolbar_model) {}
 
  protected:
-  // ChromeOmniboxEditController:
-  void UpdateWithoutTabRestore() override {}
+  // OmniboxEditController:
+  void OnInputInProgress(bool in_progress) override {}
   void OnChanged() override {}
   void OnSetFocus() override {}
   void ShowURL() override {}
@@ -114,7 +118,6 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   const ToolbarModel* GetToolbarModel() const override {
     return toolbar_model_;
   }
-  WebContents* GetWebContents() override { return nullptr; }
 
  private:
   ToolbarModel* toolbar_model_;
@@ -122,19 +125,136 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);
 };
 
+class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
+ public:
+  TestingSchemeClassifier() {}
+
+  metrics::OmniboxInputType::Type GetInputTypeForScheme(
+      const std::string& scheme) const override {
+    return metrics::OmniboxInputType::URL;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestingSchemeClassifier);
+};
+
+class TestingOmniboxClient : public OmniboxClient {
+ public:
+  TestingOmniboxClient();
+  ~TestingOmniboxClient() override;
+
+  // OmniboxClient:
+  scoped_ptr<AutocompleteProviderClient> CreateAutocompleteProviderClient()
+      override;
+
+  scoped_ptr<OmniboxNavigationObserver> CreateOmniboxNavigationObserver(
+      const base::string16& text,
+      const AutocompleteMatch& match,
+      const AutocompleteMatch& alternate_nav_match) override {
+    return nullptr;
+  }
+  bool CurrentPageExists() const override { return true; }
+  const GURL& GetURL() const override { return GURL::EmptyGURL(); }
+  const base::string16& GetTitle() const override {
+    return base::EmptyString16();
+  }
+  gfx::Image GetFavicon() const override { return gfx::Image(); }
+  bool IsInstantNTP() const override { return false; }
+  bool IsSearchResultsPage() const override { return false; }
+  bool IsLoading() const override { return false; }
+  bool IsPasteAndGoEnabled() const override { return false; }
+  bool IsNewTabPage(const std::string& url) const override { return false; }
+  bool IsHomePage(const std::string& url) const override { return false; }
+  const SessionID& GetSessionID() const override { return session_id_; }
+  bookmarks::BookmarkModel* GetBookmarkModel() override { return nullptr; }
+  TemplateURLService* GetTemplateURLService() override { return nullptr; }
+  const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
+    return scheme_classifier_;
+  }
+  AutocompleteClassifier* GetAutocompleteClassifier() override {
+    return &autocomplete_classifier_;
+  }
+  gfx::Image GetIconIfExtensionMatch(
+      const AutocompleteMatch& match) const override {
+    return gfx::Image();
+  }
+  bool ProcessExtensionKeyword(TemplateURL* template_url,
+                               const AutocompleteMatch& match,
+                               WindowOpenDisposition disposition,
+                               OmniboxNavigationObserver* observer) override {
+    return false;
+  }
+  void OnInputStateChanged() override {}
+  void OnFocusChanged(OmniboxFocusState state,
+                      OmniboxFocusChangeReason reason) override {}
+  void OnResultChanged(const AutocompleteResult& result,
+                       bool default_match_changed,
+                       const base::Callback<void(const SkBitmap& bitmap)>&
+                           on_bitmap_fetched) override {}
+  void OnCurrentMatchChanged(const AutocompleteMatch& match) override {}
+  void OnTextChanged(const AutocompleteMatch& current_match,
+                     bool user_input_in_progress,
+                     base::string16& user_text,
+                     const AutocompleteResult& result,
+                     bool is_popup_open,
+                     bool has_focus) override {}
+  void OnInputAccepted(const AutocompleteMatch& match) override {}
+  void OnRevert() override {}
+  void OnURLOpenedFromOmnibox(OmniboxLog* log) override {}
+  void OnBookmarkLaunched() override {}
+  void DiscardNonCommittedNavigations() override {}
+
+ private:
+  SessionID session_id_;
+  TestingSchemeClassifier scheme_classifier_;
+  AutocompleteClassifier autocomplete_classifier_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestingOmniboxClient);
+};
+
+TestingOmniboxClient::TestingOmniboxClient()
+    : autocomplete_classifier_(
+          make_scoped_ptr(new AutocompleteController(
+              CreateAutocompleteProviderClient(),
+              nullptr,
+              AutocompleteClassifier::kDefaultOmniboxProviders)),
+          make_scoped_ptr(new TestingSchemeClassifier())) {}
+
+TestingOmniboxClient::~TestingOmniboxClient() {
+  autocomplete_classifier_.Shutdown();
+}
+
+scoped_ptr<AutocompleteProviderClient>
+TestingOmniboxClient::CreateAutocompleteProviderClient() {
+  scoped_ptr<MockAutocompleteProviderClient> provider_client(
+      new MockAutocompleteProviderClient());
+  EXPECT_CALL(*provider_client.get(), GetBuiltinURLs())
+      .WillRepeatedly(testing::Return(std::vector<base::string16>()));
+  EXPECT_CALL(*provider_client.get(), GetSchemeClassifier())
+      .WillRepeatedly(testing::ReturnRef(scheme_classifier_));
+
+  scoped_ptr<TemplateURLService> template_url_service(new TemplateURLService(
+      nullptr, scoped_ptr<SearchTermsData>(new SearchTermsData), nullptr,
+      scoped_ptr<TemplateURLServiceClient>(), nullptr, nullptr,
+      base::Closure()));
+  provider_client->set_template_url_service(std::move(template_url_service));
+
+  return std::move(provider_client);
+}
+
 }  // namespace
 
-class AutocompleteEditTest : public ::testing::Test {
+class OmniboxEditTest : public ::testing::Test {
  public:
   TestToolbarModel* toolbar_model() { return &toolbar_model_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  base::MessageLoop message_loop_;
   TestToolbarModel toolbar_model_;
 };
 
 // Tests various permutations of AutocompleteModel::AdjustTextForCopy.
-TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
+TEST_F(OmniboxEditTest, AdjustTextForCopy) {
   struct Data {
     const char* perm_text;
     const int sel_start;
@@ -189,17 +309,8 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   };
   TestingOmniboxEditController controller(toolbar_model());
   TestingOmniboxView view(&controller);
-  TestingProfile profile;
-  // NOTE: The TemplateURLService must be created before the
-  // AutocompleteClassifier so that the SearchProvider gets a non-NULL
-  // TemplateURLService at construction time.
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      &profile, &TemplateURLServiceFactory::BuildInstanceFor);
-  AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
-      &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  OmniboxEditModel model(
-      &view, &controller,
-      make_scoped_ptr(new ChromeOmniboxClient(&controller, &profile)));
+  OmniboxEditModel model(&view, &controller,
+                         make_scoped_ptr(new TestingOmniboxClient()));
 
   for (size_t i = 0; i < arraysize(input); ++i) {
     toolbar_model()->set_text(ASCIIToUTF16(input[i].perm_text));
@@ -220,20 +331,11 @@ TEST_F(AutocompleteEditTest, AdjustTextForCopy) {
   }
 }
 
-TEST_F(AutocompleteEditTest, InlineAutocompleteText) {
+TEST_F(OmniboxEditTest, InlineAutocompleteText) {
   TestingOmniboxEditController controller(toolbar_model());
   TestingOmniboxView view(&controller);
-  TestingProfile profile;
-  // NOTE: The TemplateURLService must be created before the
-  // AutocompleteClassifier so that the SearchProvider gets a non-NULL
-  // TemplateURLService at construction time.
-  TemplateURLServiceFactory::GetInstance()->SetTestingFactory(
-      &profile, &TemplateURLServiceFactory::BuildInstanceFor);
-  AutocompleteClassifierFactory::GetInstance()->SetTestingFactory(
-      &profile, &AutocompleteClassifierFactory::BuildInstanceFor);
-  OmniboxEditModel model(
-      &view, &controller,
-      make_scoped_ptr(new ChromeOmniboxClient(&controller, &profile)));
+  OmniboxEditModel model(&view, &controller,
+                         make_scoped_ptr(new TestingOmniboxClient()));
 
   // Test if the model updates the inline autocomplete text in the view.
   EXPECT_EQ(base::string16(), view.inline_autocomplete_text());

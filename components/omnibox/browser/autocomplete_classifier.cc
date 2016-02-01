@@ -47,6 +47,10 @@ AutocompleteClassifier::~AutocompleteClassifier() {
   DCHECK(!controller_.get());
 }
 
+void AutocompleteClassifier::Shutdown() {
+  controller_.reset();
+}
+
 void AutocompleteClassifier::Classify(
     const base::string16& text,
     bool prefer_keyword,
@@ -72,8 +76,4 @@ void AutocompleteClassifier::Classify(
   *match = *result.default_match();
   if (alternate_nav_url)
     *alternate_nav_url = result.alternate_nav_url();
-}
-
-void AutocompleteClassifier::Shutdown() {
-  controller_.reset();
 }
