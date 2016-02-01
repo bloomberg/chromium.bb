@@ -511,6 +511,17 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         mEntryMap.put(entry.tabId, entry);
     }
 
+    private void recordDocumentTabStateLoadTime(long time) {
+        try {
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.DocumentTabStateLoad", time,
+                    TimeUnit.MILLISECONDS);
+        } catch (UnsatisfiedLinkError error) {
+            // Usually native is loaded when this check is called, but it is not guaranteed. Since
+            // most of the data is better than none of the data and we don't want this to crash in
+            // the case of native not being loaded, intentionally catch and ignore the linker error.
+        }
+    }
+
     // TODO(mariakhomenko): we no longer need prioritized tab id in constructor, shift it here.
     @Override
     public void startTabStateLoad() {
@@ -523,8 +534,10 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
                 // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
                 StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
                 try {
+                    long time = SystemClock.elapsedRealtime();
                     entry.setTabState(
                             mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito()));
+                    recordDocumentTabStateLoadTime(SystemClock.elapsedRealtime() - time);
                 } finally {
                     StrictMode.setThreadPolicy(oldPolicy);
                 }

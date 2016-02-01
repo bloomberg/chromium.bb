@@ -13,6 +13,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Binder;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -25,6 +26,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeApplication;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -232,6 +234,21 @@ public class ExternalAuthUtils {
     }
 
     /**
+     * Records the time it took to check for Google Play Services if native is loaded.
+     * @param time The time it took to read state.
+     */
+    private void recordGooglePlayServicesRegistrationTime(long time) {
+        try {
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.CheckGooglePlayServicesTime",
+                    time, TimeUnit.MILLISECONDS);
+        } catch (UnsatisfiedLinkError error) {
+            // Usually native is loaded when this check is called, but it is not guaranteed. Since
+            // most of the data is better than none of the data and we don't want this to crash in
+            // the case of native not being loaded, intentionally catch and ignore the linker error.
+        }
+    }
+
+    /**
      * Invokes whatever external code is necessary to check if Google Play Services is available
      * and returns the code produced by the attempt. Subclasses can override to force the behavior
      * one way or another, or to change the way that the check is performed.
@@ -243,7 +260,11 @@ public class ExternalAuthUtils {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
-            return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+            long time = SystemClock.elapsedRealtime();
+            int isAvailable =
+                    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+            recordGooglePlayServicesRegistrationTime(SystemClock.elapsedRealtime() - time);
+            return isAvailable;
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

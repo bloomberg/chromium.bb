@@ -312,6 +312,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.CheckGooglePlayServicesTime" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from checking for
+    whether play services is available.
+  </summary>
+</histogram>
+
 <histogram name="Android.StrictMode.DocumentModeSharedPrefs" units="ms">
   <owner>hartmanng@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -372,6 +381,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the amount of time due to a StrictMode violation from fetching for
     the thumbnail cache directory.
+  </summary>
+</histogram>
+
+<histogram name="Android.StrictMode.WebappAuthenticatorMac" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures the amount of time due to a StrictMode violation from looking up a
+    webapp's MAC on startup.
   </summary>
 </histogram>
 

@@ -7,10 +7,12 @@ package org.chromium.chrome.browser.metrics;
 import android.util.Pair;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Used for recording metrics about Chrome launches.
@@ -24,6 +26,7 @@ public class LaunchMetrics {
             new ArrayList<Pair<String, Integer>>();
     private static final List<Pair<String, Integer>> sTabUrls =
             new ArrayList<Pair<String, Integer>>();
+    private static final List<Long> sWebappHistogramTimes = new ArrayList<Long>();
 
     /**
      * Records the launch of a standalone Activity for a URL (i.e. a WebappActivity)
@@ -44,6 +47,15 @@ public class LaunchMetrics {
         sTabUrls.add(new Pair<String, Integer>(url, source));
     }
 
+
+    /**
+     * Records the time it took to look up from disk whether a MAC is valid during webapp startup.
+     * @param time the number of milliseconds it took to finish.
+     */
+    public static void recordWebappHistogramTimes(long time) {
+        sWebappHistogramTimes.add(time);
+    }
+
     /**
      * Calls out to native code to record URLs that have been launched via the Home screen.
      * This intermediate step is necessary because Activity.onCreate() may be called when
@@ -57,8 +69,13 @@ public class LaunchMetrics {
         for (Pair<String, Integer> item : sTabUrls) {
             nativeRecordLaunch(false, item.first, item.second, webContents);
         }
+        for (Long time : sWebappHistogramTimes) {
+            RecordHistogram.recordTimesHistogram("Android.StrictMode.WebappAuthenticatorMac", time,
+                    TimeUnit.MILLISECONDS);
+        }
         sActivityUrls.clear();
         sTabUrls.clear();
+        sWebappHistogramTimes.clear();
     }
 
     private static native void nativeRecordLaunch(

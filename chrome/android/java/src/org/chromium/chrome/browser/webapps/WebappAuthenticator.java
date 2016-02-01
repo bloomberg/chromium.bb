@@ -8,9 +8,11 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.StrictMode;
+import android.os.SystemClock;
 import android.util.Log;
 
 import org.chromium.base.SecureRandomInitializer;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -59,7 +61,9 @@ public class WebappAuthenticator {
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525785
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
+            long time = SystemClock.elapsedRealtime();
             goodMac = getMacForUrl(context, url);
+            LaunchMetrics.recordWebappHistogramTimes(SystemClock.elapsedRealtime() - time);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
