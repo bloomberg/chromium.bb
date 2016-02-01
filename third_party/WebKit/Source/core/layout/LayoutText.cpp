@@ -661,7 +661,7 @@ LayoutRect LayoutText::localCaretRect(InlineBox* inlineBox, int caretOffset, Lay
     left -= caretWidthLeftOfOffset;
     LayoutUnit caretWidthRightOfOffset = caretWidth() - caretWidthLeftOfOffset;
 
-    left = left.round();
+    left = LayoutUnit(left.round());
 
     LayoutUnit rootLeft = box->root().logicalLeft();
     LayoutUnit rootRight = box->root().logicalRight();

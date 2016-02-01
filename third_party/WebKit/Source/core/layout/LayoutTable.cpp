@@ -298,7 +298,7 @@ void LayoutTable::updateLogicalWidth()
 
     // Ensure we aren't smaller than our min preferred width. This MUST be done after 'max-width' as
     // we ignore it if it means we wouldn't accommodate our content.
-    setLogicalWidth(std::max<int>(logicalWidth(), minPreferredLogicalWidth()));
+    setLogicalWidth(std::max(logicalWidth(), minPreferredLogicalWidth()).floor());
 
     // Ensure we aren't smaller than our min-width style.
     Length styleMinLogicalWidth = style()->logicalMinWidth();

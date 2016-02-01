@@ -676,14 +676,14 @@ void LayoutTableSection::distributeRowSpanHeightToRows(SpanningLayoutTableCells&
 // Find out the baseline of the cell
 // If the cell's baseline is more then the row's baseline then the cell's baseline become the row's baseline
 // and if the row's baseline goes out of the row's boundries then adjust row height accordingly.
-void LayoutTableSection::updateBaselineForCell(LayoutTableCell* cell, unsigned row, LayoutUnit& baselineDescent)
+void LayoutTableSection::updateBaselineForCell(LayoutTableCell* cell, unsigned row, int& baselineDescent)
 {
     if (!cell->isBaselineAligned())
         return;
 
     // Ignoring the intrinsic padding as it depends on knowing the row's baseline, which won't be accurate
     // until the end of this function.
-    LayoutUnit baselinePosition = cell->cellBaselinePosition() - cell->intrinsicPaddingBefore();
+    int baselinePosition = cell->cellBaselinePosition() - cell->intrinsicPaddingBefore();
     if (baselinePosition > cell->borderBefore() + (cell->paddingBefore() - cell->intrinsicPaddingBefore())) {
         m_grid[row].baseline = std::max(m_grid[row].baseline, baselinePosition);
 
@@ -725,8 +725,8 @@ int LayoutTableSection::calcRowLogicalHeight()
 #endif
 
     for (unsigned r = 0; r < m_grid.size(); r++) {
-        m_grid[r].baseline = LayoutUnit(-1);
-        LayoutUnit baselineDescent;
+        m_grid[r].baseline = -1;
+        int baselineDescent = 0;
 
         if (m_grid[r].logicalHeight.isSpecified()) {
             // Our base size is the biggest logical height from our cells' styles (excluding row spanning cells).
@@ -1032,7 +1032,7 @@ void LayoutTableSection::layoutRows()
 
                 // If the baseline moved, we may have to update the data for our row. Find out the new baseline.
                 if (cell->isBaselineAligned()) {
-                    LayoutUnit baseline = cell->cellBaselinePosition();
+                    int baseline = cell->cellBaselinePosition();
                     if (baseline > cell->borderBefore() + cell->paddingBefore())
                         m_grid[r].baseline = std::max(m_grid[r].baseline, baseline);
                 }
@@ -1058,7 +1058,7 @@ void LayoutTableSection::layoutRows()
                 LayoutUnit oldLogicalHeight = cell->logicalHeight();
                 if (oldLogicalHeight > rHeight)
                     rowHeightIncreaseForPagination = std::max<int>(rowHeightIncreaseForPagination, oldLogicalHeight - rHeight);
-                cell->setLogicalHeight(rHeight);
+                cell->setLogicalHeight(LayoutUnit(rHeight));
                 cell->computeOverflow(oldLogicalHeight, false);
             }
 

@@ -140,7 +140,7 @@ void LayoutListBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, L
 {
     LayoutBlockFlow::computeIntrinsicLogicalWidths(minLogicalWidth, maxLogicalWidth);
     if (style()->width().hasPercent())
-        minLogicalWidth = 0;
+        minLogicalWidth = LayoutUnit();
 }
 
 void LayoutListBox::scrollToRect(const LayoutRect& rect)

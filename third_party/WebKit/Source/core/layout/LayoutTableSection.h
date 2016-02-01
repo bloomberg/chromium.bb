@@ -182,7 +182,7 @@ public:
 
         Row row;
         LayoutTableRow* rowLayoutObject;
-        LayoutUnit baseline;
+        int baseline;
         Length logicalHeight;
     };
 
@@ -274,7 +274,7 @@ public:
     bool needsCellRecalc() const { return m_needsCellRecalc; }
     void setNeedsCellRecalc();
 
-    LayoutUnit rowBaseline(unsigned row) { return m_grid[row].baseline; }
+    int rowBaseline(unsigned row) { return m_grid[row].baseline; }
 
     void rowLogicalHeightChanged(LayoutTableRow*);
 
@@ -341,7 +341,7 @@ private:
     void distributeExtraLogicalHeightToAutoRows(int& extraLogicalHeight, unsigned autoRowsCount);
     void distributeRemainingExtraLogicalHeight(int& extraLogicalHeight);
 
-    void updateBaselineForCell(LayoutTableCell*, unsigned row, LayoutUnit& baselineDescent);
+    void updateBaselineForCell(LayoutTableCell*, unsigned row, int& baselineDescent);
 
     bool hasOverflowingCell() const { return m_overflowingCells.size() || m_forceSlowPaintPathWithOverflowingCell; }
 

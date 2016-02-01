@@ -1533,21 +1533,21 @@ LayoutRect LayoutBox::clipRect(const LayoutPoint& location) const
 
     if (!style()->clipLeft().isAuto()) {
         LayoutUnit c = valueForLength(style()->clipLeft(), borderBoxRect.width());
-        clipRect.move(c, 0);
-        clipRect.contract(c, 0);
+        clipRect.move(c, LayoutUnit());
+        clipRect.contract(c, LayoutUnit());
     }
 
     if (!style()->clipRight().isAuto())
-        clipRect.contract(size().width() - valueForLength(style()->clipRight(), size().width()), 0);
+        clipRect.contract(size().width() - valueForLength(style()->clipRight(), size().width()), LayoutUnit());
 
     if (!style()->clipTop().isAuto()) {
         LayoutUnit c = valueForLength(style()->clipTop(), borderBoxRect.height());
-        clipRect.move(0, c);
-        clipRect.contract(0, c);
+        clipRect.move(LayoutUnit(), c);
+        clipRect.contract(LayoutUnit(), c);
     }
 
     if (!style()->clipBottom().isAuto())
-        clipRect.contract(0, size().height() - valueForLength(style()->clipBottom(), size().height()));
+        clipRect.contract(LayoutUnit(), size().height() - valueForLength(style()->clipBottom(), size().height()));
 
     return clipRect;
 }
@@ -1640,9 +1640,9 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
 
     // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
     if (!logicalHeightLength.isFixed()) {
-        LayoutUnit fillFallbackExtent = containingBlockStyle.isHorizontalWritingMode()
+        LayoutUnit fillFallbackExtent = LayoutUnit(containingBlockStyle.isHorizontalWritingMode()
             ? view()->frameView()->visibleContentSize().height()
-            : view()->frameView()->visibleContentSize().width();
+            : view()->frameView()->visibleContentSize().width());
         LayoutUnit fillAvailableExtent = containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding);
         if (fillAvailableExtent == -1)
             return fillFallbackExtent;
@@ -2173,14 +2173,14 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalWidthUsing(const Length& logicalWid
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length& logicalWidth, LayoutUnit availableLogicalWidth, const LayoutBlock* cb) const
 {
     ASSERT(widthType == MinSize || widthType == MainOrPreferredSize || !logicalWidth.isAuto());
     if (widthType == MinSize && logicalWidth.isAuto())
-        return adjustBorderBoxLogicalWidthForBoxSizing(0);
+        return adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit());
 
     if (!logicalWidth.isIntrinsicOrAuto()) {
         // FIXME: If the containing block flow is perpendicular to our direction we need to use the available logical height instead.
@@ -2493,7 +2493,7 @@ LayoutUnit LayoutBox::computeLogicalHeightWithoutLayout() const
     // TODO(cbiesinger): We should probably return something other than just border + padding, but for now
     // we have no good way to do anything else without layout, so we just use that.
     LogicalExtentComputedValues computedValues;
-    computeLogicalHeight(borderAndPaddingLogicalHeight(), 0, computedValues);
+    computeLogicalHeight(borderAndPaddingLogicalHeight(), LayoutUnit(), computedValues);
     return computedValues.m_extent;
 }
 
@@ -2509,7 +2509,7 @@ LayoutUnit LayoutBox::computeContentLogicalHeight(SizeType heightType, const Len
 {
     LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(heightType, height, intrinsicContentHeight);
     if (heightIncludingScrollbar == -1)
-        return -1;
+        return LayoutUnit(-1);
     return std::max(LayoutUnit(), adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 }
 
@@ -2527,25 +2527,25 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalContentHeightUsing(const Length& lo
     if (logicalHeightLength.isFillAvailable())
         return containingBlock()->availableLogicalHeight(ExcludeMarginBorderPadding) - borderAndPadding;
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(SizeType heightType, const Length& height, LayoutUnit intrinsicContentHeight) const
 {
     if (height.isAuto())
-        return heightType == MinSize ? 0 : -1;
+        return heightType == MinSize ? LayoutUnit() : LayoutUnit(-1);
     // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
     // If that happens, this code will have to change.
     if (height.isIntrinsic()) {
         if (intrinsicContentHeight == -1)
-            return -1; // Intrinsic height isn't available.
+            return LayoutUnit(-1); // Intrinsic height isn't available.
         return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight()) + scrollbarLogicalHeight();
     }
     if (height.isFixed())
         return height.value();
     if (height.hasPercent())
         return computePercentageLogicalHeight(height);
-    return -1;
+    return LayoutUnit(-1);
 }
 
 bool LayoutBox::stretchesToViewportInQuirksMode() const
@@ -2578,7 +2578,7 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
 
 LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
 {
-    LayoutUnit availableHeight = -1;
+    LayoutUnit availableHeight(-1);
 
     bool skippedAutoHeightContainingBlock = false;
     LayoutBlock* cb = containingBlock();
@@ -2625,14 +2625,14 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
                 LayoutTableCell* cell = toLayoutTableCell(cb);
                 if (scrollsOverflowY() && (!cell->style()->logicalHeight().isAuto() || !cell->table()->style()->logicalHeight().isAuto()))
                     return LayoutUnit();
-                return -1;
+                return LayoutUnit(-1);
             }
             availableHeight = cb->overrideLogicalContentHeight();
             includeBorderPadding = true;
         }
     } else if (cbstyle.logicalHeight().isFixed()) {
         LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
-        availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), -1));
+        availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)));
     } else if (cbstyle.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
         LayoutUnit heightWithScrollbar = cb->computePercentageLogicalHeight(cbstyle.logicalHeight());
@@ -2642,14 +2642,14 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
             // handle the min/max of the current block, its caller does. So the
             // return value from the recursive call will not have been adjusted
             // yet.
-            LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight(), -1);
+            LayoutUnit contentBoxHeight = cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeightWithScrollbar - cb->scrollbarLogicalHeight(), LayoutUnit(-1));
             availableHeight = std::max(LayoutUnit(), contentBoxHeight);
         }
     } else if (isOutOfFlowPositionedWithSpecifiedHeight) {
         // Don't allow this to affect the block' size() member variable, since this
         // can get called while the block is still laying out its kids.
         LogicalExtentComputedValues computedValues;
-        cb->computeLogicalHeight(cb->logicalHeight(), 0, computedValues);
+        cb->computeLogicalHeight(cb->logicalHeight(), LayoutUnit(), computedValues);
         availableHeight = computedValues.m_extent - cb->borderAndPaddingLogicalHeight() - cb->scrollbarLogicalHeight();
     } else if (cb->isLayoutView()) {
         availableHeight = view()->viewLogicalHeightForPercentages();
@@ -2691,7 +2691,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
 {
     ASSERT(sizeType == MinSize || sizeType == MainOrPreferredSize || !logicalWidth.isAuto());
     if (sizeType == MinSize && logicalWidth.isAuto())
-        return adjustContentBoxLogicalWidthForBoxSizing(0);
+        return adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit());
 
     switch (logicalWidth.type()) {
     case Fixed:
@@ -2729,7 +2729,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(SizeType sizeType, const 
     }
 
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 LayoutUnit LayoutBox::computeReplacedLogicalHeight() const
@@ -2768,7 +2768,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
 {
     ASSERT(sizeType == MinSize || sizeType == MainOrPreferredSize || !logicalHeight.isAuto());
     if (sizeType == MinSize && logicalHeight.isAuto())
-        return adjustContentBoxLogicalHeightForBoxSizing(0);
+        return adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit());
 
     switch (logicalHeight.type()) {
     case Fixed:
@@ -2786,7 +2786,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
             ASSERT_WITH_SECURITY_IMPLICATION(cb->isLayoutBlock());
             LayoutBlock* block = toLayoutBlock(cb);
             LogicalExtentComputedValues computedValues;
-            block->computeLogicalHeight(block->logicalHeight(), 0, computedValues);
+            block->computeLogicalHeight(block->logicalHeight(), LayoutUnit(), computedValues);
             LayoutUnit newContentHeight = computedValues.m_extent - block->borderAndPaddingLogicalHeight() - block->scrollbarLogicalHeight();
             LayoutUnit newHeight = block->adjustContentBoxLogicalHeightForBoxSizing(newContentHeight);
             return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(logicalHeight, newHeight));
@@ -2831,13 +2831,16 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(SizeType sizeType, const
 LayoutUnit LayoutBox::availableLogicalHeight(AvailableLogicalHeightType heightType) const
 {
     // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested in the content height.
-    return constrainContentBoxLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType), -1);
+    return constrainContentBoxLogicalHeightByMinMax(availableLogicalHeightUsing(style()->logicalHeight(), heightType), LayoutUnit(-1));
 }
 
 LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogicalHeightType heightType) const
 {
-    if (isLayoutView())
-        return isHorizontalWritingMode() ? toLayoutView(this)->frameView()->visibleContentSize().height() : toLayoutView(this)->frameView()->visibleContentSize().width();
+    if (isLayoutView()) {
+        return LayoutUnit(isHorizontalWritingMode()
+            ? toLayoutView(this)->frameView()->visibleContentSize().height()
+            : toLayoutView(this)->frameView()->visibleContentSize().width());
+    }
 
     // We need to stop here, since we don't want to increase the height of the table
     // artificially.  We're going to rely on this cell getting expanded to some new
@@ -2854,7 +2857,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
         return adjustContentBoxLogicalHeightForBoxSizing(valueForLength(h, availableHeight));
     }
 
-    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(MainOrPreferredSize, h, -1);
+    LayoutUnit heightIncludingScrollbar = computeContentAndScrollbarLogicalHeightUsing(MainOrPreferredSize, h, LayoutUnit(-1));
     if (heightIncludingScrollbar != -1)
         return std::max(LayoutUnit(), adjustContentBoxLogicalHeightForBoxSizing(heightIncludingScrollbar) - scrollbarLogicalHeight());
 
@@ -2863,7 +2866,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(const Length& h, AvailableLogi
     if (isLayoutBlock() && isOutOfFlowPositioned() && style()->height().isAuto() && !(style()->top().isAuto() || style()->bottom().isAuto())) {
         LayoutBlock* block = const_cast<LayoutBlock*>(toLayoutBlock(this));
         LogicalExtentComputedValues computedValues;
-        block->computeLogicalHeight(block->logicalHeight(), 0, computedValues);
+        block->computeLogicalHeight(block->logicalHeight(), LayoutUnit(), computedValues);
         LayoutUnit newContentHeight = computedValues.m_extent - block->borderAndPaddingLogicalHeight() - block->scrollbarLogicalHeight();
         return adjustContentBoxLogicalHeightForBoxSizing(newContentHeight);
     }
@@ -2900,8 +2903,8 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(const LayoutBoxMo
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
-            IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
-            return containingBlock->isHorizontalWritingMode() ? viewportSize.width() : viewportSize.height();
+            LayoutSize viewportSize(frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size()));
+            return LayoutUnit(containingBlock->isHorizontalWritingMode() ? viewportSize.width() : viewportSize.height());
         }
     }
 
@@ -2948,7 +2951,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(const LayoutBoxM
         const LayoutView* view = toLayoutView(containingBlock);
         if (FrameView* frameView = view->frameView()) {
             // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
-            IntSize viewportSize = frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size());
+            LayoutSize viewportSize(frameView->layoutViewportScrollableArea()->excludeScrollbars(frameView->frameRect().size()));
             return containingBlock->isHorizontalWritingMode() ? viewportSize.height() : viewportSize.width();
         }
     }
@@ -3218,11 +3221,11 @@ void LayoutBox::computePositionedLogicalWidthUsing(SizeType widthSizeType, Lengt
                 // Use the containing block's direction rather than the parent block's
                 // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
                 if (containerDirection == LTR) {
-                    marginLogicalLeftValue = 0;
+                    marginLogicalLeftValue = LayoutUnit();
                     marginLogicalRightValue = availableSpace; // will be negative
                 } else {
                     marginLogicalLeftValue = availableSpace; // will be negative
-                    marginLogicalRightValue = 0;
+                    marginLogicalRightValue = LayoutUnit();
                 }
             }
         } else if (marginLogicalLeft.isAuto()) {
@@ -3628,7 +3631,7 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box, int caretOffset, LayoutUnit
     // <rdar://problem/3777804> Deleting all content in a document can result in giant tall-as-window insertion point
     //
     // FIXME: ignoring :first-line, missing good reason to take care of
-    LayoutUnit fontHeight = style()->fontMetrics().height();
+    LayoutUnit fontHeight = LayoutUnit(style()->fontMetrics().height());
     if (fontHeight > rect.height() || (!isAtomicInlineLevel() && !isTable()))
         rect.setHeight(fontHeight);
 

@@ -221,7 +221,7 @@ void LayoutTableCell::setCellLogicalWidth(int tableLayoutLogicalWidth, SubtreeLa
 
     layouter.setNeedsLayout(this, LayoutInvalidationReason::SizeChanged);
 
-    setLogicalWidth(tableLayoutLogicalWidth);
+    setLogicalWidth(LayoutUnit(tableLayoutLogicalWidth));
     setCellWidthChanged(true);
 }
 
@@ -238,7 +238,7 @@ void LayoutTableCell::layout()
     // of them wrong. So if our content's intrinsic height has changed push the new content up into the intrinsic padding and relayout so that the rest of
     // table and row layout can use the correct baseline and height for this cell.
     if (isBaselineAligned() && section()->rowBaseline(rowIndex()) && cellBaselinePosition() > section()->rowBaseline(rowIndex())) {
-        int newIntrinsicPaddingBefore = (intrinsicPaddingBefore() - (cellBaselinePosition() - oldCellBaseline).clampNegativeToZero()).clampNegativeToZero();
+        int newIntrinsicPaddingBefore = std::max(intrinsicPaddingBefore() - std::max(cellBaselinePosition() - oldCellBaseline, 0), 0);
         setIntrinsicPaddingBefore(newIntrinsicPaddingBefore);
         SubtreeLayoutScope layouter(*this);
         layouter.setNeedsLayout(this, LayoutInvalidationReason::TableChanged);
@@ -254,44 +254,48 @@ void LayoutTableCell::layout()
 
 LayoutUnit LayoutTableCell::paddingTop() const
 {
-    int result = computedCSSPaddingTop();
-    if (!isHorizontalWritingMode())
-        return result;
-    return result + (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+    LayoutUnit result = computedCSSPaddingTop();
+    if (isHorizontalWritingMode())
+        result += (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+    // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+    return LayoutUnit(result.floor());
 }
 
 LayoutUnit LayoutTableCell::paddingBottom() const
 {
-    int result = computedCSSPaddingBottom();
-    if (!isHorizontalWritingMode())
-        return result;
-    return result + (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+    LayoutUnit result = computedCSSPaddingBottom();
+    if (isHorizontalWritingMode())
+        result += (style()->writingMode() == TopToBottomWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+    // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+    return LayoutUnit(result.floor());
 }
 
 LayoutUnit LayoutTableCell::paddingLeft() const
 {
-    int result = computedCSSPaddingLeft();
-    if (isHorizontalWritingMode())
-        return result;
-    return result + (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+    LayoutUnit result = computedCSSPaddingLeft();
+    if (!isHorizontalWritingMode())
+        result += (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingBefore() : intrinsicPaddingAfter());
+    // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+    return LayoutUnit(result.floor());
 }
 
 LayoutUnit LayoutTableCell::paddingRight() const
 {
-    int result = computedCSSPaddingRight();
-    if (isHorizontalWritingMode())
-        return result;
-    return result + (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+    LayoutUnit result = computedCSSPaddingRight();
+    if (!isHorizontalWritingMode())
+        result += (style()->writingMode() == LeftToRightWritingMode ? intrinsicPaddingAfter() : intrinsicPaddingBefore());
+    // TODO(leviw): The floor call should be removed when Table is sub-pixel aware. crbug.com/377847
+    return LayoutUnit(result.floor());
 }
 
 LayoutUnit LayoutTableCell::paddingBefore() const
 {
-    return static_cast<int>(computedCSSPaddingBefore()) + intrinsicPaddingBefore();
+    return LayoutUnit(computedCSSPaddingBefore().floor() + intrinsicPaddingBefore());
 }
 
 LayoutUnit LayoutTableCell::paddingAfter() const
 {
-    return static_cast<int>(computedCSSPaddingAfter()) + intrinsicPaddingAfter();
+    return LayoutUnit(computedCSSPaddingAfter().floor() + intrinsicPaddingAfter());
 }
 
 void LayoutTableCell::setOverrideLogicalContentHeightFromRowHeight(LayoutUnit rowHeight)
@@ -350,7 +354,7 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
             right = std::max(right, below->borderHalfRight(true));
         }
     }
-    LayoutPoint location(std::max<LayoutUnit>(left, -visualOverflowRect().x()), std::max<LayoutUnit>(top, -visualOverflowRect().y()));
+    LayoutPoint location(std::max(LayoutUnit(left), -visualOverflowRect().x()), std::max(LayoutUnit(top), -visualOverflowRect().y()));
     LayoutRect r(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
 
     mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
@@ -367,12 +371,12 @@ void LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject
     LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState);
 }
 
-LayoutUnit LayoutTableCell::cellBaselinePosition() const
+int LayoutTableCell::cellBaselinePosition() const
 {
     // <http://www.w3.org/TR/2007/CR-CSS21-20070719/tables.html#height-layout>: The baseline of a cell is the baseline of
     // the first in-flow line box in the cell, or the first in-flow table-row in the cell, whichever comes first. If there
     // is no such line box or table-row, the baseline is the bottom of content edge of the cell box.
-    LayoutUnit firstLineBaseline = firstLineBoxBaseline();
+    int firstLineBaseline = firstLineBoxBaseline();
     if (firstLineBaseline != -1)
         return firstLineBaseline;
     return borderBefore() + paddingBefore() + contentLogicalHeight();

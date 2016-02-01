@@ -214,8 +214,8 @@ void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidt
     fullRecalc();
 
     int spanMaxLogicalWidth = calcEffectiveLogicalWidth();
-    minWidth = 0;
-    maxWidth = 0;
+    minWidth = LayoutUnit();
+    maxWidth = LayoutUnit();
     float maxPercent = 0;
     float maxNonPercent = 0;
     bool scaleColumns = shouldScaleColumns(m_table);
@@ -242,11 +242,11 @@ void TableLayoutAlgorithmAuto::computeIntrinsicLogicalWidths(LayoutUnit& minWidt
 
     if (scaleColumns) {
         maxNonPercent = maxNonPercent * 100 / std::max(remainingPercent, epsilon);
-        maxWidth = std::max<int>(maxWidth, static_cast<int>(std::min(maxNonPercent, static_cast<float>(tableMaxWidth))));
-        maxWidth = std::max<int>(maxWidth, static_cast<int>(std::min(maxPercent, static_cast<float>(tableMaxWidth))));
+        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxNonPercent, static_cast<float>(tableMaxWidth)))).floor();
+        maxWidth = std::max(maxWidth, LayoutUnit(std::min(maxPercent, static_cast<float>(tableMaxWidth)))).floor();
     }
 
-    maxWidth = std::max<int>(maxWidth, spanMaxLogicalWidth);
+    maxWidth = std::max(maxWidth.floor(), spanMaxLogicalWidth);
 }
 
 void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
@@ -259,11 +259,11 @@ void TableLayoutAlgorithmAuto::applyPreferredLogicalWidthQuirks(LayoutUnit& minW
         // FIXME: This line looks REALLY suspicious as it could allow the minimum
         // preferred logical width to be smaller than the table content. This has
         // to be cross-checked against other browsers.
-        minWidth = maxWidth = std::max<int>(minWidth, tableLogicalWidth.value());
+        minWidth = maxWidth = std::max<int>(minWidth.floor(), tableLogicalWidth.value());
 
         const Length& styleMaxLogicalWidth = m_table->style()->logicalMaxWidth();
         if (styleMaxLogicalWidth.isFixed() && !styleMaxLogicalWidth.isNegative()) {
-            minWidth = std::min<int>(minWidth, styleMaxLogicalWidth.value());
+            minWidth = std::min<int>(minWidth.floor(), styleMaxLogicalWidth.value());
             minWidth = std::max(minWidth, minContentWidth);
             maxWidth = minWidth;
         }
@@ -558,7 +558,8 @@ void TableLayoutAlgorithmAuto::layout()
         for (size_t i = 0; i < nEffCols; ++i) {
             Length& logicalWidth = m_layoutStruct[i].effectiveLogicalWidth;
             if (logicalWidth.hasPercent()) {
-                int cellLogicalWidth = std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth, minimumValueForLength(logicalWidth, tableLogicalWidth));
+                int cellLogicalWidth = std::max<int>(m_layoutStruct[i].effectiveMinLogicalWidth,
+                    minimumValueForLength(logicalWidth, LayoutUnit(tableLogicalWidth)));
                 available += m_layoutStruct[i].computedLogicalWidth - cellLogicalWidth;
                 m_layoutStruct[i].computedLogicalWidth = cellLogicalWidth;
             }

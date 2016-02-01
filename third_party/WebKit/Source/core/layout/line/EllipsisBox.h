@@ -31,7 +31,7 @@ class HitTestResult;
 class EllipsisBox final : public InlineBox {
 public:
     EllipsisBox(InlineBox* inlineBox, const AtomicString& ellipsisStr, InlineFlowBox* parent,
-        int width, int height, int x, int y, bool firstLine, bool isVertical)
+        LayoutUnit width, int height, int x, int y, bool firstLine, bool isVertical)
         : InlineBox(inlineBox, LayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
         , m_height(height)
         , m_str(ellipsisStr)

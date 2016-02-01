@@ -177,14 +177,15 @@ int TableLayoutAlgorithmFixed::calcWidthArray()
 
 void TableLayoutAlgorithmFixed::computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth)
 {
-    minWidth = maxWidth = calcWidthArray();
+    minWidth = maxWidth = LayoutUnit(calcWidthArray());
 }
 
 void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
-    if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive())
-        minWidth = maxWidth = max<int>(minWidth, tableLogicalWidth.value() - m_table->bordersPaddingAndSpacingInRowDirection());
+    if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
+        minWidth = maxWidth = max(minWidth, LayoutUnit(tableLogicalWidth.value() - m_table->bordersPaddingAndSpacingInRowDirection())).floor();
+    }
 
     /*
         <table style="width:100%; background-color:red"><tr><td>
@@ -233,7 +234,7 @@ void TableLayoutAlgorithmFixed::layout()
             totalFixedWidth += calcWidth[i];
         } else if (m_width[i].hasPercent()) {
             // TODO(alancutter): Make this work correctly for calc lengths.
-            calcWidth[i] = valueForLength(m_width[i], tableLogicalWidth);
+            calcWidth[i] = valueForLength(m_width[i], LayoutUnit(tableLogicalWidth));
             totalPercentWidth += calcWidth[i];
             totalPercent += m_width[i].percent();
         } else if (m_width[i].isAuto()) {

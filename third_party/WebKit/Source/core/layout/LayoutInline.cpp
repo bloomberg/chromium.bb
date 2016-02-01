@@ -245,7 +245,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox, int, LayoutUnit* e
     if (extraWidthToEndOfLine)
         *extraWidthToEndOfLine = LayoutUnit();
 
-    LayoutRect caretRect = localCaretRectForEmptyElement(borderAndPaddingWidth(), 0);
+    LayoutRect caretRect = localCaretRectForEmptyElement(borderAndPaddingWidth(), LayoutUnit());
 
     if (InlineBox* firstBox = firstLineBox()) {
         // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
@@ -562,8 +562,8 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             LayoutBox* currBox = toLayoutBox(curr);
             if (currBox->inlineBoxWrapper()) {
                 RootInlineBox& rootBox = currBox->inlineBoxWrapper()->root();
-                int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
-                int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
+                LayoutUnit logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
+                LayoutUnit logicalHeight(container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height());
                 if (isHorizontal) {
                     yield(LayoutRect(LayoutUnit(currBox->inlineBoxWrapper()->x() - currBox->marginLeft()), LayoutUnit(logicalTop),
                         LayoutUnit(currBox->size().width() + currBox->marginWidth()), LayoutUnit(logicalHeight)));
@@ -580,17 +580,17 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             } else {
                 for (InlineFlowBox* childLine = currInline->firstLineBox(); childLine; childLine = childLine->nextLineBox()) {
                     RootInlineBox& rootBox = childLine->root();
-                    int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
-                    int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
+                    LayoutUnit logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
+                    LayoutUnit logicalHeight(container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height());
                     if (isHorizontal) {
                         yield(LayoutRect(LayoutUnit(childLine->x() - childLine->marginLogicalLeft()),
-                            LayoutUnit(logicalTop),
+                            logicalTop,
                             LayoutUnit(childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight()),
-                            LayoutUnit(logicalHeight)));
+                            logicalHeight));
                     } else {
-                        yield(LayoutRect(LayoutUnit(logicalTop),
+                        yield(LayoutRect(logicalTop,
                             LayoutUnit(childLine->y() - childLine->marginLogicalLeft()),
-                            LayoutUnit(logicalHeight),
+                            logicalHeight,
                             LayoutUnit(childLine->logicalWidth() + childLine->marginLogicalLeft() + childLine->marginLogicalRight())));
                     }
                 }
@@ -599,8 +599,10 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             LayoutText* currText = toLayoutText(curr);
             for (InlineTextBox* childText = currText->firstTextBox(); childText; childText = childText->nextTextBox()) {
                 RootInlineBox& rootBox = childText->root();
-                int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
-                int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
+                LayoutUnit logicalTop = LayoutUnit(rootBox.logicalTop()
+                    + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent()
+                    - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent()));
+                LayoutUnit logicalHeight(container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height());
                 if (isHorizontal)
                     yield(LayoutRect(childText->x(), logicalTop, childText->logicalWidth(), logicalHeight));
                 else
@@ -1062,7 +1064,7 @@ LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintIn
 LayoutRect LayoutInline::visualOverflowRect() const
 {
     LayoutRect overflowRect = linesVisualOverflowBoundingBox();
-    LayoutUnit outlineOutset = style()->outlineOutsetExtent();
+    LayoutUnit outlineOutset(style()->outlineOutsetExtent());
     if (outlineOutset) {
         Vector<LayoutRect> rects;
         // We have already included outline extents of line boxes in linesVisualOverflowBoundingBox(),
@@ -1292,10 +1294,10 @@ LayoutUnit LayoutInline::lineHeight(bool firstLine, LineDirectionMode /*directio
     if (firstLine && document().styleEngine().usesFirstLineRules()) {
         const ComputedStyle* s = style(firstLine);
         if (s != style())
-            return s->computedLineHeight();
+            return LayoutUnit(s->computedLineHeight());
     }
 
-    return style()->computedLineHeight();
+    return LayoutUnit(style()->computedLineHeight());
 }
 
 int LayoutInline::baselinePosition(FontBaseline baselineType, bool firstLine, LineDirectionMode direction, LinePositionMode linePositionMode) const

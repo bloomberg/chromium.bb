@@ -96,11 +96,11 @@ void LayoutScrollbarPart::layout()
 void LayoutScrollbarPart::layoutHorizontalPart()
 {
     if (m_part == ScrollbarBGPart) {
-        setWidth(m_scrollbar->width());
+        setWidth(LayoutUnit(m_scrollbar->width()));
         computeScrollbarHeight();
     } else {
         computeScrollbarWidth();
-        setHeight(m_scrollbar->height());
+        setHeight(LayoutUnit(m_scrollbar->height()));
     }
 }
 
@@ -108,9 +108,9 @@ void LayoutScrollbarPart::layoutVerticalPart()
 {
     if (m_part == ScrollbarBGPart) {
         computeScrollbarWidth();
-        setHeight(m_scrollbar->height());
+        setHeight(LayoutUnit(m_scrollbar->height()));
     } else {
-        setWidth(m_scrollbar->width());
+        setWidth(LayoutUnit(m_scrollbar->width()));
         computeScrollbarHeight();
     }
 }
@@ -118,7 +118,7 @@ void LayoutScrollbarPart::layoutVerticalPart()
 static int calcScrollbarThicknessUsing(SizeType sizeType, const Length& length, int containingLength)
 {
     if (!length.isIntrinsicOrAuto() || (sizeType == MinSize && length.isAuto()))
-        return minimumValueForLength(length, containingLength);
+        return minimumValueForLength(length, LayoutUnit(containingLength));
     return ScrollbarTheme::theme().scrollbarThickness();
 }
 
@@ -132,11 +132,11 @@ void LayoutScrollbarPart::computeScrollbarWidth()
     int w = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->width(), visibleSize);
     int minWidth = calcScrollbarThicknessUsing(MinSize, style()->minWidth(), visibleSize);
     int maxWidth = style()->maxWidth().isMaxSizeNone() ? w : calcScrollbarThicknessUsing(MaxSize, style()->maxWidth(), visibleSize);
-    setWidth(std::max(minWidth, std::min(maxWidth, w)));
+    setWidth(LayoutUnit(std::max(minWidth, std::min(maxWidth, w))));
 
     // Buttons and track pieces can all have margins along the axis of the scrollbar.
-    setMarginLeft(minimumValueForLength(style()->marginLeft(), visibleSize));
-    setMarginRight(minimumValueForLength(style()->marginRight(), visibleSize));
+    setMarginLeft(minimumValueForLength(style()->marginLeft(), LayoutUnit(visibleSize)));
+    setMarginRight(minimumValueForLength(style()->marginRight(), LayoutUnit(visibleSize)));
 }
 
 void LayoutScrollbarPart::computeScrollbarHeight()
@@ -149,11 +149,11 @@ void LayoutScrollbarPart::computeScrollbarHeight()
     int h = calcScrollbarThicknessUsing(MainOrPreferredSize, style()->height(), visibleSize);
     int minHeight = calcScrollbarThicknessUsing(MinSize, style()->minHeight(), visibleSize);
     int maxHeight = style()->maxHeight().isMaxSizeNone() ? h : calcScrollbarThicknessUsing(MaxSize, style()->maxHeight(), visibleSize);
-    setHeight(std::max(minHeight, std::min(maxHeight, h)));
+    setHeight(LayoutUnit(std::max(minHeight, std::min(maxHeight, h))));
 
     // Buttons and track pieces can all have margins along the axis of the scrollbar.
-    setMarginTop(minimumValueForLength(style()->marginTop(), visibleSize));
-    setMarginBottom(minimumValueForLength(style()->marginBottom(), visibleSize));
+    setMarginTop(minimumValueForLength(style()->marginTop(), LayoutUnit(visibleSize)));
+    setMarginBottom(minimumValueForLength(style()->marginBottom(), LayoutUnit(visibleSize)));
 }
 
 void LayoutScrollbarPart::computePreferredLogicalWidths()
@@ -161,7 +161,7 @@ void LayoutScrollbarPart::computePreferredLogicalWidths()
     if (!preferredLogicalWidthsDirty())
         return;
 
-    m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = 0;
+    m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = LayoutUnit();
 
     clearPreferredLogicalWidthsDirty();
 }

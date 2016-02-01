@@ -181,7 +181,7 @@ public:
 
     void paint(const PaintInfo&, const LayoutPoint&) const override;
 
-    LayoutUnit cellBaselinePosition() const;
+    int cellBaselinePosition() const;
     bool isBaselineAligned() const
     {
         EVerticalAlign va = style()->verticalAlign();

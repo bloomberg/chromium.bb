@@ -39,7 +39,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine())
-            child->paint(paintContext.paintInfo(), paintOffset, 0, 0);
+            child->paint(paintContext.paintInfo(), paintOffset, LayoutUnit(), LayoutUnit());
     }
 }
 

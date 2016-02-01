@@ -179,7 +179,7 @@ void LayoutMenuList::updateOptionsWidth()
             // Add in the option's text indent.  We can't calculate percentage values for now.
             float optionWidth = 0;
             if (const ComputedStyle* optionStyle = element->computedStyle())
-                optionWidth += minimumValueForLength(optionStyle->textIndent(), 0);
+                optionWidth += minimumValueForLength(optionStyle->textIndent(), LayoutUnit());
             if (!text.isEmpty())
                 optionWidth += computeTextWidth(text);
             maxOptionWidth = std::max(maxOptionWidth, optionWidth);
@@ -355,7 +355,7 @@ LayoutUnit LayoutMenuList::clientPaddingRight() const
         // drop-down button. But leaving room for the button inside the popup menu itself
         // looks strange, so we return a small default padding to avoid having a large empty
         // space appear on the side of the popup menu.
-        return endOfLinePadding;
+        return LayoutUnit(endOfLinePadding);
     }
 
     // If the appearance isn't MenulistPart, then the select is styled (non-native), so

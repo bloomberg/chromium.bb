@@ -71,10 +71,10 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
         int offsetFromCenter = LayoutTheme::theme().sliderTickOffsetFromTrackCenter();
         LayoutUnit trackHeight;
         if (offsetFromCenter < 0) {
-            trackHeight = -2 * offsetFromCenter;
+            trackHeight = LayoutUnit(-2 * offsetFromCenter);
         } else {
             int tickLength = LayoutTheme::theme().sliderTickSize().height();
-            trackHeight = 2 * (offsetFromCenter + tickLength);
+            trackHeight = LayoutUnit(2 * (offsetFromCenter + tickLength));
         }
         float zoomFactor = style()->effectiveZoom();
         if (zoomFactor != 1.0)
@@ -87,7 +87,7 @@ void LayoutSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
         return;
     }
     if (isVertical)
-        logicalHeight = LayoutSlider::defaultTrackLength;
+        logicalHeight = LayoutUnit(LayoutSlider::defaultTrackLength);
 
     // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
     setIntrinsicContentLogicalHeight(logicalHeight);
