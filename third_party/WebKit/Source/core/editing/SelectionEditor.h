@@ -45,6 +45,7 @@ public:
         return adoptPtrWillBeNoop(new SelectionEditor(frameSelection));
     }
     virtual ~SelectionEditor();
+    void dispose();
 
     bool hasEditableStyle() const { return m_selection.hasEditableStyle(); }
     bool isContentEditable() const { return m_selection.isContentEditable(); }

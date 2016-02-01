@@ -621,6 +621,7 @@ void FrameSelection::prepareForDestruction()
         view->clearSelection();
 
     setSelection(VisibleSelection(), CloseTyping | ClearTypingStyle | DoNotUpdateAppearance);
+    m_selectionEditor->dispose();
     m_previousCaretNode.clear();
 }
 
