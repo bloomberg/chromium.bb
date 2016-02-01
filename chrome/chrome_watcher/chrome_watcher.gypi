@@ -65,6 +65,7 @@
         '../base/base.gyp:base',
         '../components/components.gyp:browser_watcher',
         '../third_party/kasko/kasko.gyp:kasko',
+        '../components/components.gyp:crash_component'
       ],
       'msvs_settings': {
         'VCLinkerTool': {

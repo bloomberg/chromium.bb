@@ -117,7 +117,6 @@
       'browser/history/web_history_service_unittest.cc',
       'browser/image_holder_unittest.cc',
       'browser/install_verification/win/loaded_module_verification_unittest.cc',
-      'browser/install_verification/win/loaded_modules_snapshot_unittest.cc',
       'browser/install_verification/win/module_ids_unittest.cc',
       'browser/install_verification/win/module_info_unittest.cc',
       'browser/install_verification/win/module_list_unittest.cc',

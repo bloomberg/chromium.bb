@@ -4,8 +4,9 @@
 
 #include <windows.h>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/strings/string_util.h"
+#include "base/scoped_native_library.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -52,6 +53,27 @@ TEST(BaseWinUtilTest, TestGetNonClientMetrics) {
   EXPECT_GT(metrics.cbSize, 0u);
   EXPECT_GT(metrics.iScrollWidth, 0);
   EXPECT_GT(metrics.iScrollHeight, 0);
+}
+
+TEST(BaseWinUtilTest, TestGetLoadedModulesSnapshot) {
+  std::vector<HMODULE> snapshot;
+
+  ASSERT_TRUE(GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot));
+  size_t original_snapshot_size = snapshot.size();
+  ASSERT_GT(original_snapshot_size, 0u);
+  snapshot.clear();
+
+  // Load in a new module. Pick msvidc32.dll as it is present from WinXP to
+  // Win10 and yet rarely used.
+  const wchar_t dll_name[] = L"msvidc32.dll";
+  ASSERT_EQ(NULL, ::GetModuleHandle(dll_name));
+
+  base::ScopedNativeLibrary new_dll((base::FilePath(dll_name)));
+  ASSERT_NE(static_cast<HMODULE>(NULL), new_dll.get());
+  ASSERT_TRUE(GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot));
+  ASSERT_GT(snapshot.size(), original_snapshot_size);
+  ASSERT_NE(snapshot.end(),
+            std::find(snapshot.begin(), snapshot.end(), new_dll.get()));
 }
 
 }  // namespace win

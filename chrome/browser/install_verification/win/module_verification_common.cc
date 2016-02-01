@@ -8,7 +8,7 @@
 #include "base/md5.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/install_verification/win/loaded_modules_snapshot.h"
+#include "base/win/win_util.h"
 #include "chrome/browser/install_verification/win/module_info.h"
 #include "chrome/browser/install_verification/win/module_list.h"
 
@@ -19,7 +19,7 @@ std::string CalculateModuleNameDigest(const base::string16& module_name) {
 
 bool GetLoadedModules(std::set<ModuleInfo>* loaded_modules) {
   std::vector<HMODULE> snapshot;
-  if (!GetLoadedModulesSnapshot(&snapshot))
+  if (!base::win::GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot))
     return false;
 
   ModuleList::FromLoadedModuleSnapshot(snapshot)->GetModuleInfoSet(

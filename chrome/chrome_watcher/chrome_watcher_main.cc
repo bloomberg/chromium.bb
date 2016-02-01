@@ -40,6 +40,7 @@
 #include "third_party/kasko/kasko_features.h"
 
 #if BUILDFLAG(ENABLE_KASKO)
+#include "components/crash/content/app/crashpad.h"
 #include "syzygy/kasko/api/reporter.h"
 #endif
 
@@ -233,39 +234,19 @@ void GetKaskoCrashReportsBaseDir(const base::char16* browser_data_directory,
 void DumpHungBrowserProcess(DWORD main_thread_id,
                             const base::string16& channel,
                             const base::Process& process) {
-  // TODO(erikwright): Rather than recreating these crash keys here, it would be
-  // ideal to read them directly from the browser process.
+  // Read the Crashpad module annotations for the process.
+  std::vector<kasko::api::CrashKey> annotations;
+  crash_reporter::ReadMainModuleAnnotationsForKasko(process, &annotations);
 
-  // This is looking up the version of chrome_watcher.dll, which is equivalent
-  // for our purposes to chrome.dll.
-  scoped_ptr<FileVersionInfo> version_info(
-      CREATE_FILE_VERSION_INFO_FOR_CURRENT_MODULE());
-  using CrashKeyStrings = std::pair<base::string16, base::string16>;
-  std::vector<CrashKeyStrings> crash_key_strings;
-  if (version_info.get()) {
-    crash_key_strings.push_back(
-        CrashKeyStrings(L"prod", version_info->product_short_name()));
-    base::string16 version = version_info->product_version();
-    if (!version_info->is_official_build())
-      version.append(base::ASCIIToUTF16("-devel"));
-    crash_key_strings.push_back(CrashKeyStrings(L"ver", version));
-  } else {
-    // No version info found. Make up the values.
-    crash_key_strings.push_back(CrashKeyStrings(L"prod", L"Chrome"));
-    crash_key_strings.push_back(CrashKeyStrings(L"ver", L"0.0.0.0-devel"));
-  }
-  crash_key_strings.push_back(CrashKeyStrings(L"channel", channel));
-  crash_key_strings.push_back(CrashKeyStrings(L"plat", L"Win32"));
-  crash_key_strings.push_back(CrashKeyStrings(L"ptype", L"browser"));
-  crash_key_strings.push_back(
-      CrashKeyStrings(L"pid", base::IntToString16(process.Pid())));
-  crash_key_strings.push_back(CrashKeyStrings(L"hung-process", L"1"));
+  // Add a special crash key to distinguish reports generated for a hung
+  // process.
+  annotations.push_back(kasko::api::CrashKey{L"hung-process", L"1"});
 
   std::vector<const base::char16*> key_buffers;
   std::vector<const base::char16*> value_buffers;
-  for (auto& strings : crash_key_strings) {
-    key_buffers.push_back(strings.first.c_str());
-    value_buffers.push_back(strings.second.c_str());
+  for (const auto& crash_key : annotations) {
+    key_buffers.push_back(crash_key.name);
+    value_buffers.push_back(crash_key.value);
   }
   key_buffers.push_back(nullptr);
   value_buffers.push_back(nullptr);
@@ -339,8 +320,6 @@ void OnCrashReportUpload(void* context,
                      0, strings, nullptr)) {
     DPLOG(ERROR);
   }
-
-  // TODO(erikwright): Copy minidump to some "last dump" location?
 }
 
 #endif  // BUILDFLAG(ENABLE_KASKO)

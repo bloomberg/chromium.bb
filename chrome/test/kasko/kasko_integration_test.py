@@ -17,7 +17,7 @@ most likely lead to constant failures.
 Typical usage (assuming in root 'src' directory):
 
 - generate project files with the following GYP variables:
-    syzyasan=1 win_z7=0 chromium_win_pch=0
+    branding=Chrome syzyasan=1 win_z7=0 chromium_win_pch=0
 - build the release Chrome binaries:
     ninja -C out\Release chrome.exe chromedriver.exe
 - run the test:

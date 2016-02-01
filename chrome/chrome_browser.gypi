@@ -292,8 +292,6 @@
       'browser/install_verification/win/install_verification.h',
       'browser/install_verification/win/loaded_module_verification.cc',
       'browser/install_verification/win/loaded_module_verification.h',
-      'browser/install_verification/win/loaded_modules_snapshot.cc',
-      'browser/install_verification/win/loaded_modules_snapshot.h',
       'browser/install_verification/win/module_ids.cc',
       'browser/install_verification/win/module_ids.h',
       'browser/install_verification/win/module_info.h',

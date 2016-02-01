@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/strings/string16.h"
@@ -165,6 +166,13 @@ BASE_EXPORT void SetDomainStateForTesting(bool state);
 // crashes. This function can be used to guard areas of code using these calls
 // and provide a fallback path if necessary.
 BASE_EXPORT bool IsUser32AndGdi32Available();
+
+// Takes a snapshot of the modules loaded in the |process|. The returned
+// HMODULEs are not add-ref'd, so they should not be closed and may be
+// invalidated at any time (should a module be unloaded). |process| requires
+// the PROCESS_QUERY_INFORMATION and PROCESS_VM_READ permissions.
+BASE_EXPORT bool GetLoadedModulesSnapshot(HANDLE process,
+                                          std::vector<HMODULE>* snapshot);
 
 }  // namespace win
 }  // namespace base

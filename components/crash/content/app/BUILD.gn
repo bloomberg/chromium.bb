@@ -50,7 +50,10 @@ source_set("app") {
 
   deps += [ ":lib" ]
   if (is_mac || is_win) {
-    deps += [ "//third_party/crashpad/crashpad/client" ]
+    deps += [
+      "//third_party/crashpad/crashpad/client",
+      "//third_party/crashpad/crashpad/snapshot:snapshot_api",
+    ]
   }
 }
 

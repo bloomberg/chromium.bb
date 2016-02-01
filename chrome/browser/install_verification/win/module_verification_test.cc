@@ -7,7 +7,8 @@
 #include <Windows.h>
 
 #include <vector>
-#include "chrome/browser/install_verification/win/loaded_modules_snapshot.h"
+
+#include "base/win/win_util.h"
 #include "chrome/browser/install_verification/win/module_list.h"
 
 std::set<size_t> ModuleVerificationTest::reported_module_ids_;
@@ -19,7 +20,7 @@ void ModuleVerificationTest::SetUp() {
 bool ModuleVerificationTest::GetLoadedModuleInfoSet(
     std::set<ModuleInfo>* loaded_module_info_set) {
   std::vector<HMODULE> snapshot;
-  if (!GetLoadedModulesSnapshot(&snapshot))
+  if (!base::win::GetLoadedModulesSnapshot(::GetCurrentProcess(), &snapshot))
     return false;
   ModuleList::FromLoadedModuleSnapshot(snapshot)->GetModuleInfoSet(
       loaded_module_info_set);

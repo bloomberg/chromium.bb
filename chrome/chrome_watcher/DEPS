@@ -2,6 +2,7 @@ include_rules = [
   "+base",
   "+chrome/installer/util",
   "+components/browser_watcher",
+  "+components/crash",
   "+syzygy/kasko/api",
   "+third_party/kasko",
 ]

@@ -42,7 +42,7 @@ def Main():
   kasko.integration_test.RunTest(options,
                                  'chrome://delayeduithreadhang',
                                  120,
-                                 None)
+                                 {'hung-process': 'DumpHungBrowserProcess()'})
 
   _LOGGER.info('Test passed successfully!')
 

@@ -7,6 +7,10 @@
 #include <stddef.h>
 #include <string.h>
 
+#if BUILDFLAG(ENABLE_KASKO)
+#include <psapi.h>
+#endif  // BUILDFLAG(ENABLE_KASKO)
+
 #include <algorithm>
 #include <map>
 #include <vector>
@@ -34,6 +38,12 @@
 #if defined(OS_POSIX)
 #include <unistd.h>
 #endif  // OS_POSIX
+
+#if BUILDFLAG(ENABLE_KASKO)
+#include "base/win/scoped_handle.h"
+#include "base/win/win_util.h"
+#include "third_party/crashpad/crashpad/snapshot/api/module_annotations_win.h"
+#endif
 
 namespace crash_reporter {
 
@@ -92,6 +102,25 @@ bool LogMessageHandler(int severity,
 void DumpWithoutCrashing() {
   CRASHPAD_SIMULATE_CRASH();
 }
+
+#if BUILDFLAG(ENABLE_KASKO)
+HMODULE GetModuleInProcess(base::ProcessHandle process,
+                           const wchar_t* module_name) {
+  std::vector<HMODULE> modules_snapshot;
+  if (!base::win::GetLoadedModulesSnapshot(process, &modules_snapshot))
+    return nullptr;
+
+  for (HMODULE module : modules_snapshot) {
+    wchar_t current_module_name[MAX_PATH];
+    if (!::GetModuleBaseName(process, module, current_module_name, MAX_PATH))
+      continue;
+
+    if (std::wcscmp(module_name, current_module_name) == 0)
+      return module;
+  }
+  return nullptr;
+}
+#endif  // BUILDFLAG(ENABLE_KASKO)
 
 }  // namespace
 
@@ -293,10 +322,33 @@ void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
   // Merge in the platform annotations.
   for (const auto& entry : annotations) {
     kasko::api::CrashKey kv;
-    wcsncpy_s(kv.name, base::UTF8ToWide(entry.first).c_str(),
-              _TRUNCATE);
-    wcsncpy_s(kv.value, base::UTF8ToWide(entry.second).c_str(),
-              _TRUNCATE);
+    wcsncpy_s(kv.name, base::UTF8ToWide(entry.first).c_str(), _TRUNCATE);
+    wcsncpy_s(kv.value, base::UTF8ToWide(entry.second).c_str(), _TRUNCATE);
+    crash_keys->push_back(kv);
+  }
+}
+
+void ReadMainModuleAnnotationsForKasko(
+    const base::Process& process,
+    std::vector<kasko::api::CrashKey>* crash_keys) {
+  // Reopen process with necessary access.
+  base::win::ScopedHandle process_handle(::OpenProcess(
+      PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, process.Pid()));
+  if (!process_handle.IsValid())
+    return;
+
+  HMODULE module = GetModuleInProcess(process_handle.Get(), L"chrome.exe");
+  if (!module)
+    return;
+
+  std::map<std::string, std::string> annotations;
+  crashpad::ReadModuleAnnotations(process_handle.Get(), module, &annotations);
+
+  // Append the annotations to the crash keys.
+  for (const auto& entry : annotations) {
+    kasko::api::CrashKey kv;
+    wcsncpy_s(kv.name, base::UTF8ToWide(entry.first).c_str(), _TRUNCATE);
+    wcsncpy_s(kv.value, base::UTF8ToWide(entry.second).c_str(), _TRUNCATE);
     crash_keys->push_back(kv);
   }
 }
