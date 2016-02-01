@@ -1052,9 +1052,10 @@ void FrameSelection::caretBlinkTimerFired(Timer<FrameSelection>*)
 
 void FrameSelection::stopCaretBlinkTimer()
 {
-    m_caretBlinkTimer.stop();
+    if (m_caretBlinkTimer.isActive() || m_shouldPaintCaret)
+        setCaretRectNeedsUpdate();
     m_shouldPaintCaret = false;
-    setCaretRectNeedsUpdate();
+    m_caretBlinkTimer.stop();
 }
 
 void FrameSelection::notifyLayoutObjectOfSelectionChange(EUserTriggered userTriggered)
