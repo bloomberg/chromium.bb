@@ -1,0 +1,99 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/html/util.html">
+
+<dom-module id="history-item">
+  <template>
+    <style>
+      #main-container {
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
+        min-height: 40px;
+      }
+
+      paper-checkbox {
+        --paper-checkbox-checked-color: rgb(68, 136, 255);
+        --paper-checkbox-size: 16px;
+        --paper-checkbox-unchecked-color: #969696;
+        height: 16px;
+        margin: 0 16px 0 20px;
+        padding: 2px;
+        width: 16px;
+      }
+
+      #time {
+        color: #646464;
+        min-width: 96px;
+      }
+
+      #title {
+        color: #333;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      #title:hover {
+        text-decoration: underline;
+      }
+
+      #domain {
+        @apply(--layout-flex);
+        -webkit-margin-start: 16px;
+        color: #969696;
+        white-space: nowrap;
+      }
+
+      iron-icon {
+        --iron-icon-height: 16px;
+        --iron-icon-width: 16px;
+      }
+
+      #website-icon {
+        -webkit-margin-end: 16px;
+        height: 16px;
+        min-width: 16px;
+      }
+
+      #menu-button {
+        -webkit-margin-end: 12px;
+        -webkit-margin-start: 2px;
+        color: #969696;
+        height: 36px;
+        min-width: 36px;
+        width: 36px;
+      }
+
+      #bookmark {
+        -webkit-margin-end: 10px;
+        -webkit-margin-start: 20px;
+        color: rgb(68, 136, 255);
+        min-width: 16px;
+        visibility: hidden;
+      }
+
+      :host([starred]) #bookmark {
+        visibility: visible;
+      }
+    </style>
+    <div id="main-container">
+      <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
+          checked="{{selected}}">
+      </paper-checkbox>
+      <span id="time">{{timeAccessed_}}</span>
+      <div id="website-icon"></div>
+      <a href="{{websiteUrl_}}" id="title">{{websiteTitle_}}</a>
+      <span id="domain">{{websiteDomain_}}</span>
+      <iron-icon icon="star" id="bookmark"></iron-icon>
+      <paper-icon-button icon="more-vert" id="menu-button"
+          on-tap="onMenuButtonTap_">
+      </paper-icon-button>
+    </div>
+  </template>
+  <script src="chrome://history/history_item.js"></script>
+</dom-module>
