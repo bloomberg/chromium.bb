@@ -181,6 +181,9 @@ net::CookieStore* CreateCookieStore(const CookieStoreConfig& config) {
     }
   }
 
+  if (!config.cookieable_schemes.empty())
+    cookie_monster->SetCookieableSchemes(config.cookieable_schemes);
+
   return cookie_monster;
 }
 

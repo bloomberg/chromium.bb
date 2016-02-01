@@ -1331,8 +1331,9 @@ TEST_F(CookieMonsterTest, SetCookieableSchemes) {
   scoped_refptr<CookieMonster> cm_foo(new CookieMonster(NULL, NULL));
 
   // Only cm_foo should allow foo:// cookies.
-  const char* const kSchemes[] = {"foo"};
-  cm_foo->SetCookieableSchemes(kSchemes, 1);
+  std::vector<std::string> schemes;
+  schemes.push_back("foo");
+  cm_foo->SetCookieableSchemes(schemes);
 
   GURL foo_url("foo://host/path");
   GURL http_url("http://host/path");

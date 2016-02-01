@@ -82,7 +82,6 @@
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
@@ -157,12 +156,9 @@ class QuittingHistoryDBTask : public history::HistoryDBTask {
 class TestExtensionURLRequestContext : public net::URLRequestContext {
  public:
   TestExtensionURLRequestContext() {
-    net::CookieMonster* cookie_monster =
-        content::CreateCookieStore(content::CookieStoreConfig())->
-            GetCookieMonster();
-    const char* const schemes[] = {extensions::kExtensionScheme};
-    cookie_monster->SetCookieableSchemes(schemes, arraysize(schemes));
-    set_cookie_store(cookie_monster);
+    content::CookieStoreConfig cookie_config;
+    cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
+    set_cookie_store(content::CreateCookieStore(cookie_config));
   }
 
   ~TestExtensionURLRequestContext() override { AssertNoURLRequests(); }

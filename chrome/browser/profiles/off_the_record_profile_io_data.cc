@@ -295,14 +295,11 @@ void OffTheRecordProfileIOData::
       io_thread_globals->url_request_backoff_manager.get());
   // All we care about for extensions is the cookie store. For incognito, we
   // use a non-persistent cookie store.
-  net::CookieMonster* extensions_cookie_store =
-      content::CreateCookieStore(content::CookieStoreConfig())->
-          GetCookieMonster();
+  content::CookieStoreConfig cookie_config;
   // Enable cookies for chrome-extension URLs.
-  const char* const schemes[] = {
-      extensions::kExtensionScheme
-  };
-  extensions_cookie_store->SetCookieableSchemes(schemes, arraysize(schemes));
+  cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
+  net::CookieStore* extensions_cookie_store =
+      content::CreateCookieStore(cookie_config);
   extensions_context->set_cookie_store(extensions_cookie_store);
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(

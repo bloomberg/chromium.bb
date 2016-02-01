@@ -589,14 +589,10 @@ void ProfileImplIOData::
       lazy_params_->session_cookie_mode,
       NULL, NULL);
   cookie_config.crypto_delegate = cookie_config::GetCookieCryptoDelegate();
+  // Enable cookies for chrome-extension URLs.
+  cookie_config.cookieable_schemes.push_back(extensions::kExtensionScheme);
   net::CookieStore* extensions_cookie_store =
       content::CreateCookieStore(cookie_config);
-  // Enable cookies for chrome-extension URLs.
-  const char* const schemes[] = {
-      extensions::kExtensionScheme
-  };
-  extensions_cookie_store->GetCookieMonster()->SetCookieableSchemes(
-      schemes, arraysize(schemes));
   extensions_context->set_cookie_store(extensions_cookie_store);
 
   scoped_ptr<net::URLRequestJobFactoryImpl> extensions_job_factory(

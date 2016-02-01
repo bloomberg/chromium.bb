@@ -5,6 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_COOKIE_STORE_FACTORY_H_
 #define CONTENT_PUBLIC_BROWSER_COOKIE_STORE_FACTORY_H_
 
+#include <string>
+#include <vector>
+
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -87,6 +90,9 @@ struct CONTENT_EXPORT CookieStoreConfig {
   //
   // Only used for persistent cookie stores.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner;
+
+  // If non-empty, overrides the default list of schemes that support cookies.
+  std::vector<std::string> cookieable_schemes;
 };
 
 CONTENT_EXPORT net::CookieStore* CreateCookieStore(

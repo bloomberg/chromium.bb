@@ -5,6 +5,7 @@
 #include "android_webview/native/cookie_manager.h"
 
 #include <utility>
+#include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
@@ -509,7 +510,22 @@ void CookieManager::SetAcceptFileSchemeCookies(bool accept) {
 }
 
 void CookieManager::SetAcceptFileSchemeCookiesLocked(bool accept) {
-  cookie_monster_->SetEnableFileScheme(accept);
+  // There are some unknowns about how to correctly handle file:// cookies,
+  // and our implementation for this is not robust.  http://crbug.com/582985
+  //
+  // TODO(mmenke): This call should be removed once we can deprecate and remove
+  // the Android WebView 'CookieManager::setAcceptFileSchemeCookies' method.
+  // Until then, note that this is just not a great idea.
+  std::vector<std::string> schemes;
+  schemes.insert(schemes.begin(),
+                 net::CookieMonster::kDefaultCookieableSchemes,
+                 net::CookieMonster::kDefaultCookieableSchemes +
+                     net::CookieMonster::kDefaultCookieableSchemesCount);
+
+  if (accept)
+    schemes.push_back(url::kFileScheme);
+
+  cookie_monster_->SetCookieableSchemes(schemes);
 }
 
 }  // namespace

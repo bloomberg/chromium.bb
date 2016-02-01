@@ -356,8 +356,6 @@ void RunAsync(scoped_refptr<base::TaskRunner> proxy,
 CookieMonster::CookieMonster(PersistentCookieStore* store,
                              CookieMonsterDelegate* delegate)
     : CookieMonster(store, delegate, kDefaultAccessUpdateThresholdSeconds) {
-  InitializeHistograms();
-  SetDefaultCookieableSchemes();
 }
 
 CookieMonster::CookieMonster(PersistentCookieStore* store,
@@ -375,7 +373,9 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       keep_expired_cookies_(false),
       persist_session_cookies_(false) {
   InitializeHistograms();
-  SetDefaultCookieableSchemes();
+  cookieable_schemes_.insert(
+      cookieable_schemes_.begin(), kDefaultCookieableSchemes,
+      kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
 }
 
 bool CookieMonster::ImportCookies(const CookieList& list) {
@@ -1102,19 +1102,16 @@ CookieMonster* CookieMonster::GetCookieMonster() {
   return this;
 }
 
-void CookieMonster::SetCookieableSchemes(const char* const schemes[],
-                                         size_t num_schemes) {
+void CookieMonster::SetCookieableSchemes(
+    const std::vector<std::string>& schemes) {
   base::AutoLock autolock(lock_);
 
   // Calls to this method will have no effect if made after a WebView or
   // CookieManager instance has been created.
-  if (initialized_) {
+  if (initialized_)
     return;
-  }
 
-  cookieable_schemes_.clear();
-  cookieable_schemes_.insert(cookieable_schemes_.end(), schemes,
-                             schemes + num_schemes);
+  cookieable_schemes_ = schemes;
 }
 
 void CookieMonster::SetKeepExpiredCookies() {
@@ -1140,12 +1137,8 @@ bool CookieMonster::IsCookieableScheme(const std::string& scheme) {
                    scheme) != cookieable_schemes_.end();
 }
 
-// Note: file must be the last scheme.
-const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http",
-                                                                "https",
-                                                                "ws",
-                                                                "wss",
-                                                                "file"};
+const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",
+                                                                "ws", "wss"};
 const int CookieMonster::kDefaultCookieableSchemesCount =
     arraysize(kDefaultCookieableSchemes);
 
@@ -1160,23 +1153,6 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
   return hook_map_[key]->Add(
       base::Bind(&RunAsync, base::ThreadTaskRunnerHandle::Get(), callback));
 }
-
-#if defined(OS_ANDROID)
-void CookieMonster::SetEnableFileScheme(bool accept) {
-  // This assumes "file" is always at the end of the array. See the comment
-  // above kDefaultCookieableSchemes.
-  //
-  // TODO(mkwst): We're keeping this method around to support the
-  // 'CookieManager::setAcceptFileSchemeCookies' method on Android's WebView;
-  // if/when we can deprecate and remove that method, we can remove this one
-  // as well. Until then, we'll just ensure that the method has no effect on
-  // non-android systems.
-  int num_schemes = accept ? kDefaultCookieableSchemesCount
-                           : kDefaultCookieableSchemesCount - 1;
-
-  SetCookieableSchemes(kDefaultCookieableSchemes, num_schemes);
-}
-#endif
 
 CookieMonster::~CookieMonster() {
   DeleteAll(false);
@@ -1712,12 +1688,6 @@ void CookieMonster::TrimDuplicateCookiesForKey(const std::string& key,
     }
   }
   DCHECK_EQ(num_duplicates, num_duplicates_found);
-}
-
-void CookieMonster::SetDefaultCookieableSchemes() {
-  // Always disable file scheme unless SetEnableFileScheme(true) is called.
-  SetCookieableSchemes(kDefaultCookieableSchemes,
-                       kDefaultCookieableSchemesCount - 1);
 }
 
 void CookieMonster::FindCookiesForHostAndDomain(
