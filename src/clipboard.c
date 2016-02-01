@@ -141,7 +141,7 @@ clipboard_source_create(struct clipboard *clipboard,
 	struct clipboard_source *source;
 	char **s;
 
-	source = malloc(sizeof *source);
+	source = zalloc(sizeof *source);
 	if (source == NULL)
 		return NULL;
 
