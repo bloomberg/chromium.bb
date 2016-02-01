@@ -221,7 +221,8 @@ public class DownloadNotificationService extends Service {
         intent.setComponent(component);
         intent.putExtra(EXTRA_DOWNLOAD_ID, downloadId);
         intent.putExtra(EXTRA_DOWNLOAD_FILE_NAME, fileName);
-        return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(
+                mContext, downloadId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /**
