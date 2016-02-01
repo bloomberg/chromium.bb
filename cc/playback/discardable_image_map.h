@@ -8,10 +8,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/rtree.h"
 #include "cc/playback/draw_image.h"
+#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -50,7 +51,7 @@ class CC_EXPORT DiscardableImageMap {
 
    private:
     DiscardableImageMap* image_map_;
-    scoped_ptr<SkCanvas> metadata_canvas_;
+    skia::RefPtr<SkCanvas> metadata_canvas_;
   };
 
   DiscardableImageMap();
@@ -66,7 +67,7 @@ class CC_EXPORT DiscardableImageMap {
   friend class ScopedMetadataGenerator;
   friend class DiscardableImageMapTest;
 
-  scoped_ptr<SkCanvas> BeginGeneratingMetadata(const gfx::Size& bounds);
+  skia::RefPtr<SkCanvas> BeginGeneratingMetadata(const gfx::Size& bounds);
   void EndGeneratingMetadata();
 
   std::vector<std::pair<DrawImage, gfx::Rect>> all_images_;

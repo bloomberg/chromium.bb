@@ -183,10 +183,10 @@ DiscardableImageMap::DiscardableImageMap() {}
 
 DiscardableImageMap::~DiscardableImageMap() {}
 
-scoped_ptr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
+skia::RefPtr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
     const gfx::Size& bounds) {
   DCHECK(all_images_.empty());
-  return scoped_ptr<SkCanvas>(new DiscardableImagesMetadataCanvas(
+  return skia::AdoptRef(new DiscardableImagesMetadataCanvas(
       bounds.width(), bounds.height(), &all_images_));
 }
 
