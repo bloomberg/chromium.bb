@@ -106,6 +106,7 @@
         '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
         '<(DEPTH)/chrome/chrome_resources.gyp:packed_resources',
+        '<(DEPTH)/content/content_shell_and_tests.gyp:content_browser_test_base',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',

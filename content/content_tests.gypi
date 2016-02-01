@@ -26,11 +26,6 @@
       'public/test/async_file_test_helper.h',
       'public/test/background_sync_test_util.cc',
       'public/test/background_sync_test_util.h',
-      'public/test/browser_test.h',
-      'public/test/browser_test_base.cc',
-      'public/test/browser_test_base.h',
-      'public/test/browser_test_utils.cc',
-      'public/test/browser_test_utils.h',
       'public/test/content_test_suite_base.cc',
       'public/test/content_test_suite_base.h',
       'public/test/download_test_observer.cc',
@@ -1363,7 +1358,9 @@
           ],
         },
         {
-          # GN version: //content/tests:browsertest_support
+          # GN version: //content/test:browsertest_support
+          # content_browser_test_support can be used by targets that run
+          # content_shell based browser tests.
           'target_name': 'content_browser_test_support',
           'type': 'static_library',
           'dependencies': [
@@ -1403,6 +1400,42 @@
           ],
         },
         {
+          # GN version: //content/test:browsertest_base
+          # content_browser_test_base can be used by any browser test target.
+          'target_name': 'content_browser_test_base',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../net/net.gyp:net_test_support',
+            '../testing/gtest.gyp:gtest',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+            '../ui/base/ui_base.gyp:ui_base',
+            '../ui/base/ui_base.gyp:ui_base_test_support',
+            '../ui/events/events.gyp:events_test_support',
+            'content.gyp:content_browser',
+            'content.gyp:content_common',
+          ],
+          'export_dependent_settings': [
+            'content.gyp:content_browser',
+          ],
+          'sources': [
+            # Source list duplicated in GN build.
+            'public/test/browser_test.h',
+            'public/test/browser_test_base.cc',
+            'public/test/browser_test_base.h',
+            'public/test/browser_test_utils.cc',
+            'public/test/browser_test_utils.h',
+          ],
+          'conditions': [
+            ['OS != "ios"', {
+              'dependencies': [ '../third_party/WebKit/public/blink.gyp:blink' ],
+              'export_dependent_settings': [
+                '../third_party/WebKit/public/blink.gyp:blink',
+              ],
+            }],
+          ],
+        },
+        {
           # GN version: //content/test:test_mojo_bindings
           'target_name': 'content_test_mojo_bindings',
           'type': 'static_library',
@@ -1437,6 +1470,7 @@
             'content.gyp:content_plugin',
             'content.gyp:content_renderer',
             'content.gyp:content_resources',
+            'content_browser_test_base',
             'content_browser_test_support',
             'content_common_mojo_bindings.gyp:content_common_mojo_bindings',
             'content_shell_lib',
