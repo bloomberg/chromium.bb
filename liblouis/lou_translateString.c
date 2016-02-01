@@ -601,19 +601,6 @@ brailleIndicatorDefined (TranslationTableOffset offset)
 static int prevType = plain_text;
 static int curType = plain_text;
 
-typedef enum
-{
-  firstWord,
-  lastWordBefore,
-  lastWordAfter,
-  firstLetter,
-  lastLetter,
-  singleLetter,
-  word,
-  wordStop,
-  lenPhrase
-} emphCodes;
-
 static int
 validMatch ()
 {
@@ -2136,10 +2123,10 @@ convertToPassage(
 	}
 	
 	buffer[pass_start] |= bit_begin;
-	if(brailleIndicatorDefined(offset[lastLetter])
-	   || brailleIndicatorDefined(offset[lastWordAfter]))
+	if(brailleIndicatorDefined(offset[lastLetterOffset])
+	   || brailleIndicatorDefined(offset[lastWordAfterOffset]))
 		buffer[pass_end] |= bit_end;
-	else if(brailleIndicatorDefined(offset[lastWordBefore]))
+	else if(brailleIndicatorDefined(offset[lastWordBeforeOffset]))
 		buffer[word_start] |= bit_end;
 }
 
@@ -2156,7 +2143,7 @@ resolveEmphasisPassages(
 	int pass_start = -1, pass_end = -1, word_start = -1, in_word = 0, in_pass = 0;
 	int i;
 	
-	if(!offset[lenPhrase])
+	if(!offset[lenPhraseOffset])
 		return;
 	
 	for(i = 0; i < srcmax; i++)
@@ -2168,7 +2155,7 @@ resolveEmphasisPassages(
 			{
 				if(!in_word)
 				{
-					if(word_cnt >= offset[lenPhrase])
+					if(word_cnt >= offset[lenPhraseOffset])
 					if(pass_end >= 0)
 					{
 						convertToPassage(
@@ -2178,7 +2165,7 @@ resolveEmphasisPassages(
 				}
 				else
 				{
-					if(word_cnt >= offset[lenPhrase])
+					if(word_cnt >= offset[lenPhraseOffset])
 					if(pass_end >= 0)
 					{
 						convertToPassage(
@@ -2212,7 +2199,7 @@ resolveEmphasisPassages(
 			}
 			else if(in_pass)
 			{
-				if(word_cnt >= offset[lenPhrase])
+				if(word_cnt >= offset[lenPhraseOffset])
 				if(pass_end >= 0)
 				{
 					convertToPassage(
@@ -2238,7 +2225,7 @@ resolveEmphasisPassages(
 		   || buffer[i] & bit_word
 		   || buffer[i] & bit_symbol)
 		{
-			if(word_cnt >= offset[lenPhrase])
+			if(word_cnt >= offset[lenPhraseOffset])
 			if(pass_end >= 0)
 			{
 				convertToPassage(
@@ -2251,7 +2238,7 @@ resolveEmphasisPassages(
 	
 	if(in_pass)
 	{
-		if(word_cnt >= offset[lenPhrase])
+		if(word_cnt >= offset[lenPhraseOffset])
 		if(pass_end >= 0)
 		{
 			convertToPassage(
@@ -2630,54 +2617,53 @@ markEmphases()
 	if(!haveEmphasis)
 		return;
 		
-	if(table->underWord)
-		resolveEmphasisWords(emphasisBuffer, &table->firstWordUnder,
+	if(table->emphRules[emph2Rule][wordOffset])
+		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph2Rule][firstWordOffset],
 		                     UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-	else if(table->singleLetterUnder)
-		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordUnder,
+	else if(table->emphRules[emph2Rule][singleLetterOffset])
+		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph2Rule][firstWordOffset],
 		                       UNDER_BEGIN, UNDER_END, UNDER_SYMBOL);
-	resolveEmphasisPassages(emphasisBuffer, &table->firstWordUnder,
+	resolveEmphasisPassages(emphasisBuffer, &table->emphRules[emph2Rule][firstWordOffset],
 	                        UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
 	*/
-	if(table->boldWord)
-		resolveEmphasisWords(emphasisBuffer, &table->firstWordBold,
+	if(table->emphRules[emph3Rule][wordOffset])
+		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph3Rule][firstWordOffset],
 		                     BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
-	else if(table->singleLetterBold)
-		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordBold,
+	else if(table->emphRules[emph3Rule][singleLetterOffset])
+		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph3Rule][firstWordOffset],
 		                       BOLD_BEGIN, BOLD_END, BOLD_SYMBOL);
-	resolveEmphasisPassages(emphasisBuffer, &table->firstWordBold,
+	resolveEmphasisPassages(emphasisBuffer, &table->emphRules[emph3Rule][firstWordOffset],
 	                        BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);
 	*/
-	if(table->italWord)
-		resolveEmphasisWords(emphasisBuffer, &table->firstWordItal,
+	if(table->emphRules[emph1Rule][wordOffset])
+		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph1Rule][firstWordOffset],
 		                     ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
-	else if(table->singleLetterItal)
-		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordItal,
+	else if(table->emphRules[emph1Rule][singleLetterOffset])
+		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph1Rule][firstWordOffset],
 		                       ITALIC_BEGIN, ITALIC_END, ITALIC_SYMBOL);
-	resolveEmphasisPassages(emphasisBuffer, &table->firstWordItal,
+	resolveEmphasisPassages(emphasisBuffer, &table->emphRules[emph1Rule][firstWordOffset],
 	                        ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	/* from davy
 	if(table->usesEmphMode)
 		resolveEmphasisResets(emphasisBuffer,
 							ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	*/
-	if(table->scriptWord)
-		resolveEmphasisWords(emphasisBuffer, &table->firstWordScript,
+	if(table->emphRules[emph4Rule][wordOffset])
+		resolveEmphasisWords(emphasisBuffer, &table->emphRules[emph4Rule][firstWordOffset],
 		                     SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
-	else if(table->singleLetterScript)
-		resolveEmphasisSymbols(emphasisBuffer, &table->firstWordScript,
+	else if(table->emphRules[emph4Rule][singleLetterOffset])
+		resolveEmphasisSymbols(emphasisBuffer, &table->emphRules[emph4Rule][firstWordOffset],
 		                       SCRIPT_BEGIN, SCRIPT_END, SCRIPT_SYMBOL);
-	resolveEmphasisPassages(emphasisBuffer, &table->firstWordScript,
+	resolveEmphasisPassages(emphasisBuffer, &table->emphRules[emph4Rule][firstWordOffset],
 	                        SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
-
 
 //	resolveEmphasisWords(emphasisBuffer, &table->firstWordTransNote,
 //	                     TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
@@ -2688,11 +2674,11 @@ markEmphases()
 	{
 		switch(i)
 		{
-		case 0:  offset = &table->firstWordTrans1; break;
-		case 1:  offset = &table->firstWordTrans2; break;
-		case 2:  offset = &table->firstWordTrans3; break;
-		case 3:  offset = &table->firstWordTrans4; break;
-		case 4:  offset = &table->firstWordTrans5; break;
+		case 0:  offset = &table->emphRules[emph6Rule][firstWordOffset]; break;
+		case 1:  offset = &table->emphRules[emph7Rule][firstWordOffset]; break;
+		case 2:  offset = &table->emphRules[emph8Rule][firstWordOffset]; break;
+		case 3:  offset = &table->emphRules[emph9Rule][firstWordOffset]; break;
+		case 4:  offset = &table->emphRules[emph10Rule][firstWordOffset]; break;
 		}
 		resolveEmphasisWords(
 			transNoteBuffer,
@@ -2723,7 +2709,7 @@ insertEmphasis(
 {	
 	if(buffer[at] & bit_symbol)
 	{
-		if(brailleIndicatorDefined(offset[singleLetter]))
+		if(brailleIndicatorDefined(offset[singleLetterOffset]))
 			for_updatePositions(
 				&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 	}
@@ -2732,17 +2718,17 @@ insertEmphasis(
 	//   && !(buffer[at] & bit_begin)
 	   && !(buffer[at] & bit_end))
 	{
-		if(brailleIndicatorDefined(offset[word]))
+		if(brailleIndicatorDefined(offset[wordOffset]))
 			for_updatePositions(
 				&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 	}
 	
 	if(buffer[at] & bit_begin)
 	{
-		if(brailleIndicatorDefined(offset[firstWord]))
+		if(brailleIndicatorDefined(offset[firstWordOffset]))
 			for_updatePositions(
 				&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
-		else if(brailleIndicatorDefined(offset[firstLetter]))
+		else if(brailleIndicatorDefined(offset[firstLetterOffset]))
 			for_updatePositions(
 				&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 	}
@@ -2760,19 +2746,19 @@ insertEmphasisEnd(
 	{
 		if(buffer[at] & bit_word)
 		{
-			if(brailleIndicatorDefined(offset[wordStop]))
+			if(brailleIndicatorDefined(offset[wordStopOffset]))
 				for_updatePositions(
 					&indicRule->charsdots[0], 0, indicRule->dotslen, -1);
 		}
 		else
 		{
-			if(brailleIndicatorDefined(offset[lastLetter]))
+			if(brailleIndicatorDefined(offset[lastLetterOffset]))
 				for_updatePositions(
 					&indicRule->charsdots[0], 0, indicRule->dotslen, -1);
-			else if(brailleIndicatorDefined(offset[lastWordAfter]))
+			else if(brailleIndicatorDefined(offset[lastWordAfterOffset]))
 				for_updatePositions(
 					&indicRule->charsdots[0], 0, indicRule->dotslen, -1);
-			else if(brailleIndicatorDefined(offset[lastWordBefore]))
+			else if(brailleIndicatorDefined(offset[lastWordBeforeOffset]))
 				for_updatePositions(
 					&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 		}
@@ -2844,10 +2830,10 @@ insertEmphasesAt(const int at)
 	
 	type_counts[CAPS_COUNT] 
 		= endCount(emphasisBuffer, at, CAPS_END, CAPS_BEGIN, CAPS_WORD);
-	type_counts[BOLD_COUNT]
-		= endCount(emphasisBuffer, at, BOLD_END, BOLD_BEGIN, BOLD_WORD);
 	type_counts[UNDER_COUNT]
 		= endCount(emphasisBuffer, at, UNDER_END, UNDER_BEGIN, UNDER_WORD);
+	type_counts[BOLD_COUNT]
+		= endCount(emphasisBuffer, at, BOLD_END, BOLD_BEGIN, BOLD_WORD);
 	type_counts[ITALIC_COUNT]
 		= endCount(emphasisBuffer, at, ITALIC_END, ITALIC_BEGIN, ITALIC_WORD);
 	type_counts[SCRIPT_COUNT]
@@ -2882,43 +2868,43 @@ insertEmphasesAt(const int at)
 			break;			
 		case ITALIC_COUNT:
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordItal, ITALIC_END, ITALIC_WORD);
+				emphasisBuffer, at, &table->emphRules[emph1Rule][firstWordOffset], ITALIC_END, ITALIC_WORD);
 			break;
 		case UNDER_COUNT:
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordUnder, UNDER_END, UNDER_WORD);
+				emphasisBuffer, at, &table->emphRules[emph2Rule][firstWordOffset], UNDER_END, UNDER_WORD);
 			break;
 		case BOLD_COUNT:
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordBold, BOLD_END, BOLD_WORD);
+				emphasisBuffer, at, &table->emphRules[emph3Rule][firstWordOffset], BOLD_END, BOLD_WORD);
 			break;
 		case SCRIPT_COUNT:
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordScript, SCRIPT_END, SCRIPT_WORD);
+				emphasisBuffer, at, &table->emphRules[emph4Rule][firstWordOffset], SCRIPT_END, SCRIPT_WORD);
 			break;
 		case TNOTE_COUNT:
 			insertEmphasisEnd(
-				emphasisBuffer, at, &table->firstWordTransNote, TNOTE_END, TNOTE_WORD);
+				emphasisBuffer, at, &table->emphRules[emph5Rule][firstWordOffset], TNOTE_END, TNOTE_WORD);
 			break;
 		case TRANS1_COUNT:
 			insertEmphasisEnd(
-				transNoteBuffer, at, &table->firstWordTrans1, TRANSNOTE_END, TRANSNOTE_END);
+				transNoteBuffer, at, &table->emphRules[emph6Rule][firstWordOffset], TRANSNOTE_END, TRANSNOTE_END);
 			break;
 		case TRANS2_COUNT:
 			insertEmphasisEnd(
-				transNoteBuffer, at, &table->firstWordTrans2, TRANSNOTE_END << 4, TRANSNOTE_END << 4);
+				transNoteBuffer, at, &table->emphRules[emph7Rule][firstWordOffset], TRANSNOTE_END << 4, TRANSNOTE_END << 4);
 			break;
 		case TRANS3_COUNT:
 			insertEmphasisEnd(
-				transNoteBuffer, at, &table->firstWordTrans3, TRANSNOTE_END << 8, TRANSNOTE_END << 8);
+				transNoteBuffer, at, &table->emphRules[emph8Rule][firstWordOffset], TRANSNOTE_END << 8, TRANSNOTE_END << 8);
 			break;
 		case TRANS4_COUNT:
 			insertEmphasisEnd(
-				transNoteBuffer, at, &table->firstWordTrans4, TRANSNOTE_END << 12, TRANSNOTE_END << 12);
+				transNoteBuffer, at, &table->emphRules[emph9Rule][firstWordOffset], TRANSNOTE_END << 12, TRANSNOTE_END << 12);
 			break;
 		case TRANS5_COUNT:
 			insertEmphasisEnd(
-				transNoteBuffer, at, &table->firstWordTrans5, TRANSNOTE_END << 16, TRANSNOTE_END << 16);
+				transNoteBuffer, at, &table->emphRules[emph10Rule][firstWordOffset], TRANSNOTE_END << 16, TRANSNOTE_END << 16);
 			break;
 		}
 	}
@@ -2930,11 +2916,11 @@ insertEmphasesAt(const int at)
 		{
 			switch(i)
 			{
-			case 0:  offset = &table->firstWordTrans1; break;
-			case 1:  offset = &table->firstWordTrans2; break;
-			case 2:  offset = &table->firstWordTrans3; break;
-			case 3:  offset = &table->firstWordTrans4; break;
-			case 4:  offset = &table->firstWordTrans5; break;
+			case 0:  offset = &table->emphRules[emph6Rule][firstWordOffset]; break;
+			case 1:  offset = &table->emphRules[emph7Rule][firstWordOffset]; break;
+			case 2:  offset = &table->emphRules[emph8Rule][firstWordOffset]; break;
+			case 3:  offset = &table->emphRules[emph9Rule][firstWordOffset]; break;
+			case 4:  offset = &table->emphRules[emph10Rule][firstWordOffset]; break;
 			}
 			insertEmphasis(
 				transNoteBuffer, at, offset,
@@ -2946,32 +2932,32 @@ insertEmphasesAt(const int at)
 	}
 	if(emphasisBuffer[at] & TNOTE_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordTransNote,
+			emphasisBuffer, at, &table->emphRules[emph5Rule][firstWordOffset],
 			TNOTE_BEGIN, TNOTE_END, TNOTE_WORD, TNOTE_SYMBOL);
 	if(emphasisBuffer[at] & SCRIPT_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordScript,
+			emphasisBuffer, at, &table->emphRules[emph4Rule][firstWordOffset],
 			SCRIPT_BEGIN, SCRIPT_END, SCRIPT_WORD, SCRIPT_SYMBOL);
 	if(emphasisBuffer[at] & ITALIC_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordItal,
+			emphasisBuffer, at, &table->emphRules[emph1Rule][firstWordOffset],
 			ITALIC_BEGIN, ITALIC_END, ITALIC_WORD, ITALIC_SYMBOL);
 	if(emphasisBuffer[at] & BOLD_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordBold,
+			emphasisBuffer, at, &table->emphRules[emph3Rule][firstWordOffset],
 			BOLD_BEGIN, BOLD_END, BOLD_WORD, BOLD_SYMBOL);			
 	if(emphasisBuffer[at] & UNDER_EMPHASIS)
 		insertEmphasis(
-			emphasisBuffer, at, &table->firstWordUnder,
-			UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);
-	
+			emphasisBuffer, at, &table->emphRules[emph2Rule][firstWordOffset],
+			UNDER_BEGIN, UNDER_END, UNDER_WORD, UNDER_SYMBOL);	
+
 	/*   insert graded 1 mode indicator   */
 	if(transOpcode == CTO_Contraction)
 	if(brailleIndicatorDefined(table->noContractSign))
 		for_updatePositions(
 			&indicRule->charsdots[0], 0, indicRule->dotslen, 0);
 
-	/*   insert capitaliztion last so it will be closest to word   */
+	/*   insert capitalization last so it will be closest to word   */
 	if(emphasisBuffer[at] & CAPS_EMPHASIS)
 		insertEmphasis(
 			emphasisBuffer, at, &table->firstWordCaps,

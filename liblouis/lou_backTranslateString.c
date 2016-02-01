@@ -518,31 +518,31 @@ handleMultind ()
       found = findBrailleIndicatorRule (table->numberSign);
       break;
     case CTO_LastWordItalBeforeRule:
-      found = findBrailleIndicatorRule (table->lastWordItalBefore);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastWordBeforeOffset]);
       break;
     case CTO_FirstLetterItalRule:
-      found = findBrailleIndicatorRule (table->firstLetterItal);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][firstLetterOffset]);
       break;
     case CTO_LastLetterItalRule:
-      found = findBrailleIndicatorRule (table->lastLetterItal);
+      found = findBrailleIndicatorRule (table->emphRules[emph1Rule][lastLetterOffset]);
       break;
     case CTO_LastWordUnderBeforeRule:
-      found = findBrailleIndicatorRule (table->lastWordUnderBefore);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastWordBeforeOffset]);
       break;
     case CTO_FirstLetterUnderRule:
-      found = findBrailleIndicatorRule (table->firstLetterUnder);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][firstLetterOffset]);
       break;
     case CTO_LastLetterUnderRule:
-      found = findBrailleIndicatorRule (table->lastLetterUnder);
+      found = findBrailleIndicatorRule (table->emphRules[emph2Rule][lastLetterOffset]);
       break;
     case CTO_LastWordBoldBeforeRule:
-      found = findBrailleIndicatorRule (table->lastWordBoldBefore);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastWordBeforeOffset]);
       break;
     case CTO_FirstLetterBoldRule:
-      found = findBrailleIndicatorRule (table->firstLetterBold);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][firstLetterOffset]);
       break;
     case CTO_LastLetterBoldRule:
-      found = findBrailleIndicatorRule (table->lastLetterBold);
+      found = findBrailleIndicatorRule (table->emphRules[emph3Rule][lastLetterOffset]);
       break;
     case CTO_BegComp:
       found = findBrailleIndicatorRule (table->begComp);
