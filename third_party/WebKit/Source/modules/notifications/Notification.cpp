@@ -253,6 +253,11 @@ NavigatorVibration::VibrationPattern Notification::vibrate(bool& isNull) const
     return pattern;
 }
 
+DOMTimeStamp Notification::timestamp() const
+{
+    return m_data.timestamp;
+}
+
 bool Notification::silent() const
 {
     return m_data.silent;

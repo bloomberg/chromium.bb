@@ -13,6 +13,7 @@
 #include "modules/vibration/NavigatorVibration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
+#include "wtf/CurrentTime.h"
 
 namespace blink {
 namespace {
@@ -56,6 +57,7 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
 
     webData.icon = iconUrl;
     webData.vibrate = NavigatorVibration::sanitizeVibrationPattern(options.vibrate());
+    webData.timestamp = options.hasTimestamp() ? static_cast<double>(options.timestamp()) : WTF::currentTimeMS();
     webData.silent = options.silent();
     webData.requireInteraction = options.requireInteraction();
 

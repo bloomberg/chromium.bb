@@ -22,6 +22,7 @@
                 body: "Hallo, wereld!",
                 tag: "notification",
                 icon: "http://localhost/my_icon.png",
+                timestamp: 621046800000,
                 silent: true,
                 requireInteraction: true,
                 data: "my data",
@@ -36,6 +37,7 @@
             assert_equals(notification.body, options.body);
             assert_equals(notification.tag, options.tag);
             assert_equals(notification.icon, options.icon);
+            assert_equals(notification.timestamp, options.timestamp);
             assert_true(notification.silent);
             assert_true(notification.requireInteraction);
             assert_equals(notification.data, options.data);
@@ -54,6 +56,9 @@
             assert_false(emptyNotification.requireInteraction);
             assert_equals(emptyNotification.data, null);
             assert_array_equals(emptyNotification.actions, []);
+
+            var timeDifference = Math.abs(Date.now() - emptyNotification.timestamp);
+            assert_true(timeDifference < 16);  // 16 is not significant, just to reduce flakiness.
 
             var equalNotification = new Notification("My Notification", {
                 vibrate: [50, 10, 50, 10, 50],

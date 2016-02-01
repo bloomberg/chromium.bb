@@ -24,6 +24,7 @@ const char kNotificationBody[] = "Hello, world!";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIconUrl[] = "https://example.com/icon.png";
 const int kNotificationVibrationPattern[] = {100, 200, 300};
+const double kNotificationTimestamp = 621046800.;
 const unsigned char kNotificationData[] = {0xdf, 0xff, 0x0, 0x0, 0xff, 0xdf};
 const char kAction1Name[] = "btn1";
 const char kAction1Title[] = "Button 1";
@@ -40,6 +41,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   web_data.icon = blink::WebURL(GURL(kNotificationIconUrl));
   web_data.vibrate = blink::WebVector<int>(
       kNotificationVibrationPattern, arraysize(kNotificationVibrationPattern));
+  web_data.timestamp = kNotificationTimestamp;
   web_data.silent = true;
   web_data.requireInteraction = true;
   web_data.data =
@@ -66,6 +68,7 @@ TEST(NotificationDataConversionsTest, ToPlatformNotificationData) {
   EXPECT_THAT(platform_data.vibration_pattern,
               testing::ElementsAreArray(kNotificationVibrationPattern));
 
+  EXPECT_DOUBLE_EQ(kNotificationTimestamp, platform_data.timestamp.ToJsTime());
   ASSERT_EQ(web_data.data.size(), platform_data.data.size());
   for (size_t i = 0; i < web_data.data.size(); ++i)
     EXPECT_EQ(web_data.data[i], platform_data.data[i]);
@@ -92,6 +95,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   platform_data.tag = kNotificationTag;
   platform_data.icon = GURL(kNotificationIconUrl);
   platform_data.vibration_pattern = vibration_pattern;
+  platform_data.timestamp = base::Time::FromJsTime(kNotificationTimestamp);
   platform_data.silent = true;
   platform_data.require_interaction = true;
   platform_data.data = developer_data;
@@ -114,6 +118,7 @@ TEST(NotificationDataConversionsTest, ToWebNotificationData) {
   for (size_t i = 0; i < vibration_pattern.size(); ++i)
     EXPECT_EQ(vibration_pattern[i], web_data.vibrate[i]);
 
+  EXPECT_DOUBLE_EQ(kNotificationTimestamp, web_data.timestamp);
   EXPECT_TRUE(web_data.silent);
   EXPECT_TRUE(web_data.requireInteraction);
 
@@ -156,6 +161,43 @@ TEST(NotificationDataConversionsTest, NotificationDataDirectionality) {
           ToWebNotificationData(platform_data);
       EXPECT_EQ(pair.first, web_data.direction);
     }
+  }
+}
+
+TEST(NotificationDataConversionsTest, TimeEdgeCaseValueBehaviour) {
+  {
+    blink::WebNotificationData web_data;
+    web_data.timestamp =
+        static_cast<double>(std::numeric_limits<unsigned long long>::max());
+
+    blink::WebNotificationData copied_data =
+        ToWebNotificationData(ToPlatformNotificationData(web_data));
+    EXPECT_NE(web_data.timestamp, copied_data.timestamp);
+  }
+  {
+    blink::WebNotificationData web_data;
+    web_data.timestamp =
+        static_cast<double>(9211726771200000000ull);  // January 1, 293878
+
+    blink::WebNotificationData copied_data =
+        ToWebNotificationData(ToPlatformNotificationData(web_data));
+    EXPECT_NE(web_data.timestamp, copied_data.timestamp);
+  }
+  {
+    blink::WebNotificationData web_data;
+    web_data.timestamp = 0;
+
+    blink::WebNotificationData copied_data =
+        ToWebNotificationData(ToPlatformNotificationData(web_data));
+    EXPECT_EQ(web_data.timestamp, copied_data.timestamp);
+  }
+  {
+    blink::WebNotificationData web_data;
+    web_data.timestamp = 0;
+
+    blink::WebNotificationData copied_data =
+        ToWebNotificationData(ToPlatformNotificationData(web_data));
+    EXPECT_EQ(web_data.timestamp, copied_data.timestamp);
   }
 }
 

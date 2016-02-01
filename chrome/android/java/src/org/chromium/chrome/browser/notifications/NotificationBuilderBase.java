@@ -47,6 +47,7 @@ public abstract class NotificationBuilderBase {
     protected Action mSettingsAction;
     protected int mDefaults = Notification.DEFAULT_ALL;
     protected long[] mVibratePattern;
+    protected long mTimestamp;
 
     /**
      * Combines all of the options that have been set and returns a new Notification object.
@@ -161,6 +162,14 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase setVibrate(long[] pattern) {
         mVibratePattern = Arrays.copyOf(pattern, pattern.length);
+        return this;
+    }
+
+    /**
+     * Sets the timestamp at which the event of the notification took place.
+     */
+    public NotificationBuilderBase setTimestamp(long timestamp) {
+        mTimestamp = timestamp;
         return this;
     }
 

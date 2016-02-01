@@ -420,6 +420,7 @@ public class NotificationUIManager {
      * @param icon Icon to be displayed in the notification. Valid Bitmap icons will be scaled to
      *             the platforms, whereas a default icon will be generated for invalid Bitmaps.
      * @param vibrationPattern Vibration pattern following the Web Vibration syntax.
+     * @param timestamp The timestamp of the event for which the notification is being shown.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param actionTitles Titles of actions to display alongside the notification.
      * @see https://developer.android.com/reference/android/app/Notification.html
@@ -427,7 +428,7 @@ public class NotificationUIManager {
     @CalledByNative
     private void displayNotification(long persistentNotificationId, String origin, String profileId,
             boolean incognito, String tag, String title, String body, Bitmap icon,
-            int[] vibrationPattern, boolean silent, String[] actionTitles) {
+            int[] vibrationPattern, long timestamp, boolean silent, String[] actionTitles) {
         Resources res = mAppContext.getResources();
 
         // Record whether it's known whether notifications can be shown to the user at all.
@@ -463,6 +464,7 @@ public class NotificationUIManager {
                         .setContentIntent(clickIntent)
                         .setDeleteIntent(closeIntent)
                         .setTicker(createTickerText(title, body))
+                        .setTimestamp(timestamp)
                         .setOrigin(UrlUtilities.formatUrlForSecurityDisplay(
                                 origin, false /* showScheme */));
 

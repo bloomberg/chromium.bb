@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -42,6 +43,7 @@ PlatformNotificationData ToPlatformNotificationData(
   platform_data.icon = blink::WebStringToGURL(web_data.icon.string());
   platform_data.vibration_pattern.assign(web_data.vibrate.begin(),
                                          web_data.vibrate.end());
+  platform_data.timestamp = base::Time::FromJsTime(web_data.timestamp);
   platform_data.silent = web_data.silent;
   platform_data.require_interaction = web_data.requireInteraction;
   platform_data.data.assign(web_data.data.begin(), web_data.data.end());
@@ -77,6 +79,7 @@ WebNotificationData ToWebNotificationData(
   web_data.tag = blink::WebString::fromUTF8(platform_data.tag);
   web_data.icon = blink::WebURL(platform_data.icon);
   web_data.vibrate = platform_data.vibration_pattern;
+  web_data.timestamp = platform_data.timestamp.ToJsTime();
   web_data.silent = platform_data.silent;
   web_data.requireInteraction = platform_data.require_interaction;
   web_data.data = platform_data.data;

@@ -60,6 +60,11 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         assertTrue(tickerText.contains("MyNotification"));
         assertTrue(tickerText.contains("Hello"));
 
+        // Verify that the notification's timestamp is set in the past 60 seconds. This number has
+        // no significance, but needs to be high enough to not cause flakiness as it's set by the
+        // renderer process on notification creation.
+        assertTrue(Math.abs(System.currentTimeMillis() - notification.when) < 60 * 1000);
+
         // Validate the appearance style of the notification. The EXTRA_TEMPLATE was introduced
         // in Android Lollipop, we cannot verify this in earlier versions.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP

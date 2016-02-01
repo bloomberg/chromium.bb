@@ -10,6 +10,7 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationOptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
@@ -24,6 +25,7 @@ const char kNotificationBody[] = "Hello, world";
 const char kNotificationTag[] = "my_tag";
 const char kNotificationIcon[] = "https://example.com/icon.png";
 const unsigned kNotificationVibration[] = { 42, 10, 20, 30, 40 };
+const unsigned long long kNotificationTimestamp = 621046800ull;
 const bool kNotificationSilent = false;
 const bool kNotificationRequireInteraction = true;
 
@@ -71,6 +73,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     options.setTag(kNotificationTag);
     options.setIcon(kNotificationIcon);
     options.setVibrate(vibrationSequence);
+    options.setTimestamp(kNotificationTimestamp);
     options.setSilent(kNotificationSilent);
     options.setRequireInteraction(kNotificationRequireInteraction);
     options.setActions(actions);
@@ -94,6 +97,7 @@ TEST_F(NotificationDataTest, ReflectProperties)
     for (size_t i = 0; i < vibrationPattern.size(); ++i)
         EXPECT_EQ(vibrationPattern[i], static_cast<unsigned>(notificationData.vibrate[i]));
 
+    EXPECT_EQ(kNotificationTimestamp, notificationData.timestamp);
     EXPECT_EQ(kNotificationSilent, notificationData.silent);
     EXPECT_EQ(kNotificationRequireInteraction, notificationData.requireInteraction);
     EXPECT_EQ(actions.size(), notificationData.actions.size());
@@ -154,6 +158,19 @@ TEST_F(NotificationDataTest, VibrationNormalization)
     ASSERT_EQ(normalizedPattern.size(), notificationData.vibrate.size());
     for (size_t i = 0; i < normalizedPattern.size(); ++i)
         EXPECT_EQ(normalizedPattern[i], notificationData.vibrate[i]);
+}
+
+TEST_F(NotificationDataTest, DefaultTimestampValue)
+{
+    NotificationOptions options;
+
+    TrackExceptionState exceptionState;
+    WebNotificationData notificationData = createWebNotificationData(executionContext(), kNotificationTitle, options, exceptionState);
+    EXPECT_FALSE(exceptionState.hadException());
+
+    // The timestamp should be set to the current time since the epoch if it wasn't supplied by the developer.
+    // "32" has no significance, but an equal comparison of the value could lead to flaky failures.
+    EXPECT_NEAR(notificationData.timestamp, WTF::currentTimeMS(), 32);
 }
 
 TEST_F(NotificationDataTest, DirectionValues)

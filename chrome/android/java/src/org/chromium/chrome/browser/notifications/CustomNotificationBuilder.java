@@ -123,6 +123,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
         builder.setDeleteIntent(mDeleteIntent);
         builder.setDefaults(mDefaults);
         builder.setVibrate(mVibratePattern);
+        builder.setWhen(mTimestamp);
         builder.setContent(compactView);
 
         // Some things are duplicated in the builder to ensure the notification shows correctly on

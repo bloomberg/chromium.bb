@@ -152,7 +152,8 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   Java_NotificationUIManager_displayNotification(
       env, java_object_.obj(), persistent_notification_id, origin.obj(),
       profile_id.obj(), profile->IsOffTheRecord(), tag.obj(), title.obj(),
-      body.obj(), icon.obj(), vibration_pattern.obj(), notification.silent(),
+      body.obj(), icon.obj(), vibration_pattern.obj(),
+      notification.timestamp().ToJavaTime(), notification.silent(),
       action_titles.obj());
 
   regenerated_notification_infos_[persistent_notification_id] =

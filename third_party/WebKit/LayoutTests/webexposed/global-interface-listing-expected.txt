@@ -3680,6 +3680,7 @@ interface Notification : EventTarget
     getter requireInteraction
     getter silent
     getter tag
+    getter timestamp
     getter title
     getter vibrate
     method close

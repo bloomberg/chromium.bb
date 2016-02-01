@@ -18,6 +18,7 @@ dictionary NotificationOptions {
     USVString icon;
     // TODO(sh919.park): vibrate should be ([Clamp] unsigned long or sequence<unsigned long>)
     (unsigned long or sequence<unsigned long>) vibrate;
+    DOMTimeStamp timestamp;
     boolean silent = false;
     boolean requireInteraction = false;
     any data = null;

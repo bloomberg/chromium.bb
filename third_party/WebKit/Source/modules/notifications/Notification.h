@@ -35,6 +35,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMTimeStamp.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/vibration/NavigatorVibration.h"
@@ -90,6 +91,7 @@ public:
     String tag() const;
     String icon() const;
     NavigatorVibration::VibrationPattern vibrate(bool& isNull) const;
+    DOMTimeStamp timestamp() const;
     bool silent() const;
     bool requireInteraction() const;
     ScriptValue data(ScriptState*);

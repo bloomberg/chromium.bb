@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context_factory.h"
@@ -35,6 +36,7 @@ const int kIconWidth = 100;
 const int kIconHeight = 100;
 
 const int kNotificationVibrationPattern[] = { 100, 200, 300 };
+const double kNotificationTimestamp = 621046800000.;
 
 class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
  public:
@@ -237,6 +239,12 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(default_notification.silent());
   EXPECT_FALSE(default_notification.never_timeout());
 
+  // Verifies that the notification's default timestamp is set in the last 30
+  // seconds. This number has no significance, but it needs to be significantly
+  // high to avoid flakiness in the test.
+  EXPECT_NEAR(default_notification.timestamp().ToJsTime(),
+              base::Time::Now().ToJsTime(), 30 * 1000);
+
   // Now, test the non-default values.
 
   ASSERT_TRUE(RunScript("DisplayPersistentAllOptionsNotification()",
@@ -254,6 +262,8 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   EXPECT_FALSE(all_options_notification.icon().IsEmpty());
   EXPECT_TRUE(all_options_notification.silent());
   EXPECT_TRUE(all_options_notification.never_timeout());
+  EXPECT_DOUBLE_EQ(kNotificationTimestamp,
+                   all_options_notification.timestamp().ToJsTime());
 
   EXPECT_EQ(kIconWidth, all_options_notification.icon().Width());
   EXPECT_EQ(kIconHeight, all_options_notification.icon().Height());

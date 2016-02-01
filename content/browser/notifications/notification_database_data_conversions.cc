@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
 #include "content/public/browser/notification_database_data.h"
 
@@ -56,6 +57,8 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
         payload.vibration_pattern().begin(), payload.vibration_pattern().end());
   }
 
+  notification_data->timestamp =
+      base::Time::FromInternalValue(payload.timestamp());
   notification_data->silent = payload.silent();
   notification_data->require_interaction = payload.require_interaction();
 
@@ -108,6 +111,7 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
   for (size_t i = 0; i < notification_data.vibration_pattern.size(); ++i)
     payload->add_vibration_pattern(notification_data.vibration_pattern[i]);
 
+  payload->set_timestamp(notification_data.timestamp.ToInternalValue());
   payload->set_silent(notification_data.silent);
   payload->set_require_interaction(notification_data.require_interaction);
 

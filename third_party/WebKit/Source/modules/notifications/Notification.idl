@@ -68,6 +68,7 @@ enum NotificationPermission {
     readonly attribute USVString icon;
 
     [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
+    readonly attribute DOMTimeStamp timestamp;
     readonly attribute boolean silent;
     readonly attribute boolean requireInteraction;
     [CallWith=ScriptState, SameObject] readonly attribute any data;

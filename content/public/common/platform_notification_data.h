@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -69,6 +70,9 @@ struct CONTENT_EXPORT PlatformNotificationData {
   // Vibration pattern for the notification, following the syntax of the
   // Vibration API. https://www.w3.org/TR/vibration/
   std::vector<int> vibration_pattern;
+
+  // The time at which the event the notification represents took place.
+  base::Time timestamp;
 
   // Whether default notification indicators (sound, vibration, light) should
   // be suppressed.
