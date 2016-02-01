@@ -28,6 +28,8 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 
+#include <algorithm>
+
 using namespace WTF;
 
 namespace blink {
@@ -161,6 +163,92 @@ protected:
     bool updateOffsetIfNeeded(const FloatingObject&) final;
 };
 
+class FindNextFloatLogicalBottomAdapter {
+public:
+    typedef FloatingObjectInterval IntervalType;
+
+    FindNextFloatLogicalBottomAdapter(const LayoutBlockFlow& renderer, LayoutUnit belowLogicalHeight)
+        : m_layoutObject(renderer)
+        , m_belowLogicalHeight(belowLogicalHeight)
+        , m_aboveLogicalHeight(LayoutUnit::max())
+        , m_nextLogicalBottom()
+        , m_nextShapeLogicalBottom()
+    {
+    }
+
+    LayoutUnit lowValue() const { return m_belowLogicalHeight; }
+    LayoutUnit highValue() const { return m_aboveLogicalHeight; }
+    void collectIfNeeded(const IntervalType&);
+
+    LayoutUnit nextLogicalBottom() { return m_nextLogicalBottom; }
+    LayoutUnit nextShapeLogicalBottom() { return m_nextShapeLogicalBottom; }
+
+private:
+    const LayoutBlockFlow& m_layoutObject;
+    LayoutUnit m_belowLogicalHeight;
+    LayoutUnit m_aboveLogicalHeight;
+    LayoutUnit m_nextLogicalBottom;
+    LayoutUnit m_nextShapeLogicalBottom;
+};
+
+inline static bool rangesIntersect(LayoutUnit floatTop, LayoutUnit floatBottom, LayoutUnit objectTop, LayoutUnit objectBottom)
+{
+    if (objectTop >= floatBottom || objectBottom < floatTop)
+        return false;
+
+    // The top of the object overlaps the float
+    if (objectTop >= floatTop)
+        return true;
+
+    // The object encloses the float
+    if (objectTop < floatTop && objectBottom > floatBottom)
+        return true;
+
+    // The bottom of the object overlaps the float
+    if (objectBottom > objectTop && objectBottom > floatTop && objectBottom <= floatBottom)
+        return true;
+
+    return false;
+}
+
+inline void FindNextFloatLogicalBottomAdapter::collectIfNeeded(const IntervalType& interval)
+{
+    const FloatingObject& floatingObject = *(interval.data());
+    if (!rangesIntersect(interval.low(), interval.high(), m_belowLogicalHeight, m_aboveLogicalHeight))
+        return;
+
+    // All the objects returned from the tree should be already placed.
+    ASSERT(floatingObject.isPlaced());
+    ASSERT(rangesIntersect(m_layoutObject.logicalTopForFloat(floatingObject), m_layoutObject.logicalBottomForFloat(floatingObject), m_belowLogicalHeight, m_aboveLogicalHeight));
+
+    LayoutUnit floatBottom = m_layoutObject.logicalBottomForFloat(floatingObject);
+
+    if (ShapeOutsideInfo* shapeOutside = floatingObject.layoutObject()->shapeOutsideInfo()) {
+        LayoutUnit shapeBottom = m_layoutObject.logicalTopForFloat(floatingObject) + m_layoutObject.marginBeforeForChild(*floatingObject.layoutObject()) + shapeOutside->shapeLogicalBottom();
+        // Use the shapeBottom unless it extends outside of the margin box, in which case it is clipped.
+        m_nextShapeLogicalBottom = m_nextShapeLogicalBottom ? std::min(shapeBottom, floatBottom) : shapeBottom;
+    } else {
+        m_nextShapeLogicalBottom = m_nextShapeLogicalBottom ? std::min(m_nextShapeLogicalBottom, floatBottom) : floatBottom;
+    }
+
+    m_nextLogicalBottom = m_nextLogicalBottom ? std::min(m_nextLogicalBottom, floatBottom) : floatBottom;
+}
+
+LayoutUnit FloatingObjects::findNextFloatLogicalBottomBelow(LayoutUnit logicalHeight)
+{
+    FindNextFloatLogicalBottomAdapter adapter(*m_layoutObject, logicalHeight);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    return adapter.nextShapeLogicalBottom();
+}
+
+LayoutUnit FloatingObjects::findNextFloatLogicalBottomBelowForBlock(LayoutUnit logicalHeight)
+{
+    FindNextFloatLogicalBottomAdapter adapter(*m_layoutObject, logicalHeight);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    return adapter.nextLogicalBottom();
+}
 
 FloatingObjects::~FloatingObjects()
 {
@@ -441,26 +529,6 @@ FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
     : floatingObject(nullptr)
     , dirty(true)
 {
-}
-
-inline static bool rangesIntersect(LayoutUnit floatTop, LayoutUnit floatBottom, LayoutUnit objectTop, LayoutUnit objectBottom)
-{
-    if (objectTop >= floatBottom || objectBottom < floatTop)
-        return false;
-
-    // The top of the object overlaps the float
-    if (objectTop >= floatTop)
-        return true;
-
-    // The object encloses the float
-    if (objectTop < floatTop && objectBottom > floatBottom)
-        return true;
-
-    // The bottom of the object overlaps the float
-    if (objectBottom > objectTop && objectBottom > floatTop && objectBottom <= floatBottom)
-        return true;
-
-    return false;
 }
 
 template<>

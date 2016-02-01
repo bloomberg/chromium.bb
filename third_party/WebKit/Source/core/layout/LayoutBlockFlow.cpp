@@ -1869,7 +1869,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child, LayoutUnit logicalTo
                 return newLogicalTop - logicalTop;
             }
 
-            newLogicalTop = nextFloatLogicalBottomBelow(newLogicalTop);
+            newLogicalTop = nextFloatLogicalBottomBelowForBlock(newLogicalTop);
             ASSERT(newLogicalTop >= logicalTop);
             if (newLogicalTop < logicalTop)
                 break;
@@ -2567,29 +2567,19 @@ LayoutUnit LayoutBlockFlow::lowestFloatLogicalBottom(FloatingObject::Type floatT
     return m_floatingObjects->lowestFloatLogicalBottom(floatType);
 }
 
-LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
+LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const
+{
+    if (!m_floatingObjects)
+        return logicalHeight;
+    return m_floatingObjects->findNextFloatLogicalBottomBelow(logicalHeight);
+}
+
+LayoutUnit LayoutBlockFlow::nextFloatLogicalBottomBelowForBlock(LayoutUnit logicalHeight) const
 {
     if (!m_floatingObjects)
         return logicalHeight;
 
-    LayoutUnit logicalBottom;
-    const FloatingObjectSet& floatingObjectSet = m_floatingObjects->set();
-    FloatingObjectSetIterator end = floatingObjectSet.end();
-    for (FloatingObjectSetIterator it = floatingObjectSet.begin(); it != end; ++it) {
-        const FloatingObject& floatingObject = *it->get();
-        LayoutUnit floatLogicalBottom = logicalBottomForFloat(floatingObject);
-        ShapeOutsideInfo* shapeOutside = floatingObject.layoutObject()->shapeOutsideInfo();
-        if (shapeOutside && (offsetMode == ShapeOutsideFloatShapeOffset)) {
-            LayoutUnit shapeLogicalBottom = logicalTopForFloat(floatingObject) + marginBeforeForChild(*floatingObject.layoutObject()) + shapeOutside->shapeLogicalBottom();
-            // Use the shapeLogicalBottom unless it extends outside of the margin box, in which case it is clipped.
-            if (shapeLogicalBottom < floatLogicalBottom)
-                floatLogicalBottom = shapeLogicalBottom;
-        }
-        if (floatLogicalBottom > logicalHeight)
-            logicalBottom = logicalBottom ? std::min(floatLogicalBottom, logicalBottom) : floatLogicalBottom;
-    }
-
-    return logicalBottom;
+    return m_floatingObjects->findNextFloatLogicalBottomBelowForBlock(logicalHeight);
 }
 
 bool LayoutBlockFlow::hitTestFloats(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
