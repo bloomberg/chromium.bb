@@ -21,15 +21,3 @@ include_rules = [
   "+ui/base",
   "+ui/gfx",
 ]
-
-specific_include_rules = {
-  ".*_unittest\.cc$": [
-    "!chrome/browser/history/history_service.h",
-    "!chrome/browser/history/history_service_factory.h",
-    "!chrome/browser/search_engines/template_url_service_test_util.h",
-    "!chrome/common/chrome_paths.h",
-    "!chrome/test/base/testing_profile.h",
-    "!components/syncable_prefs/testing_pref_service_syncable.h",
-    "!content/public/test/test_browser_thread_bundle.h",
-  ],
-}

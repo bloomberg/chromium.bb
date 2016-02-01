@@ -208,6 +208,14 @@
       'browser/search/iframe_source_unittest.cc',
       'browser/search/thumbnail_source_unittest.cc',
       'browser/search_engines/search_provider_install_data_unittest.cc',
+
+      # TODO(hashimoto): those tests should be componentized and moved to
+      # //components:components_unittests, http://crbug.com/527882.
+      'browser/search_engines/template_url_fetcher_unittest.cc',
+      'browser/search_engines/template_url_parser_unittest.cc',
+      'browser/search_engines/template_url_service_sync_unittest.cc',
+      'browser/search_engines/template_url_service_unittest.cc',
+
       'browser/service_process/service_process_control_mac_unittest.mm',
       'browser/services/gcm/fake_gcm_profile_service.cc',
       'browser/services/gcm/fake_gcm_profile_service.h',
@@ -309,13 +317,6 @@
       # Duplicate these tests here because PathService has more items in
       # unit_tests than in base_unittests.
       '../base/path_service_unittest.cc',
-
-      # TODO(hashimoto): those tests should be componentized and moved to
-      # //components:components_unittests, http://crbug.com/527882.
-      '../components/search_engines/template_url_fetcher_unittest.cc',
-      '../components/search_engines/template_url_parser_unittest.cc',
-      '../components/search_engines/template_url_service_sync_unittest.cc',
-      '../components/search_engines/template_url_service_unittest.cc',
 
       '../testing/gtest_mac_unittest.mm',
       '../third_party/zlib/google/compression_utils_unittest.cc',
