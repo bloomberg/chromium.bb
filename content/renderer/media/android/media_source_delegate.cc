@@ -153,6 +153,12 @@ void MediaSourceDelegate::InitializeMediaSource(
     const base::Closure& waiting_for_decryption_key_cb) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DCHECK(!media_source_opened_cb.is_null());
+  DCHECK(!encrypted_media_init_data_cb.is_null());
+  DCHECK(!set_cdm_ready_cb.is_null());
+  DCHECK(!update_network_state_cb.is_null());
+  DCHECK(!duration_change_cb.is_null());
+  DCHECK(!waiting_for_decryption_key_cb.is_null());
+
   media_source_opened_cb_ = media_source_opened_cb;
   encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   set_cdm_ready_cb_ = media::BindToCurrentLoop(set_cdm_ready_cb);
@@ -496,16 +502,14 @@ void MediaSourceDelegate::OnDemuxerInitDone(media::PipelineStatus status) {
   audio_stream_ = chunk_demuxer_->GetStream(DemuxerStream::AUDIO);
   video_stream_ = chunk_demuxer_->GetStream(DemuxerStream::VIDEO);
 
-  if (audio_stream_ && audio_stream_->audio_decoder_config().is_encrypted() &&
-      !set_cdm_ready_cb_.is_null()) {
+  if (audio_stream_ && audio_stream_->audio_decoder_config().is_encrypted()) {
     InitAudioDecryptingDemuxerStream();
     // InitVideoDecryptingDemuxerStream() will be called in
     // OnAudioDecryptingDemuxerStreamInitDone().
     return;
   }
 
-  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted() &&
-      !set_cdm_ready_cb_.is_null()) {
+  if (video_stream_ && video_stream_->video_decoder_config().is_encrypted()) {
     InitVideoDecryptingDemuxerStream();
     return;
   }
@@ -519,7 +523,6 @@ void MediaSourceDelegate::InitAudioDecryptingDemuxerStream() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DVLOG(1) << __FUNCTION__ << " : " << demuxer_client_id_;
   DCHECK(!set_cdm_ready_cb_.is_null());
-
   audio_decrypting_demuxer_stream_.reset(new media::DecryptingDemuxerStream(
       media_task_runner_, media_log_, waiting_for_decryption_key_cb_));
   audio_decrypting_demuxer_stream_->Initialize(
@@ -547,10 +550,22 @@ void MediaSourceDelegate::OnAudioDecryptingDemuxerStreamInitDone(
   DVLOG(1) << __FUNCTION__ << "(" << status << ") : " << demuxer_client_id_;
   DCHECK(chunk_demuxer_);
 
-  if (status != media::PIPELINE_OK)
+  if (status != media::PIPELINE_OK) {
     audio_decrypting_demuxer_stream_.reset();
-  else
-    audio_stream_ = audio_decrypting_demuxer_stream_.get();
+    // Different CDMs are supported differently. For CDMs that support a
+    // Decryptor, we'll try to use DecryptingDemuxerStream in the render side.
+    // Otherwise, we'll try to use the CDMs in the browser side. Therefore, if
+    // DecryptingDemuxerStream initialization failed, it's still possible that
+    // we can handle the audio with a CDM in the browser. Declare demuxer ready
+    // now to try that path. Note there's no need to try DecryptingDemuxerStream
+    // for video here since it is impossible to handle audio in the browser and
+    // handle video in the render process.
+    is_demuxer_ready_ = true;
+    NotifyDemuxerReady();
+    return;
+  }
+
+  audio_stream_ = audio_decrypting_demuxer_stream_.get();
 
   if (video_stream_ && video_stream_->video_decoder_config().is_encrypted()) {
     InitVideoDecryptingDemuxerStream();
