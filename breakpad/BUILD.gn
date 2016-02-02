@@ -881,4 +881,13 @@ if (is_android) {
     test_suite = "breakpad_unittests"
     isolate_file = "breakpad_unittests.isolate"
   }
+
+  # TODO(GYP) Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("breakpad_unittests_apk_run") {
+    testonly = true
+    deps = [
+      ":breakpad_unittests",
+    ]
+  }
 }

@@ -122,6 +122,15 @@ template("test") {
         ":${apk_name}_incremental",
       ]
     }
+
+    # TODO(GYP): Delete this after we've converted everything to GN.
+    # The _run targets exist only for compatibility w/ GYP.
+    group("${target_name}_apk_run") {
+      testonly = true
+      deps = [
+        ":$main_target_name",
+      ]
+    }
   } else if (is_ios) {
     if (is_ios) {
       import("//build/config/ios/rules.gni")
