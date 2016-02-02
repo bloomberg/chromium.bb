@@ -83,6 +83,64 @@ test(function(t) {
 }, "Text input with title, placeholder, label-for, aria-label and aria-labelledby");
 </script>
 
+<div class="container">
+    <label>label-wrapping-text7
+        <input id="text7" type="text" title="text7-title">
+    </label>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput7 = accessibilityController.accessibleElementById("text7");
+    assert_equals(axTextInput7.name, "label-wrapping-text7 ");
+    assert_equals(axTextInput7.nameFrom, "relatedElement");
+}, "Text input with title and label-wrapped");
+</script>
+
+<div class="container">
+    <label for="dummy">label-wrapping-text8
+        <input id="text8" type="text">
+    </label>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput8 = accessibilityController.accessibleElementById("text8");
+    assert_equals(axTextInput8.name, "");
+}, "Text input with wrapped label with wrong ID");
+</script>
+
+<div class="container">
+    <label for="text9">label-for-text9</label>
+    <label>label-wrapping-text9
+        <input id="text9" type="text" title="text9-title" placeholder="text9-placeholder">
+    </label>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput9 = accessibilityController.accessibleElementById("text9");
+    assert_equals(axTextInput9.name, "label-for-text9");
+    assert_equals(axTextInput9.nameFrom, "relatedElement");
+}, "Text input with title, placeholder, label-for and label-wrapped");
+</script>
+
+<div class="container">
+    <label>label-wrapping-text10<input id="text10" type="text" title="text10-title" placeholder="text10-placeholder">
+    </label>
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput10 = accessibilityController.accessibleElementById("text10");
+    assert_equals(axTextInput10.name, "label-wrapping-text10");
+    assert_equals(axTextInput10.nameFrom, "relatedElement");
+    assert_equals(axTextInput10.description, "text10-placeholder");
+    assert_equals(axTextInput10.descriptionFrom, "placeholder");
+}, "Text input with placeholder and label-wrapped");
+</script>
+
+
 <script>
 if (window.testRunner)
     document.body.className = "hideAllContainers";

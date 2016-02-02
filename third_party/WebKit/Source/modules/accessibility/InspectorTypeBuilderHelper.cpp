@@ -225,7 +225,6 @@ AXValueNativeSourceType::Enum nativeSourceType(AXTextFromNativeHTML nativeSource
 
 PassRefPtr<AXValueSource> createValueSource(NameSource& nameSource)
 {
-    String attribute = nameSource.attribute.toString();
     AXValueSourceType::Enum type = valueSourceType(nameSource.type);
     RefPtr<AXValueSource> valueSource = AXValueSource::create().setType(type);
     RefPtr<AXValue> value;

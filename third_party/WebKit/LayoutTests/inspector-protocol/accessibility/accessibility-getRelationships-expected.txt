@@ -45,14 +45,14 @@ Ginger Ale
         {
           "name": "labelledby",
           "value": {
-            "type": "idrefList",
+            "type": "nodeList",
             "relatedNodes": [
               {
                 "idref": "rg1_label",
+                "text": "Lunch Options",
                 "nodeResult": "h3#rg1_label"
               }
-            ],
-            "value": "rg1_label"
+            ]
           }
         }
       ],
@@ -115,14 +115,14 @@ Ginger Ale
         {
           "name": "labelledby",
           "value": {
-            "type": "idrefList",
+            "type": "nodeList",
             "relatedNodes": [
               {
                 "idref": "rg2_label",
+                "text": "Drink Options",
                 "nodeResult": "h3#rg2_label"
               }
-            ],
-            "value": "rg2_label"
+            ]
           }
         }
       ],

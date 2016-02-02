@@ -629,11 +629,15 @@ HTMLLabelElement* AXNodeObject::labelForElement(const Element* element) const
 
     const AtomicString& id = element->getIdAttribute();
     if (!id.isEmpty()) {
-        if (HTMLLabelElement* label = element->treeScope().labelElementForId(id))
-            return label;
+        if (HTMLLabelElement* labelFor = element->treeScope().labelElementForId(id))
+            return labelFor;
     }
 
-    return Traversal<HTMLLabelElement>::firstAncestor(*element);
+    HTMLLabelElement* labelWrappedElement = Traversal<HTMLLabelElement>::firstAncestor(*element);
+    if (labelWrappedElement && labelWrappedElement->control() == toLabelableElement(element))
+        return labelWrappedElement;
+
+    return 0;
 }
 
 AXObject* AXNodeObject::menuButtonForMenu() const
@@ -1504,14 +1508,12 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
     if (foundTextAlternative && !nameSources)
         return textAlternative;
 
-    // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
-    textAlternative = nativeTextAlternative(visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
-    if (!textAlternative.isEmpty() && !nameSources)
-        return textAlternative;
-
     // Step 2E from: http://www.w3.org/TR/accname-aam-1.1
     if (recursive && !inAriaLabelledByTraversal && isControl() && !isButton()) {
         // No need to set any name source info in a recursive call.
+        if (isTextControl())
+            return text();
+
         if (isRange()) {
             const AtomicString& ariaValuetext = getAttribute(aria_valuetextAttr);
             if (!ariaValuetext.isNull())
@@ -1521,6 +1523,11 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
 
         return stringValue();
     }
+
+    // Step 2D from: http://www.w3.org/TR/accname-aam-1.1
+    textAlternative = nativeTextAlternative(visited, nameFrom, relatedObjects, nameSources, &foundTextAlternative);
+    if (!textAlternative.isEmpty() && !nameSources)
+        return textAlternative;
 
     // Step 2F / 2G from: http://www.w3.org/TR/accname-aam-1.1
     if (recursive || nameFromContents()) {
@@ -2151,10 +2158,10 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
                     NameSource& source = nameSources->last();
                     source.relatedObjects = *relatedObjects;
                     source.text = textAlternative;
-                    if (label->getAttribute(forAttr).isNull())
-                        source.nativeSource = AXTextFromNativeHTMLLabelWrapped;
-                    else
+                    if (label->getAttribute(forAttr) == htmlElement->getIdAttribute())
                         source.nativeSource = AXTextFromNativeHTMLLabelFor;
+                    else
+                        source.nativeSource = AXTextFromNativeHTMLLabelWrapped;
                     *foundTextAlternative = true;
                 } else {
                     return textAlternative;

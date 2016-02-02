@@ -101,7 +101,7 @@ function test()
 
     function rewriteValue(value, promises)
     {
-        if (value.type === "idrefList" || value.type === "idref") {
+        if (value.type === "idrefList" || value.type === "idref" || value.type == "nodeList") {
             checkExists("relatedNodes", value);
             var relatedNodeArray = value.relatedNodes;
             check(Array.isArray(relatedNodeArray), "relatedNodes should be an array", JSON.stringify(value));

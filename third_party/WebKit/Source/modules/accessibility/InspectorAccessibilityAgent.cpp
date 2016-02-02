@@ -246,6 +246,12 @@ void fillWidgetStates(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXProper
     }
 }
 
+PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::Enum key, AXRelatedObjectVector& nodes)
+{
+    RefPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes, AXValueType::NodeList);
+    return createProperty(key, nodeListValue);
+}
+
 PassRefPtr<AXProperty> createRelatedNodeListProperty(AXRelationshipAttributes::Enum key, AXObject::AXObjectVector& nodes, const QualifiedName& attr, AXObject* axObject)
 {
     RefPtr<AXValue> nodeListValue = createRelatedNodeListValue(nodes);
@@ -274,11 +280,6 @@ void fillRelationships(AXObject* axObject, PassRefPtr<TypeBuilder::Array<AXPrope
     axObject->ariaDescribedbyElements(results);
     if (!results.isEmpty())
         properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Describedby, results, aria_describedbyAttr, axObject));
-    results.clear();
-
-    axObject->ariaLabelledbyElements(results);
-    if (!results.isEmpty())
-        properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Labelledby, results, aria_labelledbyAttr, axObject));
     results.clear();
 
     axObject->ariaOwnsElements(results);
@@ -327,7 +328,6 @@ PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
     AccessibilityRole role = axObject->roleValue();
     RefPtr<AXNode> nodeObject = AXNode::create().setNodeId(String::number(axObject->axObjectID())).setIgnored(false);
     nodeObject->setRole(createRoleNameValue(role));
-    nodeObject->setProperties(properties);
 
     AXObject::NameSources nameSources;
     String computedName = axObject->name(&nameSources);
@@ -335,11 +335,21 @@ PassRefPtr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObjectCa
         RefPtr<AXValue> name = createValue(computedName, AXValueType::ComputedString);
         if (!nameSources.isEmpty()) {
             RefPtr<TypeBuilder::Array<AXValueSource>> nameSourceProperties = TypeBuilder::Array<AXValueSource>::create();
-            for (size_t i = 0; i < nameSources.size(); ++i)
-                nameSourceProperties->addItem(createValueSource(nameSources[i]));
+            for (size_t i = 0; i < nameSources.size(); ++i) {
+                NameSource& nameSource = nameSources[i];
+                nameSourceProperties->addItem(createValueSource(nameSource));
+                if (nameSource.text.isNull() || nameSource.superseded)
+                    continue;
+                if (!nameSource.relatedObjects.isEmpty()) {
+                    properties->addItem(createRelatedNodeListProperty(AXRelationshipAttributes::Labelledby, nameSource.relatedObjects));
+                }
+            }
             name->setSources(nameSourceProperties);
         }
+        nodeObject->setProperties(properties);
         nodeObject->setName(name);
+    } else {
+        nodeObject->setProperties(properties);
     }
 
     fillCoreProperties(axObject, nodeObject);
