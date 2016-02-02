@@ -308,8 +308,7 @@ public abstract class BidirectionalStream {
 
     /**
      * Starts the stream, all callbacks go to the {@code callback} argument passed to {@link
-     * BidirectionalStream.Builder#BidirectionalStream.Builder BidirectionalStream.Builder()}.
-     * Should only be called once.
+     * BidirectionalStream.Builder}'s constructor. Should only be called once.
      */
     public abstract void start();
 

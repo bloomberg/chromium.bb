@@ -197,6 +197,7 @@ public final class UrlResponseInfo {
      * progresses until completion, when {@link UrlRequest.Callback#onSucceeded onSucceeded()},
      * {@link UrlRequest.Callback#onFailed onFailed()}, or
      * {@link UrlRequest.Callback#onCanceled onCanceled()} is called.
+     * @return a minimum count of bytes received from the network to process this request.
      */
     public long getReceivedBytesCount() {
         return mReceivedBytesCount.get();

@@ -141,7 +141,12 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Overrides the User-Agent header for all requests.
+         * Overrides the User-Agent header for all requests. An explicitly
+         * set User-Agent header (set using
+         * {@link UrlRequest.Builder#addHeader}) will override a value set
+         * using this function.
+         *
+         * @param userAgent the User-Agent string to use for all requests.
          * @return the builder to facilitate chaining.
          */
         public Builder setUserAgent(String userAgent) {
@@ -178,9 +183,19 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Sets whether falling back to implementation based on system's
-         * {@link java.net.HttpURLConnection} implementation is enabled.
+         * Sets whether the resulting {@link CronetEngine} uses an
+         * implementation based on the system's
+         * {@link java.net.HttpURLConnection} implementation, or if this is
+         * only done as a backup if the native implementation fails to load.
          * Defaults to disabled.
+         * @param value {@code true} makes the resulting {@link CronetEngine}
+         *              use an implementation based on the system's
+         *              {@link java.net.HttpURLConnection} implementation
+         *              without trying to load the native implementation.
+         *              {@code false} makes the resulting {@code CronetEngine}
+         *              use the native implementation, or if that fails to load,
+         *              falls back to an implementation based on the system's
+         *              {@link java.net.HttpURLConnection} implementation.
          * @return the builder to facilitate chaining.
          * @deprecated Not supported by the new API.
          */
@@ -196,6 +211,7 @@ public abstract class CronetEngine {
 
         /**
          * Overrides the name of the native library backing Cronet.
+         * @param libName the name of the native library backing Cronet.
          * @return the builder to facilitate chaining.
          */
         Builder setLibraryName(String libName) {
@@ -206,6 +222,7 @@ public abstract class CronetEngine {
         /**
          * Sets a {@link LibraryLoader} to be used to load the native library.
          * If not set, the library will be loaded using {@link System#loadLibrary}.
+         * @param loader {@code LibraryLoader} to be used to load the native library.
          * @return the builder to facilitate chaining.
          */
         public Builder setLibraryLoader(LibraryLoader loader) {
@@ -224,6 +241,7 @@ public abstract class CronetEngine {
         /**
          * Sets whether <a href="https://www.chromium.org/quic">QUIC</a> protocol
          * is enabled. Defaults to disabled.
+         * @param value {@code true} to enable QUIC, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
         public Builder enableQUIC(boolean value) {
@@ -238,6 +256,7 @@ public abstract class CronetEngine {
         /**
          * Sets whether <a href="https://tools.ietf.org/html/rfc7540">HTTP/2</a>
          * protocol is enabled. Defaults to enabled.
+         * @param value {@code true} to enable HTTP/2, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
         public Builder enableHTTP2(boolean value) {
@@ -254,6 +273,7 @@ public abstract class CronetEngine {
          * <a
          * href="https://lists.w3.org/Archives/Public/ietf-http-wg/2008JulSep/att-0441/Shared_Dictionary_Compression_over_HTTP.pdf">
          * SDCH</a> compression is enabled. Defaults to disabled.
+         * @param value {@code true} to enable SDCH, {@code false} to disable.
          * @return the builder to facilitate chaining.
          */
         public Builder enableSDCH(boolean value) {
@@ -292,7 +312,6 @@ public abstract class CronetEngine {
          * @param secureProxyCheckUrl a URL to fetch to determine if using a secure
          * proxy is allowed.
          * @return the builder to facilitate chaining.
-         * @hide
          * @deprecated Marked as deprecated because @hide doesn't properly hide but
          *         javadocs are built with nodeprecated="yes".
          */
@@ -501,6 +520,7 @@ public abstract class CronetEngine {
 
         /**
          * Returns list of public key pins.
+         * @return list of public key pins.
          */
         List<Pkp> publicKeyPins() {
             return mPkps;
@@ -551,7 +571,11 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Sets a native MockCertVerifier for testing.
+         * Sets a native MockCertVerifier for testing. See
+         * {@code MockCertVerifier.createMockCertVerifier} for a method that
+         * can be used to create a MockCertVerifier.
+         * @param mockCertVerifier pointer to native MockCertVerifier.
+         * @return the builder to facilitate chaining.
          */
         Builder setMockCertVerifierForTesting(long mockCertVerifier) {
             mMockCertVerifier = mockCertVerifier;
@@ -573,6 +597,7 @@ public abstract class CronetEngine {
 
         /**
          * Build a {@link CronetEngine} using this builder's configuration.
+         * @return constructed {@link CronetEngine}.
          */
         public CronetEngine build() {
             CronetEngine engine = createContext(this);
@@ -816,6 +841,7 @@ public abstract class CronetEngine {
      *
      * @param url URL of resource to connect to.
      * @return an {@link java.net.HttpURLConnection} instance implemented by this CronetEngine.
+     * @throws IOException if an error occurs while opening the connection.
      */
     public abstract URLConnection openConnection(URL url) throws IOException;
 
@@ -829,7 +855,7 @@ public abstract class CronetEngine {
      * @param url URL of resource to connect to.
      * @param proxy proxy to use when establishing connection.
      * @return an {@link java.net.HttpURLConnection} instance implemented by this CronetEngine.
-     * @hide
+     * @throws IOException if an error occurs while opening the connection.
      * @deprecated Marked as deprecated because @hide doesn't properly hide but
      *         javadocs are built with nodeprecated="yes".
      *         TODO(pauljensen): Expose once implemented, http://crbug.com/418111
@@ -983,12 +1009,16 @@ public abstract class CronetEngine {
          * for user-facing latency analysis.
          *
          * <p>Must call {@link #enableNetworkQualityEstimator} to enable request metrics collection.
+         * @return metrics collected for this request.
          */
         public UrlRequestMetrics getMetrics() {
             return mMetrics;
         }
 
-        /** Returns a UrlResponseInfo for the request, if its response had started. */
+        /**
+         * Returns a {@link UrlResponseInfo} for the request, if its response had started.
+         * @return {@link UrlResponseInfo} for the request, if its response had started.
+         */
         @Nullable
         public UrlResponseInfo getResponseInfo() {
             return mResponseInfo;
@@ -1059,7 +1089,10 @@ public abstract class CronetEngine {
      */
     @Deprecated
     public interface RequestFinishedListener { // TODO(klm): Add a convenience abstract class.
-        /** Invoked with request info. */
+        /**
+         * Invoked with request info.
+         * @param requestInfo {@link UrlRequestInfo} for finished request.
+         */
         void onRequestFinished(UrlRequestInfo requestInfo);
     }
 }

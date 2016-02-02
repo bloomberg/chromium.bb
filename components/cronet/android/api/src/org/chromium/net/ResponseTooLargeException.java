@@ -7,7 +7,7 @@ package org.chromium.net;
 import java.io.IOException;
 
 /**
- * Exception returned if a {@link HttpUrlRequest} attempts to download a
+ * Exception returned if a {@code HttpUrlRequest} attempts to download a
  * response that exceeds the user-specified limit.
  * @deprecated This is no longer used in the async API.
  */
