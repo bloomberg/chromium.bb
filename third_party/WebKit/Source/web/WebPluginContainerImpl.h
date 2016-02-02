@@ -203,7 +203,7 @@ private:
     TouchEventRequestType m_touchEventRequestType;
     bool m_wantsWheelEvents;
 
-    bool m_inDispose;
+    bool m_isDisposed;
 };
 
 DEFINE_TYPE_CASTS(WebPluginContainerImpl, Widget, widget, widget->isPluginContainer(), widget.isPluginContainer());
