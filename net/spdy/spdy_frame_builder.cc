@@ -62,7 +62,7 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                SpdyFrameType type,
                                                uint8_t flags) {
-  DCHECK_GE(SPDY3, version_);
+  DCHECK_EQ(SPDY3, version_);
   DCHECK(SpdyConstants::IsValidFrameType(
       version_, SpdyConstants::SerializeFrameType(version_, type)));
   bool success = true;
@@ -80,7 +80,7 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
 bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
                                             SpdyStreamId stream_id,
                                             uint8_t flags) {
-  if (version_ > SPDY3) {
+  if (version_ == HTTP2) {
     return BeginNewFrame(framer, DATA, flags, stream_id);
   }
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
@@ -104,7 +104,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
   DCHECK(SpdyConstants::IsValidFrameType(
       version_, SpdyConstants::SerializeFrameType(version_, type)));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_GT(framer.protocol_version(), SPDY3);
+  DCHECK_EQ(HTTP2, framer.protocol_version());
   bool success = true;
   if (length_ > 0) {
     // Update length field for previous frame.
@@ -169,7 +169,7 @@ bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
                                        size_t length) {
-  if (version_ < HTTP2) {
+  if (version_ == SPDY3) {
     DCHECK_LE(length,
               SpdyConstants::GetFrameMaximumSize(version_) -
                   framer.GetFrameMinimumSize());
@@ -179,7 +179,7 @@ bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
   bool success = false;
   const size_t old_length = length_;
 
-  if (version_ < HTTP2) {
+  if (version_ == SPDY3) {
     FlagsAndLength flags_length = CreateFlagsAndLength(
         0,  // We're not writing over the flags value anyway.
         length);
@@ -198,7 +198,7 @@ bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
 }
 
 bool SpdyFrameBuilder::OverwriteFlags(const SpdyFramer& framer, uint8_t flags) {
-  DCHECK_GT(framer.protocol_version(), SPDY3);
+  DCHECK_EQ(HTTP2, framer.protocol_version());
   bool success = false;
   const size_t old_length = length_;
   // Flags are the fifth octet in the frame prefix.

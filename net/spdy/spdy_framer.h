@@ -195,13 +195,13 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // OnControlFrameHeaderData().
   // |stream_id| The stream receiving the header.
   // |has_priority| Whether or not the headers frame included a priority value,
-  //     and, if protocol version >= HTTP2, stream dependency info.
-  // |priority| If |has_priority| is true and protocol version > SPDY3,
-  //     priority value for the receiving stream, else 0.
+  //     and, if protocol version == HTTP2, stream dependency info.
+  // |priority| If |has_priority| is true, then priority value for the receiving
+  //     stream, otherwise 0.
   // |parent_stream_id| If |has_priority| is true and protocol
-  //     version >= HTTP2, the parent stream of the receiving stream, else 0.
+  //     version == HTTP2, the parent stream of the receiving stream, else 0.
   // |exclusive| If |has_priority| is true and protocol
-  //     version >= HTTP2, the exclusivity of dependence on the parent stream,
+  //     version == HTTP2, the exclusivity of dependence on the parent stream,
   //     else false.
   // |fin| Whether FIN flag is set in frame headers.
   // |end| False if HEADERs frame is to be followed by a CONTINUATION frame,

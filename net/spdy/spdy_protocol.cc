@@ -657,9 +657,9 @@ size_t SpdyConstants::GetPrefixLength(SpdyFrameType type,
 }
 
 size_t SpdyConstants::GetFrameMaximumSize(SpdyMajorVersion version) {
-  if (version < HTTP2) {
+  if (version == SPDY3) {
     // 24-bit length field plus eight-byte frame header.
-    return ((1<<24) - 1) + 8;
+    return ((1 << 24) - 1) + 8;
   } else {
     // Max payload of 2^14 plus nine-byte frame header.
     // TODO(mlavan): In HTTP/2 this is actually not a constant;
@@ -674,15 +674,15 @@ size_t SpdyConstants::GetSizeOfSizeField() {
 }
 
 size_t SpdyConstants::GetSettingSize(SpdyMajorVersion version) {
-  return version <= SPDY3 ? 8 : 6;
+  return version == SPDY3 ? 8 : 6;
 }
 
 int32_t SpdyConstants::GetInitialStreamWindowSize(SpdyMajorVersion version) {
-  return (version <= SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
+  return (version == SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
 }
 
 int32_t SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
-  return (version <= SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
+  return (version == SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
 }
 
 SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {

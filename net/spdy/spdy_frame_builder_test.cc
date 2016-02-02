@@ -44,7 +44,7 @@ TEST_P(SpdyFrameBuilderTest, RewriteLength) {
   SpdySettingsIR settings_ir;
   scoped_ptr<SpdyFrame> expected(framer.SerializeSettings(settings_ir));
   SpdyFrameBuilder builder(expected->size() + 1, spdy_version_);
-  if (spdy_version_ <= SPDY3) {
+  if (spdy_version_ == SPDY3) {
     builder.WriteControlFrameHeader(framer, SETTINGS, 0);
     builder.WriteUInt32(0);  // Write the number of settings.
   } else {
@@ -61,7 +61,7 @@ TEST_P(SpdyFrameBuilderTest, OverwriteFlags) {
   // Create a HEADERS frame both via framer and manually via builder with
   // different flags set, then make them match using OverwriteFlags().
   SpdyFramer framer(spdy_version_);
-  if (spdy_version_ <= SPDY3) {
+  if (spdy_version_ == SPDY3) {
     return;
   }
   SpdyHeadersIR headers_ir(1);
