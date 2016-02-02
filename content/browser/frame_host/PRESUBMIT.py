@@ -19,8 +19,11 @@ def _GetTryMasters(project, change):
 
 
 def GetPreferredTryMasters(project, change):
-  # TODO(nick, dcheng): We don't a value here because it would replace, rather
-  # than augment, the default set of try servers. Figure out how to augment it.
+  # TODO(nick, dcheng): Using the value of _GetTryMasters() instead of an empty
+  # value here would cause 'git cl try' to include the site isolation trybots,
+  # which would be nice. But it has the side effect of replacing, rather than
+  # augmenting, the default set of try servers. Re-enable this when we figure
+  # out a way to augment the default set.
   return {}
 
 
