@@ -51,6 +51,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerClientType,
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerProviderType,
                           content::SERVICE_WORKER_PROVIDER_TYPE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchType,
+                          content::ServiceWorkerFetchType::LAST)
+
 IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(mode)
   IPC_STRUCT_TRAITS_MEMBER(is_main_resource_load)
@@ -66,6 +69,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::ServiceWorkerFetchRequest)
   IPC_STRUCT_TRAITS_MEMBER(redirect_mode)
   IPC_STRUCT_TRAITS_MEMBER(client_id)
   IPC_STRUCT_TRAITS_MEMBER(is_reload)
+  IPC_STRUCT_TRAITS_MEMBER(fetch_type)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(content::ServiceWorkerFetchEventResult,

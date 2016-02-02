@@ -743,7 +743,11 @@ void ServiceWorkerContextClient::OnFetchEvent(
   webRequest.setFrameType(GetBlinkFrameType(request.frame_type));
   webRequest.setClientId(blink::WebString::fromUTF8(request.client_id));
   webRequest.setIsReload(request.is_reload);
-  proxy_->dispatchFetchEvent(request_id, webRequest);
+  if (request.fetch_type == ServiceWorkerFetchType::FOREIGN_FETCH) {
+    proxy_->dispatchForeignFetchEvent(request_id, webRequest);
+  } else {
+    proxy_->dispatchFetchEvent(request_id, webRequest);
+  }
 }
 
 void ServiceWorkerContextClient::OnNotificationClickEvent(

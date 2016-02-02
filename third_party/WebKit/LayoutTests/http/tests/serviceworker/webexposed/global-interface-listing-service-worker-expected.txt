@@ -861,6 +861,7 @@ global object
     getter onactivate
     getter oncrossoriginmessage
     getter onfetch
+    getter onforeignfetch
     getter ongeofenceenter
     getter ongeofenceleave
     getter oninstall
@@ -876,6 +877,7 @@ global object
     setter onactivate
     setter oncrossoriginmessage
     setter onfetch
+    setter onforeignfetch
     setter ongeofenceenter
     setter ongeofenceleave
     setter oninstall

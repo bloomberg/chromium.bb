@@ -48,4 +48,5 @@
   attribute EventHandler onfetch;
   attribute EventHandler oninstall;
   attribute EventHandler onmessage;
+  [RuntimeEnabled=ForeignFetch] attribute EventHandler onforeignfetch;
 };

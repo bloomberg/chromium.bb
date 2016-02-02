@@ -176,7 +176,8 @@ class MockHttpProtocolHandler
         FETCH_CREDENTIALS_MODE_OMIT, FetchRedirectMode::FOLLOW_MODE,
         true /* is_main_resource_load */, REQUEST_CONTEXT_TYPE_HYPERLINK,
         REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-        scoped_refptr<ResourceRequestBody>(), delegate_);
+        scoped_refptr<ResourceRequestBody>(), ServiceWorkerFetchType::FETCH,
+        delegate_);
     job_->ForwardToServiceWorker();
     return job_;
   }

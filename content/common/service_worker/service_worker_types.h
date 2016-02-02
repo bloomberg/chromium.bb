@@ -106,6 +106,12 @@ enum ServiceWorkerFetchEventResult {
   SERVICE_WORKER_FETCH_EVENT_LAST = SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE
 };
 
+enum class ServiceWorkerFetchType {
+  FETCH,
+  FOREIGN_FETCH,
+  LAST = FOREIGN_FETCH
+};
+
 struct ServiceWorkerCaseInsensitiveCompare {
   bool operator()(const std::string& lhs, const std::string& rhs) const {
     return base::CompareCaseInsensitiveASCII(lhs, rhs) < 0;
@@ -139,6 +145,7 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   FetchRedirectMode redirect_mode;
   std::string client_id;
   bool is_reload;
+  ServiceWorkerFetchType fetch_type;
 };
 
 // Represents a response to a fetch.

@@ -95,6 +95,7 @@ finish
 focus
 focusin
 focusout
+foreignfetch
 frametimingbufferfull
 fullscreenchange
 fullscreenerror

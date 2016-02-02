@@ -76,6 +76,7 @@ public:
     void dispatchActivateEvent(int) override;
     void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) override;
     void dispatchFetchEvent(int, const WebServiceWorkerRequest&) override;
+    void dispatchForeignFetchEvent(int, const WebServiceWorkerRequest&) override;
     void dispatchGeofencingEvent(int, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) override;
     void dispatchInstallEvent(int) override;
     void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) override;
@@ -111,6 +112,8 @@ private:
     WebServiceWorkerContextClient& client() const;
     Document& document() const;
     ServiceWorkerGlobalScope* workerGlobalScope() const;
+
+    void dispatchFetchEventImpl(int eventID, const WebServiceWorkerRequest&, const AtomicString& eventTypeName);
 
     // Non-null until the WebEmbeddedWorkerImpl explicitly detach()es
     // as part of its finalization.

@@ -119,6 +119,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     scoped_refptr<ResourceRequestBody> body,
+    ServiceWorkerFetchType fetch_type,
     Delegate* delegate)
     : net::URLRequestJob(request, network_delegate),
       delegate_(delegate),
@@ -137,6 +138,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       frame_type_(frame_type),
       fall_back_required_(false),
       body_(body),
+      fetch_type_(fetch_type),
       weak_factory_(this) {
   DCHECK(delegate_) << "ServiceWorkerURLRequestJob requires a delegate";
 }
@@ -481,6 +483,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
     request->referrer =
         Referrer(GURL(request_->referrer()), blink::WebReferrerPolicyDefault);
   }
+  request->fetch_type = fetch_type_;
   return request;
 }
 

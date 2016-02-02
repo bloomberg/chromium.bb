@@ -104,18 +104,12 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 
 void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
 {
-    RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
-    bool defaultPrevented = false;
-    Request* request = Request::create(workerGlobalScope(), webRequest);
-    request->headers()->setGuard(Headers::ImmutableGuard);
-    FetchEventInit eventInit;
-    eventInit.setCancelable(true);
-    eventInit.setRequest(request);
-    eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
-    eventInit.setIsReload(webRequest.isReload());
-    RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(EventTypeNames::fetch, eventInit, observer));
-    defaultPrevented = !workerGlobalScope()->dispatchEvent(fetchEvent.release());
-    observer->didDispatchEvent(defaultPrevented);
+    dispatchFetchEventImpl(eventID, webRequest, EventTypeNames::fetch);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest)
+{
+    dispatchFetchEventImpl(eventID, webRequest, EventTypeNames::foreignfetch);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeofencingEventType eventType, const WebString& regionID, const WebCircularGeofencingRegion& region)
@@ -273,6 +267,22 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScopeProxy::workerGlobalScope() con
 {
     ASSERT(m_workerGlobalScope);
     return m_workerGlobalScope;
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchFetchEventImpl(int eventID, const WebServiceWorkerRequest& webRequest, const AtomicString& eventTypeName)
+{
+    RespondWithObserver* observer = RespondWithObserver::create(workerGlobalScope(), eventID, webRequest.url(), webRequest.mode(), webRequest.frameType(), webRequest.requestContext());
+    bool defaultPrevented = false;
+    Request* request = Request::create(workerGlobalScope(), webRequest);
+    request->headers()->setGuard(Headers::ImmutableGuard);
+    FetchEventInit eventInit;
+    eventInit.setCancelable(true);
+    eventInit.setRequest(request);
+    eventInit.setClientId(webRequest.isMainResourceLoad() ? WebString() : webRequest.clientId());
+    eventInit.setIsReload(webRequest.isReload());
+    RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(eventTypeName, eventInit, observer));
+    defaultPrevented = !workerGlobalScope()->dispatchEvent(fetchEvent.release());
+    observer->didDispatchEvent(defaultPrevented);
 }
 
 } // namespace blink

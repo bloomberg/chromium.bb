@@ -58,6 +58,7 @@ public:
     // FIXME: This needs to pass the active service worker info.
     virtual void dispatchInstallEvent(int installEventID) = 0;
     virtual void dispatchFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
+    virtual void dispatchForeignFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
 
     virtual void dispatchGeofencingEvent(int eventID, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) = 0;
 

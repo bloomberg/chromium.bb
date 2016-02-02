@@ -107,6 +107,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
       RequestContextType request_context_type,
       RequestContextFrameType frame_type,
       scoped_refptr<ResourceRequestBody> body,
+      ServiceWorkerFetchType fetch_type,
       Delegate* delegate);
 
   ~ServiceWorkerURLRequestJob() override;
@@ -268,6 +269,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   scoped_refptr<ResourceRequestBody> body_;
   scoped_ptr<storage::BlobDataHandle> request_body_blob_data_handle_;
   scoped_refptr<ServiceWorkerVersion> streaming_version_;
+  ServiceWorkerFetchType fetch_type_;
 
   ResponseBodyType response_body_type_ = UNKNOWN;
   bool did_record_result_ = false;
