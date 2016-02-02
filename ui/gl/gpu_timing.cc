@@ -342,9 +342,19 @@ int64_t GPUTimingImpl::CalculateTimerOffset() {
         timer_type_ == GPUTiming::kTimerTypeARB) {
       GLint64 gl_now = 0;
       glGetInteger64v(GL_TIMESTAMP, &gl_now);
-      int64_t micro_now = NanoToMicro(gl_now);
-      offset_ = GetCurrentCPUTime() - micro_now;
-      offset_valid_ = (timer_type_ == GPUTiming::kTimerTypeARB);
+      const int64_t cpu_time = GetCurrentCPUTime();
+      const int64_t micro_offset = cpu_time - NanoToMicro(gl_now);
+
+      // We cannot expect these instructions to run with the accuracy
+      // within 1 microsecond, instead discard differences which are less
+      // than a single millisecond.
+      base::TimeDelta delta =
+          base::TimeDelta::FromMicroseconds(micro_offset - offset_);
+
+      if (delta.magnitude().InMilliseconds() >= 1) {
+        offset_ = micro_offset;
+        offset_valid_ = (timer_type_ == GPUTiming::kTimerTypeARB);
+      }
     } else {
       offset_ = 0;
       offset_valid_ = true;

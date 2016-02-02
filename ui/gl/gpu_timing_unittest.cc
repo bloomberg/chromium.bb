@@ -106,7 +106,7 @@ TEST_F(GPUTimingTest, QueryTimeStampTest) {
   scoped_refptr<GPUTimingClient> client = CreateGPUTimingClient();
   scoped_ptr<GPUTimer> gpu_timer = client->CreateGPUTimer(false);
 
-  const int64_t begin_cpu_time = 123;
+  const int64_t begin_cpu_time = 1230;
   const int64_t begin_gl_time = 10 * base::Time::kNanosecondsPerMicrosecond;
   const int64_t cpu_gl_offset =
       begin_gl_time / base::Time::kNanosecondsPerMicrosecond - begin_cpu_time;
