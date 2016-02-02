@@ -80,6 +80,7 @@ class WindowServerTestBase
                        scoped_ptr<std::vector<uint8_t>>* new_data) override;
   Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
+  void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
 
   // InterfaceFactory<WindowTreeClient>:
   void Create(mojo::ApplicationConnection* connection,

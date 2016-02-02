@@ -5,8 +5,6 @@
 module mus.mojom;
 
 import "components/mus/public/interfaces/input_event_constants.mojom";
-import "components/mus/public/interfaces/input_event_matcher.mojom";
-import "components/mus/public/interfaces/input_events.mojom";
 import "components/mus/public/interfaces/input_key_codes.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
@@ -19,15 +17,6 @@ interface WindowTreeHost {
 
   // Sets a title string to be displayed on the platform window.
   SetTitle(string title);
-
-  // Add and remove accelerators. When accelerators are registered the
-  // WindowTreeHostClient receives the event via OnAccelerator() rather than the
-  // target window. The id is defined by the client and can be used to more
-  // easily identify the accelerator's action. If an accelerator with the same
-  // id or the same matcher already exists, then the accelerator is not added,
-  // and returns false.
-  AddAccelerator(uint32 id, EventMatcher matcher) => (bool success);
-  RemoveAccelerator(uint32 id);
 
   // Enables (or disables) child windows of |window_id| to be activated.
   AddActivationParent(uint32 window_id);
@@ -47,9 +36,8 @@ interface WindowTreeHost {
                                              mojo.Insets hit_area);
 };
 
+// TODO(sky): get rid of this.
 interface WindowTreeHostClient {
-  // An accelerator registered via AddAccelerator() has been triggered.
-  OnAccelerator(uint32 id, Event event);
 };
 
 interface WindowTreeHostFactory {

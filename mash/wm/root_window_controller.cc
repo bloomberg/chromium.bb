@@ -87,21 +87,6 @@ bool RootWindowController::WindowIsContainer(const mus::Window* window) const {
   return window && window->parent() == root_;
 }
 
-RootWindowController::RootWindowController(WindowManagerApplication* app)
-    : app_(app), root_(nullptr), window_count_(0), host_client_binding_(this) {
-  window_manager_.reset(new WindowManager);
-}
-
-RootWindowController::~RootWindowController() {}
-
-void RootWindowController::AddAccelerators() {
-  window_tree_host_->AddAccelerator(
-      kWindowSwitchAccelerator,
-      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::TAB,
-                            mus::mojom::kEventFlagControlDown),
-      base::Bind(&AssertTrue));
-}
-
 void RootWindowController::OnAccelerator(uint32_t id,
                                          mus::mojom::EventPtr event) {
   switch (id) {
@@ -112,6 +97,21 @@ void RootWindowController::OnAccelerator(uint32_t id,
       app_->OnAccelerator(id, std::move(event));
       break;
   }
+}
+
+RootWindowController::RootWindowController(WindowManagerApplication* app)
+    : app_(app), root_(nullptr), window_count_(0), host_client_binding_(this) {
+  window_manager_.reset(new WindowManager);
+}
+
+RootWindowController::~RootWindowController() {}
+
+void RootWindowController::AddAccelerators() {
+  window_manager_->window_manager_client()->AddAccelerator(
+      kWindowSwitchAccelerator,
+      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::TAB,
+                            mus::mojom::kEventFlagControlDown),
+      base::Bind(&AssertTrue));
 }
 
 void RootWindowController::OnEmbed(mus::Window* root) {

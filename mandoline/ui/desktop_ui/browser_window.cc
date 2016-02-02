@@ -37,6 +37,13 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mandoline {
+namespace {
+
+void OnAcceleratorAdded(bool success) {
+  DCHECK(success);
+}
+
+}  // namespace
 
 class ProgressView : public views::View {
  public:
@@ -101,7 +108,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
                              mus::mojom::WindowTreeHostFactory* host_factory,
                              BrowserManager* manager)
     : app_(app),
-      host_client_binding_(this),
+      window_manager_client_(nullptr),
       manager_(manager),
       toolbar_view_(nullptr),
       progress_bar_(nullptr),
@@ -112,9 +119,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       find_active_(0),
       find_count_(0),
       web_view_(this) {
-  mus::CreateWindowTreeHost(host_factory,
-                            host_client_binding_.CreateInterfacePtrAndBind(),
-                            this, &host_, nullptr);
+  mus::CreateWindowTreeHost(host_factory, nullptr, this, &host_, this);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {
@@ -209,34 +214,40 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
 
   web_view_.Init(app_, content_);
 
-  host_->AddAccelerator(
+  const base::Callback<void(bool)> add_accelerator_callback =
+      base::Bind(&OnAcceleratorAdded);
+  DCHECK(window_manager_client_);
+  window_manager_client_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::CLOSE),
       mus::CreateKeyMatcher(mus::mojom::KeyboardCode::W,
                             mus::mojom::kEventFlagControlDown),
-      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
-  host_->AddAccelerator(
+      add_accelerator_callback);
+  window_manager_client_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::FOCUS_OMNIBOX),
       mus::CreateKeyMatcher(mus::mojom::KeyboardCode::L,
                             mus::mojom::kEventFlagControlDown),
-      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
-  host_->AddAccelerator(
+      add_accelerator_callback);
+  window_manager_client_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::NEW_WINDOW),
       mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
                             mus::mojom::kEventFlagControlDown),
-      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
-  host_->AddAccelerator(
+      add_accelerator_callback);
+  window_manager_client_->AddAccelerator(
       static_cast<uint32_t>(BrowserCommand::SHOW_FIND),
       mus::CreateKeyMatcher(mus::mojom::KeyboardCode::F,
                             mus::mojom::kEventFlagControlDown),
-      mus::mojom::WindowTreeHost::AddAcceleratorCallback());
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_BACK),
-                        mus::CreateKeyMatcher(mus::mojom::KeyboardCode::LEFT,
-                                              mus::mojom::kEventFlagAltDown),
-                        mus::mojom::WindowTreeHost::AddAcceleratorCallback());
-  host_->AddAccelerator(static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
-                        mus::CreateKeyMatcher(mus::mojom::KeyboardCode::RIGHT,
-                                              mus::mojom::kEventFlagAltDown),
-                        mus::mojom::WindowTreeHost::AddAcceleratorCallback());
+      add_accelerator_callback);
+  window_manager_client_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::GO_BACK),
+      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::LEFT,
+                            mus::mojom::kEventFlagAltDown),
+      add_accelerator_callback);
+  window_manager_client_->AddAccelerator(
+      static_cast<uint32_t>(BrowserCommand::GO_FORWARD),
+      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::RIGHT,
+                            mus::mojom::kEventFlagAltDown),
+      add_accelerator_callback);
+
   // Now that we're ready, load the default url.
   LoadURL(default_url_);
 
@@ -265,7 +276,28 @@ void BrowserWindow::OnConnectionLost(mus::WindowTreeConnection* connection) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserWindow, mus::ViewTreeHostClient implementation:
+// BrowserWindow, mus::WindowManagerDelegate implementation:
+
+void BrowserWindow::SetWindowManagerClient(mus::WindowManagerClient* client) {
+  window_manager_client_ = client;
+}
+
+bool BrowserWindow::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
+  return true;
+}
+
+bool BrowserWindow::OnWmSetProperty(
+    mus::Window* window,
+    const std::string& name,
+    scoped_ptr<std::vector<uint8_t>>* new_data) {
+  return true;
+}
+
+mus::Window* BrowserWindow::OnWmCreateTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  NOTREACHED();
+  return nullptr;
+}
 
 void BrowserWindow::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
   switch (static_cast<BrowserCommand>(id)) {

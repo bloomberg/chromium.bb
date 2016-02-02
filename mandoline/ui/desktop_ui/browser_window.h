@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -44,11 +45,11 @@ class ProgressView;
 class ToolbarView;
 
 class BrowserWindow : public mus::WindowTreeDelegate,
-                      public mus::mojom::WindowTreeHostClient,
                       public web_view::mojom::WebViewClient,
                       public ViewEmbedder,
                       public mojo::InterfaceFactory<ViewEmbedder>,
-                      public FindBarDelegate {
+                      public FindBarDelegate,
+                      public mus::WindowManagerDelegate {
  public:
   BrowserWindow(mojo::ApplicationImpl* app,
                 mus::mojom::WindowTreeHostFactory* host_factory,
@@ -73,7 +74,14 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
-  // Overridden from WindowTreeHostClient:
+  // Overridden from WindowManagerDelegate:
+  void SetWindowManagerClient(mus::WindowManagerClient* client) override;
+  bool OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) override;
+  bool OnWmSetProperty(mus::Window* window,
+                       const std::string& name,
+                       scoped_ptr<std::vector<uint8_t>>* new_data) override;
+  mus::Window* OnWmCreateTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
@@ -107,10 +115,10 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void Layout(views::View* host);
 
   mojo::ApplicationImpl* app_;
+  mus::WindowManagerClient* window_manager_client_;
   scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
   mus::mojom::WindowTreeHostPtr host_;
-  mojo::Binding<WindowTreeHostClient> host_client_binding_;
   BrowserManager* manager_;
   ToolbarView* toolbar_view_;
   ProgressView* progress_bar_;

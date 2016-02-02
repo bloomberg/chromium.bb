@@ -120,6 +120,11 @@ Window* WindowServerTestBase::OnWmCreateTopLevelWindow(
              : nullptr;
 }
 
+void WindowServerTestBase::OnAccelerator(uint32_t id, mojom::EventPtr event) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnAccelerator(id, std::move(event));
+}
+
 void WindowServerTestBase::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojom::WindowTreeClient> request) {

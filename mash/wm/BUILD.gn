@@ -46,6 +46,7 @@ source_set("lib") {
     "property_util.h",
     "root_window_controller.cc",
     "root_window_controller.h",
+    "root_windows_observer.h",
     "screenlock_layout.cc",
     "screenlock_layout.h",
     "shadow.cc",

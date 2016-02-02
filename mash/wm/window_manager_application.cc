@@ -12,6 +12,7 @@
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mash/wm/accelerator_registrar_impl.h"
 #include "mash/wm/root_window_controller.h"
+#include "mash/wm/root_windows_observer.h"
 #include "mash/wm/user_window_controller_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
@@ -27,10 +28,25 @@ WindowManagerApplication::WindowManagerApplication()
     : app_(nullptr), window_manager_factory_binding_(this) {}
 
 WindowManagerApplication::~WindowManagerApplication() {
+  // AcceleratorRegistrarImpl removes an observer in its destructor. Destroy
+  // it early on.
+  std::set<AcceleratorRegistrarImpl*> accelerator_registrars(
+      accelerator_registrars_);
+  for (AcceleratorRegistrarImpl* registrar : accelerator_registrars)
+    registrar->Destroy();
+
   std::set<RootWindowController*> controllers(root_controllers_);
-  std::for_each(
-      controllers.begin(), controllers.end(),
-      [](RootWindowController* controller) { controller->Destroy(); });
+  for (RootWindowController* controller : controllers)
+    controller->Destroy();
+}
+
+std::set<RootWindowController*> WindowManagerApplication::GetRootControllers() {
+  std::set<RootWindowController*> root_controllers;
+  for (RootWindowController* controller : root_controllers_) {
+    if (controller->root())
+      root_controllers.insert(controller);
+  }
+  return root_controllers;
 }
 
 void WindowManagerApplication::OnRootWindowControllerGotRoot(
@@ -51,6 +67,9 @@ void WindowManagerApplication::OnRootWindowControllerDoneInit(
     user_window_controller_binding_.AddBinding(user_window_controller_.get(),
                                                std::move(*request));
   user_window_controller_requests_.clear();
+
+  FOR_EACH_OBSERVER(RootWindowsObserver, root_windows_observers_,
+                    OnRootWindowControllerAdded(root_controller));
 }
 
 void WindowManagerApplication::OnRootWindowDestroyed(
@@ -67,6 +86,16 @@ void WindowManagerApplication::OnAccelerator(uint32_t id,
       break;
     }
   }
+}
+
+void WindowManagerApplication::AddRootWindowsObserver(
+    RootWindowsObserver* observer) {
+  root_windows_observers_.AddObserver(observer);
+}
+
+void WindowManagerApplication::RemoveRootWindowsObserver(
+    RootWindowsObserver* observer) {
+  root_windows_observers_.RemoveObserver(observer);
 }
 
 void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
@@ -112,8 +141,6 @@ void WindowManagerApplication::Create(
 void WindowManagerApplication::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request) {
-  // TODO(sky): figure out the right place for this code. Should it
-  // automatically register for all displays?
   static int accelerator_registrar_count = 0;
   if (accelerator_registrar_count == std::numeric_limits<int>::max()) {
     // Restart from zero if we have reached the limit. It is technically
@@ -123,11 +150,8 @@ void WindowManagerApplication::Create(
     // install accelerators.
     accelerator_registrar_count = 0;
   }
-  // TODO(sky): make global.
-  RootWindowController* root_controller = *root_controllers_.begin();
   accelerator_registrars_.insert(new AcceleratorRegistrarImpl(
-      root_controller->window_tree_host(), ++accelerator_registrar_count,
-      std::move(request),
+      this, ++accelerator_registrar_count, std::move(request),
       base::Bind(&WindowManagerApplication::OnAcceleratorRegistrarDestroyed,
                  base::Unretained(this))));
 }

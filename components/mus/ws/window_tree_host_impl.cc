@@ -234,18 +234,6 @@ void WindowTreeHostImpl::SetTitle(const mojo::String& title) {
   display_manager_->SetTitle(title.To<base::string16>());
 }
 
-void WindowTreeHostImpl::AddAccelerator(
-    uint32_t id,
-    mojom::EventMatcherPtr event_matcher,
-    const AddAcceleratorCallback& callback) {
-  bool success = event_dispatcher_.AddAccelerator(id, std::move(event_matcher));
-  callback.Run(success);
-}
-
-void WindowTreeHostImpl::RemoveAccelerator(uint32_t id) {
-  event_dispatcher_.RemoveAccelerator(id);
-}
-
 void WindowTreeHostImpl::AddActivationParent(Id transport_window_id) {
   ServerWindow* window = GetWindowFromWindowTreeHost(transport_window_id);
   if (window)
@@ -518,7 +506,7 @@ void WindowTreeHostImpl::OnFocusChanged(
 
 void WindowTreeHostImpl::OnAccelerator(uint32_t accelerator_id,
                                        mojom::EventPtr event) {
-  client()->OnAccelerator(accelerator_id, std::move(event));
+  GetWindowTree()->OnAccelerator(accelerator_id, std::move(event));
 }
 
 void WindowTreeHostImpl::SetFocusedWindowFromEventDispatcher(

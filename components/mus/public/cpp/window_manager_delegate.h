@@ -10,7 +10,10 @@
 #include <map>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/mus/public/interfaces/input_event_matcher.mojom.h"
+#include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 
 namespace gfx {
@@ -21,10 +24,17 @@ namespace mus {
 
 class Window;
 
+// See the mojom with the same name for details on the functions in this
+// interface.
 class WindowManagerClient {
  public:
   virtual void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) = 0;
+
+  virtual void AddAccelerator(uint32_t id,
+                              mojom::EventMatcherPtr event_matcher,
+                              const base::Callback<void(bool)>& callback) = 0;
+  virtual void RemoveAccelerator(uint32_t id) = 0;
 
  protected:
   virtual ~WindowManagerClient() {}
@@ -61,6 +71,8 @@ class WindowManagerDelegate {
   // of OnWmCreateTopLevelWindow().
   virtual Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) = 0;
+
+  virtual void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

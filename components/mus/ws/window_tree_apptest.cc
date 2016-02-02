@@ -397,6 +397,9 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
     NOTIMPLEMENTED();
   }
+  void OnAccelerator(uint32_t id, mojom::EventPtr event) override {
+    NOTIMPLEMENTED();
+  }
 
   TestChangeTracker tracker_;
 

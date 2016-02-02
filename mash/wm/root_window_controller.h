@@ -56,10 +56,14 @@ class RootWindowController : public mus::WindowObserver,
   mus::Window* GetWindowById(mus::Id id);
   bool WindowIsContainer(const mus::Window* window) const;
 
+  WindowManager* window_manager() { return window_manager_.get(); }
+
   // TODO(sky): don't expose this, it may be null.
   mus::mojom::WindowTreeHost* window_tree_host() {
     return window_tree_host_.get();
   }
+
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
 
  private:
   explicit RootWindowController(WindowManagerApplication* app);
@@ -69,9 +73,6 @@ class RootWindowController : public mus::WindowObserver,
 
   // Sets up the window containers used for z-space management.
   void CreateContainers();
-
-  // WindowTreeHostClient:
-  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;

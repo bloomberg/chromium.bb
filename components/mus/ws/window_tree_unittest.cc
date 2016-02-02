@@ -92,6 +92,7 @@ class TestWindowManager : public mojom::WindowManager {
     got_create_top_level_window_ = true;
     change_id_ = change_id;
   }
+  void OnAccelerator(uint32_t id, mojom::EventPtr event) override {}
 
   bool got_create_top_level_window_;
   uint32_t change_id_;

@@ -127,6 +127,7 @@ class WindowTreeImpl : public mojom::WindowTree,
 
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);
+  void OnAccelerator(uint32_t accelerator_id, mojom::EventPtr event);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -333,6 +334,10 @@ class WindowTreeImpl : public mojom::WindowTree,
       override;
 
   // mojom::WindowManagerClient:
+  void AddAccelerator(uint32_t id,
+                      mojom::EventMatcherPtr event_matcher,
+                      const AddAcceleratorCallback& callback) override;
+  void RemoveAccelerator(uint32_t id) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(

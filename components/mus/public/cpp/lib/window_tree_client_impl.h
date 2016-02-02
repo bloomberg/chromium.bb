@@ -227,10 +227,15 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void WmCreateTopLevelWindow(uint32_t change_id,
                               mojo::Map<mojo::String, mojo::Array<uint8_t>>
                                   transport_properties) override;
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   // Overriden from WindowManagerClient:
   void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
+  void AddAccelerator(uint32_t id,
+                      mojom::EventMatcherPtr event_matcher,
+                      const base::Callback<void(bool)>& callback) override;
+  void RemoveAccelerator(uint32_t id) override;
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this connection.

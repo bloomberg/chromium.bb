@@ -26,6 +26,10 @@ class WindowManager : public mus::WindowObserver,
 
   void Initialize(RootWindowController* root_controller);
 
+  mus::WindowManagerClient* window_manager_client() {
+    return window_manager_client_;
+  }
+
  private:
   gfx::Rect CalculateDefaultBounds(mus::Window* window) const;
   gfx::Rect GetMaximizedWindowBounds() const;
@@ -45,6 +49,7 @@ class WindowManager : public mus::WindowObserver,
                        scoped_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
+  void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
   RootWindowController* root_controller_;
   mus::WindowManagerClient* window_manager_client_;

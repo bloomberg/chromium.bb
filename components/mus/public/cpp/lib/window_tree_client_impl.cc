@@ -891,10 +891,26 @@ void WindowTreeClientImpl::WmCreateTopLevelWindow(
                                                              window->id());
 }
 
+void WindowTreeClientImpl::OnAccelerator(uint32_t id, mojom::EventPtr event) {
+  window_manager_delegate_->OnAccelerator(id, std::move(event));
+}
+
 void WindowTreeClientImpl::SetFrameDecorationValues(
     mojom::FrameDecorationValuesPtr values) {
   window_manager_internal_client_->WmSetFrameDecorationValues(
       std::move(values));
+}
+
+void WindowTreeClientImpl::AddAccelerator(
+    uint32_t id,
+    mojom::EventMatcherPtr event_matcher,
+    const base::Callback<void(bool)>& callback) {
+  window_manager_internal_client_->AddAccelerator(id, std::move(event_matcher),
+                                                  callback);
+}
+
+void WindowTreeClientImpl::RemoveAccelerator(uint32_t id) {
+  window_manager_internal_client_->RemoveAccelerator(id);
 }
 
 }  // namespace mus

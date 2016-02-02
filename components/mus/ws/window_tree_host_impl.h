@@ -91,6 +91,8 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
 
   ConnectionManager* connection_manager() { return connection_manager_; }
 
+  EventDispatcher* event_dispatcher() { return &event_dispatcher_; }
+
   // Returns the root ServerWindow of this viewport.
   ServerWindow* root_window() { return root_.get(); }
   const ServerWindow* root_window() const { return root_.get(); }
@@ -119,10 +121,6 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // WindowTreeHost:
   void SetSize(mojo::SizePtr size) override;
   void SetTitle(const mojo::String& title) override;
-  void AddAccelerator(uint32_t id,
-                      mojom::EventMatcherPtr event_matcher,
-                      const AddAcceleratorCallback& callback) override;
-  void RemoveAccelerator(uint32_t id) override;
   void AddActivationParent(Id transport_window_id) override;
   void RemoveActivationParent(Id transport_window_id) override;
   void ActivateNextWindow() override;

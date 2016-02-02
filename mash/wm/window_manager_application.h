@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
@@ -38,6 +39,7 @@ namespace wm {
 
 class AcceleratorRegistrarImpl;
 class RootWindowController;
+class RootWindowsObserver;
 class UserWindowControllerImpl;
 
 class WindowManagerApplication
@@ -51,6 +53,12 @@ class WindowManagerApplication
 
   mojo::ApplicationImpl* app() { return app_; }
 
+  // Returns the RootWindowControllers that have valid roots.
+  //
+  // NOTE: this does not return |controllers_| as most clients want a
+  // RootWindowController that has a valid root window.
+  std::set<RootWindowController*> GetRootControllers();
+
   // Called when the root window of |root_controller| is obtained.
   void OnRootWindowControllerGotRoot(RootWindowController* root_controller);
 
@@ -63,6 +71,9 @@ class WindowManagerApplication
 
   // TODO(sky): figure out right place for this code.
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
+
+  void AddRootWindowsObserver(RootWindowsObserver* observer);
+  void RemoveRootWindowsObserver(RootWindowsObserver* observer);
 
  private:
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
@@ -108,6 +119,8 @@ class WindowManagerApplication
 
   mojo::Binding<mus::mojom::WindowManagerFactory>
       window_manager_factory_binding_;
+
+  base::ObserverList<RootWindowsObserver> root_windows_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerApplication);
 };
