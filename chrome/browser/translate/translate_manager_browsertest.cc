@@ -24,13 +24,6 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
   TranslateManagerBrowserTest() {}
   ~TranslateManagerBrowserTest() override {}
 
-  std::string GetLanguageFor(content::WebContents* web_contents) {
-    translate::LanguageDetectionDetails details;
-    content::Source<content::WebContents> source(web_contents);
-    language_detected_signal_->GetDetailsFor(source.map_key(), &details);
-    return details.adopted_language;
-  }
-
   void WaitUntilLanguageDetected() { language_detected_signal_->Wait(); }
 
   void ResetObserver() {
@@ -64,40 +57,37 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  // The InProcessBrowserTest opens a new tab, let's wait for that first.
-  WaitUntilLanguageDetected();
-
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-
-  std::string adopted_language = GetLanguageFor(current_web_contents);
-  EXPECT_EQ("und", adopted_language);
-
-  // Open a new tab with a page in English.
-  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/english_page.html")),
-                ui::PAGE_TRANSITION_TYPED);
-
-  ResetObserver();
-
-  current_web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(current_web_contents);
+  // The InProcessBrowserTest opens a new tab, let's wait for that first.
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
 
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Open a new tab with a page in English.
+  ResetObserver();
+  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/english_page.html")),
+                ui::PAGE_TRANSITION_TYPED);
+  current_web_contents = browser()->tab_strip_model()->GetActiveWebContents();
+  chrome_translate_client =
+      ChromeTranslateClient::FromWebContents(current_web_contents);
   WaitUntilLanguageDetected();
-  adopted_language = GetLanguageFor(current_web_contents);
-  EXPECT_EQ("en", adopted_language);
+
   EXPECT_EQ("en",
             chrome_translate_client->GetLanguageState().original_language());
 
   ResetObserver();
-
   // Now navigate to a page in French.
   ui_test_utils::NavigateToURL(
       browser(), GURL(embedded_test_server()->GetURL("/french_page.html")));
-
   WaitUntilLanguageDetected();
-  adopted_language = GetLanguageFor(current_web_contents);
-  EXPECT_EQ("fr", adopted_language);
+
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 }
@@ -115,15 +105,18 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
-  WaitUntilLanguageDetected();
-
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ChromeTranslateClient* chrome_translate_client =
       ChromeTranslateClient::FromWebContents(current_web_contents);
 
-  std::string adopted_language = GetLanguageFor(current_web_contents);
-  EXPECT_EQ("und", adopted_language);
+  // There is a possible race condition, when the language is not yet detected,
+  // so we check for that and wait if necessary.
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetected();
+
+  EXPECT_EQ("und",
+            chrome_translate_client->GetLanguageState().original_language());
 
   ResetObserver();
 
@@ -132,8 +125,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), french_url);
 
   WaitUntilLanguageDetected();
-  adopted_language = GetLanguageFor(current_web_contents);
-  EXPECT_EQ("fr", adopted_language);
   EXPECT_EQ("fr",
             chrome_translate_client->GetLanguageState().original_language());
 }
@@ -145,28 +136,25 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        MAYBE_TranslateSessionRestore) {
-  WaitUntilLanguageDetected();
-
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::string active_adopted_language = GetLanguageFor(active_web_contents);
+  ChromeTranslateClient* active_translate_client =
+      ChromeTranslateClient::FromWebContents(active_web_contents);
+  if (active_translate_client->GetLanguageState().current_language().empty())
+    WaitUntilLanguageDetected();
+  EXPECT_EQ("und",
+            active_translate_client->GetLanguageState().current_language());
+
+  // Make restored tab active to (on some platforms) initiate language
+  // detection.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
 
   content::WebContents* restored_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  std::string restored_adopted_language = GetLanguageFor(restored_web_contents);
-
-  // One of the tabs could be still loading, let's check on that and wait,
-  // if necessary.
-  if (active_adopted_language.empty()) {
-    ResetObserver();
+  ChromeTranslateClient* restored_translate_client =
+      ChromeTranslateClient::FromWebContents(restored_web_contents);
+  if (restored_translate_client->GetLanguageState().current_language().empty())
     WaitUntilLanguageDetected();
-    active_adopted_language = GetLanguageFor(active_web_contents);
-  } else if (restored_adopted_language.empty()) {
-    ResetObserver();
-    WaitUntilLanguageDetected();
-    restored_adopted_language = GetLanguageFor(restored_web_contents);
-  }
-
-  EXPECT_EQ("fr", restored_adopted_language);
-  EXPECT_EQ("und", active_adopted_language);
+  EXPECT_EQ("fr",
+            restored_translate_client->GetLanguageState().current_language());
 }
