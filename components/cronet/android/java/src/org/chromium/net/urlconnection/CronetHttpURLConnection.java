@@ -63,6 +63,9 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public void connect() throws IOException {
+        getOutputStream();
+        // If request is started in getOutputStream, calling startRequest()
+        // again has no effect.
         startRequest();
     }
 
@@ -184,7 +187,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
      */
     @Override
     public OutputStream getOutputStream() throws IOException {
-        if (mOutputStream == null) {
+        if (mOutputStream == null && doOutput) {
             if (connected) {
                 throw new ProtocolException(
                         "Cannot write to OutputStream after receiving response.");

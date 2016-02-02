@@ -106,6 +106,56 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     }
 
     /**
+     * Tests that calling {@link HttpURLConnection#connect} will also initialize
+     * {@code OutputStream} if necessary in the case where
+     * {@code setFixedLengthStreamingMode} is called.
+     * Regression test for crbug.com/582975.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testInitOutputStreamInConnect() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        String dataString = "some very important data";
+        byte[] data = dataString.getBytes();
+        connection.setFixedLengthStreamingMode(data.length);
+        connection.connect();
+        OutputStream out = connection.getOutputStream();
+        out.write(data);
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals(dataString, TestUtil.getResponseAsString(connection));
+        connection.disconnect();
+    }
+
+    /**
+     * Tests that calling {@link HttpURLConnection#connect} will also initialize
+     * {@code OutputStream} if necessary in the case where
+     * {@code setChunkedStreamingMode} is called.
+     * Regression test for crbug.com/582975.
+     */
+    @SmallTest
+    @Feature({"Cronet"})
+    @CompareDefaultWithCronet
+    public void testInitChunkedOutputStreamInConnect() throws Exception {
+        URL url = new URL(NativeTestServer.getEchoBodyURL());
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        String dataString = "some very important chunked data";
+        byte[] data = dataString.getBytes();
+        connection.setChunkedStreamingMode(0);
+        connection.connect();
+        OutputStream out = connection.getOutputStream();
+        out.write(data);
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals(dataString, TestUtil.getResponseAsString(connection));
+        connection.disconnect();
+    }
+
+    /**
      * Tests that using reflection to find {@code fixedContentLengthLong} works.
      */
     @SmallTest
