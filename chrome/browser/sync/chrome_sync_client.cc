@@ -140,7 +140,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   favicon::FaviconService* GetFaviconService() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     return FaviconServiceFactory::GetForProfile(
-        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+        profile_, ServiceAccessType::IMPLICIT_ACCESS);
   }
   history::HistoryService* GetHistoryService() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -189,10 +189,9 @@ void ChromeSyncClient::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_data_service_ = WebDataServiceFactory::GetAutofillWebDataForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  // TODO(crbug.com/558320) Is EXPLICIT_ACCESS appropriate here?
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
   password_store_ = PasswordStoreFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
@@ -235,7 +234,7 @@ bookmarks::BookmarkModel* ChromeSyncClient::GetBookmarkModel() {
 favicon::FaviconService* ChromeSyncClient::GetFaviconService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return FaviconServiceFactory::GetForProfile(
-      profile_, ServiceAccessType::EXPLICIT_ACCESS);
+      profile_, ServiceAccessType::IMPLICIT_ACCESS);
 }
 
 history::HistoryService* ChromeSyncClient::GetHistoryService() {
@@ -357,6 +356,10 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                      : base::WeakPtr<history::HistoryService>();
     }
     case syncer::TYPED_URLS: {
+      // We request history service with explicit access here because this
+      // codepath is executed on backend thread while HistoryServiceFactory
+      // checks preference value in implicit mode and PrefService expectes calls
+      // only from UI thread.
       history::HistoryService* history = HistoryServiceFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
       if (!history)
@@ -475,10 +478,7 @@ void ChromeSyncClient::ClearBrowsingData(base::Time start, base::Time end) {
   remover->Remove(BrowsingDataRemover::TimeRange(start, end),
                   BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
 
-  scoped_refptr<password_manager::PasswordStore> password =
-      PasswordStoreFactory::GetForProfile(profile_,
-                                          ServiceAccessType::EXPLICIT_ACCESS);
-  password->RemoveLoginsSyncedBetween(start, end);
+  password_store_->RemoveLoginsSyncedBetween(start, end);
 }
 
 void ChromeSyncClient::SetBrowsingDataRemoverObserverForTesting(
