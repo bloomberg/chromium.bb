@@ -38,6 +38,15 @@ bool IPAddress::IsReserved() const {
   return IsIPAddressReserved(ip_address_);
 }
 
+bool IPAddress::IsZero() const {
+  for (auto x : ip_address_) {
+    if (x != 0)
+      return false;
+  }
+
+  return !empty();
+}
+
 bool IPAddress::IsIPv4Mapped() const {
   return net::IsIPv4Mapped(ip_address_);
 }

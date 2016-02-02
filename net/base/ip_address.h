@@ -56,6 +56,9 @@ class NET_EXPORT IPAddress {
   // protocols's reserved ranges.
   bool IsReserved() const;
 
+  // Returns true if the IP is "zero" (e.g. the 0.0.0.0 IPv4 address).
+  bool IsZero() const;
+
   // Returns true if |ip_address_| is an IPv4-mapped IPv6 address.
   bool IsIPv4Mapped() const;
 

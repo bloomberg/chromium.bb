@@ -61,6 +61,27 @@ TEST(IPAddressTest, IsValid) {
   EXPECT_TRUE(ip_address4.empty());
 }
 
+TEST(IPAddressTest, IsZero) {
+  uint8_t address1[4] = {};
+  IPAddress zero_ipv4_address(address1);
+  EXPECT_TRUE(zero_ipv4_address.IsZero());
+
+  uint8_t address2[4] = {10};
+  IPAddress non_zero_ipv4_address(address2);
+  EXPECT_FALSE(non_zero_ipv4_address.IsZero());
+
+  uint8_t address3[16] = {};
+  IPAddress zero_ipv6_address(address3);
+  EXPECT_TRUE(zero_ipv6_address.IsZero());
+
+  uint8_t address4[16] = {10};
+  IPAddress non_zero_ipv6_address(address4);
+  EXPECT_FALSE(non_zero_ipv6_address.IsZero());
+
+  IPAddress empty_address;
+  EXPECT_FALSE(empty_address.IsZero());
+}
+
 TEST(IPAddressTest, ToString) {
   uint8_t addr1[4] = {0, 0, 0, 0};
   IPAddress ip_address1(addr1);
