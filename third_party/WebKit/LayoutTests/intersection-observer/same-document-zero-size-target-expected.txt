@@ -1,0 +1,41 @@
+Iintersection observer test with zero-size target element.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS entries.length is 0
+PASS entries.length is 1
+PASS entries[0].boundingClientRect.left is 8
+PASS entries[0].boundingClientRect.right is 9
+PASS entries[0].boundingClientRect.top is 408
+PASS entries[0].boundingClientRect.bottom is 409
+PASS entries[0].intersectionRect.left is 8
+PASS entries[0].intersectionRect.right is 9
+PASS entries[0].intersectionRect.top is 408
+PASS entries[0].intersectionRect.bottom is 409
+PASS entries[0].rootBounds.left is 0
+PASS entries[0].rootBounds.right is 785
+PASS entries[0].rootBounds.top is 0
+PASS entries[0].rootBounds.bottom is 600
+PASS entries[0].target is [object HTMLDivElement]
+PASS entries[0].boundingClientRect is [object ClientRect]
+PASS entries[0].intersectionRect is [object ClientRect]
+PASS entries[0].rootBounds is [object ClientRect]
+PASS entries.length is 2
+PASS entries[1].boundingClientRect.left is 8
+PASS entries[1].boundingClientRect.right is 9
+PASS entries[1].boundingClientRect.top is 608
+PASS entries[1].boundingClientRect.bottom is 609
+PASS entries[1].intersectionRect.left is 0
+PASS entries[1].intersectionRect.right is 0
+PASS entries[1].intersectionRect.top is 0
+PASS entries[1].intersectionRect.bottom is 0
+PASS entries[1].rootBounds.left is 0
+PASS entries[1].rootBounds.right is 785
+PASS entries[1].rootBounds.top is 0
+PASS entries[1].rootBounds.bottom is 600
+PASS entries[1].target is [object HTMLDivElement]
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -36,6 +36,10 @@ void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
         geometry.targetRect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
     else
         geometry.targetRect = toLayoutText(targetLayoutObject)->visualOverflowRect();
+    if (!geometry.targetRect.size().width())
+        geometry.targetRect.setWidth(LayoutUnit(1));
+    if (!geometry.targetRect.size().height())
+        geometry.targetRect.setHeight(LayoutUnit(1));
     geometry.intersectionRect = geometry.targetRect;
 }
 
