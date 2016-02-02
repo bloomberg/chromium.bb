@@ -946,7 +946,12 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
     // TODO(chrishtr): intentionally ignore transform, because the positioning of frameRect() does also. This is probably wrong.
     unclippedIntLocalRect = box->absoluteToLocalQuad(FloatRect(unclippedIntLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
-    clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+
+    // As a performance optimization, map the clipped rect separately if is different than the unclipped rect.
+    if (clippedLocalRect != unclippedIntLocalRect)
+        clippedLocalRect = box->absoluteToLocalQuad(FloatRect(clippedLocalRect), TraverseDocumentBoundaries).enclosingBoundingBox();
+    else
+        clippedLocalRect = unclippedIntLocalRect;
 }
 
 void WebPluginContainerImpl::calculateGeometry(IntRect& windowRect, IntRect& clipRect, IntRect& unobscuredRect, Vector<IntRect>& cutOutRects)
