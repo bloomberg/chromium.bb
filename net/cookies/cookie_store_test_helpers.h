@@ -29,6 +29,20 @@ class DelayedCookieMonster : public CookieStore {
       const CookieOptions& options,
       const CookieMonster::SetCookiesCallback& callback) override;
 
+  void SetCookieWithDetailsAsync(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time creation_time,
+                                 const base::Time expiration_time,
+                                 bool secure,
+                                 bool http_only,
+                                 bool same_site,
+                                 bool enforce_strict_secure,
+                                 CookiePriority priority,
+                                 const SetCookiesCallback& callback) override;
+
   void GetCookiesWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,

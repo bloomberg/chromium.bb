@@ -389,7 +389,7 @@ bool CookieMonster::ImportCookies(const CookieList& list) {
     CookieOptions options;
     options.set_include_httponly();
     options.set_include_same_site();
-    if (!SetCanonicalCookie(&cookie, cookie->CreationDate(), options))
+    if (!SetCanonicalCookie(std::move(cookie), options))
       return false;
   }
   return true;
@@ -462,11 +462,11 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            const std::string& value,
                            const std::string& domain,
                            const std::string& path,
-                           const base::Time& expiration_time,
+                           const base::Time creation_time,
+                           const base::Time expiration_time,
                            bool secure,
                            bool http_only,
                            bool same_site,
-                           bool enforce_prefixes,
                            bool enforce_strict_secure,
                            CookiePriority priority,
                            const SetCookiesCallback& callback)
@@ -476,11 +476,11 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         value_(value),
         domain_(domain),
         path_(path),
+        creation_time_(creation_time),
         expiration_time_(expiration_time),
         secure_(secure),
         http_only_(http_only),
         same_site_(same_site),
-        enforce_prefixes_(enforce_prefixes),
         enforce_strict_secure_(enforce_strict_secure),
         priority_(priority),
         callback_(callback) {}
@@ -497,11 +497,11 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   std::string value_;
   std::string domain_;
   std::string path_;
+  base::Time creation_time_;
   base::Time expiration_time_;
   bool secure_;
   bool http_only_;
   bool same_site_;
-  bool enforce_prefixes_;
   bool enforce_strict_secure_;
   CookiePriority priority_;
   SetCookiesCallback callback_;
@@ -511,9 +511,8 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->SetCookieWithDetails(
-      url_, name_, value_, domain_, path_, expiration_time_, secure_,
-      http_only_, same_site_, enforce_prefixes_, enforce_strict_secure_,
-      priority_);
+      url_, name_, value_, domain_, path_, creation_time_, expiration_time_,
+      secure_, http_only_, same_site_, enforce_strict_secure_, priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -958,17 +957,17 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const std::string& value,
     const std::string& domain,
     const std::string& path,
-    const Time& expiration_time,
+    const Time creation_time,
+    const Time expiration_time,
     bool secure,
     bool http_only,
     bool same_site,
-    bool enforce_prefixes,
     bool enforce_strict_secure,
     CookiePriority priority,
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
-      this, url, name, value, domain, path, expiration_time, secure, http_only,
-      same_site, enforce_prefixes, enforce_strict_secure, priority, callback);
+      this, url, name, value, domain, path, creation_time, expiration_time,
+      secure, http_only, same_site, enforce_strict_secure, priority, callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -1163,11 +1162,11 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          const std::string& value,
                                          const std::string& domain,
                                          const std::string& path,
-                                         const base::Time& expiration_time,
+                                         const base::Time creation_time,
+                                         const base::Time expiration_time,
                                          bool secure,
                                          bool http_only,
                                          bool same_site,
-                                         bool enforce_prefixes,
                                          bool enforce_strict_secure,
                                          CookiePriority priority) {
   base::AutoLock autolock(lock_);
@@ -1175,12 +1174,19 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   if (!HasCookieableScheme(url))
     return false;
 
-  Time creation_time = CurrentTime();
-  last_time_seen_ = creation_time;
+  // TODO(mmenke): This class assumes each cookie to have a unique creation
+  // time. Allowing the caller to set the creation time violates that
+  // assumption. Worth fixing? Worth noting that time changes between browser
+  // restarts can cause the same issue.
+  base::Time actual_creation_time = creation_time;
+  if (creation_time.is_null()) {
+    actual_creation_time = CurrentTime();
+    last_time_seen_ = actual_creation_time;
+  }
 
   scoped_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
-      url, name, value, domain, path, creation_time, expiration_time, secure,
-      http_only, same_site, enforce_strict_secure, priority));
+      url, name, value, domain, path, actual_creation_time, expiration_time,
+      secure, http_only, same_site, enforce_strict_secure, priority));
 
   if (!cc.get())
     return false;
@@ -1190,7 +1196,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   options.set_include_same_site();
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
-  return SetCanonicalCookie(&cc, creation_time, options);
+  return SetCanonicalCookie(std::move(cc), options);
 }
 
 CookieList CookieMonster::GetAllCookies() {
@@ -1882,16 +1888,16 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
     VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
     return false;
   }
-  return SetCanonicalCookie(&cc, creation_time, options);
+  return SetCanonicalCookie(std::move(cc), options);
 }
 
-bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
-                                       const Time& creation_time,
+bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie> cc,
                                        const CookieOptions& options) {
-  const std::string key(GetKey((*cc)->Domain()));
-  bool already_expired = (*cc)->IsExpired(creation_time);
+  Time creation_time = cc->CreationDate();
+  const std::string key(GetKey(cc->Domain()));
+  bool already_expired = cc->IsExpired(creation_time);
 
-  if (DeleteAnyEquivalentCookie(key, **cc, options.exclude_httponly(),
+  if (DeleteAnyEquivalentCookie(key, *cc, options.exclude_httponly(),
                                 already_expired,
                                 options.enforce_strict_secure())) {
     std::string error;
@@ -1908,21 +1914,18 @@ bool CookieMonster::SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
   }
 
   VLOG(kVlogSetCookies) << "SetCookie() key: " << key
-                        << " cc: " << (*cc)->DebugString();
+                        << " cc: " << cc->DebugString();
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
   if (!already_expired || keep_expired_cookies_) {
     // See InitializeHistograms() for details.
-    if ((*cc)->IsPersistent()) {
+    if (cc->IsPersistent()) {
       histogram_expiration_duration_minutes_->Add(
-          ((*cc)->ExpiryDate() - creation_time).InMinutes());
+          (cc->ExpiryDate() - creation_time).InMinutes());
     }
 
-    {
-      CanonicalCookie cookie = *(cc->get());
-      InternalInsertCookie(key, cc->release(), true);
-    }
+    InternalInsertCookie(key, cc.release(), true);
   } else {
     VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
   }
@@ -1943,10 +1946,11 @@ bool CookieMonster::SetCanonicalCookies(const CookieList& list) {
   CookieOptions options;
   options.set_include_httponly();
 
-  for (CookieList::const_iterator it = list.begin(); it != list.end(); ++it) {
-    scoped_ptr<CanonicalCookie> canonical_cookie(new CanonicalCookie(*it));
-    if (!SetCanonicalCookie(&canonical_cookie, it->CreationDate(), options))
+  for (const auto& cookie : list) {
+    if (!SetCanonicalCookie(make_scoped_ptr(new CanonicalCookie(cookie)),
+                            options)) {
       return false;
+    }
   }
 
   return true;

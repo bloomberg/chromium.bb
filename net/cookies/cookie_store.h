@@ -56,6 +56,31 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const CookieOptions& options,
       const SetCookiesCallback& callback) = 0;
 
+  // Sets a cookie given explicit user-provided cookie attributes. The cookie
+  // name, value, domain, etc. are each provided as separate strings. This
+  // function expects each attribute to be well-formed. It will check for
+  // disallowed characters (e.g. the ';' character is disallowed within the
+  // cookie value attribute) and will return false without setting the cookie
+  // if such characters are found.
+  //
+  // If |creation_time| is null, it will be set to the time the cookie is set.
+  //
+  // If unable to set a cookie, will  invoke |callback| with false.
+  virtual void SetCookieWithDetailsAsync(
+      const GURL& url,
+      const std::string& name,
+      const std::string& value,
+      const std::string& domain,
+      const std::string& path,
+      const base::Time creation_time,
+      const base::Time expiration_time,
+      bool secure,
+      bool http_only,
+      bool same_site,
+      bool enforce_strict_secure,
+      CookiePriority priority,
+      const SetCookiesCallback& callback) = 0;
+
   // TODO(???): what if the total size of all the cookies >4k, can we have a
   // header that big or do we need multiple Cookie: headers?
   // Note: Some sites, such as Facebook, occasionally use Cookie headers >4k.

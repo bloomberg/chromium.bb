@@ -12,7 +12,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "jni/CookiesFetcher_jni.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 
@@ -63,9 +62,7 @@ void CookiesFetcher::PersistCookiesInternal(
     return;
   }
 
-  net::CookieMonster* monster = store->GetCookieMonster();
-
-  monster->GetAllCookiesAsync(base::Bind(
+  store->GetAllCookiesAsync(base::Bind(
       &CookiesFetcher::OnCookiesFetchFinished, base::Unretained(this)));
 }
 
@@ -154,7 +151,6 @@ void CookiesFetcher::RestoreToCookieJarInternal(
       return;
   }
 
-  net::CookieMonster* monster = store->GetCookieMonster();
   base::Callback<void(bool success)> cb;
 
   // TODO(estark): Remove kEnableExperimentalWebPlatformFeatures check
@@ -163,11 +159,11 @@ void CookiesFetcher::RestoreToCookieJarInternal(
   bool experimental_features_enabled =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExperimentalWebPlatformFeatures);
-  monster->SetCookieWithDetailsAsync(
+  store->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
-      cookie.Path(), cookie.ExpiryDate(), cookie.IsSecure(),
+      cookie.Path(), base::Time(), cookie.ExpiryDate(), cookie.IsSecure(),
       cookie.IsHttpOnly(), cookie.IsSameSite(), experimental_features_enabled,
-      experimental_features_enabled, cookie.Priority(), cb);
+      cookie.Priority(), cb);
 }
 
 // JNI functions

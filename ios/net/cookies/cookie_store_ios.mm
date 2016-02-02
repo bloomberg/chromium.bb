@@ -400,7 +400,6 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
       // specified: it is inferred from the URL instead. The only case when it
       // is empty is when the domain attribute is incorrectly formatted.
       std::string domain_string(base::SysNSStringToUTF8([cookie domain]));
-      const std::string url_host(url.host());
       std::string dummy;
       bool has_explicit_domain = HasExplicitDomain(cookie_line);
       bool has_valid_domain =
@@ -422,6 +421,74 @@ void CookieStoreIOS::SetCookieWithOptionsAsync(
         creation_time_manager_->SetCreationTime(
             cookie,
             creation_time_manager_->MakeUniqueCreationTime(base::Time::Now()));
+      }
+
+      if (!callback.is_null())
+        callback.Run(success);
+      break;
+  }
+}
+
+void CookieStoreIOS::SetCookieWithDetailsAsync(
+    const GURL& url,
+    const std::string& name,
+    const std::string& value,
+    const std::string& domain,
+    const std::string& path,
+    const base::Time creation_time,
+    const base::Time expiration_time,
+    bool secure,
+    bool http_only,
+    bool same_site,
+    bool enforce_strict_secure,
+    CookiePriority priority,
+    const SetCookiesCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  switch (synchronization_state_) {
+    case NOT_SYNCHRONIZED:
+      cookie_monster_->SetCookieWithDetailsAsync(
+          url, name, value, domain, path, creation_time, expiration_time,
+          secure, http_only, same_site, enforce_strict_secure, priority,
+          WrapSetCallback(callback));
+      break;
+    case SYNCHRONIZING:
+      tasks_pending_synchronization_.push_back(
+          base::Bind(&CookieStoreIOS::SetCookieWithDetailsAsync, this, url,
+                     name, value, domain, path, creation_time, expiration_time,
+                     secure, http_only, same_site, enforce_strict_secure,
+                     priority, WrapSetCallback(callback)));
+      break;
+    case SYNCHRONIZED:
+      // If cookies are not allowed, they are stashed in the CookieMonster, and
+      // should be written there instead.
+      DCHECK(SystemCookiesAllowed());
+
+      bool success = false;
+
+      // First create a CanonicalCookie, to normalize the arguments,
+      // particularly domain and path, and perform validation.
+      scoped_ptr<net::CanonicalCookie> canonical_cookie =
+          net::CanonicalCookie::Create(
+              url, name, value, domain, path, creation_time, expiration_time,
+              secure, http_only, same_site, enforce_strict_secure,
+              priority);
+
+      if (canonical_cookie) {
+        NSHTTPCookie* cookie =
+            SystemCookieFromCanonicalCookie(*canonical_cookie);
+
+        if (cookie != nil) {
+          [system_store_ setCookie:cookie];
+          base::Time base_creation_time = creation_time;
+          if (base_creation_time.is_null()) {
+            base_creation_time = base::Time::Now();
+          }
+          creation_time_manager_->SetCreationTime(
+              cookie, creation_time_manager_->MakeUniqueCreationTime(
+                          base_creation_time));
+          success = true;
+        }
       }
 
       if (!callback.is_null())

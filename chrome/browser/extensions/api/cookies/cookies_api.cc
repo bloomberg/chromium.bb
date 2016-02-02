@@ -32,6 +32,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -368,10 +369,8 @@ bool CookiesSetFunction::RunAsync() {
 
 void CookiesSetFunction::SetCookieOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  net::CookieMonster* cookie_monster =
-      store_browser_context_->GetURLRequestContext()
-          ->cookie_store()
-          ->GetCookieMonster();
+  net::CookieStore* cookie_store =
+      store_browser_context_->GetURLRequestContext()->cookie_store();
 
   base::Time expiration_time;
   if (parsed_args_->details.expiration_date.get()) {
@@ -387,7 +386,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
           ->network_delegate()
           ->AreExperimentalCookieFeaturesEnabled();
 
-  cookie_monster->SetCookieWithDetailsAsync(
+  cookie_store->SetCookieWithDetailsAsync(
       url_, parsed_args_->details.name.get() ? *parsed_args_->details.name
                                              : std::string(),
       parsed_args_->details.value.get() ? *parsed_args_->details.value
@@ -396,6 +395,7 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                          : std::string(),
       parsed_args_->details.path.get() ? *parsed_args_->details.path
                                        : std::string(),
+      base::Time(),
       expiration_time,
       parsed_args_->details.secure.get() ? *parsed_args_->details.secure.get()
                                          : false,
@@ -405,19 +405,17 @@ void CookiesSetFunction::SetCookieOnIOThread() {
       // to extend the extension API to support them. For the moment, we'll set
       // all cookies as non-First-party-only.
       false, are_experimental_cookie_features_enabled,
-      are_experimental_cookie_features_enabled, net::COOKIE_PRIORITY_DEFAULT,
+      net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
 }
 
 void CookiesSetFunction::PullCookie(bool set_cookie_result) {
   // Pull the newly set cookie.
-  net::CookieMonster* cookie_monster =
-      store_browser_context_->GetURLRequestContext()
-          ->cookie_store()
-          ->GetCookieMonster();
+  net::CookieStore* cookie_store =
+      store_browser_context_->GetURLRequestContext()->cookie_store();
   success_ = set_cookie_result;
   cookies_helpers::GetCookieListFromStore(
-      cookie_monster, url_,
+      cookie_store, url_,
       base::Bind(&CookiesSetFunction::PullCookieCallback, this));
 }
 

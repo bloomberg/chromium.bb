@@ -153,26 +153,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
   typedef base::Callback<void(bool success)> DeleteCookieCallback;
 
-  // Sets a cookie given explicit user-provided cookie attributes. The cookie
-  // name, value, domain, etc. are each provided as separate strings. This
-  // function expects each attribute to be well-formed. It will check for
-  // disallowed characters (e.g. the ';' character is disallowed within the
-  // cookie value attribute) and will return false without setting the cookie
-  // if such characters are found.
-  void SetCookieWithDetailsAsync(const GURL& url,
-                                 const std::string& name,
-                                 const std::string& value,
-                                 const std::string& domain,
-                                 const std::string& path,
-                                 const base::Time& expiration_time,
-                                 bool secure,
-                                 bool http_only,
-                                 bool first_party,
-                                 bool enforce_prefixes,
-                                 bool enforce_strict_secure,
-                                 CookiePriority priority,
-                                 const SetCookiesCallback& callback);
-
   // Returns all the cookies, for use in management UI, etc. Filters results
   // using given url scheme, host / domain and path and options. This does not
   // mark the cookies as having been accessed.
@@ -204,6 +184,19 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void SetCookieWithOptionsAsync(const GURL& url,
                                  const std::string& cookie_line,
                                  const CookieOptions& options,
+                                 const SetCookiesCallback& callback) override;
+  void SetCookieWithDetailsAsync(const GURL& url,
+                                 const std::string& name,
+                                 const std::string& value,
+                                 const std::string& domain,
+                                 const std::string& path,
+                                 const base::Time creation_time,
+                                 const base::Time expiration_time,
+                                 bool secure,
+                                 bool http_only,
+                                 bool same_site,
+                                 bool enforce_strict_secure,
+                                 CookiePriority priority,
                                  const SetCookiesCallback& callback) override;
   void GetCookiesWithOptionsAsync(const GURL& url,
                                   const CookieOptions& options,
@@ -436,11 +429,11 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& value,
                             const std::string& domain,
                             const std::string& path,
-                            const base::Time& expiration_time,
+                            const base::Time creation_time,
+                            const base::Time expiration_time,
                             bool secure,
                             bool http_only,
-                            bool first_party,
-                            bool enforce_prefixes,
+                            bool same_site,
                             bool enforce_strict_secure,
                             CookiePriority priority);
 
@@ -568,8 +561,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   // Helper function that sets a canonical cookie, deleting equivalents and
   // performing garbage collection.
-  bool SetCanonicalCookie(scoped_ptr<CanonicalCookie>* cc,
-                          const base::Time& creation_time,
+  bool SetCanonicalCookie(scoped_ptr<CanonicalCookie> cc,
                           const CookieOptions& options);
 
   // Helper function calling SetCanonicalCookie() for all cookies in |list|.
