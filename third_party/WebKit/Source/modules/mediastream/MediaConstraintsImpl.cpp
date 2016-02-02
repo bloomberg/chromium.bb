@@ -94,7 +94,6 @@ const char kDAEchoCancellation[] = "googDAEchoCancellation";
 // const char kHighpassFilter[] = "googHighpassFilter"; // duplicate k-name
 // const char kTypingNoiseDetection[] = "googTypingNoiseDetection"; // duplicate k-name
 // const char kAudioMirroring[] = "googAudioMirroring"; // duplicate k-name
-const char kAecDump[] = "audioDebugRecording";
 
 // Google-specific constraint keys for a local video source (getUserMedia).
 const char kNoiseReduction[] = "googNoiseReduction";
@@ -313,8 +312,6 @@ static void parseOldStyleNames(ExecutionContext* context, const WebVector<WebMed
             result.googAudioMirroring.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kDAEchoCancellation)) {
             result.googDAEchoCancellation.setExact(toBoolean(constraint.m_value));
-        } else if (constraint.m_name.equals(kAecDump)) {
-            result.googAecDump.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kNoiseReduction)) {
             result.googNoiseReduction.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kOfferToReceiveAudio)) {
