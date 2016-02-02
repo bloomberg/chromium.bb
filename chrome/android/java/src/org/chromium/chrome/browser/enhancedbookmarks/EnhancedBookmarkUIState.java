@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.components.bookmarks.BookmarkId;
 
 /**
@@ -151,7 +152,12 @@ class EnhancedBookmarkUIState {
                     && !mFolder.equals(bookmarkModel.getRootFolderId());
         }
 
-        if (mState == STATE_FILTER && mFilter == null) return false;
+        if (mState == STATE_FILTER) {
+            if (mFilter == null) return false;
+            if (mFilter == EnhancedBookmarkFilter.OFFLINE_PAGES) {
+                return OfflinePageBridge.isEnabled();
+            }
+        }
 
         return true;
     }

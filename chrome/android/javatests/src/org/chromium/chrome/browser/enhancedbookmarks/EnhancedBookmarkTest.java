@@ -244,6 +244,14 @@ public class EnhancedBookmarkTest extends ChromeActivityTestCaseBase<ChromeActiv
                 EnhancedBookmarkUtils.getLastUsedUrl(getActivity()));
     }
 
+    @SmallTest
+    @CommandLineFlags.Add(ChromeSwitches.DISABLE_OFFLINE_PAGES)
+    public void testOpenBookmarkManagerInOfflinePageWhenDisabled() throws InterruptedException {
+        openBookmarkManager("chrome-native://bookmarks/filter/OFFLINE_PAGES");
+        EnhancedBookmarkDelegate delegate = mItemsContainer.getDelegateForTesting();
+        assertEquals(EnhancedBookmarkUIState.STATE_ALL_BOOKMARKS, delegate.getCurrentState());
+    }
+
     /**
      * Returns the View that has the given text.
      *
