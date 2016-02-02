@@ -662,7 +662,10 @@ FileManager.prototype = /** @struct */ {
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
-    return this.initBackgroundPagePromise_.then(function() {
+    return Promise.all([
+      this.initBackgroundPagePromise_,
+      window.importElementsPromise
+    ]).then(function() {
       this.initEssentialUI_();
       this.initAdditionalUI_();
       return this.initSettingsPromise_;
@@ -792,11 +795,6 @@ FileManager.prototype = /** @struct */ {
     assert(this.launchParams_);
     this.ui_ = new FileManagerUI(
         assert(this.providersModel_), this.dialogDom_, this.launchParams_);
-
-    // Show the window as soon as the UI pre-initialization is done.
-    if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
-      chrome.app.window.current().show();
-    }
   };
 
   /**
@@ -1374,8 +1372,10 @@ FileManager.prototype = /** @struct */ {
         this.backgroundPage_.background.progressCenter.updateItem(item);
       }
     }
-    this.backgroundPage_.background.progressCenter.removePanel(
-        this.ui_.progressCenterPanel);
+    if (this.ui_ && this.ui_.progressCenterPanel) {
+      this.backgroundPage_.background.progressCenter.removePanel(
+          this.ui_.progressCenterPanel);
+    }
   };
 
   /**

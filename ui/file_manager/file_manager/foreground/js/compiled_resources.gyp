@@ -84,6 +84,7 @@
           './directory_contents.js',
           './directory_model.js',
           './directory_tree_naming_controller.js',
+          './elements_importer.js',
           './empty_folder_controller.js',
           './file_manager.js',
           './file_manager_commands.js',

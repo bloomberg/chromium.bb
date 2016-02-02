@@ -15,6 +15,7 @@
       <!-- Files.app pages and scripts. -->
       <include name="IDR_FILE_MANAGER_MAIN" file="file_manager/main.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_MAIN_JS" file="file_manager/foreground/js/main_scripts.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_ELEMENTS_IMPORTER_JS" file="file_manager/foreground/js/elements_importer.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_BKGND_JS" file="file_manager/background/js/background.js" type="BINDATA" />
 
       <!-- Common Scripts. -->
@@ -50,6 +51,7 @@
       <include name="IDR_FILE_MANAGER_VOLUME_MANAGER_JS" file="file_manager/background/js/volume_manager.js" flattenhtml="false" type="BINDATA" />
 
       <!-- Polymer elements -->
+      <include name="IDR_FILE_MANAGER_ELEMENTS_ELEMENTS_BUNDLE_HTML" file="file_manager/foreground/elements/elements_bundle.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_ICON_BUTTON_HTML" file="file_manager/foreground/elements/files_icon_button.html" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_ICON_BUTTON_JS" file="file_manager/foreground/elements/files_icon_button.js" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ELEMENTS_FILES_RIPPLE_HTML" file="file_manager/foreground/elements/files_ripple.html" type="BINDATA" />

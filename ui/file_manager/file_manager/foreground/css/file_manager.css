@@ -2294,3 +2294,8 @@ files-toggle-ripple {
   right: 0;
   top: 0;
 }
+
+/* Preventing FOUC */
+paper-input-container:unresolved {
+  display: none;
+}

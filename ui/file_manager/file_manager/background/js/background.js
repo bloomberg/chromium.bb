@@ -297,8 +297,7 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = {
     color: '#1976d2'
   },
   minWidth: 480,
-  minHeight: 300,
-  hidden: true
+  minHeight: 300
 };
 
 /**

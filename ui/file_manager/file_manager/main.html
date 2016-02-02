@@ -27,18 +27,8 @@
     <link rel="stylesheet" href="foreground/css/common.css">
     <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
 
-    <script src="chrome://resources/js/polymer_config.js"></script>
-    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/image-icons.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
-    <link rel="import" href="foreground/elements/files_ripple.html">
-    <link rel="import" href="foreground/elements/files_toggle_ripple.html">
-    <link rel="import" href="foreground/elements/files_tooltip.html">
+    <script src="foreground/js/elements_importer.js"></script>
+    <script src="foreground/js/main_scripts.js" defer></script>
   </head>
 
   <body tabindex="-1">
@@ -445,7 +435,5 @@
     <div id="drag-container"></div>
     <files-tooltip></files-tooltip>
     <iframe id="command-dispatcher" hidden aria-hidden="true"></iframe>
-
-    <script src="foreground/js/main_scripts.js"></script>
   </body>
 </html>
