@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <numeric>
+
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -46,6 +48,43 @@ ACTION_TEMPLATE(InvokeUsbTransferCallback,
   net::IOBuffer* io_buffer = new net::IOBuffer(1);
   memset(io_buffer->data(), 0, 1);  // Avoid uninitialized reads.
   ::std::tr1::get<k>(args).Run(p1, io_buffer, 1);
+}
+
+ACTION_P2(InvokeUsbIsochronousTransferOutCallback,
+          transferred_length,
+          success_packets) {
+  std::vector<UsbDeviceHandle::IsochronousPacket> packets(arg2.size());
+  for (size_t i = 0; i < packets.size(); ++i) {
+    packets[i].length = arg2[i];
+    if (i < success_packets) {
+      packets[i].transferred_length = transferred_length;
+      packets[i].status = device::USB_TRANSFER_COMPLETED;
+    } else {
+      packets[i].transferred_length = 0;
+      packets[i].status = device::USB_TRANSFER_ERROR;
+    }
+  }
+  arg4.Run(arg1, packets);
+}
+
+ACTION_P2(InvokeUsbIsochronousTransferInCallback,
+          transferred_length,
+          success_packets) {
+  size_t total_length = std::accumulate(arg1.begin(), arg1.end(), 0u);
+  net::IOBuffer* io_buffer = new net::IOBuffer(total_length);
+  std::vector<UsbDeviceHandle::IsochronousPacket> packets(arg1.size());
+  for (size_t i = 0; i < packets.size(); ++i) {
+    packets[i].length = arg1[i];
+    packets[i].transferred_length = transferred_length;
+    if (i < success_packets) {
+      packets[i].transferred_length = transferred_length;
+      packets[i].status = device::USB_TRANSFER_COMPLETED;
+    } else {
+      packets[i].transferred_length = 0;
+      packets[i].status = device::USB_TRANSFER_ERROR;
+    }
+  }
+  arg3.Run(io_buffer, packets);
 }
 
 class TestDevicePermissionsPrompt
@@ -165,10 +204,8 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferEvent) {
   EXPECT_CALL(*mock_device_handle_.get(),
               GenericTransfer(device::USB_DIRECTION_OUTBOUND, 2, _, 1, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED));
-  EXPECT_CALL(
-      *mock_device_handle_.get(),
-      IsochronousTransfer(device::USB_DIRECTION_OUTBOUND, 3, _, 1, 1, 1, _, _))
-      .WillOnce(InvokeUsbTransferCallback<7>(device::USB_TRANSFER_COMPLETED));
+  EXPECT_CALL(*mock_device_handle_.get(), IsochronousTransferOut(3, _, _, _, _))
+      .WillOnce(InvokeUsbIsochronousTransferOutCallback(1, 1u));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunAppTest("api_test/usb/transfer_event"));
 }
@@ -181,10 +218,14 @@ IN_PROC_BROWSER_TEST_F(UsbApiTest, ZeroLengthTransfer) {
 }
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, TransferFailure) {
-  EXPECT_CALL(*mock_device_handle_.get(), GenericTransfer(_, _, _, _, _, _))
+  EXPECT_CALL(*mock_device_handle_.get(),
+              GenericTransfer(device::USB_DIRECTION_OUTBOUND, 1, _, _, _, _))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_COMPLETED))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_ERROR))
       .WillOnce(InvokeUsbTransferCallback<5>(device::USB_TRANSFER_TIMEOUT));
+  EXPECT_CALL(*mock_device_handle_.get(), IsochronousTransferIn(2, _, _, _))
+      .WillOnce(InvokeUsbIsochronousTransferInCallback(8, 10u))
+      .WillOnce(InvokeUsbIsochronousTransferInCallback(8, 5u));
   EXPECT_CALL(*mock_device_handle_.get(), Close()).Times(AnyNumber());
   ASSERT_TRUE(RunAppTest("api_test/usb/transfer_failure"));
 }

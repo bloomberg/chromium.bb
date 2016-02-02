@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_USB_DEVICE_IMPL_H_
-#define DEVICE_USB_DEVICE_IMPL_H_
+#ifndef DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_
+#define DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_
 
 #include <stdint.h>
 
@@ -84,13 +84,13 @@ class DeviceImpl : public Device {
                           const GenericTransferOutCallback& callback) override;
   void IsochronousTransferIn(
       uint8_t endpoint_number,
-      uint32_t num_packets,
-      uint32_t packet_length,
+      mojo::Array<uint32_t> packet_lengths,
       uint32_t timeout,
       const IsochronousTransferInCallback& callback) override;
   void IsochronousTransferOut(
       uint8_t endpoint_number,
-      mojo::Array<mojo::Array<uint8_t>> packets,
+      mojo::Array<uint8_t> data,
+      mojo::Array<uint32_t> packet_lengths,
       uint32_t timeout,
       const IsochronousTransferOutCallback& callback) override;
 
@@ -110,4 +110,4 @@ class DeviceImpl : public Device {
 }  // namespace usb
 }  // namespace device
 
-#endif  // DEVICE_USB_DEVICE_IMPL_H_
+#endif  // DEVICE_DEVICES_APP_USB_DEVICE_IMPL_H_

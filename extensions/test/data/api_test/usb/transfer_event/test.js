@@ -18,6 +18,7 @@ var tests = [
       transfer.data = new ArrayBuffer(1);
 
       usb.controlTransfer(device, transfer, function (result) {
+        chrome.test.assertNoLastError();
         chrome.test.succeed();
       });
     });
@@ -31,6 +32,7 @@ var tests = [
       transfer.data = new ArrayBuffer(1);
 
       usb.bulkTransfer(device, transfer, function (result) {
+        chrome.test.assertNoLastError();
         chrome.test.succeed();
       });
     });
@@ -44,6 +46,7 @@ var tests = [
       transfer.data = new ArrayBuffer(1);
 
       usb.interruptTransfer(device, transfer, function (result) {
+        chrome.test.assertNoLastError();
         chrome.test.succeed();
       });
     });
@@ -62,6 +65,7 @@ var tests = [
       isoTransfer.packetLength = 1;
 
       usb.isochronousTransfer(device, isoTransfer, function (result) {
+        chrome.test.assertNoLastError();
         chrome.test.succeed();
       });
     });

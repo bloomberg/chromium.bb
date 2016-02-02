@@ -139,6 +139,12 @@ enum TransferStatus {
   SHORT_PACKET,
 };
 
+struct IsochronousPacket {
+  uint32 length;
+  uint32 transferred_length;
+  TransferStatus status;
+};
+
 interface Device {
   // Retrieve a DeviceInfo struct containing metadata about the device,
   // including the set of all available device configurations.
@@ -238,22 +244,22 @@ interface Device {
   // transfers can be initiated on the endpoint. The endpoint must be of type
   // ISOCHRONOUS.
   //
-  // |packet_length| specifies the maximum expected number of bytes to receive
-  // for each packet in this transfer. |num_packets| specifies the maximum total
-  // number of packets to receive.
+  // |packet_lengths| specifies the maximum expected number of bytes to receive
+  // for each packet in this transfer.
   //
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
   //
-  // |packets| contains the set of packets received from the device, in order.
-  // No received packet's size will exceed |packet_length|, and will be null
-  // if |status| is neither COMPLETED, BABBLE, or SHORT_PACKET.
+  // |data| contains the data received from the device, if any. |packets|
+  // contains the status of each packet received from the device, in order. The
+  // length of the packet indicates its position in |data| while it's
+  // transferred length gives the amount of data actually received from the
+  // device.
   IsochronousTransferIn(uint8 endpoint_number,
-                        uint32 num_packets,
-                        uint32 packet_length,
+                        array<uint32> packet_lengths,
                         uint32 timeout)
-      => (TransferStatus status, array<array<uint8>>? packets);
+      => (array<uint8>? data, array<IsochronousPacket> packets);
 
   // Initiates an outbound isochronous transfer request on a specific endpoint.
   // The interface to which |endpoint_number| belongs must be claimed, and the
@@ -261,14 +267,19 @@ interface Device {
   // transfers can be initiated on the endpoint. The endpoint must be of type
   // ISOCHRONOUS.
   //
-  // |packets| specifies the series of data packets to send to the device for
-  // this transfer.
+  // |data| specifies the bytes to send to the device.
+  //
+  // |packet_lengths| specifies how |data| should be separated into packets when
+  // it is sent to the device.
   //
   // |timeout| specifies the request timeout in milliseconds. A timeout of 0
   // indicates no timeout: the request will remain pending indefinitely until
   // completed or otherwise terminated.
+
+  // |packets| contains the status of each packet sent to the device, in order.
   IsochronousTransferOut(uint8 endpoint_number,
-                         array<array<uint8>> packets,
+                         array<uint8> data,
+                         array<uint32> packet_lengths,
                          uint32 timeout)
-      => (TransferStatus status);
+      => (array<IsochronousPacket> packets);
 };

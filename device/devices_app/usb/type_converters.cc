@@ -267,4 +267,17 @@ TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice>::Convert(
   return info;
 }
 
+// static
+device::usb::IsochronousPacketPtr
+TypeConverter<device::usb::IsochronousPacketPtr,
+              device::UsbDeviceHandle::IsochronousPacket>::
+    Convert(const device::UsbDeviceHandle::IsochronousPacket& packet) {
+  device::usb::IsochronousPacketPtr info =
+      device::usb::IsochronousPacket::New();
+  info->length = packet.length;
+  info->transferred_length = packet.transferred_length;
+  info->status = mojo::ConvertTo<device::usb::TransferStatus>(packet.status);
+  return info;
+}
+
 }  // namespace mojo

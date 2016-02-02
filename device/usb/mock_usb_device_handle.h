@@ -5,11 +5,12 @@
 #ifndef DEVICE_USB_MOCK_USB_DEVICE_HANDLE_H_
 #define DEVICE_USB_MOCK_USB_DEVICE_HANDLE_H_
 
-#include "device/usb/usb_device_handle.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
+#include "device/usb/usb_device_handle.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,7 +18,7 @@ namespace device {
 
 class MockUsbDeviceHandle : public UsbDeviceHandle {
  public:
-  MockUsbDeviceHandle(UsbDevice* device);
+  explicit MockUsbDeviceHandle(UsbDevice* device);
 
   scoped_refptr<UsbDevice> GetDevice() const override;
   MOCK_METHOD0(Close, void());
@@ -44,15 +45,17 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                      size_t length,
                      unsigned int timeout,
                      const TransferCallback& callback));
-  MOCK_METHOD8(IsochronousTransfer,
-               void(UsbEndpointDirection direction,
-                    uint8_t endpoint,
-                    scoped_refptr<net::IOBuffer> buffer,
-                    size_t length,
-                    unsigned int packets,
-                    unsigned int packet_length,
+  MOCK_METHOD4(IsochronousTransferIn,
+               void(uint8_t endpoint,
+                    const std::vector<uint32_t>& packet_lengths,
                     unsigned int timeout,
-                    const TransferCallback& callback));
+                    const IsochronousTransferCallback& callback));
+  MOCK_METHOD5(IsochronousTransferOut,
+               void(uint8_t endpoint,
+                    scoped_refptr<net::IOBuffer> buffer,
+                    const std::vector<uint32_t>& packet_lengths,
+                    unsigned int timeout,
+                    const IsochronousTransferCallback& callback));
   MOCK_METHOD6(GenericTransfer,
                void(UsbEndpointDirection direction,
                     uint8_t endpoint,

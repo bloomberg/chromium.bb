@@ -245,7 +245,7 @@ class UsbClaimInterfaceFunction : public UsbConnectionFunction {
 
   UsbClaimInterfaceFunction();
 
- protected:
+ private:
   ~UsbClaimInterfaceFunction() override;
 
   // ExtensionFunction:
@@ -334,7 +334,7 @@ class UsbInterruptTransferFunction : public UsbTransferFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbInterruptTransferFunction);
 };
 
-class UsbIsochronousTransferFunction : public UsbTransferFunction {
+class UsbIsochronousTransferFunction : public UsbConnectionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.isochronousTransfer", USB_ISOCHRONOUSTRANSFER)
 
@@ -345,6 +345,10 @@ class UsbIsochronousTransferFunction : public UsbTransferFunction {
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+  void OnCompleted(
+      scoped_refptr<net::IOBuffer> data,
+      const std::vector<device::UsbDeviceHandle::IsochronousPacket>& packets);
 
   DISALLOW_COPY_AND_ASSIGN(UsbIsochronousTransferFunction);
 };
