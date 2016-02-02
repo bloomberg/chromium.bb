@@ -789,9 +789,8 @@ void SpdySession::InitializeWithSocket(
   buffered_spdy_framer_->set_visitor(this);
   buffered_spdy_framer_->set_debug_visitor(this);
   UMA_HISTOGRAM_ENUMERATION(
-      "Net.SpdyVersion2",
-      protocol_ - kProtoSPDYHistogramOffset,
-      kProtoSPDYMaximumVersion - kProtoSPDYMinimumVersion + 1);
+      "Net.SpdyVersion3", protocol_ - kProtoSPDYHistogramOffset,
+      kProtoSPDYMaximumVersion - kProtoSPDYHistogramOffset + 1);
 
   net_log_.AddEvent(
       NetLog::TYPE_HTTP2_SESSION_INITIALIZED,

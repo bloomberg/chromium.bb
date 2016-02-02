@@ -27313,6 +27313,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SpdyVersion2" enum="SpdyProtocolVersion">
   <owner>bnc@chromium.org</owner>
+  <obsolete>
+    Deprecated on 2016-02-01, because the incorrect bucket count caused data
+    corruption.  Replaced by Net.SpdyVersion3.
+  </obsolete>
+  <summary>
+    The SPDY protocol version that is used to talk to SPDY servers.  Logged
+    every time a SPDY session is initialized.
+  </summary>
+</histogram>
+
+<histogram name="Net.SpdyVersion3" enum="SpdyProtocolVersion">
+  <owner>bnc@chromium.org</owner>
   <summary>
     The SPDY protocol version that is used to talk to SPDY servers.  Logged
     every time a SPDY session is initialized.
@@ -78358,6 +78370,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="SPDY 3.1"/>
   <int value="3" label="HTTP/2 draft-14"/>
   <int value="4" label="HTTP/2 draft-15"/>
+  <int value="5" label="HTTP/2 draft-16"/>
+  <int value="6" label="HTTP/2 draft-17"/>
+  <int value="7" label="HTTP/2"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">
