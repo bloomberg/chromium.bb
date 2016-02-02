@@ -265,13 +265,6 @@
       {
         "name": "telemetry_perf_unittests",
         "script": "telemetry_perf_unittests.py"
-      },
-      {
-        "args": [
-          "android_webview_unittests"
-        ],
-        "name": "android_webview_unittests",
-        "script": "android_gtest_test.py"
       }
     ]
   },

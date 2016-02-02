@@ -154,18 +154,3 @@ def parse_common_test_results(json_results, test_separator='/'):
 
   return results
 
-
-def parse_gtest_test_results(json_results):
-  failures = set()
-  for cur_iteration_data in json_results.get('per_iteration_data', []):
-    for test_fullname, results in cur_iteration_data.iteritems():
-      # Results is a list with one entry per test try. Last one is the final
-      # result, the only we care about here.
-      last_result = results[-1]
-
-      if last_result['status'] != 'SUCCESS':
-        failures.add(test_fullname)
-
-  return {
-    'failures': sorted(failures),
-  }
