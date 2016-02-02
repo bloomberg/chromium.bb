@@ -266,7 +266,8 @@ void GuestViewBase::DispatchOnResizeEvent(const gfx::Size& old_size,
   args->SetInteger(kOldHeight, old_size.height());
   args->SetInteger(kNewWidth, new_size.width());
   args->SetInteger(kNewHeight, new_size.height());
-  DispatchEventToGuestProxy(new GuestViewEvent(kEventResize, std::move(args)));
+  DispatchEventToGuestProxy(
+      make_scoped_ptr(new GuestViewEvent(kEventResize, std::move(args))));
 }
 
 gfx::Size GuestViewBase::GetDefaultSize() const {
@@ -752,14 +753,15 @@ void GuestViewBase::OnZoomChanged(
   }
 }
 
-void GuestViewBase::DispatchEventToGuestProxy(GuestViewEvent* event) {
+void GuestViewBase::DispatchEventToGuestProxy(
+    scoped_ptr<GuestViewEvent> event) {
   event->Dispatch(this, guest_instance_id_);
 }
 
-void GuestViewBase::DispatchEventToView(GuestViewEvent* event) {
+void GuestViewBase::DispatchEventToView(scoped_ptr<GuestViewEvent> event) {
   if (!attached() &&
       (!CanRunInDetachedState() || !can_owner_receive_events())) {
-    pending_events_.push_back(linked_ptr<GuestViewEvent>(event));
+    pending_events_.push_back(std::move(event));
     return;
   }
 
@@ -770,9 +772,9 @@ void GuestViewBase::SendQueuedEvents() {
   if (!attached())
     return;
   while (!pending_events_.empty()) {
-    linked_ptr<GuestViewEvent> event_ptr = pending_events_.front();
+    scoped_ptr<GuestViewEvent> event_ptr = std::move(pending_events_.front());
     pending_events_.pop_front();
-    event_ptr.release()->Dispatch(this, view_instance_id_);
+    event_ptr->Dispatch(this, view_instance_id_);
   }
 }
 

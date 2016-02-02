@@ -87,12 +87,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
   void NavigateGuest(const std::string& src, bool force_navigation);
 
   // Shows the context menu for the guest.
-  // |items| acts as a filter. This restricts the current context's default
-  // menu items to contain only the items from |items|.
-  // |items| == NULL means no filtering will be applied.
-  void ShowContextMenu(
-      int request_id,
-      const WebViewGuestDelegate::MenuItemVector* items);
+  void ShowContextMenu(int request_id);
 
   // Sets the frame name of the guest.
   void SetName(const std::string& name);

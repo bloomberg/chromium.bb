@@ -21,7 +21,7 @@ SupportsUserData::Data* SupportsUserData::GetUserData(const void* key) const {
 
 void SupportsUserData::SetUserData(const void* key, Data* data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  user_data_[key] = linked_ptr<Data>(data);
+  user_data_[key] = make_scoped_ptr(data);
 }
 
 void SupportsUserData::RemoveUserData(const void* key) {

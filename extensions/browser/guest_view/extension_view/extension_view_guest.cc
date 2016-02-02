@@ -128,8 +128,8 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
 
   scoped_ptr<base::DictionaryValue> args(new base::DictionaryValue());
   args->SetString(guest_view::kUrl, url_.spec());
-  DispatchEventToView(
-      new GuestViewEvent(extensionview::kEventLoadCommit, std::move(args)));
+  DispatchEventToView(make_scoped_ptr(
+      new GuestViewEvent(extensionview::kEventLoadCommit, std::move(args))));
 }
 
 void ExtensionViewGuest::DidNavigateMainFrame(

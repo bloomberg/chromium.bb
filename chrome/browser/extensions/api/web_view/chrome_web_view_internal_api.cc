@@ -146,9 +146,8 @@ bool ChromeWebViewInternalShowContextMenuFunction::RunAsyncSafe(
       webview::ShowContextMenu::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  // TODO(lazyboy): Actually implement filtering menu items, we pass NULL for
-  // now.
-  guest->ShowContextMenu(params->request_id, NULL);
+  // TODO(lazyboy): Actually implement filtering menu items.
+  guest->ShowContextMenu(params->request_id);
 
   SendResponse(true);
   return true;

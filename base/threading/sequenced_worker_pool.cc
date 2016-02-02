@@ -19,7 +19,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
@@ -448,7 +448,7 @@ class SequencedWorkerPool::Inner {
   // Owning pointers to all threads we've created so far, indexed by
   // ID. Since we lazily create threads, this may be less than
   // max_threads_ and will be initially empty.
-  typedef std::map<PlatformThreadId, linked_ptr<Worker> > ThreadMap;
+  using ThreadMap = std::map<PlatformThreadId, scoped_ptr<Worker>>;
   ThreadMap threads_;
 
   // Set to true when we're in the process of creating another thread.
@@ -788,9 +788,8 @@ void SequencedWorkerPool::Inner::ThreadLoop(Worker* this_worker) {
     AutoLock lock(lock_);
     DCHECK(thread_being_created_);
     thread_being_created_ = false;
-    std::pair<ThreadMap::iterator, bool> result =
-        threads_.insert(
-            std::make_pair(this_worker->tid(), make_linked_ptr(this_worker)));
+    auto result = threads_.insert(
+        std::make_pair(this_worker->tid(), make_scoped_ptr(this_worker)));
     DCHECK(result.second);
 
     while (true) {

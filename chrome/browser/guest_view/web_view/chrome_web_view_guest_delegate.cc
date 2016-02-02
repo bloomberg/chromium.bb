@@ -67,8 +67,8 @@ bool ChromeWebViewGuestDelegate::HandleContextMenu(
       MenuModelToValue(pending_menu_->menu_model());
   args->Set(webview::kContextMenuItems, items.release());
   args->SetInteger(webview::kRequestId, request_id);
-  web_view_guest()->DispatchEventToView(
-      new GuestViewEvent(webview::kEventContextMenuShow, std::move(args)));
+  web_view_guest()->DispatchEventToView(make_scoped_ptr(
+      new GuestViewEvent(webview::kEventContextMenuShow, std::move(args))));
   return true;
 }
 
@@ -99,10 +99,8 @@ scoped_ptr<base::ListValue> ChromeWebViewGuestDelegate::MenuModelToValue(
   return items;
 }
 
-void ChromeWebViewGuestDelegate::OnShowContextMenu(
-    int request_id,
-    const MenuItemVector* items) {
-  if (!pending_menu_.get())
+void ChromeWebViewGuestDelegate::OnShowContextMenu(int request_id) {
+  if (!pending_menu_)
     return;
 
   // Make sure this was the correct request.
@@ -110,7 +108,6 @@ void ChromeWebViewGuestDelegate::OnShowContextMenu(
     return;
 
   // TODO(lazyboy): Implement.
-  DCHECK(!items);
 
   ContextMenuDelegate* menu_delegate =
       ContextMenuDelegate::FromWebContents(guest_web_contents());

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
@@ -75,7 +76,7 @@ class PrivetNotificationsListener  {
     scoped_ptr<PrivetHTTPClient> privet_http;
   };
 
-  typedef std::map<std::string, linked_ptr<DeviceContext> > DeviceContextMap;
+  using DeviceContextMap = std::map<std::string, scoped_ptr<DeviceContext>>;
 
   void CreateInfoOperation(scoped_ptr<PrivetHTTPClient> http_client);
   void OnPrivetInfoDone(DeviceContext* device,

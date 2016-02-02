@@ -101,12 +101,10 @@ void PrivetNotificationsListener::DeviceChanged(
     return;  // Already saw this device.
   }
 
-  linked_ptr<DeviceContext> device_context(new DeviceContext);
-
+  scoped_ptr<DeviceContext>& device_context = devices_seen_[name];
+  device_context.reset(new DeviceContext);
   device_context->notification_may_be_active = false;
   device_context->registered = !description.id.empty();
-
-  devices_seen_.insert(make_pair(name, device_context));
 
   if (!device_context->registered) {
     device_context->privet_http_resolution =

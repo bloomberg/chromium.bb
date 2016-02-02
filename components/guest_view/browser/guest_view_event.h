@@ -26,8 +26,7 @@ class GuestViewEvent {
   ~GuestViewEvent();
 
   // This method will dispatch the event to the specified |guest|'s embedder and
-  // use the provided |instance_id| for routing. After dispatch, this object
-  // will self-destruct.
+  // use the provided |instance_id| for routing.
   void Dispatch(GuestViewBase* guest, int instance_id);
 
 private:
