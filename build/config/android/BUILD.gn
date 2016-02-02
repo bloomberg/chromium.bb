@@ -78,7 +78,7 @@ config("compiler") {
   if (current_cpu == "arm" && !use_order_profiling) {
     ldflags += [
       # Enable identical code folding to reduce size.
-      "-Wl,--icf=safe",
+      "-Wl,--icf=all",
     ]
   }
 
