@@ -137,7 +137,12 @@ if (is_linux && !is_chromeos && use_x11) {
 }
 
 if (is_android) {
-  manifest_package = "org.chromium.blimp"
+  declare_args() {
+    # Package name used in the manifest for the Blimp APK.
+    blimp_package_name = "org.chromium.blimp"
+  }
+
+  manifest_package = blimp_package_name
   blimp_apk_manifest = "$target_gen_dir/blimp_apk_manifest/AndroidManifest.xml"
   blimp_test_apk_manifest =
       "$target_gen_dir/blimp_test_apk_manifest/AndroidManifest.xml"
