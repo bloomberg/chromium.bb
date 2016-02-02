@@ -195,7 +195,7 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
     workers.JoinAll(watcher)
   except device_errors.CommandFailedError:
     logging.exception('Command failed on device.')
-  except device_errors.CommandFailedError:
+  except device_errors.CommandTimeoutError:
     logging.exception('Command timed out on device.')
   except device_errors.DeviceUnreachableError:
     logging.exception('Device became unreachable.')
