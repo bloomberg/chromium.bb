@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/scheduler/delay_based_time_source.h"
@@ -17,12 +18,18 @@
 
 namespace cc {
 
+namespace {
+// kDoubleTickDivisor prevents the SyntheticBFS from sending BeginFrames too
+// often to an observer.
+static const double kDoubleTickDivisor = 2.0;
+}
+
 // BeginFrameObserverBase -----------------------------------------------
 BeginFrameObserverBase::BeginFrameObserverBase()
     : last_begin_frame_args_(), dropped_begin_frame_args_(0) {
 }
 
-const BeginFrameArgs BeginFrameObserverBase::LastUsedBeginFrameArgs() const {
+const BeginFrameArgs& BeginFrameObserverBase::LastUsedBeginFrameArgs() const {
   return last_begin_frame_args_;
 }
 void BeginFrameObserverBase::OnBeginFrame(const BeginFrameArgs& args) {
@@ -51,69 +58,49 @@ void BeginFrameObserverBase::AsValueInto(
 
 // BeginFrameSourceBase ------------------------------------------------------
 BeginFrameSourceBase::BeginFrameSourceBase()
-    : observer_(NULL),
-      needs_begin_frames_(false),
-      paused_(false),
-      inside_as_value_into_(false) {
-  DCHECK(!observer_);
-  DCHECK_EQ(inside_as_value_into_, false);
-}
+    : paused_(false), inside_as_value_into_(false) {}
 
-bool BeginFrameSourceBase::NeedsBeginFrames() const {
-  return needs_begin_frames_;
-}
-
-void BeginFrameSourceBase::SetNeedsBeginFrames(bool needs_begin_frames) {
-  DEBUG_FRAMES("BeginFrameSourceBase::SetNeedsBeginFrames",
-               "current state",
-               needs_begin_frames_,
-               "new state",
-               needs_begin_frames);
-  if (needs_begin_frames_ != needs_begin_frames) {
-    needs_begin_frames_ = needs_begin_frames;
-    OnNeedsBeginFramesChange(needs_begin_frames);
-  }
-}
+BeginFrameSourceBase::~BeginFrameSourceBase() {}
 
 void BeginFrameSourceBase::AddObserver(BeginFrameObserver* obs) {
-  DEBUG_FRAMES("BeginFrameSourceBase::AddObserver",
-               "current observer",
-               observer_,
-               "to add observer",
-               obs);
-  DCHECK(!observer_);
-  observer_ = obs;
-  if (observer_)
-    return observer_->OnBeginFrameSourcePausedChanged(paused_);
+  DEBUG_FRAMES("BeginFrameSourceBase::AddObserver", "num observers",
+               observers_.size(), "to add observer", obs);
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) == observers_.end())
+      << "AddObserver cannot be called with an observer that was already added";
+  bool observers_was_empty = observers_.empty();
+  observers_.insert(obs);
+  if (observers_was_empty)
+    OnNeedsBeginFramesChanged(true);
+  obs->OnBeginFrameSourcePausedChanged(paused_);
 }
 
 void BeginFrameSourceBase::RemoveObserver(BeginFrameObserver* obs) {
-  DEBUG_FRAMES("BeginFrameSourceBase::RemoveObserver",
-               "current observer",
-               observer_,
-               "to remove observer",
-               obs);
-  DCHECK_EQ(observer_, obs);
-  observer_ = NULL;
+  DEBUG_FRAMES("BeginFrameSourceBase::RemoveObserver", "num observers",
+               observers_.size(), "removed observer", obs);
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) != observers_.end())
+      << "RemoveObserver cannot be called with an observer that wasn't added";
+  observers_.erase(obs);
+  if (observers_.empty())
+    OnNeedsBeginFramesChanged(false);
 }
 
 void BeginFrameSourceBase::CallOnBeginFrame(const BeginFrameArgs& args) {
-  DEBUG_FRAMES("BeginFrameSourceBase::CallOnBeginFrame",
-               "current observer",
-               observer_,
-               "args",
-               args.AsValue());
-  if (observer_) {
-    return observer_->OnBeginFrame(args);
-  }
+  DEBUG_FRAMES("BeginFrameSourceBase::CallOnBeginFrame", "num observers",
+               observers_.size(), "args", args.AsValue());
+  std::set<BeginFrameObserver*> observers(observers_);
+  for (auto& it : observers)
+    it->OnBeginFrame(args);
 }
 
 void BeginFrameSourceBase::SetBeginFrameSourcePaused(bool paused) {
   if (paused_ == paused)
     return;
   paused_ = paused;
-  if (observer_)
-    return observer_->OnBeginFrameSourcePausedChanged(paused_);
+  std::set<BeginFrameObserver*> observers(observers_);
+  for (auto& it : observers)
+    it->OnBeginFrameSourcePausedChanged(paused_);
 }
 
 // Tracing support
@@ -126,16 +113,17 @@ void BeginFrameSourceBase::AsValueInto(
     return;
   }
 
-  if (observer_) {
+  {
     base::AutoReset<bool> prevent_loops(
         const_cast<bool*>(&inside_as_value_into_), true);
-    dict->BeginDictionary("observer");
-    observer_->AsValueInto(dict);
-    dict->EndDictionary();
-  } else {
-    dict->SetString("observer", "NULL");
+    dict->BeginArray("observers");
+    for (const auto& it : observers_) {
+      dict->BeginDictionary();
+      it->AsValueInto(dict);
+      dict->EndDictionary();
+    }
+    dict->EndArray();
   }
-  dict->SetBoolean("needs_begin_frames", NeedsBeginFrames());
 }
 
 // BackToBackBeginFrameSource --------------------------------------------
@@ -148,11 +136,8 @@ BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner)
     : BeginFrameSourceBase(),
       task_runner_(task_runner),
-      send_begin_frame_posted_(false),
       weak_factory_(this) {
   DCHECK(task_runner);
-  DCHECK_EQ(needs_begin_frames_, false);
-  DCHECK_EQ(send_begin_frame_posted_, false);
 }
 
 BackToBackBeginFrameSource::~BackToBackBeginFrameSource() {
@@ -162,26 +147,33 @@ base::TimeTicks BackToBackBeginFrameSource::Now() {
   return base::TimeTicks::Now();
 }
 
-void BackToBackBeginFrameSource::OnNeedsBeginFramesChange(
+// BeginFrameSourceBase support
+void BackToBackBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
+  DCHECK(observers_.empty())
+      << "BackToBackBeginFrameSource only supports a single observer";
+  BeginFrameSourceBase::AddObserver(obs);
+}
+
+void BackToBackBeginFrameSource::OnNeedsBeginFramesChanged(
     bool needs_begin_frames) {
-  if (!needs_begin_frames)
-    return;
+  if (needs_begin_frames) {
+    PostBeginFrame();
+  } else {
+    begin_frame_task_.Cancel();
+  }
+}
 
-  if (send_begin_frame_posted_)
-    return;
-
-  send_begin_frame_posted_ = true;
-  task_runner_->PostTask(FROM_HERE,
-                         base::Bind(&BackToBackBeginFrameSource::BeginFrame,
-                                    weak_factory_.GetWeakPtr()));
+void BackToBackBeginFrameSource::PostBeginFrame() {
+  DCHECK(needs_begin_frames());
+  begin_frame_task_.Reset(base::Bind(&BackToBackBeginFrameSource::BeginFrame,
+                                     weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE, begin_frame_task_.callback());
 }
 
 void BackToBackBeginFrameSource::BeginFrame() {
-  send_begin_frame_posted_ = false;
-
-  if (!needs_begin_frames_)
-    return;
-
+  DCHECK(needs_begin_frames());
+  DCHECK(!begin_frame_task_.IsCancelled());
+  begin_frame_task_.Cancel();
   base::TimeTicks now = Now();
   BeginFrameArgs args = BeginFrameArgs::Create(
       BEGINFRAME_FROM_HERE, now, now + BeginFrameArgs::DefaultInterval(),
@@ -189,12 +181,10 @@ void BackToBackBeginFrameSource::BeginFrame() {
   CallOnBeginFrame(args);
 }
 
-// BeginFrameSource support
-
 void BackToBackBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
-  if (remaining_frames == 0) {
-    OnNeedsBeginFramesChange(NeedsBeginFrames());
-  }
+  BeginFrameSourceBase::DidFinishFrame(remaining_frames);
+  if (needs_begin_frames() && remaining_frames == 0)
+    PostBeginFrame();
 }
 
 // Tracing support
@@ -202,7 +192,6 @@ void BackToBackBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {
   dict->SetString("type", "BackToBackBeginFrameSource");
   BeginFrameSourceBase::AsValueInto(dict);
-  dict->SetBoolean("send_begin_frame_posted_", send_begin_frame_posted_);
 }
 
 // SyntheticBeginFrameSource ---------------------------------------------
@@ -217,13 +206,10 @@ scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
     scoped_ptr<DelayBasedTimeSource> time_source)
     : BeginFrameSourceBase(), time_source_(std::move(time_source)) {
-  time_source_->SetActive(false);
   time_source_->SetClient(this);
 }
 
-SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {
-  time_source_->SetActive(false);
-}
+SyntheticBeginFrameSource::~SyntheticBeginFrameSource() {}
 
 void SyntheticBeginFrameSource::OnUpdateVSyncParameters(
     base::TimeTicks new_vsync_timebase,
@@ -234,26 +220,42 @@ void SyntheticBeginFrameSource::OnUpdateVSyncParameters(
 BeginFrameArgs SyntheticBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time,
     BeginFrameArgs::BeginFrameArgsType type) {
-  base::TimeTicks deadline = time_source_->NextTickTime();
-  return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+  return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time,
+                                time_source_->NextTickTime(),
                                 time_source_->Interval(), type);
+}
+
+// BeginFrameSource support
+void SyntheticBeginFrameSource::AddObserver(BeginFrameObserver* obs) {
+  BeginFrameSourceBase::AddObserver(obs);
+  BeginFrameArgs args = CreateBeginFrameArgs(
+      time_source_->NextTickTime() - time_source_->Interval(),
+      BeginFrameArgs::MISSED);
+  BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+  if (!last_args.IsValid() ||
+      (args.frame_time >
+       last_args.frame_time + args.interval / kDoubleTickDivisor)) {
+    obs->OnBeginFrame(args);
+  }
+}
+
+void SyntheticBeginFrameSource::OnNeedsBeginFramesChanged(
+    bool needs_begin_frames) {
+  time_source_->SetActive(needs_begin_frames);
 }
 
 // DelayBasedTimeSourceClient support
 void SyntheticBeginFrameSource::OnTimerTick() {
-  CallOnBeginFrame(CreateBeginFrameArgs(time_source_->LastTickTime(),
-                                        BeginFrameArgs::NORMAL));
-}
-
-// BeginFrameSourceBase support
-void SyntheticBeginFrameSource::OnNeedsBeginFramesChange(
-    bool needs_begin_frames) {
-  base::TimeTicks missed_tick_time =
-      time_source_->SetActive(needs_begin_frames);
-  if (!missed_tick_time.is_null()) {
-    DCHECK(needs_begin_frames);
-    CallOnBeginFrame(
-        CreateBeginFrameArgs(missed_tick_time, BeginFrameArgs::MISSED));
+  BeginFrameArgs args = CreateBeginFrameArgs(time_source_->LastTickTime(),
+                                             BeginFrameArgs::NORMAL);
+  std::set<BeginFrameObserver*> observers(observers_);
+  for (auto& it : observers) {
+    BeginFrameArgs last_args = it->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        (args.frame_time >
+         last_args.frame_time + args.interval / kDoubleTickDivisor)) {
+      it->OnBeginFrame(args);
+    }
   }
 }
 
@@ -275,24 +277,18 @@ scoped_ptr<BeginFrameSourceMultiplexer> BeginFrameSourceMultiplexer::Create() {
 
 BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer()
     : BeginFrameSourceBase(),
-      minimum_interval_(base::TimeDelta()),
-      active_source_(NULL),
-      source_list_() {
-}
+      active_source_(nullptr),
+      inside_add_observer_(false) {}
 
 BeginFrameSourceMultiplexer::BeginFrameSourceMultiplexer(
     base::TimeDelta minimum_interval)
     : BeginFrameSourceBase(),
-      minimum_interval_(minimum_interval),
-      active_source_(NULL),
-      source_list_() {
-}
+      active_source_(nullptr),
+      inside_add_observer_(false) {}
 
 BeginFrameSourceMultiplexer::~BeginFrameSourceMultiplexer() {
-  if (active_source_) {
-    active_source_->SetNeedsBeginFrames(false);
+  if (active_source_ && needs_begin_frames())
     active_source_->RemoveObserver(this);
-  }
 }
 
 void BeginFrameSourceMultiplexer::SetMinimumInterval(
@@ -337,29 +333,18 @@ void BeginFrameSourceMultiplexer::SetActiveSource(
                "to become active",
                new_source);
 
-  DCHECK(HasSource(new_source) || new_source == NULL);
+  DCHECK(HasSource(new_source) || new_source == nullptr);
 
-  bool needs_begin_frames = NeedsBeginFrames();
-  if (active_source_) {
-    if (needs_begin_frames)
-      SetNeedsBeginFrames(false);
+  if (active_source_ == new_source)
+    return;
 
-    // Technically we shouldn't need to remove observation, but this prevents
-    // the case where SetNeedsBeginFrames message gets to the source after a
-    // message has already been sent.
+  if (active_source_ && needs_begin_frames())
     active_source_->RemoveObserver(this);
-    active_source_ = NULL;
-  }
-  DCHECK(!active_source_);
+
   active_source_ = new_source;
 
-  if (active_source_) {
+  if (active_source_ && needs_begin_frames())
     active_source_->AddObserver(this);
-
-    if (needs_begin_frames) {
-      SetNeedsBeginFrames(true);
-    }
-  }
 }
 
 const BeginFrameSource* BeginFrameSourceMultiplexer::ActiveSource() {
@@ -381,42 +366,50 @@ void BeginFrameSourceMultiplexer::OnBeginFrame(const BeginFrameArgs& args) {
                "using",
                "new args",
                args.AsValue());
+  last_begin_frame_args_ = args;
   CallOnBeginFrame(args);
 }
 
-const BeginFrameArgs BeginFrameSourceMultiplexer::LastUsedBeginFrameArgs()
+const BeginFrameArgs& BeginFrameSourceMultiplexer::LastUsedBeginFrameArgs()
     const {
-  if (observer_)
-    return observer_->LastUsedBeginFrameArgs();
-  else
-    return BeginFrameArgs();
+  return last_begin_frame_args_;
 }
 
 void BeginFrameSourceMultiplexer::OnBeginFrameSourcePausedChanged(bool paused) {
-  BeginFrameSourceBase::SetBeginFrameSourcePaused(paused);
-}
-
-// BeginFrameSource support
-void BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange(
-    bool needs_begin_frames) {
-  DEBUG_FRAMES("BeginFrameSourceMultiplexer::OnNeedsBeginFramesChange",
-               "active_source", active_source_, "needs_begin_frames",
-               needs_begin_frames);
-  if (active_source_) {
-    active_source_->SetNeedsBeginFrames(needs_begin_frames);
-  } else {
-    DCHECK(!needs_begin_frames);
+  if (paused_ == paused)
+    return;
+  paused_ = paused;
+  if (!inside_add_observer_) {
+    std::set<BeginFrameObserver*> observers(observers_);
+    for (auto& it : observers)
+      it->OnBeginFrameSourcePausedChanged(paused);
   }
 }
 
+// BeginFrameSource support
 void BeginFrameSourceMultiplexer::DidFinishFrame(size_t remaining_frames) {
   DEBUG_FRAMES("BeginFrameSourceMultiplexer::DidFinishFrame",
                "active_source",
                active_source_,
                "remaining_frames",
                remaining_frames);
-  if (active_source_) {
+  if (active_source_)
     active_source_->DidFinishFrame(remaining_frames);
+}
+
+void BeginFrameSourceMultiplexer::AddObserver(BeginFrameObserver* obs) {
+  base::AutoReset<bool> reset(&inside_add_observer_, true);
+  BeginFrameSourceBase::AddObserver(obs);
+}
+
+void BeginFrameSourceMultiplexer::OnNeedsBeginFramesChanged(
+    bool needs_begin_frames) {
+  if (!active_source_)
+    return;
+  if (needs_begin_frames) {
+    active_source_->AddObserver(this);
+  } else {
+    active_source_->RemoveObserver(this);
   }
 }
 
@@ -426,11 +419,10 @@ void BeginFrameSourceMultiplexer::AsValueInto(
   dict->SetString("type", "BeginFrameSourceMultiplexer");
 
   dict->SetInteger("minimum_interval_us", minimum_interval_.InMicroseconds());
-  if (observer_) {
-    dict->BeginDictionary("last_begin_frame_args");
-    observer_->LastUsedBeginFrameArgs().AsValueInto(dict);
-    dict->EndDictionary();
-  }
+
+  dict->BeginDictionary("last_begin_frame_args");
+  last_begin_frame_args_.AsValueInto(dict);
+  dict->EndDictionary();
 
   if (active_source_) {
     dict->BeginDictionary("active_source");
@@ -458,17 +450,15 @@ bool BeginFrameSourceMultiplexer::HasSource(BeginFrameSource* source) {
 
 bool BeginFrameSourceMultiplexer::IsIncreasing(const BeginFrameArgs& args) {
   DCHECK(args.IsValid());
-  if (!observer_)
-    return false;
 
   // If the last begin frame is invalid, then any new begin frame is valid.
-  if (!observer_->LastUsedBeginFrameArgs().IsValid())
+  if (!last_begin_frame_args_.IsValid())
     return true;
 
   // Only allow new args have a *strictly bigger* frame_time value and statisfy
   // minimum interval requirement.
   return (args.frame_time >=
-          observer_->LastUsedBeginFrameArgs().frame_time + minimum_interval_);
+          last_begin_frame_args_.frame_time + minimum_interval_);
 }
 
 }  // namespace cc

@@ -63,6 +63,7 @@ Scheduler::Scheduler(
       synthetic_frame_source_(std::move(synthetic_frame_source)),
       unthrottled_frame_source_(std::move(unthrottled_frame_source)),
       frame_source_(BeginFrameSourceMultiplexer::Create()),
+      observing_frame_source_(false),
       throttle_frame_production_(false),
       compositor_timing_history_(std::move(compositor_timing_history)),
       begin_impl_frame_deadline_mode_(
@@ -84,7 +85,6 @@ Scheduler::Scheduler(
   begin_impl_frame_deadline_closure_ = base::Bind(
       &Scheduler::OnBeginImplFrameDeadline, weak_factory_.GetWeakPtr());
 
-  frame_source_->AddObserver(this);
   frame_source_->AddSource(primary_frame_source());
   primary_frame_source()->SetClientReady();
 
@@ -95,8 +95,8 @@ Scheduler::Scheduler(
 }
 
 Scheduler::~Scheduler() {
-  if (frame_source_->NeedsBeginFrames())
-    frame_source_->SetNeedsBeginFrames(false);
+  if (observing_frame_source_)
+    frame_source_->RemoveObserver(this);
   frame_source_->SetActiveSource(nullptr);
 }
 
@@ -247,7 +247,7 @@ void Scheduler::DidLoseOutputSurface() {
 
 void Scheduler::DidCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
-  DCHECK(!frame_source_->NeedsBeginFrames());
+  DCHECK(!observing_frame_source_);
   DCHECK(begin_impl_frame_deadline_task_.IsCancelled());
   compositor_timing_history_->DidSwapBuffersReset();
   state_machine_.DidCreateAndInitializeOutputSurface();
@@ -278,16 +278,18 @@ void Scheduler::BeginImplFrameNotExpectedSoon() {
 void Scheduler::SetupNextBeginFrameIfNeeded() {
   // Never call SetNeedsBeginFrames if the frame source already has the right
   // value.
-  if (frame_source_->NeedsBeginFrames() != state_machine_.BeginFrameNeeded()) {
+  if (observing_frame_source_ != state_machine_.BeginFrameNeeded()) {
     if (state_machine_.BeginFrameNeeded()) {
-      // Call SetNeedsBeginFrames(true) as soon as possible.
-      frame_source_->SetNeedsBeginFrames(true);
+      // Call AddObserver as soon as possible.
+      observing_frame_source_ = true;
+      frame_source_->AddObserver(this);
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        true);
     } else if (state_machine_.begin_impl_frame_state() ==
                SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE) {
-      // Call SetNeedsBeginFrames(false) in between frames only.
-      frame_source_->SetNeedsBeginFrames(false);
+      // Call RemoveObserver in between frames only.
+      observing_frame_source_ = false;
+      frame_source_->RemoveObserver(this);
       BeginImplFrameNotExpectedSoon();
       devtools_instrumentation::NeedsBeginFrameChanged(layer_tree_host_id_,
                                                        false);
@@ -344,8 +346,7 @@ bool Scheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
 
   bool should_defer_begin_frame =
       !begin_retro_frame_args_.empty() ||
-      !begin_retro_frame_task_.IsCancelled() ||
-      !frame_source_->NeedsBeginFrames() ||
+      !begin_retro_frame_task_.IsCancelled() || !observing_frame_source_ ||
       (state_machine_.begin_impl_frame_state() !=
        SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_IDLE);
 
@@ -447,7 +448,7 @@ void Scheduler::PostBeginRetroFrameIfNeeded() {
                "Scheduler::PostBeginRetroFrameIfNeeded",
                "state",
                AsValue());
-  if (!frame_source_->NeedsBeginFrames())
+  if (!observing_frame_source_)
     return;
 
   if (begin_retro_frame_args_.empty() || !begin_retro_frame_task_.IsCancelled())
@@ -807,8 +808,7 @@ void Scheduler::AsValueInto(base::trace_event::TracedValue* state) const {
       (last_vsync_timebase_ - base::TimeTicks()).InMillisecondsF());
   state->SetDouble("estimated_parent_draw_time_ms",
                    estimated_parent_draw_time_.InMillisecondsF());
-  state->SetBoolean("last_set_needs_begin_frame_",
-                    frame_source_->NeedsBeginFrames());
+  state->SetBoolean("observing_frame_source", observing_frame_source_);
   state->SetInteger("begin_retro_frame_args",
                     static_cast<int>(begin_retro_frame_args_.size()));
   state->SetBoolean("begin_retro_frame_task",

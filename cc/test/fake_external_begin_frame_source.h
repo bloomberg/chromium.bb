@@ -23,7 +23,7 @@ class FakeExternalBeginFrameSource
   void SetClientReady() override;
 
   // BeginFrameSourceBase overrides.
-  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
+  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override;
 
   void TestOnBeginFrame();
   void PostTestOnBeginFrame();
@@ -31,6 +31,7 @@ class FakeExternalBeginFrameSource
  private:
   double milliseconds_per_frame_;
   bool is_ready_;
+  base::CancelableClosure begin_frame_task_;
   base::WeakPtrFactory<FakeExternalBeginFrameSource> weak_ptr_factory_;
 };
 

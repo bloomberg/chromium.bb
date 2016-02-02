@@ -83,6 +83,8 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
   int pending_swaps_;
   int max_pending_swaps_;
 
+  bool observing_begin_frame_source_;
+
   SurfaceId root_surface_id_;
   bool root_surface_damaged_;
   bool expect_damage_from_root_surface_;

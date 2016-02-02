@@ -19,11 +19,6 @@ namespace cc {
 
 namespace {
 
-// kDoubleTickDivisor prevents ticks from running within the specified
-// fraction of an interval.  This helps account for jitter in the timebase as
-// well as quick timer reactivation.
-static const int kDoubleTickDivisor = 2;
-
 // kIntervalChangeThreshold is the fraction of the interval that will trigger an
 // immediate interval change.  kPhaseChangeThreshold is the fraction of the
 // interval that will trigger an immediate phase change.  If the changes are
@@ -53,32 +48,21 @@ DelayBasedTimeSource::DelayBasedTimeSource(
 
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
 
-base::TimeTicks DelayBasedTimeSource::SetActive(bool active) {
+void DelayBasedTimeSource::SetActive(bool active) {
   TRACE_EVENT1("cc", "DelayBasedTimeSource::SetActive", "active", active);
 
   if (active == active_)
-    return base::TimeTicks();
+    return;
 
   active_ = active;
 
-  if (!active_) {
+  if (active_) {
+    PostNextTickTask(Now());
+  } else {
+    last_tick_time_ = base::TimeTicks();
     next_tick_time_ = base::TimeTicks();
     tick_closure_.Cancel();
-    return base::TimeTicks();
   }
-
-  ResetTickTask(Now());
-
-  // Determine if there was a tick that was missed while not active.
-  base::TimeTicks last_tick_time_if_always_active = next_tick_time_ - interval_;
-  base::TimeTicks last_tick_time_threshold =
-      last_tick_time_ + interval_ / kDoubleTickDivisor;
-  if (last_tick_time_if_always_active > last_tick_time_threshold) {
-    last_tick_time_ = last_tick_time_if_always_active;
-    return last_tick_time_;
-  }
-
-  return base::TimeTicks();
 }
 
 base::TimeDelta DelayBasedTimeSource::Interval() const {
@@ -134,7 +118,7 @@ void DelayBasedTimeSource::SetTimebaseAndInterval(base::TimeTicks timebase,
   if (interval_change > kIntervalChangeThreshold) {
     TRACE_EVENT_INSTANT0("cc", "DelayBasedTimeSource::IntervalChanged",
                          TRACE_EVENT_SCOPE_THREAD);
-    ResetTickTask(Now());
+    PostNextTickTask(Now());
     return;
   }
 
@@ -150,7 +134,7 @@ void DelayBasedTimeSource::SetTimebaseAndInterval(base::TimeTicks timebase,
       phase_change < (1.0 - kPhaseChangeThreshold)) {
     TRACE_EVENT_INSTANT0("cc", "DelayBasedTimeSource::PhaseChanged",
                          TRACE_EVENT_SCOPE_THREAD);
-    ResetTickTask(Now());
+    PostNextTickTask(Now());
     return;
   }
 }
@@ -213,37 +197,15 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 // is not reset.
 //      now=37   tick_target=16.667  new_target=50.000  -->
 //          tick(), PostDelayedTask(floor(50.000-37)) --> PostDelayedTask(13)
-base::TimeTicks DelayBasedTimeSource::NextTickTarget(
-    base::TimeTicks now) const {
-  base::TimeTicks next_tick_target =
-      now.SnappedToNextTick(timebase_, interval_);
-  DCHECK(now <= next_tick_target)
-      << "now = " << now.ToInternalValue()
-      << "; new_tick_target = " << next_tick_target.ToInternalValue()
-      << "; new_interval = " << interval_.InMicroseconds()
-      << "; new_timbase = " << timebase_.ToInternalValue();
-
-  // Avoid double ticks when:
-  // 1) Turning off the timer and turning it right back on.
-  // 2) Jittery data is passed to SetTimebaseAndInterval().
-  if (next_tick_target - last_tick_time_ <= interval_ / kDoubleTickDivisor)
-    next_tick_target += interval_;
-
-  return next_tick_target;
-}
-
 void DelayBasedTimeSource::PostNextTickTask(base::TimeTicks now) {
-  next_tick_time_ = NextTickTarget(now);
-  DCHECK(next_tick_time_ >= now);
-  // Post another task *before* the tick and update state
-  base::TimeDelta delay = next_tick_time_ - now;
-  task_runner_->PostDelayedTask(FROM_HERE, tick_closure_.callback(), delay);
-}
-
-void DelayBasedTimeSource::ResetTickTask(base::TimeTicks now) {
+  next_tick_time_ = now.SnappedToNextTick(timebase_, interval_);
+  if (next_tick_time_ == now)
+    next_tick_time_ += interval_;
+  DCHECK_GT(next_tick_time_, now);
   tick_closure_.Reset(base::Bind(&DelayBasedTimeSource::OnTimerTick,
                                  weak_factory_.GetWeakPtr()));
-  PostNextTickTask(now);
+  task_runner_->PostDelayedTask(FROM_HERE, tick_closure_.callback(),
+                                next_tick_time_ - now);
 }
 
 std::string DelayBasedTimeSource::TypeString() const {

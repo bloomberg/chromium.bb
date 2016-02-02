@@ -48,13 +48,13 @@ void SynchronousCompositorExternalBeginFrameSource::SetClient(
   client_ = client;
 
   if (client_)
-    client_->OnNeedsBeginFramesChange(needs_begin_frames_);
+    client_->OnNeedsBeginFramesChange(needs_begin_frames());
 
   // State without client is paused, and default client state is not paused.
   SetBeginFrameSourcePaused(!client_);
 }
 
-void SynchronousCompositorExternalBeginFrameSource::OnNeedsBeginFramesChange(
+void SynchronousCompositorExternalBeginFrameSource::OnNeedsBeginFramesChanged(
     bool needs_begin_frames) {
   DCHECK(CalledOnValidThread());
   if (client_)

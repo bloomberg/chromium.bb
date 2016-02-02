@@ -37,9 +37,9 @@ std::string TestDelayBasedTimeSource::TypeString() const {
 TestDelayBasedTimeSource::~TestDelayBasedTimeSource() {
 }
 
-void FakeBeginFrameSource::DidFinishFrame(size_t remaining_frames) {
-  remaining_frames_ = remaining_frames;
-}
+FakeBeginFrameSource::FakeBeginFrameSource() {}
+
+FakeBeginFrameSource::~FakeBeginFrameSource() {}
 
 void FakeBeginFrameSource::AsValueInto(
     base::trace_event::TracedValue* dict) const {

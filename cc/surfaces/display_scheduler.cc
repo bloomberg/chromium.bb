@@ -27,10 +27,10 @@ DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
       all_active_child_surfaces_ready_to_draw_(false),
       pending_swaps_(0),
       max_pending_swaps_(max_pending_swaps),
+      observing_begin_frame_source_(false),
       root_surface_damaged_(false),
       expect_damage_from_root_surface_(false),
       weak_ptr_factory_(this) {
-  begin_frame_source_->AddObserver(this);
   begin_frame_deadline_closure_ = base::Bind(
       &DisplayScheduler::OnBeginFrameDeadline, weak_ptr_factory_.GetWeakPtr());
 
@@ -40,7 +40,8 @@ DisplayScheduler::DisplayScheduler(DisplaySchedulerClient* client,
 }
 
 DisplayScheduler::~DisplayScheduler() {
-  begin_frame_source_->RemoveObserver(this);
+  if (observing_begin_frame_source_)
+    begin_frame_source_->RemoveObserver(this);
 }
 
 // If we try to draw when the root surface resources are locked, the
@@ -96,14 +97,17 @@ void DisplayScheduler::SurfaceDamaged(SurfaceId surface_id) {
         child_surface_ids_damaged_, child_surface_ids_to_expect_damage_from_);
   }
 
-  begin_frame_source_->SetNeedsBeginFrames(!output_surface_lost_);
+  if (!output_surface_lost_ && !observing_begin_frame_source_) {
+    observing_begin_frame_source_ = true;
+    begin_frame_source_->AddObserver(this);
+  }
+
   ScheduleBeginFrameDeadline();
 }
 
 void DisplayScheduler::OutputSurfaceLost() {
   TRACE_EVENT0("cc", "DisplayScheduler::OutputSurfaceLost");
   output_surface_lost_ = true;
-  begin_frame_source_->SetNeedsBeginFrames(false);
   ScheduleBeginFrameDeadline();
 }
 
@@ -278,7 +282,10 @@ void DisplayScheduler::AttemptDrawAndSwap() {
     all_active_child_surfaces_ready_to_draw_ = true;
     expect_damage_from_root_surface_ = false;
 
-    begin_frame_source_->SetNeedsBeginFrames(false);
+    if (observing_begin_frame_source_) {
+      observing_begin_frame_source_ = false;
+      begin_frame_source_->RemoveObserver(this);
+    }
   }
 }
 

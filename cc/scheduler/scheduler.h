@@ -167,6 +167,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   scoped_ptr<BackToBackBeginFrameSource> unthrottled_frame_source_;
 
   scoped_ptr<BeginFrameSourceMultiplexer> frame_source_;
+  bool observing_frame_source_;
   bool throttle_frame_production_;
 
   base::TimeDelta authoritative_vsync_interval_;

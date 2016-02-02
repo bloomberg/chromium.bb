@@ -168,8 +168,7 @@ class ExternalBeginFrameSource : public cc::BeginFrameSourceBase,
   }
 
   // cc::BeginFrameSourceBase implementation:
-  void OnNeedsBeginFramesChange(
-      bool needs_begin_frames) override {
+  void OnNeedsBeginFramesChanged(bool needs_begin_frames) override {
     compositor_->OnNeedsBeginFramesChange(needs_begin_frames);
   }
 
