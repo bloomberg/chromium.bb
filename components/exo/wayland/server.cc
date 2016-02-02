@@ -702,6 +702,7 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 
 void HandleShellSurfaceConfigureCallback(wl_resource* resource,
                                          const gfx::Size& size,
+                                         ash::wm::WindowStateType state_type,
                                          bool activated) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
@@ -928,11 +929,23 @@ void xdg_shell_use_unstable_version(wl_client* client,
 
 void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
                                        const gfx::Size& size,
+                                       ash::wm::WindowStateType state_type,
                                        bool activated) {
-  // TODO(reveman): Include the shell surface state (maximized, etc.) and make
-  // sure this configure callback is called when any of that state changes.
+  // TODO(reveman): Implement XDG_SURFACE_STATE_RESIZING.
   wl_array states;
   wl_array_init(&states);
+  if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED) {
+    xdg_surface_state* value = static_cast<xdg_surface_state*>(
+        wl_array_add(&states, sizeof(xdg_surface_state)));
+    DCHECK(value);
+    *value = XDG_SURFACE_STATE_MAXIMIZED;
+  }
+  if (state_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN) {
+    xdg_surface_state* value = static_cast<xdg_surface_state*>(
+        wl_array_add(&states, sizeof(xdg_surface_state)));
+    DCHECK(value);
+    *value = XDG_SURFACE_STATE_FULLSCREEN;
+  }
   if (activated) {
     xdg_surface_state* value = static_cast<xdg_surface_state*>(
         wl_array_add(&states, sizeof(xdg_surface_state)));

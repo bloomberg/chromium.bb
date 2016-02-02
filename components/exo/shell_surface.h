@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -31,6 +32,7 @@ class ShellSurface : public SurfaceDelegate,
                      public SurfaceObserver,
                      public views::WidgetDelegate,
                      public views::View,
+                     public ash::wm::WindowStateObserver,
                      public aura::client::ActivationChangeObserver {
  public:
   explicit ShellSurface(Surface* surface);
@@ -48,12 +50,14 @@ class ShellSurface : public SurfaceDelegate,
     surface_destroyed_callback_ = surface_destroyed_callback;
   }
 
-  // Set the callback to run when the client is asked to resize the surface.
+  // Set the callback to run when the client is asked to configure the surface.
   // The size is a hint, in the sense that the client is free to ignore it if
   // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
   // in steps of NxM pixels).
   using ConfigureCallback =
-      base::Callback<void(const gfx::Size& size, bool activated)>;
+      base::Callback<void(const gfx::Size& size,
+                          ash::wm::WindowStateType state_type,
+                          bool activated)>;
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
   }
@@ -110,6 +114,10 @@ class ShellSurface : public SurfaceDelegate,
 
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
+
+  // Overridden from ash::wm::WindowStateObserver:
+  void OnPostWindowStateTypeChange(ash::wm::WindowState* window_state,
+                                   ash::wm::WindowStateType old_type) override;
 
   // Overridden from aura::client::ActivationChangeObserver:
   void OnWindowActivated(

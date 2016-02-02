@@ -156,10 +156,13 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
 }
 
 void Configure(gfx::Size* suggested_size,
+               ash::wm::WindowStateType* has_state_type,
                bool* is_active,
                const gfx::Size& size,
+               ash::wm::WindowStateType state_type,
                bool activated) {
   *suggested_size = size;
+  *has_state_type = state_type;
   *is_active = activated;
 }
 
@@ -168,16 +171,19 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
   gfx::Size suggested_size;
+  ash::wm::WindowStateType has_state_type = ash::wm::WINDOW_STATE_TYPE_NORMAL;
   bool is_active = false;
-  shell_surface->set_configure_callback(
-      base::Bind(&Configure, base::Unretained(&suggested_size),
-                 base::Unretained(&is_active)));
+  shell_surface->set_configure_callback(base::Bind(
+      &Configure, base::Unretained(&suggested_size),
+      base::Unretained(&has_state_type), base::Unretained(&is_active)));
   shell_surface->Maximize();
   EXPECT_EQ(CurrentContext()->bounds().width(), suggested_size.width());
+  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_MAXIMIZED, has_state_type);
 
   shell_surface->SetFullscreen(true);
   EXPECT_EQ(CurrentContext()->bounds().size().ToString(),
             suggested_size.ToString());
+  EXPECT_EQ(ash::wm::WINDOW_STATE_TYPE_FULLSCREEN, has_state_type);
 
   gfx::Size buffer_size(64, 64);
   scoped_ptr<Buffer> buffer(new Buffer(
