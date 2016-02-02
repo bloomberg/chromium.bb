@@ -50,7 +50,7 @@ doctest:
 	      "results in $(BUILDDIR)/doctest/output.txt."
 
 chromesite:
-	-rm $(CHROMESITE_BUILDDIR)/.buildinfo
+	-rm -f $(CHROMESITE_BUILDDIR)/.buildinfo
 	doxygen/generate_docs.py $(CHROMESITE_BUILDDIR)
 	$(SPHINXBUILD) -b chromesite $(ALLSPHINXOPTS) $(CHROMESITE_BUILDDIR)
 	rm -rf $(CHROMESITE_BUILDDIR)/images

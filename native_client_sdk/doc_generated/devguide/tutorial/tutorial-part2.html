@@ -57,7 +57,7 @@ significantly increasing the complexity of the makefile.</p>
 <p>Here is the new makefile, supporting three toolchains (PNaCl, Newlib NaCl,
 Glibc NaCl) and two configurations (Debug, Release).</p>
 <pre class="prettyprint">
-VALID_TOOLCHAINS := pnacl newlib glibc
+VALID_TOOLCHAINS := pnacl clang-newlib glibc
 
 NACL_SDK_ROOT ?= $(abspath $(CURDIR)/../..)
 include $(NACL_SDK_ROOT)/tools/common.mk
@@ -90,9 +90,10 @@ for its examples and libraries, but generally you will choose one toolchain
 when you begin your project and never change it. Please see the
 <a class="reference internal" href="/native-client/overview.html#toolchains"><em>Toolchains section of the Native Client overview</em></a> for more
 information.</p>
-<p>For this example, we support the <code>pnacl</code>, <code>newlib</code> and <code>glibc</code> toolchains.</p>
+<p>For this example, we support the <code>pnacl</code>, <code>clang-newlib</code> and <code>glibc</code>
+toolchains.</p>
 <pre class="prettyprint">
-VALID_TOOLCHAINS := pnacl newlib glibc
+VALID_TOOLCHAINS := pnacl clang-newlib glibc
 </pre>
 <p>Next, as a convenience, we specify where to find <code>NACL_SDK_ROOT</code>. Because
 this example is located in <code>pepper_$(VERSION)/getting_started/part2</code>, the
@@ -244,7 +245,7 @@ to the body element to specify the name, supported toolchains, supported
 configurations, and path to the <code>.nmf</code> file:</p>
 <pre class="prettyprint">
 &lt;body data-name=&quot;part2&quot;
-    data-tools=&quot;newlib glibc pnacl&quot;
+    data-tools=&quot;clang-newlib glibc pnacl&quot;
     data-configs=&quot;Debug Release&quot;
     data-path=&quot;{tc}/{config}&quot;&gt;
 ...

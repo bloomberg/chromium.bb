@@ -140,18 +140,22 @@ uses, even if the rest of an application is dynamically linked.</li>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>x86</td>
-<td>newlib</td>
-<td>toolchain/&lt;platform&gt;_x86_newlib</td>
-</tr>
-<tr class="row-odd"><td>x86</td>
 <td>glibc</td>
 <td>toolchain/&lt;platform&gt;_x86_glibc</td>
 </tr>
-<tr class="row-even"><td>ARM</td>
-<td>newlib</td>
-<td>toolchain/&lt;platform&gt;_arm_newlib</td>
+<tr class="row-odd"><td>ARM</td>
+<td>glibc</td>
+<td>toolchain/&lt;platform&gt;_arm_glibc</td>
 </tr>
-<tr class="row-odd"><td>PNaCl</td>
+<tr class="row-even"><td>x86</td>
+<td>newlib</td>
+<td>toolchain/&lt;platform&gt;_pnacl</td>
+</tr>
+<tr class="row-odd"><td>ARM</td>
+<td>newlib</td>
+<td>toolchain/&lt;platform&gt;_pnacl</td>
+</tr>
+<tr class="row-even"><td>PNaCl</td>
 <td>newlib</td>
 <td>toolchain/&lt;platform&gt;_pnacl</td>
 </tr>
@@ -161,11 +165,10 @@ uses, even if the rest of an application is dynamically linked.</li>
 machine (i.e., win, mac, or linux). For example, in the Windows SDK, the x86
 toolchain that uses glibc is in <code>toolchain/win_x86_glibc</code>.</p>
 <aside class="note">
-<strong>Note:</strong> The ARM and PNaCl toolchains are currently restricted to newlib.
+<strong>Note:</strong> The PNaCl toolchain is currently restricted to newlib.
 </aside>
 <p>To use the glibc library and dynamic linking in your application, you <strong>must</strong>
-use a glibc toolchain. (Currently the only glibc toolchain is
-<code>&lt;platform&gt;_x86_glibc</code>.) Note that you must build all code in your application
+use a glibc toolchain.  Note that you must build all code in your application
 with one toolchain. Code from multiple toolchains cannot be mixed.</p>
 <h2 id="specifying-and-delivering-shared-libraries">Specifying and delivering shared libraries</h2>
 <p>One significant difference between newlib and glibc applications is that glibc
@@ -226,8 +229,8 @@ to build x86 32-bit and 64-bit .nexe and .so files, and to generate a .nmf
 file. These commands are described below.</p>
 <aside class="note">
 <strong>Note:</strong> The Makefiles for most of the examples in the SDK build the
-examples using multiple toolchains (x86 newlib, x86 glibc, ARM, and PNaCl).
-With a few exceptions (listed in the <a class="reference internal" href="/native-client/sdk/release-notes.html#sdk-release-notes"><em>Release Notes</em></a>), running &#8220;make&#8221; in each example&#8217;s directory builds
+examples using multiple toolchains (x86 newlib, x86 glibc, ARM newlib, ARM
+glibc, and PNaCl).  With a few exceptions (listed in the <a class="reference internal" href="/native-client/sdk/release-notes.html#sdk-release-notes"><em>Release Notes</em></a>), running &#8220;make&#8221; in each example&#8217;s directory builds
 multiple versions of the example using the SDK toolchains. The dlopen example
 is one of those exceptions – it is only built with the x86 glibc toolchain,
 as that is currently the only toolchain that supports glibc and thus dynamic

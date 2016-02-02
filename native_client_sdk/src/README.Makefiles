@@ -38,8 +38,9 @@ SOURCES
 
 VALID_TOOLCHAINS
   This variable can be used to control which toolchains are supported by
-  the project.  Valid entries for this list are: newlib, glibc, pnacl,
-  linux, mac, win.  The default value is: "newlib glibc pnacl".
+  the project.  Valid entries for this list are: clang-newlib, glibc,
+  pnacl, linux, mac, win.  The default value is: "clang-newlib glibc
+  pnacl".
 
 NACL_SDK_ROOT
   Optionally force the build system to use a certain location for the

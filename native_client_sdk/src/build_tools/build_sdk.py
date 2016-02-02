@@ -128,8 +128,6 @@ def GetGypBuiltLib(tcname, arch):
       lib_suffix = ''
       tcdir = 'tc_pnacl_newlib'
       arch = 'x64'
-    else:
-      arch = 'clang-' + arch
 
   return os.path.join(GetNinjaOutDir(arch), 'gen', tcdir, 'lib' + lib_suffix)
 
@@ -411,7 +409,7 @@ def GypNinjaInstall(pepperdir, toolchains):
       continue
     elif tc == 'pnacl':
       xarches = (None, 'ia32', 'x64', 'arm')
-    elif tc in ('x86_glibc', 'x86_newlib'):
+    elif tc in ('x86_glibc'):
       xarches = ('ia32', 'x64')
     elif tc == 'arm_glibc':
       xarches = ('arm',)
@@ -433,22 +431,10 @@ def GypNinjaBuild_NaCl(rel_out_dir):
   out_dir_32 = MakeNinjaRelPath(rel_out_dir + '-ia32')
   out_dir_64 = MakeNinjaRelPath(rel_out_dir + '-x64')
   out_dir_arm = MakeNinjaRelPath(rel_out_dir + '-arm')
-  out_dir_clang_32 = MakeNinjaRelPath(rel_out_dir + '-clang-ia32')
-  out_dir_clang_64 = MakeNinjaRelPath(rel_out_dir + '-clang-x64')
-  out_dir_clang_arm = MakeNinjaRelPath(rel_out_dir + '-clang-arm')
 
-  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32,
-                gyp_defines=['use_nacl_clang=0'])
-  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64,
-                gyp_defines=['use_nacl_clang=0'])
-  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm,
-                gyp_defines=['use_nacl_clang=0'])
-  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
-      out_dir_clang_32, gyp_defines=['use_nacl_clang=1'])
-  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
-      out_dir_clang_64, gyp_defines=['use_nacl_clang=1'])
-  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk',
-      out_dir_clang_arm, gyp_defines=['use_nacl_clang=1'])
+  GypNinjaBuild('ia32', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_32)
+  GypNinjaBuild('x64', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_64)
+  GypNinjaBuild('arm', gyp_py, nacl_core_sdk_gyp, 'nacl_core_sdk', out_dir_arm)
   GypNinjaBuild('x64', gyp_py, all_gyp, 'ncval_new', out_dir_64)
 
 
@@ -465,13 +451,12 @@ def GypNinjaBuild_Breakpad(rel_out_dir):
   GypNinjaBuild('x64', gyp_py, gyp_file, build_list, out_dir)
 
 
-def GypNinjaBuild_PPAPI(arch, rel_out_dir, gyp_defines=None):
+def GypNinjaBuild_PPAPI(arch, rel_out_dir):
   gyp_py = os.path.join(SRC_DIR, 'build', 'gyp_chromium')
   out_dir = MakeNinjaRelPath(rel_out_dir)
   gyp_file = os.path.join(SRC_DIR, 'ppapi', 'native_client',
                           'native_client.gyp')
-  GypNinjaBuild(arch, gyp_py, gyp_file, 'ppapi_lib', out_dir,
-                gyp_defines=gyp_defines)
+  GypNinjaBuild(arch, gyp_py, gyp_file, 'ppapi_lib', out_dir)
 
 
 def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
@@ -487,14 +472,10 @@ def GypNinjaBuild_Pnacl(rel_out_dir, target_arch):
   GypNinjaBuild(target_arch, gyp_py, gyp_file, targets, out_dir)
 
 
-def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
-                  out_dir, gyp_defines=None):
+def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets, out_dir):
   gyp_env = dict(os.environ)
   gyp_env['GYP_GENERATORS'] = 'ninja'
-  gyp_defines = gyp_defines or []
-  gyp_defines.append('nacl_allow_thin_archives=0')
-  if not options.no_use_sysroot:
-    gyp_defines.append('use_sysroot=1')
+  gyp_defines = ['nacl_allow_thin_archives=0', 'use_nacl_clang=1']
   if options.mac_sdk:
     gyp_defines.append('mac_sdk=%s' % options.mac_sdk)
 
@@ -504,8 +485,6 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
       gyp_env['GYP_CROSSCOMPILE'] = '1'
       if options.no_arm_trusted:
         gyp_defines.append('disable_cross_trusted=1')
-  if getos.GetPlatform() == 'mac':
-    gyp_defines.append('clang=1')
 
   gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
   # We can't use windows path separators in GYP_GENERATOR_FLAGS since
@@ -544,24 +523,14 @@ def BuildStepBuildToolchains(pepperdir, toolchains, build, clean):
     GypNinjaBuild_NaCl(GYPBUILD_DIR)
     GypNinjaBuild_Breakpad(GYPBUILD_DIR + '-x64')
 
-    if set(toolchains) & set(['x86_glibc', 'x86_newlib']):
-      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-ia32',
-                          ['use_nacl_clang=0'])
-      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64',
-                          ['use_nacl_clang=0'])
+    if 'x86_glibc' in toolchains or 'pnacl' in toolchains:
+      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-ia32')
+      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-x64')
 
-    if 'arm_glibc' in toolchains:
-      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm',
-                          ['use_nacl_clang=0'] )
+    if 'arm_glibc' in toolchains or 'pnacl' in toolchains:
+      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-arm')
 
     if 'pnacl' in toolchains:
-      GypNinjaBuild_PPAPI('ia32', GYPBUILD_DIR + '-clang-ia32',
-                          ['use_nacl_clang=1'])
-      GypNinjaBuild_PPAPI('x64', GYPBUILD_DIR + '-clang-x64',
-                          ['use_nacl_clang=1'])
-      GypNinjaBuild_PPAPI('arm', GYPBUILD_DIR + '-clang-arm',
-                          ['use_nacl_clang=1'])
-
       # NOTE: For ia32, gyp builds both x86-32 and x86-64 by default.
       for arch in ('ia32', 'arm'):
         # Fill in the latest native pnacl shim library from the chrome build.

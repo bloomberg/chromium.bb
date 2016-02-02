@@ -52,7 +52,7 @@ def GetChannelInfo():
     for version_row in os_row['versions']:
       channel = version_row['channel']
       # We don't display canary docs.
-      if channel == 'canary':
+      if channel.startswith('canary'):
         continue
 
       version = version_row['version'].split('.')[0]  # Major version
@@ -313,8 +313,7 @@ def main(argv):
   if options.verbose:
     Trace.verbose = True
 
-  channel_info = GetChannelInfo()
-  for channel, info in channel_info.iteritems():
+  for channel, info in GetChannelInfo().iteritems():
     GenerateDocs(options.out_directory, channel, info.version, info.branch)
 
   return 0

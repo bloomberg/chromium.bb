@@ -7,8 +7,8 @@
 Pepper C API Reference (Beta)
 ##########################################
 
-This page lists the C API for Pepper 48. Apps that use this API can
-run in Chrome 48 or higher.
+This page lists the C API for Pepper 49. Apps that use this API can
+run in Chrome 49 or higher.
 
 `Interfaces <pepper_beta/c/group___interfaces.html>`__
 =============================================================

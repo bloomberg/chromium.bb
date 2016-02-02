@@ -57,13 +57,13 @@ To test a specific example, you can run the test_projects.py script::
   # Test the core example. This will test all toolchains/configs.
   build_tools/test_projects.py core
 
-  # Test the graphics_2d example, newlib/Debug only.
-  build_tools/test_projects.py graphics_2d -t newlib -c Debug
+  # Test the graphics_2d example, glibc/Debug only.
+  build_tools/test_projects.py graphics_2d -t glibc -c Debug
 
 This assumes that the example is already built. If not, you can use the `-b`
 flag to build it first::
 
-  build_tools/test_projects.py nacl_io_test -t newlib -c Debug -b
+  build_tools/test_projects.py nacl_io_test -t glibc -c Debug -b
 
 
 Rebuilding the Projects
@@ -82,9 +82,9 @@ You can then rebuild the example by running Make::
 
 You can build a specific toolchain/configuration combination::
 
-  make TOOLCHAIN=newlib CONFIG=Debug -j8
+  make TOOLCHAIN=glibc CONFIG=Debug -j8
 
-The valid toolchains are: `newlib`, `glibc`, `clang-newlib` and `pnacl`.
+The valid toolchains are: `glibc`, `clang-newlib` and `pnacl`.
 The valid configurations are: `Debug` and `Release`.
 
 To run the example::
@@ -92,8 +92,8 @@ To run the example::
   # Run the default configuration
   make run
 
-  # Run the newlib/Debug configuration
-  make TOOLCHAIN=newlib CONFIG=Debug -j8
+  # Run the glibc/Debug configuration
+  make TOOLCHAIN=glibc CONFIG=Debug -j8
 
 This will try to find Chrome and launch it. You can specify this manually via
 the CHROME_PATH environment variable::
@@ -112,8 +112,8 @@ cannot be built this way.
 To build the standalone configuration::
 
   cd tests/nacl_io_test
-  make STANDALONE=1 TOOLCHAIN=newlib -j8
+  make STANDALONE=1 TOOLCHAIN=glibc -j8
 
 To run the standalone tests, you must specify an architecture explicitly::
 
-  make STANDALONE=1 TOOLCHAIN=newlib NACL_ARCH=x86_64 -j8 run
+  make STANDALONE=1 TOOLCHAIN=glibc NACL_ARCH=x86_64 -j8 run

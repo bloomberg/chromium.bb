@@ -5,7 +5,7 @@
 # GNU Makefile based on shared rules provided by the Native Client SDK.
 # See README.Makefiles for more details.
 
-VALID_TOOLCHAINS := newlib glibc pnacl
+VALID_TOOLCHAINS := clang-newlib glibc pnacl
 
 NACL_SDK_ROOT ?= $(abspath $(CURDIR)/../../..)
 include $(NACL_SDK_ROOT)/tools/common.mk

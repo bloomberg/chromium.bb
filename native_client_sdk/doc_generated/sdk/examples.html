@@ -13,30 +13,30 @@ you&#8217;re using, type <code>about:chrome</code> or <code>about:version</code>
 bar.</p>
 <h2 id="build-the-sdk-examples"><span id="id1"></span>Build the SDK examples</h2>
 <p>The Makefile scripts for the SDK examples can build multiple versions of the
-examples using any of the three SDK toolchains (newlib, glibc, and PNaCl) and in
-both release and debug configurations. Note that some examples, <code>dlopen</code> for
-example, build only with particular toolchains.</p>
+examples using any of the three SDK toolchains (clang-newlib, glibc, and PNaCl)
+and in both release and debug configurations. Note that some examples,
+<code>dlopen</code> for example, build only with particular toolchains.</p>
 <p>Find the toolchains for each example by looking at the <code>VALID_TOOLCHAINS</code>
 variable in the Makefile for a particular example. The first item listed is the
 default. It&#8217;s built when you run an example make file without parameters. for
 example running make in the <code>core</code> directory of pepper_35 builds the example
-using the <code>newlib</code> toolchain.</p>
+using the <code>glibc</code> toolchain.</p>
 <pre class="prettyprint">
 $ cd pepper_35/examples/api/core
 $ make
-  CXX  newlib/Release/core_x86_32.o
-  LINK newlib/Release/core_unstripped_x86_32.nexe
-  VALIDATE newlib/Release/core_unstripped_x86_32.nexe
-  CXX  newlib/Release/core_x86_64.o
-  LINK newlib/Release/core_unstripped_x86_64.nexe
-  VALIDATE newlib/Release/core_unstripped_x86_64.nexe
-  CXX  newlib/Release/core_arm.o
-  LINK newlib/Release/core_unstripped_arm.nexe
-  VALIDATE newlib/Release/core_unstripped_arm.nexe
-  STRIP newlib/Release/core_x86_32.nexe
-  STRIP newlib/Release/core_x86_64.nexe
-  STRIP newlib/Release/core_arm.nexe
-  CREATE_NMF newlib/Release/core.nmf
+  CXX  glibc/Release/core_x86_32.o
+  LINK glibc/Release/core_unstripped_x86_32.nexe
+  VALIDATE glibc/Release/core_unstripped_x86_32.nexe
+  CXX  glibc/Release/core_x86_64.o
+  LINK glibc/Release/core_unstripped_x86_64.nexe
+  VALIDATE glibc/Release/core_unstripped_x86_64.nexe
+  CXX  glibc/Release/core_arm.o
+  LINK glibc/Release/core_unstripped_arm.nexe
+  VALIDATE glibc/Release/core_unstripped_arm.nexe
+  STRIP glibc/Release/core_x86_32.nexe
+  STRIP glibc/Release/core_x86_64.nexe
+  STRIP glibc/Release/core_arm.nexe
+  CREATE_NMF glibc/Release/core.nmf
 </pre>
 <p>As you can see, this produces a number of architecture specific nexe files in
 the <code>pepper_35/examples/api/core/Release</code> directory.  Create debug versions by
@@ -59,21 +59,21 @@ default toolchains.</p>
 <pre class="prettyprint">
 $ cd pepper_35/examples/api/core
 $ make TOOLCHAIN=all
-make TOOLCHAIN=newlib
+make TOOLCHAIN=clang-newlib
 make[1]: Entering directory 'pepper_35/examples/api/core'
-  CXX  newlib/Release/core_x86_32.o
-  LINK newlib/Release/core_unstripped_x86_32.nexe
-  VALIDATE newlib/Release/core_unstripped_x86_32.nexe
-  CXX  newlib/Release/core_x86_64.o
-  LINK newlib/Release/core_unstripped_x86_64.nexe
-  VALIDATE newlib/Release/core_unstripped_x86_64.nexe
-  CXX  newlib/Release/core_arm.o
-  LINK newlib/Release/core_unstripped_arm.nexe
-  VALIDATE newlib/Release/core_unstripped_arm.nexe
-  STRIP newlib/Release/core_x86_32.nexe
-  STRIP newlib/Release/core_x86_64.nexe
-  STRIP newlib/Release/core_arm.nexe
-  CREATE_NMF newlib/Release/core.nmf
+  CXX  clang-newlib/Release/core_x86_32.o
+  LINK clang-newlib/Release/core_unstripped_x86_32.nexe
+  VALIDATE clang-newlib/Release/core_unstripped_x86_32.nexe
+  CXX  clang-newlib/Release/core_x86_64.o
+  LINK clang-newlib/Release/core_unstripped_x86_64.nexe
+  VALIDATE clang-newlib/Release/core_unstripped_x86_64.nexe
+  CXX  clang-newlib/Release/core_arm.o
+  LINK clang-newlib/Release/core_unstripped_arm.nexe
+  VALIDATE clang-newlib/Release/core_unstripped_arm.nexe
+  STRIP clang-newlib/Release/core_x86_32.nexe
+  STRIP clang-newlib/Release/core_x86_64.nexe
+  STRIP clang-newlib/Release/core_arm.nexe
+  CREATE_NMF clang-newlib/Release/core.nmf
 make[1]: Leaving directory 'pepper_35/examples/api/core'
 make TOOLCHAIN=glibc
 make[1]: Entering directory 'pepper_35/examples/api/core'
@@ -91,11 +91,11 @@ make[1]: Entering directory 'pepper_35/examples/api/core'
 <p>After running <code>make</code>, example directories will contain one or more of the
 following subdirectories, depending on which Makefile you run:</p>
 <ul class="small-gap">
-<li><code>newlib</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
+<li><code>clang-newlib</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
 <li><code>glibc</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
 <li><code>pnacl</code> with subdirectories <code>Debug</code> and <code>Release</code>;</li>
 </ul>
-<p>For the newlib and glibc toolchains the Debug and Release subdirectories
+<p>For the clang-newlib and glibc toolchains the Debug and Release subdirectories
 contain .nexe files for all target architectures. For the PNaCl toolchain
 they contain a single .pexe file. PNaCl debug also produces pre-translated
 .nexe files, for ease of debugging. All Debug and Release directories contain

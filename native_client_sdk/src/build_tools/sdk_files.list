@@ -445,7 +445,6 @@ toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/lib32/libppapi.so
 toolchain/${PLATFORM}_x86_glibc/x86_64-nacl/lib32/libppapi_stub.a
 tools/cl_wrapper.py
 tools/common.mk
-tools/compiler-wrapper.py
 tools/create_html.py
 tools/create_nmf.py
 tools/decode_dump.py

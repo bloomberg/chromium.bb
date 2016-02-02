@@ -4,6 +4,15 @@
 <span id="sdk-release-notes"></span><h1 id="release-notes"><span id="sdk-release-notes"></span>Release Notes</h1>
 <p>The dates in the following release notes denote when Chrome and the NaCl SDK
 reached canary status. The stable release is typically 6 weeks later.</p>
+<h2 id="chrome-pepper-49">Chrome/Pepper 49</h2>
+<ul class="small-gap">
+<li>GCC-based newlib toolchains removed from the SDK.  These have been
+superseded by the nacl-clang toolchain which also produces statically linked
+architecture specific nexe files.</li>
+<li>gtest/gmock no longer shipped as pre-built libraries.  This is in-line with
+normal gtest/gmock usage guidelines.  Projects wishing to use gtest/gmock must
+now add explicit include paths and compile gtest-all.cc locally.</li>
+</ul>
 <h2 id="chrome-pepper-45-10-july-2015">Chrome/Pepper 45 (10 July 2015)</h2>
 <h3 id="pepper">Pepper</h3>
 <ul class="small-gap">

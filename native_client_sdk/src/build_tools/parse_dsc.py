@@ -11,7 +11,6 @@ import sys
 
 VALID_TOOLCHAINS = [
   'clang-newlib',
-  'newlib',
   'glibc',
   'pnacl',
   'win',

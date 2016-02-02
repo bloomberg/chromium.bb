@@ -30,7 +30,6 @@ LIB_DICT = {
   'win': ['x86_32']
 }
 VALID_TOOLCHAINS = [
-  'newlib',
   'clang-newlib',
   'glibc',
   'pnacl',
@@ -291,9 +290,9 @@ def main(args):
   if not options.toolchain:
     # Order matters here: the default toolchain for an example's Makefile will
     # be the first toolchain in this list that is available in the example.
-    # e.g. If an example supports newlib and glibc, then the default will be
-    # newlib.
-    options.toolchain = ['pnacl', 'newlib', 'glibc', 'host', 'clang-newlib']
+    # e.g. If an example supports clang-newlib and glibc, then the default will
+    # be clang-newlib.
+    options.toolchain = ['pnacl', 'clang-newlib', 'glibc', 'host']
 
   if 'host' in options.toolchain:
     options.toolchain.remove('host')

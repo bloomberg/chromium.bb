@@ -111,9 +111,10 @@ The Native Client SDK contains multiple toolchains, which are differentiated by
 =================== ========= ===============================
 Target architecture C library Toolchain directory
 =================== ========= ===============================
-x86                 newlib    toolchain/<platform>_x86_newlib
 x86                 glibc     toolchain/<platform>_x86_glibc
-ARM                 newlib    toolchain/<platform>_arm_newlib
+ARM                 glibc     toolchain/<platform>_arm_glibc
+x86                 newlib    toolchain/<platform>_pnacl
+ARM                 newlib    toolchain/<platform>_pnacl
 PNaCl               newlib    toolchain/<platform>_pnacl
 =================== ========= ===============================
 
@@ -124,11 +125,10 @@ toolchain that uses glibc is in ``toolchain/win_x86_glibc``.
 .. Note::
   :class: note
 
-  **Note:** The ARM and PNaCl toolchains are currently restricted to newlib.
+  **Note:** The PNaCl toolchain is currently restricted to newlib.
 
 To use the glibc library and dynamic linking in your application, you **must**
-use a glibc toolchain. (Currently the only glibc toolchain is
-``<platform>_x86_glibc``.) Note that you must build all code in your application
+use a glibc toolchain.  Note that you must build all code in your application
 with one toolchain. Code from multiple toolchains cannot be mixed.
 
 Specifying and delivering shared libraries
@@ -206,8 +206,8 @@ file. These commands are described below.
   :class: note
 
   **Note:** The Makefiles for most of the examples in the SDK build the
-  examples using multiple toolchains (x86 newlib, x86 glibc, ARM, and PNaCl).
-  With a few exceptions (listed in the :ref:`Release Notes
+  examples using multiple toolchains (x86 newlib, x86 glibc, ARM newlib, ARM
+  glibc, and PNaCl).  With a few exceptions (listed in the :ref:`Release Notes
   <sdk-release-notes>`), running "make" in each example's directory builds
   multiple versions of the example using the SDK toolchains. The dlopen example
   is one of those exceptions – it is only built with the x86 glibc toolchain,

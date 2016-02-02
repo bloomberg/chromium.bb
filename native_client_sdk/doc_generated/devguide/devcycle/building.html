@@ -72,17 +72,19 @@ Makefiles included with the SDK examples.</p>
 <p>This section will mostly cover PNaCl, but also describes how to build
 <strong>nexe</strong> applications.</p>
 <h3 id="c-libraries">C libraries</h3>
-<p>The PNaCl SDK has a single choice of C library: <a class="reference external" href="http://sourceware.org/newlib/">newlib</a>.</p>
-<p>The Native Client SDK also has a GCC-based toolchain for building
-<strong>nexes</strong>. The GCC-based toolchain has support for two C libraries:
-<a class="reference external" href="http://sourceware.org/newlib/">newlib</a> and <a class="reference external" href="http://www.gnu.org/software/libc/">glibc</a>.  See <a class="reference internal" href="/native-client/devguide/devcycle/dynamic-loading.html"><em>Dynamic Linking &amp; Loading with glibc</em></a> for information about these libraries, including factors to
-help you decide which to use.</p>
+<p>The PNaCl toolchain uses the <a class="reference external" href="http://sourceware.org/newlib/">newlib</a> C library and can be used to build
+portable <strong>pexe</strong> files (using <code>pnacl-clang</code>) or <strong>nexe</strong> files (using, for
+example, <code>x86_64-nacl-clang</code>).  The Native Client SDK also has a
+GCC-based toolchain for building <strong>nexe</strong> files which uses the <a class="reference external" href="http://www.gnu.org/software/libc/">glibc</a> C library.
+See <a class="reference internal" href="/native-client/devguide/devcycle/dynamic-loading.html"><em>Dynamic Linking &amp; Loading with glibc</em></a> for
+information about these libraries, including factors to help you decide which to
+use.</p>
 <h3 id="c-standard-libraries"><span id="building-cpp-libraries"></span>C++ standard libraries</h3>
 <p>The PNaCl SDK can use either LLVM&#8217;s <a class="reference external" href="http://libcxx.llvm.org/">libc++</a>
 (the current default) or GCC&#8217;s <a class="reference external" href="http://gcc.gnu.org/libstdc++">libstdc++</a> (deprecated). The
 <code>-stdlib=[libc++|libstdc++]</code> command line argument can be used to
 choose which standard library to use.</p>
-<p>The GCC-based Native Client SDK only has support for GCC&#8217;s <a class="reference external" href="http://gcc.gnu.org/libstdc++">libstdc++</a>.</p>
+<p>The GCC-based toolchain only has support for GCC&#8217;s <a class="reference external" href="http://gcc.gnu.org/libstdc++">libstdc++</a>.</p>
 <p>C++11 library support is only complete in libc++ but other non-library language
 features should work regardless of which standard library is used. The
 <code>-std=gnu++11</code> command line argument can be used to indicate which C++
@@ -368,12 +370,12 @@ flags, e.g., you can specify <code>x86_64-nacl-gcc -m32</code> to compile a 32-b
 files with the PNaCl-based toolchain, except that the output is
 architecture specific.</p>
 <p>For example, assuming you&#8217;re developing on a Windows machine, targeting the x86
-architecture, and using the newlib library, you can compile a 32-bit <strong>.nexe</strong>
-for the hello_world example with the following command:</p>
+architecture you can compile a 32-bit <strong>.nexe</strong> for the hello_world example with
+the following command:</p>
 <pre>
-nacl_sdk/pepper_&lt;version&gt;/toolchain/win_x86_newlib/bin/i686-nacl-gcc \
+nacl_sdk/pepper_&lt;version&gt;/toolchain/win_x86_glibc/bin/i686-nacl-gcc \
   hello_world.c -Inacl_sdk/pepper_&lt;version&gt;/include \
-  -Lnacl_sdk/pepper_&lt;version&gt;/lib/newlib/Release -o hello_world_x86_32.nexe \
+  -Lnacl_sdk/pepper_&lt;version&gt;/lib/glibc/Release -o hello_world_x86_32.nexe \
   -m32 -g -O2 -lppapi
 </pre>
 <p>To compile a 64-bit <strong>.nexe</strong>, you can run the same command but use -m64 instead
@@ -403,7 +405,7 @@ ones in the SDK examples.</p>
 configurations (using PNaCl vs NaCl, using different C libraries,
 targeting different architectures, and using different levels of optimization).
 To select a specific toolchain, set the <strong>environment variable</strong>
-<code>TOOLCHAIN</code> to either <code>pnacl</code>, <code>newlib</code>, <code>glibc</code>, or <code>host</code>.
+<code>TOOLCHAIN</code> to either <code>pnacl</code>, <code>clang-newlib</code>, <code>glibc</code>, or <code>host</code>.
 To select a specific level of optimization set the <strong>environment
 variable</strong> <code>CONFIG</code> to either <code>Debug</code>, or <code>Release</code>. Running
 <code>make</code> in each example&#8217;s directory does <strong>one</strong> of the following,
@@ -417,18 +419,18 @@ the newlib library</li>
 example</li>
 </ul>
 </li>
-<li><p class="first">If <code>TOOLCHAIN=newlib</code> creates a subdirectory called <code>newlib</code>;</p>
+<li><p class="first">If <code>TOOLCHAIN=clang-newlib</code> creates a subdirectory called <code>clang-newlib</code>;</p>
 <ul class="small-gap">
 <li>builds <strong>.nexes</strong> for the x86-32, x86-64, and ARM architectures using the
-newlib library</li>
-<li>generates a Native Client manifest (.nmf) file for the newlib version of
-the example</li>
+nacl-clang toolchain and the newlib C library</li>
+<li>generates a Native Client manifest (.nmf) file for the clang-newlib version
+of the example</li>
 </ul>
 </li>
 <li><p class="first">If <code>TOOLCHAIN=glibc</code> creates a subdirectory called <code>glibc</code>;</p>
 <ul class="small-gap">
-<li>builds <strong>.nexes</strong> for the x86-32 and x86-64 architectures using the glibc
-library</li>
+<li>builds <strong>.nexes</strong> for the x86-32, x86-64 and ARM architectures using the
+glibc library</li>
 <li>generates a Native Client manifest (.nmf) file for the glibc version of the
 example</li>
 </ul>
@@ -473,12 +475,13 @@ in the following locations:</p>
 <li>ARM toolchain: <code>toolchain/&lt;platform&gt;_arm_&lt;c_library&gt;/arm-nacl/lib</code></li>
 </ul>
 <p>For example, on Windows, the libraries for the x86-64 architecture in the
-newlib toolchain are in <code>toolchain/win_x86_newlib/x86_64-nacl/lib64</code>.</p>
+glibc toolchain are in <code>toolchain/win_x86_glibc/x86_64-nacl/lib64</code>.</p>
 <p>The header files are in:</p>
 <ul class="small-gap">
-<li>PNaCl toolchain: <code>toolchain/&lt;platform&gt;_pnacl/usr/include</code></li>
-<li>x86 toolchains: <code>toolchain/&lt;platform&gt;_x86_&lt;c_library&gt;/x86_64-nacl/include</code></li>
-<li>ARM toolchain: <code>toolchain/&lt;platform&gt;_arm_&lt;c_library&gt;/arm-nacl/include</code></li>
+<li>PNaCl toolchain: <code>toolchain/&lt;platform&gt;_pnacl/le32-nacl/include</code></li>
+<li>clang newlib toolchains: <code>toolchain/&lt;platform&gt;_pnacl/&lt;arch&gt;-nacl/include</code></li>
+<li>x86 glibc toolchain: <code>toolchain/&lt;platform&gt;_x86_glibc/x86_64-nacl/include</code></li>
+<li>ARM glibc toolchain: <code>toolchain/&lt;platform&gt;_arm_glibc/arm-nacl/include</code></li>
 </ul>
 <p>Many other libraries have been ported for use with Native Client; for more
 information, see the <a class="reference external" href="https://chromium.googlesource.com/webports">webports</a>
@@ -488,8 +491,8 @@ adding it to webports.</p>
 The PNaCl Pepper libraries are located in the the
 <code>nacl_sdk/pepper_&lt;version&gt;/lib/pnacl/&lt;Release or Debug&gt;</code> directory.
 The GNU-based toolchain has Pepper libraries in
-<code>nacl_sdk/pepper_&lt;version&gt;/lib/newlib_&lt;arch&gt;/&lt;Release or Debug&gt;</code>
-and <code>nacl_sdk/pepper_&lt;version&gt;/lib/glibc_&lt;arch&gt;/&lt;Release or Debug&gt;</code>.
+<code>nacl_sdk/pepper_&lt;version&gt;/lib/glibc_&lt;arch&gt;/&lt;Release or Debug&gt;</code>
+and <code>nacl_sdk/pepper_&lt;version&gt;/lib/clang-newlib_&lt;arch&gt;/&lt;Release or Debug&gt;</code>.
 The libraries provided by the SDK allow the application to use Pepper,
 as well as convenience libraries to simplify porting an application that
 uses POSIX functions. Here are descriptions of the Pepper libraries provided

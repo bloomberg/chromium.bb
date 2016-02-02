@@ -52,7 +52,7 @@ Glibc NaCl) and two configurations (Debug, Release).
 
 .. naclcode::
 
-    VALID_TOOLCHAINS := pnacl newlib glibc
+    VALID_TOOLCHAINS := pnacl clang-newlib glibc
 
     NACL_SDK_ROOT ?= $(abspath $(CURDIR)/../..)
     include $(NACL_SDK_ROOT)/tools/common.mk
@@ -88,11 +88,12 @@ when you begin your project and never change it. Please see the
 :ref:`Toolchains section of the Native Client overview <toolchains>` for more
 information.
 
-For this example, we support the ``pnacl``, ``newlib`` and ``glibc`` toolchains.
+For this example, we support the ``pnacl``, ``clang-newlib`` and ``glibc``
+toolchains.
 
 .. naclcode::
 
-    VALID_TOOLCHAINS := pnacl newlib glibc
+    VALID_TOOLCHAINS := pnacl clang-newlib glibc
 
 Next, as a convenience, we specify where to find ``NACL_SDK_ROOT``. Because
 this example is located in ``pepper_$(VERSION)/getting_started/part2``, the
@@ -290,7 +291,7 @@ configurations, and path to the ``.nmf`` file:
 .. naclcode::
 
     <body data-name="part2"
-        data-tools="newlib glibc pnacl"
+        data-tools="clang-newlib glibc pnacl"
         data-configs="Debug Release"
         data-path="{tc}/{config}">
     ...

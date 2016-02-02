@@ -52,13 +52,13 @@ This section will mostly cover PNaCl, but also describes how to build
 C libraries
 -----------
 
-The PNaCl SDK has a single choice of C library: newlib_.
-
-The Native Client SDK also has a GCC-based toolchain for building
-**nexes**. The GCC-based toolchain has support for two C libraries:
-newlib_ and glibc_.  See :doc:`Dynamic Linking & Loading with glibc
-<dynamic-loading>` for information about these libraries, including factors to
-help you decide which to use.
+The PNaCl toolchain uses the newlib_ C library and can be used to build
+portable **pexe** files (using ``pnacl-clang``) or **nexe** files (using, for
+example, ``x86_64-nacl-clang``).  The Native Client SDK also has a
+GCC-based toolchain for building **nexe** files which uses the glibc_ C library.
+See :doc:`Dynamic Linking & Loading with glibc <dynamic-loading>` for
+information about these libraries, including factors to help you decide which to
+use.
 
 .. _building_cpp_libraries:
 
@@ -71,7 +71,7 @@ The PNaCl SDK can use either LLVM's `libc++ <http://libcxx.llvm.org/>`_
 ``-stdlib=[libc++|libstdc++]`` command line argument can be used to
 choose which standard library to use.
 
-The GCC-based Native Client SDK only has support for GCC's `libstdc++
+The GCC-based toolchain only has support for GCC's `libstdc++
 <http://gcc.gnu.org/libstdc++>`_.
 
 C++11 library support is only complete in libc++ but other non-library language
@@ -445,15 +445,15 @@ files with the PNaCl-based toolchain, except that the output is
 architecture specific.
 
 For example, assuming you're developing on a Windows machine, targeting the x86
-architecture, and using the newlib library, you can compile a 32-bit **.nexe**
-for the hello_world example with the following command:
+architecture you can compile a 32-bit **.nexe** for the hello_world example with
+the following command:
 
 .. naclcode::
   :prettyprint: 0
 
-  nacl_sdk/pepper_<version>/toolchain/win_x86_newlib/bin/i686-nacl-gcc \
+  nacl_sdk/pepper_<version>/toolchain/win_x86_glibc/bin/i686-nacl-gcc \
     hello_world.c -Inacl_sdk/pepper_<version>/include \
-    -Lnacl_sdk/pepper_<version>/lib/newlib/Release -o hello_world_x86_32.nexe \
+    -Lnacl_sdk/pepper_<version>/lib/glibc/Release -o hello_world_x86_32.nexe \
     -m32 -g -O2 -lppapi
 
 To compile a 64-bit **.nexe**, you can run the same command but use -m64 instead
@@ -496,7 +496,7 @@ The Makefiles for the SDK examples build most of the examples in multiple
 configurations (using PNaCl vs NaCl, using different C libraries,
 targeting different architectures, and using different levels of optimization).
 To select a specific toolchain, set the **environment variable**
-``TOOLCHAIN`` to either ``pnacl``, ``newlib``, ``glibc``, or ``host``.
+``TOOLCHAIN`` to either ``pnacl``, ``clang-newlib``, ``glibc``, or ``host``.
 To select a specific level of optimization set the **environment
 variable** ``CONFIG`` to either ``Debug``, or ``Release``. Running
 ``make`` in each example's directory does **one** of the following,
@@ -509,17 +509,17 @@ depending on the setting of the environment variables.
   * generates a Native Client manifest (.nmf) file for the pnacl version of the
     example
 
-* If ``TOOLCHAIN=newlib`` creates a subdirectory called ``newlib``;
+* If ``TOOLCHAIN=clang-newlib`` creates a subdirectory called ``clang-newlib``;
 
   * builds **.nexes** for the x86-32, x86-64, and ARM architectures using the
-    newlib library
-  * generates a Native Client manifest (.nmf) file for the newlib version of
-    the example
+    nacl-clang toolchain and the newlib C library
+  * generates a Native Client manifest (.nmf) file for the clang-newlib version
+    of the example
 
 * If ``TOOLCHAIN=glibc`` creates a subdirectory called ``glibc``;
 
-  * builds **.nexes** for the x86-32 and x86-64 architectures using the glibc
-    library
+  * builds **.nexes** for the x86-32, x86-64 and ARM architectures using the
+    glibc library
   * generates a Native Client manifest (.nmf) file for the glibc version of the
     example
 
@@ -572,13 +572,14 @@ in the following locations:
 * ARM toolchain: ``toolchain/<platform>_arm_<c_library>/arm-nacl/lib``
 
 For example, on Windows, the libraries for the x86-64 architecture in the
-newlib toolchain are in ``toolchain/win_x86_newlib/x86_64-nacl/lib64``.
+glibc toolchain are in ``toolchain/win_x86_glibc/x86_64-nacl/lib64``.
 
 The header files are in:
 
-* PNaCl toolchain: ``toolchain/<platform>_pnacl/usr/include``
-* x86 toolchains: ``toolchain/<platform>_x86_<c_library>/x86_64-nacl/include``
-* ARM toolchain: ``toolchain/<platform>_arm_<c_library>/arm-nacl/include``
+* PNaCl toolchain: ``toolchain/<platform>_pnacl/le32-nacl/include``
+* clang newlib toolchains: ``toolchain/<platform>_pnacl/<arch>-nacl/include``
+* x86 glibc toolchain: ``toolchain/<platform>_x86_glibc/x86_64-nacl/include``
+* ARM glibc toolchain: ``toolchain/<platform>_arm_glibc/arm-nacl/include``
 
 Many other libraries have been ported for use with Native Client; for more
 information, see the `webports <https://chromium.googlesource.com/webports>`_
@@ -589,8 +590,8 @@ Besides the standard libraries, the SDK includes Pepper libraries.
 The PNaCl Pepper libraries are located in the the
 ``nacl_sdk/pepper_<version>/lib/pnacl/<Release or Debug>`` directory.
 The GNU-based toolchain has Pepper libraries in
-``nacl_sdk/pepper_<version>/lib/newlib_<arch>/<Release or Debug>``
-and ``nacl_sdk/pepper_<version>/lib/glibc_<arch>/<Release or Debug>``.
+``nacl_sdk/pepper_<version>/lib/glibc_<arch>/<Release or Debug>``
+and ``nacl_sdk/pepper_<version>/lib/clang-newlib_<arch>/<Release or Debug>``.
 The libraries provided by the SDK allow the application to use Pepper,
 as well as convenience libraries to simplify porting an application that
 uses POSIX functions. Here are descriptions of the Pepper libraries provided

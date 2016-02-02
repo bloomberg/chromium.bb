@@ -22,31 +22,31 @@ Build the SDK examples
 ----------------------
 
 The Makefile scripts for the SDK examples can build multiple versions of the
-examples using any of the three SDK toolchains (newlib, glibc, and PNaCl) and in
-both release and debug configurations. Note that some examples, ``dlopen`` for
-example, build only with particular toolchains. 
+examples using any of the three SDK toolchains (clang-newlib, glibc, and PNaCl)
+and in both release and debug configurations. Note that some examples,
+``dlopen`` for example, build only with particular toolchains. 
 
 Find the toolchains for each example by looking at the ``VALID_TOOLCHAINS``
 variable in the Makefile for a particular example. The first item listed is the
 default. It's built when you run an example make file without parameters. for
 example running make in the ``core`` directory of pepper_35 builds the example
-using the ``newlib`` toolchain. ::
+using the ``glibc`` toolchain. ::
 
   $ cd pepper_35/examples/api/core
   $ make
-    CXX  newlib/Release/core_x86_32.o
-    LINK newlib/Release/core_unstripped_x86_32.nexe
-    VALIDATE newlib/Release/core_unstripped_x86_32.nexe
-    CXX  newlib/Release/core_x86_64.o
-    LINK newlib/Release/core_unstripped_x86_64.nexe
-    VALIDATE newlib/Release/core_unstripped_x86_64.nexe
-    CXX  newlib/Release/core_arm.o
-    LINK newlib/Release/core_unstripped_arm.nexe
-    VALIDATE newlib/Release/core_unstripped_arm.nexe
-    STRIP newlib/Release/core_x86_32.nexe
-    STRIP newlib/Release/core_x86_64.nexe
-    STRIP newlib/Release/core_arm.nexe
-    CREATE_NMF newlib/Release/core.nmf
+    CXX  glibc/Release/core_x86_32.o
+    LINK glibc/Release/core_unstripped_x86_32.nexe
+    VALIDATE glibc/Release/core_unstripped_x86_32.nexe
+    CXX  glibc/Release/core_x86_64.o
+    LINK glibc/Release/core_unstripped_x86_64.nexe
+    VALIDATE glibc/Release/core_unstripped_x86_64.nexe
+    CXX  glibc/Release/core_arm.o
+    LINK glibc/Release/core_unstripped_arm.nexe
+    VALIDATE glibc/Release/core_unstripped_arm.nexe
+    STRIP glibc/Release/core_x86_32.nexe
+    STRIP glibc/Release/core_x86_64.nexe
+    STRIP glibc/Release/core_arm.nexe
+    CREATE_NMF glibc/Release/core.nmf
 
 As you can see, this produces a number of architecture specific nexe files in
 the ``pepper_35/examples/api/core/Release`` directory.  Create debug versions by
@@ -70,21 +70,21 @@ default toolchains. ::
 
   $ cd pepper_35/examples/api/core
   $ make TOOLCHAIN=all
-  make TOOLCHAIN=newlib 
+  make TOOLCHAIN=clang-newlib
   make[1]: Entering directory 'pepper_35/examples/api/core'
-    CXX  newlib/Release/core_x86_32.o
-    LINK newlib/Release/core_unstripped_x86_32.nexe
-    VALIDATE newlib/Release/core_unstripped_x86_32.nexe
-    CXX  newlib/Release/core_x86_64.o
-    LINK newlib/Release/core_unstripped_x86_64.nexe
-    VALIDATE newlib/Release/core_unstripped_x86_64.nexe
-    CXX  newlib/Release/core_arm.o
-    LINK newlib/Release/core_unstripped_arm.nexe
-    VALIDATE newlib/Release/core_unstripped_arm.nexe
-    STRIP newlib/Release/core_x86_32.nexe
-    STRIP newlib/Release/core_x86_64.nexe
-    STRIP newlib/Release/core_arm.nexe
-    CREATE_NMF newlib/Release/core.nmf
+    CXX  clang-newlib/Release/core_x86_32.o
+    LINK clang-newlib/Release/core_unstripped_x86_32.nexe
+    VALIDATE clang-newlib/Release/core_unstripped_x86_32.nexe
+    CXX  clang-newlib/Release/core_x86_64.o
+    LINK clang-newlib/Release/core_unstripped_x86_64.nexe
+    VALIDATE clang-newlib/Release/core_unstripped_x86_64.nexe
+    CXX  clang-newlib/Release/core_arm.o
+    LINK clang-newlib/Release/core_unstripped_arm.nexe
+    VALIDATE clang-newlib/Release/core_unstripped_arm.nexe
+    STRIP clang-newlib/Release/core_x86_32.nexe
+    STRIP clang-newlib/Release/core_x86_64.nexe
+    STRIP clang-newlib/Release/core_arm.nexe
+    CREATE_NMF clang-newlib/Release/core.nmf
   make[1]: Leaving directory 'pepper_35/examples/api/core'
   make TOOLCHAIN=glibc 
   make[1]: Entering directory 'pepper_35/examples/api/core'
@@ -106,11 +106,11 @@ Build results
 After running ``make``, example directories will contain one or more of the
 following subdirectories, depending on which Makefile you run:
 
-* ``newlib`` with subdirectories ``Debug`` and ``Release``;
+* ``clang-newlib`` with subdirectories ``Debug`` and ``Release``;
 * ``glibc`` with subdirectories ``Debug`` and ``Release``;
 * ``pnacl`` with subdirectories ``Debug`` and ``Release``;
 
-For the newlib and glibc toolchains the Debug and Release subdirectories
+For the clang-newlib and glibc toolchains the Debug and Release subdirectories
 contain .nexe files for all target architectures. For the PNaCl toolchain
 they contain a single .pexe file. PNaCl debug also produces pre-translated
 .nexe files, for ease of debugging. All Debug and Release directories contain
