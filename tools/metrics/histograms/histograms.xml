@@ -9154,6 +9154,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>User actions in chrome://downloads</summary>
 </histogram>
 
+<histogram name="Download.DownloadDangerPrompt"
+    enum="SBClientDownloadExtensions">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    Records when user is shown the download danger prompt while attempting to
+    recover a blocked download from chrome://downloads, grouped by the type of
+    file.
+  </summary>
+</histogram>
+
 <histogram name="Download.DownloadSize" units="KB">
   <owner>asanka@chromium.org</owner>
   <summary>The size of successfully completed downloads.</summary>
@@ -83057,6 +83067,28 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Google" label="only Google cookies are recorded."/>
   <suffix name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DownloadDangerPromptResponse" separator=".">
+  <suffix name="Proceed"
+      label="The user clicked through and recovered the download."/>
+  <suffix name="Shown" label="The user was shown the prompt."/>
+  <affected-histogram name="Download.DownloadDangerPrompt.DangerousContent"/>
+  <affected-histogram name="Download.DownloadDangerPrompt.DangerousFile"/>
+  <affected-histogram name="Download.DownloadDangerPrompt.DangerousHost"/>
+  <affected-histogram name="Download.DownloadDangerPrompt.DangerousURL"/>
+  <affected-histogram name="Download.DownloadDangerPrompt.PotentiallyUnwanted"/>
+  <affected-histogram name="Download.DownloadDangerPrompt.UncommonContent"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="DownloadDangerPromptType" separator=".">
+  <suffix name="DangerousContent" label="File marked DANGEROUS_CONTENT"/>
+  <suffix name="DangerousFile" label="File marked DANGEROUS_FILE"/>
+  <suffix name="DangerousHost" label="File marked DANGEROUS_HOST"/>
+  <suffix name="DangerousURL" label="File marked DANGEROUS_URL"/>
+  <suffix name="PotentiallyUnwanted" label="File marked POTENTIALLY_UNWANTED"/>
+  <suffix name="UncommonContent" label="File marked UNCOMMON_CONTENT"/>
+  <affected-histogram name="Download.DownloadDangerPrompt"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="EmePromise" separator=".">

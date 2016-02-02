@@ -58,6 +58,10 @@ class DownloadDangerPrompt {
   static void SendSafeBrowsingDownloadRecoveryReport(
       bool did_proceed,
       const content::DownloadItem& download);
+
+  // Records UMA stats for a download danger prompt event.
+  static void RecordDownloadDangerPrompt(bool did_proceed,
+                                         const content::DownloadItem& download);
 };
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_DANGER_PROMPT_H_

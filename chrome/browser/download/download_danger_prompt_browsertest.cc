@@ -202,6 +202,9 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, MAYBE_TestAll) {
       .WillByDefault(ReturnRef(GURL::EmptyGURL()));
   ON_CALL(download(), GetBrowserContext())
       .WillByDefault(Return(browser()->profile()));
+  base::FilePath empty_file_path;
+  ON_CALL(download(), GetTargetFilePath())
+      .WillByDefault(ReturnRef(empty_file_path));
 
   OpenNewTab();
 

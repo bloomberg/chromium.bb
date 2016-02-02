@@ -337,10 +337,11 @@ void DownloadDangerPromptViews::RunDone(Action action) {
   OnDone done = done_;
   done_.Reset();
   if (download_ != NULL) {
+    const bool accept = action == DownloadDangerPrompt::ACCEPT;
+    RecordDownloadDangerPrompt(accept, *download_);
     if (!download_->GetURL().is_empty() &&
         !download_->GetBrowserContext()->IsOffTheRecord()) {
-      SendSafeBrowsingDownloadRecoveryReport(
-          action == DownloadDangerPrompt::ACCEPT, *download_);
+      SendSafeBrowsingDownloadRecoveryReport(accept, *download_);
     }
     download_->RemoveObserver(this);
     download_ = NULL;
