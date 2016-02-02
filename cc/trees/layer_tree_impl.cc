@@ -47,15 +47,6 @@
 
 namespace cc {
 
-namespace {
-
-const uint32_t kMainLayerFlags =
-    MutableProperty::kOpacity | MutableProperty::kTransform;
-const uint32_t kScrollLayerFlags =
-    MutableProperty::kScrollLeft | MutableProperty::kScrollTop;
-
-}  // namespace
-
 LayerTreeImpl::LayerTreeImpl(
     LayerTreeHostImpl* layer_tree_host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
@@ -372,7 +363,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->has_ever_been_drawn_ = false;
 }
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
-  if (!layer->element_id())
+  if (!layer->element_id() || !layer->mutable_properties())
     return;
 
   TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
@@ -380,16 +371,12 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
                layer->element_id(), "layer_id", layer->id());
 
   ElementLayers& layers = element_layers_map_[layer->element_id()];
-  if (layer->mutable_properties() & kMainLayerFlags) {
-    if (!layers.main || layer->IsActive())
-      layers.main = layer;
-  }
-  if (layer->mutable_properties() & kScrollLayerFlags) {
-    if (!layers.scroll || layer->IsActive()) {
-      TRACE_EVENT2("compositor-worker", "LayerTreeImpl::AddToElementMap scroll",
-                   "element_id", layer->element_id(), "layer_id", layer->id());
-      layers.scroll = layer;
-    }
+  if ((!layers.main || layer->IsActive()) && !layer->scrollable()) {
+    layers.main = layer;
+  } else if ((!layers.scroll || layer->IsActive()) && layer->scrollable()) {
+    TRACE_EVENT2("compositor-worker", "LayerTreeImpl::AddToElementMap scroll",
+                 "element_id", layer->element_id(), "layer_id", layer->id());
+    layers.scroll = layer;
   }
 }
 
@@ -402,9 +389,9 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
                layer->element_id(), "layer_id", layer->id());
 
   ElementLayers& layers = element_layers_map_[layer->element_id()];
-  if (layer->mutable_properties() & kMainLayerFlags)
+  if (!layer->scrollable())
     layers.main = nullptr;
-  if (layer->mutable_properties() & kScrollLayerFlags)
+  if (layer->scrollable())
     layers.scroll = nullptr;
 
   if (!layers.main && !layers.scroll)

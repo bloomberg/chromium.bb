@@ -111,24 +111,35 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     // In this case, we should get a valid mutable state for this element id that
     // has a real effect on the corresponding layer.
     scoped_ptr<LayerImpl> root = LayerImpl::Create(hostImpl().active_tree(), 42);
-    SetLayerPropertiesForTesting(root.get());
-    root->SetElementId(42);
-    root->SetMutableProperties(CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform | CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
 
-    hostImpl().SetViewportSize(root->bounds());
+    scoped_ptr<LayerImpl> scopedLayer =
+        LayerImpl::Create(hostImpl().active_tree(), 11);
+    LayerImpl* layer = scopedLayer.get();
+    layer->SetScrollClipLayer(root->id());
+
+    root->AddChild(std::move(scopedLayer));
+
+    SetLayerPropertiesForTesting(layer);
+    layer->SetElementId(12);
+    root->SetElementId(layer->element_id());
+
+    root->SetMutableProperties(CompositorMutableProperty::kOpacity | CompositorMutableProperty::kTransform);
+    layer->SetMutableProperties(CompositorMutableProperty::kScrollLeft | CompositorMutableProperty::kScrollTop);
+
+    hostImpl().SetViewportSize(layer->bounds());
     hostImpl().active_tree()->SetRootLayer(std::move(root));
     hostImpl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
     CompositorMutations mutations;
     CompositorMutableStateProvider provider(hostImpl().active_tree(), &mutations);
 
-    OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(42));
+    OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
     EXPECT_TRUE(state.get());
 
     EXPECT_EQ(1.0, rootLayer()->opacity());
     EXPECT_EQ(gfx::Transform().ToString(), rootLayer()->transform().ToString());
-    EXPECT_EQ(0.0, rootLayer()->CurrentScrollOffset().x());
-    EXPECT_EQ(0.0, rootLayer()->CurrentScrollOffset().y());
+    EXPECT_EQ(0.0, layer->CurrentScrollOffset().x());
+    EXPECT_EQ(0.0, layer->CurrentScrollOffset().y());
 
     gfx::Transform zero(0, 0, 0, 0, 0, 0);
     state->setOpacity(0.5);
@@ -138,13 +149,13 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
 
     EXPECT_EQ(0.5, rootLayer()->opacity());
     EXPECT_EQ(zero.ToString(), rootLayer()->transform().ToString());
-    EXPECT_EQ(1.0, rootLayer()->CurrentScrollOffset().x());
-    EXPECT_EQ(1.0, rootLayer()->CurrentScrollOffset().y());
+    EXPECT_EQ(1.0, layer->CurrentScrollOffset().x());
+    EXPECT_EQ(1.0, layer->CurrentScrollOffset().y());
 
     // The corresponding mutation should reflect the changed values.
     EXPECT_EQ(1ul, mutations.map.size());
 
-    const CompositorMutation& mutation = *mutations.map.find(42)->value;
+    const CompositorMutation& mutation = *mutations.map.find(layer->element_id())->value;
     EXPECT_TRUE(mutation.isOpacityMutated());
     EXPECT_TRUE(mutation.isTransformMutated());
     EXPECT_TRUE(mutation.isScrollLeftMutated());
