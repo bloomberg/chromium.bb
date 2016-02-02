@@ -47,3 +47,11 @@ function failTest(reason) {
   returnToTest('Test failed: ' + error.stack);
   return error;
 }
+
+function success(method) {
+  debug(method + '(): success.');
+}
+
+function failure(method, error) {
+  throw failTest(method + '() failed: ' + JSON.stringify(error));
+}

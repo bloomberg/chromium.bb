@@ -44,16 +44,23 @@ function preparePeerConnection() {
  * Returns a string on the format ok-(JSON encoded session description).
  *
  * @param {!Object} constraints Any createOffer constraints.
+ * @param {string} videoCodec If not null, promotes the specified codec to be
+ *     the default video codec, e.g. the first one in the list on the 'm=video'
+ *     SDP offer line. |videoCodec| is the case-sensitive codec name, e.g.
+ *     'VP8' or 'H264'.
  */
-function createLocalOffer(constraints) {
+function createLocalOffer(constraints, videoCodec = null) {
   peerConnection_().createOffer(
       function(localOffer) {
-        success_('createOffer');
+        success('createOffer');
+
         setLocalDescription(peerConnection, localOffer);
+        if (videoCodec !== null)
+          localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp, videoCodec);
 
         returnToTest('ok-' + JSON.stringify(localOffer));
       },
-      function(error) { failure_('createOffer', error); },
+      function(error) { failure('createOffer', error); },
       constraints);
 }
 
@@ -76,17 +83,45 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
   var sessionDescription = new RTCSessionDescription(offer);
   peerConnection_().setRemoteDescription(
       sessionDescription,
-      function() { success_('setRemoteDescription'); },
-      function(error) { failure_('setRemoteDescription', error); });
+      function() { success('setRemoteDescription'); },
+      function(error) { failure('setRemoteDescription', error); });
 
   peerConnection_().createAnswer(
       function(answer) {
-        success_('createAnswer');
+        success('createAnswer');
         setLocalDescription(peerConnection, answer);
         returnToTest('ok-' + JSON.stringify(answer));
       },
-      function(error) { failure_('createAnswer', error); },
+      function(error) { failure('createAnswer', error); },
       constraints);
+}
+
+/**
+ * Verifies that the specified codec is the default video codec, e.g. the first
+ * one in the list on the 'm=video' SDP answer line. If this is not the case,
+ * |failure| occurs.
+ *
+ * @param {!string} sessionDescJson A JSON-encoded session description.
+ * @param {!string} expectedVideoCodec The case-sensitive codec name, e.g.
+ *     'VP8' or 'H264'.
+ */
+function verifyDefaultVideoCodec(sessionDescJson, expectedVideoCodec) {
+  var sessionDesc = parseJson_(sessionDescJson);
+  if (!sessionDesc.type) {
+    failure('verifyDefaultVideoCodec',
+             'Invalid session description: ' + sessionDescJson);
+  }
+  var defaultVideoCodec = getSdpDefaultVideoCodec(sessionDesc.sdp);
+  if (defaultVideoCodec === null) {
+    failure('verifyDefaultVideoCodec',
+             'Could not determine default video codec.');
+  }
+  if (expectedVideoCodec !== defaultVideoCodec) {
+    failure('verifyDefaultVideoCodec',
+             'Expected default video codec ' + expectedVideoCodec +
+             ', got ' + defaultVideoCodec + '.');
+  }
+  returnToTest('ok-verified');
 }
 
 /**
@@ -109,10 +144,10 @@ function receiveAnswerFromPeer(sessionDescJson) {
   peerConnection_().setRemoteDescription(
       sessionDescription,
       function() {
-        success_('setRemoteDescription');
+        success('setRemoteDescription');
         returnToTest('ok-accepted-answer');
       },
-      function(error) { failure_('setRemoteDescription', error); });
+      function(error) { failure('setRemoteDescription', error); });
 }
 
 /**
@@ -194,8 +229,8 @@ function receiveIceCandidates(iceCandidatesJson) {
           iceCandidatesJson);
 
     peerConnection_().addIceCandidate(new RTCIceCandidate(iceCandidate,
-        function() { success_('addIceCandidate'); },
-        function(error) { failure_('addIceCandidate', error); }
+        function() { success('addIceCandidate'); },
+        function(error) { failure('addIceCandidate', error); }
     ));
   });
 
@@ -248,16 +283,6 @@ function peerConnection_() {
 }
 
 /** @private */
-function success_(method) {
-  debug(method + '(): success.');
-}
-
-/** @private */
-function failure_(method, error) {
-  throw failTest(method + '() failed: ' + JSON.stringify(error));
-}
-
-/** @private */
 function iceCallback_(event) {
   if (event.candidate)
     gIceCandidates.push(event.candidate);
@@ -271,8 +296,8 @@ function setLocalDescription(peerConnection, sessionDescription) {
 
   peerConnection.setLocalDescription(
     sessionDescription,
-    function() { success_('setLocalDescription'); },
-    function(error) { failure_('setLocalDescription', error); });
+    function() { success('setLocalDescription'); },
+    function(error) { failure('setLocalDescription', error); });
 }
 
 /** @private */

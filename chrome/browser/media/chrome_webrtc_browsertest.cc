@@ -40,35 +40,44 @@ class WebRtcBrowserTest : public WebRtcTestBase {
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
+
+  void RunsAudioVideoWebRTCCallInTwoTabs(std::string video_codec) {
+    if (OnWinXp()) return;
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    content::WebContents* left_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+    content::WebContents* right_tab =
+        OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+
+    SetupPeerconnectionWithLocalStream(left_tab);
+    SetupPeerconnectionWithLocalStream(right_tab);
+
+    NegotiateCall(left_tab, right_tab, video_codec);
+
+    StartDetectingVideo(left_tab, "remote-view");
+    StartDetectingVideo(right_tab, "remote-view");
+
+#if !defined(OS_MACOSX)
+    // Video is choppy on Mac OS X. http://crbug.com/443542.
+    WaitForVideoToPlay(left_tab);
+    WaitForVideoToPlay(right_tab);
+#endif
+
+    HangUp(left_tab);
+    HangUp(right_tab);
+  }
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       RunsAudioVideoWebRTCCallInTwoTabs) {
-  if (OnWinXp()) return;
+                       RunsAudioVideoWebRTCCallInTwoTabsVP8) {
+  RunsAudioVideoWebRTCCallInTwoTabs("VP8");
+}
 
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  content::WebContents* left_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-  content::WebContents* right_tab =
-      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
-
-  SetupPeerconnectionWithLocalStream(left_tab);
-  SetupPeerconnectionWithLocalStream(right_tab);
-
-  NegotiateCall(left_tab, right_tab);
-
-  StartDetectingVideo(left_tab, "remote-view");
-  StartDetectingVideo(right_tab, "remote-view");
-
-#if !defined(OS_MACOSX)
-  // Video is choppy on Mac OS X. http://crbug.com/443542.
-  WaitForVideoToPlay(left_tab);
-  WaitForVideoToPlay(right_tab);
-#endif
-
-  HangUp(left_tab);
-  HangUp(right_tab);
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsVP9) {
+  RunsAudioVideoWebRTCCallInTwoTabs("VP9");
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest, TestWebAudioMediaStream) {

@@ -104,8 +104,12 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // respective tabs. Before calling this, you must have prepared peer
   // connections in both tabs and configured them as you like (for instance by
   // calling SetupPeerconnectionWithLocalStream).
+  // If |video_codec| is a non-empty string, the SDP offer is modified (and SDP
+  // answer verified) so that the specified video codec (case-sensitive name) is
+  // used during the call instead of the default one.
   void NegotiateCall(content::WebContents* from_tab,
-                     content::WebContents* to_tab) const;
+                     content::WebContents* to_tab,
+                     const std::string& video_codec = "") const;
 
   // Hangs up a negotiated call.
   void HangUp(content::WebContents* from_tab) const;
@@ -139,9 +143,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void CloseInfoBarInTab(content::WebContents* tab_contents,
                          infobars::InfoBar* infobar) const;
 
-  std::string CreateLocalOffer(content::WebContents* from_tab) const;
+  std::string CreateLocalOffer(content::WebContents* from_tab,
+                               std::string default_video_codec = "") const;
   std::string CreateAnswer(std::string local_offer,
-                           content::WebContents* to_tab) const;
+                           content::WebContents* to_tab,
+                           std::string default_video_codec = "") const;
   void ReceiveAnswer(const std::string& answer,
                      content::WebContents* from_tab) const;
   void GatherAndSendIceCandidates(content::WebContents* from_tab,
