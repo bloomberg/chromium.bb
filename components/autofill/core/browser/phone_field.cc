@@ -92,6 +92,11 @@ const PhoneField::Parser PhoneField::kPhoneFieldGrammars[] = {
     {REGEX_PREFIX_SEPARATOR, FIELD_PHONE, 0},
     {REGEX_SUFFIX_SEPARATOR, FIELD_SUFFIX, 0},
     {REGEX_SEPARATOR, FIELD_NONE, 0},
+    // Area code: <ac>:3 Prefix: <prefix>:3 Suffix: <suffix>:4 (Ext: <ext>)?
+    {REGEX_AREA, FIELD_AREA_CODE, 3},
+    {REGEX_PREFIX, FIELD_PHONE, 3},
+    {REGEX_SUFFIX, FIELD_SUFFIX, 4},
+    {REGEX_SEPARATOR, FIELD_NONE, 0},
     // Phone: <ac> Prefix: <phone> Suffix: <suffix> (Ext: <ext>)?
     {REGEX_PHONE, FIELD_AREA_CODE, 0},
     {REGEX_PREFIX, FIELD_PHONE, 0},
