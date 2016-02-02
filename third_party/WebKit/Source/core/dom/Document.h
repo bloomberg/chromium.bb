@@ -431,7 +431,11 @@ public:
     void setupFontBuilder(ComputedStyle& documentStyle);
 
     bool needsLayoutTreeUpdate() const;
+    // Update ComputedStyles and attach LayoutObjects if necessary, but don't
+    // lay out.
     void updateLayoutTreeIfNeeded() { updateLayoutTree(NoChange); }
+    // Same as updateLayoutTreeIfNeeded except ignoring pending stylesheets.
+    void updateLayoutTreeIgnorePendingStylesheets();
     void updateLayoutTreeForNodeIfNeeded(Node*);
     void updateLayout();
     void layoutUpdated();
