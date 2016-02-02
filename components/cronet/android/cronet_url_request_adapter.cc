@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/android/url_request_error.h"
 #include "jni/CronetUrlRequest_jni.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
@@ -290,7 +291,7 @@ void CronetURLRequestAdapter::OnSSLCertificateError(
   int net_error = net::MapCertStatusToNetError(ssl_info.cert_status);
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
-      env, owner_.obj(), net_error,
+      env, owner_.obj(), NetErrorToUrlRequestError(net_error), net_error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
 }
@@ -412,7 +413,7 @@ bool CronetURLRequestAdapter::MaybeReportError(net::URLRequest* request) const {
           << " on chromium request: " << initial_url_.possibly_invalid_spec();
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetUrlRequest_onError(
-      env, owner_.obj(), net_error,
+      env, owner_.obj(), NetErrorToUrlRequestError(net_error), net_error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
   return true;

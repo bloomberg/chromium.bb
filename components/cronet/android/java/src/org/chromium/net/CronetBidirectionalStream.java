@@ -428,12 +428,13 @@ class CronetBidirectionalStream extends BidirectionalStream {
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onError(final int nativeError, final String errorString, long receivedBytesCount) {
+    private void onError(
+            int errorCode, int nativeError, String errorString, long receivedBytesCount) {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedBytesCount(receivedBytesCount);
         }
         failWithException(new CronetException(
-                "Exception in BidirectionalStream: " + errorString, nativeError));
+                "Exception in BidirectionalStream: " + errorString, errorCode, nativeError));
     }
 
     /**

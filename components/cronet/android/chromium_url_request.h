@@ -24,7 +24,7 @@ enum UrlRequestPriority {
   REQUEST_PRIORITY_HIGHEST = 4,
 };
 
-// Define request priority values like REQUEST_ERROR_SUCCESS in a
+// Define request error values like REQUEST_ERROR_SUCCESS in a
 // way that ensures they're always the same than their Java counterpart.
 //
 // A Java counterpart will be generated for this enum.

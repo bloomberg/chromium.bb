@@ -29,7 +29,7 @@ generate_jni("cronet_jni_headers") {
   jni_package = "cronet"
 }
 
-java_cpp_enum("cronet_url_request_java") {
+java_cpp_enum("chromium_url_request_java") {
   sources = [
     "chromium_url_request.h",
   ]
@@ -45,6 +45,18 @@ java_cpp_enum("network_quality_observations_java") {
   sources = [
     "//net/base/network_quality_estimator.h",
   ]
+}
+
+java_cpp_enum("url_request_error_java") {
+  sources = [
+    "url_request_error.h",
+  ]
+}
+
+# This target is a jar file containing classes that Cronet's javadocs
+# may reference but are not included in the javadocs themselves.
+android_library("cronet_javadoc_classpath") {
+  srcjar_deps = [ ":url_request_error_java" ]
 }
 
 java_cpp_enum("http_cache_type_java") {
@@ -101,8 +113,8 @@ template("cronet_static_tmpl") {
     defines = []
 
     deps = [
+      ":chromium_url_request_java",
       ":cronet_jni_headers",
-      ":cronet_url_request_java",
       ":cronet_version_header",
       ":features",
       "//base",
@@ -132,6 +144,8 @@ template("cronet_static_tmpl") {
       "//components/cronet/android/url_request_adapter.h",
       "//components/cronet/android/url_request_context_adapter.cc",
       "//components/cronet/android/url_request_context_adapter.h",
+      "//components/cronet/android/url_request_error.cc",
+      "//components/cronet/android/url_request_error.h",
       "//components/cronet/android/wrapped_channel_upload_element_reader.cc",
       "//components/cronet/android/wrapped_channel_upload_element_reader.h",
       "//components/cronet/histogram_manager.cc",
@@ -238,6 +252,7 @@ android_library("cronet_api") {
   srcjar_deps = [
     ":cronet_version_srcjar",
     ":http_cache_type_java",
+    ":url_request_error_java",
     ":load_states_list",
     ":network_quality_observations_java",
   ]
@@ -275,7 +290,7 @@ android_library("cronet_java") {
   ]
 
   srcjar_deps = [
-    ":cronet_url_request_java",
+    ":chromium_url_request_java",
     ":net_request_priority_java",
   ]
 
@@ -750,7 +765,6 @@ action("generate_javadoc") {
   outputs = [
     depfile,
   ]
-
   args = [
     "--output-dir",
     rebase_path(_package_dir, root_build_dir),
@@ -762,6 +776,12 @@ action("generate_javadoc") {
     rebase_path("//components/cronet/README.md", root_build_dir),
     "--depfile",
     rebase_path(depfile, root_build_dir),
+    "--lib-java-dir",
+    rebase_path("$root_build_dir/lib.java/components/cronet/android",
+                root_build_dir),
+  ]
+  deps = [
+    ":cronet_javadoc_classpath",
   ]
 }
 

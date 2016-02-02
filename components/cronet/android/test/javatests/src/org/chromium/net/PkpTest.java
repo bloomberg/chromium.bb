@@ -317,7 +317,7 @@ public class PkpTest extends CronetTestBase {
      */
     private void assertErrorResponse() {
         assertNotNull("Expected an error", mListener.mError);
-        int errorCode = mListener.mError.netError();
+        int errorCode = mListener.mError.getCronetInternalErrorCode();
         Set<Integer> expectedErrors = new HashSet<>();
         expectedErrors.add(NetError.ERR_QUIC_PROTOCOL_ERROR);
         expectedErrors.add(NetError.ERR_CONNECTION_REFUSED);
@@ -332,7 +332,8 @@ public class PkpTest extends CronetTestBase {
      */
     private void assertSuccessfulResponse() {
         if (mListener.mError != null) {
-            fail("Did not expect an error but got error code " + mListener.mError.mNetError);
+            fail("Did not expect an error but got error code "
+                    + mListener.mError.getCronetInternalErrorCode());
         }
         assertNotNull("Expected non-null response from the server", mListener.mResponseInfo);
         assertEquals(200, mListener.mResponseInfo.getHttpStatusCode());

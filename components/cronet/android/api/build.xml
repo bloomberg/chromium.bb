@@ -7,7 +7,7 @@
                notree="yes"
                nodeprecated="yes"
                linkoffline="https://developer.android.com/reference ."
-               bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-23/android.jar:../../../../third_party/android_tools/sdk/extras/android/support/annotations/android-support-annotations.jar"
+               bootclasspath="../../../../third_party/android_tools/sdk/platforms/android-23/android.jar:../../../../third_party/android_tools/sdk/extras/android/support/annotations/android-support-annotations.jar:${lib.java.dir}/cronet_javadoc_classpath.jar"
                use="true"
                >
         <fileset dir="${source.dir}" defaultexcludes="yes">

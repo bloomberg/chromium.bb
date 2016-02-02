@@ -9,6 +9,7 @@ import android.os.StrictMode;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -231,6 +232,15 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         assertFalse(mOnErrorCalled);
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
+        if (mFailureType == FailureType.THROW_SYNC) {
+            assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, error.getErrorCode());
+            assertEquals(0, error.getCronetInternalErrorCode());
+            assertEquals("UrlRequestListener method has thrown an exception", error.getMessage());
+            assertNotNull(error.getCause());
+            assertTrue(error.getCause() instanceof IllegalStateException);
+            assertEquals("Listener Exception.", error.getCause().getMessage());
+            assertFalse(error.immediatelyRetryable());
+        }
 
         mOnErrorCalled = true;
         mError = error;

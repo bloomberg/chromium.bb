@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
+#include "components/cronet/android/url_request_error.h"
 #include "jni/CronetBidirectionalStream_jni.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -273,7 +274,7 @@ void CronetBidirectionalStreamAdapter::OnFailed(int error) {
   DCHECK(context_->IsOnNetworkThread());
   JNIEnv* env = base::android::AttachCurrentThread();
   cronet::Java_CronetBidirectionalStream_onError(
-      env, owner_.obj(), error,
+      env, owner_.obj(), NetErrorToUrlRequestError(error), error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(error)).obj(),
       bidi_stream_->GetTotalReceivedBytes());
 }

@@ -506,7 +506,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                         FailurePhase.START, arbitraryNetError));
         assertNull(callback.mResponseInfo);
         assertNotNull(callback.mError);
-        assertEquals(arbitraryNetError, callback.mError.netError());
+        assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
         assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
@@ -523,7 +523,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals(0, callback.mResponseInfo.getReceivedBytesCount());
         assertNotNull(callback.mError);
-        assertEquals(arbitraryNetError, callback.mError.netError());
+        assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
         assertEquals(callback.mResponseStep, ResponseStep.ON_RESPONSE_STARTED);
@@ -540,7 +540,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals(0, callback.mResponseInfo.getReceivedBytesCount());
         assertNotNull(callback.mError);
-        assertEquals(arbitraryNetError, callback.mError.netError());
+        assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
         assertTrue(callback.mOnErrorCalled);
         assertEquals(callback.mResponseStep, ResponseStep.ON_RESPONSE_STARTED);
@@ -575,7 +575,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertNull(callback.mResponseInfo);
         assertNotNull(callback.mError);
         assertTrue(callback.mOnErrorCalled);
-        assertEquals(-201, callback.mError.netError());
+        assertEquals(-201, callback.mError.getCronetInternalErrorCode());
         assertEquals("Exception in CronetUrlRequest: net::ERR_CERT_DATE_INVALID",
                 callback.mError.getMessage());
         assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
@@ -1592,7 +1592,48 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals("", callback.mResponseAsString);
     }
 
+    /*
+     * Verifies error codes are passed through correctly.
+     */
     @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
+    public void testErrorCodes() throws Exception {
+        checkSpecificErrorCode(
+                -105, UrlRequestException.ERROR_HOSTNAME_NOT_RESOLVED, "NAME_NOT_RESOLVED", false);
+        checkSpecificErrorCode(-106, UrlRequestException.ERROR_INTERNET_DISCONNECTED,
+                "INTERNET_DISCONNECTED", false);
+        checkSpecificErrorCode(
+                -21, UrlRequestException.ERROR_NETWORK_CHANGED, "NETWORK_CHANGED", true);
+        checkSpecificErrorCode(
+                -100, UrlRequestException.ERROR_CONNECTION_CLOSED, "CONNECTION_CLOSED", true);
+        checkSpecificErrorCode(
+                -102, UrlRequestException.ERROR_CONNECTION_REFUSED, "CONNECTION_REFUSED", false);
+        checkSpecificErrorCode(
+                -101, UrlRequestException.ERROR_CONNECTION_RESET, "CONNECTION_RESET", true);
+        checkSpecificErrorCode(
+                -118, UrlRequestException.ERROR_CONNECTION_TIMED_OUT, "CONNECTION_TIMED_OUT", true);
+        checkSpecificErrorCode(-7, UrlRequestException.ERROR_TIMED_OUT, "TIMED_OUT", true);
+        checkSpecificErrorCode(
+                -109, UrlRequestException.ERROR_ADDRESS_UNREACHABLE, "ADDRESS_UNREACHABLE", false);
+        checkSpecificErrorCode(-2, UrlRequestException.ERROR_OTHER, "FAILED", false);
+    }
+
+    private void checkSpecificErrorCode(int netError, int errorCode, String name,
+            boolean immediatelyRetryable) throws Exception {
+        TestUrlRequestCallback callback = startAndWaitForComplete(
+                MockUrlRequestJobFactory.getMockUrlWithFailure(FailurePhase.START, netError));
+        assertNull(callback.mResponseInfo);
+        assertNotNull(callback.mError);
+        assertEquals(netError, callback.mError.getCronetInternalErrorCode());
+        assertEquals(errorCode, callback.mError.getErrorCode());
+        assertEquals(
+                "Exception in CronetUrlRequest: net::ERR_" + name, callback.mError.getMessage());
+        assertEquals(0, callback.mRedirectCount);
+        assertTrue(callback.mOnErrorCalled);
+        assertEquals(callback.mResponseStep, ResponseStep.NOTHING);
+    }
+
     // Returns the contents of byteBuffer, from its position() to its limit(),
     // as a String. Does not modify byteBuffer's position().
     private String bufferContentsToString(ByteBuffer byteBuffer, int start, int end) {

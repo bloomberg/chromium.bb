@@ -27,7 +27,7 @@
           'includes': [ '../build/jni_generator.gypi' ],
         },
         {
-          'target_name': 'cronet_url_request_java',
+          'target_name': 'chromium_url_request_java',
           'type': 'none',
           'variables': {
             'source_file': 'cronet/android/chromium_url_request.h',
@@ -49,6 +49,31 @@
             'source_file': '../net/base/network_quality_estimator.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          'target_name': 'url_request_error_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'cronet/android/url_request_error.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # This target is a jar file containing classes that Cronet's javadocs
+          # may reference but are not included in the javadocs themselves.
+          'target_name': 'cronet_javadoc_classpath',
+          'type': 'none',
+          'variables': {
+            # Work around GYP requirement that java targets specify java_in_dir
+            # variable that contains at least one java file.
+            'java_in_dir': 'cronet/android/api',
+            'java_in_dir_suffix': '/src_dummy',
+            'run_findbugs': 1,
+          },
+          'dependencies': [
+            'url_request_error_java',
+          ],
+          'includes': [ '../build/java.gypi' ],
         },
         {
           'target_name': 'http_cache_type_java',
@@ -225,6 +250,7 @@
           'type': 'none',
           'dependencies': [
             'http_cache_type_java',
+            'url_request_error_java',
             'cronet_version',
             'load_states_list',
             'network_quality_observations_java',
@@ -243,7 +269,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             'cronet_api',
-            'cronet_url_request_java',
+            'chromium_url_request_java',
             'libcronet',
             'net_request_priority_java',
             'network_quality_observations_java',
@@ -533,6 +559,7 @@
             'libcronet',
             'cronet_java',
             'cronet_api',
+            'cronet_javadoc_classpath',
             '../net/net.gyp:net_unittests_apk',
           ],
           'variables': {
@@ -657,6 +684,7 @@
                 '--input-dir=cronet/',
                 '--overview-file=<(package_dir)/README.md.html',
                 '--readme-file=cronet/README.md',
+                '--lib-java-dir=<(lib_java_dir)',
               ],
               'message': 'Generating Javadoc',
             },

@@ -453,8 +453,8 @@ final class CronetUrlRequest implements UrlRequest {
      * Only called on the Executor.
      */
     private void onListenerException(Exception e) {
-        UrlRequestException requestError = new UrlRequestException(
-                "CalledByNative method has thrown an exception", e);
+        UrlRequestException requestError =
+                new UrlRequestException("UrlRequestListener method has thrown an exception", e);
         Log.e(CronetUrlRequestContext.LOG_TAG,
                 "Exception in CalledByNative method", e);
         // Do not call into listener if request is finished.
@@ -658,20 +658,22 @@ final class CronetUrlRequest implements UrlRequest {
     /**
      * Called when error has occured, no callbacks will be called afterwards.
      *
+     * @param errorCode error code from {@link UrlRequestException.ERROR_LISTENER_EXCEPTION_THROWN
+     *         UrlRequestException.ERROR_*}.
      * @param nativeError native net error code.
      * @param errorString textual representation of the error code.
      * @param receivedBytesCount number of bytes received.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onError(final int nativeError, final String errorString, long receivedBytesCount) {
+    private void onError(
+            int errorCode, int nativeError, String errorString, long receivedBytesCount) {
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedBytesCount(
                     mReceivedBytesCountFromRedirects + receivedBytesCount);
         }
         UrlRequestException requestError = new UrlRequestException(
-                "Exception in CronetUrlRequest: " + errorString,
-                nativeError);
+                "Exception in CronetUrlRequest: " + errorString, errorCode, nativeError);
         failWithException(requestError);
     }
 
