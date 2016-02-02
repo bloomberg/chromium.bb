@@ -1057,8 +1057,6 @@ crbug.com/548695 fast/forms/datalist/update-range-with-datalist.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
 crbug.com/492511 [ Mac ] fast/text/international/arabic-justify.html [ Failure ]
 
-crbug.com/582845 fast/borders/border-radius-percent.html [ NeedsRebaseline ]
-
 # Ref tests that fail due to differences in inline box structure, even though they contain the same text.
 # This happens because inline box layout uses fixed-point measurements, which can cause rounding differences.
 crbug.com/321237 [ Mac ] fast/dom/shadow/shadow-insertion-point-rendering-multiple-shadow-roots.html [ Failure ]
