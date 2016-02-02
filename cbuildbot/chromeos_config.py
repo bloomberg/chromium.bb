@@ -584,6 +584,7 @@ _waterfall_config_map = {
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
         'lakitu_next-paladin',
+        'veyron_minnie-cheets-paladin',
 
         # Experimental Canaries (Group)
         'storm-release-group',

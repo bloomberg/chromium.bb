@@ -21907,6 +21907,7 @@
     },
     "veyron_minnie-cheets-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "veyron_minnie-cheets"
         ],
