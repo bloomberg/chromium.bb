@@ -625,7 +625,7 @@ PositionWithAffinity LayoutText::positionForPoint(const LayoutPoint& point)
             if (pointBlockDirection < bottom || (blocksAreFlipped && pointBlockDirection == bottom)) {
                 ShouldAffinityBeDownstream shouldAffinityBeDownstream;
                 if (lineDirectionPointFitsInBox(pointLineDirection, box, shouldAffinityBeDownstream))
-                    return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(box, box->offsetForPosition(pointLineDirection.toFloat()), shouldAffinityBeDownstream);
+                    return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(box, box->offsetForPosition(pointLineDirection), shouldAffinityBeDownstream);
             }
         }
         lastBox = box;
@@ -634,7 +634,7 @@ PositionWithAffinity LayoutText::positionForPoint(const LayoutPoint& point)
     if (lastBox) {
         ShouldAffinityBeDownstream shouldAffinityBeDownstream;
         lineDirectionPointFitsInBox(pointLineDirection, lastBox, shouldAffinityBeDownstream);
-        return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(lastBox, lastBox->offsetForPosition(pointLineDirection.toFloat()) + lastBox->start(), shouldAffinityBeDownstream);
+        return createPositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(lastBox, lastBox->offsetForPosition(pointLineDirection) + lastBox->start(), shouldAffinityBeDownstream);
     }
     return createPositionWithAffinity(0);
 }
@@ -778,8 +778,8 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
     floatMinWidth = m_minWidth;
     floatMaxWidth = m_maxWidth;
 
-    firstLineMinWidth = m_firstLineMinWidth;
-    lastLineMinWidth = m_lastLineLineMinWidth;
+    firstLineMinWidth = LayoutUnit(m_firstLineMinWidth);
+    lastLineMinWidth = LayoutUnit(m_lastLineLineMinWidth);
 
     hasBreakableChar = m_hasBreakableChar;
     hasBreak = m_hasBreak;
@@ -807,15 +807,15 @@ void LayoutText::trimmedPrefWidths(LayoutUnit leadWidthLayoutUnit,
     if (hasBreak) {
         const Font& f = style()->font(); // FIXME: This ignores first-line.
         bool firstLine = true;
-        firstLineMaxWidth = floatMaxWidth;
-        lastLineMaxWidth = floatMaxWidth;
+        firstLineMaxWidth = LayoutUnit(floatMaxWidth);
+        lastLineMaxWidth = LayoutUnit(floatMaxWidth);
         for (int i = 0; i < len; i++) {
             int linelen = 0;
             while (i + linelen < len && text[i + linelen] != newlineCharacter)
                 linelen++;
 
             if (linelen) {
-                lastLineMaxWidth = widthFromFont(f, i, linelen, leadWidth, lastLineMaxWidth.toFloat(), direction, nullptr, nullptr);
+                lastLineMaxWidth = LayoutUnit(widthFromFont(f, i, linelen, leadWidth, lastLineMaxWidth.toFloat(), direction, nullptr, nullptr));
                 if (firstLine) {
                     firstLine = false;
                     leadWidth = 0.f;

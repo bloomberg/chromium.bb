@@ -862,7 +862,7 @@ void LayoutMultiColumnFlowThread::computePreferredLogicalWidths()
     if (multicolStyle->hasAutoColumnWidth()) {
         m_minPreferredLogicalWidth = m_minPreferredLogicalWidth * columnCount + gapExtra;
     } else {
-        columnWidth = multicolStyle->columnWidth();
+        columnWidth = LayoutUnit(multicolStyle->columnWidth());
         m_minPreferredLogicalWidth = std::min(m_minPreferredLogicalWidth, columnWidth);
     }
     // Note that if column-count is auto here, we should resolve it to calculate the maximum

@@ -391,14 +391,14 @@ LayoutUnit LayoutTextControlSingleLine::scrollHeight() const
 LayoutUnit LayoutTextControlSingleLine::scrollLeft() const
 {
     if (innerEditorElement())
-        return innerEditorElement()->scrollLeft();
+        return LayoutUnit(innerEditorElement()->scrollLeft());
     return LayoutBlockFlow::scrollLeft();
 }
 
 LayoutUnit LayoutTextControlSingleLine::scrollTop() const
 {
     if (innerEditorElement())
-        return innerEditorElement()->scrollTop();
+        return LayoutUnit(innerEditorElement()->scrollTop());
     return LayoutBlockFlow::scrollTop();
 }
 

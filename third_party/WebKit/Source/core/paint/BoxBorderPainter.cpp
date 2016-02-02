@@ -971,10 +971,10 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
 
         // Paint inner only
         GraphicsContextStateSaver stateSaver(graphicsContext);
-        LayoutUnit topWidth = m_edges[BSTop].usedWidth() / 2;
-        LayoutUnit bottomWidth = m_edges[BSBottom].usedWidth() / 2;
-        LayoutUnit leftWidth = m_edges[BSLeft].usedWidth() / 2;
-        LayoutUnit rightWidth = m_edges[BSRight].usedWidth() / 2;
+        LayoutUnit topWidth(m_edges[BSTop].usedWidth() / 2);
+        LayoutUnit bottomWidth(m_edges[BSBottom].usedWidth() / 2);
+        LayoutUnit leftWidth(m_edges[BSLeft].usedWidth() / 2);
+        LayoutUnit rightWidth(m_edges[BSRight].usedWidth() / 2);
 
         FloatRoundedRect clipRect = m_style.getRoundedInnerBorderFor(borderRect,
             LayoutRectOutsets(-topWidth, -rightWidth, -bottomWidth, -leftWidth),

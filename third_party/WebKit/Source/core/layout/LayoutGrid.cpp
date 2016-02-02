@@ -559,7 +559,7 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         GridTrackSize trackSize = gridTrackSize(direction, trackIndex);
 
         LayoutUnit oldBaseSize = tracks[trackIndex].baseSize();
-        LayoutUnit baseSize = std::max<LayoutUnit>(oldBaseSize, flexFraction * trackSize.maxTrackBreadth().flex());
+        LayoutUnit baseSize = std::max(oldBaseSize, LayoutUnit(flexFraction * trackSize.maxTrackBreadth().flex()));
         if (LayoutUnit increment = baseSize - oldBaseSize) {
             tracks[trackIndex].setBaseSize(baseSize);
             freeSpace -= increment;
@@ -1719,7 +1719,7 @@ void LayoutGrid::applyStretchAlignmentToChildIfNeeded(LayoutBox& child)
             child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (desiredLogicalHeight != child.logicalHeight()) {
                 // TODO (lajava): Can avoid laying out here in some cases. See https://webkit.org/b/87905.
-                child.setLogicalHeight(0);
+                child.setLogicalHeight(LayoutUnit());
                 child.setNeedsLayout(LayoutInvalidationReason::GridChanged);
             }
         }

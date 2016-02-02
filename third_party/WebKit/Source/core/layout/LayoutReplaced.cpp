@@ -265,18 +265,18 @@ void LayoutReplaced::computePositionedLogicalWidth(LogicalExtentComputedValues& 
         logicalRightValue = valueForLength(logicalRight, containerLogicalWidth);
 
         LayoutUnit difference = availableSpace - (logicalLeftValue + logicalRightValue);
-        if (difference > 0) {
+        if (difference > LayoutUnit()) {
             marginLogicalLeftAlias = difference / 2; // split the difference
             marginLogicalRightAlias = difference - marginLogicalLeftAlias; // account for odd valued differences
         } else {
             // Use the containing block's direction rather than the parent block's
             // per CSS 2.1 reference test abspos-replaced-width-margin-000.
             if (containerDirection == LTR) {
-                marginLogicalLeftAlias = 0;
+                marginLogicalLeftAlias = LayoutUnit();
                 marginLogicalRightAlias = difference; // will be negative
             } else {
                 marginLogicalLeftAlias = difference; // will be negative
-                marginLogicalRightAlias = 0;
+                marginLogicalRightAlias = LayoutUnit();
             }
         }
 
@@ -559,7 +559,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
 
         // If 'height' and 'width' both have computed values of 'auto' and the element also has an intrinsic width, then that intrinsic width is the used value of 'width'.
         if (computedHeightIsAuto && hasIntrinsicWidth)
-            return computeReplacedLogicalWidthRespectingMinMaxWidth(constrainedSize.width(), shouldComputePreferred);
+            return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(constrainedSize.width()), shouldComputePreferred);
 
         bool hasIntrinsicHeight = constrainedSize.height() > 0;
         if (intrinsicRatio) {
@@ -568,7 +568,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
             // of 'width' is: (used height) * (intrinsic ratio)
             if (intrinsicRatio && ((computedHeightIsAuto && !hasIntrinsicWidth && hasIntrinsicHeight) || !computedHeightIsAuto)) {
                 LayoutUnit logicalHeight = computeReplacedLogicalHeight();
-                return computeReplacedLogicalWidthRespectingMinMaxWidth(logicalHeight * intrinsicRatio, shouldComputePreferred);
+                return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(logicalHeight * intrinsicRatio), shouldComputePreferred);
             }
 
             // If 'height' and 'width' both have computed values of 'auto' and the element has an intrinsic ratio but no intrinsic height or width, then the used value of
@@ -576,7 +576,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
             // the used value of 'width' is calculated from the constraint equation used for block-level, non-replaced elements in normal flow.
             if (computedHeightIsAuto && !hasIntrinsicWidth && !hasIntrinsicHeight) {
                 if (shouldComputePreferred == ComputePreferred)
-                    return computeReplacedLogicalWidthRespectingMinMaxWidth(0, ComputePreferred);
+                    return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(), ComputePreferred);
                 // The aforementioned 'constraint equation' used for block-level, non-replaced elements in normal flow:
                 // 'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width' + 'margin-right' = width of containing block
                 LayoutUnit logicalWidth = containingBlock()->availableLogicalWidth();
@@ -591,7 +591,7 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalWidth(ShouldComputePreferred sh
 
         // Otherwise, if 'width' has a computed value of 'auto', and the element has an intrinsic width, then that intrinsic width is the used value of 'width'.
         if (hasIntrinsicWidth)
-            return computeReplacedLogicalWidthRespectingMinMaxWidth(constrainedSize.width(), shouldComputePreferred);
+            return computeReplacedLogicalWidthRespectingMinMaxWidth(LayoutUnit(constrainedSize.width()), shouldComputePreferred);
 
         // Otherwise, if 'width' has a computed value of 'auto', but none of the conditions above are met, then the used value of 'width' becomes 300px. If 300px is too
         // wide to fit the device, UAs should use the width of the largest rectangle that has a 2:1 ratio and fits the device instead.
@@ -626,11 +626,11 @@ LayoutUnit LayoutReplaced::computeReplacedLogicalHeight() const
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic ratio then the used value of 'height' is:
     // (used width) / (intrinsic ratio)
     if (intrinsicRatio)
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(availableLogicalWidth() / intrinsicRatio);
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(availableLogicalWidth() / intrinsicRatio));
 
     // Otherwise, if 'height' has a computed value of 'auto', and the element has an intrinsic height, then that intrinsic height is the used value of 'height'.
     if (hasIntrinsicHeight)
-        return computeReplacedLogicalHeightRespectingMinMaxHeight(constrainedSize.height());
+        return computeReplacedLogicalHeightRespectingMinMaxHeight(LayoutUnit(constrainedSize.height()));
 
     // Otherwise, if 'height' has a computed value of 'auto', but none of the conditions above are met, then the used value of 'height' must be set to the height
     // of the largest rectangle that has a 2:1 ratio, has a height not greater than 150px, and has a width not greater than the device width.
@@ -656,7 +656,7 @@ void LayoutReplaced::computePreferredLogicalWidths()
 
     const ComputedStyle& styleToUse = styleRef();
     if (styleToUse.logicalWidth().hasPercent() || styleToUse.logicalMaxWidth().hasPercent())
-        m_minPreferredLogicalWidth = 0;
+        m_minPreferredLogicalWidth = LayoutUnit();
 
     if (styleToUse.logicalMinWidth().isFixed() && styleToUse.logicalMinWidth().value() > 0) {
         m_maxPreferredLogicalWidth = std::max(m_maxPreferredLogicalWidth, adjustContentBoxLogicalWidthForBoxSizing(styleToUse.logicalMinWidth().value()));

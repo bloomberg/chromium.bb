@@ -120,9 +120,9 @@ int InlineTextBox::baselinePosition(FontBaseline baselineType) const
 LayoutUnit InlineTextBox::lineHeight() const
 {
     if (!isText() || !lineLayoutItem().parent())
-        return 0;
+        return LayoutUnit();
     if (lineLayoutItem().isBR())
-        return toLayoutBR(lineLayoutItem())->lineHeight(isFirstLineStyle());
+        return LayoutUnit(toLayoutBR(lineLayoutItem())->lineHeight(isFirstLineStyle()));
     if (parent()->lineLayoutItem() == lineLayoutItem().parent())
         return parent()->lineHeight();
     return LineLayoutBoxModel(lineLayoutItem().parent()).lineHeight(isFirstLineStyle(), isHorizontal() ? HorizontalLine : VerticalLine, PositionOnContainingLine);
@@ -243,7 +243,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const
 
     LayoutUnit logicalWidth = r.width();
     if (r.x() > logicalRight())
-        logicalWidth  = 0;
+        logicalWidth = LayoutUnit();
     else if (r.maxX() > logicalRight())
         logicalWidth = logicalRight() - r.x();
 
@@ -312,7 +312,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
 {
     if (foundBox) {
         setTruncation(cFullTruncation);
-        return -1;
+        return LayoutUnit(-1);
     }
 
     // For LTR this is the left edge of the box, for RTL, the right edge in parent coordinates.
@@ -327,7 +327,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         // Too far.  Just set full truncation, but return -1 and let the ellipsis just be placed at the edge of the box.
         setTruncation(cFullTruncation);
         foundBox = true;
-        return -1;
+        return LayoutUnit(-1);
     }
 
     bool ltrEllipsisWithinBox = flowIsLTR && (ellipsisX < logicalRight());
@@ -372,7 +372,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         return logicalRight() - widthOfVisibleText - ellipsisWidth;
     }
     truncatedWidth += logicalWidth();
-    return -1;
+    return LayoutUnit(-1);
 }
 
 bool InlineTextBox::isLineBreak() const
@@ -472,7 +472,7 @@ LayoutUnit InlineTextBox::textPos() const
     // When computing the width of a text run, LayoutBlock::computeInlineDirectionPositionsForLine() doesn't include the actual offset
     // from the containing block edge in its measurement. textPos() should be consistent so the text are laid out in the same width.
     if (logicalLeft() == 0)
-        return 0;
+        return LayoutUnit();
     return logicalLeft() - root().logicalLeft();
 }
 

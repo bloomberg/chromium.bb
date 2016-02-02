@@ -224,7 +224,7 @@ void LayoutRubyRun::layout()
     if (!rt)
         return;
 
-    rt->setLogicalLeft(0);
+    rt->setLogicalLeft(LayoutUnit());
 
     // Place the LayoutRubyText such that its bottom is flush with the lineTop of the first line of the LayoutRubyBase.
     LayoutUnit lastLineRubyTextBottom = rt->logicalHeight();

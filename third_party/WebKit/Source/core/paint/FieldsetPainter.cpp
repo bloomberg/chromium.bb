@@ -84,13 +84,13 @@ void FieldsetPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& p
     // cases the legend is embedded in the right and bottom borders respectively.
     // https://bugs.webkit.org/show_bug.cgi?id=47236
     if (m_layoutFieldset.style()->isHorizontalWritingMode()) {
-        LayoutUnit yOff = (legend->location().y() > 0) ? LayoutUnit() : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
-        paintRect.expand(0, -yOff);
-        paintRect.move(0, yOff);
+        LayoutUnit yOff = (legend->location().y() > LayoutUnit()) ? LayoutUnit() : (legend->size().height() - m_layoutFieldset.borderTop()) / 2;
+        paintRect.expand(LayoutUnit(), -yOff);
+        paintRect.move(LayoutUnit(), yOff);
     } else {
-        LayoutUnit xOff = (legend->location().x() > 0) ? LayoutUnit() : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
-        paintRect.expand(-xOff, 0);
-        paintRect.move(xOff, 0);
+        LayoutUnit xOff = (legend->location().x() > LayoutUnit()) ? LayoutUnit() : (legend->size().width() - m_layoutFieldset.borderLeft()) / 2;
+        paintRect.expand(-xOff, LayoutUnit());
+        paintRect.move(xOff, LayoutUnit());
     }
 
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutFieldset, paintInfo.phase, paintRect, paintOffset);

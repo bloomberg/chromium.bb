@@ -435,7 +435,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     LayoutUnit hyphenWidth;
     if (toInlineTextBox(run->m_box)->hasHyphen())
-        hyphenWidth = layoutText->hyphenWidth(font, run->direction());
+        hyphenWidth = LayoutUnit(layoutText->hyphenWidth(font, run->direction()));
 
     float measuredWidth = 0;
     FloatRect glyphBounds;
@@ -500,7 +500,7 @@ static inline void setLogicalWidthForTextRun(RootInlineBox* lineBox, BidiRun* ru
 
     glyphOverflow.setFromBounds(glyphBounds, font.fontMetrics().floatAscent(), font.fontMetrics().floatDescent(), measuredWidth);
 
-    run->m_box->setLogicalWidth(measuredWidth + hyphenWidth);
+    run->m_box->setLogicalWidth(LayoutUnit(measuredWidth) + hyphenWidth);
     if (!fallbackFonts.isEmpty()) {
         ASSERT(run->m_box->isText());
         GlyphOverflowAndFallbackFontsMap::ValueType* it = textBoxDataMap.add(toInlineTextBox(run->m_box), std::make_pair(Vector<const SimpleFontData*>(), GlyphOverflow())).storedValue;
@@ -1988,7 +1988,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
             // accommodate our truncation string, and no replaced elements (images, tables) can overlap the ellipsis
             // space.
 
-            LayoutUnit width = indentText == IndentText ? firstLineEllipsisWidth : ellipsisWidth;
+            LayoutUnit width(indentText == IndentText ? firstLineEllipsisWidth : ellipsisWidth);
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
             if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
                 LayoutUnit totalLogicalWidth = curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);

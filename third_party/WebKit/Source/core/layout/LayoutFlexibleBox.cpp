@@ -664,8 +664,8 @@ LayoutUnit LayoutFlexibleBox::computeMainSizeFromAspectRatioUsing(const LayoutBo
     const LayoutSize& childIntrinsicSize = child.intrinsicSize();
     double ratio = childIntrinsicSize.width().toFloat() / childIntrinsicSize.height().toFloat();
     if (isHorizontalFlow())
-        return crossSize * ratio;
-    return crossSize / ratio;
+        return LayoutUnit(crossSize * ratio);
+    return LayoutUnit(crossSize / ratio);
 }
 
 void LayoutFlexibleBox::setFlowAwareLocationForChild(LayoutBox& child, const LayoutPoint& location)
@@ -1099,7 +1099,7 @@ bool LayoutFlexibleBox::resolveFlexibleLengths(FlexSign flexSign, const OrderedF
 
     double sumFlexFactors = (flexSign == PositiveFlexibility) ? totalFlexGrow : totalFlexShrink;
     if (sumFlexFactors > 0 && sumFlexFactors < 1) {
-        LayoutUnit fractional = availableFreeSpace * sumFlexFactors;
+        LayoutUnit fractional(availableFreeSpace * sumFlexFactors);
         if (fractional.abs() < remainingFreeSpace.abs())
             remainingFreeSpace = fractional;
     }

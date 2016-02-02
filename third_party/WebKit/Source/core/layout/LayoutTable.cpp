@@ -298,7 +298,7 @@ void LayoutTable::updateLogicalWidth()
 
     // Ensure we aren't smaller than our min preferred width. This MUST be done after 'max-width' as
     // we ignore it if it means we wouldn't accommodate our content.
-    setLogicalWidth(std::max(logicalWidth(), minPreferredLogicalWidth()).floor());
+    setLogicalWidth(LayoutUnit(std::max(logicalWidth(), minPreferredLogicalWidth()).floor()));
 
     // Ensure we aren't smaller than our min-width style.
     Length styleMinLogicalWidth = style()->logicalMinWidth();
@@ -348,7 +348,7 @@ LayoutUnit LayoutTable::convertStyleLogicalHeightToComputedHeight(const Length& 
         if (isHTMLTableElement(node()) || style()->boxSizing() == BORDER_BOX) {
             borders = borderAndPadding;
         }
-        computedLogicalHeight = styleLogicalHeight.value() - borders;
+        computedLogicalHeight = LayoutUnit(styleLogicalHeight.value() - borders);
     } else if (styleLogicalHeight.hasPercent()) {
         computedLogicalHeight = computePercentageLogicalHeight(styleLogicalHeight);
     } else if (styleLogicalHeight.isIntrinsic()) {

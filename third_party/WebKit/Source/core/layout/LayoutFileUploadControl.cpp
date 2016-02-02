@@ -114,7 +114,7 @@ void LayoutFileUploadControl::computePreferredLogicalWidths()
     const ComputedStyle& styleToUse = styleRef();
 
     if (styleToUse.width().isFixed() && styleToUse.width().value() > 0)
-        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(styleToUse.width().value());
+        m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit(styleToUse.width().value()));
     else
         computeIntrinsicLogicalWidths(m_minPreferredLogicalWidth, m_maxPreferredLogicalWidth);
 

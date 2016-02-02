@@ -184,7 +184,7 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& min
 {
     Length tableLogicalWidth = m_table->style()->logicalWidth();
     if (tableLogicalWidth.isFixed() && tableLogicalWidth.isPositive()) {
-        minWidth = maxWidth = max(minWidth, LayoutUnit(tableLogicalWidth.value() - m_table->bordersPaddingAndSpacingInRowDirection())).floor();
+        minWidth = maxWidth = LayoutUnit(max(minWidth, LayoutUnit(tableLogicalWidth.value() - m_table->bordersPaddingAndSpacingInRowDirection())).floor());
     }
 
     /*
@@ -200,7 +200,7 @@ void TableLayoutAlgorithmFixed::applyPreferredLogicalWidthQuirks(LayoutUnit& min
     // We can achieve this effect by making the maxwidth of fixed tables with percentage
     // widths be infinite.
     if (m_table->style()->logicalWidth().hasPercent() && maxWidth < tableMaxWidth)
-        maxWidth = tableMaxWidth;
+        maxWidth = LayoutUnit(tableMaxWidth);
 }
 
 void TableLayoutAlgorithmFixed::layout()

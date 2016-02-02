@@ -100,7 +100,7 @@ LayoutUnit SVGInlineTextBox::positionForOffset(int) const
 {
     // SVG doesn't use the offset <-> position selection system.
     ASSERT_NOT_REACHED();
-    return 0;
+    return LayoutUnit();
 }
 
 FloatRect SVGInlineTextBox::selectionRectForTextFragment(const SVGTextFragment& fragment, int startPosition, int endPosition, const ComputedStyle& style) const

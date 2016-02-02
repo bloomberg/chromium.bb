@@ -453,12 +453,12 @@ LayoutUnit LayoutBox::scrollHeight() const
 
 LayoutUnit LayoutBox::scrollLeft() const
 {
-    return hasOverflowClip() ? layer()->scrollableArea()->scrollXOffset() : 0;
+    return hasOverflowClip() ? LayoutUnit(layer()->scrollableArea()->scrollXOffset()) : LayoutUnit();
 }
 
 LayoutUnit LayoutBox::scrollTop() const
 {
-    return hasOverflowClip() ? layer()->scrollableArea()->scrollYOffset() : 0;
+    return hasOverflowClip() ? LayoutUnit(layer()->scrollableArea()->scrollYOffset()) : LayoutUnit();
 }
 
 int LayoutBox::pixelSnappedScrollWidth() const
@@ -614,17 +614,17 @@ LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(LayoutUnit logica
     const ComputedStyle& styleToUse = styleRef();
     if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
         if (styleToUse.logicalMaxHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
-            LayoutUnit availableLogicalHeight = logicalHeight / styleToUse.logicalHeight().value() * 100;
+            LayoutUnit availableLogicalHeight(logicalHeight / styleToUse.logicalHeight().value() * 100);
             logicalHeight = std::min(logicalHeight, valueForLength(styleToUse.logicalMaxHeight(), availableLogicalHeight));
         } else {
-            LayoutUnit maxHeight = computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), LayoutUnit(-1));
+            LayoutUnit maxHeight(computeContentLogicalHeight(MaxSize, styleToUse.logicalMaxHeight(), LayoutUnit(-1)));
             if (maxHeight != -1)
                 logicalHeight = std::min(logicalHeight, maxHeight);
         }
     }
 
     if (styleToUse.logicalMinHeight().hasPercent() && styleToUse.logicalHeight().hasPercent()) {
-        LayoutUnit availableLogicalHeight = logicalHeight / styleToUse.logicalHeight().value() * 100;
+        LayoutUnit availableLogicalHeight(logicalHeight / styleToUse.logicalHeight().value() * 100);
         logicalHeight = std::max(logicalHeight, valueForLength(styleToUse.logicalMinHeight(), availableLogicalHeight));
     } else {
         logicalHeight = std::max(logicalHeight, computeContentLogicalHeight(MinSize, styleToUse.logicalMinHeight(), intrinsicContentHeight));
@@ -1147,34 +1147,38 @@ void LayoutBox::clearExtraInlineAndBlockOffests()
         gExtraBlockOffsetMap->remove(this);
 }
 
-LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const
+LayoutUnit LayoutBox::adjustBorderBoxLogicalWidthForBoxSizing(float width) const
 {
     LayoutUnit bordersPlusPadding = borderAndPaddingLogicalWidth();
+    LayoutUnit result(width);
     if (style()->boxSizing() == CONTENT_BOX)
-        return width + bordersPlusPadding;
-    return std::max(width, bordersPlusPadding);
+        return result + bordersPlusPadding;
+    return std::max(result, bordersPlusPadding);
 }
 
-LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(LayoutUnit height) const
+LayoutUnit LayoutBox::adjustBorderBoxLogicalHeightForBoxSizing(float height) const
 {
     LayoutUnit bordersPlusPadding = borderAndPaddingLogicalHeight();
+    LayoutUnit result(height);
     if (style()->boxSizing() == CONTENT_BOX)
-        return height + bordersPlusPadding;
-    return std::max(height, bordersPlusPadding);
+        return result + bordersPlusPadding;
+    return std::max(result, bordersPlusPadding);
 }
 
-LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit width) const
+LayoutUnit LayoutBox::adjustContentBoxLogicalWidthForBoxSizing(float width) const
 {
+    LayoutUnit result(width);
     if (style()->boxSizing() == BORDER_BOX)
-        width -= borderAndPaddingLogicalWidth();
-    return std::max(LayoutUnit(), width);
+        result -= borderAndPaddingLogicalWidth();
+    return std::max(LayoutUnit(), result);
 }
 
-LayoutUnit LayoutBox::adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const
+LayoutUnit LayoutBox::adjustContentBoxLogicalHeightForBoxSizing(float height) const
 {
+    LayoutUnit result(height);
     if (style()->boxSizing() == BORDER_BOX)
-        height -= borderAndPaddingLogicalHeight();
-    return std::max(LayoutUnit(), height);
+        result -= borderAndPaddingLogicalHeight();
+    return std::max(LayoutUnit(), result);
 }
 
 // Hit Testing
@@ -1660,7 +1664,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     }
 
     // Use the content box logical height as specified by the style.
-    return cb->adjustContentBoxLogicalHeightForBoxSizing(logicalHeightLength.value());
+    return cb->adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit(logicalHeightLength.value()));
 }
 
 void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
@@ -2095,13 +2099,13 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         computedValues.m_margins.m_start = minimumValueForLength(styleToUse.marginStart(), containerLogicalWidth);
         computedValues.m_margins.m_end = minimumValueForLength(styleToUse.marginEnd(), containerLogicalWidth);
         if (treatAsReplaced)
-            computedValues.m_extent = std::max<LayoutUnit>(floatValueForLength(logicalWidthLength, 0) + borderAndPaddingLogicalWidth(), minPreferredLogicalWidth());
+            computedValues.m_extent = std::max(LayoutUnit(floatValueForLength(logicalWidthLength, 0)) + borderAndPaddingLogicalWidth(), minPreferredLogicalWidth());
         return;
     }
 
     // Width calculations
     if (treatAsReplaced) {
-        computedValues.m_extent = logicalWidthLength.value() + borderAndPaddingLogicalWidth();
+        computedValues.m_extent = LayoutUnit(logicalWidthLength.value()) + borderAndPaddingLogicalWidth();
     } else if (parent()->isLayoutGrid() && style()->logicalWidth().isAuto() && style()->logicalMinWidth().isAuto() && style()->overflowX() == OVISIBLE && containerLogicalWidth < minPreferredLogicalWidth()) {
         // TODO (lajava) Move this logic to the LayoutGrid class.
         // Implied minimum size of Grid items.
@@ -2188,7 +2192,7 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType, const Length&
 {
     ASSERT(widthType == MinSize || widthType == MainOrPreferredSize || !logicalWidth.isAuto());
     if (widthType == MinSize && logicalWidth.isAuto())
-        return adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit());
+        return adjustBorderBoxLogicalWidthForBoxSizing(0);
 
     if (!logicalWidth.isIntrinsicOrAuto()) {
         // FIXME: If the containing block flow is perpendicular to our direction we need to use the available logical height instead.
@@ -2469,7 +2473,7 @@ void LayoutBox::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logica
             // been given as an override.  Just use that.  The value has already been adjusted
             // for box-sizing.
             ASSERT(h.isFixed());
-            heightResult = h.value() + borderAndPaddingLogicalHeight();
+            heightResult = LayoutUnit(h.value()) + borderAndPaddingLogicalHeight();
         }
 
         computedValues.m_extent = heightResult;
@@ -2550,7 +2554,7 @@ LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(SizeType heig
         return computeIntrinsicLogicalContentHeightUsing(height, intrinsicContentHeight, borderAndPaddingLogicalHeight()) + scrollbarLogicalHeight();
     }
     if (height.isFixed())
-        return height.value();
+        return LayoutUnit(height.value());
     if (height.hasPercent())
         return computePercentageLogicalHeight(height);
     return LayoutUnit(-1);
@@ -2639,7 +2643,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
             includeBorderPadding = true;
         }
     } else if (cbstyle.logicalHeight().isFixed()) {
-        LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(cbstyle.logicalHeight().value());
+        LayoutUnit contentBoxHeight = cb->adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit(cbstyle.logicalHeight().value()));
         availableHeight = std::max(LayoutUnit(), cb->constrainContentBoxLogicalHeightByMinMax(contentBoxHeight - cb->scrollbarLogicalHeight(), LayoutUnit(-1)));
     } else if (cbstyle.logicalHeight().hasPercent() && !isOutOfFlowPositionedWithSpecifiedHeight) {
         // We need to recur and compute the percentage height for our containing block.
@@ -3895,7 +3899,7 @@ void LayoutBox::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintIn
         LayoutUnit smallerWidth = std::min(oldBorderBoxSize.width(), newBorderBoxSize.width());
         LayoutUnit borderTopRightRadiusWidth = valueForLength(style()->borderTopRightRadius().width(), smallerWidth);
         LayoutUnit borderBottomRightRadiusWidth = valueForLength(style()->borderBottomRightRadius().width(), smallerWidth);
-        LayoutUnit borderWidth = std::max<LayoutUnit>(borderRight(), std::max(borderTopRightRadiusWidth, borderBottomRightRadiusWidth));
+        LayoutUnit borderWidth = std::max(LayoutUnit(borderRight()), std::max(borderTopRightRadiusWidth, borderBottomRightRadiusWidth));
         LayoutRect rightDeltaRect(positionFromPaintInvalidationBacking.x() + smallerWidth - borderWidth,
             positionFromPaintInvalidationBacking.y(),
             deltaWidth + borderWidth,
@@ -3909,7 +3913,7 @@ void LayoutBox::incrementallyInvalidatePaint(const LayoutBoxModelObject& paintIn
         LayoutUnit smallerHeight = std::min(oldBorderBoxSize.height(), newBorderBoxSize.height());
         LayoutUnit borderBottomLeftRadiusHeight = valueForLength(style()->borderBottomLeftRadius().height(), smallerHeight);
         LayoutUnit borderBottomRightRadiusHeight = valueForLength(style()->borderBottomRightRadius().height(), smallerHeight);
-        LayoutUnit borderHeight = std::max<LayoutUnit>(borderBottom(), std::max(borderBottomLeftRadiusHeight, borderBottomRightRadiusHeight));
+        LayoutUnit borderHeight = std::max(LayoutUnit(borderBottom()), std::max(borderBottomLeftRadiusHeight, borderBottomRightRadiusHeight));
         LayoutRect bottomDeltaRect(positionFromPaintInvalidationBacking.x(),
             positionFromPaintInvalidationBacking.y() + smallerHeight - borderHeight,
             std::max(oldBorderBoxSize.width(), newBorderBoxSize.width()),
@@ -3968,10 +3972,10 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const
     if (const ShadowList* boxShadow = style()->boxShadow()) {
         // FIXME: Use LayoutUnit edge outsets, and then simplify this.
         FloatRectOutsets outsets = boxShadow->rectOutsetsIncludingOriginal();
-        top = outsets.top();
-        right = outsets.right();
-        bottom = outsets.bottom();
-        left = outsets.left();
+        top = LayoutUnit(outsets.top());
+        right = LayoutUnit(outsets.right());
+        bottom = LayoutUnit(outsets.bottom());
+        left = LayoutUnit(outsets.left());
     }
 
     if (style()->hasBorderImageOutsets()) {
@@ -4305,10 +4309,10 @@ LayoutRect LayoutBox::noOverflowRect() const
 
     const int scrollBarWidth = verticalScrollbarWidth();
     const int scrollBarHeight = horizontalScrollbarHeight();
-    LayoutUnit left = borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? scrollBarWidth : 0);
-    LayoutUnit top = borderTop();
-    LayoutUnit right = borderRight();
-    LayoutUnit bottom = borderBottom();
+    LayoutUnit left(borderLeft() + (shouldPlaceBlockDirectionScrollbarOnLogicalLeft() ? scrollBarWidth : 0));
+    LayoutUnit top(borderTop());
+    LayoutUnit right(borderRight());
+    LayoutUnit bottom(borderBottom());
     LayoutRect rect(left, top, size().width() - left - right, size().height() - top - bottom);
     flipForWritingMode(rect);
     // Subtract space occupied by scrollbars. Order is important here: first flip, then subtract

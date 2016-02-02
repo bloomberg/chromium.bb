@@ -92,15 +92,15 @@ TEST_F(BoxShapeTest, zeroRadii)
     EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(60), LayoutUnit(1)));
     EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
 
-    TEST_EXCLUDED_INTERVAL(shape, -9, 1, -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, -10, 0, -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, -10, 200, -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, 5, 10, -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, 59, 1, -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-9), LayoutUnit(1), -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(0), -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(200), -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(10), -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(59), LayoutUnit(1), -10, 110);
 
-    TEST_NO_EXCLUDED_INTERVAL(shape, -12, 2);
-    TEST_NO_EXCLUDED_INTERVAL(shape, 60, 1);
-    TEST_NO_EXCLUDED_INTERVAL(shape, 100, 200);
+    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(-12), LayoutUnit(2));
+    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(60), LayoutUnit(1));
+    TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(100), LayoutUnit(200));
 }
 
 /* BoxShape geometry for this test. Corner radii are in parens, x and y intercepts
@@ -123,12 +123,12 @@ TEST_F(BoxShapeTest, getIntervals)
 
     EXPECT_EQ(LayoutRect(0, 0, 100, 100), shape->shapeMarginLogicalBoundingBox());
 
-    TEST_EXCLUDED_INTERVAL(shape, 10, 95, 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, 5, 25, 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, 15, 6, 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, 20, 50, 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, 69, 5, 0, 100);
-    TEST_EXCLUDED_INTERVAL(shape, 85, 10, 0, 97.320511f);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(10), LayoutUnit(95), 0, 100);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(25), 0, 100);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(15), LayoutUnit(6), 0, 100);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(20), LayoutUnit(50), 0, 100);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(69), LayoutUnit(5), 0, 100);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(85), LayoutUnit(10), 0, 97.320511f);
 }
 
 } // anonymous namespace

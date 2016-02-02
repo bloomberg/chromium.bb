@@ -709,7 +709,7 @@ LayoutUnit LayoutInline::offsetTop() const
 static LayoutUnit computeMargin(const LayoutInline* layoutObject, const Length& margin)
 {
     if (margin.isFixed())
-        return margin.value();
+        return LayoutUnit(margin.value());
     if (margin.hasPercent())
         return minimumValueForLength(margin, std::max(LayoutUnit(), layoutObject->containingBlock()->availableLogicalWidth()));
     return LayoutUnit();
@@ -1426,8 +1426,8 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
         container = this;
 
     FloatPoint absPos = container->localToAbsolute();
-    region.bounds.setX(absPos.x() + region.bounds.x());
-    region.bounds.setY(absPos.y() + region.bounds.y());
+    region.bounds.setX(LayoutUnit(absPos.x() + region.bounds.x()));
+    region.bounds.setY(LayoutUnit(absPos.y() + region.bounds.y()));
 
     regions.append(region);
 }

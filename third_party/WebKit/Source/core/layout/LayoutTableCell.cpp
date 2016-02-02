@@ -154,7 +154,7 @@ void LayoutTableCell::computePreferredLogicalWidths()
             // to make the minwidth of the cell into the fixed width.  They do this
             // even in strict mode, so do not make this a quirk.  Affected the top
             // of hiptop.com.
-            m_minPreferredLogicalWidth = std::max<LayoutUnit>(w.value(), m_minPreferredLogicalWidth);
+            m_minPreferredLogicalWidth = std::max(LayoutUnit(w.value()), m_minPreferredLogicalWidth);
         }
     }
 }
@@ -183,7 +183,7 @@ void LayoutTableCell::computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&
     case TEXT_BOTTOM:
     case LENGTH:
     case BASELINE: {
-        LayoutUnit baseline = cellBaselinePosition();
+        int baseline = cellBaselinePosition();
         if (baseline > borderBefore() + paddingBefore())
             intrinsicPaddingBefore = section()->rowBaseline(rowIndex()) - (baseline - oldIntrinsicPaddingBefore);
         break;
@@ -976,7 +976,7 @@ bool LayoutTableCell::boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoida
 
 void LayoutTableCell::scrollbarsChanged(bool horizontalScrollbarChanged, bool verticalScrollbarChanged)
 {
-    LayoutUnit scrollbarHeight = scrollbarLogicalHeight();
+    int scrollbarHeight = scrollbarLogicalHeight();
     if (!scrollbarHeight)
         return; // Not sure if we should be doing something when a scrollbar goes away or not.
 

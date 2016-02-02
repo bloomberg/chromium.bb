@@ -532,10 +532,10 @@ public:
 
     LayoutSize offsetFromContainer(const LayoutObject*, const LayoutPoint&, bool* offsetDependsOnPoint = nullptr) const override;
 
-    LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
-    LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
-    LayoutUnit adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
-    LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
+    LayoutUnit adjustBorderBoxLogicalWidthForBoxSizing(float width) const;
+    LayoutUnit adjustBorderBoxLogicalHeightForBoxSizing(float height) const;
+    LayoutUnit adjustContentBoxLogicalWidthForBoxSizing(float width) const;
+    LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(float height) const;
 
     // ComputedMarginValues holds the actual values for margins. It ignores
     // margin collapsing as they are handled in LayoutBlockFlow.
