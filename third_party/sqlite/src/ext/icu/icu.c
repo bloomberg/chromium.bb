@@ -82,7 +82,7 @@ static int icuLikeCompare(
 
     /* Read (and consume) the next character from the input pattern. */
     UChar32 uPattern;
-    U8_NEXT_UNSAFE(zPattern, iPattern, uPattern);
+    U8_NEXT_OR_FFFD(zPattern, iPattern, -1, uPattern);
 
     /* There are now 4 possibilities:
     **
@@ -102,7 +102,7 @@ static int icuLikeCompare(
       while( (c=zPattern[iPattern]) == MATCH_ALL || c == MATCH_ONE ){
         if( c==MATCH_ONE ){
           if( zString[iString]==0 ) return 0;
-          U8_FWD_1_UNSAFE(zString, iString);
+          U8_FWD_1(zString, iString, -1);
         }
         iPattern++;
       }
@@ -113,14 +113,14 @@ static int icuLikeCompare(
         if( icuLikeCompare(&zPattern[iPattern], &zString[iString], uEsc) ){
           return 1;
         }
-        U8_FWD_1_UNSAFE(zString, iString);
+        U8_FWD_1(zString, iString, -1);
       }
       return 0;
 
     }else if( !prevEscape && uPattern==MATCH_ONE ){
       /* Case 2. */
       if( zString[iString]==0 ) return 0;
-      U8_FWD_1_UNSAFE(zString, iString);
+      U8_FWD_1(zString, iString, -1);
 
     }else if( !prevEscape && uPattern==uEsc){
       /* Case 3. */
@@ -129,7 +129,7 @@ static int icuLikeCompare(
     }else{
       /* Case 4. */
       UChar32 uString;
-      U8_NEXT_UNSAFE(zString, iString, uString);
+      U8_NEXT_OR_FFFD(zString, iString, -1, uString);
       uString = u_foldCase(uString, U_FOLD_CASE_DEFAULT);
       uPattern = u_foldCase(uPattern, U_FOLD_CASE_DEFAULT);
       if( uString!=uPattern ){
