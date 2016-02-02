@@ -421,7 +421,14 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         // (assuming sampleRate = 1).  Since time2 is greater than 128, we want to output a value
         // for frame 128.  This requires that fillToEndFrame be at least 129.  This is achieved by
         // ceil(time2).
-        size_t fillToEndFrame = std::min(endFrame, static_cast<size_t>(ceil(time2 * sampleRate)));
+        //
+        // However, time2 can be very large, so compute this carefully in the case where time2
+        // exceeds the size of a size_t.
+
+        size_t fillToEndFrame = endFrame;
+        if (endFrame > time2 * sampleRate)
+            fillToEndFrame = static_cast<size_t>(ceil(time2 * sampleRate));
+
         ASSERT(fillToEndFrame >= startFrame);
         size_t fillToFrame = fillToEndFrame - startFrame;
         fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));

@@ -1,0 +1,11 @@
+Test AudioParam with Huge Time Value
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS linearRampToValue(0.1, 1e+300) successfully rendered.
+PASS exponentialRampToValue(0.1, 1e+300) successfully rendered.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
