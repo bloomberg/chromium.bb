@@ -14,6 +14,8 @@ source_set("update_client") {
     "action_wait.h",
     "background_downloader_win.cc",
     "background_downloader_win.h",
+    "client_update_protocol_ecdsa.cc",
+    "client_update_protocol_ecdsa.h",
     "component_patcher.cc",
     "component_patcher.h",
     "component_patcher_operation.cc",
@@ -88,6 +90,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "client_update_protocol_ecdsa_unittest.cc",
     "component_patcher_unittest.cc",
     "crx_downloader_unittest.cc",
     "ping_manager_unittest.cc",

@@ -33,6 +33,8 @@
         'update_client/action_wait.h',
         'update_client/background_downloader_win.cc',
         'update_client/background_downloader_win.h',
+        'update_client/client_update_protocol_ecdsa.cc',
+        'update_client/client_update_protocol_ecdsa.h',
         'update_client/component_patcher.cc',
         'update_client/component_patcher.h',
         'update_client/component_patcher_operation.cc',

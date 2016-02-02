@@ -790,6 +790,7 @@
     ],
     'update_client_unittest_sources': [
       'update_client/component_patcher_unittest.cc',
+      'update_client/client_update_protocol_ecdsa_unittest.cc',
       'update_client/crx_downloader_unittest.cc',
       'update_client/ping_manager_unittest.cc',
       'update_client/request_sender_unittest.cc',
