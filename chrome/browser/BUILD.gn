@@ -1142,6 +1142,7 @@ source_set("test_support") {
     "//components/search_engines:test_support",
     "//components/syncable_prefs:test_support",
     "//components/user_prefs/tracked:user_prefs_tracked_test_support",
+    "//content/test:browsertest_base",
     "//content/test:test_support",
     "//net:test_support",
     "//skia",

@@ -194,6 +194,8 @@ source_set("test_support") {
   }
 }
 
+# browsertest_support can be used by targets that run content_shell based
+# browser tests.
 source_set("browsertest_support") {
   testonly = true
 
@@ -222,6 +224,39 @@ source_set("browsertest_support") {
   }
 
   configs += [ "//v8:external_startup_data" ]
+}
+
+# browsertest_base can be used by any browser test target.
+source_set("browsertest_base") {
+  testonly = true
+
+  sources = [
+    "../public/test/browser_test.h",
+    "../public/test/browser_test_base.cc",
+    "../public/test/browser_test_base.h",
+    "../public/test/browser_test_utils.cc",
+    "../public/test/browser_test_utils.h",
+  ]
+
+  public_deps = [
+    "//content/public/browser",
+    "//content/public/common",
+  ]
+  deps = [
+    "//base:base",
+    "//net:test_support",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/base:test_support",
+    "//ui/base/ime",
+    "//ui/events:dom_keycode_converter",
+    "//ui/events:events_base",
+    "//ui/events:gesture_detection",
+    "//ui/resources",
+  ]
+  if (!is_ios) {
+    public_deps += [ "//third_party/WebKit/public:blink" ]
+  }
 }
 
 mojom("content_test_mojo_bindings") {
@@ -358,6 +393,7 @@ test("content_browsertests") {
   ]
 
   deps = [
+    ":browsertest_base",
     ":browsertest_support",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",

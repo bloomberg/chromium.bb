@@ -12,12 +12,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/base/network_change_notifier.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 using chrome_browser_net::NetworkPredictionOptions;
 using net::NetworkChangeNotifier;

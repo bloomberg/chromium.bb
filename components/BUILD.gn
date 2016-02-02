@@ -383,6 +383,7 @@ test("components_browsertests") {
       "//components/password_manager/content/renderer",
       "//components/tracing",
       "//content/shell:content_shell_lib",
+      "//content/test:browsertest_base",
       "//content/test:browsertest_support",
       "//content/test:test_support",
       "//device/bluetooth",

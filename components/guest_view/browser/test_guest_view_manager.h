@@ -12,7 +12,6 @@
 #include "base/memory/linked_ptr.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
 namespace guest_view {
