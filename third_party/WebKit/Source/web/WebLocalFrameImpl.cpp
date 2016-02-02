@@ -1448,89 +1448,6 @@ WebString WebLocalFrameImpl::pageProperty(const WebString& propertyName, int pag
     return m_printContext->pageProperty(frame(), propertyName.utf8().data(), pageIndex);
 }
 
-bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect)
-{
-    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect);
-}
-
-void WebLocalFrameImpl::stopFinding(bool clearSelection)
-{
-    if (m_textFinder) {
-        if (!clearSelection)
-            setFindEndstateFocusAndSelection();
-        m_textFinder->stopFindingAndClearSelection();
-    }
-}
-
-void WebLocalFrameImpl::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
-{
-    ensureTextFinder().scopeStringMatches(identifier, searchText, options, reset);
-}
-
-void WebLocalFrameImpl::cancelPendingScopingEffort()
-{
-    if (m_textFinder)
-        m_textFinder->cancelPendingScopingEffort();
-}
-
-void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
-{
-    // This function should only be called on the mainframe.
-    ASSERT(!parent());
-    ensureTextFinder().increaseMatchCount(identifier, count);
-}
-
-void WebLocalFrameImpl::resetMatchCount()
-{
-    ensureTextFinder().resetMatchCount();
-}
-
-void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
-{
-    ASSERT(!event.isNull());
-    frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
-}
-
-int WebLocalFrameImpl::findMatchMarkersVersion() const
-{
-    ASSERT(!parent());
-
-    if (m_textFinder)
-        return m_textFinder->findMatchMarkersVersion();
-    return 0;
-}
-
-int WebLocalFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
-{
-    ASSERT(!parent());
-    return ensureTextFinder().selectNearestFindMatch(point, selectionRect);
-}
-
-WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
-{
-    ASSERT(!parent());
-
-    if (m_textFinder)
-        return m_textFinder->activeFindMatchRect();
-    return WebFloatRect();
-}
-
-void WebLocalFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
-{
-    ASSERT(!parent());
-    ensureTextFinder().findMatchRects(outputRects);
-}
-
-void WebLocalFrameImpl::setTickmarks(const WebVector<WebRect>& tickmarks)
-{
-    if (frameView()) {
-        Vector<IntRect> tickmarksConverted(tickmarks.size());
-        for (size_t i = 0; i < tickmarks.size(); ++i)
-            tickmarksConverted[i] = tickmarks[i];
-        frameView()->setTickmarks(tickmarksConverted);
-    }
-}
-
 WebString WebLocalFrameImpl::contentAsText(size_t maxChars) const
 {
     if (!frame())
@@ -2190,6 +2107,89 @@ void WebLocalFrameImpl::didCallAddSearchProvider()
 void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
 {
     UseCounter::count(frame(), UseCounter::ExternalIsSearchProviderInstalled);
+}
+
+bool WebLocalFrameImpl::find(int identifier, const WebString& searchText, const WebFindOptions& options, bool wrapWithinFrame, WebRect* selectionRect)
+{
+    return ensureTextFinder().find(identifier, searchText, options, wrapWithinFrame, selectionRect);
+}
+
+void WebLocalFrameImpl::stopFinding(bool clearSelection)
+{
+    if (m_textFinder) {
+        if (!clearSelection)
+            setFindEndstateFocusAndSelection();
+        m_textFinder->stopFindingAndClearSelection();
+    }
+}
+
+void WebLocalFrameImpl::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
+{
+    ensureTextFinder().scopeStringMatches(identifier, searchText, options, reset);
+}
+
+void WebLocalFrameImpl::cancelPendingScopingEffort()
+{
+    if (m_textFinder)
+        m_textFinder->cancelPendingScopingEffort();
+}
+
+void WebLocalFrameImpl::increaseMatchCount(int count, int identifier)
+{
+    // This function should only be called on the mainframe.
+    ASSERT(!parent());
+    ensureTextFinder().increaseMatchCount(identifier, count);
+}
+
+void WebLocalFrameImpl::resetMatchCount()
+{
+    ensureTextFinder().resetMatchCount();
+}
+
+void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
+{
+    ASSERT(!event.isNull());
+    frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
+}
+
+int WebLocalFrameImpl::findMatchMarkersVersion() const
+{
+    ASSERT(!parent());
+
+    if (m_textFinder)
+        return m_textFinder->findMatchMarkersVersion();
+    return 0;
+}
+
+int WebLocalFrameImpl::selectNearestFindMatch(const WebFloatPoint& point, WebRect* selectionRect)
+{
+    ASSERT(!parent());
+    return ensureTextFinder().selectNearestFindMatch(point, selectionRect);
+}
+
+WebFloatRect WebLocalFrameImpl::activeFindMatchRect()
+{
+    ASSERT(!parent());
+
+    if (m_textFinder)
+        return m_textFinder->activeFindMatchRect();
+    return WebFloatRect();
+}
+
+void WebLocalFrameImpl::findMatchRects(WebVector<WebFloatRect>& outputRects)
+{
+    ASSERT(!parent());
+    ensureTextFinder().findMatchRects(outputRects);
+}
+
+void WebLocalFrameImpl::setTickmarks(const WebVector<WebRect>& tickmarks)
+{
+    if (frameView()) {
+        Vector<IntRect> tickmarksConverted(tickmarks.size());
+        for (size_t i = 0; i < tickmarks.size(); ++i)
+            tickmarksConverted[i] = tickmarks[i];
+        frameView()->setTickmarks(tickmarksConverted);
+    }
 }
 
 void WebLocalFrameImpl::willBeDetached()

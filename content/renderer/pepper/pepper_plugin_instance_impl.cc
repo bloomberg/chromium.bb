@@ -2593,7 +2593,7 @@ void PepperPluginInstanceImpl::SetTickmarks(PP_Instance instance,
                                             tickmarks[i].size.width,
                                             tickmarks[i].size.height);
   }
-  blink::WebFrame* frame = render_frame_->GetWebFrame();
+  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
   frame->setTickmarks(tickmarks_converted);
 }
 

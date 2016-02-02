@@ -2396,7 +2396,7 @@ bool TestRunner::FindString(const std::string& search_text,
       wrap_around = true;
   }
 
-  WebFrame* frame = web_view_->mainFrame();
+  WebLocalFrame* frame = web_view_->mainFrame()->toWebLocalFrame();
   const bool find_result = frame->find(0, WebString::fromUTF8(search_text),
                                        find_options, wrap_around, 0);
   frame->stopFinding(false);

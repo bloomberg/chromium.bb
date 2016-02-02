@@ -3562,7 +3562,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPage)
     registerMockedHttpURLLoad("find.html");
     FrameTestHelpers::WebViewHelper webViewHelper(this);
     webViewHelper.initializeAndLoad(m_baseURL + "find.html");
-    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    ASSERT_TRUE(webViewHelper.webView()->mainFrame()->isWebLocalFrame());
+    WebLocalFrame* frame = webViewHelper.webView()->mainFrame()->toWebLocalFrame();
     const int findIdentifier = 12345;
     WebFindOptions options;
 
@@ -3758,7 +3759,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects)
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3874,7 +3875,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageSkipsHiddenFrames)
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3913,7 +3914,7 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame)
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3940,7 +3941,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
+        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -3951,7 +3952,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings)
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     runPendingTasks();
     EXPECT_TRUE(client.findResultsAreReady());
@@ -3978,7 +3979,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     RefPtrWillBeRawPtr<LocalFrame> holdSecondFrame(secondFrame->frame());
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        EXPECT_TRUE(frame->find(kFindIdentifier, searchText, options, false, 0));
+        EXPECT_TRUE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());
@@ -3986,7 +3987,7 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings)
     mainFrame->resetMatchCount();
 
     for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
-        frame->scopeStringMatches(kFindIdentifier, searchText, options, true);
+        frame->toWebLocalFrame()->scopeStringMatches(kFindIdentifier, searchText, options, true);
 
     // The first scopeStringMatches will have reset the state. Detach before it actually scopes.
     removeElementById(mainFrame, "frame");
@@ -4015,9 +4016,8 @@ TEST_P(ParameterizedWebFrameTest, ResetMatchCount)
     // Check that child frame exists.
     EXPECT_TRUE(!!mainFrame->traverseNext(false));
 
-    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false)) {
-        EXPECT_FALSE(frame->find(kFindIdentifier, searchText, options, false, 0));
-    }
+    for (WebFrame* frame = mainFrame; frame; frame = frame->traverseNext(false))
+        EXPECT_FALSE(frame->toWebLocalFrame()->find(kFindIdentifier, searchText, options, false, 0));
 
     runPendingTasks();
     EXPECT_FALSE(client.findResultsAreReady());

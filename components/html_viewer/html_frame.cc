@@ -932,9 +932,10 @@ void HTMLFrame::Find(int32_t request_id,
                      bool wrap_within_frame,
                      const FindCallback& callback) {
   blink::WebRect selection_rect;
-  bool result = web_frame_->find(request_id, search_text.To<blink::WebString>(),
-                                 options.To<blink::WebFindOptions>(),
-                                 wrap_within_frame, &selection_rect);
+  bool result = web_frame_->toWebLocalFrame()->find(
+      request_id, search_text.To<blink::WebString>(),
+      options.To<blink::WebFindOptions>(), wrap_within_frame, &selection_rect);
+
   if (!result) {
     // don't leave text selected as you move to the next frame.
     web_frame_->executeCommand(blink::WebString::fromUTF8("Unselect"),
@@ -955,20 +956,21 @@ void HTMLFrame::StopFinding(bool clear_selection) {
     }
   }
 
-  web_frame_->stopFinding(clear_selection);
+  web_frame_->toWebLocalFrame()->stopFinding(clear_selection);
 }
 
 void HTMLFrame::HighlightFindResults(int32_t request_id,
                                      const mojo::String& search_text,
                                      web_view::mojom::FindOptionsPtr options,
                                      bool reset) {
-  web_frame_->scopeStringMatches(request_id, search_text.To<blink::WebString>(),
-                                 options.To<blink::WebFindOptions>(), reset);
+  web_frame_->toWebLocalFrame()->scopeStringMatches(
+      request_id, search_text.To<blink::WebString>(),
+      options.To<blink::WebFindOptions>(), reset);
 }
 
 void HTMLFrame::StopHighlightingFindResults() {
-  web_frame_->resetMatchCount();
-  web_frame_->cancelPendingScopingEffort();
+  web_frame_->toWebLocalFrame()->resetMatchCount();
+  web_frame_->toWebLocalFrame()->cancelPendingScopingEffort();
 }
 
 void HTMLFrame::frameDetached(blink::WebRemoteFrameClient::DetachType type) {

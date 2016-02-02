@@ -137,21 +137,6 @@ public:
         int& marginLeft) override;
     WebString pageProperty(const WebString& propertyName, int pageIndex) override;
     void printPagesWithBoundaries(WebCanvas*, const WebSize&) override;
-    bool find(
-        int identifier, const WebString& searchText, const WebFindOptions&,
-        bool wrapWithinFrame, WebRect* selectionRect) override;
-    void stopFinding(bool clearSelection) override;
-    void scopeStringMatches(
-        int identifier, const WebString& searchText, const WebFindOptions&,
-        bool reset) override;
-    void cancelPendingScopingEffort() override;
-    void increaseMatchCount(int count, int identifier) override;
-    void resetMatchCount() override;
-    int findMatchMarkersVersion() const override;
-    WebFloatRect activeFindMatchRect() override;
-    void findMatchRects(WebVector<WebFloatRect>&) override;
-    int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect) override;
-    void setTickmarks(const WebVector<WebRect>&) override;
     void dispatchMessageEventWithOriginCheck(
         const WebSecurityOrigin& intendedTargetOrigin,
         const WebDOMEvent&) override;

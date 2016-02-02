@@ -5043,12 +5043,13 @@ void RenderFrameImpl::OnFind(int request_id,
     return;
   }
 
-  WebFrame* main_frame = GetWebFrame();
-  WebFrame* frame_after_main = main_frame->traverseNext(true);
-  WebFrame* focused_frame = render_view_->webview()->focusedFrame();
-  WebFrame* search_frame = focused_frame;  // start searching focused frame.
+  WebLocalFrame* main_frame = GetWebFrame();
+  WebLocalFrame* focused_frame =
+      render_view_->webview()->focusedFrame()->toWebLocalFrame();
+  // Start searching in the focused frame.
+  WebLocalFrame* search_frame = focused_frame;
 
-  bool multi_frame = (frame_after_main != main_frame);
+  bool multi_frame = (main_frame->traverseNext(true) != main_frame);
 
   // If we have multiple frames, we don't want to wrap the search within the
   // frame, so we check here if we only have main_frame in the chain.
@@ -5074,8 +5075,10 @@ void RenderFrameImpl::OnFind(int request_id,
       do {
         // What is the next frame to search (we might be going backwards)? Note
         // that we specify wrap=true so that search_frame never becomes NULL.
-        search_frame = options.forward ? search_frame->traverseNext(true)
-                                       : search_frame->traversePrevious(true);
+        search_frame =
+            options.forward
+                ? search_frame->traverseNext(true)->toWebLocalFrame()
+                : search_frame->traversePrevious(true)->toWebLocalFrame();
       } while (!search_frame->hasVisibleContent() &&
                search_frame != focused_frame);
 
@@ -5135,7 +5138,7 @@ void RenderFrameImpl::OnFind(int request_id,
 
       // Iterate to the next frame. The frame will not necessarily scope, for
       // example if it is not visible.
-      search_frame = search_frame->traverseNext(true);
+      search_frame = search_frame->traverseNext(true)->toWebLocalFrame();
     } while (search_frame != main_frame);
   }
 }
@@ -5164,9 +5167,9 @@ void RenderFrameImpl::OnStopFinding(StopFindAction action) {
                                          GetFocusedElement());
   }
 
-  WebFrame* frame = view->mainFrame();
+  WebFrame* frame = GetWebFrame();
   while (frame) {
-    frame->stopFinding(clear_selection);
+    frame->toWebLocalFrame()->stopFinding(clear_selection);
     frame = frame->traverseNext(false);
   }
 

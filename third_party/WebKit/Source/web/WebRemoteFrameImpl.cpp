@@ -582,69 +582,6 @@ void WebRemoteFrameImpl::printPagesWithBoundaries(WebCanvas*, const WebSize&)
     ASSERT_NOT_REACHED();
 }
 
-bool WebRemoteFrameImpl::find(
-    int identifier, const WebString& searchText, const WebFindOptions&,
-    bool wrapWithinFrame, WebRect* selectionRect)
-{
-    ASSERT_NOT_REACHED();
-    return false;
-}
-
-void WebRemoteFrameImpl::stopFinding(bool clearSelection)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::scopeStringMatches(
-    int identifier, const WebString& searchText, const WebFindOptions&,
-    bool reset)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::cancelPendingScopingEffort()
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::increaseMatchCount(int count, int identifier)
-{
-    ASSERT_NOT_REACHED();
-}
-
-void WebRemoteFrameImpl::resetMatchCount()
-{
-    ASSERT_NOT_REACHED();
-}
-
-int WebRemoteFrameImpl::findMatchMarkersVersion() const
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-WebFloatRect WebRemoteFrameImpl::activeFindMatchRect()
-{
-    ASSERT_NOT_REACHED();
-    return WebFloatRect();
-}
-
-void WebRemoteFrameImpl::findMatchRects(WebVector<WebFloatRect>&)
-{
-    ASSERT_NOT_REACHED();
-}
-
-int WebRemoteFrameImpl::selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect)
-{
-    ASSERT_NOT_REACHED();
-    return 0;
-}
-
-void WebRemoteFrameImpl::setTickmarks(const WebVector<WebRect>&)
-{
-    ASSERT_NOT_REACHED();
-}
-
 void WebRemoteFrameImpl::dispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intendedTargetOrigin,
     const WebDOMEvent&)
