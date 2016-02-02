@@ -9,6 +9,7 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintInfo.h"
+#include "core/paint/PaintTiming.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
@@ -62,6 +63,9 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         return;
 
     BoxPainter(m_layoutSVGRoot).paint(paintContext.paintInfo(), LayoutPoint());
+
+    PaintTiming& timing = PaintTiming::from(m_layoutSVGRoot.node()->document().topDocument());
+    timing.markFirstContentfulPaint();
 }
 
 } // namespace blink

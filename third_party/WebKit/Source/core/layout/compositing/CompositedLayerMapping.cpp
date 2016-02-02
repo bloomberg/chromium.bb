@@ -2384,26 +2384,20 @@ void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double
 
 void CompositedLayerMapping::notifyFirstPaint()
 {
-    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
-        if (timing->firstPaint() == 0)
-            timing->markFirstPaint();
-    }
+    if (PaintTiming* timing = m_owningLayer.paintTiming())
+        timing->markFirstPaint();
 }
 
 void CompositedLayerMapping::notifyFirstTextPaint()
 {
-    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
-        if (timing->firstTextPaint() == 0)
-            timing->markFirstTextPaint();
-    }
+    if (PaintTiming* timing = m_owningLayer.paintTiming())
+        timing->markFirstTextPaint();
 }
 
 void CompositedLayerMapping::notifyFirstImagePaint()
 {
-    if (PaintTiming* timing = m_owningLayer.paintTiming()) {
-        if (timing->firstImagePaint() == 0)
-            timing->markFirstImagePaint();
-    }
+    if (PaintTiming* timing = m_owningLayer.paintTiming())
+        timing->markFirstImagePaint();
 }
 
 IntRect CompositedLayerMapping::pixelSnappedCompositedBounds() const
