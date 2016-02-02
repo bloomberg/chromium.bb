@@ -1,7 +1,7 @@
 Name: libjingle
 URL: http://www.webrtc.org
 Version: unknown
-Revision: 11431
+Revision: 11460
 License: BSD
 License File: source/talk/COPYING
 Security Critical: yes
