@@ -199,6 +199,7 @@
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "platform/DateComponents.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/Histogram.h"
 #include "platform/Language.h"
 #include "platform/LengthFunctions.h"
 #include "platform/Logging.h"
@@ -4472,7 +4473,9 @@ bool Document::execCommand(const String& commandName, bool, const String& value,
     EventQueueScope eventQueueScope;
     Editor::tidyUpHTMLStructure(*this);
     Editor::Command editorCommand = command(this, commandName);
-    Platform::current()->histogramSparse("WebCore.Document.execCommand", editorCommand.idForHistogram());
+
+    DEFINE_STATIC_LOCAL(SparseHistogram, editorCommandHistogram, ("WebCore.Document.execCommand"));
+    editorCommandHistogram.sample(editorCommand.idForHistogram());
     return editorCommand.execute(value);
 }
 

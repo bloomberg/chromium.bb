@@ -59,6 +59,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/EditorClient.h"
+#include "platform/Histogram.h"
 #include "platform/KillRing.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/scroll/Scrollbar.h"
@@ -1777,7 +1778,8 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
             return false;
     }
     frame().document()->updateLayoutIgnorePendingStylesheets();
-    Platform::current()->histogramSparse("WebCore.Editing.Commands", m_command->idForUserMetrics);
+    DEFINE_STATIC_LOCAL(SparseHistogram, commandHistogram, ("WebCore.Editing.Commands"));
+    commandHistogram.sample(m_command->idForUserMetrics);
     return m_command->execute(*m_frame, triggeringEvent, m_source, parameter);
 }
 

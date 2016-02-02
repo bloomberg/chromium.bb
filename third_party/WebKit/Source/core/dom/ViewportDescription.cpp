@@ -32,6 +32,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 
@@ -239,7 +240,8 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
                 int viewportWidth = maxWidth.intValue();
                 int windowWidth = mainFrame->host()->visualViewport().size().width();
                 int overviewZoomPercent = 100 * windowWidth / static_cast<float>(viewportWidth);
-                Platform::current()->histogramSparse("Viewport.OverviewZoom", overviewZoomPercent);
+                DEFINE_STATIC_LOCAL(SparseHistogram, overviewZoomHistogram, ("Viewport.OverviewZoom"));
+                overviewZoomHistogram.sample(overviewZoomPercent);
             }
 
         } else if (maxWidth.type() == blink::DeviceWidth || maxWidth.type() == blink::ExtendToZoom) {

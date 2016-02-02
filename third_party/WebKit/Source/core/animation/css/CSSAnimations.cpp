@@ -53,6 +53,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/Histogram.h"
 #include "platform/animation/TimingFunction.h"
 #include "public/platform/Platform.h"
 #include "wtf/BitArray.h"
@@ -116,9 +117,10 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
         }
     }
 
+    DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram, ("WebCore.Animation.CSSProperties"));
     for (CSSPropertyID property : specifiedPropertiesForUseCounter) {
         ASSERT(property != CSSPropertyInvalid);
-        Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
+        propertyHistogram.sample(UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
     }
 
     // Merge duplicate keyframes.
@@ -490,7 +492,9 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         runningTransition.animation = animation;
         m_transitions.set(id, runningTransition);
         ASSERT(id != CSSPropertyInvalid);
-        Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
+
+        DEFINE_STATIC_LOCAL(SparseHistogram, propertyHistogram, ("WebCore.Animation.CSSProperties"));
+        propertyHistogram.sample(UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
     }
     clearPendingUpdate();
 }

@@ -117,7 +117,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void histogramEnumeration(const char* name,
                             int sample,
                             int boundary_value) override;
-  void histogramSparse(const char* name, int sample) override;
   void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp,
                                   const char* name) override;
   void unregisterMemoryDumpProvider(
