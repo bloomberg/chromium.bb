@@ -636,6 +636,10 @@ GLenum ResourceProvider::GetResourceTextureTarget(ResourceId id) {
   return GetResource(id)->target;
 }
 
+ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
+  return GetResource(id)->hint;
+}
+
 void ResourceProvider::CopyToResource(ResourceId id,
                                       const uint8_t* image,
                                       const gfx::Size& image_size) {

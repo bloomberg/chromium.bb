@@ -115,7 +115,8 @@ class CC_EXPORT VideoResourceUpdater
   typedef std::list<PlaneResource> ResourceList;
   ResourceList::iterator AllocateResource(const gfx::Size& plane_size,
                                           ResourceFormat format,
-                                          bool has_mailbox);
+                                          bool has_mailbox,
+                                          bool immutable_hint);
   void DeleteResource(ResourceList::iterator resource_it);
   bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
   void CopyPlaneTexture(const scoped_refptr<media::VideoFrame>& video_frame,

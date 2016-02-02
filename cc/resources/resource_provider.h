@@ -123,6 +123,7 @@ class CC_EXPORT ResourceProvider
   ResourceType default_resource_type() const { return default_resource_type_; }
   ResourceType GetResourceType(ResourceId id);
   GLenum GetResourceTextureTarget(ResourceId id);
+  TextureHint GetTextureHint(ResourceId id);
 
   // Creates a resource of the default resource type.
   ResourceId CreateResource(const gfx::Size& size,

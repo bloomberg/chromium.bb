@@ -159,11 +159,14 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 VideoResourceUpdater::ResourceList::iterator
 VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
                                        ResourceFormat format,
-                                       bool has_mailbox) {
+                                       bool has_mailbox,
+                                       bool immutable_hint) {
   // TODO(danakj): Abstract out hw/sw resource create/delete from
   // ResourceProvider and stop using ResourceProvider in this class.
   const ResourceId resource_id = resource_provider_->CreateResource(
-      plane_size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
+      plane_size, immutable_hint ? ResourceProvider::TEXTURE_HINT_IMMUTABLE
+                                 : ResourceProvider::TEXTURE_HINT_DEFAULT,
+      format);
   if (resource_id == 0)
     return all_resources_.end();
 
@@ -297,9 +300,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     // Check if we need to allocate a new resource.
     if (resource_it == all_resources_.end()) {
+      const bool is_immutable = true;
       resource_it =
           AllocateResource(output_plane_resource_size, output_resource_format,
-                           !software_compositor);
+                           !software_compositor, is_immutable);
     }
     if (resource_it == all_resources_.end())
       break;
@@ -446,7 +450,9 @@ void VideoResourceUpdater::CopyPlaneTexture(
     // unreferenced texture.
     if (it->resource_size == output_plane_resource_size &&
         it->resource_format == copy_target_format && !it->mailbox.IsZero() &&
-        it->ref_count == 0) {
+        it->ref_count == 0 &&
+        resource_provider_->GetTextureHint(it->resource_id) !=
+            ResourceProvider::TEXTURE_HINT_IMMUTABLE) {
       resource = it;
       break;
     }
@@ -454,8 +460,9 @@ void VideoResourceUpdater::CopyPlaneTexture(
 
   // Otherwise allocate a new resource.
   if (resource == all_resources_.end()) {
-    resource =
-        AllocateResource(output_plane_resource_size, copy_target_format, true);
+    const bool is_immutable = false;
+    resource = AllocateResource(output_plane_resource_size, copy_target_format,
+                                true, is_immutable);
   }
 
   ++resource->ref_count;
