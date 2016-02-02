@@ -48,9 +48,9 @@ MessageWindowImpl.prototype.sendReply_ = function(
  * Initializes the button with the label and the click handler.
  * Hides the button if the label is null or undefined.
  *
- * @param{HTMLElement} button
- * @param{?string} label
- * @param{Function} clickHandler
+ * @param {HTMLElement} button
+ * @param {?string} label
+ * @param {Function} clickHandler
  * @private
  */
 MessageWindowImpl.prototype.initButton_ =
@@ -92,12 +92,12 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
       }
 
       // Set the dialog text.
-      var button = document.getElementById('button-primary');
-      var cancelButton = document.getElementById('button-secondary');
-      var messageDiv = document.getElementById('message');
-      var infoboxDiv = document.getElementById('infobox');
+      var button = base.getHtmlElement('button-primary');
+      var cancelButton = base.getHtmlElement('button-secondary');
+      var messageDiv = base.getHtmlElement('message');
+      var infoboxDiv = base.getHtmlElement('infobox');
 
-      document.getElementById('title').innerText = title;
+      base.getHtmlElement('title').innerText = title;
       document.querySelector('title').innerText = title;
       messageDiv.innerHTML = message;
 
@@ -142,7 +142,7 @@ MessageWindowImpl.prototype.onMessage_ = function(event) {
         break;
       }
 
-      var messageDiv = document.getElementById('message');
+      var messageDiv = base.getHtmlElement('message');
       messageDiv.innerText = message;
 
       base.resizeWindowToContent(true);

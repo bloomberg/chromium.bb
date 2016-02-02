@@ -23,10 +23,10 @@ remoting.Me2MeActivity = function(host, hostList) {
   this.hostList_ = hostList;
   /** @private */
   this.pinDialog_ =
-      new remoting.PinDialog(document.getElementById('pin-dialog'), host);
+      new remoting.PinDialog(base.getHtmlElement('pin-dialog'), host);
   /** @private */
   this.hostUpdateDialog_ = new remoting.HostNeedsUpdateDialog(
-      document.getElementById('host-needs-update-dialog'), this.host_);
+      base.getHtmlElement('host-needs-update-dialog'), this.host_);
 
   /** @private */
   this.retryOnHostOffline_ = true;
@@ -282,8 +282,8 @@ remoting.Me2MeActivity.prototype.showErrorMessage_ = function(error) {
 remoting.Me2MeActivity.prototype.showFinishDialog_ = function(mode) {
   var dialog = remoting.modalDialogFactory.createMessageDialog(
       mode,
-      document.getElementById('client-finished-me2me-button'),
-      document.getElementById('client-reconnect-button'));
+      base.getHtmlElement('client-finished-me2me-button'),
+      base.getHtmlElement('client-reconnect-button'));
 
   /** @typedef {remoting.MessageDialog.Result} */
   var Result = remoting.MessageDialog.Result;

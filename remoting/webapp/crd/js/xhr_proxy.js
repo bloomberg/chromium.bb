@@ -65,10 +65,12 @@ remoting.XMLHttpRequestProxy.prototype.abort = function() {
   }
 };
 
+/** @suppress {missingReturn} */
 remoting.XMLHttpRequestProxy.prototype.getResponseHeader = function(header) {
   console.error('Sandbox: unproxied getResponseHeader(' + header + ') called.');
 };
 
+/** @suppress {missingReturn} */
 remoting.XMLHttpRequestProxy.prototype.getAllResponseHeaders = function() {
   console.error('Sandbox: unproxied getAllResponseHeaders called.');
 };

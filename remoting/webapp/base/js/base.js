@@ -861,3 +861,15 @@ base.isNaclEnabled = function() {
   }
   return false;
 };
+
+/**
+ * Alias for document.getElementById that returns an HTMLElement
+ * @param {string} id The ID of the element to find.
+ * @return {?HTMLElement} The found element or null if not found.
+ */
+base.getHtmlElement = function(id) {
+  var el = document.getElementById(id);
+  if (el)
+    console.assert(el instanceof HTMLElement);
+  return /** @type {HTMLElement} */(el);
+};

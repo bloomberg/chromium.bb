@@ -54,9 +54,6 @@ Element.prototype.offsetBottom;
 /** @type {string} */
 Element.prototype.textContent;
 
-/** @type {DOMTokenList} */
-Element.prototype.classList;
-
 /** @type {boolean} */
 Element.prototype.checked;
 

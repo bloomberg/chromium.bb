@@ -134,7 +134,7 @@ remoting.HostTableEntry.prototype.createDom_ = function() {
   }
 };
 
-/** @return {base.Disposable} @private */
+/** @private */
 remoting.HostTableEntry.prototype.registerButton_ = function(
     /** HTMLElement */ button, /** Function */ callback) {
   var onKeyDown = function(/** Event */ e) {

@@ -779,8 +779,8 @@ Polymer({
    * castModeList.
    *
    * @param {number} castModeType Type of cast mode to look for.
-   * @return {?media_router.CastMode} CastMode object with the given type in
-   *     castModeList, or undefined if not found.
+   * @return {media_router.CastMode|undefined} CastMode object with the given
+   *     type in castModeList, or undefined if not found.
    */
   findCastModeByType_: function(castModeType) {
     return this.castModeList.find(function(element, index, array) {

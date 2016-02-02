@@ -6,7 +6,7 @@
 // S:::::S                    T:::::T        O:::::O     O:::::O  P::::P     P:::::P
 //  S::::SSSS                                                     P::::PPPPPP:::::P
 //   SS::::::SSSSS       This file is generated. To update it,    P:::::::::::::PP
-//     SSS::::::::SS          run roll_compiler_version.          P::::PPPPPPPPP
+//     SSS::::::::SS          run roll_closure_compiler.          P::::PPPPPPPPP
 //        SSSSSS::::S                                             P::::P
 //             S:::::S        T:::::T        O:::::O     O:::::O  P::::P
 //             S:::::S        T:::::T        O::::::O   O::::::O  P::::P
@@ -403,14 +403,14 @@ chrome.app.window.AppWindow.prototype.hide = function() {};
 
 
 /**
- * @return {!chrome.app.window.Bounds} The current window bounds.
+ * @return {!chrome.app.window.ContentBounds} The current window bounds.
  * @see http://developer.chrome.com/apps/app.window.html#type-AppWindow
  */
 chrome.app.window.AppWindow.prototype.getBounds = function() {};
 
 
 /**
- * @param {!chrome.app.window.Bounds} bounds The new window bounds.
+ * @param {!chrome.app.window.ContentBounds} bounds The new window bounds.
  * @see http://developer.chrome.com/apps/app.window.html#type-AppWindow
  */
 chrome.app.window.AppWindow.prototype.setBounds = function(bounds) {};
@@ -429,6 +429,24 @@ chrome.app.window.AppWindow.prototype.isAlwaysOnTop = function() {};
  * @see http://developer.chrome.com/apps/app.window.html#type-AppWindow
  */
 chrome.app.window.AppWindow.prototype.setAlwaysOnTop = function(alwaysOnTop) {};
+
+
+/**
+ * @param {boolean} alwaysVisible Set whether the window is visible on all
+ *     workspaces.
+ * @see http://developer.chrome.com/apps/app.window.html#type-AppWindow
+ */
+chrome.app.window.AppWindow.prototype.setVisibleOnAllWorkspaces =
+    function(alwaysVisible) {};
+
+
+/**
+ * @param {boolean} wantAllKeys Set whether the window should get all keyboard
+ *     events including system keys that are usually not sent.
+ * @see http://developer.chrome.com/apps/app.window.html#type-AppWindow
+ */
+chrome.app.window.AppWindow.prototype.setInterceptAllKeys =
+    function(wantAllKeys) {};
 
 
 /** @type {!ChromeEvent} */
@@ -457,6 +475,10 @@ chrome.app.window.AppWindow.prototype.onRestored;
 
 /** @type {!Window} */
 chrome.app.window.AppWindow.prototype.contentWindow;
+
+
+/** @type {string} */
+chrome.app.window.AppWindow.prototype.id;
 
 
 /** @type {!chrome.app.window.Bounds} */
