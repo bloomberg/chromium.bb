@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <memory>
 #include <type_traits>
+#include <vector>
 
 #include "base/atomic_ref_count.h"
 #include "base/base_export.h"
@@ -117,6 +118,12 @@ template <typename T> struct IsMoveOnlyType {
 // move-only, even without the sentinel member.
 template <typename T, typename D>
 struct IsMoveOnlyType<std::unique_ptr<T, D>> : std::true_type {};
+
+// Specialization of std::vector, so that it's considered move-only if the
+// element type is move-only. Allocator is explicitly ignored when determining
+// move-only status of the std::vector.
+template <typename T, typename Allocator>
+struct IsMoveOnlyType<std::vector<T, Allocator>> : IsMoveOnlyType<T> {};
 
 template <typename>
 struct CallbackParamTraitsForMoveOnlyType;
