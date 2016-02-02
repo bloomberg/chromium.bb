@@ -52895,6 +52895,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in V8 compiler (full codegen) for eval.</summary>
 </histogram>
 
+<histogram name="V8.CompileInlineScriptMicroSeconds" units="microseconds">
+  <owner>yangguo@chromium.org</owner>
+  <summary>Time spent compiling an inline script.</summary>
+</histogram>
+
 <histogram name="V8.CompileLazy" units="ms">
   <obsolete>
     This histogram has been replaced by V8.CompileLazyMicroSeconds.

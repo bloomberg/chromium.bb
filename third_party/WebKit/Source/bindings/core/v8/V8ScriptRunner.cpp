@@ -57,7 +57,11 @@ const int kMaxRecursionDepth = 44;
 
 class V8CompileHistogram {
 public:
-    enum Cacheability { Cacheable, Noncacheable };
+    enum Cacheability {
+        Cacheable,
+        Noncacheable,
+        InlineScript
+    };
     explicit V8CompileHistogram(Cacheability);
     ~V8CompileHistogram();
 
@@ -75,7 +79,18 @@ V8CompileHistogram::V8CompileHistogram(V8CompileHistogram::Cacheability cacheabi
 V8CompileHistogram::~V8CompileHistogram()
 {
     int64_t elapsedMicroSeconds = static_cast<int64_t>((WTF::currentTime() - m_timeStamp) * 1000000);
-    const char* name = (m_cacheability == Cacheable) ? "V8.CompileCacheableMicroSeconds" : "V8.CompileNoncacheableMicroSeconds";
+    const char* name = "";
+    switch (m_cacheability) {
+    case Cacheable:
+        name = "V8.CompileCacheableMicroSeconds";
+        break;
+    case Noncacheable:
+        name = "V8.CompileNoncacheableMicroSeconds";
+        break;
+    case InlineScript:
+        name = "V8.CompileInlineScriptMicroSeconds";
+        break;
+    }
     Platform::current()->histogramCustomCounts(name, elapsedMicroSeconds, 0, 1000000, 50);
 }
 
@@ -258,14 +273,14 @@ PassOwnPtr<CompileFn> bind(const A&... args)
 
 // Select a compile function from any of the above, mainly depending on
 // cacheOptions.
-PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, v8::Local<v8::String> code)
+PassOwnPtr<CompileFn> selectCompileFunction(V8CacheOptions cacheOptions, CachedMetadataHandler* cacheHandler, v8::Local<v8::String> code, V8CompileHistogram::Cacheability cacheabilityIfNoHandler)
 {
     static const int minimalCodeLength = 1024;
     static const int hotHours = 72;
 
+    // Caching is not available in this case.
     if (!cacheHandler)
-        // Caching is not available in this case.
-        return bind(compileWithoutOptions, V8CompileHistogram::Noncacheable);
+        return bind(compileWithoutOptions, cacheabilityIfNoHandler);
 
     if (cacheOptions == V8CacheOptionsNone)
         return bind(compileWithoutOptions, V8CompileHistogram::Cacheable);
@@ -362,9 +377,13 @@ v8::MaybeLocal<v8::Script> V8ScriptRunner::compileScript(v8::Local<v8::String> c
         v8String(isolate, sourceMapUrl),
         v8Boolean(accessControlStatus == OpaqueResource, isolate));
 
+    V8CompileHistogram::Cacheability cacheabilityIfNoHandler = V8CompileHistogram::Cacheability::Noncacheable;
+    if (!cacheHandler && (scriptStartPosition.m_line.zeroBasedInt() == 0) && (scriptStartPosition.m_column.zeroBasedInt() == 0))
+        cacheabilityIfNoHandler = V8CompileHistogram::Cacheability::InlineScript;
+
     OwnPtr<CompileFn> compileFn = streamer
         ? selectCompileFunction(cacheOptions, resource, streamer)
-        : selectCompileFunction(cacheOptions, cacheHandler, code);
+        : selectCompileFunction(cacheOptions, cacheHandler, code, cacheabilityIfNoHandler);
 
     return (*compileFn)(isolate, code, origin);
 }
