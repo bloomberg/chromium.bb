@@ -176,10 +176,10 @@ bool BrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void BrowserRootView::OnMouseExited(const ui::MouseEvent& event) {
-  // Reset such that the tab switch always occurs halfway through a smooth
-  // scroll.
+  // Reset the remainders so tab switches occur halfway through a smooth scroll.
   scroll_remainder_x_ = 0;
   scroll_remainder_y_ = 0;
+  RootView::OnMouseExited(event);
 }
 
 void BrowserRootView::OnEventProcessingStarted(ui::Event* event) {
