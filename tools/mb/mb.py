@@ -569,7 +569,7 @@ class MetaBuildWrapper(object):
           deps_path = d
           break
       else:
-        raise MBErr('did not generate any of ' % ', '.join(deps_paths))
+        raise MBErr('did not generate any of %s' % ', '.join(deps_paths))
 
       command, extra_files = self.GetIsolateCommand(target, vals,
                                                     gn_isolate_map)
@@ -686,11 +686,13 @@ class MetaBuildWrapper(object):
     return ret
 
   def GetIsolateCommand(self, target, vals, gn_isolate_map):
+    android = 'target_os="android"' in vals['gn_args']
+
     # This needs to mirror the settings in //build/config/ui.gni:
     # use_x11 = is_linux && !use_ozone.
     # TODO(dpranke): Figure out how to keep this in sync better.
     use_x11 = (self.platform == 'linux2' and
-               not 'target_os="android"' in vals['gn_args'] and
+               not android and
                not 'use_ozone=true' in vals['gn_args'])
 
     asan = 'is_asan=true' in vals['gn_args']
@@ -703,21 +705,25 @@ class MetaBuildWrapper(object):
     cmdline = []
     extra_files = []
 
-    if use_x11 and test_type == 'windowed_test_launcher':
+    if android:
+      # TODO(jbudorick): This won't work with instrumentation test targets.
+      # Revisit this logic when those are added to gn_isolate_map.pyl.
+      cmdline = [self.PathJoin('bin', 'run_%s' % target)]
+    elif use_x11 and test_type == 'windowed_test_launcher':
       extra_files = [
           'xdisplaycheck',
           '../../testing/test_env.py',
           '../../testing/xvfb.py',
       ]
       cmdline = [
-        '../../testing/xvfb.py',
-        '.',
-        './' + str(target),
-        '--brave-new-test-launcher',
-        '--test-launcher-bot-mode',
-        '--asan=%d' % asan,
-        '--msan=%d' % msan,
-        '--tsan=%d' % tsan,
+          '../../testing/xvfb.py',
+          '.',
+          './' + str(target),
+          '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
+          '--asan=%d' % asan,
+          '--msan=%d' % msan,
+          '--tsan=%d' % tsan,
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
       extra_files = [
