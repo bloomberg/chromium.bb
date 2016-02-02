@@ -62,8 +62,7 @@ class CodereviewSettingsFileMock(object):
   # pylint: disable=R0201
   def read(self):
     return ("CODE_REVIEW_SERVER: gerrit.chromium.org\n" +
-            "GERRIT_HOST: gerrit.chromium.org\n" +
-            "GERRIT_PORT: 29418\n")
+            "GERRIT_HOST: True\n")
 
 
 class AuthenticatorMock(object):
@@ -560,7 +559,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'master', 'master'],),
          'fake_ancestor_sha'),
-        ((['git', 'config', 'gerrit.host'],), 'gerrit.example.com'),
+        ((['git', 'config', 'gerrit.host'],), 'True'),
         ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
@@ -750,8 +749,7 @@ class TestGitCl(TestCase):
     def ParseCodereviewSettingsContent(content):
       keyvals = {}
       keyvals['CODE_REVIEW_SERVER'] = 'gerrit.chromium.org'
-      keyvals['GERRIT_HOST'] = 'gerrit.chromium.org'
-      keyvals['GERRIT_PORT'] = '29418'
+      keyvals['GERRIT_HOST'] = 'True'
       return keyvals
     self.mock(git_cl.gclient_utils, 'ParseCodereviewSettingsContent',
               ParseCodereviewSettingsContent)
@@ -798,11 +796,9 @@ class TestGitCl(TestCase):
            'rietveld.pending-ref-prefix'],), ''),
         ((['git', 'config', '--unset-all',
            'rietveld.run-post-upload-hook'],), ''),
-        ((['git', 'config', 'gerrit.host',
-           'gerrit.chromium.org'],), ''),
+        ((['git', 'config', 'gerrit.host', 'True'],), ''),
         # DownloadHooks(False)
-        ((['git', 'config', 'gerrit.host'],),
-         'gerrit.chromium.org'),
+        ((['git', 'config', 'gerrit.host'],), 'True'),
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((commit_msg_path, os.X_OK,), False),
         (('https://gerrit-review.googlesource.com/tools/hooks/commit-msg',
