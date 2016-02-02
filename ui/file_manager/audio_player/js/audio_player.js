@@ -34,6 +34,16 @@ function AudioPlayer(container) {
   // Initial value is null. It'll be set in load().
   this.isPlaylistExpanded_ = null;
 
+  /**
+   * Whether if the trackinfo is expanded or not.
+   * True: expanded, false: collapsed, null: unset.
+   *
+   * @type {?boolean}
+   * @private
+   */
+  // Initial value is null. It'll be set in load().
+  this.isTrackInfoExpanded_ = null;
+
   this.player_ =
     /** @type {AudioPlayerElement} */ (document.querySelector('audio-player'));
   this.player_.tracks = [];
@@ -42,7 +52,11 @@ function AudioPlayer(container) {
   // if the states are changed.
   var STORAGE_PREFIX = 'audioplayer-';
   var KEYS_TO_SAVE_STATES =
-      ['shuffle', 'repeat', 'volume', 'playlist-expanded'];
+      ['shuffle',
+       'repeat',
+       'volume',
+       'playlist-expanded',
+       'track-info-expanded'];
   var storageKeys = KEYS_TO_SAVE_STATES.map(a => STORAGE_PREFIX + a);
   chrome.storage.local.get(storageKeys, function(results) {
     // Update the UI by loaded state.
@@ -62,9 +76,14 @@ function AudioPlayer(container) {
     }
   }.bind(this));
 
-  // Update the window size when UI's 'expanded' state is changed.
+  // Update the window size when UI's 'playlist-expanded' state is changed.
   this.player_.addEventListener('playlist-expanded-changed', function(event) {
     this.onPlaylistExpandedChanged_(event.detail.value);
+  }.bind(this));
+
+  // Update the window size when UI's 'track-info-expanded' state is changed.
+  this.player_.addEventListener('track-info-expanded-changed', function(event) {
+    this.onTrackInfoExpandedChanged_(event.detail.value);
   }.bind(this));
 
   // Run asynchronously after an event of model change is delivered.
@@ -148,6 +167,7 @@ AudioPlayer.prototype.load = function(playlist) {
   util.saveAppState();
 
   this.isPlaylistExpanded_ = this.player_.playlistExpanded;
+  this.isTrackInfoExpanded_ = this.player_.trackInfoExpanded;
 
   // Resolving entries has to be done after the volume manager is initialized.
   this.volumeManager_.ensureInitialized(function() {
@@ -312,12 +332,11 @@ AudioPlayer.prototype.onError_ = function() {
  * @private
  */
 AudioPlayer.prototype.onResize_ = function(event) {
-  if (!this.isPlaylistExpanded_ &&
-      window.innerHeight > AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+  var trackListHeight = this.player_.$.trackList.clientHeight;
+  if (trackListHeight > AudioPlayer.TOP_PADDING_HEIGHT) {
     this.isPlaylistExpanded_ = true;
     this.player_.playlistExpanded = true;
-  } else if (this.isPlaylistExpanded_ &&
-             window.innerHeight <= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+  } else {
     this.isPlaylistExpanded_ = false;
     this.player_.playlistExpanded = false;
   }
@@ -382,6 +401,13 @@ AudioPlayer.TRACK_HEIGHT = 48;
 AudioPlayer.CLOSED_ARTWORK_HEIGHT = 48;
 
 /**
+ * artwork panel height in pixels, when it's opened.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.EXPANDED_ARTWORK_HEIGHT = 320;
+
+/**
  * Controls bar height in pixels.
  * @type {number}
  * @const
@@ -401,11 +427,20 @@ AudioPlayer.DEFAULT_EXPANDED_ITEMS = 5;
  * @const
  */
 AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.TOP_PADDING_HEIGHT +
-                                       AudioPlayer.CLOSED_ARTWORK_HEIGHT +
+                                       AudioPlayer.EXPANDED_ARTWORK_HEIGHT +
                                        AudioPlayer.CONTROLS_HEIGHT;
 
 /**
- * Invoked when the 'expanded' property in the model is changed.
+ * Minimum size of the window in the mode in pixels.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.CLOSED_MODE_MIN_HEIGHT = AudioPlayer.TOP_PADDING_HEIGHT +
+                                     AudioPlayer.CLOSED_ARTWORK_HEIGHT +
+                                     AudioPlayer.CONTROLS_HEIGHT;
+
+/**
+ * Invoked when the 'playlist-expanded' property in the model is changed.
  * @param {boolean} newValue New value.
  * @private
  */
@@ -419,7 +454,7 @@ AudioPlayer.prototype.onPlaylistExpandedChanged_ = function(newValue) {
 
   if (this.isPlaylistExpanded_ !== newValue) {
     this.isPlaylistExpanded_ = newValue;
-    this.syncHeight_();
+    this.syncHeightForPlaylist_();
 
     // Saves new state.
     window.appState.playlistExpanded = newValue;
@@ -428,30 +463,77 @@ AudioPlayer.prototype.onPlaylistExpandedChanged_ = function(newValue) {
 };
 
 /**
+ * Invoked when the 'track-info-expanded' property in the model is changed.
+ * @param {boolean} newValue New value.
  * @private
  */
-AudioPlayer.prototype.syncHeight_ = function() {
+AudioPlayer.prototype.onTrackInfoExpandedChanged_ = function(newValue) {
+  if (this.isTrackInfoExpanded_ !== null &&
+      this.isTrackInfoExpanded_ === newValue)
+    return;
+
+  this.lastExpandedInnerHeight_ = window.innerHeight;
+
+  if (this.isTrackInfoExpanded_ !== newValue) {
+    this.isTrackInfoExpanded_ = newValue;
+    var state = chrome.app.window.current()
+    var newHeight = window.outerHeight;
+    if (newValue) {
+      state.innerBounds.minHeight = AudioPlayer.EXPANDED_MODE_MIN_HEIGHT;
+      newHeight += AudioPlayer.EXPANDED_MODE_MIN_HEIGHT -
+          AudioPlayer.CLOSED_MODE_MIN_HEIGHT;
+    } else {
+      state.innerBounds.minHeight = AudioPlayer.CLOSED_MODE_MIN_HEIGHT;
+      newHeight -= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT -
+          AudioPlayer.CLOSED_MODE_MIN_HEIGHT;
+    }
+    window.resizeTo(window.outerWidth, newHeight);
+
+    // Saves new state.
+    window.appState.isTrackInfoExpanded_ = newValue;
+    util.saveAppState();
+  }
+};
+
+/**
+ * @private
+ */
+AudioPlayer.prototype.syncHeightForPlaylist_ = function() {
   var targetInnerHeight;
 
   if (this.player_.playlistExpanded) {
-    // Expanded.
+    // playllist expanded.
     if (!this.lastExpandedInnerHeight_ ||
         this.lastExpandedInnerHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
       var expandedListHeight =
           Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
               AudioPlayer.TRACK_HEIGHT;
-      targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
-                          expandedListHeight +
-                          AudioPlayer.CONTROLS_HEIGHT;
+      if (this.player_.trackInfoExpanded) {
+        targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
+                            AudioPlayer.EXPANDED_ARTWORK_HEIGHT +
+                            expandedListHeight +
+                            AudioPlayer.CONTROLS_HEIGHT;
+      } else {
+        targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
+                            AudioPlayer.TRACK_HEIGHT +
+                            expandedListHeight +
+                            AudioPlayer.CONTROLS_HEIGHT;
+      }
       this.lastExpandedInnerHeight_ = targetInnerHeight;
     } else {
       targetInnerHeight = this.lastExpandedInnerHeight_;
     }
   } else {
-    // Not expanded.
-    targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
-                        AudioPlayer.TRACK_HEIGHT +
-                        AudioPlayer.CONTROLS_HEIGHT;
+    // playllist not expanded.
+    if (this.player_.trackInfoExpanded) {
+      targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
+                          AudioPlayer.EXPANDED_ARTWORK_HEIGHT +
+                          AudioPlayer.CONTROLS_HEIGHT;
+    } else {
+      targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
+                          AudioPlayer.TRACK_HEIGHT +
+                          AudioPlayer.CONTROLS_HEIGHT;
+    }
   }
   window.resizeTo(window.outerWidth,
                   AudioPlayer.HEADER_HEIGHT + targetInnerHeight);

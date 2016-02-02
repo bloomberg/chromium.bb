@@ -7,30 +7,37 @@
   background: rgb(245, 245, 245);
   color: rgb(51, 51, 51);
   cursor: default;
-  display: flex;
-  flex-direction: column;
   font-size: 10pt;
-  justify-content: space-around;
   overflow: hidden;
 }
 
 /* Track item. */
 .track {
   align-items: center;
+  background-color: rgba(255, 255, 255, 0.9);
   display: flex;
   height: 48px;
   justify-content: space-between;
   width: 100%;
 }
 
-/* Track icon. */
+:host[expanded] .track {
+  bottom: 0px;
+  position: absolute;
+}
+
+/* artwork icon(expanded) */
 .track .icon-wrapper {
   flex: none;
   height: 48px;
   width: 48px;
 }
 
-.icon-wrapper .icon {
+:host[expanded] .icon {
+  visibility: hidden;
+}
+
+:host(:not([expanded])) .icon {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
@@ -40,16 +47,47 @@
   width: 48px;
 }
 
-.icon-wrapper .icon-background {
-  background: -webkit-image-set(
-      url(../assets/100/playlist_now_playing.png) 1x,
-      url(../assets/200/playlist_now_playing.png) 2x)
-      center
-      no-repeat;
-  height: 48px;
-  pointer-events: none;
-  position: absolute;
-  width: 48px;
+/* artwork icon(expanded) */
+
+.track-wrapper {
+  background-color: rgb(32, 32, 34);
+  position: relative;
+}
+
+:host:not([artwork-available])[expanded] .track-wrapper {
+  height: 320px;
+  position: relative;
+  width: 100%;
+}
+
+.icon-expanded {
+  background-size: 0 0;
+}
+
+:host:not([expanded]) .icon-unavailable-expanded {
+  background-size: 0 0;
+}
+
+:host:not([artwork-available])[expanded] .icon-unavailable-expanded {
+  background-image: -webkit-image-set(
+      url(../assets/100/player_no_artwork.png) 1x,
+      url(../assets/200/player_no_artwork.png) 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: calc(320px - 48px);
+  margin-left: auto;
+  margin-right: auto;
+  width: 320px;
+}
+
+:host[artwork-available][expanded] .icon-expanded {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 320px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 320px;
 }
 
 /* expand icon. */
@@ -61,20 +99,13 @@
   width: 48px;
 }
 
-:host(:not([available])) > .track .expand {
-  background-image: -webkit-image-set(
-      url(../assets/100/player_cover_open.png) 1x,
-      url(../assets/200/player_cover_open.png) 2x);
-  opacity: 0.1;
-}
-
-:host([available]:not([expanded])) > .track .expand {
+:host:not([expanded]) .track .expand {
   background-image: -webkit-image-set(
       url(../assets/100/player_cover_open.png) 1x,
       url(../assets/200/player_cover_open.png) 2x);
 }
 
-:host([available][expanded]) > .track .expand {
+:host[expanded] .track .expand {
   background-image: -webkit-image-set(
       url(../assets/100/player_cover_close.png) 1x,
       url(../assets/200/player_cover_close.png) 2x);

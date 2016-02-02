@@ -17,7 +17,14 @@
       expanded: {
         type: Boolean,
         value: false,
-        notify: true
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      artworkAvailable: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true
       }
     },
   });

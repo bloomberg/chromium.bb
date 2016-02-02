@@ -137,6 +137,7 @@ Polymer({
       var currentTrack = this.$.trackList.getCurrentTrack();
       if(currentTrack && currentTrack != this.$.trackInfo.track){
         this.$.trackInfo.track = currentTrack;
+        this.$.trackInfo.artworkAvailable = !!currentTrack.artworkUrl;
       }
       if (currentTrack && currentTrack.url != this.$.audio.src) {
         this.$.audio.src = currentTrack.url;
@@ -377,11 +378,14 @@ Polymer({
       this.$.trackInfo.notifyPath('track.title', this.tracks[index].title);
       this.$.trackInfo.notifyPath('track.artist', this.tracks[index].artist);
       var artworkUrl = this.tracks[index].artworkUrl;
-      if (!artworkUrl || artworkUrl !== '')
+      if (!artworkUrl && artworkUrl !== '') {
         this.$.trackInfo.notifyPath('track.artworkUrl',
             this.tracks[index].artworkUrl);
-      else
+        this.$.trackInfo.artworkAvailable = true;
+      } else {
         this.$.trackInfo.notifyPath('track.artworkUrl', undefined);
+        this.$.trackInfo.artworkAvailable = false;
+      }
     }
   },
 
