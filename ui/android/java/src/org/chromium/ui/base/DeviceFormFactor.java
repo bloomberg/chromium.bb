@@ -23,7 +23,7 @@ public class DeviceFormFactor {
     private static Boolean sIsLargeTablet = null;
 
     /**
-     * @param context Android's context
+     * @param context Android's context.
      * @return        Whether the app is should treat the device as a tablet for layout.
      */
     @CalledByNative
@@ -46,6 +46,15 @@ public class DeviceFormFactor {
             sIsLargeTablet = minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
         }
         return sIsLargeTablet;
+    }
+
+    /**
+     * Resets form factor information. This method should be called due to a smallestScreenWidthDp
+     * change in the {@link android.content.res.Configuration}.
+     */
+    public static void onConfigurationChanged() {
+        sIsTablet = null;
+        sIsLargeTablet = null;
     }
 
 }
