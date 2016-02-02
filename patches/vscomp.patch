@@ -37,3 +37,16 @@ index 0fb2b3e..007713e 100644
 +#endif
  
  U_NAMESPACE_END
+diff --git a/source/i18n/dtfmtsym.cpp b/source/i18n/dtfmtsym.cpp
+index e99670d..c9a3502 100644
+--- a/source/i18n/dtfmtsym.cpp
++++ b/source/i18n/dtfmtsym.cpp
+@@ -169,7 +169,7 @@ SharedDateFormatSymbols::~SharedDateFormatSymbols() {
+ template<> U_I18N_API
+ const SharedDateFormatSymbols *
+         LocaleCacheKey<SharedDateFormatSymbols>::createObject(
+-                const void */*unusedContext*/, UErrorCode &status) const {
++                const void * /*unusedContext*/, UErrorCode &status) const {
+     char type[256];
+     Calendar::getCalendarTypeFromLocale(fLoc, type, UPRV_LENGTHOF(type), status);
+     if (U_FAILURE(status)) {

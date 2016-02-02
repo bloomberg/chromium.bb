@@ -265,6 +265,7 @@ D. Local Modifications
   - patches/vscomp.patch for building with Visual Studio on Windows.
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
+     c. fix http://bugs.icu-project.org/trac/ticket/12129 (C4138 warning)
 
   - patches/data.build.patch :
       Remove unnecessary resources : unames, collator rule source

@@ -246,8 +246,6 @@
                     # See http://bugs.icu-project.org/trac/ticket/11122
                     '-Wno-inline-new-delete',
                     '-Wno-implicit-exception-spec-mismatch',
-                    # See http://bugs.icu-project.org/trac/ticket/11757.
-                    '-Wno-reorder',
                   ],
                 },
               },
