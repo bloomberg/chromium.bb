@@ -191,12 +191,14 @@ if (!is_android) {
         ":xdg_mime",  # Needs to be public for installer to consume files.
       ]
 
-      # Needed for chrome_main.cc initialization of libraries.
-      configs += [ "//build/config/linux:pangocairo" ]
-
       # GYP has this in a 'profiling==0 and linux_disable_pie==0' condition.
       # but GN doesn't have either of these flags.
       ldflags = [ "-pie" ]
+
+      if (use_pango || use_cairo) {
+        # Needed for chrome_main.cc initialization of libraries.
+        configs += [ "//build/config/linux:pangocairo" ]
+      }
 
       if (use_x11) {
         configs += [

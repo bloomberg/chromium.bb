@@ -46,12 +46,16 @@ pkg_config("glib") {
   ]
 }
 
-pkg_config("pangocairo") {
-  packages = [ "pangocairo" ]
+if (use_pango || use_cairo) {
+  pkg_config("pangocairo") {
+    packages = [ "pangocairo" ]
+  }
 }
 
-pkg_config("pangoft2") {
-  packages = [ "pangoft2" ]
+if (use_pango) {
+  pkg_config("pangoft2") {
+    packages = [ "pangoft2" ]
+  }
 }
 
 # Note: if your target also depends on //dbus, you don't need to add this
