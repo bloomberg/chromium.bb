@@ -104,8 +104,7 @@ template <bool is_method, typename... Args>
 struct BindsArrayToFirstArg : false_type {};
 
 template <typename T, typename... Args>
-struct BindsArrayToFirstArg<true, T, Args...>
-    : is_array<typename std::remove_reference<T>::type> {};
+struct BindsArrayToFirstArg<true, T, Args...> : is_array<T> {};
 
 // HasRefCountedParamAsRawPtr is the same to HasRefCountedTypeAsRawPtr except
 // when |is_method| is true HasRefCountedParamAsRawPtr skips the first argument.
@@ -402,12 +401,11 @@ struct BindState<Runnable, R(Args...), BoundArgs...> final
                               InvokeHelperType, UnboundForwardRunType>;
   using UnboundRunType = MakeFunctionType<R, UnboundArgs>;
 
-  template <typename... ForwardArgs>
-  BindState(const Runnable& runnable, ForwardArgs&&... bound_args)
+  BindState(const Runnable& runnable, const BoundArgs&... bound_args)
       : BindStateBase(&Destroy),
         runnable_(runnable),
         ref_(bound_args...),
-        bound_args_(std::forward<ForwardArgs>(bound_args)...) {}
+        bound_args_(bound_args...) {}
 
   RunnableType runnable_;
   MaybeScopedRefPtr<HasIsMethodTag<Runnable>::value, BoundArgs...> ref_;
