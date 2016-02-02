@@ -956,13 +956,6 @@ def GetConfig():
           'TOC-ASAN',
   )
 
-  llvm = site_config.AddTemplate(
-      'llvm',
-      default_hw_tests_override,
-      profile='llvm',
-      description='Build with LLVM',
-  )
-
   telemetry = site_config.AddTemplate(
       'telemetry',
       default_hw_tests_override,
@@ -1287,19 +1280,6 @@ def GetConfig():
       trybot_list=False,
       gcc_githash='svn-mirror/google/gcc-4_9',
       description='Test next minor toolchain revision',
-  )
-
-  site_config.Add(
-      'toolchain-llvm',
-      llvm,
-      incremental,
-      no_vmtest_builder,
-      boards=['amd64-generic', 'daisy', 'x86-alex'],
-      hw_tests=[],
-      hw_tests_override=[],
-      chroot_replace=True,
-      description='Build with LLVM',
-      trybot_list=True,
   )
 
   site_config.Add(
@@ -2040,6 +2020,49 @@ def GetConfig():
       afdo_use=False,
       usepkg_build_packages=False,
       branch_util_test=True,
+  )
+
+  llvm = site_config.AddTemplate(
+      'llvm',
+      # Use release builder as a base. Make sure that we are doing a full
+      # build and that we are using AFDO.
+      _release,
+      no_vmtest_builder,
+      profile='llvm',
+      hw_tests=HWTestList.AsanTest(),
+      hw_tests_override=HWTestList.AsanTest(),
+      images=['base', 'test'],
+      description='Full release build with LLVM toolchain',
+      paygen=False,
+      signer_tests=False,
+      # This config is only for toolchain use. No need to list with general
+      # configs.
+      trybot_list=False,
+  )
+
+  _grouped_toolchain_llvm = config_lib.BuildConfig(
+      build_packages_in_background=True,
+      chrome_sdk=False,
+      chrome_sdk_build_chrome=False,
+      chroot_replace=False,
+  )
+
+  _llvm_grouped = llvm.derive(_grouped_toolchain_llvm)
+
+  site_config.AddGroup(
+      'toolchain-llvm',
+      site_config.Add(
+          'peppy-toolchain-llvm', llvm,
+          boards=['peppy'],
+      ),
+      site_config.Add(
+          'daisy-toolchain-llvm', _llvm_grouped,
+          boards=['daisy'],
+      ),
+      site_config.Add(
+          'x86-alex-toolchain-llvm', _llvm_grouped,
+          boards=['x86-alex'],
+      ),
   )
 
   ### Master release config.
