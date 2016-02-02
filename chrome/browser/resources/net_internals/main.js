@@ -191,6 +191,7 @@ var MainView = (function() {
       addTab(TimelineView);
       addTab(DnsView);
       addTab(SocketsView);
+      addTab(AltSvcView);
       addTab(SpdyView);
       addTab(QuicView);
       addTab(SdchView);

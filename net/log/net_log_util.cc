@@ -449,11 +449,11 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
                        status_dict);
   }
 
-  if (info_sources & NET_INFO_SPDY_ALT_SVC_MAPPINGS) {
+  if (info_sources & NET_INFO_ALT_SVC_MAPPINGS) {
     const HttpServerProperties& http_server_properties =
         *context->http_server_properties();
     net_info_dict->Set(
-        NetInfoSourceToString(NET_INFO_SPDY_ALT_SVC_MAPPINGS),
+        NetInfoSourceToString(NET_INFO_ALT_SVC_MAPPINGS),
         http_server_properties.GetAlternativeServiceInfoAsValue());
   }
 

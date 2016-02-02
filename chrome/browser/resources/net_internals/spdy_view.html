@@ -74,25 +74,4 @@
       </p>
     </div>
   </div>
-
-  <h4>Alternative Service Mappings</h4>
-  <div id=spdy-view-alternate-protocol-mappings>
-    <div jsdisplay="spdyAlternateProtocolMappings.length == 0">None</div>
-    <div jsdisplay="spdyAlternateProtocolMappings.length != 0">
-      <table class="styled-table">
-        <thead>
-          <tr>
-            <th>Host</th>
-            <th>Alternative Service</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr jsselect="spdyAlternateProtocolMappings">
-            <td jscontent="host_port_pair"></td>
-            <td jscontent="alternative_service"></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </div>

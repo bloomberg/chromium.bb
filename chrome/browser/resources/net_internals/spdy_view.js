@@ -23,7 +23,6 @@ var SpdyView = (function() {
 
     g_browser.addSpdySessionInfoObserver(this, true);
     g_browser.addSpdyStatusObserver(this, true);
-    g_browser.addSpdyAlternateProtocolMappingsObserver(this, true);
   }
 
   SpdyView.TAB_ID = 'tab-handle-spdy';
@@ -34,8 +33,6 @@ var SpdyView = (function() {
   SpdyView.MAIN_BOX_ID = 'spdy-view-tab-content';
   SpdyView.STATUS_ID = 'spdy-view-status';
   SpdyView.SESSION_INFO_ID = 'spdy-view-session-info';
-  SpdyView.ALTERNATE_PROTOCOL_MAPPINGS_ID =
-      'spdy-view-alternate-protocol-mappings';
 
   cr.addSingletonGetter(SpdyView);
 
@@ -45,9 +42,7 @@ var SpdyView = (function() {
 
     onLoadLogFinish: function(data) {
       return this.onSpdySessionInfoChanged(data.spdySessionInfo) &&
-             this.onSpdyStatusChanged(data.spdyStatus) &&
-             this.onSpdyAlternateProtocolMappingsChanged(
-                 data.spdyAlternateProtocolMappings);
+             this.onSpdyStatusChanged(data.spdyStatus);
     },
 
     /**
@@ -70,19 +65,6 @@ var SpdyView = (function() {
         return false;
       var input = new JsEvalContext(spdyStatus);
       jstProcess(input, $(SpdyView.STATUS_ID));
-      return true;
-    },
-
-    /**
-     * Displays information on the SPDY alternate protocol mappings.
-     */
-    onSpdyAlternateProtocolMappingsChanged: function(
-        spdyAlternateProtocolMappings) {
-      if (!spdyAlternateProtocolMappings)
-        return false;
-      var input = new JsEvalContext(
-          {spdyAlternateProtocolMappings: spdyAlternateProtocolMappings});
-      jstProcess(input, $(SpdyView.ALTERNATE_PROTOCOL_MAPPINGS_ID));
       return true;
     }
   };

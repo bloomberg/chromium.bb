@@ -42,6 +42,7 @@
 <include src="quic_view.js">
 <include src="socket_pool_wrapper.js">
 <include src="sockets_view.js">
+<include src="alt_svc_view.js">
 <include src="spdy_view.js">
 <include src="modules_view.js">
 <include src="prerender_view.js">

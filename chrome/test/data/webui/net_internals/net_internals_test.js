@@ -314,6 +314,7 @@ var NetInternalsTest = (function() {
       dns: DnsView.TAB_ID,
       sockets: SocketsView.TAB_ID,
       http2: SpdyView.TAB_ID,
+      'alt-svc': AltSvcView.TAB_ID,
       quic: QuicView.TAB_ID,
       sdch: SdchView.TAB_ID,
       httpCache: HttpCacheView.TAB_ID,

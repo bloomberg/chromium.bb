@@ -49,8 +49,8 @@ var BrowserBridge = (function() {
     this.addNetInfoPollableDataHelper('spdySessionInfo',
                                       'onSpdySessionInfoChanged');
     this.addNetInfoPollableDataHelper('spdyStatus', 'onSpdyStatusChanged');
-    this.addNetInfoPollableDataHelper('spdyAlternateProtocolMappings',
-                                      'onSpdyAlternateProtocolMappingsChanged');
+    this.addNetInfoPollableDataHelper('altSvcMappings',
+                                      'onAltSvcMappingsChanged');
     this.addNetInfoPollableDataHelper('quicInfo', 'onQuicInfoChanged');
     this.addNetInfoPollableDataHelper('sdchInfo', 'onSdchInfoChanged');
     this.addNetInfoPollableDataHelper('httpCacheInfo',
@@ -485,15 +485,13 @@ var BrowserBridge = (function() {
     },
 
     /**
-     * Adds a listener of the AlternateProtocolMappings. |observer| will be
+     * Adds a listener of the altSvcMappings. |observer| will be
      * called back when data is received, through:
      *
-     *   observer.onSpdyAlternateProtocolMappingsChanged(
-     *       spdyAlternateProtocolMappings)
+     *   observer.onAltSvcMappingsChanged(altSvcMappings)
      */
-    addSpdyAlternateProtocolMappingsObserver: function(observer,
-                                                       ignoreWhenUnchanged) {
-      this.pollableDataHelpers_.spdyAlternateProtocolMappings.addObserver(
+    addAltSvcMappingsObserver: function(observer, ignoreWhenUnchanged) {
+      this.pollableDataHelpers_.altSvcMappings.addObserver(
           observer, ignoreWhenUnchanged);
     },
 
