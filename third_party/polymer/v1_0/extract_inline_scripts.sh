@@ -21,7 +21,7 @@ fi
 src="${1%/}"
 dst="${2%/}"
 
-rsync -c -r -v --exclude="compiled_resources*.gyp" "$src/" "$dst/"
+rsync -c --delete -r -v --exclude="compiled_resources*.gyp" "$src/" "$dst/"
 
 find "$dst" -name "*.html" \
             -not -path "*/demos/*" \
