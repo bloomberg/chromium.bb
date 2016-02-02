@@ -286,7 +286,11 @@ bool FrameTreeNode::CommitPendingSandboxFlags() {
 void FrameTreeNode::CreatedNavigationRequest(
     scoped_ptr<NavigationRequest> navigation_request) {
   CHECK(IsBrowserSideNavigationEnabled());
-  ResetNavigationRequest(false);
+
+  // There's no need to reset the state: there's still an ongoing load, and the
+  // RenderFrameHostManager will take care of updates to the speculative
+  // RenderFrameHost in DidCreateNavigationRequest below.
+  ResetNavigationRequest(true);
 
   // Force the throbber to start to keep it in sync with what is happening in
   // the UI. Blink doesn't send throb notifications for JavaScript URLs, so it
@@ -303,21 +307,17 @@ void FrameTreeNode::CreatedNavigationRequest(
   render_manager()->DidCreateNavigationRequest(*navigation_request_);
 }
 
-void FrameTreeNode::ResetNavigationRequest(bool is_commit) {
+void FrameTreeNode::ResetNavigationRequest(bool keep_state) {
   CHECK(IsBrowserSideNavigationEnabled());
   if (!navigation_request_)
     return;
   navigation_request_.reset();
 
-  // During commit, the clean up of a speculative RenderFrameHost is done in
-  // RenderFrameHostManager::DidNavigateFrame. The load is also still being
-  // tracked.
-  if (is_commit)
+  if (keep_state)
     return;
 
-  // If the reset corresponds to a cancelation, the RenderFrameHostManager
-  // should clean up any speculative RenderFrameHost it created for the
-  // navigation.
+  // The RenderFrameHostManager should clean up any speculative RenderFrameHost
+  // it created for the navigation. Also register that the load stopped.
   DidStopLoading();
   render_manager_.CleanUpNavigation();
 }

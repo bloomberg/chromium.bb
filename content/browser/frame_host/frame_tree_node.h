@@ -220,9 +220,10 @@ class CONTENT_EXPORT FrameTreeNode {
       scoped_ptr<NavigationRequest> navigation_request);
 
   // PlzNavigate
-  // Resets the current navigation request. |is_commit| is true if the reset is
-  // due to the commit of the navigation.
-  void ResetNavigationRequest(bool is_commit);
+  // Resets the current navigation request. If |keep_state| is true, any state
+  // created by the NavigationRequest (e.g. speculative RenderFrameHost,
+  // loading state) will not be reset by the function.
+  void ResetNavigationRequest(bool keep_state);
 
   // Returns true if this node is in a state where the loading progress is being
   // tracked.

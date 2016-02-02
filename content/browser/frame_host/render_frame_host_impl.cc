@@ -2060,8 +2060,6 @@ void RenderFrameHostImpl::CommitNavigation(
       response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
                                      request_params));
-  // TODO(clamy): Check if we should start the throbber for non javascript urls
-  // here.
 
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.

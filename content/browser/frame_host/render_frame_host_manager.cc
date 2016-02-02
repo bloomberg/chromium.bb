@@ -772,11 +772,6 @@ void RenderFrameHostManager::ClearWebUIInstances() {
 void RenderFrameHostManager::DidCreateNavigationRequest(
     const NavigationRequest& request) {
   CHECK(IsBrowserSideNavigationEnabled());
-  // Clean up any state in case there's an ongoing navigation.
-  // TODO(carlosk): remove this cleanup here once we properly cancel ongoing
-  // navigations.
-  CleanUpNavigation();
-
   RenderFrameHostImpl* dest_rfh = GetFrameHostForNavigation(request);
   DCHECK(dest_rfh);
 }
