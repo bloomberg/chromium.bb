@@ -25,9 +25,6 @@
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
-#include "platform/SharedBuffer.h"
-#include "platform/weborigin/KURL.h"
-#include "public/platform/Platform.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -61,8 +58,6 @@ static const char isRegex[] = "isRegex";
 static const char lineNumber[] = "lineNumber";
 static const char columnNumber[] = "columnNumber";
 static const char condition[] = "condition";
-static const char skipStackPattern[] = "skipStackPattern";
-static const char skipContentScripts[] = "skipContentScripts";
 static const char skipAllPauses[] = "skipAllPauses";
 
 } // namespace DebuggerAgentState;
@@ -126,19 +121,6 @@ static PassRefPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::Context> cont
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
-static PassOwnPtr<SourceMap> parseSourceMapFromDataUrl(const String& url)
-{
-    KURL sourceMapURL(KURL(), url);
-    if (sourceMapURL.isEmpty() || !sourceMapURL.isValid())
-        return nullptr;
-    WebString mimetype;
-    WebString charset;
-    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(sourceMapURL, mimetype, charset));
-    if (!data)
-        return nullptr;
-    return SourceMap::parse(String(data->data(), data->size()), String());
-}
-
 static bool positionComparator(const std::pair<int, int>& a, const std::pair<int, int>& b)
 {
     if (a.first != b.first)
@@ -170,8 +152,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_recursionLevelForStepOut(0)
     , m_recursionLevelForStepFrame(0)
     , m_skipAllPauses(false)
-    , m_skipContentScripts(false)
-    , m_cachedSkipStackGeneration(0)
     , m_lastAsyncOperationId(0)
     , m_maxAsyncCallStackDepth(0)
     , m_currentAsyncCallChain(nullptr)
@@ -234,8 +214,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
 
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, JSONObject::create());
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
-    m_state->setString(DebuggerAgentState::skipStackPattern, "");
-    m_state->setBoolean(DebuggerAgentState::skipContentScripts, false);
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
     m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
@@ -245,7 +223,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_currentCallStack.Reset();
     m_scripts.clear();
     m_blackboxedPositions.clear();
-    m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     internalSetAsyncCallStackDepth(0);
     m_promiseTracker->setEnabled(false, false);
@@ -263,23 +240,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     clearStepIntoAsync();
     m_skipAllPauses = false;
     m_enabled = false;
-}
-
-static PassOwnPtr<ScriptRegexp> compileSkipCallFramePattern(String patternText)
-{
-    if (patternText.isEmpty())
-        return nullptr;
-    OwnPtr<ScriptRegexp> result = adoptPtr(new ScriptRegexp(patternText, TextCaseSensitive));
-    if (!result->isValid())
-        result.clear();
-    return result.release();
-}
-
-void V8DebuggerAgentImpl::increaseCachedSkipStackGeneration()
-{
-    ++m_cachedSkipStackGeneration;
-    if (!m_cachedSkipStackGeneration)
-        m_cachedSkipStackGeneration = 1;
 }
 
 void V8DebuggerAgentImpl::internalSetAsyncCallStackDepth(int depth)
@@ -317,12 +277,6 @@ void V8DebuggerAgentImpl::restore()
     m_state->getNumber(DebuggerAgentState::pauseOnExceptionsState, &pauseState);
     setPauseOnExceptionsImpl(&error, pauseState);
 
-    String skipStackPattern;
-    m_state->getString(DebuggerAgentState::skipStackPattern, &skipStackPattern);
-    m_cachedSkipStackRegExp = compileSkipCallFramePattern(skipStackPattern);
-    increaseCachedSkipStackGeneration();
-
-    m_skipContentScripts = m_state->booleanProperty(DebuggerAgentState::skipContentScripts, false);
     m_skipAllPauses = m_state->booleanProperty(DebuggerAgentState::skipAllPauses, false);
 
     int asyncCallStackDepth = 0;
@@ -558,35 +512,15 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<Ja
         // Unknown scripts are blackboxed.
         return true;
     }
-    if (m_skipContentScripts && it->value.isContentScript())
-        return true;
-
     auto itBlackboxedPositions = m_blackboxedPositions.find(String::number(frame->sourceID()));
-    if (itBlackboxedPositions != m_blackboxedPositions.end()) {
-        const Vector<std::pair<int, int>>& ranges = itBlackboxedPositions->value;
-        auto itRange = std::lower_bound(ranges.begin(), ranges.end(), std::make_pair(frame->line(), frame->column()), positionComparator);
-        // Ranges array contains positions in script where blackbox state is changed.
-        // [(0,0) ... ranges[0]) isn't blackboxed, [ranges[0] ... ranges[1]) is blackboxed...
-        return std::distance(ranges.begin(), itRange) % 2;
-    }
+    if (itBlackboxedPositions == m_blackboxedPositions.end())
+        return false;
 
-    bool isBlackboxed = false;
-    String scriptURL = it->value.sourceURL();
-    String sourceMappedScriptURL;
-    auto itSourceMap = m_sourceMaps.find(String::number(frame->sourceID()));
-    if (itSourceMap != m_sourceMaps.end()) {
-        const SourceMap::Entry* entry = itSourceMap->value->findEntry(frame->line(), frame->column());
-        if (entry)
-            sourceMappedScriptURL = entry->sourceURL;
-    }
-    if (m_cachedSkipStackRegExp && (!scriptURL.isEmpty() || !sourceMappedScriptURL.isEmpty())) {
-        if (!it->value.getBlackboxedState(m_cachedSkipStackGeneration, &isBlackboxed)) {
-            isBlackboxed = !scriptURL.isEmpty() && m_cachedSkipStackRegExp->match(scriptURL) != -1;
-            isBlackboxed = isBlackboxed || (!sourceMappedScriptURL.isEmpty() && m_cachedSkipStackRegExp->match(sourceMappedScriptURL) != -1);
-            it->value.setBlackboxedState(m_cachedSkipStackGeneration, isBlackboxed);
-        }
-    }
-    return isBlackboxed;
+    const Vector<std::pair<int, int>>& ranges = itBlackboxedPositions->value;
+    auto itRange = std::lower_bound(ranges.begin(), ranges.end(), std::make_pair(frame->line(), frame->column()), positionComparator);
+    // Ranges array contains positions in script where blackbox state is changed.
+    // [(0,0) ... ranges[0]) isn't blackboxed, [ranges[0] ... ranges[1]) is blackboxed...
+    return std::distance(ranges.begin(), itRange) % 2;
 }
 
 V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipExceptionPause()
@@ -1116,28 +1050,6 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
     injectedScript->setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
 }
 
-// TODO(kozyatinskiy): remove this method after blackboxing migration to blackboxed ranges.
-void V8DebuggerAgentImpl::skipStackFrames(ErrorString* errorString, const String* pattern, const bool* skipContentScripts)
-{
-    if (!checkEnabled(errorString))
-        return;
-    m_blackboxedPositions.clear();
-    OwnPtr<ScriptRegexp> compiled;
-    String patternValue = pattern ? *pattern : "";
-    if (!patternValue.isEmpty()) {
-        compiled = compileSkipCallFramePattern(patternValue);
-        if (!compiled) {
-            *errorString = "Invalid regular expression";
-            return;
-        }
-    }
-    m_state->setString(DebuggerAgentState::skipStackPattern, patternValue);
-    m_cachedSkipStackRegExp = compiled.release();
-    increaseCachedSkipStackGeneration();
-    m_skipContentScripts = asBool(skipContentScripts);
-    m_state->setBoolean(DebuggerAgentState::skipContentScripts, m_skipContentScripts);
-}
-
 void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int depth)
 {
     if (!checkEnabled(errorString))
@@ -1584,9 +1496,6 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     bool hasSourceURL = script.hasSourceURL();
     String scriptURL = script.sourceURL();
     String sourceMapURL = sourceMapURLForScript(script, parsedScript.success);
-    OwnPtr<SourceMap> sourceMap = parseSourceMapFromDataUrl(sourceMapURL);
-    if (sourceMap)
-        m_sourceMaps.set(parsedScript.scriptId, sourceMap.release());
 
     const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
@@ -1774,7 +1683,6 @@ void V8DebuggerAgentImpl::reset()
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
     m_blackboxedPositions.clear();
-    m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
     m_promiseTracker->clear();

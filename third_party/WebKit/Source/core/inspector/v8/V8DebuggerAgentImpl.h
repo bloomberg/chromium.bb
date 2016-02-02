@@ -10,7 +10,6 @@
 #include "core/InspectorFrontend.h"
 #include "core/inspector/v8/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
-#include "core/inspector/v8/SourceMap.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "wtf/Forward.h"
@@ -104,7 +103,6 @@ public:
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
     void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
     void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId);
-    void skipStackFrames(ErrorString*, const String* pattern, const bool* skipContentScripts);
     void setAsyncCallStackDepth(ErrorString*, int depth);
     void enablePromiseTracker(ErrorString*, const bool* captureStacks);
     void disablePromiseTracker(ErrorString*);
@@ -228,9 +226,7 @@ private:
     int m_recursionLevelForStepOut;
     int m_recursionLevelForStepFrame;
     bool m_skipAllPauses;
-    bool m_skipContentScripts;
-    OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
-    unsigned m_cachedSkipStackGeneration;
+
     // This field must be destroyed before the listeners set above.
     OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtr<PromiseTracker> m_promiseTracker;
@@ -248,7 +244,6 @@ private:
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
-    HashMap<String, OwnPtr<SourceMap>> m_sourceMaps;
     HashMap<String, Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

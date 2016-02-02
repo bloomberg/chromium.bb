@@ -58,9 +58,6 @@ public:
     bool isInternalScript() const { return m_isInternalScript; }
     bool isLiveEdit() const { return m_isLiveEdit; }
 
-    bool getBlackboxedState(unsigned blackboxGeneration, bool* isBlackboxed) const;
-    void setBlackboxedState(unsigned blackboxGeneration, bool isBlackboxed);
-
     V8DebuggerScript& setURL(const String&);
     V8DebuggerScript& setSourceURL(const String&);
     V8DebuggerScript& setSourceMappingURL(const String&);
@@ -87,9 +84,6 @@ private:
     bool m_isContentScript;
     bool m_isInternalScript;
     bool m_isLiveEdit;
-    // Used from outside for caching.
-    bool m_isBlackboxedURL;
-    unsigned m_blackboxGeneration;
 };
 
 struct V8DebuggerParsedScript {

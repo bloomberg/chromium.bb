@@ -66,7 +66,6 @@ public:
     virtual void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrameId, const String* in_functionObjectId) = 0;
     virtual void getStepInPositions(ErrorString*, const String& in_callFrameId, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::Location>>& opt_out_stepInPositions) = 0;
     virtual void getBacktrace(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::CallFrame>>& out_callFrames, RefPtr<TypeBuilder::Debugger::StackTrace>& opt_out_asyncStackTrace) = 0;
-    virtual void skipStackFrames(ErrorString*, const String* in_script, const bool* in_skipContentScripts) = 0;
     virtual void setAsyncCallStackDepth(ErrorString*, int in_maxDepth) = 0;
     virtual void enablePromiseTracker(ErrorString*, const bool* in_captureStacks) = 0;
     virtual void disablePromiseTracker(ErrorString*) = 0;

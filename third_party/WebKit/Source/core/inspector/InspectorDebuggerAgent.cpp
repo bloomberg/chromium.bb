@@ -218,11 +218,6 @@ void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<TypeB
     m_v8DebuggerAgent->getBacktrace(errorString, outCallFrames, optOutAsyncStackTrace);
 }
 
-void InspectorDebuggerAgent::skipStackFrames(ErrorString* errorString, const String* inScript, const bool* inSkipContentScripts)
-{
-    m_v8DebuggerAgent->skipStackFrames(errorString, inScript, inSkipContentScripts);
-}
-
 void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, int inMaxDepth)
 {
     m_v8DebuggerAgent->setAsyncCallStackDepth(errorString, inMaxDepth);
