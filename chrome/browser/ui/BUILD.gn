@@ -57,13 +57,21 @@ source_set("ui") {
     "//components/certificate_reporting:encrypted_cert_logger_proto",
     "//components/dom_distiller/webui",
     "//components/flags_ui",
+    "//components/guest_view/browser",
+    "//components/history/core/browser",
     "//components/invalidation/impl",
+    "//components/keyed_service/content",
+    "//components/keyed_service/core",
     "//components/omnibox/common",
     "//components/onc",
     "//components/password_manager/core/browser",
     "//components/resources",
+    "//components/signin/core/browser",
     "//components/strings",
+    "//components/sync_driver",
     "//components/toolbar",
+    "//components/translate/core/browser",
+    "//components/ui/zoom",
     "//components/update_client",
     "//components/version_ui",
     "//content/public/common",
@@ -85,6 +93,10 @@ source_set("ui") {
     "//ui/snapshot",
     "//ui/strings",
   ]
+
+  if (enable_extensions) {
+    deps += [ "//extensions/browser" ]
+  }
 
   if (!is_ios) {
     sources += rebase_path(gypi_values.chrome_browser_ui_non_ios_sources,
