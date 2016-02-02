@@ -250,6 +250,11 @@ extern const char kMediaFileSystemPathPart[];
 extern const uint8_t kWebstoreSignaturesPublicKey[];
 extern const int kWebstoreSignaturesPublicKeySize;
 
+#if defined(OS_CHROMEOS)
+// Returns true if |extension_id| is one of the IME extensions that will create
+// IME menu.
+bool IsImeMenuExtensionId(const std::string& extension_id);
+#endif
 }  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

@@ -150,7 +150,14 @@ void LauncherContextMenu::Init() {
             MENU_PIN,
             l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_PIN));
       }
-      if (controller_->IsOpen(item_.id)) {
+      bool show_close_button = controller_->IsOpen(item_.id);
+#if defined(OS_CHROMEOS)
+      if (extension_misc::IsImeMenuExtensionId(
+              controller_->GetAppIDForShelfID(item_.id))) {
+        show_close_button = false;
+      }
+#endif
+      if (show_close_button) {
         AddItem(MENU_CLOSE,
                 l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
       }
