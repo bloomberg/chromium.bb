@@ -597,16 +597,8 @@ void ThreadState::scheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gcType)
     ASSERT(!isSweepingInProgress());
     ASSERT(!sweepForbidden());
 
-    // TODO(haraken): Consider if we should trigger a memory pressure GC
-    // for V8 minor GCs as well.
-    if (gcType == BlinkGC::V8MajorGC && shouldForceMemoryPressureGC()) {
-#if PRINT_HEAP_STATS
-        dataLogF("Scheduled MemoryPressureGC\n");
-#endif
-        Heap::collectGarbage(BlinkGC::HeapPointersOnStack, BlinkGC::GCWithoutSweep, BlinkGC::MemoryPressureGC);
-        return;
-    }
-    if (shouldScheduleV8FollowupGC()) {
+    if ((gcType == BlinkGC::V8MajorGC && shouldForceMemoryPressureGC())
+        || shouldScheduleV8FollowupGC()) {
 #if PRINT_HEAP_STATS
         dataLogF("Scheduled PreciseGC\n");
 #endif
