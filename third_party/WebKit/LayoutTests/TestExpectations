@@ -409,6 +409,10 @@ crbug.com/518005 crbug.com/463358 [ Mac ] svg/W3C-SVG-1.1/struct-frag-02-t.svg [
 crbug.com/510337 inspector/elements/edit/edit-dom-actions.html [ Timeout ]
 
 # SPv2 paint properties are still being implemented.
+#
+# These tests should not be rebaselined automatically, as our goal is to exactly match
+# existing tests. We have skipped the entire spv2 directory and are adding [ Pass ] lines
+# as we go. Please remove [ Pass ] lines instead of rebaselining these tests.
 crbug.com/537409 virtual/spv2/ [ Skip ]
 crbug.com/563667 virtual/spv2/fast/block/basic/001.html [ Pass ]
 crbug.com/563667 virtual/spv2/fast/block/positioning/static-distance-with-positioned-ancestor.html [ Pass ]
