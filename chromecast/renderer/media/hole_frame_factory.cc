@@ -57,9 +57,12 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
   // No texture => audio device.  size empty => video has one dimension = 0.
   // Dimension 0 case triggers a DCHECK later on in TextureMailbox if we push
   // through the overlay path.
-  if (!texture_ || size.IsEmpty())
+  if (!texture_ || size.IsEmpty()) {
+    LOG(INFO) << "Create black frame " << size.width() << "x" << size.height();
     return ::media::VideoFrame::CreateBlackFrame(gfx::Size(1, 1));
+  }
 
+  LOG(INFO) << "Create hole frame " << size.width() << "x" << size.height();
   scoped_refptr<::media::VideoFrame> frame =
       ::media::VideoFrame::WrapNativeTexture(
           ::media::PIXEL_FORMAT_XRGB,

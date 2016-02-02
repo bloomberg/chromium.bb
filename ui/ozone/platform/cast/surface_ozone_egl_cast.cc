@@ -18,11 +18,13 @@ intptr_t SurfaceOzoneEglCast::GetNativeWindow() {
 }
 
 bool SurfaceOzoneEglCast::OnSwapBuffers() {
+  parent_->OnSwapBuffers();
   return true;
 }
 
 void SurfaceOzoneEglCast::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
+  parent_->OnSwapBuffers();
   callback.Run(gfx::SwapResult::SWAP_ACK);
 }
 

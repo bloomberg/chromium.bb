@@ -78,7 +78,9 @@ SurfaceFactoryCast::SurfaceFactoryCast(scoped_ptr<CastEglPlatform> egl_platform)
       window_(0),
       display_size_(GetInitialDisplaySize()),
       new_display_size_(GetInitialDisplaySize()),
-      egl_platform_(std::move(egl_platform)) {}
+      egl_platform_(std::move(egl_platform)),
+      overlay_count_(0),
+      previous_frame_overlay_count_(0) {}
 
 SurfaceFactoryCast::~SurfaceFactoryCast() {
   ShutdownHardware();
@@ -126,6 +128,31 @@ void SurfaceFactoryCast::ShutdownHardware() {
   egl_platform_->ShutdownHardware();
 
   state_ = kUninitialized;
+}
+
+void SurfaceFactoryCast::OnSwapBuffers() {
+  DCHECK(overlay_count_ == 0 || overlay_count_ == 1);
+
+  // Logging for overlays to help diagnose bugs when nothing is visible on
+  // screen.  Logging this every frame would be overwhelming, so we just
+  // log on the transitions from 0 overlays -> 1 overlay and vice versa.
+  if (overlay_count_ == 0 && previous_frame_overlay_count_ != 0) {
+    LOG(INFO) << "Overlays deactivated";
+  } else if (overlay_count_ != 0 && previous_frame_overlay_count_ == 0) {
+    LOG(INFO) << "Overlays activated: " << overlay_bounds_.ToString();
+  } else if (overlay_count_ == previous_frame_overlay_count_ &&
+             overlay_bounds_ != previous_frame_overlay_bounds_) {
+    LOG(INFO) << "Overlay geometry changed to " << overlay_bounds_.ToString();
+  }
+
+  previous_frame_overlay_count_ = overlay_count_;
+  previous_frame_overlay_bounds_ = overlay_bounds_;
+  overlay_count_ = 0;
+}
+
+void SurfaceFactoryCast::OnOverlayScheduled(const gfx::Rect& display_bounds) {
+  ++overlay_count_;
+  overlay_bounds_ = display_bounds;
 }
 
 scoped_ptr<SurfaceOzoneCanvas> SurfaceFactoryCast::CreateCanvasForWidget(
@@ -222,7 +249,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::BufferUsage usage) {
   class CastPixmap : public NativePixmap {
    public:
-    CastPixmap() {}
+    CastPixmap(SurfaceFactoryCast* parent) : parent_(parent) {}
 
     void* GetEGLClientBuffer() const override {
       // TODO(halliwell): try to implement this through CastEglPlatform.
@@ -240,6 +267,7 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
                               gfx::OverlayTransform plane_transform,
                               const gfx::Rect& display_bounds,
                               const gfx::RectF& crop_rect) override {
+      parent_->OnOverlayScheduled(display_bounds);
       return true;
     }
     void SetProcessingCallback(
@@ -251,9 +279,11 @@ scoped_refptr<NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
    private:
     ~CastPixmap() override {}
 
+    SurfaceFactoryCast* parent_;
+
     DISALLOW_COPY_AND_ASSIGN(CastPixmap);
   };
-  return make_scoped_refptr(new CastPixmap);
+  return make_scoped_refptr(new CastPixmap(this));
 }
 
 bool SurfaceFactoryCast::LoadEGLGLES2Bindings(

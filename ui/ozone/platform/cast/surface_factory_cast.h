@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
@@ -48,6 +49,10 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   void TerminateDisplay();
   void ShutdownHardware();
 
+  // API for keeping track of overlays per frame for logging purposes
+  void OnSwapBuffers();
+  void OnOverlayScheduled(const gfx::Rect& display_bounds);
+
  private:
   enum HardwareState { kUninitialized, kInitialized, kFailed };
 
@@ -63,6 +68,12 @@ class SurfaceFactoryCast : public SurfaceFactoryOzone {
   gfx::Size display_size_;
   gfx::Size new_display_size_;
   scoped_ptr<chromecast::CastEglPlatform> egl_platform_;
+
+  // Overlays scheduled in current and previous frames:
+  int overlay_count_;
+  gfx::Rect overlay_bounds_;
+  int previous_frame_overlay_count_;
+  gfx::Rect previous_frame_overlay_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceFactoryCast);
 };
