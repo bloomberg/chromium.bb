@@ -22,9 +22,9 @@
     'disable_debugallocation%': 0,
   },
   'targets': [
-    # Only executables and not libraries should depend on the
-    # allocator target; only the application (the final executable)
-    # knows what allocator makes sense.
+    # The only targets that should depend on allocator are 'base' and
+    # executables that don't depend, directly or indirectly, on base (a few).
+    # All the other targets get a transitive dependency on this target via base.
     {
       'target_name': 'allocator',
       'variables': {
