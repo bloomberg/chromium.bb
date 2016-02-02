@@ -4,7 +4,6 @@
 
 #include <list>
 
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"

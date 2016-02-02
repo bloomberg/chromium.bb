@@ -5,7 +5,6 @@
 #include "chrome/browser/themes/theme_service.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
 

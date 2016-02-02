@@ -6,12 +6,12 @@
 
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/browser_sync/browser/profile_sync_test_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"

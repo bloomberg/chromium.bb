@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/metrics/metrics_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_cookie_changed_subscription.h"
 #include "components/signin/core/browser/signin_header_helper.h"

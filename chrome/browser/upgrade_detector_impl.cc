@@ -15,7 +15,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -33,6 +31,8 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/google/core/browser/google_url_tracker.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"

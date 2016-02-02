@@ -8,9 +8,6 @@
 
 #include <string>
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,6 +17,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/process_type.h"

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "sync/api/attachments/attachment_id.h"
 #include "sync/api/sync_change.h"

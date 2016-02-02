@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/render_process_host.h"

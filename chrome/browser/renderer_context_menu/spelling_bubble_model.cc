@@ -5,12 +5,12 @@
 #include "chrome/browser/renderer_context_menu/spelling_bubble_model.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"

@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/cocoa/confirm_quit.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_registry_simple.h"
 #import "ui/base/accelerators/platform_accelerator_cocoa.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

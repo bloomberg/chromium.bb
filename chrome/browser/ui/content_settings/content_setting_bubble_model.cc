@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -32,6 +31,7 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"

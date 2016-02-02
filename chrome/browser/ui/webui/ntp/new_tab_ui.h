@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/url_data_source.h"

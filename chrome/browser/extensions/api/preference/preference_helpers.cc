@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"

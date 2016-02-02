@@ -6,10 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/prefs/json_pref_store.h"
-#include "base/prefs/pref_filter.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/prefs/json_pref_store.h"
+#include "components/prefs/pref_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 

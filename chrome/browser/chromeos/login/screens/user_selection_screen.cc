@@ -8,7 +8,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "components/prefs/pref_service.h"
 #include "components/proximity_auth/screenlock_bridge.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"

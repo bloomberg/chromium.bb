@@ -7,12 +7,12 @@
 #include <string>
 
 #include "base/android/jni_string.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/dom_distiller/core/experiments.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"

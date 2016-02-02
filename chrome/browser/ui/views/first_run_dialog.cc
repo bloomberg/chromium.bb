@@ -30,8 +30,8 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 using views::GridLayout;

@@ -8,13 +8,13 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/url_formatter/url_fixer.h"
 
 namespace {

@@ -5,14 +5,14 @@
 #include "chrome/browser/ui/webui/chromeos/login/demo_mode_detector.h"
 
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
   const int kDerelectDetectionTimeoutSeconds = 8 * 60 * 60;  // 8 hours.

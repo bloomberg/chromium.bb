@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync_driver/sync_service_observer.h"
 
 namespace base {

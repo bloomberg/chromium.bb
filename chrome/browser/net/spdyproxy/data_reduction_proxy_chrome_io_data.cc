@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/common/chrome_content_client.h"
@@ -18,6 +17,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 

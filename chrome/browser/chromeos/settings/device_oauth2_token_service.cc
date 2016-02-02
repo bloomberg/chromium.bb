@@ -11,9 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/time/time.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace chromeos {

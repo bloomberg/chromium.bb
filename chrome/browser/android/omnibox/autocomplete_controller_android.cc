@@ -8,7 +8,6 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -43,6 +42,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"

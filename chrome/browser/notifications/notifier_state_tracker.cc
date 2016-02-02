@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(ENABLE_EXTENSIONS)

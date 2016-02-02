@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_error.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"

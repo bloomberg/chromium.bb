@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
@@ -15,6 +14,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/login/user_names.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"

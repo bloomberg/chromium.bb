@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
@@ -23,6 +22,7 @@
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "content/public/browser/browser_thread.h"
 

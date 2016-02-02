@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/files/file_util.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +23,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/mime_util/mime_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

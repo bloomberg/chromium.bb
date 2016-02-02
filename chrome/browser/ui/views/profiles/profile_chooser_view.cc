@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -36,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"

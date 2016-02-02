@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -79,6 +77,8 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/rappor/rappor_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"

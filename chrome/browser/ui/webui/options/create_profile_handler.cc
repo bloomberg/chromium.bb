@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 

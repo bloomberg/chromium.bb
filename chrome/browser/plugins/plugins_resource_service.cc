@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "url/gurl.h"
 

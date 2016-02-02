@@ -5,7 +5,6 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/autofill_counter.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/history_counter.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 

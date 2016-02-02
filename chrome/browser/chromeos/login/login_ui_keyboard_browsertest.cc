@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 
 namespace chromeos {

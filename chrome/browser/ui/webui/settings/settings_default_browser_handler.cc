@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {

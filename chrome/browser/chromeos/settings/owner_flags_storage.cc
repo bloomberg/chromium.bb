@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/settings/owner_flags_storage.h"
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
@@ -13,6 +12,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/ownership/owner_settings_service.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 namespace about_flags {

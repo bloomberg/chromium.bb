@@ -4,12 +4,12 @@
 
 #include "chrome/browser/chromeos/login/session/login_oobe_session_manager_delegate.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 

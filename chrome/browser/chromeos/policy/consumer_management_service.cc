@@ -8,13 +8,13 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 namespace em = enterprise_management;

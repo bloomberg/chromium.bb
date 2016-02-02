@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -17,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/google/core/browser/google_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"

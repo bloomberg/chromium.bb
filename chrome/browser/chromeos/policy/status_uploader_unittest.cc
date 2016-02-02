@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -16,6 +15,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_context_getter.h"

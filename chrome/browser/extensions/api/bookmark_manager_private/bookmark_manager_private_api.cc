@@ -11,7 +11,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -32,6 +31,7 @@
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/render_view_host.h"

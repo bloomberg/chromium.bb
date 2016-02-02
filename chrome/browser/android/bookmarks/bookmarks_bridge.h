@@ -11,10 +11,10 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace bookmarks {
 class BookmarkModel;

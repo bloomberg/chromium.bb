@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
-#include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

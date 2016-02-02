@@ -7,7 +7,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/prefs/pref_service.h"
 
 using extension_function_test_utils::RunFunctionAndReturnError;
 using extension_function_test_utils::RunFunctionAndReturnSingleResult;

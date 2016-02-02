@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -19,6 +18,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_value_map.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 

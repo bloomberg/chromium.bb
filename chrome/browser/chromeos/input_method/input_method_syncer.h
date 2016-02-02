@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
+#include "components/prefs/pref_member.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 

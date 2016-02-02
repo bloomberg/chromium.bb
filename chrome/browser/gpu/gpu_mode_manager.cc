@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/user_metrics.h"
 

@@ -34,9 +34,9 @@
 #include "net/url_request/url_request_test_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 using testing::InvokeWithoutArgs;

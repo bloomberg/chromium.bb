@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +17,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/components_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "content/public/browser/interstitial_page.h"

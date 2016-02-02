@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"

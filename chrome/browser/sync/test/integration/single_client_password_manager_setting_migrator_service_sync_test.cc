@@ -4,7 +4,6 @@
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 #include "content/public/browser/notification_details.h"

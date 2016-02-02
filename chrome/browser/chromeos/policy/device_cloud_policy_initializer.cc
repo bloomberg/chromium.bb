@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +27,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/system_policy_request_context.h"
+#include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace policy {

@@ -8,10 +8,10 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace arc {
 

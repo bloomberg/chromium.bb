@@ -6,12 +6,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/prefs/testing_pref_store.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/testing_pref_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;

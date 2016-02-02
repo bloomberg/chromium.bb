@@ -10,12 +10,12 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/precache/precache_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/precache/content/precache_manager.h"
+#include "components/prefs/pref_service.h"
 #include "jni/PrecacheLauncher_jni.h"
 
 using base::android::AttachCurrentThread;

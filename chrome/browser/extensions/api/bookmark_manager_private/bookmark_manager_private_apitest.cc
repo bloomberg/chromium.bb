@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -18,6 +17,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 
 using bookmarks::BookmarkModel;

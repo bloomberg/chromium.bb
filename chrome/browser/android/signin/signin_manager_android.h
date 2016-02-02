@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 

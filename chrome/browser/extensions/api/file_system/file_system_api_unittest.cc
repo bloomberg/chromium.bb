@@ -21,11 +21,11 @@
 #if defined(OS_CHROMEOS)
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/testing_pref_service.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"

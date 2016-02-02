@@ -9,10 +9,10 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {

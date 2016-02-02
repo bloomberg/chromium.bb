@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_contents.h"

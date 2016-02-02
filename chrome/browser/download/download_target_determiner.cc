@@ -5,7 +5,6 @@
 #include "chrome/browser/download/download_target_determiner.h"
 
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -22,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/mime_util/mime_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_interrupt_reasons.h"

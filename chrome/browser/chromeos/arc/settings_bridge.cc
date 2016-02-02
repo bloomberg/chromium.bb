@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 using ::chromeos::system::TimezoneSettings;
 

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -29,6 +28,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_sync_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 

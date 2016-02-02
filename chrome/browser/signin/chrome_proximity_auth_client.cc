@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/signin/easy_unlock_service_regular.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "components/prefs/pref_service.h"
 #include "components/proximity_auth/cryptauth/cryptauth_client_impl.h"
 #include "components/proximity_auth/cryptauth/cryptauth_device_manager.h"
 #include "components/proximity_auth/cryptauth/cryptauth_enrollment_manager.h"

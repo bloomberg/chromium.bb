@@ -10,7 +10,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -24,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_request.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/ures.h"
 #include "third_party/icu/source/common/unicode/utypes.h"

@@ -64,7 +64,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -73,6 +72,7 @@
 #include "chrome/browser/extensions/api/file_system/request_file_system_dialog_view.h"
 #include "chrome/browser/extensions/api/file_system/request_file_system_notification.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"

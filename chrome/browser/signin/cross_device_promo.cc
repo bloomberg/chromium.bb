@@ -7,11 +7,11 @@
 #include <stdint.h>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"

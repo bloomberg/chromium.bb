@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "base/threading/thread.h"
 #include "components/password_manager/core/browser/keychain_migration_status_mac.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_member.h"
 
 namespace crypto {
 class AppleKeychain;

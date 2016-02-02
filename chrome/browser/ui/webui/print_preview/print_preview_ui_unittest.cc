@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/print_preview_test.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/prefs/pref_service.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/site_instance.h"

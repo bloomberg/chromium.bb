@@ -5,7 +5,6 @@
 #include "chrome/browser/feedback/system_logs/log_sources/chrome_internal_log_source.h"
 
 #include "base/json/json_string_value_serializer.h"
-#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync_driver/about_sync_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"

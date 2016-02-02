@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/user_metrics.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/issue.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 

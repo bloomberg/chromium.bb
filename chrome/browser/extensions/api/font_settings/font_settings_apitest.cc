@@ -4,12 +4,12 @@
 
 // Font Settings Extension API browser tests.
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 // Test of extension API on a standard profile.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {

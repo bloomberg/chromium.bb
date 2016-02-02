@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/ui/translate/translate_bubble_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/language_state.h"

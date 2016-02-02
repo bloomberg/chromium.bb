@@ -10,8 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -31,6 +29,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_accept_languages.h"

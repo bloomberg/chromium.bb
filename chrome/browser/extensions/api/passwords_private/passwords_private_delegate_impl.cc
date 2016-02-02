@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 

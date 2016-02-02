@@ -20,12 +20,12 @@
 #include "ui/views/widget/native_widget_aura.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/native_theme/native_theme_aura.h"

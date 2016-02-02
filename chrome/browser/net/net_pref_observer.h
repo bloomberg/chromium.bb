@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NET_NET_PREF_OBSERVER_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
+#include "components/prefs/pref_member.h"
 
 class PrefService;
 

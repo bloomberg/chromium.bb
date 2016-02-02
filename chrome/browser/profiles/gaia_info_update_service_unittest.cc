@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/syncable_prefs/pref_service_syncable.h"

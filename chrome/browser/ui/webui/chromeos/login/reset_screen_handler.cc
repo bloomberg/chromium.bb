@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/prefs/pref_registry_simple.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
@@ -17,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/login/localized_values_builder.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "grit/components_strings.h"
 
 namespace {

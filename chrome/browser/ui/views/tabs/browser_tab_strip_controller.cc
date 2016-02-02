@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
@@ -34,6 +33,7 @@
 #include "components/mime_util/mime_util.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"

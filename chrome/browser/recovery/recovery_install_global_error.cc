@@ -4,7 +4,6 @@
 
 #include "chrome/browser/recovery/recovery_install_global_error.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"

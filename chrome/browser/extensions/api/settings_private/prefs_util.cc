@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "extensions/browser/extension_pref_value_map.h"

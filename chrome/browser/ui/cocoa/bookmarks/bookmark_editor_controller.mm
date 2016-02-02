@@ -4,13 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_editor_controller.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "components/bookmarks/browser/bookmark_expanded_state_tracker.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 

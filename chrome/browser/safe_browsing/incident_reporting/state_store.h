@@ -12,7 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/scoped_user_pref_update.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 class Profile;
 

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/app_list/test/fake_profile_store.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 FakeProfileStore::FakeProfileStore(const base::FilePath& user_data_dir,
                                    PrefService* local_state)

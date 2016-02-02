@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NET_ASYNC_DNS_FIELD_TRIAL_H_
 #define CHROME_BROWSER_NET_ASYNC_DNS_FIELD_TRIAL_H_
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 
 namespace chrome_browser_net {
 

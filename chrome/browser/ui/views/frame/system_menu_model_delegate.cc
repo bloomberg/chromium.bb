@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/frame/system_menu_model_delegate.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ui/base/l10n/l10n_util.h"
 

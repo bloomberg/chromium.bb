@@ -5,7 +5,6 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -35,6 +34,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"

@@ -10,7 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"

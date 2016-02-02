@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/first_run/goodies_displayer.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {

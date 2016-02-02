@@ -5,7 +5,6 @@
 #include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"
 
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/password_manager/password_manager_setting_migrator_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +13,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

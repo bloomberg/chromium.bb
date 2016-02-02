@@ -8,8 +8,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -21,6 +19,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/drive/drive_app_registry.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"

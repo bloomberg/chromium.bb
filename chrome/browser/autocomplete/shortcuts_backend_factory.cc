@@ -5,7 +5,6 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/autocomplete/shortcuts_extensions_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -14,6 +13,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
 #include "components/omnibox/browser/shortcuts_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

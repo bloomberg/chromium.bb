@@ -6,8 +6,6 @@
 
 #include <utility>
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -20,6 +18,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/active_field_trials.h"
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/browser_thread.h"

@@ -6,7 +6,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "chrome/browser/browser_process.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"

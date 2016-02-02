@@ -9,9 +9,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "components/onc/onc_constants.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 
 namespace chromeos {

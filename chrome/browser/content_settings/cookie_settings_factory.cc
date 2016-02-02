@@ -5,7 +5,6 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/common/constants.h"

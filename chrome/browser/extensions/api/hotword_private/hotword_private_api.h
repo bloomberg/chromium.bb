@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_HOTWORD_PRIVATE_HOTWORD_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_HOTWORD_PRIVATE_HOTWORD_PRIVATE_API_H_
 
-#include "base/prefs/pref_change_registrar.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/hotword_private.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 

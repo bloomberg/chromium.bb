@@ -9,7 +9,6 @@
 #include <bitset>
 
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
@@ -18,6 +17,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_utils.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_context.h"

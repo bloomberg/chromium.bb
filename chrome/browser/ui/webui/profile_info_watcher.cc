@@ -6,13 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
 

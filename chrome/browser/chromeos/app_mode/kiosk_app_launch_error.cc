@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

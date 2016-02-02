@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -25,12 +24,12 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -38,6 +37,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #endif  // defined(OS_CHROMEOS)
 

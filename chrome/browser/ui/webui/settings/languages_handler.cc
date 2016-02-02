@@ -12,9 +12,9 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_WIN)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 #if defined(OS_CHROMEOS)

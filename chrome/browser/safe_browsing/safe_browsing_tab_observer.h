@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {

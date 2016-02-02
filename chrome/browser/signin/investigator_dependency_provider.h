@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SIGNIN_INVESTIGATOR_DEPENDENCY_PROVIDER_H_
 #define CHROME_BROWSER_SIGNIN_INVESTIGATOR_DEPENDENCY_PROVIDER_H_
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_investigator.h"
 
 // This version should work for anything with a profile object, like desktop and

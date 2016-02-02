@@ -11,12 +11,12 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "url/origin.h"

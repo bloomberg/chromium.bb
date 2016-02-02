@@ -9,10 +9,10 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_store.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "components/prefs/pref_store.h"
 #include "content/public/browser/cookie_store_factory.h"
 
 class JsonPrefStore;

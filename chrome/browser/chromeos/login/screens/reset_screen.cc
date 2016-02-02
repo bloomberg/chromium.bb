@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -22,6 +20,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 
 namespace chromeos {

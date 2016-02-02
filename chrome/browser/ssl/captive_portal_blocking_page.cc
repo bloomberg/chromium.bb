@@ -8,7 +8,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/certificate_reporting/error_reporter.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"

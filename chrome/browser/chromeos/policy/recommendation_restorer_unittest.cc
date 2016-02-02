@@ -8,8 +8,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/testing_pref_store.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -24,6 +22,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/testing_pref_store.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/notification_details.h"

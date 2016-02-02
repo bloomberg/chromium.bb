@@ -6,8 +6,6 @@
 
 #include "ash/system/system_notifier.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
@@ -28,6 +26,8 @@
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/extension_registry.h"
 #include "grit/ui_chromeos_resources.h"

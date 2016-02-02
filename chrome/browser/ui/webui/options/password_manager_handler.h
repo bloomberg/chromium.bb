@@ -11,11 +11,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/prefs/pref_member.h"
 
 namespace options {
 

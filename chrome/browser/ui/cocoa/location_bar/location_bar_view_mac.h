@@ -14,12 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/prefs/pref_member.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"
 
 @class AutocompleteTextField;

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -26,6 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"

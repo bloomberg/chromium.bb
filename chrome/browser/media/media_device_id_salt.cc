@@ -4,10 +4,10 @@
 #include "chrome/browser/media/media_device_id_salt.h"
 
 #include "base/base64.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

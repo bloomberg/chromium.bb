@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -60,6 +59,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/core/live_tab_context.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"

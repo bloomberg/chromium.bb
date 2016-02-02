@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/app_list/google_now_extension.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "ui/message_center/notifier_settings.h"
 

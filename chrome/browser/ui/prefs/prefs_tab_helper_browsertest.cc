@@ -4,7 +4,6 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 
 class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
  protected:

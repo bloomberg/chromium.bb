@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 
 class SingleClientSupervisedUserSettingsSyncTest : public SyncTest {
  public:

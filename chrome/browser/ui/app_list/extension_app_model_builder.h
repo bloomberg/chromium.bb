@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/extensions/install_observer.h"
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/base/models/list_model_observer.h"
 

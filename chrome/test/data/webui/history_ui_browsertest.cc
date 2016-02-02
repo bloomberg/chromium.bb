@@ -4,7 +4,6 @@
 
 #include "chrome/test/data/webui/history_ui_browsertest.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -12,6 +11,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/prefs/pref_service.h"
 
 HistoryUIBrowserTest::HistoryUIBrowserTest()
     : history_(NULL),

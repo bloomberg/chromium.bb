@@ -5,13 +5,13 @@
 #include "chrome/browser/metrics/android_metrics_provider.h"
 
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 namespace {
 

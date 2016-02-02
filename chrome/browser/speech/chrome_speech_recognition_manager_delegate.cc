@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_restrictions.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"

@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 

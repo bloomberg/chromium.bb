@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
@@ -18,6 +17,7 @@
 #include "components/autofill/content/browser/risk/fingerprint.h"
 #include "components/autofill/content/browser/risk/proto/fingerprint.pb.h"
 #include "components/metrics/metrics_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 

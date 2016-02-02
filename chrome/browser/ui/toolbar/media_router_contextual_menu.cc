@@ -21,11 +21,11 @@
 #include "ui/base/models/menu_model_delegate.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

@@ -8,11 +8,11 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/win/registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 // The registry path where the TriggeredReset values get set. Note that this
 // uses the same path for both SxS (Canary) and non-SxS Chrome.

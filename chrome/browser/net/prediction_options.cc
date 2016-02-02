@@ -5,10 +5,10 @@
 #include "chrome/browser/net/prediction_options.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/network_change_notifier.h"
 

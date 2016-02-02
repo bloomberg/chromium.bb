@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_fetcher.h"
 #include "components/search_engines/template_url_service.h"

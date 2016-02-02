@@ -8,7 +8,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -22,6 +21,7 @@
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"

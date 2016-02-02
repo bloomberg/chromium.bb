@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/browser/browser_process.h"
@@ -32,6 +31,7 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"

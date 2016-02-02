@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -20,6 +19,7 @@
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 
 namespace chromeos {

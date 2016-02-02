@@ -5,7 +5,6 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -16,6 +15,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

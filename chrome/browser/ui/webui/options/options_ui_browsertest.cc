@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/options/options_ui_browsertest.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/strings/grit/components_strings.h"

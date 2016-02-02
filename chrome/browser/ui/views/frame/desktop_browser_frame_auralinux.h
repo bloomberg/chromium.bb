@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_DESKTOP_BROWSER_FRAME_AURALINUX_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura.h"
+#include "components/prefs/pref_member.h"
 
 // Provides the window frame for the Chrome browser window on Desktop Linux.
 class DesktopBrowserFrameAuraLinux : public DesktopBrowserFrameAura {

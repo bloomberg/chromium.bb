@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -49,6 +48,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"

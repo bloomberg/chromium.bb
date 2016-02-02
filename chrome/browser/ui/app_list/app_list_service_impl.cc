@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/app_list/profile_store.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 

@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/extensions/manifest_handlers/ui_overrides_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_function_registry.h"

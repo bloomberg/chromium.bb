@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/mock_error_screen.h"
@@ -20,6 +19,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

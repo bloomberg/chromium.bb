@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/extension_sync_service_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_prefs_factory.h"
 #include "extensions/browser/extension_registry_factory.h"
 #include "extensions/browser/extension_system.h"

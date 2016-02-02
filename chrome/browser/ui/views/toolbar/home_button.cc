@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/settings_api_bubble_helper_views.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_delegate.h"

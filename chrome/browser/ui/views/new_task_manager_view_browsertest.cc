@@ -5,8 +5,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
@@ -14,6 +12,8 @@
 #include "chrome/browser/ui/views/new_task_manager_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/test_utils.h"
 #include "ui/views/controls/table/table_view.h"
 

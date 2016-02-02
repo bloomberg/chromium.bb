@@ -32,8 +32,8 @@
 #include "extensions/common/extension.h"
 
 #if !defined(OS_MACOSX)
-#include "base/prefs/pref_service.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 using base::UserMetricsAction;

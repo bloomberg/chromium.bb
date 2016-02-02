@@ -32,13 +32,13 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/display/display_configuration_observer.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #endif

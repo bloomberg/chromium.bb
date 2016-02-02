@@ -9,11 +9,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/settings_private.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace extensions {

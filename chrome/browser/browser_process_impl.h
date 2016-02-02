@@ -18,11 +18,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class ChromeChildProcessWatcher;
 class ChromeDeviceClient;

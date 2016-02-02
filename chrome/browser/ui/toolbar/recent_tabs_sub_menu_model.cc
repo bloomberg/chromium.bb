@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -27,6 +26,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/synced_session.h"

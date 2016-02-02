@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_SCOPED_TESTING_LOCAL_STATE_H_
 
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 class TestingBrowserProcess;
 

@@ -14,10 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "ui/gfx/geometry/size.h"
 

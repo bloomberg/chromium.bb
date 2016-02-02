@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"

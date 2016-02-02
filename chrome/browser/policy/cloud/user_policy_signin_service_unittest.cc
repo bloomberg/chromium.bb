@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -34,6 +33,7 @@
 #include "components/policy/core/common/cloud/mock_user_cloud_policy_store.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #include "components/policy/core/common/schema_registry.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"

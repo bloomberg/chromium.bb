@@ -4,12 +4,12 @@
 
 #include "chrome/browser/search/hotword_audio_history_handler.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/history/core/browser/web_history_service.h"
+#include "components/prefs/pref_service.h"
 
 using extensions::BrowserContextKeyedAPIFactory;
 using extensions::HotwordPrivateEventService;

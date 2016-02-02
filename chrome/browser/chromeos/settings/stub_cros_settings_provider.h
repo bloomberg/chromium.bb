@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_value_map.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "components/prefs/pref_value_map.h"
 
 namespace chromeos {
 

@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"

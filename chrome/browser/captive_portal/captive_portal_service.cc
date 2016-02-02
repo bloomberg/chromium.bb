@@ -9,13 +9,13 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_types.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 
 #if defined(OS_WIN)

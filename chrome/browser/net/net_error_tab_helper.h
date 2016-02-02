@@ -11,10 +11,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/common/features.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

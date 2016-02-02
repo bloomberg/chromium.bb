@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/scoped_user_pref_update.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "ui/base/ui_base_types.h"
 
 class Browser;

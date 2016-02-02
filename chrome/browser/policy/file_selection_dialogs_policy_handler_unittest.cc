@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/policy/file_selection_dialogs_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_value_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

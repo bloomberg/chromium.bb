@@ -6,7 +6,6 @@
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -21,6 +20,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"

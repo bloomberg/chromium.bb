@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace policy {
 

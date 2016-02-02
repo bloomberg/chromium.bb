@@ -6,12 +6,12 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"
 

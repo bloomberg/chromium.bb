@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -24,6 +23,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

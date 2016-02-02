@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_delegate_impl.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {

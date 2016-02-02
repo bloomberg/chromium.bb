@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/webui/options/options_browsertest.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"

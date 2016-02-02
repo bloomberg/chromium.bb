@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/network_profile_bubble_view.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
@@ -14,6 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/label_button.h"

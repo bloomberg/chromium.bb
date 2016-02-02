@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -33,6 +32,7 @@
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_url_handler.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"

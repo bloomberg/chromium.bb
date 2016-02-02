@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -14,6 +13,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"

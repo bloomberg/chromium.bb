@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/permissions/permission_context_factory_base.h"
+#include "components/prefs/pref_service.h"
 
 class GeolocationPermissionContext;
 class PrefRegistrySyncable;

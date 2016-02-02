@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"

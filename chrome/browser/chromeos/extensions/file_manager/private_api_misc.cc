@@ -11,7 +11,6 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -42,6 +41,7 @@
 #include "chromeos/settings/timezone_settings.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"

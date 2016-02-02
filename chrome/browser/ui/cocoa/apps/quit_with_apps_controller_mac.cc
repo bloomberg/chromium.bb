@@ -6,8 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/i18n/number_formatting.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
@@ -24,6 +22,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/app_window/app_window.h"

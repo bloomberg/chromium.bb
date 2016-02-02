@@ -25,10 +25,10 @@
 #include "url/gurl.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
+#include "components/prefs/pref_service.h"
 #endif
 
 @interface FirstRunDialogController (PrivateMethods)

@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
@@ -16,6 +15,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
 namespace first_run {

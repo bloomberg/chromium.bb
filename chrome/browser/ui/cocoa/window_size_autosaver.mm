@@ -6,8 +6,8 @@
 
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 
 // If the window width stored in the prefs is smaller than this, the size is
 // not restored but instead cleared from the profile -- to protect users from

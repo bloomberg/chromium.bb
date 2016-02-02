@@ -4,7 +4,6 @@
 
 #include "chrome/browser/browsing_data/history_counter.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
@@ -17,6 +16,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/web_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "net/http/http_status_code.h"

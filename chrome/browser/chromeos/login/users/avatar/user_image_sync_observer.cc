@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/login/users/avatar/user_image_sync_observer.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
@@ -16,6 +14,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -20,6 +19,7 @@
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_state/security_state_model.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"

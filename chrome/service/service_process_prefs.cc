@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "base/prefs/pref_filter.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "components/prefs/pref_filter.h"
 
 ServiceProcessPrefs::ServiceProcessPrefs(
     const base::FilePath& pref_filename,

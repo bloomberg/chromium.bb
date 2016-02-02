@@ -4,10 +4,10 @@
 
 #include "chrome/browser/extensions/extension_ui_util.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"

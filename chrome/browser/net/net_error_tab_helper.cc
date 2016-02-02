@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/dns_probe_service.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/error_page/common/net_error_info.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"

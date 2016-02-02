@@ -9,10 +9,10 @@
 
 #include <Cocoa/Cocoa.h>
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/cocoa/base_view.h"
 #include "ui/base/cocoa/focus_tracker.h"

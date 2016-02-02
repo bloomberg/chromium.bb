@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -44,6 +43,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/web_resource/notification_promo.h"
 #include "content/public/browser/browser_thread.h"

@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,6 +16,7 @@
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_value_map.h"
 #include "grit/components_strings.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"

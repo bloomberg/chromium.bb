@@ -4,7 +4,6 @@
 
 #include "chrome/browser/permissions/permission_queue_controller.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/geolocation/geolocation_infobar_delegate_android.h"
@@ -21,6 +20,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"

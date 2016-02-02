@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -13,6 +12,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/prefs/pref_service.h"
 
 class UserManagerMacTest : public BrowserWithTestWindowTest {
  public:

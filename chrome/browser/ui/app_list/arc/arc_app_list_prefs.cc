@@ -10,13 +10,13 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

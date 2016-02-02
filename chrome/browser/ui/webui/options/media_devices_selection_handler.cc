@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
 

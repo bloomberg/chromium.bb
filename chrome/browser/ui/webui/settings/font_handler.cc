@@ -9,12 +9,12 @@
 
 #include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/options/font_settings_utils.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/font_list_async.h"
 #include "content/public/browser/web_ui.h"
 

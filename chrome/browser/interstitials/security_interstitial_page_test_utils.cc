@@ -6,13 +6,13 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/web_contents.h"

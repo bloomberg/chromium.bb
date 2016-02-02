@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -30,6 +29,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "policy/proto/device_management_backend.pb.h"
 
 using google::protobuf::RepeatedField;

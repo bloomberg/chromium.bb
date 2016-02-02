@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -19,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"

@@ -4,8 +4,6 @@
 
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -26,6 +24,8 @@
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -16,6 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

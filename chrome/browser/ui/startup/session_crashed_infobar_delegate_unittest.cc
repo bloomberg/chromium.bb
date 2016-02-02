@@ -5,8 +5,6 @@
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -18,6 +16,8 @@
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 
 class SessionCrashedInfoBarDelegateUnitTest : public BrowserWithTestWindowTest {
  public:

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"

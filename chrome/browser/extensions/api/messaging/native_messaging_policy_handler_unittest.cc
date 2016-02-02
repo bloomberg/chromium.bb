@@ -4,11 +4,11 @@
 
 #include "chrome/browser/extensions/api/messaging/native_messaging_policy_handler.h"
 
-#include "base/prefs/pref_value_map.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/browser/policy_error_map.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
+#include "components/prefs/pref_value_map.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

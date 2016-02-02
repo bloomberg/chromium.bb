@@ -4,8 +4,8 @@
 
 #include "chrome/browser/net/sdch_owner_pref_storage.h"
 
-#include "base/prefs/persistent_pref_store.h"
 #include "base/values.h"
+#include "components/prefs/persistent_pref_store.h"
 
 namespace chrome_browser_net {
 

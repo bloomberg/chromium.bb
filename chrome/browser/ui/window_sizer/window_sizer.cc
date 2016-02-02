@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/screen.h"
 

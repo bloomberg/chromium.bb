@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 
 #include "ash/test/ash_test_base.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/chromeos/accessibility_types.h"
 

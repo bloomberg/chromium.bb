@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/prefs/pref_service.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeOSInfoPrivateTest) {
   // Set the initial timezone different from what JS function

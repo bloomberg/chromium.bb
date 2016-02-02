@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/process/process_info.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 
 namespace {
 

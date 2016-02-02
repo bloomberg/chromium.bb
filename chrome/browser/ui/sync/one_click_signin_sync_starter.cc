@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "components/prefs/pref_service.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"

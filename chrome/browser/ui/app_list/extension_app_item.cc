@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"

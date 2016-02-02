@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/component_updater/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 
 namespace safe_browsing {

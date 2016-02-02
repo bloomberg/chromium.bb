@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
@@ -20,6 +19,7 @@
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

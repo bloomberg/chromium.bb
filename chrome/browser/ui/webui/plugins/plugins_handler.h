@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_PLUGINS_PLUGINS_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/values.h"
 #include "chrome/browser/ui/webui/mojo_web_ui_handler.h"
 #include "chrome/browser/ui/webui/plugins/plugins.mojom.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"

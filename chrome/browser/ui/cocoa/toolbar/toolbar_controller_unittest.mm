@@ -6,7 +6,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
@@ -21,6 +20,7 @@
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"

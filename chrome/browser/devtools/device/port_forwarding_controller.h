@@ -8,10 +8,10 @@
 #include <map>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 class Profile;

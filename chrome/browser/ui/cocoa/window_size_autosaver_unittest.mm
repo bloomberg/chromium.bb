@@ -7,11 +7,11 @@
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

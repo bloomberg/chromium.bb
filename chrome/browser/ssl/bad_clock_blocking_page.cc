@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/interstitials/chrome_controller_client.h"
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
@@ -16,6 +15,7 @@
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/bad_clock_ui.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"

@@ -8,7 +8,6 @@
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
@@ -26,6 +25,7 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/resource/resource_bundle.h"
 

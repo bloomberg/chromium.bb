@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -15,6 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"

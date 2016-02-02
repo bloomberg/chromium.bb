@@ -6,10 +6,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 LoginUIServiceFactory::LoginUIServiceFactory()

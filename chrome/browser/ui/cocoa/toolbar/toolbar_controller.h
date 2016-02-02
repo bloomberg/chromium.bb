@@ -9,10 +9,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_member.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_resizer.h"
+#include "components/prefs/pref_member.h"
 #import "ui/base/cocoa/tracking_area.h"
 
 @class AutocompleteTextField;

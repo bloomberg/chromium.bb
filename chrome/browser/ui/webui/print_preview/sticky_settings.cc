@@ -6,12 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "printing/page_size_margins.h"
 
 namespace printing {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_NET_SDCH_OWNER_PREF_STORAGE_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_store.h"
+#include "components/prefs/pref_store.h"
 #include "net/sdch/sdch_owner.h"
 
 class PersistentPrefStore;

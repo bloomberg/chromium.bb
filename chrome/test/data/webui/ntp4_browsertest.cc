@@ -4,11 +4,11 @@
 
 #include "chrome/test/data/webui/ntp4_browsertest.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 NTP4LoggedInWebUITest::NTP4LoggedInWebUITest() {}

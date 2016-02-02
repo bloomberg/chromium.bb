@@ -4,10 +4,10 @@
 
 #include "chrome/browser/chromeos/login/session/stub_login_session_manager_delegate.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 
 namespace chromeos {

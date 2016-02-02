@@ -5,11 +5,11 @@
 #include "chrome/browser/net/disk_cache_dir_policy_handler.h"
 
 #include "base/files/file_path.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/prefs/pref_value_map.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

@@ -8,8 +8,6 @@
 #include <stddef.h>
 
 #include "base/android/jni_string.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -20,6 +18,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"

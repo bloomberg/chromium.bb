@@ -6,13 +6,13 @@
 
 #include <set>
 
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/drive/drive_app_provider.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"

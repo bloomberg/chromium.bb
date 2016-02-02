@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_management.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"

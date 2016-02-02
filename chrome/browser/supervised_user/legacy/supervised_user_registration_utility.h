@@ -10,13 +10,13 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_sync_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class GoogleServiceAuthError;
 class PrefService;

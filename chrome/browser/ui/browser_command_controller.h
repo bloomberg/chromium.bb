@@ -8,11 +8,11 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/command_updater_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_member.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "ui/base/window_open_disposition.h"
 

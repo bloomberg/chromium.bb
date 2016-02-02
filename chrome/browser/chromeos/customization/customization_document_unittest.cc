@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -23,6 +22,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"

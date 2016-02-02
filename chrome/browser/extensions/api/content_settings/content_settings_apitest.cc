@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/content_switches.h"

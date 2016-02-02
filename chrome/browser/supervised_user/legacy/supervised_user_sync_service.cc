@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_data.h"

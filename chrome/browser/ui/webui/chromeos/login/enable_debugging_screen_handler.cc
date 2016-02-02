@@ -7,8 +7,6 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
@@ -23,6 +21,8 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/login/localized_values_builder.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

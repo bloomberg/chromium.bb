@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/device_local_account_extension_tracker.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/extensions/policy_handlers.h"
@@ -14,6 +13,7 @@
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/core/common/schema_registry.h"
+#include "components/prefs/pref_value_map.h"
 #include "extensions/browser/pref_names.h"
 
 namespace policy {

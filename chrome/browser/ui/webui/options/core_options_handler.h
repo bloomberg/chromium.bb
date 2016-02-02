@@ -10,11 +10,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/plugins/plugin_status_pref_setter.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 
 namespace options {
 

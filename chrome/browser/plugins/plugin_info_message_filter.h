@@ -12,10 +12,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;

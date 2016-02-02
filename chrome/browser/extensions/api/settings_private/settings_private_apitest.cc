@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/settings_private/settings_private_delegate.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/switches.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_views.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_stats.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_controller_observer.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/dragdrop/os_exchange_data.h"

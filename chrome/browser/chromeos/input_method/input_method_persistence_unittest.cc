@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -19,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 

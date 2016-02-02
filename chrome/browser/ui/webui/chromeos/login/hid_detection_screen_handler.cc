@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_model.h"
@@ -17,6 +16,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/login/localized_values_builder.h"
+#include "components/prefs/pref_service.h"
 
 namespace {
 

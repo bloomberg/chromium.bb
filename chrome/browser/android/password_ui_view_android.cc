@@ -8,7 +8,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/pref_names.h"
@@ -19,6 +18,7 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/common/experiments.h"
 #include "components/password_manager/core/common/password_manager_switches.h"
+#include "components/prefs/pref_service.h"
 #include "jni/PasswordUIView_jni.h"
 
 using base::android::ConvertUTF16ToJavaString;

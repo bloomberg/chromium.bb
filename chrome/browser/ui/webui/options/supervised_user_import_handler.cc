@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"

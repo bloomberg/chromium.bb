@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"

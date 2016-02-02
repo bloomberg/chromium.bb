@@ -10,7 +10,6 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/options_util.h"
@@ -26,6 +25,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/prefs/pref_service.h"
 #include "jni/PersonalDataManager_jni.h"
 
 using base::android::ConvertJavaStringToUTF8;

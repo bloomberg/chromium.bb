@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/common/constants.h"

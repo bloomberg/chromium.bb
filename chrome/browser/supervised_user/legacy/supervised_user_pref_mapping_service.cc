@@ -5,11 +5,11 @@
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 const int kNoAvatar = -1;
 

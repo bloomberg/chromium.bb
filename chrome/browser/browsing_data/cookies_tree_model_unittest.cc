@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data/mock_browsing_data_cache_storage_helper.h"
@@ -26,6 +25,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_types.h"

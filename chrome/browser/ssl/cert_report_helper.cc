@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -18,6 +17,7 @@
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/variations/variations_associated_data.h"

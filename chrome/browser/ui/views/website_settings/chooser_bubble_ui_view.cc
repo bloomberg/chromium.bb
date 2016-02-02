@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

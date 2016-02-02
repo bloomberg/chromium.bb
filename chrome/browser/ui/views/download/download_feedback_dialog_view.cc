@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/download/download_feedback_dialog_view.h"
 
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/supports_user_data.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

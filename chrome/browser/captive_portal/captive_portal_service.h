@@ -7,13 +7,13 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/captive_portal/captive_portal_detector.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 #include "net/base/backoff_entry.h"
 #include "url/gurl.h"
 

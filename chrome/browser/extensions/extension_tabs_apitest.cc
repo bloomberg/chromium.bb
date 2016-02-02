@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/prefs/pref_service.h"
 #include "net/dns/mock_host_resolver.h"
 
 #if defined(OS_WIN)

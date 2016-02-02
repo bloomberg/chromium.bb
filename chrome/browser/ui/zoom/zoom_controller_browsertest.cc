@@ -5,7 +5,6 @@
 #include "components/ui/zoom/zoom_controller.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/process/kill.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,6 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/navigation_entry.h"

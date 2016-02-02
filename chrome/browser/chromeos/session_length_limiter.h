@@ -8,10 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
 class PrefService;

@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/search/search.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_ui.h"

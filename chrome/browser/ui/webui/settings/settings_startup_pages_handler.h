@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_SETTINGS_STARTUP_PAGES_HANDLER_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/custom_home_pages_table_model.h"
 #include "chrome/browser/ui/webui/settings/md_settings_ui.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/models/table_model_observer.h"
 
 namespace base {

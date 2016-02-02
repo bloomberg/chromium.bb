@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/common/constants.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"

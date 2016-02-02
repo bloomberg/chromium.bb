@@ -9,9 +9,9 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {

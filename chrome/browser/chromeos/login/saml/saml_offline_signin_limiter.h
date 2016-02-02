@@ -7,12 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 

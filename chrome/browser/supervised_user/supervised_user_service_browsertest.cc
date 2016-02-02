@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 

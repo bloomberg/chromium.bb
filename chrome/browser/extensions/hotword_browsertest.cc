@@ -4,7 +4,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/extension_test_message_listener.h"

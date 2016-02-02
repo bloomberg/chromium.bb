@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SETTINGS_PRIVATE_SETTINGS_PRIVATE_EVENT_ROUTER_H_
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/event_router.h"
 
 namespace content {

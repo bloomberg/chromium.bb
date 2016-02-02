@@ -9,8 +9,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
+#include "components/prefs/pref_member.h"
 
 class Profile;
 class SigninManagerBase;

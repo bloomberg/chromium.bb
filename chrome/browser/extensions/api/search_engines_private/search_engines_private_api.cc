@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"

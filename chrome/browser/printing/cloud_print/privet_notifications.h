@@ -8,11 +8,11 @@
 #include <map>
 #include <string>
 
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 
 class NotificationUIManager;
 

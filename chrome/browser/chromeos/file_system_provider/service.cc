@@ -7,8 +7,6 @@
 #include <stddef.h>
 
 #include "base/files/file_path.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
@@ -19,6 +17,8 @@
 #include "chrome/browser/chromeos/file_system_provider/registry_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 #include "chrome/browser/chromeos/file_system_provider/throttled_file_system.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"

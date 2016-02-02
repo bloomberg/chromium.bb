@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -27,6 +26,7 @@
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "components/history/core/browser/download_constants.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"

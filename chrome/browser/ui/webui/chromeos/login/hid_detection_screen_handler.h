@@ -8,10 +8,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_view.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/web_ui.h"
 
 namespace base {

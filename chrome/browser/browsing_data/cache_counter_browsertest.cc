@@ -10,13 +10,13 @@
 
 #include "chrome/browser/browsing_data/cache_counter.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"

@@ -12,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/security_state/security_state_model.h"
 #include "components/ui/zoom/zoom_event_manager_observer.h"

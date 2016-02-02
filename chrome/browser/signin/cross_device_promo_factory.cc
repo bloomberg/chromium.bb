@@ -4,7 +4,6 @@
 
 #include "chrome/browser/signin/cross_device_promo_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/cross_device_promo.h"
@@ -13,6 +12,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "google_apis/gaia/gaia_constants.h"

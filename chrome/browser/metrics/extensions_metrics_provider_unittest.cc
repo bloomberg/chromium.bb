@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/testing_pref_service.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/proto/system_profile.pb.h"
+#include "components/prefs/testing_pref_service.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"

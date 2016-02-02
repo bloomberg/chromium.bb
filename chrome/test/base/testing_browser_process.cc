@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/testing_browser_process.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/network_time/network_time_tracker.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"

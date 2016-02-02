@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/sync/test/integration/password_manager_setting_migrator_helper.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 

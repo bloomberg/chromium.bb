@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/prefs/pref_service.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"

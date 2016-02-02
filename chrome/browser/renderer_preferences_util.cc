@@ -5,10 +5,10 @@
 #include "chrome/browser/renderer_preferences_util.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"

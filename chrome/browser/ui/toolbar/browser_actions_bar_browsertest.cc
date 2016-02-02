@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"

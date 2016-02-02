@@ -6,7 +6,6 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -20,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {

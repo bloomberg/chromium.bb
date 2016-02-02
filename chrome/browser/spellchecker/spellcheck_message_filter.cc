@@ -8,7 +8,6 @@
 #include <functional>
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/spellchecker/feedback_sender.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/spellchecker/spelling_service_client.h"
 #include "chrome/common/spellcheck_marker.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "net/url_request/url_fetcher.h"
 

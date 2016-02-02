@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -16,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"

@@ -8,13 +8,13 @@
 
 #include <map>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_source.h"
 
 // Identifies the user data on the profile.

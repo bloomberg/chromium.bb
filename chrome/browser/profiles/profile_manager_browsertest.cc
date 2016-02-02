@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -27,6 +26,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_CHROMEOS)

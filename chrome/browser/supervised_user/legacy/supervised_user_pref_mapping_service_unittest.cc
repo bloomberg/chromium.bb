@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_pref_mapping_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

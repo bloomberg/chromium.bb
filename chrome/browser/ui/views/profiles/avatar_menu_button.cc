@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "grit/theme_resources.h"

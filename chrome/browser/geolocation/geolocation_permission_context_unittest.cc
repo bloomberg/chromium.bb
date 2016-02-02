@@ -48,9 +48,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/android/mock_location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context_android.h"
+#include "components/prefs/pref_service.h"
 #else
 #include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 
-#include "base/prefs/pref_registry_simple.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/user_metrics.h"

@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/i18n/rtl.h"
-#include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -56,6 +55,7 @@
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"

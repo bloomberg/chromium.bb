@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +18,7 @@
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/prefs/pref_service.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 

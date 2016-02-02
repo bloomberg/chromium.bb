@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 

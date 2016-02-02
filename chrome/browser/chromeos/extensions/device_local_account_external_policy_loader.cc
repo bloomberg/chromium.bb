@@ -8,11 +8,11 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "components/policy/core/common/policy_map.h"
+#include "components/prefs/pref_value_map.h"
 #include "extensions/browser/pref_names.h"
 #include "net/url_request/url_request_context_getter.h"
 

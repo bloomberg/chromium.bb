@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
 #include "ui/accessibility/ax_view_state.h"

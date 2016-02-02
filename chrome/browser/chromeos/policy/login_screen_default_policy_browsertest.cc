@@ -11,8 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -26,6 +24,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/chromeos/accessibility_types.h"
 

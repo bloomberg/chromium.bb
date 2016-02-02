@@ -8,8 +8,6 @@
 #include <vector>
 
 #include "base/files/file_util.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -25,6 +23,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/login/user_names.h"
+#include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"

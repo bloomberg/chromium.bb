@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -24,6 +23,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

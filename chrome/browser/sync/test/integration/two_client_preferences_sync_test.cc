@@ -6,13 +6,13 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 using preferences_helper::AwaitBooleanPrefMatches;
 using preferences_helper::AwaitIntegerPrefMatches;

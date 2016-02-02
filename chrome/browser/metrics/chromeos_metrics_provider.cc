@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -17,6 +15,8 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"

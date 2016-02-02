@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/browser_view_prefs.h"
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include "ui/base/x/x11_util.h"

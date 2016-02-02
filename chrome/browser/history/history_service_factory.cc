@@ -4,7 +4,6 @@
 
 #include "chrome/browser/history/history_service_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -17,6 +16,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/prefs/pref_service.h"
 
 // static
 history::HistoryService* HistoryServiceFactory::GetForProfile(

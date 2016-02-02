@@ -19,7 +19,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/prefs/pref_service.h"
 #include "base/process/launch.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,6 +38,7 @@
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(GOOGLE_CHROME_BUILD)

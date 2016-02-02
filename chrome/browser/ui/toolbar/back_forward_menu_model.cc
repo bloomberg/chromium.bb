@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"

@@ -7,7 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {

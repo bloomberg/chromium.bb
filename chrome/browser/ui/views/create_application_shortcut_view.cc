@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
@@ -28,6 +27,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/favicon_base/select_favicon_frames.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"

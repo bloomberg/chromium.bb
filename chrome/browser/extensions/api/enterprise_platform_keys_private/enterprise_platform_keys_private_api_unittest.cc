@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -28,6 +27,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/test_util.h"

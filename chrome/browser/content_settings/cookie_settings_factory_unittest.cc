@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

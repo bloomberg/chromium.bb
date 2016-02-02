@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/active_script_controller.h"
@@ -30,6 +29,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/extension_registry.h"

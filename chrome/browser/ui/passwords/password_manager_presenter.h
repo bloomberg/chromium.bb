@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/pref_member.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "components/prefs/pref_member.h"
 
 namespace autofill {
 struct PasswordForm;

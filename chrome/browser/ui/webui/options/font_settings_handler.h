@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_member.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
+#include "components/prefs/pref_member.h"
 #include "extensions/browser/extension_registry_observer.h"
 
 namespace base {

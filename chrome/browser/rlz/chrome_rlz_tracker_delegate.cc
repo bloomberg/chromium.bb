@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -19,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/omnibox/browser/omnibox_log.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"

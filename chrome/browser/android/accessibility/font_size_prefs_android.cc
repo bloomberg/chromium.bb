@@ -5,11 +5,11 @@
 #include "chrome/browser/android/accessibility/font_size_prefs_android.h"
 
 #include "base/observer_list.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "jni/FontSizePrefs_jni.h"
 
 using base::android::JavaRef;

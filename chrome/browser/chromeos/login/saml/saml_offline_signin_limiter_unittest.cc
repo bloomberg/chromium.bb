@@ -6,8 +6,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,6 +18,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 
 #if defined(ENABLE_EXTENSIONS)
 #include "base/scoped_observer.h"

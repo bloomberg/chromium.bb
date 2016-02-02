@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "base/message_loop/message_loop.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -23,6 +22,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/ownership/mock_owner_key_util.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "google_apis/gaia/gaia_oauth_client.h"

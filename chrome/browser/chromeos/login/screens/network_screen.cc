@@ -8,7 +8,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -28,6 +27,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 

@@ -7,10 +7,10 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace options {
 

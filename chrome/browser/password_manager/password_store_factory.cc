@@ -10,7 +10,6 @@
 #include "base/environment.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -29,6 +28,7 @@
 #include "components/password_manager/core/browser/password_store_factory_util.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)

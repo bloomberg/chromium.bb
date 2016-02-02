@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/accessibility/invert_bubble_view.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -13,6 +12,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"

@@ -11,8 +11,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/prefs/pref_member.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 
 #if defined(OS_WIN)

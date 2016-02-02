@@ -10,11 +10,11 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace extensions {

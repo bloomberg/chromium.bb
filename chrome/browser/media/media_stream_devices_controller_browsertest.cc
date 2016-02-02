@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/test/mock_render_process_host.h"

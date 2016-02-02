@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/prefs/pref_service.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
@@ -23,6 +22,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/metrics/metrics_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/common/error_utils.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"

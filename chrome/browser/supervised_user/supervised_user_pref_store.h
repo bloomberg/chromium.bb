@@ -10,9 +10,9 @@
 #include "base/callback_list.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/pref_store.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
+#include "components/prefs/pref_store.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 

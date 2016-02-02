@@ -6,11 +6,11 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
-#include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting_api.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/prefs/pref_service.h"
 
 namespace extensions {
 namespace chromedirectsetting {

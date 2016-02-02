@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/location.h"
-#include "base/prefs/pref_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -20,6 +19,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/translate/core/common/translate_pref_names.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"

@@ -4,13 +4,13 @@
 
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"

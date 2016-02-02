@@ -5,12 +5,12 @@
 #include "chrome/browser/translate/translate_accept_languages_factory.h"
 
 #include "base/macros.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 
 namespace {

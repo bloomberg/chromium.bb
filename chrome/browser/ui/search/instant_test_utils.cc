@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "content/public/browser/notification_service.h"

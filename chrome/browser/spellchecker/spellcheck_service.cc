@@ -5,8 +5,6 @@
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_member.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
@@ -21,6 +19,8 @@
 #include "chrome/common/spellcheck_bdict_language.h"
 #include "chrome/common/spellcheck_common.h"
 #include "chrome/common/spellcheck_messages.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"

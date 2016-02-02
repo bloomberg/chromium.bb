@@ -5,7 +5,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
@@ -15,6 +14,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/translate/core/browser/translate_prefs.h"
 
 using bookmarks_helper::AddURL;

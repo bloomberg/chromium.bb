@@ -4,7 +4,6 @@
 
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -15,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_service.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"

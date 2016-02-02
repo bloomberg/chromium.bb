@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "components/prefs/pref_service.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
