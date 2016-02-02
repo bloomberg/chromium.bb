@@ -15,7 +15,7 @@
 -WebNavigationApiTest.CrossProcessFragment
 -WebNavigationApiTest.ServerRedirectSingleProcess
 -WebNavigationApiTest.CrossProcessHistory
--WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs
+-WebRtcBrowserTest.RunsAudioVideoWebRTCCallInTwoTabs*
 
 # crbug.com/574997: Navigating to a file: URL for a non-existing dir.
 -SSLUITest.TestMarkNonSecureAs
