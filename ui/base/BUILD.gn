@@ -599,6 +599,8 @@ source_set("test_support") {
       "test/scoped_fake_nswindow_focus.mm",
       "test/scoped_fake_nswindow_fullscreen.h",
       "test/scoped_fake_nswindow_fullscreen.mm",
+      "test/scoped_preferred_scroller_style_legacy_mac.h",
+      "test/scoped_preferred_scroller_style_legacy_mac.mm",
       "test/test_clipboard.cc",
       "test/test_clipboard.h",
       "test/windowed_nsnotification_observer.h",

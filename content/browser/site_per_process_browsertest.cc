@@ -51,6 +51,10 @@
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "ui/gfx/switches.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/test/scoped_preferred_scroller_style_legacy_mac.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -2143,6 +2147,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        MAYBE_FrameOwnerPropertiesPropagationScrolling) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedPreferredScrollerStyleLegacy scroller_style_override;
+#endif
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_owner_properties_scrolling.html"));
   NavigateToURL(shell(), main_url);

@@ -694,6 +694,8 @@
             'test/scoped_fake_nswindow_focus.mm',
             'test/scoped_fake_nswindow_fullscreen.h',
             'test/scoped_fake_nswindow_fullscreen.mm',
+            'test/scoped_preferred_scroller_style_legacy_mac.h',
+            'test/scoped_preferred_scroller_style_legacy_mac.mm',
             'test/windowed_nsnotification_observer.h',
             'test/windowed_nsnotification_observer.mm',
           ],
