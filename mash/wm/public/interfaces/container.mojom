@@ -5,7 +5,8 @@
 module mash.wm.mojom;
 
 enum Container {
-  ALL_USER_BACKGROUND = 1,
+  ROOT = 0,
+  ALL_USER_BACKGROUND,
   USER_WORKSPACE,
   USER_BACKGROUND,
   USER_PRIVATE,
