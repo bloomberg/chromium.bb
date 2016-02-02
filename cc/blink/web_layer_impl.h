@@ -144,7 +144,6 @@ class WebLayerImpl : public blink::WebLayer {
       const blink::WebLayerPositionConstraint& constraint) override;
   blink::WebLayerPositionConstraint positionConstraint() const override;
   void setScrollClient(blink::WebLayerScrollClient* client) override;
-  bool isOrphan() const override;
   void setLayerClient(cc::LayerClient* client) override;
   const cc::Layer* ccLayer() const override;
   void setElementId(uint64_t id) override;

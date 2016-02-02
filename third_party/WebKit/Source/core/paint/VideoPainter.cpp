@@ -46,7 +46,7 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     bool forceSoftwareVideoPaint = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
 
     if (displayingPoster || !forceSoftwareVideoPaint) {
-        // This wil display the poster image, if one is present, and otherwise paint nothing.
+        // This will display the poster image, if one is present, and otherwise paint nothing.
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
     } else {
         SkPaint videoPaint = context.fillPaint();

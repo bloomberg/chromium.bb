@@ -45,7 +45,6 @@ public:
 
     bool shouldDisplayVideo() const;
     HTMLVideoElement* videoElement() const;
-    bool acceleratedRenderingInUse() const;
 
     const char* name() const override { return "LayoutVideo"; }
 

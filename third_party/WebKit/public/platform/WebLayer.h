@@ -236,9 +236,6 @@ public:
     // so, but this is to facilitate benchmarks and tests.
     virtual void setForceRenderSurface(bool) = 0;
 
-    // True if the layer is not part of a tree attached to a WebLayerTreeView.
-    virtual bool isOrphan() const = 0;
-
     // Sets the cc-side layer client.
     virtual void setLayerClient(cc::LayerClient*) = 0;
 

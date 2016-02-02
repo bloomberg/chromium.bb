@@ -468,10 +468,6 @@ void WebLayerImpl::setScrollClient(blink::WebLayerScrollClient* scroll_client) {
   }
 }
 
-bool WebLayerImpl::isOrphan() const {
-  return !layer_->layer_tree_host();
-}
-
 void WebLayerImpl::setLayerClient(cc::LayerClient* client) {
   layer_->SetLayerClient(client);
 }

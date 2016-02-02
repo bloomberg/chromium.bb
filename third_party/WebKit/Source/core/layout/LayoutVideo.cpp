@@ -143,12 +143,6 @@ void LayoutVideo::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& p
     VideoPainter(*this).paintReplaced(paintInfo, paintOffset);
 }
 
-bool LayoutVideo::acceleratedRenderingInUse() const
-{
-    WebLayer* webLayer = mediaElement()->platformLayer();
-    return webLayer && !webLayer->isOrphan();
-}
-
 void LayoutVideo::layout()
 {
     updatePlayer();
