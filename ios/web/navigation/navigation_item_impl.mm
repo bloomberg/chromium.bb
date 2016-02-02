@@ -154,7 +154,7 @@ const base::string16& NavigationItemImpl::GetTitleForDisplay(
       title = title.substr(slashpos + 1);
   }
 
-  const int kMaxTitleChars = 4 * 1024;
+  const size_t kMaxTitleChars = 4 * 1024;
   gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }

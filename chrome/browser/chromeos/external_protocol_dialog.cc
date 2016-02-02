@@ -95,7 +95,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()),
       scheme_(url.scheme()) {
-  const int kMaxUrlWithoutSchemeSize = 256;
+  const size_t kMaxUrlWithoutSchemeSize = 256;
   base::string16 elided_url_without_scheme;
   gfx::ElideString(base::ASCIIToUTF16(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);

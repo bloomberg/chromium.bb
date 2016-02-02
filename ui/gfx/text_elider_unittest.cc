@@ -594,7 +594,7 @@ TEST(TextEliderTest, StringSlicerCombiningSurrogate) {
 TEST(TextEliderTest, ElideString) {
   struct TestData {
     const char* input;
-    int max_len;
+    size_t max_len;
     bool result;
     const char* output;
   } cases[] = {
@@ -831,7 +831,7 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
   EXPECT_LE(GetStringWidthF(lines[1], font_list), kAvailableWidth);
 }
 
-#ifdef OS_CHROMEOS
+#if defined(OS_CHROMEOS)
 // This test was created specifically to test a message from crbug.com/415213.
 // It tests that width of concatenation of words equals sum of widths of the
 // words.
@@ -846,7 +846,7 @@ TEST(TextEliderTest, ElideRectangleTextCheckConcatWidthEqualsSumOfWidths) {
 #undef WIDTH
   SetFontRenderParamsDeviceScaleFactor(1.0f);
 }
-#endif // OS_CHROMEOS
+#endif  // defined(OS_CHROMEOS)
 
 // TODO(crbug.com/338784): Enable this on android.
 #if defined(OS_ANDROID)

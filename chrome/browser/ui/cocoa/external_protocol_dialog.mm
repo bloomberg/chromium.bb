@@ -70,7 +70,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       l10n_util::GetNSStringWithFixup(
         IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT)];
 
-  const int kMaxUrlWithoutSchemeSize = 256;
+  const size_t kMaxUrlWithoutSchemeSize = 256;
   base::string16 elided_url_without_scheme;
   gfx::ElideString(base::ASCIIToUTF16(url_.possibly_invalid_spec()),
                   kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);

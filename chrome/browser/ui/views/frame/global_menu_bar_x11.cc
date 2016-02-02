@@ -129,7 +129,7 @@ const unsigned int kMostVisitedCount = 8;
 const unsigned int kRecentlyClosedCount = 8;
 
 // Menus more than this many chars long will get trimmed.
-const int kMaximumMenuWidthInChars = 50;
+const size_t kMaximumMenuWidthInChars = 50;
 
 // Constants used in menu definitions.
 const int MENU_SEPARATOR =-1;

@@ -259,10 +259,9 @@ base::string16 ElideText(const base::string16& text,
 }
 
 bool ElideString(const base::string16& input,
-                 int max_len,
+                 size_t max_len,
                  base::string16* output) {
-  DCHECK_GE(max_len, 0);
-  if (static_cast<int>(input.length()) <= max_len) {
+  if (input.length() <= max_len) {
     output->assign(input);
     return false;
   }

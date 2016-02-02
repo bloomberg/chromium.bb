@@ -29,7 +29,7 @@ base::string16 SimplifyDocumentTitleWithLength(const base::string16& title,
       std::remove_if(no_controls.begin(), no_controls.end(), &u_iscntrl),
       no_controls.end());
   base::string16 result;
-  gfx::ElideString(no_controls, static_cast<int>(length), &result);
+  gfx::ElideString(no_controls, length, &result);
   return result;
 }
 

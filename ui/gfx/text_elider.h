@@ -96,7 +96,7 @@ GFX_EXPORT base::string16 ElideFilename(const base::FilePath& filename,
 // puts "Hell...Tom" in str and returns true.
 // TODO(tsepez): Doesn't handle UTF-16 surrogate pairs properly.
 // TODO(tsepez): Doesn't handle bidi properly.
-GFX_EXPORT bool ElideString(const base::string16& input, int max_len,
+GFX_EXPORT bool ElideString(const base::string16& input, size_t max_len,
                             base::string16* output);
 
 // Reformat |input| into |output| so that it fits into a |max_rows| by
