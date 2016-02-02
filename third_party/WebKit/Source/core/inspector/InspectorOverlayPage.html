@@ -747,8 +747,7 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
     var arrowRadius = 8;
     var pageMargin = 2;
 
-    var boxX = Math.max(pageMargin, bounds.minX + (bounds.maxX - bounds.minX) / 2 - titleWidth / 2);
-    boxX = Math.min(boxX, canvasWidth - titleWidth - pageMargin);
+    var boxX = Math.min(bounds.minX, canvasWidth - titleWidth - pageMargin);
 
     var boxY = bounds.minY - arrowRadius - titleHeight;
     var onTop = true;
@@ -765,13 +764,11 @@ function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow
         return;
 
     var tooltipArrow = tooltipContainer.createChild("div", "material-tooltip-arrow");
-    // Center arrow if possible. Otherwise, try the bounds of the element.
-    var arrowX = bounds.minX + (bounds.maxX - bounds.minX) / 2 - arrowRadius;
+    // Left align arrow to the tooltip but ensure it is pointing to the element.
     var tooltipBorderRadius = 2;
-    if (arrowX < pageMargin + tooltipBorderRadius)
-        arrowX = bounds.maxX - arrowRadius * 2;
-    else if (arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius)
-        arrowX = bounds.minX;
+    var arrowX = boxX + arrowRadius + tooltipBorderRadius;
+    if (arrowX < bounds.minX)
+        arrowX = bounds.minX + arrowRadius;
     // Hide arrow if element is completely off the sides of the page.
     var arrowHidden = arrowX < pageMargin + tooltipBorderRadius || arrowX + arrowRadius * 2 > canvasWidth - pageMargin - tooltipBorderRadius;
     tooltipArrow.classList.toggle("hidden", arrowHidden);
