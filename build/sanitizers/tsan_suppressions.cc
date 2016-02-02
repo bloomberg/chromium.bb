@@ -274,6 +274,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/454655
 "race:content::BrowserTestBase::PostTaskToInProcessRendererAndWait\n"
 
+// https://crbug.com/539315
+"race:MojoCreateMessagePipe\n"
+
 // https://crbug.com/569682
 "race:blink::ThreadState::visitStackRoots\n"
 
