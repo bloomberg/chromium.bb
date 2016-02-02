@@ -61,10 +61,10 @@
    folding them. */
 #ifdef __COUNTER__
 #define DYNAMIC_ANNOTATIONS_IMPL \
-  volatile short lineno = (__LINE__ << 8) + __COUNTER__; (void)lineno;
+  volatile unsigned short lineno = (__LINE__ << 8) + __COUNTER__; (void)lineno;
 #else
 #define DYNAMIC_ANNOTATIONS_IMPL \
-  volatile short lineno = (__LINE__ << 8); (void)lineno;
+  volatile unsigned short lineno = (__LINE__ << 8); (void)lineno;
 #endif
 
 /* WARNING: always add new annotations to the end of the list.

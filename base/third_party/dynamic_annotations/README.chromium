@@ -18,3 +18,6 @@ with better precision.
 These files were taken from
 http://code.google.com/p/data-race-test/source/browse/?#svn/trunk/dynamic_annotations
 The files are covered under BSD license as described within the files.
+
+Local modifications:
+* made lineno an unsigned short (for -Wconstant-conversion warning fixes)
