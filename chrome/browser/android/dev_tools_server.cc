@@ -151,19 +151,18 @@ class UnixDomainServerSocketFactory
 
  private:
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::ServerSocket> socket(
+    scoped_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(auth_callback_,
                                         true /* use_abstract_namespace */));
 
-    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) == net::OK)
-      return socket;
+    if (socket->BindAndListen(socket_name_, kBackLog) == net::OK)
+      return std::move(socket);
 
     // Try a fallback socket name.
     const std::string fallback_address(
         base::StringPrintf("%s_%d", socket_name_.c_str(), getpid()));
-    if (socket->ListenWithAddressAndPort(fallback_address, 0, kBackLog)
-        == net::OK)
-      return socket;
+    if (socket->BindAndListen(fallback_address, kBackLog) == net::OK)
+      return std::move(socket);
 
     return scoped_ptr<net::ServerSocket>();
   }
@@ -171,12 +170,12 @@ class UnixDomainServerSocketFactory
   scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    scoped_ptr<net::ServerSocket> socket(
+    scoped_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(auth_callback_, true));
-    if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
+    if (socket->BindAndListen(*name, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
-    return socket;
+    return std::move(socket);
   }
 
   std::string socket_name_;

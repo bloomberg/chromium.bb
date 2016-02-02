@@ -64,14 +64,13 @@ class UnixDomainServerSocketFactory
  private:
   // DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::ServerSocket> socket(
-        new net::UnixDomainServerSocket(
-            base::Bind(&CanUserConnectToDevTools),
-            true /* use_abstract_namespace */));
-    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) != net::OK)
+    scoped_ptr<net::UnixDomainServerSocket> socket(
+        new net::UnixDomainServerSocket(base::Bind(&CanUserConnectToDevTools),
+                                        true /* use_abstract_namespace */));
+    if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
-    return socket;
+    return std::move(socket);
   }
 
   std::string socket_name_;

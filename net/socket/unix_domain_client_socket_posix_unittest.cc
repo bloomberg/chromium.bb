@@ -131,7 +131,7 @@ TEST_F(UnixDomainClientSocketTest, Connect) {
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
@@ -157,7 +157,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
   SocketDescriptor accepted_socket_fd = kInvalidSocket;
   TestCompletionCallback accept_callback;
@@ -209,7 +209,7 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithAbstractNamespace) {
 #if defined(OS_ANDROID) || defined(OS_LINUX)
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
@@ -255,7 +255,7 @@ TEST_F(UnixDomainClientSocketTest,
 
 TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -288,7 +288,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
 
 TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -321,7 +321,7 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
 
 TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -390,7 +390,7 @@ TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
 
 TEST_F(UnixDomainClientSocketTest, ReadBeforeWrite) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true), false);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;
   EXPECT_EQ(ERR_IO_PENDING,

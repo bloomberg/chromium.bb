@@ -55,7 +55,7 @@ TEST_F(UnixDomainServerSocketTest, ListenWithInvalidPath) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
   EXPECT_EQ(ERR_FILE_NOT_FOUND,
-            server_socket.ListenWithAddressAndPort(kInvalidSocketPath, 0, 1));
+            server_socket.BindAndListen(kInvalidSocketPath, /*backlog=*/1));
 }
 
 TEST_F(UnixDomainServerSocketTest, ListenWithInvalidPathWithAbstractNamespace) {
@@ -63,11 +63,10 @@ TEST_F(UnixDomainServerSocketTest, ListenWithInvalidPathWithAbstractNamespace) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
 #if defined(OS_ANDROID) || defined(OS_LINUX)
-  EXPECT_EQ(OK,
-            server_socket.ListenWithAddressAndPort(kInvalidSocketPath, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(kInvalidSocketPath, /*backlog=*/1));
 #else
   EXPECT_EQ(ERR_ADDRESS_INVALID,
-            server_socket.ListenWithAddressAndPort(kInvalidSocketPath, 0, 1));
+            server_socket.BindAndListen(kInvalidSocketPath, /*backlog=*/1));
 #endif
 }
 
@@ -76,8 +75,8 @@ TEST_F(UnixDomainServerSocketTest, ListenAgainAfterFailureWithInvalidPath) {
   UnixDomainServerSocket server_socket(CreateAuthCallback(true),
                                        kUseAbstractNamespace);
   EXPECT_EQ(ERR_FILE_NOT_FOUND,
-            server_socket.ListenWithAddressAndPort(kInvalidSocketPath, 0, 1));
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+            server_socket.BindAndListen(kInvalidSocketPath, /*backlog=*/1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 }
 
 TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
@@ -85,7 +84,7 @@ TEST_F(UnixDomainServerSocketTest, AcceptWithForbiddenUser) {
 
   UnixDomainServerSocket server_socket(CreateAuthCallback(false),
                                        kUseAbstractNamespace);
-  EXPECT_EQ(OK, server_socket.ListenWithAddressAndPort(socket_path_, 0, 1));
+  EXPECT_EQ(OK, server_socket.BindAndListen(socket_path_, /*backlog=*/1));
 
   scoped_ptr<StreamSocket> accepted_socket;
   TestCompletionCallback accept_callback;

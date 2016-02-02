@@ -257,8 +257,8 @@ void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
 
     auth_socket_.reset(
         new net::UnixDomainServerSocket(base::Bind(MatchUid), false));
-    int rv = auth_socket_->ListenWithAddressAndPort(
-        g_gnubby_socket_name.Get().value(), 0, 1);
+    int rv = auth_socket_->BindAndListen(g_gnubby_socket_name.Get().value(),
+                                         /*backlog=*/1);
     if (rv != net::OK) {
       LOG(ERROR) << "Failed to open socket for gnubby requests";
       return;

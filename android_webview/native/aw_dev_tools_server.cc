@@ -97,14 +97,14 @@ class UnixDomainServerSocketFactory
  private:
   // devtools_http_handler::DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> CreateForHttpServer() override {
-    scoped_ptr<net::ServerSocket> socket(
+    scoped_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
             base::Bind(&content::CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
-    if (socket->ListenWithAddressAndPort(socket_name_, 0, kBackLog) != net::OK)
+    if (socket->BindAndListen(socket_name_, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
-    return socket;
+    return std::move(socket);
   }
 
   scoped_ptr<net::ServerSocket> CreateForTethering(std::string* name) override {
@@ -112,8 +112,9 @@ class UnixDomainServerSocketFactory
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
     scoped_ptr<net::UnixDomainServerSocket> socket(
         new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools), true));
-    if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
+            base::Bind(&content::CanUserConnectToDevTools),
+            true /* use_abstract_namespace */));
+    if (socket->BindAndListen(*name, kBackLog) != net::OK)
       return scoped_ptr<net::ServerSocket>();
 
     return std::move(socket);
