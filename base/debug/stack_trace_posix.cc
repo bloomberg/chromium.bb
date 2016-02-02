@@ -124,6 +124,7 @@ class BacktraceOutputHandler {
   virtual ~BacktraceOutputHandler() {}
 };
 
+#if !defined(__UCLIBC__)
 void OutputPointer(void* pointer, BacktraceOutputHandler* handler) {
   // This should be more than enough to store a 64-bit number in hex:
   // 16 hex digits + 1 for null-terminator.
@@ -171,7 +172,7 @@ void ProcessBacktrace(void *const *trace,
 
     handler->HandleOutput("\n");
   }
-#elif !defined(__UCLIBC__)
+#else
   bool printed = false;
 
   // Below part is async-signal unsafe (uses malloc), so execute it only
@@ -200,6 +201,7 @@ void ProcessBacktrace(void *const *trace,
   }
 #endif  // defined(USE_SYMBOLIZE)
 }
+#endif  // !defined(__UCLIBC__)
 
 void PrintToStderr(const char* output) {
   // NOTE: This code MUST be async-signal safe (it's used by in-process
