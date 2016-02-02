@@ -20,6 +20,7 @@ Local changes:
  * Removed examples/, documentation and build related files, keeping only
    the contents of src/ less mux/ which is unused.
  * Merged COPYING/PATENTS to LICENSE
+ * Added an explicit cast to short in yuv_sse2.c
 Cherry-picks:
   Revert patch f7fc4bc: dec/webp.c: don't wait for data before reporting w/h
   Revert patch d1c359e: fix shared object build with -fvisibility=hidden
