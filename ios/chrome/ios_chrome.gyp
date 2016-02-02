@@ -121,6 +121,7 @@
         '../../components/url_formatter/url_formatter.gyp:url_formatter',
         '../../google_apis/google_apis.gyp:google_apis',
         '../../net/net.gyp:net',
+        '../../net/net.gyp:net_extras',
         '../../skia/skia.gyp:skia',
         '../../sync/sync.gyp:sync',
         '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
