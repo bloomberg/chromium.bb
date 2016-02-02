@@ -116,6 +116,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         setContentView(R.layout.blimp_main);
 
         mBlimpClientSession = new BlimpClientSession();
+        mBlimpClientSession.connect();
 
         mBlimpView = (BlimpView) findViewById(R.id.renderer);
         mBlimpView.initializeRenderer(mBlimpClientSession);

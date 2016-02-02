@@ -16,6 +16,8 @@ component("blimp_client") {
     "app/blimp_startup.cc",
     "app/blimp_startup.h",
     "blimp_client_export.h",
+    "session/assignment_source.cc",
+    "session/assignment_source.h",
     "session/blimp_client_session.cc",
     "session/blimp_client_session.h",
   ]

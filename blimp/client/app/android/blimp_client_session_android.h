@@ -12,15 +12,20 @@
 namespace blimp {
 namespace client {
 
+class AssignmentSource;
+
 class BlimpClientSessionAndroid : public BlimpClientSession {
  public:
   static bool RegisterJni(JNIEnv* env);
   static BlimpClientSessionAndroid* FromJavaObject(JNIEnv* env, jobject jobj);
 
   BlimpClientSessionAndroid(JNIEnv* env,
-                            const base::android::JavaParamRef<jobject>& jobj);
+                            const base::android::JavaParamRef<jobject>& jobj,
+                            scoped_ptr<AssignmentSource> assignment_source);
 
   // Methods called from Java via JNI.
+  void Connect(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
 
  private:

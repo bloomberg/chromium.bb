@@ -21,6 +21,13 @@ public class BlimpClientSession {
     }
 
     /**
+     * Retrieves an assignment and uses it to connect to the engine.
+     */
+    public void connect() {
+        nativeConnect(mNativeBlimpClientSessionAndroidPtr);
+    }
+
+    /**
      * Destroys the native BlimpClientSession.  This class should not be used after this is called.
      */
     public void destroy() {
@@ -38,5 +45,6 @@ public class BlimpClientSession {
     }
 
     private native long nativeInit();
+    private native void nativeConnect(long nativeBlimpClientSessionAndroid);
     private native void nativeDestroy(long nativeBlimpClientSessionAndroid);
 }

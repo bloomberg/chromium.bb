@@ -59,8 +59,10 @@ void FakeNavigationFeatureDelegate::OnLoadingChanged(int tab_id, bool loading) {
 
 }  // namespace
 
-BlimpClientSessionLinux::BlimpClientSessionLinux()
-    : event_source_(ui::PlatformEventSource::CreateDefault()),
+BlimpClientSessionLinux::BlimpClientSessionLinux(
+    scoped_ptr<AssignmentSource> assignment_source)
+    : BlimpClientSession(std::move(assignment_source)),
+      event_source_(ui::PlatformEventSource::CreateDefault()),
       navigation_feature_delegate_(new FakeNavigationFeatureDelegate) {
   blimp_display_manager_.reset(new BlimpDisplayManager(gfx::Size(800, 600),
                                                        this,

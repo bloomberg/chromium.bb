@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "blimp/client/blimp_client_export.h"
+#include "blimp/client/session/assignment_source.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 
@@ -41,7 +42,11 @@ class TabControlFeature;
 // feature proxies must be interacted with on the UI thread.
 class BLIMP_CLIENT_EXPORT BlimpClientSession {
  public:
-  BlimpClientSession();
+  explicit BlimpClientSession(scoped_ptr<AssignmentSource> assignment_source);
+
+  // Uses the AssignmentSource to get an Assignment and then uses the assignment
+  // configuration to connect to the Blimplet.
+  void Connect();
 
   TabControlFeature* GetTabControlFeature() const;
   NavigationFeature* GetNavigationFeature() const;
@@ -50,9 +55,6 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
  protected:
   virtual ~BlimpClientSession();
 
-  // Returns the IPEndPoint to use for connecting to the blimplet.
-  net::IPEndPoint GetBlimpletIPEndpoint();
-
  private:
   // Registers a message processor which will receive all messages of the |type|
   // specified.  Returns a BlimpMessageProcessor object for sending messages of
@@ -60,6 +62,14 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   scoped_ptr<BlimpMessageProcessor> RegisterFeature(
       BlimpMessage::Type type,
       BlimpMessageProcessor* incoming_processor);
+
+  // The AssignmentCallback for when an assignment is ready. This will trigger
+  // a connection to the engine.
+  void ConnectWithAssignment(const Assignment& assignment);
+
+  // The AssignmentSource is used when the user of BlimpClientSession calls
+  // Connect() to get a valid assignment and later connect to the engine.
+  scoped_ptr<AssignmentSource> assignment_source_;
 
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
@@ -74,6 +84,8 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
   // Incoming messages are only routed to the UI thread since all features run
   // on the UI thread.
   std::vector<scoped_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
+
+  base::WeakPtrFactory<BlimpClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpClientSession);
 };
