@@ -60,7 +60,6 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
-#include "ui/gfx/win/dpi.h"
 #endif
 
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(VIEWS_EXPORT,
@@ -679,19 +678,9 @@ gfx::Rect DesktopNativeWidgetAura::GetRestoredBounds() const {
 void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   if (!content_window_)
     return;
-  // TODO(ananta)
-  // This code by default scales the bounds rectangle by 1.
-  // We could probably get rid of this and similar logic from
-  // the DesktopNativeWidgetAura::OnWindowTreeHostResized function.
-  float scale = 1;
   aura::Window* root = host_->window();
-  if (root) {
-    scale = gfx::Screen::GetScreen()
-                ->GetDisplayNearestWindow(root)
-                .device_scale_factor();
-  }
-  gfx::Rect bounds_in_pixels =
-    gfx::ScaleToEnclosingRect(bounds, scale, scale);
+  gfx::Screen* screen = gfx::Screen::GetScreen();
+  gfx::Rect bounds_in_pixels = screen->DIPToScreenRectInWindow(root, bounds);
   desktop_window_tree_host_->AsWindowTreeHost()->SetBounds(bounds_in_pixels);
 }
 

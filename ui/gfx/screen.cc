@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/logging.h"
 #include "ui/gfx/screen.h"
+
+#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 
@@ -32,6 +33,18 @@ Screen* Screen::GetScreen() {
 // static
 void Screen::SetScreenInstance(Screen* instance) {
   g_screen = instance;
+}
+
+gfx::Rect Screen::ScreenToDIPRectInWindow(NativeView view,
+                                          const gfx::Rect& screen_rect) const {
+  float scale = GetDisplayNearestWindow(view).device_scale_factor();
+  return ScaleToEnclosingRect(screen_rect, 1.0f / scale);
+}
+
+gfx::Rect Screen::DIPToScreenRectInWindow(NativeView view,
+                                          const gfx::Rect& dip_rect) const {
+  float scale = GetDisplayNearestWindow(view).device_scale_factor();
+  return ScaleToEnclosingRect(dip_rect, scale);
 }
 
 }  // namespace gfx

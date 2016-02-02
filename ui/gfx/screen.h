@@ -9,12 +9,13 @@
 
 #include "base/macros.h"
 #include "ui/gfx/display.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
+
 class DisplayObserver;
+class Point;
 class Rect;
 
 // A utility class for getting various info about screen size, displays,
@@ -71,6 +72,18 @@ class GFX_EXPORT Screen {
   // Adds/Removes display observers.
   virtual void AddObserver(DisplayObserver* observer) = 0;
   virtual void RemoveObserver(DisplayObserver* observer) = 0;
+
+  // Converts |screen_rect| to DIP coordinates in the context of |view| clamping
+  // to the enclosing rect if the coordinates do not fall on pixel boundaries.
+  // If |view| is null, the primary display is used as the context.
+  virtual gfx::Rect ScreenToDIPRectInWindow(NativeView view,
+                                            const gfx::Rect& screen_rect) const;
+
+  // Converts |dip_rect| to screen coordinates in the context of |view| clamping
+  // to the enclosing rect if the coordinates do not fall on pixel boundaries.
+  // If |view| is null, the primary display is used as the context.
+  virtual gfx::Rect DIPToScreenRectInWindow(NativeView view,
+                                            const gfx::Rect& dip_rect) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Screen);
