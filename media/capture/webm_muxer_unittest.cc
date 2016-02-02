@@ -144,9 +144,9 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
   if (GetParam().num_video_tracks > 0)
     return;
 
-  int sample_rate = 48000;
-  int bits_per_sample = 16;
-  int frames_per_buffer = 480;
+  const int sample_rate = 48000;
+  const int bits_per_sample = 16;
+  const int frames_per_buffer = 480;
   media::AudioParameters audio_params(
       media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
       media::CHANNEL_LAYOUT_MONO, sample_rate, bits_per_sample,
@@ -188,13 +188,9 @@ TEST_P(WebmMuxerTest, OnEncodedAudioTwoFrames) {
             accumulated_position_);
 }
 
-// Currently, when WebmMuxer is told it will have both audio and video tracks,
-// it drops data until it's receiving data for _both_ tracks, to avoid issues
-// related to writing the webm header.
 // This test verifies that when video data comes before audio data, we save the
-// most recent video keyframe and add it to the video track as soon as audio
-// data comes.
-TEST_P(WebmMuxerTest, VideoKeyframeIsSaved) {
+// encoded video frames and add it to the video track when audio data arrives.
+TEST_P(WebmMuxerTest, VideoIsStoredWhileWaitingForAudio) {
   // This test is only relevant if we have both kinds of tracks.
   if (GetParam().num_video_tracks == 0 || GetParam().num_audio_tracks == 0)
     return;
@@ -204,25 +200,33 @@ TEST_P(WebmMuxerTest, VideoKeyframeIsSaved) {
   const scoped_refptr<VideoFrame> video_frame =
       VideoFrame::CreateBlackFrame(frame_size);
   const std::string encoded_video("thisisanencodedvideopacket");
-  // Won't write anything.
   webm_muxer_.OnEncodedVideo(video_frame,
                              make_scoped_ptr(new std::string(encoded_video)),
                              base::TimeTicks::Now(), true /* keyframe */);
+  // A few encoded non key frames.
+  const int kNumNonKeyFrames = 2;
+  for (int i = 0; i < kNumNonKeyFrames; ++i) {
+    webm_muxer_.OnEncodedVideo(video_frame,
+                               make_scoped_ptr(new std::string(encoded_video)),
+                               base::TimeTicks::Now(), false /* keyframe */);
+  }
 
-  // Then send some audio. The header will be written and muxing will proceed
+  // Send some audio. The header will be written and muxing will proceed
   // normally.
-  int sample_rate = 48000;
-  int bits_per_sample = 16;
-  int frames_per_buffer = 480;
+  const int sample_rate = 48000;
+  const int bits_per_sample = 16;
+  const int frames_per_buffer = 480;
   media::AudioParameters audio_params(
       media::AudioParameters::Format::AUDIO_PCM_LOW_LATENCY,
       media::CHANNEL_LAYOUT_MONO, sample_rate, bits_per_sample,
       frames_per_buffer);
   const std::string encoded_audio("thisisanencodedaudiopacket");
 
-  // We should first get the video keyframe, then the audio frame.
+  // We should first get the encoded video frames, then the encoded audio frame.
   Sequence s;
-  EXPECT_CALL(*this, WriteCallback(Eq(encoded_video))).Times(1).InSequence(s);
+  EXPECT_CALL(*this, WriteCallback(Eq(encoded_video)))
+      .Times(1 + kNumNonKeyFrames)
+      .InSequence(s);
   EXPECT_CALL(*this, WriteCallback(Eq(encoded_audio))).Times(1).InSequence(s);
   // We'll also get lots of other header-related stuff.
   EXPECT_CALL(*this, WriteCallback(

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <deque>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
@@ -115,9 +117,22 @@ class MEDIA_EXPORT WebmMuxer : public NON_EXPORTED_BASE(mkvmuxer::IMkvWriter) {
   // The MkvMuxer active element.
   mkvmuxer::Segment segment_;
 
-  // Save the most recent video keyframe if we're waiting for audio to come in.
-  scoped_ptr<std::string> most_recent_encoded_video_keyframe_;
-  base::TimeTicks saved_keyframe_timestamp_;
+  // Hold on to all encoded video frames to dump them with and when audio is
+  // received, if expected, since WebM headers can only be written once.
+  struct EncodedVideoFrame {
+    EncodedVideoFrame(scoped_ptr<std::string> data,
+                      base::TimeTicks timestamp,
+                      bool is_keyframe);
+    ~EncodedVideoFrame();
+
+    scoped_ptr<std::string> data;
+    base::TimeTicks timestamp;
+    bool is_keyframe;
+
+   private:
+    DISALLOW_IMPLICIT_CONSTRUCTORS(EncodedVideoFrame);
+  };
+  std::deque<scoped_ptr<EncodedVideoFrame>> encoded_frames_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(WebmMuxer);
 };

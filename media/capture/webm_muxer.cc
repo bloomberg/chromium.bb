@@ -121,22 +121,24 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
       first_frame_timestamp_ = timestamp;
   }
 
-  // TODO(ajose): Don't drop data. http://crbug.com/547948
-  // TODO(ajose): Update this when we support multiple tracks.
-  // http://crbug.com/528523
+  // TODO(ajose): Support multiple tracks: http://crbug.com/528523
   if (has_audio_ && !audio_track_index_) {
     DVLOG(1) << __FUNCTION__ << ": delaying until audio track ready.";
-    if (is_key_frame) {
-      most_recent_encoded_video_keyframe_ = std::move(encoded_data);
-      saved_keyframe_timestamp_ = timestamp;
-    }
+    if (is_key_frame)  // Upon Key frame reception, empty the encoded queue.
+      encoded_frames_queue_.clear();
+
+    encoded_frames_queue_.push_back(make_scoped_ptr(new EncodedVideoFrame(
+        std::move(encoded_data), timestamp, is_key_frame)));
     return;
   }
 
-  // If have a saved keyframe, add it first.
-  if (most_recent_encoded_video_keyframe_.get())
-    AddFrame(std::move(most_recent_encoded_video_keyframe_), video_track_index_,
-             saved_keyframe_timestamp_, true /* is_key_frame */);
+  // Dump all saved encoded video frames if any.
+  while (!encoded_frames_queue_.empty()) {
+    AddFrame(std::move(encoded_frames_queue_.front()->data), video_track_index_,
+             encoded_frames_queue_.front()->timestamp,
+             encoded_frames_queue_.front()->is_keyframe);
+    encoded_frames_queue_.pop_front();
+  }
 
   AddFrame(std::move(encoded_data), video_track_index_, timestamp,
            is_key_frame);
@@ -154,18 +156,20 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
       first_frame_timestamp_ = timestamp;
   }
 
-  // TODO(ajose): Don't drop data. http://crbug.com/547948
-  // TODO(ajose): Update this when we support multiple tracks.
-  // http://crbug.com/528523
+  // TODO(ajose): Don't drop audio data: http://crbug.com/547948
+  // TODO(ajose): Support multiple tracks: http://crbug.com/528523
   if (has_video_ && !video_track_index_) {
     DVLOG(1) << __FUNCTION__ << ": delaying until video track ready.";
     return;
   }
 
-  // If have a saved keyframe, add it first.
-  if (most_recent_encoded_video_keyframe_.get())
-    AddFrame(std::move(most_recent_encoded_video_keyframe_), video_track_index_,
-             saved_keyframe_timestamp_, true /* is_key_frame */);
+  // Dump all saved encoded video frames if any.
+  while (!encoded_frames_queue_.empty()) {
+    AddFrame(std::move(encoded_frames_queue_.front()->data), video_track_index_,
+             encoded_frames_queue_.front()->timestamp,
+             encoded_frames_queue_.front()->is_keyframe);
+    encoded_frames_queue_.pop_front();
+  }
 
   AddFrame(std::move(encoded_data), audio_track_index_, timestamp,
            true /* is_key_frame -- always true for audio */);
@@ -274,5 +278,12 @@ void WebmMuxer::AddFrame(scoped_ptr<std::string> encoded_data,
                         base::Time::kNanosecondsPerMicrosecond,
                     is_key_frame);
 }
+
+WebmMuxer::EncodedVideoFrame::EncodedVideoFrame(scoped_ptr<std::string> data,
+                                                base::TimeTicks timestamp,
+                                                bool is_keyframe)
+    : data(std::move(data)), timestamp(timestamp), is_keyframe(is_keyframe) {}
+
+WebmMuxer::EncodedVideoFrame::~EncodedVideoFrame() {}
 
 }  // namespace media
