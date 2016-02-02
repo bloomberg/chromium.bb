@@ -1,6 +1,7 @@
 include_rules = [
   "+components/google/core",
   "+components/history/core",
+  "+components/infobars/core",
   "+components/keyed_service/core",
   "+components/metrics/proto",
   # TODO(mpearson): for experiment; remove after crbug.com/488901 is launched.
@@ -10,6 +11,7 @@ include_rules = [
   "+components/prefs",
   "+components/rappor",
   "+components/sync_driver",
+  "+components/syncable_prefs/testing_pref_service_syncable.h",
   "+components/url_formatter",
   "+components/webdata",
   "+google_apis",

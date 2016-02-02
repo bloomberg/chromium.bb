@@ -2654,6 +2654,40 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DesktopSearchRedirectionInfoBar_Dismiss">
+  <owner>fdoray@chromium.org</owner>
+  <description>
+    Recorded when the user clicks on the dismiss button in the infobar
+    explaining that a desktop search has been redirected to the default search
+    engine.
+  </description>
+</action>
+
+<action name="DesktopSearchRedirectionInfoBar_Ignore">
+  <owner>fdoray@chromium.org</owner>
+  <description>
+    Recorded when the infobar explaining that a desktop search has been
+    redirected to the default search engine is closed without user interaction.
+  </description>
+</action>
+
+<action name="DesktopSearchRedirectionInfoBar_ManageSearchSettings">
+  <owner>fdoray@chromium.org</owner>
+  <description>
+    Recorded when the user clicks on the 'Manage search settings' button in the
+    infobar explaining that a desktop search has been redirected to the default
+    search engine.
+  </description>
+</action>
+
+<action name="DesktopSearchRedirectionInfoBar_Shown">
+  <owner>fdoray@chromium.org</owner>
+  <description>
+    Recorded when the infobar explaining that a desktop search has been
+    redirected to the default search engine is shown.
+  </description>
+</action>
+
 <action name="Desktop_SwitchTask">
   <owner>bruthig@google.com</owner>
   <owner>tdanderson@google.com</owner>

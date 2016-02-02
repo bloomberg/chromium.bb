@@ -268,7 +268,6 @@
       'browser/ui/passwords/password_bubble_experiment_unittest.cc',
       'browser/ui/passwords/password_manager_presenter_unittest.cc',
       'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
-      'browser/ui/startup/startup_browser_creator_win_unittest.cc',
       'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
       'browser/ui/sync/sync_promo_ui_unittest.cc',
       'browser/ui/tests/ui_gfx_image_unittest.cc',

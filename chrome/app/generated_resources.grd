@@ -6391,11 +6391,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enables synchronizing WiFi network settings across devices. When enabled, the WiFi credential datatype is registered with Chrome Sync, and WiFi credentials are synchronized subject to user preferences. (See also, chrome://settings/syncSetup.)
       </message>
       <if expr="is_win">
-        <message name="IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_DESCRIPTION" desc="Description for the flag to enable a preference that allows redirection of Windows desktop searches to the default search engine.">
-          Enables a preference that allows redirection of Windows desktop searches to the default search engine.
+        <message name="IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_DESCRIPTION" desc="Description for the flag to enable redirection of Windows desktop searches to the default search engine.">
+          Enables redirection of Windows desktop searches to the default search engine.
         </message>
-        <message name="IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME" desc="Title for the flag to enable a preference that allows redirection of Windows desktop searches to the default search engine.">
-          Windows desktop search redirection preference
+        <message name="IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME" desc="Title for the flag to enable redirection of Windows desktop searches to the default search engine.">
+          Windows desktop search redirection
         </message>
       </if>
       <message name="IDS_FLAGS_SYNC_SANDBOX_NAME" desc="Name for the flag that causes Chrome to use the sandbox (testing) server for Sync.">

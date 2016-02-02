@@ -198,6 +198,7 @@
       <part file="password_manager_strings.grdp" />
       <part file="pdf_strings.grdp" />
       <part file="policy_strings.grdp" />
+      <part file="search_engines_strings.grdp" />
       <part file="security_interstitials_strings.grdp" />
       <part file="ssl_errors_strings.grdp" />
       <part file="sync_ui_strings.grdp" />

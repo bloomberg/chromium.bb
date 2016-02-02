@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <!-- Desktop search redirection strings. -->
+  <message name="IDS_DESKTOP_SEARCH_REDIRECTION_INFOBAR_MESSAGE" desc="Text shown in the infobar informing the user that a desktop search has been redirected to the default search engine.">
+    Desktop searches use your default search engine (<ph name="DEFAULT_SEARCH_ENGINE_NAME">$1<ex>Google</ex></ph>).
+  </message>
+  <message name="IDS_DESKTOP_SEARCH_REDIRECTION_INFOBAR_BUTTON" desc="Text of the button to go to the search engine settings page, in the infobar informing the user that a desktop search has been redirected to the default search engine.">
+    Manage search settings
+  </message>
+</grit-part>

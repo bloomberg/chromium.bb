@@ -81,7 +81,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "components/search_engines/desktop_search_win.h"
+#include "components/search_engines/desktop_search_utils.h"
 #endif  // defined(OS_WIN)
 
 #if defined(ENABLE_APP_LIST)
@@ -2058,7 +2058,7 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_NAME,
      IDS_FLAGS_WINDOWS_DESKTOP_SEARCH_REDIRECTION_DESCRIPTION,
      kOsWin,
-     FEATURE_VALUE_TYPE(kWindowsDesktopSearchRedirectionFeature)},
+     FEATURE_VALUE_TYPE(kDesktopSearchRedirectionFeature)},
 #endif  // defined(OS_WIN)
     {"force-ui-direction",
      IDS_FLAGS_FORCE_UI_DIRECTION_NAME,

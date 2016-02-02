@@ -98,7 +98,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/metrics/jumplist_metrics_win.h"
-#include "components/search_engines/desktop_search_win.h"
+#include "components/search_engines/desktop_search_utils.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW)
@@ -307,8 +307,8 @@ bool ShowUserManagerOnStartupIfNeeded(
 
 StartupBrowserCreator::StartupBrowserCreator()
     : is_default_browser_dialog_suppressed_(false),
-      show_main_browser_window_(true) {
-}
+      show_main_browser_window_(true),
+      show_desktop_search_redirection_infobar_(false) {}
 
 StartupBrowserCreator::~StartupBrowserCreator() {}
 
@@ -372,7 +372,8 @@ bool StartupBrowserCreator::LaunchBrowser(
   if (!silent_launch) {
     StartupBrowserCreatorImpl lwp(cur_dir, command_line, this, is_first_run);
     const std::vector<GURL> urls_to_launch =
-        GetURLsFromCommandLine(command_line, cur_dir, profile);
+        GetURLsFromCommandLine(command_line, cur_dir, profile,
+                               &show_desktop_search_redirection_infobar_);
     chrome::HostDesktopType host_desktop_type =
         chrome::HOST_DESKTOP_TYPE_NATIVE;
 
@@ -531,7 +532,11 @@ const wchar_t* StartupBrowserCreator::GetDefaultBrowserUrl() {
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const base::CommandLine& command_line,
     const base::FilePath& cur_dir,
-    Profile* profile) {
+    Profile* profile,
+    bool* show_desktop_search_redirection_infobar) {
+  DCHECK(profile);
+  DCHECK(show_desktop_search_redirection_infobar);
+
   std::vector<GURL> urls;
 
   const base::CommandLine::StringVector& params = command_line.GetArgs();
@@ -558,23 +563,14 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     GURL url = GURL(param.MaybeAsASCII());
 
 #if defined(OS_WIN)
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile);
-    DCHECK(template_url_service);
-    base::string16 search_terms;
-    if (DetectWindowsDesktopSearch(
-            url, template_url_service->search_terms_data(), &search_terms)) {
-      base::RecordAction(base::UserMetricsAction("DesktopSearch"));
-
-      if (ShouldRedirectWindowsDesktopSearchToDefaultSearchEngine(
-            profile->GetPrefs())) {
-        const GURL search_url(GetDefaultSearchURLForSearchTerms(
-            template_url_service, search_terms));
-        if (search_url.is_valid()) {
-          urls.push_back(search_url);
-          continue;
-        }
-      }
+    // Replace desktop search URL by a default search engine URL if needed.
+    // Ignore cases where there are multiple command line arguments, because
+    // desktop search never passes multiple URLs to the browser.
+    if (params.size() == 1) {
+      *show_desktop_search_redirection_infobar =
+          ReplaceDesktopSearchURLWithDefaultSearchURLIfNeeded(
+              profile->GetPrefs(),
+              TemplateURLServiceFactory::GetForProfile(profile), &url);
     }
 #endif  // defined(OS_WIN)
 

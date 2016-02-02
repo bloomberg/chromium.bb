@@ -99,6 +99,10 @@ class StartupBrowserCreator {
     return show_main_browser_window_;
   }
 
+  bool show_desktop_search_redirection_infobar() const {
+    return show_desktop_search_redirection_infobar_;
+  }
+
   // For faking that no profiles have been launched yet.
   static void ClearLaunchedProfilesForTesting();
 
@@ -133,8 +137,6 @@ class StartupBrowserCreator {
                            ReadingWasRestartedAfterRestart);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, UpdateWithTwoProfiles);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, LastUsedProfileActivated);
-  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorWinTest,
-                           GetURLsFromCommandLineWithDesktopSearchURL);
 
   bool ProcessCmdLineImpl(const base::CommandLine& command_line,
                           const base::FilePath& cur_dir,
@@ -142,12 +144,16 @@ class StartupBrowserCreator {
                           Profile* last_used_profile,
                           const Profiles& last_opened_profiles);
 
-  // Returns the list of URLs to open from the command line. The returned
-  // vector is empty if the user didn't specify any URLs on the command line.
+  // Returns the list of URLs to open from the command line. The returned vector
+  // is empty if the user didn't specify any URLs on the command line.
+  // |show_search_redirection_infobar| is set to true if an infobar should be
+  // shown to inform the user that a desktop search has been redirected to the
+  // default search engine.
   static std::vector<GURL> GetURLsFromCommandLine(
       const base::CommandLine& command_line,
       const base::FilePath& cur_dir,
-      Profile* profile);
+      Profile* profile,
+      bool* show_desktop_search_redirection_infobar);
 
   // This function performs command-line handling and is invoked only after
   // start up (for example when we get a start request for another process).
@@ -181,6 +187,10 @@ class StartupBrowserCreator {
   // Whether the browser window should be shown immediately after it has been
   // created. Default is true.
   bool show_main_browser_window_;
+
+  // Whether an infobar should be shown to inform the user that a desktop search
+  // has been redirected to the default search engine.
+  bool show_desktop_search_redirection_infobar_;
 
   // True if we have already read and reset the preference kWasRestarted. (A
   // member variable instead of a static variable inside WasRestarted because

@@ -44105,6 +44105,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Search.DesktopSearch.RedirectionInfobarCloseAction"
+    enum="DesktopSearchRedirectionInfobarCloseAction">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The action performed by the user to close the infobar explaining that a
+    desktop search has been redirected to the default search engine.
+  </summary>
+</histogram>
+
+<histogram name="Search.DesktopSearch.URLAction" enum="DesktopSearchURLAction">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    The action performed when a desktop search URL is passed to the browser
+    through the command line.
+  </summary>
+</histogram>
+
 <histogram name="Search.MigratedPrefToDictionaryValue" enum="BooleanHit">
   <owner>caitkp@chromium.org</owner>
   <summary>
@@ -60611,6 +60628,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="First window capture call failed."/>
 </enum>
 
+<enum name="DesktopSearchRedirectionInfobarCloseAction" type="int">
+  <int value="0" label="Clicked the 'Manage search settings' link"/>
+  <int value="1" label="Clicked the dismiss button"/>
+  <int value="2" label="InfoBar dismissed implicitly (no interaction)"/>
+</enum>
+
+<enum name="DesktopSearchURLAction" type="int">
+  <int value="0" label="No redirection - Feature disabled"/>
+  <int value="1" label="No redirection - Default search engine is Bing"/>
+  <int value="2" label="No redirection - Default search engine is invalid"/>
+  <int value="3" label="Redirection to the default search engine"/>
+</enum>
+
 <enum name="DeviceIdMismatch" type="int">
   <int value="0" label="BOTH_NONEMPTY"/>
   <int value="1" label="SYNC_EMPTY"/>
@@ -68435,6 +68465,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="59" label="UPGRADE_INFOBAR_DELEGATE"/>
   <int value="60" label="CHROME_WINDOW_ERROR"/>
   <int value="61" label="CONFIRM_DANGEROUS_DOWNLOAD"/>
+  <int value="62" label="WINDOWS_DESKTOP_SEARCH_INFOBAR_DELEGATE"/>
 </enum>
 
 <enum name="InfoBarResponse" type="int">
