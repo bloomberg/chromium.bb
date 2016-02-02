@@ -126,8 +126,9 @@ class PartialScreenshotController::ScopedCursorSetter {
 
 PartialScreenshotController::PartialScreenshotController()
     : root_window_(nullptr), screenshot_delegate_(nullptr) {
-  Shell* shell = Shell::GetInstance();
-  shell->PrependPreTargetHandler(this);
+  // Keep this here and don't move it to StartPartialScreenshotSession(), as it
+  // needs to be pre-pended by MouseCursorEventFilter in Shell::Init().
+  Shell::GetInstance()->PrependPreTargetHandler(this);
 }
 
 PartialScreenshotController::~PartialScreenshotController() {
@@ -175,7 +176,19 @@ void PartialScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
 }
 
 void PartialScreenshotController::Complete() {
-  const gfx::Rect& region = layers_[root_window_]->region();
+  if (!root_window_) {
+    // If we received a released event before we ever got a pressed event
+    // (resulting in setting |root_window_|), we just return without canceling
+    // to keep the screenshot session active waiting for the next press.
+    //
+    // This is to avoid a crash that used to happen when we start the screenshot
+    // session while the mouse is pressed and then release without moving the
+    // mouse. crbug.com/581432.
+    return;
+  }
+
+  DCHECK(layers_.count(root_window_));
+  const gfx::Rect& region = layers_.at(root_window_)->region();
   if (!region.IsEmpty()) {
     screenshot_delegate_->HandleTakePartialScreenshot(
         root_window_, gfx::IntersectRects(root_window_->bounds(), region));
@@ -199,11 +212,12 @@ void PartialScreenshotController::Update(const ui::LocatedEvent& event) {
     MaybeStart(event);
 
   DCHECK(layers_.find(root_window_) != layers_.end());
-  layers_[root_window_]->SetRegion(
-      gfx::Rect(std::min(start_position_.x(), event.root_location().x()),
-                std::min(start_position_.y(), event.root_location().y()),
-                ::abs(start_position_.x() - event.root_location().x()),
-                ::abs(start_position_.y() - event.root_location().y())));
+  layers_.at(root_window_)
+      ->SetRegion(
+          gfx::Rect(std::min(start_position_.x(), event.root_location().x()),
+                    std::min(start_position_.y(), event.root_location().y()),
+                    ::abs(start_position_.x() - event.root_location().x()),
+                    ::abs(start_position_.y() - event.root_location().y())));
 }
 
 void PartialScreenshotController::OnKeyEvent(ui::KeyEvent* event) {

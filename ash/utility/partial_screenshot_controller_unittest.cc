@@ -78,6 +78,43 @@ TEST_F(PartialScreenshotControllerTest, BasicMouse) {
   EXPECT_FALSE(IsActive());
 }
 
+// Starting the screenshot session while mouse is pressed, releasing the mouse
+// without moving it used to cause a crash. Make sure this doesn't happen again.
+// crbug.com/581432.
+TEST_F(PartialScreenshotControllerTest, StartSessionWhileMousePressed) {
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+  test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
+
+  generator.MoveMouseTo(100, 100);
+  generator.PressLeftButton();
+
+  // The following used to cause a crash. Now it should remain in the
+  // screenshot session.
+  StartPartialScreenshotSession();
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_TRUE(IsActive());
+
+  // Pressing again, moving, and releasing should take a screenshot.
+  generator.PressLeftButton();
+  generator.MoveMouseTo(200, 200);
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(1, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_FALSE(IsActive());
+
+  // Starting the screenshot session while mouse is pressed, moving the mouse
+  // and releasing should take a screenshot normally.
+  generator.MoveMouseTo(100, 100);
+  generator.PressLeftButton();
+  StartPartialScreenshotSession();
+  generator.MoveMouseTo(150, 150);
+  generator.MoveMouseTo(200, 200);
+  EXPECT_TRUE(IsActive());
+  generator.ReleaseLeftButton();
+  EXPECT_EQ(2, test_delegate->handle_take_partial_screenshot_count());
+  EXPECT_FALSE(IsActive());
+}
+
 TEST_F(PartialScreenshotControllerTest, JustClick) {
   StartPartialScreenshotSession();
   test::TestScreenshotDelegate* test_delegate = GetScreenshotDelegate();
