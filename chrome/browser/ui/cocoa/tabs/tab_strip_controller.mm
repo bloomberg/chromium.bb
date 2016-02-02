@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
@@ -1198,6 +1199,22 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
     NSValue* oldTargetValue = [targetFrames_ objectForKey:identifier];
     if (!oldTargetValue ||
         !NSEqualRects([oldTargetValue rectValue], tabFrame)) {
+      // Redraw the tab once it moves to its final location. Because we're
+      // using Core Animation, each tab caches its contents until told to
+      // redraw. Without forcing a redraw at the end of the move, tabs will
+      // display the wrong content when using a theme that creates transparent
+      // tabs.
+      ScopedNSAnimationContextGroup subAnimationGroup(animate);
+      subAnimationGroup.SetCurrentContextDuration(kAnimationDuration);
+      // -[NSAnimationContext setCompletionHandler:] is only available on
+      // 10.7 and higher.
+      if (base::mac::IsOSLionOrLater()) {
+        NSView* tabView = [tab view];
+        [[NSAnimationContext currentContext] setCompletionHandler:^{
+          [tabView setNeedsDisplay:YES];
+        }];
+      }
+
       [frameTarget setFrame:tabFrame];
       [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
                         forKey:identifier];
