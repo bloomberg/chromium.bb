@@ -58,7 +58,6 @@ class CONTENT_EXPORT CacheStorageCache
   using Requests = std::vector<ServiceWorkerFetchRequest>;
   using RequestsCallback =
       base::Callback<void(CacheStorageError, scoped_ptr<Requests>)>;
-  using SizeCallback = base::Callback<void(int64_t)>;
 
   static scoped_refptr<CacheStorageCache> CreateMemoryCache(
       const GURL& origin,
@@ -108,8 +107,9 @@ class CONTENT_EXPORT CacheStorageCache
   // will exit early. Close should only be called once per CacheStorageCache.
   void Close(const base::Closure& callback);
 
-  // The size of the cache's contents.
-  void Size(const SizeCallback& callback);
+  // The size of the cache contents in memory. Returns 0 if the cache backend is
+  // not a memory cache backend.
+  int64_t MemoryBackedSize() const;
 
   base::FilePath path() const { return path_; }
 
@@ -232,8 +232,6 @@ class CONTENT_EXPORT CacheStorageCache
 
   void CloseImpl(const base::Closure& callback);
 
-  void SizeImpl(const SizeCallback& callback);
-
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
   virtual void CreateBackend(const ErrorCallback& callback);
@@ -259,7 +257,6 @@ class CONTENT_EXPORT CacheStorageCache
   void PendingRequestsCallback(const RequestsCallback& callback,
                                CacheStorageError error,
                                scoped_ptr<Requests> requests);
-  void PendingSizeCallback(const SizeCallback& callback, int64_t size);
 
   void PopulateResponseMetadata(const CacheMetadata& metadata,
                                 ServiceWorkerResponse* response);

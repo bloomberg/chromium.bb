@@ -255,7 +255,9 @@ class TestCacheStorageCache : public CacheStorageCache {
 class CacheStorageCacheTest : public testing::Test {
  public:
   CacheStorageCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+        callback_error_(CACHE_STORAGE_OK),
+        callback_closed_(false) {}
 
   void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
@@ -420,14 +422,6 @@ class CacheStorageCacheTest : public testing::Test {
     return callback_closed_;
   }
 
-  int64_t Size() {
-    base::RunLoop run_loop;
-    cache_->Size(base::Bind(&CacheStorageCacheTest::SizeCallback,
-                            base::Unretained(this), &run_loop));
-    run_loop.Run();
-    return callback_size_;
-  }
-
   void RequestsCallback(base::RunLoop* run_loop,
                         CacheStorageError error,
                         scoped_ptr<CacheStorageCache::Requests> requests) {
@@ -492,12 +486,6 @@ class CacheStorageCacheTest : public testing::Test {
       run_loop->Quit();
   }
 
-  void SizeCallback(base::RunLoop* run_loop, int64_t size) {
-    callback_size_ = size;
-    if (run_loop)
-      run_loop->Quit();
-  }
-
   bool VerifyKeys(const std::vector<std::string>& expected_keys) {
     if (expected_keys.size() != callback_strings_.size())
       return false;
@@ -549,17 +537,22 @@ class CacheStorageCacheTest : public testing::Test {
   scoped_ptr<storage::BlobDataHandle> blob_handle_;
   std::string expected_blob_data_;
 
-  CacheStorageError callback_error_ = CACHE_STORAGE_OK;
+  CacheStorageError callback_error_;
   scoped_ptr<ServiceWorkerResponse> callback_response_;
   scoped_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
-  bool callback_closed_ = false;
-  int64_t callback_size_ = 0;
+  bool callback_closed_;
 };
 
 class CacheStorageCacheTestP : public CacheStorageCacheTest,
                                public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return !GetParam(); }
+};
+
+class CacheStorageCacheMemoryOnlyTest
+    : public CacheStorageCacheTest,
+      public testing::WithParamInterface<bool> {
+  bool MemoryOnly() override { return true; }
 };
 
 TEST_P(CacheStorageCacheTestP, PutNoBody) {
@@ -961,20 +954,26 @@ TEST_P(CacheStorageCacheTestP, PutObeysQuotaLimits) {
   EXPECT_EQ(CACHE_STORAGE_ERROR_QUOTA_EXCEEDED, callback_error_);
 }
 
-TEST_P(CacheStorageCacheTestP, Size) {
-  EXPECT_EQ(0, Size());
+TEST_F(CacheStorageCacheMemoryOnlyTest, MemoryBackedSize) {
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
-  EXPECT_LT(0, Size());
-  int64_t no_body_size = Size();
+  EXPECT_LT(0, cache_->MemoryBackedSize());
+  int64_t no_body_size = cache_->MemoryBackedSize();
 
   EXPECT_TRUE(Delete(no_body_request_));
-  EXPECT_EQ(0, Size());
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
 
   EXPECT_TRUE(Put(body_request_, body_response_));
-  EXPECT_LT(no_body_size, Size());
+  EXPECT_LT(no_body_size, cache_->MemoryBackedSize());
 
   EXPECT_TRUE(Delete(body_request_));
-  EXPECT_EQ(0, Size());
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+}
+
+TEST_F(CacheStorageCacheTest, MemoryBackedSizePersistent) {
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
+  EXPECT_TRUE(Put(no_body_request_, no_body_response_));
+  EXPECT_EQ(0, cache_->MemoryBackedSize());
 }
 
 TEST_P(CacheStorageCacheTestP, OpsFailOnClosedBackendNeverCreated) {

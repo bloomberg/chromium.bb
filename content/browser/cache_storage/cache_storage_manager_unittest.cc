@@ -604,47 +604,50 @@ TEST_P(CacheStorageManagerTestP, OpenRunsSerially) {
 TEST_P(CacheStorageManagerTestP, GetOriginUsage) {
   EXPECT_EQ(0, GetOriginUsage(origin1_));
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_EQ(0, GetOriginUsage(origin1_));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  int64_t foo_size = GetOriginUsage(origin1_);
   EXPECT_LT(0, GetOriginUsage(origin1_));
   EXPECT_EQ(0, GetOriginUsage(origin2_));
-
-  // Add the same entry into a second cache, the size should double.
-  EXPECT_TRUE(Open(origin1_, "bar"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  EXPECT_EQ(2 * foo_size, GetOriginUsage(origin1_));
 }
 
 TEST_P(CacheStorageManagerTestP, GetAllOriginsUsage) {
   EXPECT_EQ(0ULL, GetAllOriginsUsage().size());
-  // Put one entry in a cache on origin 1.
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-
-  // Put two entries (of identical size) in a cache on origin 2.
-  EXPECT_TRUE(Open(origin2_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
-  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/bar")));
-
   std::vector<CacheStorageUsageInfo> usage = GetAllOriginsUsage();
-  EXPECT_EQ(2ULL, usage.size());
+  EXPECT_EQ(1ULL, usage.size());
+  const CacheStorageUsageInfo& info = usage[0];
+  EXPECT_EQ(origin1_, info.origin);
+  EXPECT_LT(0, info.total_size_bytes);
+  if (MemoryOnly())
+    EXPECT_TRUE(info.last_modified.is_null());
+  else
+    EXPECT_FALSE(info.last_modified.is_null());
+}
 
-  int origin1_index = usage[0].origin == origin1_ ? 0 : 1;
-  int origin2_index = usage[1].origin == origin2_ ? 1 : 0;
-  EXPECT_NE(origin1_index, origin2_index);
+TEST_F(CacheStorageManagerMemoryOnlyTest, MemoryBackedSize) {
+  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 
-  int64_t origin1_size = usage[origin1_index].total_size_bytes;
-  int64_t origin2_size = usage[origin2_index].total_size_bytes;
-  EXPECT_EQ(2 * origin1_size, origin2_size);
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  scoped_refptr<CacheStorageCache> foo_cache = callback_cache_;
+  EXPECT_TRUE(Open(origin1_, "bar"));
+  scoped_refptr<CacheStorageCache> bar_cache = callback_cache_;
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 
-  if (MemoryOnly()) {
-    EXPECT_TRUE(usage[origin1_index].last_modified.is_null());
-    EXPECT_TRUE(usage[origin2_index].last_modified.is_null());
-  } else {
-    EXPECT_FALSE(usage[origin1_index].last_modified.is_null());
-    EXPECT_FALSE(usage[origin2_index].last_modified.is_null());
-  }
+  EXPECT_TRUE(CachePut(foo_cache, GURL("http://example.com/foo")));
+  EXPECT_LT(0, cache_storage->MemoryBackedSize());
+  int64_t foo_size = cache_storage->MemoryBackedSize();
+
+  EXPECT_TRUE(CachePut(bar_cache, GURL("http://example.com/foo")));
+  EXPECT_EQ(foo_size * 2, cache_storage->MemoryBackedSize());
+}
+
+TEST_F(CacheStorageManagerTest, MemoryBackedSizePersistent) {
+  CacheStorage* cache_storage = CacheStorageForOrigin(origin1_);
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+  EXPECT_EQ(0, cache_storage->MemoryBackedSize());
 }
 
 TEST_F(CacheStorageManagerTest, DeleteUnreferencedCacheDirectories) {
@@ -735,7 +738,7 @@ TEST_F(CacheStorageMigrationTest, DeleteCache) {
 }
 
 TEST_F(CacheStorageMigrationTest, GetOriginUsage) {
-  EXPECT_EQ(0, GetOriginUsage(origin1_));
+  EXPECT_GT(GetOriginUsage(origin1_), 0);
   EXPECT_FALSE(base::DirectoryExists(legacy_path_));
   EXPECT_TRUE(base::DirectoryExists(new_path_));
 }
