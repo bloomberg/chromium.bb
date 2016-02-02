@@ -21,9 +21,7 @@ ScreenlockLayout::~ScreenlockLayout() {}
 // screenlock restarts.
 
 void ScreenlockLayout::LayoutWindow(mus::Window* window) {
-  gfx::Rect bounds = owner()->bounds();
-  bounds.Inset(-25, -25);
-  window->SetBounds(bounds);
+  window->SetBounds(owner()->bounds());
 }
 
 }  // namespace wm

@@ -19,6 +19,7 @@ mojo_native_application("shell") {
 
   deps = [
     "//base",
+    "//mash/screenlock/public/interfaces",
     "//mash/shell/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",

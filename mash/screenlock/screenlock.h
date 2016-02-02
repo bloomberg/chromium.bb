@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mash/shell/public/interfaces/shell.mojom.h"
+#include "mash/screenlock/public/interfaces/screenlock.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
@@ -21,8 +21,10 @@ class AuraInit;
 namespace mash {
 namespace screenlock {
 
-class Screenlock : public mojo::ApplicationDelegate,
-                   public shell::mojom::ScreenlockStateListener {
+class Screenlock
+    : public mojo::ApplicationDelegate,
+      public mash::screenlock::mojom::Screenlock,
+      public mojo::InterfaceFactory<mash::screenlock::mojom::Screenlock> {
  public:
   Screenlock();
   ~Screenlock() override;
@@ -30,14 +32,21 @@ class Screenlock : public mojo::ApplicationDelegate,
  private:
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
+  bool ConfigureIncomingConnection(
+      mojo::ApplicationConnection* connection) override;
 
-  // mash::shell::mojom::ScreenlockStateListener:
-  void ScreenlockStateChanged(bool locked) override;
+  // mash::screenlock::mojom::Screenlock:
+  void Quit() override;
+
+  // mojo::InterfaceFactory<mash::screenlock::mojom::Screenlock>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mash::screenlock::mojom::Screenlock> r) override;
 
   mojo::ApplicationImpl* app_;
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;
-  mojo::WeakBindingSet<mash::shell::mojom::ScreenlockStateListener> bindings_;
+  mojo::WeakBindingSet<mash::screenlock::mojom::Screenlock> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(Screenlock);
 };

@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/common/weak_interface_ptr_set.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 
@@ -38,8 +37,6 @@ class ShellApplicationDelegate
       mojo::ApplicationConnection* connection) override;
 
   // mash::shell::mojom::Shell:
-  void AddScreenlockStateListener(
-      mojom::ScreenlockStateListenerPtr listener) override;
   void LockScreen() override;
   void UnlockScreen() override;
 
@@ -63,10 +60,7 @@ class ShellApplicationDelegate
 
   mojo::ApplicationImpl* app_;
   std::map<std::string, scoped_ptr<mojo::ApplicationConnection>> connections_;
-  bool screen_locked_;
   mojo::WeakBindingSet<mash::shell::mojom::Shell> bindings_;
-  mojo::WeakInterfacePtrSet<mojom::ScreenlockStateListener>
-      screenlock_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellApplicationDelegate);
 };

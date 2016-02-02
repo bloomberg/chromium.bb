@@ -243,8 +243,8 @@ void FocusController::SetFocusedWindowImpl(
 void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
                                              ServerWindow* window,
                                              bool is_drawn) {
-  // DCHECK(!is_drawn); TODO(sadrul):
-  // DCHECK(root_->Contains(window)); TODO(sadrul):
+  DCHECK(!is_drawn);
+  DCHECK(root_->Contains(window));
   drawn_tracker_.reset();
 
   auto will_be_hidden = [ancestor, window](ServerWindow* w) {
@@ -296,7 +296,7 @@ void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
 void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
                                           ServerWindow* window,
                                           bool is_drawn) {
-  // DCHECK(false);  TODO(sadrul):
+  DCHECK(false);
 }
 
 }  // namespace ws

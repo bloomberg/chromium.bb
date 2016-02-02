@@ -39,14 +39,6 @@ class WeakBindingSet {
     bindings_.push_back(binding->GetWeakPtr());
   }
 
-  // Returns an InterfacePtr bound to one end of a pipe whose other end is
-  // bound to |this|.
-  InterfacePtr<Interface> CreateInterfacePtrAndBind(Interface* impl) {
-    InterfacePtr<Interface> interface_ptr;
-    AddBinding(impl, GetProxy(&interface_ptr));
-    return interface_ptr;
-  }
-
   void CloseAllBindings() {
     for (const auto& it : bindings_) {
       if (it) {

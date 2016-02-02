@@ -70,7 +70,6 @@ source_set("lib") {
     "//components/mus/common",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
-    "//mash/shell/public/interfaces",
     "//mash/wm/public/interfaces",
     "//mash/wm/resources",
     "//mojo/common:common_base",
@@ -105,8 +104,6 @@ mojo_native_application("wm") {
     "//mojo/shell/public/cpp",
   ]
 
-  # TODO(beng): This target relies on //mash/shell, but there is a cycle so we
-  #             can't state that dependency here.
   data_deps = [
     "//components/mus",
   ]

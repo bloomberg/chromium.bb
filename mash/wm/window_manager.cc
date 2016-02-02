@@ -25,9 +25,7 @@ namespace mash {
 namespace wm {
 
 WindowManager::WindowManager()
-    : root_controller_(nullptr),
-      window_manager_client_(nullptr),
-      binding_(this) {}
+    : root_controller_(nullptr), window_manager_client_(nullptr) {}
 
 WindowManager::~WindowManager() {
   if (!root_controller_)
@@ -39,8 +37,7 @@ WindowManager::~WindowManager() {
   }
 }
 
-void WindowManager::Initialize(RootWindowController* root_controller,
-                               mash::shell::mojom::ShellPtr shell) {
+void WindowManager::Initialize(RootWindowController* root_controller) {
   DCHECK(root_controller);
   DCHECK(!root_controller_);
   root_controller_ = root_controller;
@@ -66,8 +63,6 @@ void WindowManager::Initialize(RootWindowController* root_controller,
       NonClientFrameController::GetMaxTitleBarButtonWidth();
   window_manager_client_->SetFrameDecorationValues(
       std::move(frame_decoration_values));
-
-  shell->AddScreenlockStateListener(binding_.CreateInterfacePtrAndBind());
 }
 
 gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {
@@ -163,13 +158,6 @@ mus::Window* WindowManager::OnWmCreateTopLevelWindow(
 
 void WindowManager::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
   root_controller_->OnAccelerator(id, std::move(event));
-}
-
-void WindowManager::ScreenlockStateChanged(bool locked) {
-  // Hide USER_PRIVATE windows when the screen is locked.
-  mus::Window* window = root_controller_->GetWindowForContainer(
-      mash::wm::mojom::Container::USER_PRIVATE);
-  window->SetVisible(!locked);
 }
 
 }  // namespace wm
