@@ -2630,9 +2630,6 @@
       'clang_warning_flags': [
         '-Wheader-hygiene',
 
-        # TODO(thakis): Add -Wfor-loop-analysis to -Wall in clang, remove this:
-        '-Wfor-loop-analysis',
-
         # TODO(thakis): Consider -Wloop-analysis (turns on
         # -Wrange-loop-analysis too).
 
