@@ -914,7 +914,8 @@ bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
     // Don't start a long idle task in touch start priority, try again when
     // the policy is scheduled to end.
     *next_long_idle_period_delay_out =
-        MainThreadOnly().current_policy_expiration_time - now;
+        std::max(base::TimeDelta(),
+                 MainThreadOnly().current_policy_expiration_time - now);
     return false;
   }
   return true;

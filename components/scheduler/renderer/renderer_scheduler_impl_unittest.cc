@@ -2767,4 +2767,24 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_FALSE(scheduler_->TimerTaskRunner()->IsQueueEnabled());
 }
 
+TEST_F(RendererSchedulerImplTest, DenyLongIdleDuringTouchStart) {
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart),
+      RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  EXPECT_EQ(UseCase::TOUCHSTART, ForceUpdatePolicyAndGetCurrentUseCase());
+
+  // First check that long idle is denied during the TOUCHSTART use case.
+  IdleHelper::Delegate* idle_delegate = scheduler_.get();
+  base::TimeTicks now;
+  base::TimeDelta next_time_to_check;
+  EXPECT_FALSE(idle_delegate->CanEnterLongIdlePeriod(now, &next_time_to_check));
+  EXPECT_GE(next_time_to_check, base::TimeDelta());
+
+  // Check again at a time past the TOUCHSTART expiration. We should still get a
+  // non-negative delay to when to check again.
+  now += base::TimeDelta::FromMilliseconds(500);
+  EXPECT_FALSE(idle_delegate->CanEnterLongIdlePeriod(now, &next_time_to_check));
+  EXPECT_GE(next_time_to_check, base::TimeDelta());
+}
+
 }  // namespace scheduler
