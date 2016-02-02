@@ -23,7 +23,6 @@ class ModulePpapi : public pp::Module {
   pp::Instance* CreateInstance(PP_Instance pp_instance) override;
 
  private:
-  bool init_was_successful_;
   const PPB_NaCl_Private* private_interface_;
 };
 
