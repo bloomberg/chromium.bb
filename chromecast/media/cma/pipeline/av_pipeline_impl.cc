@@ -111,7 +111,7 @@ bool AvPipelineImpl::StartPlayingFrom(
   // Start feeding the pipeline.
   enable_feeding_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
+      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBuffer, weak_this_));
 
   TransitionToState(kPlaying);
   return true;
@@ -180,13 +180,12 @@ void AvPipelineImpl::SetCdm(BrowserCdmCast* media_keys) {
       base::Bind(&AvPipelineImpl::OnCdmDestroyed, weak_this_));
 }
 
-void AvPipelineImpl::FetchBufferIfNeeded() {
+void AvPipelineImpl::FetchBuffer() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!enable_feeding_)
     return;
 
-  if (pending_read_ || pending_buffer_)
-    return;
+  DCHECK(!pending_read_ && !pending_buffer_);
 
   pending_read_ = true;
   frame_provider_->Read(
@@ -208,25 +207,13 @@ void AvPipelineImpl::OnNewFrame(
 
   pending_buffer_ = buffer;
   ProcessPendingBuffer();
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
 }
 
 void AvPipelineImpl::ProcessPendingBuffer() {
   if (!enable_feeding_)
     return;
 
-  // Initiate a read if there isn't already one.
-  if (!pending_buffer_ && !pending_read_) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&AvPipelineImpl::FetchBufferIfNeeded, weak_this_));
-    return;
-  }
-
-  if (!pending_buffer_ || pushed_buffer_)
-    return;
+  DCHECK(!pushed_buffer_);
 
   // Break the feeding loop when the end of stream is reached.
   if (pending_buffer_->end_of_stream()) {
@@ -293,7 +280,7 @@ void AvPipelineImpl::OnPushBufferComplete(BufferStatus status) {
     return;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&AvPipelineImpl::ProcessPendingBuffer, weak_this_));
+      FROM_HERE, base::Bind(&AvPipelineImpl::FetchBuffer, weak_this_));
 }
 
 void AvPipelineImpl::OnEndOfStream() {
@@ -327,7 +314,8 @@ void AvPipelineImpl::OnCdmStateChanged() {
     UpdatePlayableFrames();
 
   // Process the pending buffer in case the CDM now has the frame key id.
-  ProcessPendingBuffer();
+  if (pending_buffer_)
+    ProcessPendingBuffer();
 }
 
 void AvPipelineImpl::OnCdmDestroyed() {

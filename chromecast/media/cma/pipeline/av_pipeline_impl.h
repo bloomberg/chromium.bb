@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BASE_AV_PIPELINE_IMPL_H_
-#define CHROMECAST_MEDIA_CMA_BASE_AV_PIPELINE_IMPL_H_
+#ifndef CHROMECAST_MEDIA_CMA_PIPELINE_AV_PIPELINE_IMPL_H_
+#define CHROMECAST_MEDIA_CMA_PIPELINE_AV_PIPELINE_IMPL_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
 #include <list>
+#include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -101,7 +102,7 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
   void OnCdmStateChange();
 
   // Feed the pipeline, getting the frames from |frame_provider_|.
-  void FetchBufferIfNeeded();
+  void FetchBuffer();
 
   // Callback invoked when receiving a new frame from |frame_provider_|.
   void OnNewFrame(const scoped_refptr<DecoderBufferBase>& buffer,
@@ -178,4 +179,4 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BASE_AV_PIPELINE_IMPL_H_
+#endif  // CHROMECAST_MEDIA_CMA_PIPELINE_AV_PIPELINE_IMPL_H_
