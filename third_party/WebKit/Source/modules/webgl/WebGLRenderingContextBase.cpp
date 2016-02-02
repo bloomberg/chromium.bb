@@ -2526,21 +2526,7 @@ void WebGLRenderingContextBase::generateMipmap(GLenum target)
     }
     if (!validateSettableTexFormat("generateMipmap", tex->getInternalFormat(target, 0)))
         return;
-
-    // generateMipmap won't work properly if minFilter is not NEAREST_MIPMAP_LINEAR
-    // on Mac.  Remove the hack once this driver bug is fixed.
-#if OS(MACOSX)
-    bool needToResetMinFilter = false;
-    if (tex->getMinFilter() != GL_NEAREST_MIPMAP_LINEAR) {
-        webContext()->texParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-        needToResetMinFilter = true;
-    }
-#endif
     webContext()->generateMipmap(target);
-#if OS(MACOSX)
-    if (needToResetMinFilter)
-        webContext()->texParameteri(target, GL_TEXTURE_MIN_FILTER, tex->getMinFilter());
-#endif
     tex->generateMipmapLevelInfo();
 }
 
