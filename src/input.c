@@ -446,11 +446,14 @@ default_grab_touch_down(struct weston_touch_grab *grab, uint32_t time,
 	struct wl_list *resource_list;
 	wl_fixed_t sx, sy;
 
+	if (!touch->focus)
+		return;
+
 	weston_view_from_global_fixed(touch->focus, x, y, &sx, &sy);
 
 	resource_list = &touch->focus_resource_list;
 
-	if (!wl_list_empty(resource_list) && touch->focus) {
+	if (!wl_list_empty(resource_list)) {
 		serial = wl_display_next_serial(display);
 		wl_resource_for_each(resource, resource_list)
 				wl_touch_send_down(resource, serial, time,
