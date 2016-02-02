@@ -2049,6 +2049,9 @@ def CMDsync(parser, args):
                     help='Don\'t bootstrap from Google Storage.')
   parser.add_option('--ignore_locks', action='store_true',
                     help='GIT ONLY - Ignore cache locks.')
+  parser.add_option('--lock_timeout', type='int', default=0,
+                    help='GIT ONLY - Deadline (in seconds) to wait for git '
+                         'cache lock to become available.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 

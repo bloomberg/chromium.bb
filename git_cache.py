@@ -44,8 +44,9 @@ class RefsHeadsFailedToFetch(Exception):
 class Lockfile(object):
   """Class to represent a cross-platform process-specific lockfile."""
 
-  def __init__(self, path):
+  def __init__(self, path, timeout=0):
     self.path = os.path.abspath(path)
+    self.timeout = timeout
     self.lockfile = self.path + ".lock"
     self.pid = os.getpid()
 
@@ -91,16 +92,26 @@ class Lockfile(object):
   def lock(self):
     """Acquire the lock.
 
-    Note: This is a NON-BLOCKING FAIL-FAST operation.
-    Do. Or do not. There is no try.
+    This will block with a deadline of self.timeout seconds.
+    If self.timeout is zero, this is a NON-BLOCKING FAIL-FAST operation.
     """
-    try:
-      self._make_lockfile()
-    except OSError as e:
-      if e.errno == errno.EEXIST:
-        raise LockError("%s is already locked" % self.path)
-      else:
-        raise LockError("Failed to create %s (err %s)" % (self.path, e.errno))
+    elapsed = 0
+    while True:
+      try:
+        self._make_lockfile()
+        return
+      except OSError as e:
+        if elapsed < self.timeout:
+          sleep_time = min(3, self.timeout - elapsed)
+          logging.info('Could not create git cache lockfile; '
+                       'will retry after sleep(%d).', sleep_time);
+          elapsed += sleep_time
+          time.sleep(sleep_time)
+          continue
+        if e.errno == errno.EEXIST:
+          raise LockError("%s is already locked" % self.path)
+        else:
+          raise LockError("Failed to create %s (err %s)" % (self.path, e.errno))
 
   def unlock(self):
     """Release the lock."""
@@ -401,13 +412,13 @@ class Mirror(object):
         logging.warn('Fetch of %s failed' % spec)
 
   def populate(self, depth=None, shallow=False, bootstrap=False,
-               verbose=False, ignore_lock=False):
+               verbose=False, ignore_lock=False, lock_timeout=0):
     assert self.GetCachePath()
     if shallow and not depth:
       depth = 10000
     gclient_utils.safe_makedirs(self.GetCachePath())
 
-    lockfile = Lockfile(self.mirror_path)
+    lockfile = Lockfile(self.mirror_path, lock_timeout)
     if not ignore_lock:
       lockfile.lock()
 
@@ -582,6 +593,7 @@ def CMDpopulate(parser, args):
       'shallow': options.shallow,
       'bootstrap': not options.no_bootstrap,
       'ignore_lock': options.ignore_locks,
+      'lock_timeout': options.timeout,
   }
   if options.depth:
     kwargs['depth'] = options.depth
@@ -625,7 +637,8 @@ def CMDfetch(parser, args):
   git_dir = os.path.abspath(git_dir)
   if git_dir.startswith(cachepath):
     mirror = Mirror.FromPath(git_dir)
-    mirror.populate(bootstrap=not options.no_bootstrap)
+    mirror.populate(
+        bootstrap=not options.no_bootstrap, lock_timeout=options.timeout)
     return 0
   for remote in remotes:
     remote_url = subprocess.check_output(
@@ -634,7 +647,8 @@ def CMDfetch(parser, args):
       mirror = Mirror.FromPath(remote_url)
       mirror.print = lambda *args: None
       print('Updating git cache...')
-      mirror.populate(bootstrap=not options.no_bootstrap)
+      mirror.populate(
+          bootstrap=not options.no_bootstrap, lock_timeout=options.timeout)
     subprocess.check_call([Mirror.git_exe, 'fetch', remote])
   return 0
 
@@ -683,6 +697,8 @@ class OptionParser(optparse.OptionParser):
                     help='Increase verbosity (can be passed multiple times)')
     self.add_option('-q', '--quiet', action='store_true',
                     help='Suppress all extraneous output')
+    self.add_option('--timeout', type='int', default=0,
+                    help='Timeout for acquiring cache lock, in seconds')
 
   def parse_args(self, args=None, values=None):
     options, args = optparse.OptionParser.parse_args(self, args, values)

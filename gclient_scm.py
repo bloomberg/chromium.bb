@@ -871,7 +871,8 @@ class GitWrapper(SCMWrapper):
     mirror.populate(verbose=options.verbose,
                     bootstrap=not getattr(options, 'no_bootstrap', False),
                     depth=depth,
-                    ignore_lock=getattr(options, 'ignore_locks', False))
+                    ignore_lock=getattr(options, 'ignore_locks', False),
+                    lock_timeout=getattr(options, 'lock_timeout', 0))
     mirror.unlock()
 
   def _Clone(self, revision, url, options):
