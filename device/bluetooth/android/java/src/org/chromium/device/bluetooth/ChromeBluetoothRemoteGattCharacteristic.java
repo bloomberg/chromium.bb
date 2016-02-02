@@ -54,7 +54,9 @@ final class ChromeBluetoothRemoteGattCharacteristic {
     @CalledByNative
     private void onBluetoothRemoteGattCharacteristicAndroidDestruction() {
         Log.v(TAG, "ChromeBluetoothRemoteGattCharacteristic Destroyed.");
-        mChromeDevice.mBluetoothGatt.setCharacteristicNotification(mCharacteristic, false);
+        if (mChromeDevice.mBluetoothGatt != null) {
+            mChromeDevice.mBluetoothGatt.setCharacteristicNotification(mCharacteristic, false);
+        }
         mNativeBluetoothRemoteGattCharacteristicAndroid = 0;
         mChromeDevice.mWrapperToChromeCharacteristicsMap.remove(mCharacteristic);
     }

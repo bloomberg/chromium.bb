@@ -325,6 +325,11 @@ class Fakes {
         }
 
         @Override
+        public void close() {
+            nativeOnFakeBluetoothGattClose(mDevice.mAdapter.mNativeBluetoothTestAndroid);
+        }
+
+        @Override
         public void discoverServices() {
             nativeOnFakeBluetoothGattDiscoverServices(mDevice.mAdapter.mNativeBluetoothTestAndroid);
         }
@@ -673,6 +678,9 @@ class Fakes {
 
     // Binds to BluetoothTestAndroid::OnFakeBluetoothGattDisconnect.
     private static native void nativeOnFakeBluetoothGattDisconnect(long nativeBluetoothTestAndroid);
+
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattClose.
+    private static native void nativeOnFakeBluetoothGattClose(long nativeBluetoothTestAndroid);
 
     // Binds to BluetoothTestAndroid::OnFakeBluetoothGattDiscoverServices.
     private static native void nativeOnFakeBluetoothGattDiscoverServices(

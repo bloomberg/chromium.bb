@@ -36,6 +36,15 @@ void BluetoothTestAndroid::SetUp() {
   ASSERT_TRUE(RegisterNativesImpl(AttachCurrentThread()));
 }
 
+void BluetoothTestAndroid::TearDown() {
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  for (auto& device : devices) {
+    DeleteDevice(device);
+  }
+  EXPECT_EQ(0, gatt_open_connections_);
+  BluetoothTestBase::TearDown();
+}
+
 bool BluetoothTestAndroid::PlatformSupportsLowEnergy() {
   return true;
 }
@@ -289,12 +298,22 @@ void BluetoothTestAndroid::SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
 void BluetoothTestAndroid::OnFakeBluetoothDeviceConnectGattCalled(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
+  gatt_open_connections_++;
   gatt_connection_attempts_++;
 }
 
 void BluetoothTestAndroid::OnFakeBluetoothGattDisconnect(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller) {
+  gatt_disconnection_attempts_++;
+}
+
+void BluetoothTestAndroid::OnFakeBluetoothGattClose(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller) {
+  gatt_open_connections_--;
+
+  // close implies disconnect
   gatt_disconnection_attempts_++;
 }
 

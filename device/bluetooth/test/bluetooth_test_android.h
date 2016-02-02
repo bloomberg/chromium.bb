@@ -22,6 +22,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
 
   // Test overrides:
   void SetUp() override;
+  void TearDown() override;
 
   // BluetoothTestBase overrides:
   bool PlatformSupportsLowEnergy() override;
@@ -80,6 +81,11 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
 
+  // Records that Java FakeBluetoothGatt close was called.
+  void OnFakeBluetoothGattClose(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
+
   // Records that Java FakeBluetoothGatt discoverServices was called.
   void OnFakeBluetoothGattDiscoverServices(
       JNIEnv* env,
@@ -109,6 +115,8 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       const base::android::JavaParamRef<jbyteArray>& value);
 
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
+
+  int gatt_open_connections_ = 0;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).
