@@ -17,4 +17,8 @@ source_set("prefs") {
     "//mojo/common",
     "//mojo/shell/public/cpp",
   ]
+
+  data_deps = [
+    "//components/filesystem",
+  ]
 }
