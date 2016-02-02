@@ -1955,6 +1955,12 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
   EXPECT_COLOR_SPACE_EQ(last_video_frame_color_space_, COLOR_SPACE_HD_REC709);
 }
 
+TEST_F(PipelineIntegrationTest, HD_VP9_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-1280x720.webm", kClockless));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 // Verify that videos with an odd frame size playback successfully.
 TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
   ASSERT_EQ(PIPELINE_OK, Start("butterfly-853x480.webm"));

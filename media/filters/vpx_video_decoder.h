@@ -61,6 +61,12 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   void CloseDecoder();
 
+  // Helper method for decoding buffers either on the offload thread or directly
+  // on the media thread. |bound_decode_cb| must be bound to the thread that
+  // called Decode().
+  void DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
+                    const DecodeCB& bound_decode_cb);
+
   // Try to decode |buffer| into |video_frame|. Return true if all decoding
   // succeeded. Note that decoding can succeed and still |video_frame| be
   // nullptr if there has been a partial decoding.
@@ -72,6 +78,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
 
   base::ThreadChecker thread_checker_;
 
+  // |state_| must only be read and written to on |offload_task_runner_| if it
+  // is non-null and there are outstanding tasks on the offload thread.
   DecoderState state_;
 
   OutputCB output_cb_;
@@ -85,6 +93,10 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
   // with no alpha. |frame_pool_| is used for all other cases.
   class MemoryPool;
   scoped_refptr<MemoryPool> memory_pool_;
+
+  // High resolution vp9 may block the media thread for too long, in such cases
+  // we share a per-process thread to avoid overly long blocks.
+  scoped_refptr<base::SingleThreadTaskRunner> offload_task_runner_;
 
   VideoFramePool frame_pool_;
 

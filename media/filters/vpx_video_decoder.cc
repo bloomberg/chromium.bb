@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -23,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
+#include "base/threading/thread.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
@@ -45,6 +47,68 @@ extern "C" {
 #include "third_party/libyuv/include/libyuv/convert.h"
 
 namespace media {
+
+// High resolution VP9 decodes can block the main task runner for too long,
+// preventing demuxing, audio decoding, and other control activities.  In those
+// cases share a thread per process for higher resolution decodes.
+//
+// All calls into this class must be done on the per-process media thread.
+class VpxOffloadThread {
+ public:
+  VpxOffloadThread() : offload_thread_("VpxOffloadThread") {}
+  ~VpxOffloadThread() {}
+
+  scoped_refptr<base::SingleThreadTaskRunner> RequestOffloadThread() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    ++offload_thread_users_;
+    if (!offload_thread_.IsRunning())
+      offload_thread_.Start();
+
+    return offload_thread_.task_runner();
+  }
+
+  void WaitForOutstandingTasks() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(offload_thread_users_);
+    DCHECK(offload_thread_.IsRunning());
+    base::WaitableEvent waiter(false, false);
+    offload_thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
+    waiter.Wait();
+  }
+
+  void WaitForOutstandingTasksAndReleaseOffloadThread() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(offload_thread_users_);
+    DCHECK(offload_thread_.IsRunning());
+    WaitForOutstandingTasks();
+    if (!--offload_thread_users_) {
+      // Don't shut down the thread immediately in case we're in the middle of
+      // a configuration change.
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&VpxOffloadThread::ShutdownOffloadThread,
+                                base::Unretained(this)),
+          base::TimeDelta::FromSeconds(5));
+    }
+  }
+
+ private:
+  void ShutdownOffloadThread() {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    if (!offload_thread_users_)
+      offload_thread_.Stop();
+  }
+
+  int offload_thread_users_ = 0;
+  base::Thread offload_thread_;
+  base::ThreadChecker thread_checker_;
+
+  DISALLOW_COPY_AND_ASSIGN(VpxOffloadThread);
+};
+
+static base::LazyInstance<VpxOffloadThread>::Leaky g_vpx_offload_thread =
+    LAZY_INSTANCE_INITIALIZER;
 
 // Always try to use three threads for video decoding.  There is little reason
 // not to since current day CPUs tend to be multi-core and we measured
@@ -301,6 +365,8 @@ VpxVideoDecoder::VpxVideoDecoder()
 VpxVideoDecoder::~VpxVideoDecoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   CloseDecoder();
+  // Ensure CloseDecoder() released the offload thread.
+  DCHECK(!offload_task_runner_);
 }
 
 std::string VpxVideoDecoder::GetDisplayName() const {
@@ -329,24 +395,21 @@ void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
   bound_init_cb.Run(true);
 }
 
-void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
-                             const DecodeCB& decode_cb) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(buffer.get());
-  DCHECK(!decode_cb.is_null());
+void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
+                                   const DecodeCB& bound_decode_cb) {
   DCHECK_NE(state_, kUninitialized)
       << "Called Decode() before successful Initialize()";
-
-  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
   if (state_ == kError) {
     bound_decode_cb.Run(kDecodeError);
     return;
   }
+
   if (state_ == kDecodeFinished) {
     bound_decode_cb.Run(kOk);
     return;
   }
+
   if (state_ == kNormal && buffer->end_of_stream()) {
     state_ = kDecodeFinished;
     bound_decode_cb.Run(kOk);
@@ -359,17 +422,41 @@ void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
     bound_decode_cb.Run(kDecodeError);
     return;
   }
+
   // We might get a successful VpxDecode but not a frame if only a partial
   // decode happened.
-  if (video_frame.get())
+  if (video_frame) {
+    // Safe to call |output_cb_| here even if we're on the offload thread since
+    // it is only set once during Initialize() and never changed.
     output_cb_.Run(video_frame);
+  }
 
   // VideoDecoderShim expects |decode_cb| call after |output_cb_|.
   bound_decode_cb.Run(kOk);
 }
 
+void VpxVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
+                             const DecodeCB& decode_cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(buffer.get());
+  DCHECK(!decode_cb.is_null());
+
+  DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
+
+  if (offload_task_runner_) {
+    offload_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VpxVideoDecoder::DecodeBuffer,
+                              base::Unretained(this), buffer, bound_decode_cb));
+  } else {
+    DecodeBuffer(buffer, bound_decode_cb);
+  }
+}
+
 void VpxVideoDecoder::Reset(const base::Closure& closure) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (offload_task_runner_)
+    g_vpx_offload_thread.Pointer()->WaitForOutstandingTasks();
+
   state_ = kNormal;
   // PostTask() to avoid calling |closure| inmediately.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
@@ -406,6 +493,13 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     DCHECK(vpx_codec_get_caps(vpx_codec_->iface) &
            VPX_CODEC_CAP_EXTERNAL_FRAME_BUFFER);
 
+    // Move high resolution vp9 decodes off of the main media thread (otherwise
+    // decode may block audio decoding, demuxing, and other control activities).
+    if (config.coded_size().width() >= 1024) {
+      offload_task_runner_ =
+          g_vpx_offload_thread.Pointer()->RequestOffloadThread();
+    }
+
     memory_pool_ = new MemoryPool();
     if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
                                              &MemoryPool::GetVP9FrameBuffer,
@@ -425,6 +519,12 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
 }
 
 void VpxVideoDecoder::CloseDecoder() {
+  if (offload_task_runner_) {
+    g_vpx_offload_thread.Pointer()
+        ->WaitForOutstandingTasksAndReleaseOffloadThread();
+    offload_task_runner_ = nullptr;
+  }
+
   if (vpx_codec_) {
     vpx_codec_destroy(vpx_codec_);
     delete vpx_codec_;
