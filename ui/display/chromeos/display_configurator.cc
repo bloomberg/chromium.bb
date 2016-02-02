@@ -42,7 +42,7 @@ const int kConfigureDelayMs = 500;
 const int kResumeDelayMs = 500;
 
 // The EDID specification marks the top bit of the manufacturer id as reserved.
-const int16_t kReservedManufacturerID = 1 << 15;
+const int16_t kReservedManufacturerID = static_cast<int16_t>(1 << 15);
 
 struct DisplayState {
   DisplaySnapshot* display = nullptr;  // Not owned.
