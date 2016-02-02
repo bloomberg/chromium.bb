@@ -34,6 +34,8 @@ config("fontconfig") {
 }
 
 pkg_config("freetype2") {
+  visibility = [ "//build/linux:freetype2" ]
+
   packages = [ "freetype2" ]
 }
 

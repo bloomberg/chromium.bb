@@ -459,13 +459,12 @@ component("skia") {
   ]
 
   if (is_linux) {
-    configs += [ "//build/config/linux:freetype2" ]
-
     if (use_pango) {
       configs += [ "//build/config/linux:pangocairo" ]
     }
     deps += [
       "//build/linux:fontconfig",
+      "//build/linux:freetype2",
       "//third_party/icu:icuuc",
     ]
   }

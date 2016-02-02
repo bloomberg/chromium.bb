@@ -73,8 +73,12 @@
             ],
           },
         }],
-        ['OS=="android"', {
-          'toolsets': ['target', 'host'],
+        ['OS=="android" or chromecast==1', {
+          'conditions': [
+            ['OS=="android"', {
+              'toolsets': ['target', 'host'],
+            }],
+          ],
           'defines': [
             'CHROME_PNG_READ_PACK_SUPPORT',  # Required by freetype.
           ],

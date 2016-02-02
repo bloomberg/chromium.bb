@@ -7,12 +7,11 @@
     'ft2_dir': 'src',
   },
   'conditions': [
-    [ 'OS == "android"', {
+    [ 'OS=="android" or chromecast==1', {
       'targets': [
         {
           'target_name': 'ft2',
           'type': 'static_library',
-          'toolsets': ['target'],
           'sources': [
             # The following files are not sorted alphabetically, but in the
             # same order as in Android.mk to ease maintenance.
@@ -60,6 +59,13 @@
               '<(ft2_dir)/include',
             ],
           },
+          'conditions': [
+            ['OS=="android"', {
+              'toolsets': ['target'],
+            }, 'chromecast==1', {
+              'sources': [ '<(ft2_dir)/src/base/ftbdf.c', ],
+            }]
+          ],
         },
       ],
     }],

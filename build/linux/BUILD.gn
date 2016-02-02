@@ -11,8 +11,6 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "system.gyp" ])
 
-use_system_fontconfig = !is_chromecast
-
 # If brlapi isn't needed, don't require it to be installed.
 if (use_brlapi) {
   config("brlapi_config") {
@@ -107,11 +105,24 @@ group("udev") {
 }
 
 group("fontconfig") {
-  if (use_system_fontconfig) {
-    public_configs = [ "//build/config/linux:fontconfig" ]
-  } else {
+  if (is_chromecast) {
+    # Chromecast platform does not provide fontconfig
     public_deps = [
       "//third_party/fontconfig",
     ]
+  } else {
+    public_configs = [ "//build/config/linux:fontconfig" ]
+  }
+}
+
+group("freetype2") {
+  if (is_chromecast) {
+    # Chromecast platform doesn't provide freetype, so use Chromium's.
+    # The version in freetype-android is unmodified from freetype2 upstream.
+    public_deps = [
+      "//third_party/freetype-android:freetype",
+    ]
+  } else {
+    public_configs = [ "//build/config/linux:freetype2" ]
   }
 }

@@ -315,7 +315,7 @@ static_library("content_shell_lib") {
     ]
   }
 
-  if (is_linux && !is_chromecast) {
+  if (is_linux) {
     deps += [ "//third_party/freetype2" ]
   }
 

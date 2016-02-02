@@ -52,15 +52,13 @@ component("fontconfig") {
   ]
 
   deps = [
+    "//build/linux:freetype2",
     "//third_party/libxml",
     "//third_party/zlib",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [
-    "//build/config/compiler:no_chromium_code",
-    "//build/config/linux:freetype2",
-  ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
 
   public_configs = [ ":fontconfig_config" ]
 

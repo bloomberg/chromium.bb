@@ -780,7 +780,14 @@
       'target_name': 'freetype2',
       'type': 'none',
       'conditions': [
-        ['_toolset=="target"', {
+        ['chromecast==1', {
+          'dependencies': [
+            '../../third_party/freetype-android/freetype.gyp:ft2',
+          ],
+          'export_dependent_settings' : [
+            '../../third_party/freetype-android/freetype.gyp:ft2',
+          ],
+        }, '_toolset=="target"', {
           'direct_dependent_settings': {
             'cflags': [
               '<!@(<(pkg-config) --cflags freetype2)',

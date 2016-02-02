@@ -10,8 +10,8 @@ License Android Compatible: yes
 
 Description:
 This package tracks upstream FreeType, but the build files and configuration
-are based on the Android source tree. This package is only used for Android.
-For other platforms the system FreeType library is used.
+are based on the Android source tree. This package is only used for Android
+and Chromecast. For other platforms the system FreeType library is used.
 
 How to update:
 1. Find the desired commit in

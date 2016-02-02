@@ -1885,7 +1885,6 @@
         'use_system_fontconfig%': 1,
       }],
       ['chromecast==1', {
-        'use_custom_freetype%': 0,
         'use_playready%': 0,
         'conditions': [
           ['target_arch=="arm"', {

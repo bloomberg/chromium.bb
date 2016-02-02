@@ -6,13 +6,6 @@
   'variables': {
     'content_shell_product_name': 'Content Shell',
     'content_shell_version': '99.77.34.5',
-    'conditions': [
-      ['OS=="linux"', {
-       'use_custom_freetype%': 1,
-      }, {
-       'use_custom_freetype%': 0,
-      }],
-    ],
   },
   'targets': [
     {
@@ -257,6 +250,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:fontconfig',
+            '../third_party/freetype2/freetype2.gyp:freetype2',
           ],
         }],
         ['use_x11 == 1', {
@@ -318,11 +312,6 @@
             '../ui/wm/wm.gyp:wm_test_support',
            ],
         }], # chromeos==1
-        ['use_custom_freetype==1', {
-          'dependencies': [
-             '../third_party/freetype2/freetype2.gyp:freetype2',
-          ],
-        }],
         ['enable_plugins==0', {
           'sources!': [
             'shell/browser/shell_plugin_service_filter.cc',
