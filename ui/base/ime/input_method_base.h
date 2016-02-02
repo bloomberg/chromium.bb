@@ -5,6 +5,8 @@
 #ifndef UI_BASE_IME_INPUT_METHOD_BASE_H_
 #define UI_BASE_IME_INPUT_METHOD_BASE_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -83,6 +85,9 @@ class UI_BASE_IME_EXPORT InputMethodBase
   // Convenience method to notify all observers of CaretBounds changes on
   // |client| which is the text input client with focus.
   void NotifyTextInputCaretBoundsChanged(const TextInputClient* client);
+
+  // Gets the bounds of the composition text or cursor in |client|.
+  std::vector<gfx::Rect> GetCompositionBounds(const TextInputClient* client);
 
  private:
   void SetFocusedTextInputClientInternal(TextInputClient* client);

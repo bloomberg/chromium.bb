@@ -235,6 +235,10 @@ void InputMethodWin::OnCaretBoundsChanged(const TextInputClient* client) {
   gfx::Rect caret_rect(gfx::Point(window_point.x, window_point.y),
                        screen_bounds.size());
   imm32_manager_.UpdateCaretRect(attached_window, caret_rect);
+
+  if (client == GetTextInputClient() &&
+      GetTextInputType() != ui::TEXT_INPUT_TYPE_PASSWORD && GetEngine())
+    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
 }
 
 void InputMethodWin::CancelComposition(const TextInputClient* client) {

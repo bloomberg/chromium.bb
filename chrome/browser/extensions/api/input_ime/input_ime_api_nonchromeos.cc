@@ -12,10 +12,16 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/linked_ptr.h"
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/input_ime.h"
 #include "ui/base/ime/ime_bridge.h"
+#include "ui/gfx/geometry/rect.h"
 
+namespace input_ime = extensions::api::input_ime;
+namespace OnCompositionBoundsChanged =
+    extensions::api::input_ime::OnCompositionBoundsChanged;
 using ui::IMEEngineHandlerInterface;
 using input_method::InputMethodEngine;
 using input_method::InputMethodEngineBase;
@@ -37,6 +43,30 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
       : ImeObserver(extension_id, profile) {}
 
   ~ImeObserverNonChromeOS() override {}
+
+  void OnCompositionBoundsChanged(
+      const std::vector<gfx::Rect>& bounds) override {
+    if (extension_id_.empty() || bounds.empty() ||
+        !HasListener(OnCompositionBoundsChanged::kEventName))
+      return;
+
+    std::vector<linked_ptr<input_ime::Bounds>> bounds_list;
+    for (const auto& bound : bounds) {
+      linked_ptr<input_ime::Bounds> bounds_value(new input_ime::Bounds());
+      bounds_value->left = bound.x();
+      bounds_value->top = bound.y();
+      bounds_value->width = bound.width();
+      bounds_value->height = bound.height();
+      bounds_list.push_back(bounds_value);
+    }
+
+    scoped_ptr<base::ListValue> args(
+        OnCompositionBoundsChanged::Create(bounds_list));
+
+    DispatchEventToExtension(
+        extensions::events::INPUT_IME_ON_COMPOSITION_BOUNDS_CHANGED,
+        OnCompositionBoundsChanged::kEventName, std::move(args));
+  }
 
  private:
   // ImeObserver overrides.

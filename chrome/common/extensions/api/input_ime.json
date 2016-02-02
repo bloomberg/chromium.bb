@@ -830,6 +830,20 @@
             "description": "ID of the engine receiving the event"
           }
         ]
+      },
+      {
+        "name": "onCompositionBoundsChanged",
+        "type": "function",
+        "description": "Triggered when the bounds of the IME composition text or cursor are changed. The IME composition text is the instance of text produced in the input method editor.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "type": "array",
+            "name": "boundsList",
+            "description": "List of bounds information for each character on IME composition text. If there's no composition text in the editor, this array contains the bound information of the cursor.",
+            "items": { "$ref": "Bounds" }
+          }
+        ]
       }
     ]
   }

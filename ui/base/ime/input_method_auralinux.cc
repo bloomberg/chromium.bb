@@ -248,6 +248,10 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
     return;
   NotifyTextInputCaretBoundsChanged(client);
   context_->SetCursorLocation(GetTextInputClient()->GetCaretBounds());
+
+  if (!IsTextInputTypeNone() && text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
+      GetEngine())
+    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
 }
 
 void InputMethodAuraLinux::CancelComposition(const TextInputClient* client) {
