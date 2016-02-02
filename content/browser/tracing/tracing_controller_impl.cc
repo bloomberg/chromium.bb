@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "components/tracing/process_metrics_memory_dump_provider.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
-#include "content/browser/tracing/power_tracing_agent.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
@@ -30,6 +29,15 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_info.h"
 #include "net/base/network_change_notifier.h"
+
+#if (defined(OS_POSIX) && defined(USE_UDEV)) || defined(OS_WIN) || \
+    defined(OS_MACOSX)
+#define ENABLE_POWER_TRACING
+#endif
+
+#if defined(ENABLE_POWER_TRACING)
+#include "content/browser/tracing/power_tracing_agent.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -234,11 +242,13 @@ bool TracingControllerImpl::StartTracing(
 #endif
 
   if (trace_config.IsSystraceEnabled()) {
+#if defined(ENABLE_POWER_TRACING)
     PowerTracingAgent::GetInstance()->StartAgentTracing(
         trace_config,
         base::Bind(&TracingControllerImpl::OnStartAgentTracingAcked,
                    base::Unretained(this)));
     ++pending_start_tracing_ack_count_;
+#endif
 
 #if defined(OS_CHROMEOS)
     chromeos::DebugDaemonClient* debug_daemon =
@@ -703,11 +713,13 @@ void TracingControllerImpl::AddTracingAgent(const std::string& agent_name) {
   }
 #endif
 
+#if defined(ENABLE_POWER_TRACING)
   auto power_agent = PowerTracingAgent::GetInstance();
   if (agent_name == power_agent->GetTracingAgentName()) {
     additional_tracing_agents_.push_back(power_agent);
     return;
   }
+#endif
 
   DCHECK(agent_name == kChromeTracingAgentName);
 }

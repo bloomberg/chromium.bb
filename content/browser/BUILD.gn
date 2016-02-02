@@ -187,6 +187,13 @@ source_set("browser") {
   if (!is_android && !is_ios) {
     deps += [ "//content/browser/tracing:resources" ]
   }
+  if ((use_udev && is_posix) || is_mac || is_win) {
+    deps += [ "//tools/battor_agent:battor_agent_lib" ]
+    sources += [
+      "tracing/power_tracing_agent.cc",
+      "tracing/power_tracing_agent.h",
+    ]
+  }
 
   if (enable_webrtc) {
     sources += rebase_path(content_browser_gypi_values.webrtc_browser_sources,

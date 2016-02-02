@@ -1506,14 +1506,10 @@
       'browser/tracing/background_tracing_manager_impl.h',
       'browser/tracing/background_tracing_rule.cc',
       'browser/tracing/background_tracing_rule.h',
-      'browser/tracing/battor_power_trace_provider.cc',
-      'browser/tracing/battor_power_trace_provider.h',
       'browser/tracing/etw_system_event_consumer_win.cc',
       'browser/tracing/etw_system_event_consumer_win.h',
       'browser/tracing/file_tracing_provider_impl.cc',
       'browser/tracing/file_tracing_provider_impl.h',
-      'browser/tracing/power_tracing_agent.cc',
-      'browser/tracing/power_tracing_agent.h',
       'browser/tracing/trace_message_filter.cc',
       'browser/tracing/trace_message_filter.h',
       'browser/tracing/tracing_controller_impl.cc',
@@ -1915,6 +1911,15 @@
       'sources/': [
         ['exclude', '^public/browser/context_factory.h'],
       ]
+    }],
+    ['(use_udev==1 and os_posix==1) or OS=="mac" or OS=="win"', {
+      'dependencies': [
+        '../tools/battor_agent/battor_agent.gyp:battor_agent_lib',
+      ],
+      'sources': [
+        'browser/tracing/power_tracing_agent.cc',
+        'browser/tracing/power_tracing_agent.h',
+      ],
     }],
     ['OS!="ios"', {
       'sources': [

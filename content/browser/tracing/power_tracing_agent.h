@@ -7,8 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "base/trace_event/tracing_agent.h"
+#include "content/public/browser/browser_thread.h"
+#include "tools/battor_agent/battor_agent.h"
+#include "tools/battor_agent/battor_error.h"
 
 namespace base {
 template <typename Type>
@@ -17,46 +21,50 @@ struct DefaultSingletonTraits;
 
 namespace content {
 
-class BattorPowerTraceProvider;
-
-class PowerTracingAgent : public base::trace_event::TracingAgent {
+class PowerTracingAgent : public base::trace_event::TracingAgent,
+                          public battor::BattOrAgent::Listener {
  public:
   // Retrieve the singleton instance.
   static PowerTracingAgent* GetInstance();
+
+  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
+                         const StartAgentTracingCallback& callback) override;
+  void StopAgentTracing(const StopAgentTracingCallback& callback) override;
+  bool SupportsExplicitClockSync() override;
 
   // base::trace_event::TracingAgent implementation.
   std::string GetTracingAgentName() override;
   std::string GetTraceEventLabel() override;
 
-  void StartAgentTracing(const base::trace_event::TraceConfig& trace_config,
-                         const StartAgentTracingCallback& callback) override;
-  void StopAgentTracing(const StopAgentTracingCallback& callback) override;
-
-  bool SupportsExplicitClockSync() override;
-  void RecordClockSyncMarker(
-      const std::string& sync_id,
-      const RecordClockSyncMarkerCallback& callback) override;
+  // BattOrAgent::Listener implementation.
+  void OnStartTracingComplete(battor::BattOrError error) override;
+  void OnStopTracingComplete(const std::string& trace,
+                             battor::BattOrError error) override;
 
  private:
   // This allows constructor and destructor to be private and usable only
   // by the Singleton class.
   friend struct base::DefaultSingletonTraits<PowerTracingAgent>;
 
-  // Constructor.
   PowerTracingAgent();
   ~PowerTracingAgent() override;
 
-  void OnStopTracingDone(const StopAgentTracingCallback& callback,
-                         const scoped_refptr<base::RefCountedString>& result);
+  void FindBattOrOnFileThread(const StartAgentTracingCallback& callback);
+  void StartAgentTracingOnIOThread(const std::string& path,
+                                   const StartAgentTracingCallback& callback);
+  void StopAgentTracingOnIOThread(const StopAgentTracingCallback& callback);
 
-  void TraceOnThread();
-  void FlushOnThread(const StopAgentTracingCallback& callback);
-  void RecordClockSyncMarkerOnThread(
-      const std::string& sync_id,
-      const RecordClockSyncMarkerCallback& callback);
+  // Returns the path of a BattOr (e.g. /dev/ttyUSB0), or an empty string if
+  // none are found.
+  std::string GetBattOrPath();
 
-  base::Thread thread_;
-  scoped_ptr<BattorPowerTraceProvider> battor_trace_provider_;
+  // All interactions with the BattOrAgent (after construction) must happen on
+  // the IO thread.
+  scoped_ptr<battor::BattOrAgent, BrowserThread::DeleteOnIOThread>
+      battor_agent_;
+
+  StartAgentTracingCallback start_tracing_callback_;
+  StopAgentTracingCallback stop_tracing_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerTracingAgent);
 };
