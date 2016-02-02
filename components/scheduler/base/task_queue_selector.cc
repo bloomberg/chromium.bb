@@ -282,7 +282,7 @@ void TaskQueueSelector::SetTaskQueueSelectorObserver(Observer* observer) {
 }
 
 bool TaskQueueSelector::EnabledWorkQueuesEmpty() const {
-  for (TaskQueue::QueuePriority priority = TaskQueue::HIGH_PRIORITY;
+  for (TaskQueue::QueuePriority priority = TaskQueue::CONTROL_PRIORITY;
        priority < TaskQueue::QUEUE_PRIORITY_COUNT;
        priority = NextPriority(priority)) {
     if (!enabled_selector_.delayed_work_queue_sets()->IsSetEmpty(priority) ||

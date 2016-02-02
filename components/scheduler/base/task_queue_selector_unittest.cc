@@ -306,6 +306,16 @@ TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty) {
   EXPECT_TRUE(selector_.EnabledWorkQueuesEmpty());
 }
 
+TEST_F(TaskQueueSelectorTest, EnabledWorkQueuesEmpty_ControlPriority) {
+  size_t queue_order[] = {0};
+  PushTasks(queue_order, 1);
+
+  selector_.SetQueuePriority(task_queues_[0].get(),
+                             TaskQueue::CONTROL_PRIORITY);
+
+  EXPECT_FALSE(selector_.EnabledWorkQueuesEmpty());
+}
+
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
