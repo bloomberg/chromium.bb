@@ -487,16 +487,7 @@ void BrowserNonClientFrameViewMus::LayoutAvatar() {
 
 #if defined(FRAME_AVATAR_BUTTON)
 void BrowserNonClientFrameViewMus::LayoutNewStyleAvatar() {
-  DCHECK(new_avatar_button());
-
-  gfx::Size button_size = new_avatar_button()->GetPreferredSize();
-  int button_x = width() -
-                 caption_button_container_->GetPreferredSize().width() -
-                 kNewAvatarButtonOffset - button_size.width();
-
-  new_avatar_button()->SetBounds(
-      button_x, 0, button_size.width(),
-      caption_button_container_->GetPreferredSize().height());
+  NOTIMPLEMENTED();
 }
 #endif
 

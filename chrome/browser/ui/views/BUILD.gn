@@ -38,4 +38,8 @@ component("views") {
   if (use_ash) {
     deps += [ "//ash" ]
   }
+
+  if (!is_chromeos) {
+    defines += [ "FRAME_AVATAR_BUTTON=1" ]
+  }
 }
