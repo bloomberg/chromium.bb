@@ -114,6 +114,8 @@ protected:
     void destroyDecodedDataForFailedRevalidation() override;
 
 private:
+    friend class PaintLayerTest;
+
     class ImageResourceFactory : public ResourceFactory {
     public:
         ImageResourceFactory()
