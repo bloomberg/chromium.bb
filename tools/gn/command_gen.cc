@@ -152,16 +152,14 @@ bool RunIdeWriter(const std::string& ide,
                   Builder* builder,
                   Err* err) {
   if (ide == kSwitchIdeValueVs) {
-    base::TimeTicks begin_vs_gen = base::TimeTicks::Now();
+    base::ElapsedTimer timer;
     bool res =
         VisualStudioWriter::RunAndWriteFiles(build_settings, builder, err);
     if (res &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kQuiet)) {
-      OutputString(
-          "Generating Visual Studio projects took " +
-          base::Int64ToString(
-              (base::TimeTicks::Now() - begin_vs_gen).InMilliseconds()) +
-          "ms\n");
+      OutputString("Generating Visual Studio projects took " +
+                   base::Int64ToString(timer.Elapsed().InMilliseconds()) +
+                   "ms\n");
     }
     return res;
   }
