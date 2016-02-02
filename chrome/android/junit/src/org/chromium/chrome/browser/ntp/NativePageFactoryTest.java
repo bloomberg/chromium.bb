@@ -5,9 +5,6 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.app.Activity;
-import android.test.InstrumentationTestCase;
-import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 
 import org.chromium.chrome.browser.NativePage;
@@ -15,11 +12,19 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /**
  * Tests public methods in NativePageFactory.
  */
-public class NativePageFactoryTest extends InstrumentationTestCase {
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
+public class NativePageFactoryTest {
 
     private static class MockNativePage implements NativePage {
         public final NativePageType type;
@@ -49,7 +54,7 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
                 case RECENT_TABS:
                     return UrlConstants.RECENT_TABS_HOST;
                 default:
-                    fail("Unexpected NativePageType: " + type);
+                    Assert.fail("Unexpected NativePageType: " + type);
                     return null;
             }
         }
@@ -148,15 +153,21 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
         return urlCombo.expectedType != NativePageType.RECENT_TABS;
     }
 
+    @Before
+    public void setUp() {
+        NativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
+    }
+
     /**
      * Ensures that NativePageFactory.isNativePageUrl() returns true for native page URLs.
      */
-    private void runTestPostiveIsNativePageUrl() {
+    @Test
+    public void testPositiveIsNativePageUrl() {
         for (UrlCombo urlCombo : VALID_URLS) {
             String url = urlCombo.url;
-            assertTrue(url, NativePageFactory.isNativePageUrl(url, false));
+            Assert.assertTrue(url, NativePageFactory.isNativePageUrl(url, false));
             if (isValidInIncognito(urlCombo)) {
-                assertTrue(url, NativePageFactory.isNativePageUrl(url, true));
+                Assert.assertTrue(url, NativePageFactory.isNativePageUrl(url, true));
             }
         }
     }
@@ -165,10 +176,11 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
      * Ensures that NativePageFactory.isNativePageUrl() returns false for URLs that don't
      * correspond to a native page.
      */
-    private void runTestNegativeIsNativePageUrl() {
+    @Test
+    public void testNegativeIsNativePageUrl() {
         for (String invalidUrl : INVALID_URLS) {
-            assertFalse(invalidUrl, NativePageFactory.isNativePageUrl(invalidUrl, false));
-            assertFalse(invalidUrl, NativePageFactory.isNativePageUrl(invalidUrl, true));
+            Assert.assertFalse(invalidUrl, NativePageFactory.isNativePageUrl(invalidUrl, false));
+            Assert.assertFalse(invalidUrl, NativePageFactory.isNativePageUrl(invalidUrl, true));
         }
     }
 
@@ -176,7 +188,8 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
      * Ensures that NativePageFactory.createNativePageForURL() returns a native page of the right
      * type and reuses the candidate page if it's the right type.
      */
-    private void runTestCreateNativePage() {
+    @Test
+    public void testCreateNativePage() {
         NativePageType[] candidateTypes = new NativePageType[] { NativePageType.NONE,
             NativePageType.NTP, NativePageType.BOOKMARKS, NativePageType.RECENT_TABS };
         for (boolean isIncognito : new boolean[] {true, false}) {
@@ -190,13 +203,13 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
                     String debugMessage = String.format(
                             "Failed test case: isIncognito=%s, urlCombo={%s,%s}, candidateType=%s",
                             isIncognito, urlCombo.url, urlCombo.expectedType, candidateType);
-                    assertNotNull(debugMessage, page);
-                    assertEquals(debugMessage, 1, page.updateForUrlCalls);
-                    assertEquals(debugMessage, urlCombo.expectedType, page.type);
+                    Assert.assertNotNull(debugMessage, page);
+                    Assert.assertEquals(debugMessage, 1, page.updateForUrlCalls);
+                    Assert.assertEquals(debugMessage, urlCombo.expectedType, page.type);
                     if (candidateType == urlCombo.expectedType) {
-                        assertSame(debugMessage, candidate, page);
+                        Assert.assertSame(debugMessage, candidate, page);
                     } else {
-                        assertNotSame(debugMessage, candidate, page);
+                        Assert.assertNotSame(debugMessage, candidate, page);
                     }
                 }
             }
@@ -207,31 +220,19 @@ public class NativePageFactoryTest extends InstrumentationTestCase {
      * Ensures that NativePageFactory.createNativePageForURL() returns null for URLs that don't
      * correspond to a native page.
      */
-    private void runTestCreateNativePageWithInvalidUrl() {
+    @Test
+    public void testCreateNativePageWithInvalidUrl() {
         for (UrlCombo urlCombo : VALID_URLS) {
             if (!isValidInIncognito(urlCombo)) {
-                assertNull(urlCombo.url, NativePageFactory.createNativePageForURL(urlCombo.url,
-                        null, null, null, null, true));
+                Assert.assertNull(urlCombo.url, NativePageFactory.createNativePageForURL(
+                        urlCombo.url, null, null, null, null, true));
             }
         }
         for (boolean isIncognito : new boolean[] {true, false}) {
             for (String invalidUrl : INVALID_URLS) {
-                assertNull(invalidUrl, NativePageFactory.createNativePageForURL(invalidUrl, null,
-                        null, null, null, isIncognito));
+                Assert.assertNull(invalidUrl, NativePageFactory.createNativePageForURL(invalidUrl,
+                        null, null, null, null, isIncognito));
             }
         }
-    }
-
-    /**
-     * Runs all the runTest* methods defined above.
-     */
-    @SmallTest
-    @UiThreadTest
-    public void testNativePageFactory() {
-        NativePageFactory.setNativePageBuilderForTesting(new MockNativePageBuilder());
-        runTestPostiveIsNativePageUrl();
-        runTestNegativeIsNativePageUrl();
-        runTestCreateNativePage();
-        runTestCreateNativePageWithInvalidUrl();
     }
 }
