@@ -326,6 +326,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac'], bug=483282)
 
+    # Mac Retina NVIDIA
+    self.Fail('conformance2/rendering/draw-buffers.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        ['mac', ('nvidia', 0xfe9)], bug=483282)
+
     # Linux only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
