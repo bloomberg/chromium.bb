@@ -162,11 +162,12 @@ bool DisplayItemList::RetainsIndividualDisplayItems() const {
 }
 
 void DisplayItemList::Finalize() {
-  // TODO(wkorman): Uncomment the assert below once we've investigated
-  // and resolved issues. http://crbug.com/557905
   // TODO(dtrainor): Need to deal with serializing visual_rects_.
   // http://crbug.com/568757.
-  // DCHECK_EQ(items_.size(), visual_rects_.size());
+  DCHECK(!retain_individual_display_items_ ||
+         items_.size() == visual_rects_.size())
+      << "items.size() " << items_.size() << " visual_rects.size() "
+      << visual_rects_.size();
 
   // TODO(vmpstr): Build and make use of an RTree from the visual
   // rects. For now we just clear them out since we won't ever need
