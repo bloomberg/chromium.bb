@@ -208,11 +208,13 @@ cricket::VideoCapturer* MockVideoSource::GetVideoCapturer() {
   return capturer_.get();
 }
 
-void MockVideoSource::AddSink(cricket::VideoRenderer* output) {
+void MockVideoSource::AddSink(
+    rtc::VideoSinkInterface<cricket::VideoFrame>* output) {
   NOTIMPLEMENTED();
 }
 
-void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
+void MockVideoSource::RemoveSink(
+    rtc::VideoSinkInterface<cricket::VideoFrame>* output) {
   NOTIMPLEMENTED();
 }
 

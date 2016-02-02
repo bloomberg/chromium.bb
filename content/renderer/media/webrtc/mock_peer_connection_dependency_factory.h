@@ -14,6 +14,7 @@
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/media/base/videorenderer.h"
+#include "third_party/webrtc/media/base/videosinkinterface.h"
 
 namespace content {
 
@@ -41,8 +42,9 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   MediaSourceInterface::SourceState state() const override;
   bool remote() const override;
   cricket::VideoCapturer* GetVideoCapturer() override;
-  void AddSink(cricket::VideoRenderer* output) override;
-  void RemoveSink(cricket::VideoRenderer* output) override;
+  void AddSink(rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
+  void RemoveSink(
+      rtc::VideoSinkInterface<cricket::VideoFrame>* output) override;
   cricket::VideoRenderer* FrameInput() override;
   const cricket::VideoOptions* options() const override;
   void Stop() override;
