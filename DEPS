@@ -131,7 +131,7 @@ deps = {
    Var('chromium_git') + '/external/colorama.git' + '@' + '799604a1041e9b3bc5d2789ecbd7e8db2e18e6b8',
 
   'src/third_party/icu':
-   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '2b12f8775d66568f2b2e2bd8246efcfdff40d563',
+   Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '8f91ea3a7e0413df3312204058da856058a8099b',
 
   'src/third_party/libexif/sources':
    Var('chromium_git') + '/chromium/deps/libexif/sources.git' + '@' + '045b7fb9aa6d9b7f1954db248caf5eefe917476d',
