@@ -1274,6 +1274,9 @@ static bool enabledCut(LocalFrame& frame, Event*, EditorCommandSource source)
 
 static bool enabledInEditableText(LocalFrame& frame, Event* event, EditorCommandSource)
 {
+    // We should update selection to canonicalize with current layout and style,
+    // before accessing |FrameSelection::selection()|.
+    frame.selection().updateIfNeeded();
     return frame.editor().selectionForCommand(event).rootEditableElement();
 }
 
@@ -1314,11 +1317,17 @@ static bool enabledPaste(LocalFrame& frame, Event*, EditorCommandSource source)
 
 static bool enabledRangeInEditableText(LocalFrame& frame, Event*, EditorCommandSource)
 {
+    // We should update selection to canonicalize with current layout and style,
+    // before accessing |FrameSelection::selection()|.
+    frame.selection().updateIfNeeded();
     return frame.selection().isRange() && frame.selection().isContentEditable();
 }
 
 static bool enabledRangeInRichlyEditableText(LocalFrame& frame, Event*, EditorCommandSource)
 {
+    // We should update selection to canonicalize with current layout and style,
+    // before accessing |FrameSelection::selection()|.
+    frame.selection().updateIfNeeded();
     return frame.selection().isRange() && frame.selection().isContentRichlyEditable();
 }
 

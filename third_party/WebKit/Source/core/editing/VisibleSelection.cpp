@@ -48,6 +48,8 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
     , m_selectionType(NoSelection)
     , m_baseIsFirst(true)
     , m_isDirectional(false)
+    , m_granularity(CharacterGranularity)
+    , m_hasTrailingWhitespace(false)
 {
 }
 
@@ -64,6 +66,8 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTempl
     , m_affinity(affinity)
     , m_changeObserver(nullptr)
     , m_isDirectional(isDirectional)
+    , m_granularity(CharacterGranularity)
+    , m_hasTrailingWhitespace(false)
 {
     validate();
 }
@@ -122,6 +126,8 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelect
     , m_selectionType(other.m_selectionType)
     , m_baseIsFirst(other.m_baseIsFirst)
     , m_isDirectional(other.m_isDirectional)
+    , m_granularity(other.m_granularity)
+    , m_hasTrailingWhitespace(other.m_hasTrailingWhitespace)
 {
 }
 
@@ -139,6 +145,8 @@ VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::operator
     m_selectionType = other.m_selectionType;
     m_baseIsFirst = other.m_baseIsFirst;
     m_isDirectional = other.m_isDirectional;
+    m_granularity = other.m_granularity;
+    m_hasTrailingWhitespace = other.m_hasTrailingWhitespace;
     return *this;
 }
 
@@ -285,6 +293,7 @@ static EphemeralRangeTemplate<Strategy> makeSearchRange(const PositionTemplate<S
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
 {
+    ASSERT(m_granularity == WordGranularity);
     const EphemeralRangeTemplate<Strategy> searchRange = makeSearchRange(end());
     if (searchRange.isNull())
         return;
@@ -299,8 +308,10 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
         m_end = charIt.endPosition();
         changed = true;
     }
-    if (changed)
-        didChange();
+    if (!changed)
+        return;
+    m_hasTrailingWhitespace = true;
+    didChange();
 }
 
 template <typename Strategy>
@@ -517,6 +528,8 @@ void VisibleSelectionTemplate<Strategy>::updateSelectionType()
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity)
 {
+    m_granularity = granularity;
+    m_hasTrailingWhitespace = false;
     setBaseAndExtentToDeepEquivalents();
     if (m_base.isNull() || m_extent.isNull()) {
         m_base = m_extent = m_start = m_end = PositionTemplate<Strategy>();
@@ -835,7 +848,11 @@ void VisibleSelectionTemplate<Strategy>::updateIfNeeded()
     if (!document)
         return;
     document->updateLayoutIgnorePendingStylesheets();
-    validate();
+    const bool hasTrailingWhitespace = m_hasTrailingWhitespace;
+    validate(m_granularity);
+    if (!hasTrailingWhitespace)
+        return;
+    appendTrailingWhitespace();
 }
 
 template <typename Strategy>

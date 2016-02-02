@@ -169,6 +169,8 @@ void SelectionAdjuster::adjustSelectionInComposedTree(VisibleSelectionInComposed
     selectionInComposedTree->m_extent = extent;
     selectionInComposedTree->m_affinity = selection.m_affinity;
     selectionInComposedTree->m_isDirectional = selection.m_isDirectional;
+    selectionInComposedTree->m_granularity = selection.m_granularity;
+    selectionInComposedTree->m_hasTrailingWhitespace = selection.m_hasTrailingWhitespace;
     selectionInComposedTree->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
     if (position1.compareTo(position2) <= 0) {
         selectionInComposedTree->m_start = position1;
@@ -212,6 +214,8 @@ void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, co
     selection->m_extent = extent;
     selection->m_affinity = selectionInComposedTree.m_affinity;
     selection->m_isDirectional = selectionInComposedTree.m_isDirectional;
+    selection->m_granularity = selectionInComposedTree.m_granularity;
+    selection->m_hasTrailingWhitespace = selectionInComposedTree.m_hasTrailingWhitespace;
     selection->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
     if (position1.compareTo(position2) <= 0) {
         selection->m_start = position1;

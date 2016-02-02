@@ -197,6 +197,13 @@ private:
     SelectionType m_selectionType; // None, Caret, Range
     bool m_baseIsFirst : 1; // True if base is before the extent
     bool m_isDirectional : 1; // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
+
+    TextGranularity m_granularity;
+    // |updateIfNeeded()| uses |m_hasTrailingWhitespace| for word granularity.
+    // |m_hasTrailingWhitespace| is set by |appendTrailingWhitespace()|.
+    // TODO(yosin): Once we unify start/end and base/extent, we should get rid
+    // of |m_hasTrailingWhitespace|.
+    bool m_hasTrailingWhitespace : 1;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
