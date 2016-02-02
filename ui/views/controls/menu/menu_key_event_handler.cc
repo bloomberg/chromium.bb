@@ -57,7 +57,7 @@ void MenuKeyEventHandler::OnKeyEvent(ui::KeyEvent* event) {
     const int flags = event->flags();
     if (menu_controller->exit_type() == MenuController::EXIT_NONE &&
         (flags & kKeyFlagsMask) == 0) {
-      char c = event->GetCharacter();
+      base::char16 c = event->GetCharacter();
       menu_controller->SelectByChar(c);
       // Menu controller might have been deleted.
       if (!MenuController::GetActiveInstance())
