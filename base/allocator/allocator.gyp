@@ -379,6 +379,7 @@
       'targets': [
         {
           'target_name': 'libcmt',
+          'toolsets': ['host', 'target'],
           'type': 'none',
           'actions': [
             {
