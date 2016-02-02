@@ -28,7 +28,7 @@
         android:visibility="gone"
         android:background="@drawable/offline_badge_background"
         android:contentDescription="@null"
-        android:src="@drawable/eb_filter_offline_pages" />
+        android:src="@drawable/offline_pin" />
 
     <View
         android:layout_width="@dimen/most_visited_icon_size"
