@@ -33,7 +33,6 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -74,7 +73,7 @@ public:
     virtual ~ResourceFetcher();
     DECLARE_VIRTUAL_TRACE();
 
-    ResourcePtr<Resource> requestResource(FetchRequest&, const ResourceFactory&, const SubstituteData& = SubstituteData());
+    PassRefPtrWillBeRawPtr<Resource> requestResource(FetchRequest&, const ResourceFactory&, const SubstituteData& = SubstituteData());
 
     Resource* cachedResource(const KURL&) const;
 
@@ -152,7 +151,7 @@ public:
     void updateAllImageResourcePriorities();
 
     // This is only exposed for testing purposes.
-    WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>* preloads() { return m_preloads.get(); }
+    WillBeHeapListHashSet<RefPtrWillBeMember<Resource>>* preloads() { return m_preloads.get(); }
 
 private:
     friend class ResourceCacheValidationSuppressor;
@@ -160,10 +159,10 @@ private:
     explicit ResourceFetcher(FetchContext*);
 
     void initializeRevalidation(const FetchRequest&, Resource*);
-    ResourcePtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
+    PassRefPtrWillBeRawPtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
     bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
-    ResourcePtr<Resource> preCacheData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
+    void preCacheData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 
     // RevalidationPolicy enum values are used in UMAs https://crbug.com/579496.
     enum RevalidationPolicy { Use, Revalidate, Reload, Load };
@@ -188,18 +187,11 @@ private:
     HashSet<String> m_validatedURLs;
     mutable DocumentResourceMap m_documentResources;
 
-    // We intentionally use a Member instead of a ResourcePtr.
-    // Using a ResourcePtrs can lead to a wrong behavior because
-    // the underlying Resource of the ResourcePtr is updated when the Resource
-    // is revalidated. What we really want to hold here is not the ResourcePtr
-    // but the underlying Resource.
-    OwnPtrWillBeMember<WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>> m_preloads;
+    OwnPtrWillBeMember<WillBeHeapListHashSet<RefPtrWillBeMember<Resource>>> m_preloads;
     RefPtrWillBeMember<MHTMLArchive> m_archive;
 
     Timer<ResourceFetcher> m_resourceTimingReportTimer;
 
-    // We intentionally use a Member instead of a ResourcePtr.
-    // See the comment on m_preloads.
     using ResourceTimingInfoMap = WillBeHeapHashMap<RawPtrWillBeMember<Resource>, OwnPtr<ResourceTimingInfo>>;
     ResourceTimingInfoMap m_resourceTimingInfoMap;
 

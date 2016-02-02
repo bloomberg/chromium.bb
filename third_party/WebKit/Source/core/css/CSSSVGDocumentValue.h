@@ -27,7 +27,6 @@
 
 #include "core/css/CSSValue.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/fetch/ResourcePtr.h"
 
 namespace blink {
 
@@ -49,13 +48,17 @@ public:
     bool loadRequested() const { return m_loadRequested; }
     bool equals(const CSSSVGDocumentValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH()
+    {
+        visitor->trace(m_document);
+        CSSValue::traceAfterDispatch(visitor);
+    }
 
 private:
     CSSSVGDocumentValue(const String& url);
 
     String m_url;
-    ResourcePtr<DocumentResource> m_document;
+    RefPtrWillBeMember<DocumentResource> m_document;
     bool m_loadRequested;
 };
 

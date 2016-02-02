@@ -47,7 +47,7 @@ SVGFEImageElement::~SVGFEImageElement()
 #if ENABLE(OILPAN)
     if (m_cachedImage) {
         m_cachedImage->removeClient(this);
-        m_cachedImage = 0;
+        m_cachedImage = nullptr;
     }
 #else
     clearResourceReferences();
@@ -57,6 +57,7 @@ SVGFEImageElement::~SVGFEImageElement()
 DEFINE_TRACE(SVGFEImageElement)
 {
     visitor->trace(m_preserveAspectRatio);
+    visitor->trace(m_cachedImage);
     SVGFilterPrimitiveStandardAttributes::trace(visitor);
     SVGURIReference::trace(visitor);
 }
@@ -73,7 +74,7 @@ void SVGFEImageElement::clearResourceReferences()
 {
     if (m_cachedImage) {
         m_cachedImage->removeClient(this);
-        m_cachedImage = 0;
+        m_cachedImage = nullptr;
     }
 
     removeAllOutgoingReferences();

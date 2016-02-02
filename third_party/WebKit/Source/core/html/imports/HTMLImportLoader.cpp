@@ -69,7 +69,7 @@ void HTMLImportLoader::dispose()
     clearResource();
 }
 
-void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
+void HTMLImportLoader::startLoading(const PassRefPtrWillBeRawPtr<RawResource>& resource)
 {
     setResource(resource);
 }

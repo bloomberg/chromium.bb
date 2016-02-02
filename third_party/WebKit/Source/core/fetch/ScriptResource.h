@@ -49,10 +49,13 @@ public:
 class CORE_EXPORT ScriptResource final : public TextResource {
 public:
     using ClientType = ScriptResourceClient;
-    static ResourcePtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
+    static PassRefPtrWillBeRawPtr<ScriptResource> fetch(FetchRequest&, ResourceFetcher*);
 
     // Public for testing
-    ScriptResource(const ResourceRequest&, const String& charset);
+    static PassRefPtrWillBeRawPtr<ScriptResource> create(const ResourceRequest& request, const String& charset)
+    {
+        return adoptRefWillBeNoop(new ScriptResource(request, charset));
+    }
 
     ~ScriptResource() override;
 
@@ -81,11 +84,13 @@ private:
         ScriptResourceFactory()
             : ResourceFactory(Resource::Script) { }
 
-        Resource* create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
         {
-            return new ScriptResource(request, charset);
+            return adoptRefWillBeNoop(new ScriptResource(request, charset));
         }
     };
+
+    ScriptResource(const ResourceRequest&, const String& charset);
 
     bool m_integrityChecked;
     IntegrityMetadataSet m_integrityMetadata;

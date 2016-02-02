@@ -17,7 +17,7 @@
 
 namespace blink {
 
-RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader, FontDisplay display)
+RemoteFontFaceSource::RemoteFontFaceSource(PassRefPtrWillBeRawPtr<FontResource> font, PassRefPtrWillBeRawPtr<FontLoader> fontLoader, FontDisplay display)
     : m_font(font)
     , m_fontLoader(fontLoader)
     , m_display(display)
@@ -49,6 +49,7 @@ RemoteFontFaceSource::~RemoteFontFaceSource()
 void RemoteFontFaceSource::dispose()
 {
     m_font->removeClient(this);
+    m_font = nullptr;
     pruneTable();
 }
 
@@ -186,6 +187,7 @@ void RemoteFontFaceSource::beginLoadIfNeeded()
 
 DEFINE_TRACE(RemoteFontFaceSource)
 {
+    visitor->trace(m_font);
     visitor->trace(m_fontLoader);
     CSSFontFaceSource::trace(visitor);
 }

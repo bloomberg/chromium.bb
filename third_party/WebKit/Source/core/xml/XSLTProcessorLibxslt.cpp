@@ -103,7 +103,7 @@ static xmlDocPtr docLoaderFunc(
         ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, fetchOptions);
         request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-        ResourcePtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
+        RefPtrWillBeRawPtr<Resource> resource = RawResource::fetchSynchronously(request, globalResourceFetcher);
         if (!resource || !globalProcessor)
             return nullptr;
 

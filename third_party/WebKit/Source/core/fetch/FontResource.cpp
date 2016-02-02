@@ -69,7 +69,7 @@ static void recordPackageFormatHistogram(FontPackageFormat format)
     Platform::current()->histogramEnumeration("WebFont.PackageFormat", format, PackageFormatEnumMax);
 }
 
-ResourcePtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+PassRefPtrWillBeRawPtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextFont);

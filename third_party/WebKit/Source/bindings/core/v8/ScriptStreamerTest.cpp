@@ -32,7 +32,7 @@ public:
         , m_scope(v8::Isolate::GetCurrent())
         , m_settings(Settings::create())
         , m_resourceRequest("http://www.streaming-test.com/")
-        , m_resource(new ScriptResource(m_resourceRequest, "UTF-8"))
+        , m_resource(ScriptResource::create(m_resourceRequest, "UTF-8"))
         , m_pendingScript(PendingScript::create(0, m_resource.get()))
     {
         m_resource->setLoading(true);
@@ -89,7 +89,7 @@ protected:
     // fetch any data outside the test; the test controls the data by calling
     // ScriptResource::appendData.
     ResourceRequest m_resourceRequest;
-    ResourcePtr<ScriptResource> m_resource;
+    RefPtrWillBePersistent<ScriptResource> m_resource;
     OwnPtrWillBePersistent<PendingScript> m_pendingScript;
 };
 
@@ -194,7 +194,7 @@ TEST_F(ScriptStreamingTest, CancellingStreaming)
     pendingScript()->stopWatchingForLoad(&client);
     pendingScript()->releaseElementAndClear();
     m_pendingScript = nullptr; // This will destroy m_resource.
-    m_resource = 0;
+    m_resource = nullptr;
 
     // The V8 side will complete too. This should not crash. We don't receive
     // any results from the streaming and the client doesn't get notified.

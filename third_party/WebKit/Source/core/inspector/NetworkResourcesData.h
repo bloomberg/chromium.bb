@@ -124,7 +124,7 @@ public:
         PassRefPtr<SharedBuffer> buffer() const { return m_buffer; }
         void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }
 
-        Resource* cachedResource() const { return m_cachedResource; }
+        Resource* cachedResource() const { return m_cachedResource.get(); }
         void setResource(Resource* cachedResource) { m_cachedResource = cachedResource; }
 
         XHRReplayData* xhrReplayData() const { return m_xhrReplayData.get(); }
@@ -157,7 +157,7 @@ public:
         OwnPtr<TextResourceDecoder> m_decoder;
 
         RefPtr<SharedBuffer> m_buffer;
-        RawPtrWillBeMember<Resource> m_cachedResource;
+        RefPtrWillBeMember<Resource> m_cachedResource;
         RefPtr<BlobDataHandle> m_downloadedFileBlob;
     };
 

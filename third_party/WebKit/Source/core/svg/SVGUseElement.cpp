@@ -66,6 +66,10 @@ inline SVGUseElement::SVGUseElement(Document& document)
     addToPropertyMap(m_y);
     addToPropertyMap(m_width);
     addToPropertyMap(m_height);
+
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
@@ -78,12 +82,17 @@ PassRefPtrWillBeRawPtr<SVGUseElement> SVGUseElement::create(Document& document)
 
 SVGUseElement::~SVGUseElement()
 {
-    setDocumentResource(0);
 #if !ENABLE(OILPAN)
     clearShadowTree();
     cancelShadowTreeRecreation();
     svgUseLoadEventSender().cancelEvent(this);
+    dispose();
 #endif
+}
+
+void SVGUseElement::dispose()
+{
+    setDocumentResource(nullptr);
 }
 
 DEFINE_TRACE(SVGUseElement)
@@ -93,6 +102,7 @@ DEFINE_TRACE(SVGUseElement)
     visitor->trace(m_width);
     visitor->trace(m_height);
     visitor->trace(m_targetElementInstance);
+    visitor->trace(m_resource);
     SVGGraphicsElement::trace(visitor);
     SVGURIReference::trace(visitor);
 }
@@ -232,7 +242,7 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
                 setDocumentResource(DocumentResource::fetchSVGDocument(request, document().fetcher()));
             }
         } else {
-            setDocumentResource(0);
+            setDocumentResource(nullptr);
         }
 
         invalidateShadowTree();
@@ -808,7 +818,7 @@ bool SVGUseElement::instanceTreeIsLoading(const SVGElement* targetInstance)
     return false;
 }
 
-void SVGUseElement::setDocumentResource(ResourcePtr<DocumentResource> resource)
+void SVGUseElement::setDocumentResource(PassRefPtrWillBeRawPtr<DocumentResource> resource)
 {
     if (m_resource == resource)
         return;

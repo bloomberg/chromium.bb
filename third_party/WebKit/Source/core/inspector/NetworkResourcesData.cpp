@@ -29,6 +29,7 @@
 #include "core/inspector/NetworkResourcesData.h"
 
 #include "core/dom/DOMImplementation.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fetch/Resource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
@@ -272,6 +273,7 @@ void NetworkResourcesData::maybeDecodeDataToContent(const String& requestId)
 
 void NetworkResourcesData::addResource(const String& requestId, Resource* cachedResource)
 {
+    ASSERT(memoryCache()->contains(cachedResource));
     ResourceData* resourceData = resourceDataForRequestId(requestId);
     if (!resourceData)
         return;

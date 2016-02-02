@@ -35,7 +35,6 @@
 #include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -89,7 +88,7 @@ TEST(ImageResourceTest, MultipartImage)
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
 
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
+    RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
     cachedImage->load(fetcher, ResourceLoaderOptions());
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
@@ -145,7 +144,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
 
     // Emulate starting a real load.
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
+    RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
 
     cachedImage->load(fetcher, ResourceLoaderOptions());
@@ -169,7 +168,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 {
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
+    RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
     MockImageResourceClient client(cachedImage);
@@ -202,7 +201,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
 TEST(ImageResourceTest, UpdateBitmapImages)
 {
-    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(), nullptr);
+    RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
     cachedImage->setLoading(true);
 
     MockImageResourceClient client(cachedImage);

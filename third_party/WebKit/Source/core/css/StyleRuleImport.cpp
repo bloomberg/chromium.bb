@@ -41,11 +41,14 @@ StyleRuleImport::StyleRuleImport(const String& href, PassRefPtrWillBeRawPtr<Medi
     , m_styleSheetClient(this)
     , m_strHref(href)
     , m_mediaQueries(media)
-    , m_resource(nullptr)
     , m_loading(false)
 {
     if (!m_mediaQueries)
         m_mediaQueries = MediaQuerySet::create(String());
+
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 StyleRuleImport::~StyleRuleImport()
@@ -53,9 +56,15 @@ StyleRuleImport::~StyleRuleImport()
 #if !ENABLE(OILPAN)
     if (m_styleSheet)
         m_styleSheet->clearOwnerRule();
+    dispose();
 #endif
+}
+
+void StyleRuleImport::dispose()
+{
     if (m_resource)
         m_resource->removeClient(&m_styleSheetClient);
+    m_resource = nullptr;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport)
@@ -64,6 +73,7 @@ DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport)
     visitor->trace(m_parentStyleSheet);
     visitor->trace(m_mediaQueries);
     visitor->trace(m_styleSheet);
+    visitor->trace(m_resource);
     StyleRuleBase::traceAfterDispatch(visitor);
 }
 

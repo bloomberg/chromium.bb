@@ -42,7 +42,7 @@ class ScriptSourceCode;
 
 // A container for an external script which may be loaded and executed.
 //
-// A ResourcePtr alone does not prevent the underlying Resource
+// A RefPtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
 class CORE_EXPORT PendingScript final : public NoBaseWillBeGarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {

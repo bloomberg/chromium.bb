@@ -25,7 +25,6 @@
 #include "core/dom/PendingScript.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
@@ -69,7 +68,7 @@ public:
     bool willBeParserExecuted() const { return m_willBeParserExecuted; }
     bool readyToBeParserExecuted() const { return m_readyToBeParserExecuted; }
     bool willExecuteWhenDocumentFinishedParsing() const { return m_willExecuteWhenDocumentFinishedParsing; }
-    ResourcePtr<ScriptResource> resource() { return m_resource; }
+    ScriptResource* resource() { return m_resource.get(); }
 
     void setHaveFiredLoadEvent(bool haveFiredLoad) { m_haveFiredLoad = haveFiredLoad; }
     bool isParserInserted() const { return m_parserInserted; }
@@ -104,7 +103,7 @@ private:
     String debugName() const override { return "ScriptLoader"; }
 
     RawPtrWillBeMember<Element> m_element;
-    ResourcePtr<ScriptResource> m_resource;
+    RefPtrWillBeMember<ScriptResource> m_resource;
     WTF::OrdinalNumber m_startLineNumber;
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;

@@ -22,7 +22,6 @@
 
 #include "core/fetch/MemoryCache.h"
 
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/WebCacheMemoryDumpProvider.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
@@ -56,12 +55,6 @@ MemoryCache* memoryCache()
 
 MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
 {
-#if ENABLE(OILPAN)
-    // Move m_liveResources content to keep Resource objects alive.
-    for (const auto& resource : memoryCache()->m_liveResources)
-        cache->m_liveResources.add(resource);
-    memoryCache()->m_liveResources.clear();
-#endif
     memoryCache();
     MemoryCache* oldCache = gMemoryCache->release();
     *gMemoryCache = cache;
@@ -71,6 +64,7 @@ MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
 
 DEFINE_TRACE(MemoryCacheEntry)
 {
+    visitor->trace(m_resource);
     visitor->trace(m_previousInLiveResourcesList);
     visitor->trace(m_nextInLiveResourcesList);
     visitor->trace(m_previousInAllResourcesList);
@@ -79,6 +73,7 @@ DEFINE_TRACE(MemoryCacheEntry)
 
 void MemoryCacheEntry::dispose()
 {
+    m_resource->removedFromMemoryCache();
     m_resource.clear();
 }
 
@@ -130,9 +125,6 @@ DEFINE_TRACE(MemoryCache)
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(m_liveDecodedResources); ++i)
         visitor->trace(m_liveDecodedResources[i]);
     visitor->trace(m_resourceMaps);
-#if ENABLE(OILPAN)
-    visitor->trace(m_liveResources);
-#endif
 }
 
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
@@ -207,12 +199,8 @@ Resource* MemoryCache::resourceForURL(const KURL& resourceURL, const String& cac
     if (!entry)
         return nullptr;
     Resource* resource = entry->m_resource.get();
-    if (resource && !resource->lock()) {
-        ASSERT(!resource->hasClients());
-        bool didEvict = evict(entry);
-        ASSERT_UNUSED(didEvict, didEvict);
+    if (resource && !resource->lock())
         return nullptr;
-    }
     return resource;
 }
 
@@ -300,24 +288,6 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
     size_t targetSize = static_cast<size_t>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
 
     int size = m_allResources.size();
-
-    // See if we have any purged resources we can evict.
-    for (int i = 0; i < size; i++) {
-        MemoryCacheEntry* current = m_allResources[i].m_tail;
-        while (current) {
-            MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
-            // Main Resources in the cache are only substitue data that was
-            // precached and should not be evicted.
-            if (current->m_resource->wasPurged() && current->m_resource->canDelete()
-                && current->m_resource->type() != Resource::MainResource) {
-                ASSERT(!current->m_resource->hasClients());
-                ASSERT(!current->m_resource->isPreloaded());
-                bool wasEvicted = evict(current);
-                ASSERT_UNUSED(wasEvicted, wasEvicted);
-            }
-            current = previous;
-        }
-    }
     if (targetSize && m_deadSize <= targetSize)
         return;
 
@@ -362,13 +332,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
                 RELEASE_ASSERT(previous->m_resource);
                 RELEASE_ASSERT(contains(previous->m_resource.get()));
             }
-            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()
-                && !current->m_resource->isCacheValidator() && current->m_resource->canDelete()
-                && current->m_resource->type() != Resource::MainResource) {
-                // Main Resources in the cache are only substitue data that was
-                // precached and should not be evicted.
-                bool wasEvicted = evict(current);
-                ASSERT_UNUSED(wasEvicted, wasEvicted);
+            if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()) {
+                evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
             }
@@ -397,12 +362,11 @@ void MemoryCache::setCapacities(size_t minDeadBytes, size_t maxDeadBytes, size_t
     prune();
 }
 
-bool MemoryCache::evict(MemoryCacheEntry* entry)
+void MemoryCache::evict(MemoryCacheEntry* entry)
 {
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->m_resource.get();
-    bool canDelete = resource->canDelete();
     WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().string().latin1().data());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
@@ -418,8 +382,6 @@ bool MemoryCache::evict(MemoryCacheEntry* entry)
     resources->remove(it);
     if (entryPtr)
         entryPtr->dispose();
-
-    return canDelete;
 }
 
 MemoryCacheEntry* MemoryCache::getEntryForResource(const Resource* resource) const
@@ -633,17 +595,15 @@ void MemoryCache::removeURLFromCache(const KURL& url)
 
 void MemoryCache::TypeStatistic::addResource(Resource* o)
 {
-    bool purged = o->wasPurged();
-    bool purgeable = o->isPurgeable() && !purged;
+    bool purgeable = o->isPurgeable();
     size_t pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
     count++;
-    size += purged ? 0 : o->size();
+    size += o->size();
     liveSize += o->hasClients() ? o->size() : 0;
     decodedSize += o->decodedSize();
     encodedSize += o->encodedSize();
     encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
     purgeableSize += purgeable ? pageSize : 0;
-    purgedSize += purged ? pageSize : 0;
 }
 
 MemoryCache::Statistics MemoryCache::getStatistics()
@@ -800,22 +760,6 @@ bool MemoryCache::isInSameLRUListForTest(const Resource* x, const Resource* y)
     return lruListFor(ex->m_accessCount, x->size()) == lruListFor(ey->m_accessCount, y->size());
 }
 
-void MemoryCache::registerLiveResource(Resource& resource)
-{
-#if ENABLE(OILPAN)
-    ASSERT(!m_liveResources.contains(&resource));
-    m_liveResources.add(&resource);
-#endif
-}
-
-void MemoryCache::unregisterLiveResource(Resource& resource)
-{
-#if ENABLE(OILPAN)
-    ASSERT(m_liveResources.contains(&resource));
-    m_liveResources.remove(&resource);
-#endif
-}
-
 #ifdef MEMORY_CACHE_STATS
 
 void MemoryCache::dumpStats(Timer<MemoryCache>*)
@@ -842,16 +786,16 @@ void MemoryCache::dumpStats(Timer<MemoryCache>*)
 
 void MemoryCache::dumpLRULists(bool includeLive) const
 {
-    printf("LRU-SP lists in eviction order (Kilobytes decoded, Kilobytes encoded, Access count, Referenced, isPurgeable, wasPurged):\n");
+    printf("LRU-SP lists in eviction order (Kilobytes decoded, Kilobytes encoded, Access count, Referenced, isPurgeable):\n");
 
     int size = m_allResources.size();
     for (int i = size - 1; i >= 0; i--) {
         printf("\n\nList %d: ", i);
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
-            ResourcePtr<Resource> currentResource = current->m_resource;
+            RefPtrWillBeRawPtr<Resource> currentResource = current->m_resource;
             if (includeLive || !currentResource->hasClients())
-                printf("(%.1fK, %.1fK, %uA, %dR, %d, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClients(), currentResource->isPurgeable(), currentResource->wasPurged());
+                printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClients(), currentResource->isPurgeable());
 
             current = current->m_previousInAllResourcesList;
         }

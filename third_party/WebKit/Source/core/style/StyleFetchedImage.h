@@ -25,7 +25,6 @@
 #define StyleFetchedImage_h
 
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -70,7 +69,7 @@ private:
 
     void dispose();
 
-    ResourcePtr<ImageResource> m_image;
+    RefPtrWillBeMember<ImageResource> m_image;
     RawPtrWillBeMember<Document> m_document;
     const KURL m_url;
 };

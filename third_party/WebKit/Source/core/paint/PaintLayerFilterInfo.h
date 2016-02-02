@@ -103,7 +103,7 @@ private:
 
     // Same as m_internalSVGReferences, except that the reference belongs to a
     // different document.
-    Vector<ResourcePtr<DocumentResource>> m_externalSVGReferences;
+    WillBePersistentHeapVector<RefPtrWillBeMember<DocumentResource>> m_externalSVGReferences;
 };
 
 } // namespace blink

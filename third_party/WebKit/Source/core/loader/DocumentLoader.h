@@ -35,7 +35,6 @@
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/SubstituteData.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/DocumentLoadTiming.h"
@@ -144,7 +143,7 @@ public:
 
     bool loadingMultipartContent() const;
 
-    ResourcePtr<Resource> startPreload(Resource::Type, FetchRequest&);
+    Resource* startPreload(Resource::Type, FetchRequest&);
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -189,7 +188,7 @@ private:
     RawPtrWillBeMember<LocalFrame> m_frame;
     PersistentWillBeMember<ResourceFetcher> m_fetcher;
 
-    ResourcePtr<RawResource> m_mainResource;
+    RefPtrWillBeMember<RawResource> m_mainResource;
 
     RefPtrWillBeMember<DocumentWriter> m_writer;
 

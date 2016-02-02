@@ -27,7 +27,6 @@
 #define LayoutImageResource_h
 
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -64,12 +63,12 @@ public:
 
     virtual WrappedImagePtr imagePtr() const { return m_cachedImage.get(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_cachedImage); }
 
 protected:
     LayoutImageResource();
     LayoutObject* m_layoutObject;
-    ResourcePtr<ImageResource> m_cachedImage;
+    RefPtrWillBeMember<ImageResource> m_cachedImage;
 };
 
 } // namespace blink

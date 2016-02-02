@@ -6722,7 +6722,7 @@ TEST_P(ParameterizedWebFrameTest, NotifyManifestChange)
     EXPECT_EQ(14, webFrameClient.manifestChangeCount());
 }
 
-static ResourcePtr<Resource> fetchManifest(Document* document, const KURL& url)
+static PassRefPtrWillBeRawPtr<Resource> fetchManifest(Document* document, const KURL& url)
 {
     FetchRequest fetchRequest = FetchRequest(ResourceRequest(url), FetchInitiatorInfo());
     fetchRequest.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextManifest);
@@ -6739,7 +6739,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestFetch)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_baseURL + "link-manifest-fetch.json"));
+    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_baseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }
@@ -6753,7 +6753,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchAllow)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }
@@ -6767,7 +6767,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelf)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_EQ(0, resource.get()); // Fetching resource wasn't allowed.
 }
@@ -6781,7 +6781,7 @@ TEST_P(ParameterizedWebFrameTest, ManifestCSPFetchSelfReportOnly)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html");
     Document* document = toWebLocalFrameImpl(webViewHelper.webViewImpl()->mainFrame())->frame()->document();
 
-    ResourcePtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
+    RefPtrWillBeRawPtr<Resource> resource = fetchManifest(document, toKURL(m_notBaseURL + "link-manifest-fetch.json"));
 
     EXPECT_TRUE(resource->isLoaded());
 }

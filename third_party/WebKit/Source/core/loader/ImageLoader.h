@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"
@@ -169,7 +168,7 @@ private:
 #endif
 
     RawPtrWillBeMember<Element> m_element;
-    ResourcePtr<ImageResource> m_image;
+    RefPtrWillBeMember<ImageResource> m_image;
     // FIXME: Oilpan: We might be able to remove this Persistent hack when
     // ImageResourceClient is traceable.
     GC_PLUGIN_IGNORE("http://crbug.com/383741")
