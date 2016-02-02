@@ -174,24 +174,25 @@ void CSSParserImpl::parseStyleSheet(const String& string, const CSSParserContext
         "length", string.length());
 }
 
-CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange prelude, StyleSheetContents* styleSheet)
+CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, StyleSheetContents* styleSheet)
 {
-    prelude.consumeWhitespace();
+    // We only support a small subset of the css-page spec.
+    range.consumeWhitespace();
     AtomicString typeSelector;
-    if (prelude.peek().type() == IdentToken)
-        typeSelector = prelude.consume().value();
+    if (range.peek().type() == IdentToken)
+        typeSelector = range.consume().value();
 
     AtomicString pseudo;
-    if (prelude.peek().type() == ColonToken) {
-        prelude.consume();
-        if (prelude.peek().type() != IdentToken)
+    if (range.peek().type() == ColonToken) {
+        range.consume();
+        if (range.peek().type() != IdentToken)
             return CSSSelectorList();
-        pseudo = prelude.consume().value();
+        pseudo = range.consume().value();
     }
 
-    prelude.consumeWhitespace();
-    if (!prelude.atEnd())
-        return CSSSelectorList(); // Parse error; extra tokens in @page header
+    range.consumeWhitespace();
+    if (!range.atEnd())
+        return CSSSelectorList(); // Parse error; extra tokens in @page selector
 
     OwnPtr<CSSParserSelector> selector;
     if (!typeSelector.isNull() && pseudo.isNull()) {
@@ -579,10 +580,9 @@ PassRefPtrWillBeRawPtr<StyleRuleKeyframes> CSSParserImpl::consumeKeyframesRule(b
 
 PassRefPtrWillBeRawPtr<StyleRulePage> CSSParserImpl::consumePageRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
 {
-    // We only support a small subset of the css-page spec.
     CSSSelectorList selectorList = parsePageSelector(prelude, m_styleSheet);
     if (!selectorList.isValid())
-        return nullptr;
+        return nullptr; // Parse error, invalid @page selector
 
     if (m_observerWrapper) {
         unsigned endOffset = m_observerWrapper->endOffset(prelude);
