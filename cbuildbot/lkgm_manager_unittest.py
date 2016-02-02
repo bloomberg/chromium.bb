@@ -168,11 +168,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
 
     build_id = 59271
 
-    # Patch out our RepoRepository to make sure we don't corrupt real repo.
-    cros_source_mock = self.PatchObject(self.manager, 'cros_source')
-    cros_source_mock.branch = 'master'
-    cros_source_mock.directory = '/foo/repo'
-
     self.PatchObject(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.PatchObject(lkgm_manager.LKGMManager, 'CreateManifest',
                      return_value=new_manifest)
@@ -185,10 +180,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
                      return_value=my_info)
     init_mock = self.PatchObject(lkgm_manager.LKGMManager,
                                  'InitializeManifestVariables')
-
-    # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(repository, 'CloneGitRepo')
-    self.PatchObject(git, 'CreateBranch')
 
     # Publish new candidate.
     publish_mock = self.PatchObject(lkgm_manager.LKGMManager, 'PublishManifest')
@@ -216,8 +207,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
 
     build_id = 20162
 
-    # Patch out our RepoRepository to make sure we don't corrupt real repo.
-    self.PatchObject(self.manager, 'cros_source')
     filter_mock = self.PatchObject(manifest_version, 'FilterManifest',
                                    return_value=new_manifest)
 
@@ -247,12 +236,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests that we return nothing if there is nothing to create."""
     new_manifest = 'some_manifest'
     my_info = lkgm_manager._LKGMCandidateInfo('1.2.3')
-
-    # Patch out our RepoRepository to make sure we don't corrupt real repo.
-    cros_source_mock = self.PatchObject(self.manager, 'cros_source')
-    cros_source_mock.branch = 'master'
-    cros_source_mock.directory = '/foo/repo'
-
     self.PatchObject(lkgm_manager.LKGMManager, 'CheckoutSourceCode')
     self.PatchObject(lkgm_manager.LKGMManager, 'CreateManifest',
                      return_value=new_manifest)
@@ -263,10 +246,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
                                  'InitializeManifestVariables')
     self.PatchObject(lkgm_manager.LKGMManager, 'HasCheckoutBeenBuilt',
                      return_value=True)
-
-    # For _AdjustRepoCheckoutToLocalManifest.
-    self.PatchObject(repository, 'CloneGitRepo')
-    self.PatchObject(git, 'CreateBranch')
 
     candidate = self.manager.CreateNewCandidate()
     self.assertEqual(candidate, None)
