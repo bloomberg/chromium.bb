@@ -26,7 +26,10 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
   bool err;
   scoped_refptr<NullMediaLog> media_log(new NullMediaLog());
   scoped_ptr<media::mp4::BoxReader> reader(
-      media::mp4::BoxReader::ReadTopLevelBox(data, size, media_log, &err));
+      media::mp4::BoxReader::ReadTopLevelBox(data,
+                                             static_cast<const int>(size),
+                                             media_log,
+                                             &err));
   if (err) {
     return 0;
   }
