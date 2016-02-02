@@ -300,7 +300,7 @@ const AffineTransform& LayoutSVGRoot::localToParentTransform() const
 LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
 {
     // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
-    // LayoutSVGRoot::mapToVisibleRectInContainerSpace and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
+    // LayoutSVGRoot::mapToVisibleRectInAncestorSpace and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
 
