@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/experiments/api_key.h"
+#include "content/common/origin_trials/trial_token.h"
 
 #include <openssl/curve25519.h>
 
@@ -30,31 +30,30 @@ static const uint8_t kPublicKey[] = {
     0x51, 0x14, 0x66, 0xaa, 0x02, 0x53, 0x4e, 0x33, 0xa1, 0x15,
 };
 
-const char* kApiKeyFieldSeparator = "|";
+const char* kFieldSeparator = "|";
 
 }  // namespace
 
-ApiKey::~ApiKey() {}
+TrialToken::~TrialToken() {}
 
-scoped_ptr<ApiKey> ApiKey::Parse(const std::string& key_text) {
-  if (key_text.empty()) {
+scoped_ptr<TrialToken> TrialToken::Parse(const std::string& token_text) {
+  if (token_text.empty()) {
     return nullptr;
   }
 
-  // API Key should resemble:
-  // signature|origin|api_name|expiry_timestamp
-  // TODO(iclelland): Add version code to API key format to identify key algo
+  // A valid token should resemble:
+  // signature|origin|feature_name|expiry_timestamp
+  // TODO(iclelland): Add version code to token format to identify key algo
   // https://crbug.com/570684
-  std::vector<std::string> parts =
-      SplitString(key_text, kApiKeyFieldSeparator, base::KEEP_WHITESPACE,
-                  base::SPLIT_WANT_ALL);
+  std::vector<std::string> parts = SplitString(
+      token_text, kFieldSeparator, base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   if (parts.size() != 4) {
     return nullptr;
   }
 
   const std::string& signature = parts[0];
   const std::string& origin_string = parts[1];
-  const std::string& api_name = parts[2];
+  const std::string& feature_name = parts[2];
   const std::string& expiry_string = parts[3];
 
   uint64_t expiry_timestamp;
@@ -68,30 +67,30 @@ scoped_ptr<ApiKey> ApiKey::Parse(const std::string& key_text) {
     return nullptr;
   }
 
-  // signed data is (origin + "|" + api_name + "|" + expiry).
-  std::string data = key_text.substr(signature.length() + 1);
+  // signed data is (origin + "|" + feature_name + "|" + expiry).
+  std::string data = token_text.substr(signature.length() + 1);
 
-  return make_scoped_ptr(
-      new ApiKey(signature, data, origin_url, api_name, expiry_timestamp));
+  return make_scoped_ptr(new TrialToken(signature, data, origin_url,
+                                        feature_name, expiry_timestamp));
 }
 
-ApiKey::ApiKey(const std::string& signature,
-               const std::string& data,
-               const GURL& origin,
-               const std::string& api_name,
-               uint64_t expiry_timestamp)
+TrialToken::TrialToken(const std::string& signature,
+                       const std::string& data,
+                       const GURL& origin,
+                       const std::string& feature_name,
+                       uint64_t expiry_timestamp)
     : signature_(signature),
       data_(data),
       origin_(origin),
-      api_name_(api_name),
+      feature_name_(feature_name),
       expiry_timestamp_(expiry_timestamp) {}
 
-bool ApiKey::IsAppropriate(const std::string& origin,
-                           const std::string& api_name) const {
-  return ValidateOrigin(origin) && ValidateApiName(api_name);
+bool TrialToken::IsAppropriate(const std::string& origin,
+                               const std::string& feature_name) const {
+  return ValidateOrigin(origin) && ValidateFeatureName(feature_name);
 }
 
-bool ApiKey::IsValid(const base::Time& now) const {
+bool TrialToken::IsValid(const base::Time& now) const {
   // TODO(iclelland): Allow for multiple signing keys, and iterate over all
   // active keys here. https://crbug.com/543220
   return ValidateDate(now) &&
@@ -99,27 +98,27 @@ bool ApiKey::IsValid(const base::Time& now) const {
              reinterpret_cast<const char*>(kPublicKey), arraysize(kPublicKey)));
 }
 
-bool ApiKey::ValidateOrigin(const std::string& origin) const {
+bool TrialToken::ValidateOrigin(const std::string& origin) const {
   return GURL(origin) == origin_;
 }
 
-bool ApiKey::ValidateApiName(const std::string& api_name) const {
-  return base::EqualsCaseInsensitiveASCII(api_name, api_name_);
+bool TrialToken::ValidateFeatureName(const std::string& feature_name) const {
+  return base::EqualsCaseInsensitiveASCII(feature_name, feature_name_);
 }
 
-bool ApiKey::ValidateDate(const base::Time& now) const {
+bool TrialToken::ValidateDate(const base::Time& now) const {
   base::Time expiry_time = base::Time::FromDoubleT((double)expiry_timestamp_);
   return expiry_time > now;
 }
 
-bool ApiKey::ValidateSignature(const base::StringPiece& public_key) const {
+bool TrialToken::ValidateSignature(const base::StringPiece& public_key) const {
   return ValidateSignature(signature_, data_, public_key);
 }
 
 // static
-bool ApiKey::ValidateSignature(const std::string& signature_text,
-                               const std::string& data,
-                               const base::StringPiece& public_key) {
+bool TrialToken::ValidateSignature(const std::string& signature_text,
+                                   const std::string& data,
+                                   const base::StringPiece& public_key) {
   // Public key must be 32 bytes long for Ed25519.
   CHECK_EQ(public_key.length(), 32UL);
 

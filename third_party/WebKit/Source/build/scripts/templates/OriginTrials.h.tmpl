@@ -1,8 +1,8 @@
 {% from 'macros.tmpl' import license %}
 {{license()}}
 
-#ifndef ExperimentalFeatures_h
-#define ExperimentalFeatures_h
+#ifndef OriginTrials_h
+#define OriginTrials_h
 
 #include "core/CoreExport.h"
 #include "wtf/text/WTFString.h"
@@ -14,20 +14,20 @@ class ExecutionContext;
 // A class that stores dynamic tests for experimental features which can be
 // enabled through the experimental framework via API keys.
 
-class CORE_EXPORT ExperimentalFeatures {
+class CORE_EXPORT OriginTrials {
 public:
     {% for feature in features %}
-    {% if feature.api_name %}
+    {% if feature.origin_trial_feature_name %}
     static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext, String& errorMessage);
     static bool {{feature.first_lowered_name}}Enabled(ExecutionContext* executionContext);
     {% endif %}
     {% endfor %}
 
 private:
-    ExperimentalFeatures() { }
+    OriginTrials() { }
 
     {% for feature in features %}
-    {% if feature.api_name %}
+    {% if feature.origin_trial_feature_name %}
     static bool {{feature.first_lowered_name}}EnabledImpl(ExecutionContext* executionContext, String* errorMessage);
     {% endif %}
     {% endfor %}
@@ -35,4 +35,4 @@ private:
 
 } // namespace blink
 
-#endif // ExperimentalFeatures_h
+#endif // OriginTrials_h

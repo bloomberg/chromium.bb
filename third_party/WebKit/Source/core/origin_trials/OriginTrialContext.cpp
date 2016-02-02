@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/experiments/Experiments.h"
+#include "core/origin_trials/OriginTrialContext.h"
 
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
@@ -11,39 +11,39 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebApiKeyValidator.h"
+#include "public/platform/WebTrialTokenValidator.h"
 
 namespace blink {
 
 namespace {
 
-const char kExperimentsMetaName[] = "api-experiments";
+const char kTrialMetaTagName[] = "api-experiments";
 
 String getCurrentOrigin(ExecutionContext* executionContext)
 {
     return executionContext->securityOrigin()->toString();
 }
 
-String getDisabledMessage(const String& apiName)
+String getDisabledMessage(const String& featureName)
 {
     // TODO(chasej): Update message with URL to experiments site, when live
-    return "The '" + apiName + "' API is currently enabled in limited experiments. Please see [Chrome experiments website URL] for information on enabling this experiment on your site.";
+    return "The '" + featureName + "' feature is currently enabled in limited trials. Please see [Phosphor console URL] for information on enabling a trial for your site.";
 }
 
-bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, String* errorMessage, WebApiKeyValidator* validator)
+bool hasValidToken(ExecutionContext* executionContext, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
-    bool foundAnyKey = false;
+    bool foundAnyToken = false;
     String origin = getCurrentOrigin(executionContext);
 
-    // When in a document, the API key is provided in a meta tag
+    // When in a document, the token is provided in a meta tag
     if (executionContext->isDocument()) {
         HTMLHeadElement* head = toDocument(executionContext)->head();
         for (HTMLMetaElement* metaElement = head ? Traversal<HTMLMetaElement>::firstChild(*head) : 0; metaElement; metaElement = Traversal<HTMLMetaElement>::nextSibling(*metaElement)) {
-            if (equalIgnoringCase(metaElement->name(), kExperimentsMetaName)) {
-                foundAnyKey = true;
-                String keyString = metaElement->content();
+            if (equalIgnoringCase(metaElement->name(), kTrialMetaTagName)) {
+                foundAnyToken = true;
+                String tokenString = metaElement->content();
                 // Check with the validator service to verify the signature.
-                if (validator->validateApiKey(keyString, origin, apiName)) {
+                if (validator->validateToken(tokenString, origin, featureName)) {
                     return true;
                 }
             }
@@ -51,10 +51,10 @@ bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, S
     }
 
     if (errorMessage) {
-        if (foundAnyKey) {
-            *errorMessage = "The provided key(s) are not valid for the '" + apiName + "' API.";
+        if (foundAnyToken) {
+            *errorMessage = "The provided token(s) are not valid for the '" + featureName + "' feature.";
         } else {
-            *errorMessage = getDisabledMessage(apiName);
+            *errorMessage = getDisabledMessage(featureName);
         }
     }
     return false;
@@ -63,7 +63,7 @@ bool hasValidAPIKey(ExecutionContext* executionContext, const String& apiName, S
 } // namespace
 
 // static
-bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String& apiName, String* errorMessage, WebApiKeyValidator* validator)
+bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
         if (errorMessage) {
@@ -77,7 +77,7 @@ bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String&
         return false;
     }
 
-    // Experiments are only enabled for secure origins
+    // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
         ? executionContext->isSecureContext(*errorMessage)
         : executionContext->isSecureContext();
@@ -86,7 +86,7 @@ bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String&
     }
 
     if (!validator) {
-        validator = Platform::current()->apiKeyValidator();
+        validator = Platform::current()->trialTokenValidator();
         if (!validator) {
             if (errorMessage) {
                 *errorMessage = "Experimental Framework is not enabled.";
@@ -95,13 +95,7 @@ bool Experiments::isApiEnabled(ExecutionContext* executionContext, const String&
         }
     }
 
-    return hasValidAPIKey(executionContext, apiName, errorMessage, validator);
-}
-
-// static
-DOMException* Experiments::createApiDisabledException(const String& apiName)
-{
-    return DOMException::create(NotSupportedError, getDisabledMessage(apiName));
+    return hasValidToken(executionContext, featureName, errorMessage, validator);
 }
 
 } // namespace blink

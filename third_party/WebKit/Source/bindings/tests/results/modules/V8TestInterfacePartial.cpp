@@ -17,9 +17,9 @@
 #include "bindings/tests/idls/modules/TestPartialInterfaceImplementation3.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/experiments/ExperimentalFeatures.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -247,7 +247,7 @@ static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::Function
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
-    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
          toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
          return;
@@ -298,7 +298,7 @@ static void unscopeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
     String errorMessage;
-    if (!ExperimentalFeatures::featureNameEnabled(executionContext, errorMessage)) {
+    if (!OriginTrials::featureNameEnabled(executionContext, errorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
          toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage));
          return;

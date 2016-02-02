@@ -37,11 +37,11 @@ import template_expander
 
 # We want exactly the same parsing as RuntimeFeatureWriter
 # but generate different files.
-class ExperimentalFeatureWriter(make_runtime_features.RuntimeFeatureWriter):
-    class_name = 'ExperimentalFeatures'
+class OriginTrialsWriter(make_runtime_features.RuntimeFeatureWriter):
+    class_name = 'OriginTrials'
 
     def __init__(self, in_file_path):
-        super(ExperimentalFeatureWriter, self).__init__(in_file_path)
+        super(OriginTrialsWriter, self).__init__(in_file_path)
         self._outputs = {
             (self.class_name + '.cpp'): self.generate_implementation,
             (self.class_name + '.h'): self.generate_header,
@@ -61,4 +61,4 @@ class ExperimentalFeatureWriter(make_runtime_features.RuntimeFeatureWriter):
 
 
 if __name__ == '__main__':
-    in_generator.Maker(ExperimentalFeatureWriter).main(sys.argv)
+    in_generator.Maker(OriginTrialsWriter).main(sys.argv)

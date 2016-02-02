@@ -43,7 +43,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'status': ['stable', 'experimental', 'test'],
     }
     defaults = {
-        'api_name': None,
+        'origin_trial_feature_name': None,
         'condition': None,
         'implied_by': [],
         'depends_on': [],

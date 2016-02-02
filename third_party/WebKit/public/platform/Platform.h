@@ -59,7 +59,6 @@ class GrContext;
 
 namespace blink {
 
-class WebApiKeyValidator;
 class WebAudioBus;
 class WebBlobRegistry;
 class WebCanvasCaptureHandler;
@@ -114,6 +113,7 @@ class WebSyncProvider;
 struct WebFloatPoint;
 class WebThemeEngine;
 class WebThread;
+class WebTrialTokenValidator;
 class WebURL;
 class WebURLLoader;
 class WebUnitTestSupport;
@@ -635,7 +635,7 @@ public:
 
     // Experimental Framework ----------------------------------------------
 
-    virtual WebApiKeyValidator* apiKeyValidator() { return nullptr; }
+    virtual WebTrialTokenValidator* trialTokenValidator() { return nullptr; }
 
 protected:
     BLINK_PLATFORM_EXPORT Platform();

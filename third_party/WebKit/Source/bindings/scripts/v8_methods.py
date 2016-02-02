@@ -119,8 +119,8 @@ def method_context(interface, method, is_visible=True):
         raise Exception('[LenientThis] is not supported for operations.')
 
     if 'APIExperimentEnabled' in extended_attributes:
-        includes.add('core/experiments/ExperimentalFeatures.h')
         includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('core/origin_trials/OriginTrials.h')
 
     argument_contexts = [
         argument_context(interface, method, argument, index, is_visible=is_visible)

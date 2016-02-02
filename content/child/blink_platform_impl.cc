@@ -1062,8 +1062,8 @@ blink::WebSyncProvider* BlinkPlatformImpl::backgroundSyncProvider() {
       main_thread_task_runner_.get());
 }
 
-blink::WebApiKeyValidator* BlinkPlatformImpl::apiKeyValidator() {
-  return &api_key_validator_;
+blink::WebTrialTokenValidator* BlinkPlatformImpl::trialTokenValidator() {
+  return &trial_token_validator_;
 }
 
 WebThemeEngine* BlinkPlatformImpl::themeEngine() {

@@ -95,8 +95,8 @@ def attribute_context(interface, attribute):
         includes.add('bindings/core/v8/V8HiddenValue.h')
 
     if 'APIExperimentEnabled' in extended_attributes:
-        includes.add('core/experiments/ExperimentalFeatures.h')
         includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('core/origin_trials/OriginTrials.h')
 
     context = {
         'access_control_list': access_control_list(interface, attribute),

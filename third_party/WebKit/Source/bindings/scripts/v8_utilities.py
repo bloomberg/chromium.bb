@@ -387,7 +387,7 @@ def api_experiment_enabled_function(definition_or_member):
     feature_name = runtime_feature_name(definition_or_member)
     if not feature_name or not experiment_name:
         return
-    return 'ExperimentalFeatures::%sEnabled' % uncapitalize(feature_name)
+    return 'OriginTrials::%sEnabled' % uncapitalize(feature_name)
 
 
 # [RuntimeEnabled]
@@ -403,8 +403,8 @@ def runtime_enabled_function_name(definition_or_member):
     # If an API experiment is on the method/attribute, it overrides the runtime
     # enabled status. For now, we are unconditionally installing experimental
     # attributes/methods, so we are acting as though the runtime enabled
-    # function doesn't exist. (It is checked in the generated
-    # ExperimentalFeatures function, instead)
+    # function doesn't exist. (It is checked in the generated OriginTrials
+    # function, instead)
     experiment_name = api_experiment_name(definition_or_member)
     if not feature_name or experiment_name:
         return

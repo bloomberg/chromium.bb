@@ -367,9 +367,9 @@ source_set("core_generated") {
     "$blink_core_output_dir/XLinkNames.cpp",
     "$blink_core_output_dir/XMLNSNames.cpp",
     "$blink_core_output_dir/XMLNames.cpp",
-    "$blink_core_output_dir/experiments/ExperimentalFeatures.cpp",
-    "$blink_core_output_dir/experiments/ExperimentalFeatures.h",
     "$blink_core_output_dir/fetch/FetchInitiatorTypeNames.cpp",
+    "$blink_core_output_dir/origin_trials/OriginTrials.cpp",
+    "$blink_core_output_dir/origin_trials/OriginTrials.h",
 
     # Generated from HTMLEntityNames.in
     "$blink_core_output_dir/HTMLEntityTable.cpp",
@@ -578,7 +578,6 @@ group("make_core_generated") {
     ":make_core_generated_event_names",
     ":make_core_generated_event_target_names",
     ":make_core_generated_event_type_names",
-    ":make_core_generated_experimental_features",
     ":make_core_generated_fetch_initiator_type_names",
     ":make_core_generated_html_element_factory",
     ":make_core_generated_html_element_lookup_trie",
@@ -591,6 +590,7 @@ group("make_core_generated") {
     ":make_core_generated_media_feature_names",
     ":make_core_generated_media_features",
     ":make_core_generated_media_type_names",
+    ":make_core_generated_origin_trials",
     ":make_core_generated_private_script",
     ":make_core_generated_private_script_for_testing",
     ":make_core_generated_style_builder",
@@ -987,25 +987,25 @@ action("make_core_generated_html_element_lookup_trie") {
   deps = make_core_generated_deps
 }
 
-# "ExperimentalFeatures" action in make_core_generated from GYP.
-action("make_core_generated_experimental_features") {
-  script = "../build/scripts/make_experimental_features.py"
+# "OriginTrials" action in make_core_generated from GYP.
+action("make_core_generated_origin_trials") {
+  script = "../build/scripts/make_origin_trials.py"
 
   inputs = scripts_for_in_files + [
-             "../build/scripts/make_experimental_features.py",
+             "../build/scripts/make_origin_trials.py",
              "../platform/RuntimeEnabledFeatures.in",
-             "../build/scripts/templates/ExperimentalFeatures.cpp.tmpl",
-             "../build/scripts/templates/ExperimentalFeatures.h.tmpl",
+             "../build/scripts/templates/OriginTrials.cpp.tmpl",
+             "../build/scripts/templates/OriginTrials.h.tmpl",
            ]
   outputs = [
-    "$blink_core_output_dir/experiments/ExperimentalFeatures.cpp",
-    "$blink_core_output_dir/experiments/ExperimentalFeatures.h",
+    "$blink_core_output_dir/origin_trials/OriginTrials.cpp",
+    "$blink_core_output_dir/origin_trials/OriginTrials.h",
   ]
 
   args = [
     rebase_path("../platform/RuntimeEnabledFeatures.in", root_build_dir),
     "--output_dir",
-    "$rel_blink_core_gen_dir/experiments",
+    "$rel_blink_core_gen_dir/origin_trials",
   ]
 }
 

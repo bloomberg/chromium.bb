@@ -20,11 +20,10 @@
 // condition=ENABLE_NAME is used for wrapping features in compile-time
 // #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
 //
-// api_name=API_NAME is used to integrate the feature with the experimental framework, so that the feature can be
-// enabled at runtime on a per-page basis through a signed API key for the corresponding API name.
-// Declaring the api_name will cause a static method to be generated in
-// ExperimentalFeatures.h/cpp. This static method allows the feature
-// implementation to check if it is enabled for the current context.
+// origin_trial_feature_name=FEATURE_NAME is used to integrate the feature with the experimental framework, so that the
+// feature can be enabled at runtime on a per-page basis through a signed token for the corresponding feature name.
+// Declaring the origin_trial_feature_name will cause a static method to be generated in OriginTrials.h/cpp. This static
+// method allows the feature implementation to check if it is enabled for the current context.
 
 AppBanner status=stable
 AlwaysUseComplexText status=stable
@@ -82,7 +81,7 @@ ExperimentalFramework status=test
 // The sample API is used in both unit and layout tests for the Experimental
 // Framework. Do not change this flag to stable, as it exists solely to generate
 // code used by the sample API implementation.
-ExperimentalFrameworkSampleAPI api_name=Frobulate
+ExperimentalFrameworkSampleAPI origin_trial_feature_name=Frobulate
 ExperimentalV8Extras status=experimental
 FastMobileScrolling
 FileAPIBlobClose status=experimental

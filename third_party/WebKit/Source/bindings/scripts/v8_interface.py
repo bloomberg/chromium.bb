@@ -163,8 +163,8 @@ def interface_context(interface):
     v8_class_name_or_partial = v8_utilities.v8_class_name_or_partial(interface)
 
     if 'APIExperimentEnabled' in extended_attributes:
-        includes.add('core/experiments/ExperimentalFeatures.h')
         includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('core/origin_trials/OriginTrials.h')
 
     context = {
         'api_experiment_name': v8_utilities.api_experiment_name(interface),
@@ -612,8 +612,8 @@ def constant_context(constant, interface):
     extended_attributes = constant.extended_attributes
 
     if 'APIExperimentEnabled' in extended_attributes:
-        includes.add('core/experiments/ExperimentalFeatures.h')
         includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('core/origin_trials/OriginTrials.h')
 
     return {
         'api_experiment_enabled': v8_utilities.api_experiment_enabled_function(constant),  # [APIExperimentEnabled]

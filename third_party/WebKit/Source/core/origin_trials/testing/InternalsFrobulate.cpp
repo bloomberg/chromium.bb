@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/experiments/testing/InternalsFrobulate.h"
+#include "core/origin_trials/testing/InternalsFrobulate.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/experiments/ExperimentalFeatures.h"
+#include "core/origin_trials/OriginTrials.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ namespace blink {
 bool InternalsFrobulate::frobulate(ScriptState* scriptState, Internals& internals, ExceptionState& exceptionState)
 {
     String errorMessage;
-    if (!ExperimentalFeatures::experimentalFrameworkSampleAPIEnabled(scriptState->executionContext(), errorMessage)) {
+    if (!OriginTrials::experimentalFrameworkSampleAPIEnabled(scriptState->executionContext(), errorMessage)) {
         exceptionState.throwDOMException(NotSupportedError, errorMessage);
         return false;
     }
