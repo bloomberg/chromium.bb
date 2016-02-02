@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/shell/fetcher/url_resolver.h"
@@ -25,6 +26,32 @@ class ContentHandlerConnection;
 class Fetcher;
 class Identity;
 
+// Static information about an application package known to the PackageManager.
+struct ApplicationInfo {
+  ApplicationInfo();
+  ~ApplicationInfo();
+
+  std::string url;
+  std::string name;
+  CapabilityFilter base_filter;
+};
+
+// Implemented by an object that provides storage for the application catalog
+// (e.g. in Chrome, preferences). The PackageManagerImpl is the canonical owner
+// of the contents of the store, so no one else must modify its contents.
+class ApplicationCatalogStore {
+ public:
+  // Called during initialization to construct the PackageManagerImpl's catalog.
+  virtual void GetStore(base::ListValue** store) = 0;
+
+  // Write the catalog to the store. Called when the PackageManagerImpl learns
+  // of a newly encountered application.
+  virtual void UpdateStore(scoped_ptr<base::ListValue> store) = 0;
+
+ protected:
+  virtual ~ApplicationCatalogStore();
+};
+
 // This is the default implementation of PackageManager. It loads http/s urls
 // off the network as well as providing special handling for mojo: and about:
 // urls.
@@ -36,7 +63,8 @@ class PackageManagerImpl : public PackageManager {
   // load. This can be null only in tests where application loading is handled
   // by custom ApplicationLoader implementations.
   PackageManagerImpl(const base::FilePath& shell_file_root,
-                     base::TaskRunner* task_runner);
+                     base::TaskRunner* task_runner,
+                     ApplicationCatalogStore* catalog_store);
   ~PackageManagerImpl() override;
 
   // Register a content handler to handle content of |mime_type|.
@@ -71,6 +99,8 @@ class PackageManagerImpl : public PackageManager {
       const GURL& target_url,
       const CapabilityFilter& target_filter,
       InterfaceRequest<Application>* application_request) override;
+  bool IsURLInCatalog(const std::string& url) const override;
+  std::string GetApplicationName(const std::string& url) const override;
 
   GURL ResolveURL(const GURL& url);
   bool ShouldHandleWithContentHandler(
@@ -89,6 +119,21 @@ class PackageManagerImpl : public PackageManager {
   void OnContentHandlerConnectionClosed(
       ContentHandlerConnection* content_handler);
 
+  // If |url| is not in the catalog, attempts to load a manifest for it.
+  void EnsureURLInCatalog(const GURL& url);
+
+  // Populate/serialize the catalog from/to the supplied store.
+  void DeserializeCatalog();
+  void SerializeCatalog();
+
+  // Construct a catalog entry from |dictionary|.
+  void DeserializeApplication(const base::DictionaryValue* dictionary);
+
+  // Reads a manifest in the blocking pool and returns a base::Value with its
+  // contents via OnReadManifest().
+  scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path);
+  void OnReadManifest(scoped_ptr<base::Value> manifest);
+
   ApplicationManager* application_manager_;
   scoped_ptr<URLResolver> url_resolver_;
   const bool disable_cache_;
@@ -101,6 +146,9 @@ class PackageManagerImpl : public PackageManager {
   uint32_t content_handler_id_counter_;
   base::TaskRunner* task_runner_;
   base::FilePath shell_file_root_;
+
+  ApplicationCatalogStore* catalog_store_;
+  std::map<std::string, ApplicationInfo> catalog_;
 
   DISALLOW_COPY_AND_ASSIGN(PackageManagerImpl);
 };

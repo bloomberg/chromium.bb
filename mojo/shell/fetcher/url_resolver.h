@@ -25,6 +25,10 @@ class URLResolver {
   // Resolve the given "mojo:" URL to the URL that should be used to fetch the
   // code for the corresponding Mojo App.
   GURL ResolveMojoURL(const GURL& mojo_url) const;
+  // Resolve the given "mojo:" URL to the URL that should be used to fetch the
+  // application manifest for the corresponding Mojo App. Returns an empty url
+  // if no manifest can be resolved (e.g. for non-Mojo application URLs).
+  GURL ResolveMojoManifest(const GURL& mojo_url) const;
 
  private:
   GURL mojo_base_url_;

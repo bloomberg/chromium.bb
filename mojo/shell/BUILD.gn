@@ -132,6 +132,7 @@ mojo_native_application("apptests") {
   sources = [
     "application_manager_apptest.cc",
   ]
+  manifest = [ "application_manager_apptest_manifest.json" ]
 
   deps = [
     ":test_bindings",
@@ -158,6 +159,7 @@ executable("application_manager_apptest_driver") {
   ]
 
   deps = [
+    ":copy_application_manager_apptest_driver_manifest",
     ":test_bindings",
     "//base",
     "//base:base_static",
@@ -170,6 +172,15 @@ executable("application_manager_apptest_driver") {
     "//mojo/shell/runner/child:test_native_main",
     "//mojo/shell/runner/common",
     "//third_party/mojo/src/mojo/edk/system",
+  ]
+}
+
+copy("copy_application_manager_apptest_driver_manifest") {
+  sources = [
+    "application_manager_apptest_driver_manifest.json",
+  ]
+  outputs = [
+    "${root_out_dir}/{{source_file_part}}",
   ]
 }
 

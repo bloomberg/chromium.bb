@@ -114,6 +114,8 @@ bool ApplicationManager::ConnectToRunningApplication(
   if (!instance)
     return false;
 
+  // TODO(beng): CHECK() that the target URL is already in the application
+  //             catalog.
   instance->ConnectToClient(std::move(*params));
   return true;
 }
@@ -328,6 +330,8 @@ mojom::ApplicationInfoPtr ApplicationManager::CreateApplicationInfoForInstance(
   info->id = instance->id();
   info->url = instance->identity().url().spec();
   info->qualifier = instance->identity().qualifier();
+  info->name =
+      package_manager_->GetApplicationName(instance->identity().url().spec());
   if (instance->identity().url().spec() == "mojo://shell/")
     info->pid = base::Process::Current().Pid();
   else

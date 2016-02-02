@@ -11,6 +11,7 @@ struct ApplicationInfo {
   string url;
   string qualifier;
   uint32 pid;
+  string name;
 };
 
 // Implemented by an application that wishes to be informed when the list of

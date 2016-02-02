@@ -13,6 +13,7 @@ mojo_native_application("browser_driver") {
     "browser_driver_application_delegate.h",
     "main.cc",
   ]
+  manifest = [ "manifest.json" ]
 
   deps = [
     "//base",

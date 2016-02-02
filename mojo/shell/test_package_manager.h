@@ -31,6 +31,8 @@ class TestPackageManager : public PackageManager {
       const GURL& target_url,
       const CapabilityFilter& target_filter,
       InterfaceRequest<Application>* application_request) override;
+  bool IsURLInCatalog(const std::string& url) const override;
+  std::string GetApplicationName(const std::string& url) const override;
 
   DISALLOW_COPY_AND_ASSIGN(TestPackageManager);
 };

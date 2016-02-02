@@ -11,6 +11,8 @@ mojo_native_application("wallpaper") {
     "wallpaper.cc",
   ]
 
+  manifest = [ "manifest.json" ]
+
   deps = [
     "//base",
     "//components/filesystem/public/cpp/prefs",

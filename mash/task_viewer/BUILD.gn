@@ -13,6 +13,7 @@ mojo_native_application("task_viewer") {
     "task_viewer_application_delegate.cc",
     "task_viewer_application_delegate.h",
   ]
+  manifest = [ "manifest.json" ]
 
   deps = [
     "//base",

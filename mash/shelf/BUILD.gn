@@ -28,6 +28,7 @@ mojo_native_application("shelf") {
     "shelf_view.cc",
     "shelf_view.h",
   ]
+  manifest = [ "manifest.json" ]
 
   deps = [
     "//base",

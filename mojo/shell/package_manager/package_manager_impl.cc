@@ -9,6 +9,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/json/json_file_value_serializer.h"
+#include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/values.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher/about_fetcher.h"
@@ -21,25 +26,80 @@
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"
+#include "net/base/filename_util.h"
 #include "url/gurl.h"
 
 namespace mojo {
 namespace shell {
+namespace {
+
+CapabilityFilter BuildCapabilityFilterFromDictionary(
+    const base::DictionaryValue& value) {
+  CapabilityFilter filter;
+  base::DictionaryValue::Iterator it(value);
+  for (; !it.IsAtEnd(); it.Advance()) {
+    const base::ListValue* values = nullptr;
+    CHECK(it.value().GetAsList(&values));
+    AllowedInterfaces interfaces;
+    for (auto i = values->begin(); i != values->end(); ++i) {
+      std::string iface_name;
+      const base::Value* v = *i;
+      CHECK(v->GetAsString(&iface_name));
+      interfaces.insert(iface_name);
+    }
+    filter[it.key()] = interfaces;
+  }
+  return filter;
+}
+
+ApplicationInfo BuildApplicationInfoFromDictionary(
+    const base::DictionaryValue& value) {
+  ApplicationInfo info;
+  CHECK(value.GetString("url", &info.url));
+  CHECK(value.GetString("name", &info.name));
+  const base::DictionaryValue* capabilities = nullptr;
+  CHECK(value.GetDictionary("capabilities", &capabilities));
+  info.base_filter = BuildCapabilityFilterFromDictionary(*capabilities);
+  return info;
+}
+
+void SerializeEntry(const ApplicationInfo& entry,
+                    base::DictionaryValue** value) {
+  *value = new base::DictionaryValue;
+  (*value)->SetString("url", entry.url);
+  (*value)->SetString("name", entry.name);
+  base::DictionaryValue* capabilities = new base::DictionaryValue;
+  for (const auto& pair : entry.base_filter) {
+    scoped_ptr<base::ListValue> interfaces(new base::ListValue);
+    for (const auto& iface_name : pair.second)
+      interfaces->AppendString(iface_name);
+    capabilities->Set(pair.first, std::move(interfaces));
+  }
+  (*value)->Set("capabilities", make_scoped_ptr(capabilities));
+}
+
+}
+
+ApplicationInfo::ApplicationInfo() {}
+ApplicationInfo::~ApplicationInfo() {}
 
 PackageManagerImpl::PackageManagerImpl(
     const base::FilePath& shell_file_root,
-    base::TaskRunner* task_runner)
+    base::TaskRunner* task_runner,
+    ApplicationCatalogStore* catalog_store)
     : application_manager_(nullptr),
       disable_cache_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableCache)),
       content_handler_id_counter_(0u),
       task_runner_(task_runner),
-      shell_file_root_(shell_file_root) {
+      shell_file_root_(shell_file_root),
+      catalog_store_(catalog_store) {
   if (!shell_file_root.empty()) {
     GURL mojo_root_file_url =
         util::FilePathToFileURL(shell_file_root).Resolve(std::string());
     url_resolver_.reset(new URLResolver(mojo_root_file_url));
   }
+  DeserializeCatalog();
 }
 
 PackageManagerImpl::~PackageManagerImpl() {
@@ -96,6 +156,10 @@ void PackageManagerImpl::FetchRequest(
     new LocalFetcher(network_service_.get(), resolved_url,
                      GetBaseURLAndQuery(resolved_url, nullptr),
                      shell_file_root_, loader_callback);
+
+    // TODO(beng): Determine if this is in the right place, and block
+    //             establishing the connection on receiving a complete manifest.
+    EnsureURLInCatalog(url);
     return;
   }
 
@@ -130,6 +194,16 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
     return connection->id();
   }
   return Shell::kInvalidApplicationID;
+}
+
+bool PackageManagerImpl::IsURLInCatalog(const std::string& url) const {
+  return catalog_.find(url) != catalog_.end();
+}
+
+std::string PackageManagerImpl::GetApplicationName(
+    const std::string& url) const {
+  auto it = catalog_.find(url);
+  return it != catalog_.end() ? it->second.name : url;
 }
 
 GURL PackageManagerImpl::ResolveURL(const GURL& url) {
@@ -221,6 +295,80 @@ void PackageManagerImpl::OnContentHandlerConnectionClosed(
   auto it = identity_to_content_handler_.find(connection->identity());
   DCHECK(it != identity_to_content_handler_.end());
   identity_to_content_handler_.erase(it);
+}
+
+void PackageManagerImpl::EnsureURLInCatalog(const GURL& url) {
+  if (IsURLInCatalog(url.spec()))
+    return;
+
+  GURL manifest_url = url_resolver_->ResolveMojoManifest(url);
+  if (manifest_url.is_empty())
+    return;
+  base::FilePath manifest_path;
+  CHECK(net::FileURLToFilePath(manifest_url, &manifest_path));
+  base::PostTaskAndReplyWithResult(
+      task_runner_, FROM_HERE,
+      base::Bind(&PackageManagerImpl::ReadManifest, base::Unretained(this),
+                 manifest_path),
+      base::Bind(&PackageManagerImpl::OnReadManifest,
+                 base::Unretained(this)));
+}
+
+void PackageManagerImpl::DeserializeCatalog() {
+  ApplicationInfo info;
+  info.url = "mojo://shell/";
+  info.name = "Mojo Shell";
+  catalog_[info.url] = info;
+
+  if (!catalog_store_)
+    return;
+  base::ListValue* catalog = nullptr;
+  catalog_store_->GetStore(&catalog);
+  CHECK(catalog);
+  for (auto it = catalog->begin(); it != catalog->end(); ++it) {
+    const base::DictionaryValue* dictionary = nullptr;
+    const base::Value* v = *it;
+    CHECK(v->GetAsDictionary(&dictionary));
+    DeserializeApplication(dictionary);
+  }
+}
+
+void PackageManagerImpl::SerializeCatalog() {
+  scoped_ptr<base::ListValue> catalog(new base::ListValue);
+  for (const auto& info : catalog_) {
+    base::DictionaryValue* dictionary = nullptr;
+    SerializeEntry(info.second, &dictionary);
+    catalog->Append(make_scoped_ptr(dictionary));
+  }
+  if (catalog_store_)
+    catalog_store_->UpdateStore(std::move(catalog));
+}
+
+void PackageManagerImpl::DeserializeApplication(
+    const base::DictionaryValue* dictionary) {
+  ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
+  CHECK(catalog_.find(info.url) == catalog_.end());
+  catalog_[info.url] = info;
+}
+
+scoped_ptr<base::Value> PackageManagerImpl::ReadManifest(
+    const base::FilePath& manifest_path) {
+  JSONFileValueDeserializer deserializer(manifest_path);
+  int error = 0;
+  std::string message;
+  // TODO(beng): probably want to do more detailed error checking. This should
+  //             be done when figuring out if to unblock connection completion.
+  return deserializer.Deserialize(&error, &message);
+}
+
+void PackageManagerImpl::OnReadManifest(scoped_ptr<base::Value> manifest) {
+  if (!manifest)
+    return;
+
+  base::DictionaryValue* dictionary = nullptr;
+  CHECK(manifest->GetAsDictionary(&dictionary));
+  DeserializeApplication(dictionary);
+  SerializeCatalog();
 }
 
 }  // namespace shell

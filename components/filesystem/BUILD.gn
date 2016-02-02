@@ -35,6 +35,8 @@ mojo_native_application("filesystem") {
     "main.cc",
   ]
 
+  manifest = [ "manifest.json" ]
+
   deps = [
     ":lib",
     "//base",

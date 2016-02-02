@@ -9,6 +9,7 @@ import("//tools/grit/repack.gni")
 
 mojo_native_application("shell") {
   output_name = "mash_shell"
+  manifest = [ "manifest.json" ]
 
   sources = [
     "main.cc",

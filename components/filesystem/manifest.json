@@ -1,0 +1,5 @@
+{
+  "url": "mojo://filesystem/",
+  "name": "File System Service",
+  "capabilities": { }
+}

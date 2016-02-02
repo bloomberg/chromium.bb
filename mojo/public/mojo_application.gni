@@ -39,6 +39,20 @@ template("mojo_native_application") {
     }
     mojo_deps += [ ":$copy_step_name" ]
   }
+  if (defined(invoker.manifest)) {
+    copy_step_name = "${base_target_name}__copy_manifest"
+    copy(copy_step_name) {
+      sources = invoker.manifest
+      outputs = [
+        "${root_out_dir}/${base_target_name}/manifest.json",
+      ]
+      if (defined(invoker.testonly)) {
+        testonly = invoker.testonly
+      }
+      deps = mojo_deps
+    }
+    mojo_deps += [ ":$copy_step_name" ]
+  }
 
   output = base_target_name + ".mojo"
   library_target_name = base_target_name + "_library"

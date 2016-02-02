@@ -1,0 +1,5 @@
+{
+  "url": "mojo://mash_shell/",
+  "name": "System Service Controller",
+  "capabilities": { }
+}

@@ -79,12 +79,15 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
  protected:
   struct ApplicationInfo {
-    ApplicationInfo(uint32_t id, const std::string& url)
-        : id(id), url(url), pid(base::kNullProcessId) {}
+    ApplicationInfo(uint32_t id,
+                    const std::string& url,
+                    const std::string& name)
+        : id(id), url(url), pid(base::kNullProcessId), name(name) {}
 
     uint32_t id;
     std::string url;
     base::ProcessId pid;
+    std::string name;
   };
 
   void AddListenerAndWaitForApplications() {
@@ -118,7 +121,8 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
       Array<mojom::ApplicationInfoPtr> applications) override {}
   void ApplicationInstanceCreated(
       mojom::ApplicationInfoPtr application) override {
-    applications_.push_back(ApplicationInfo(application->id, application->url));
+    applications_.push_back(ApplicationInfo(application->id, application->url,
+                                            application->name));
   }
   void ApplicationInstanceDestroyed(uint32_t id) override {
     for (auto it = applications_.begin(); it != applications_.end(); ++it) {

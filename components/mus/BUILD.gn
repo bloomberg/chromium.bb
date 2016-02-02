@@ -30,6 +30,7 @@ if (is_android) {
     sources = [
       "main.cc",
     ]
+    manifest = [ "manifest.json" ]
 
     deps = [
       ":lib",

@@ -11,6 +11,8 @@ mojo_native_application("tracing") {
 
   avoid_runner_cycle = true
 
+  manifest = [ "manifest.json" ]
+
   deps = [
     ":lib",
     "//mojo/public/cpp/system",

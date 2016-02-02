@@ -202,7 +202,7 @@ MojoShellContext::MojoShellContext() {
   // Construct with an empty filepath since mojo: urls can't be registered now
   // the url scheme registry is locked.
   scoped_ptr<mojo::shell::PackageManagerImpl> package_manager(
-      new mojo::shell::PackageManagerImpl(base::FilePath(), nullptr));
+      new mojo::shell::PackageManagerImpl(base::FilePath(), nullptr, nullptr));
   application_manager_.reset(
       new mojo::shell::ApplicationManager(std::move(package_manager)));
 

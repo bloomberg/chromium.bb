@@ -63,7 +63,7 @@ class TestFetcher : public Fetcher {
 class TestPackageManager : public PackageManagerImpl {
  public:
   TestPackageManager(const base::FilePath& package_path)
-      : PackageManagerImpl(package_path, nullptr) {}
+      : PackageManagerImpl(package_path, nullptr, nullptr) {}
   ~TestPackageManager() override {}
 
  private:

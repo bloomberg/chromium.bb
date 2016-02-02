@@ -215,8 +215,8 @@ bool Context::Init(const base::FilePath& shell_file_root) {
                            task_runners_->io_runner(),
                            embedder::ScopedPlatformHandle());
 
-  package_manager_ =
-      new PackageManagerImpl(shell_file_root, task_runners_->blocking_pool());
+  package_manager_ = new PackageManagerImpl(
+      shell_file_root, task_runners_->blocking_pool(), nullptr);
   InitContentHandlers(package_manager_, command_line);
 
   RegisterLocalAliases(package_manager_);

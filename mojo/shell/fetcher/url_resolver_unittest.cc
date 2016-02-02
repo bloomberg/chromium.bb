@@ -29,6 +29,22 @@ TEST_F(URLResolverTest, TestQueryForBaseHttpURL) {
   EXPECT_EQ("http://127.0.0.1:1234/foo/foo.mojo?a=b", mapped_url.spec());
 }
 
+TEST_F(URLResolverTest, TestManifest) {
+  URLResolver resolver(GURL("file:///base"));
+  {
+    GURL mapped_url = resolver.ResolveMojoManifest(GURL("mojo:foo"));
+    EXPECT_EQ("file:///base/foo/manifest.json", mapped_url.spec());
+  }
+  {
+    GURL mapped_url = resolver.ResolveMojoManifest(GURL("exe:foo"));
+    EXPECT_EQ("file:///base/foo_manifest.json", mapped_url.spec());
+  }
+  {
+    GURL mapped_url = resolver.ResolveMojoManifest(GURL("http://localhost/"));
+    EXPECT_TRUE(mapped_url.is_empty());
+  }
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace shell

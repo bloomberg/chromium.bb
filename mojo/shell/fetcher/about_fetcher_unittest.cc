@@ -131,7 +131,7 @@ class AboutFetcherTest : public testing::Test {
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
     scoped_ptr<PackageManagerImpl> package_manager(
-      new PackageManagerImpl(shell_dir, nullptr));
+      new PackageManagerImpl(shell_dir, nullptr, nullptr));
     package_manager->RegisterContentHandler(
         "text/html", GURL("test:html_content_handler"));
     application_manager_.reset(

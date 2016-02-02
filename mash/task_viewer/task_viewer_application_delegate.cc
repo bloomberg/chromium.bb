@@ -69,9 +69,13 @@ class TaskViewer : public views::WidgetDelegateView,
     uint32_t id;
     std::string url;
     uint32_t pid;
+    std::string name;
 
-    ApplicationInfo(uint32_t id, const std::string url, base::ProcessId pid)
-        : id(id), url(url), pid(pid) {}
+    ApplicationInfo(uint32_t id,
+                    const std::string& url,
+                    base::ProcessId pid, const
+                    std::string& name)
+        : id(id), url(url), pid(pid), name(name) {}
   };
 
   // Overridden from views::WidgetDelegate:
@@ -103,8 +107,11 @@ class TaskViewer : public views::WidgetDelegateView,
     switch(column_id) {
     case 0:
       DCHECK(row < static_cast<int>(applications_.size()));
-      return base::UTF8ToUTF16(applications_[row]->url);
+      return base::UTF8ToUTF16(applications_[row]->name);
     case 1:
+      DCHECK(row < static_cast<int>(applications_.size()));
+      return base::UTF8ToUTF16(applications_[row]->url);
+    case 2:
       DCHECK(row < static_cast<int>(applications_.size()));
       return base::IntToString16(applications_[row]->pid);
     default:
@@ -136,14 +143,15 @@ class TaskViewer : public views::WidgetDelegateView,
       applications_.push_back(
           make_scoped_ptr(new ApplicationInfo(applications[i]->id,
                                               applications[i]->url,
-                                              applications[i]->pid)));
+                                              applications[i]->pid,
+                                              applications[i]->name)));
     }
   }
   void ApplicationInstanceCreated(ApplicationInfoPtr application) override {
     DCHECK(!ContainsId(application->id));
     applications_.push_back(make_scoped_ptr(
         new ApplicationInfo(application->id, application->url,
-                            application->pid)));
+                            application->pid, application->name)));
     observer_->OnItemsAdded(static_cast<int>(applications_.size()), 1);
   }
   void ApplicationInstanceDestroyed(uint32_t id) override {
@@ -179,17 +187,26 @@ class TaskViewer : public views::WidgetDelegateView,
   static std::vector<ui::TableColumn> GetColumns() {
     std::vector<ui::TableColumn> columns;
 
+    ui::TableColumn name_column;
+    name_column.id = 0;
+    // TODO(beng): use resources.
+    name_column.title = base::ASCIIToUTF16("Name");
+    name_column.width = -1;
+    name_column.percent = 0.4f;
+    name_column.sortable = true;
+    columns.push_back(name_column);
+
     ui::TableColumn url_column;
-    url_column.id = 0;
+    url_column.id = 1;
     // TODO(beng): use resources.
     url_column.title = base::ASCIIToUTF16("URL");
     url_column.width = -1;
-    url_column.percent = 0.8f;
+    url_column.percent = 0.4f;
     url_column.sortable = true;
     columns.push_back(url_column);
 
     ui::TableColumn pid_column;
-    pid_column.id = 1;
+    pid_column.id = 2;
     // TODO(beng): use resources.
     pid_column.title  = base::ASCIIToUTF16("PID");
     pid_column.width = 50;

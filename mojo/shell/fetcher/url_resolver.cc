@@ -47,5 +47,18 @@ GURL URLResolver::ResolveMojoURL(const GURL& mojo_url) const {
   }
 }
 
+GURL URLResolver::ResolveMojoManifest(const GURL& mojo_url) const {
+  // TODO(beng): think more about how this should be done for exe targets.
+  if (mojo_url.SchemeIs("mojo")) {
+    std::string host = GetBaseURLAndQuery(mojo_url, nullptr).host();
+    return mojo_base_url_.Resolve(host +
+                                  "/manifest.json");
+  } else if (mojo_url.SchemeIs("exe")) {
+    return mojo_base_url_.Resolve(GetBaseURLAndQuery(mojo_url, nullptr).host() +
+                                  "_manifest.json");
+  }
+  return GURL();
+}
+
 }  // namespace shell
 }  // namespace mojo

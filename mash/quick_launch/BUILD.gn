@@ -11,6 +11,7 @@ mojo_native_application("quick_launch") {
   sources = [
     "quick_launch.cc",
   ]
+  manifest = [ "manifest.json" ]
 
   deps = [
     "//base",

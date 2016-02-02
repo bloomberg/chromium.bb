@@ -53,6 +53,13 @@ class PackageManager {
       const GURL& target_url,
       const CapabilityFilter& target_filter,
       InterfaceRequest<Application>* application_request) = 0;
+
+  // Returns true if a manifest for |url| exists within the PackageManager's
+  // application catalog.
+  virtual bool IsURLInCatalog(const std::string& url) const = 0;
+
+  // Returns the name for the application at |url| from its manifest.
+  virtual std::string GetApplicationName(const std::string& url) const = 0;
 };
 
 }  // namespace shell

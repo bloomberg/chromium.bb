@@ -91,6 +91,7 @@ source_set("lib") {
 
 mojo_native_application("wm") {
   output_name = "desktop_wm"
+  manifest = [ "manifest.json" ]
 
   sources = [
     "main.cc",

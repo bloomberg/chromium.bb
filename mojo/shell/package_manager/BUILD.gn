@@ -16,6 +16,7 @@ source_set("package_manager") {
     "//mojo/shell",
     "//mojo/shell/fetcher",
     "//mojo/util:filename_util",
+    "//net",
   ]
 }
 

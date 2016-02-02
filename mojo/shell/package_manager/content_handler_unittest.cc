@@ -134,7 +134,7 @@ class TestApplicationLoader : public ApplicationLoader,
 class TestPackageManagerImpl : public PackageManagerImpl {
  public:
   explicit TestPackageManagerImpl(const base::FilePath& package_path)
-      : PackageManagerImpl(package_path, nullptr),
+      : PackageManagerImpl(package_path, nullptr, nullptr),
         mime_type_(kTestMimeType) {}
   ~TestPackageManagerImpl() override {}
 

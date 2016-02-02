@@ -25,6 +25,11 @@ uint32_t TestPackageManager::HandleWithContentHandler(
     InterfaceRequest<Application>* application_request) {
   return 0;
 }
+bool TestPackageManager::IsURLInCatalog(const std::string& url) const {
+  return true;
+}
+std::string TestPackageManager::GetApplicationName(
+    const std::string& url) const { return url; }
 
 }  // namespace test
 }  // namespace shell
