@@ -168,9 +168,9 @@ static void scale1d_c(const unsigned char *source, int source_step,
   (void)source_length;
 
   /* These asserts are needed if there are boundary issues... */
-  /*assert ( dest_scale > source_scale );*/
-  /*assert ( (source_length-1) * dest_scale >= (dest_length-1) * source_scale
-   * );*/
+  /* assert ( dest_scale > source_scale );*/
+  /* assert ( (source_length - 1) * dest_scale >= (dest_length - 1) *
+   * source_scale);*/
 
   for (i = 0; i < dest_length * dest_step; i += dest_step) {
     dest[i] = (char)((left_modifier * left_pixel +
