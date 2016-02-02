@@ -1284,25 +1284,29 @@ emit_structs(struct wl_list *message_list, struct interface *interface, enum sid
 static void
 format_copyright(const char *copyright)
 {
-	int bol = 1, start = 0, i;
+	int bol = 1, start = 0, i, length;
+	bool comment_started = false;
 
-	for (i = 0; copyright[i]; i++) {
+	length = strlen(copyright);
+	for (i = 0; i <= length; i++) {
 		if (bol && (copyright[i] == ' ' || copyright[i] == '\t')) {
 			continue;
 		} else if (bol) {
 			bol = 0;
 			start = i;
 		}
-
-		if (copyright[i] == '\n' || copyright[i] == '\0') {
+		if (copyright[i] == '\n' ||
+		    (copyright[i] == '\0' && !(start == i))) {
 			printf("%s%s%.*s\n",
-			       i == 0 ? "/*" : " *",
+			       comment_started ? " *" : "/*",
 			       i > start ? " " : "",
 			       i - start, copyright + start);
 			bol = 1;
+			comment_started = true;
 		}
 	}
-	printf(" */\n\n");
+	if (comment_started)
+		printf(" */\n\n");
 }
 
 static void
