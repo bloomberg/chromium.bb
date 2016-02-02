@@ -60,7 +60,7 @@ class CONTENT_EXPORT SyntheticGestureController {
     ~GestureAndCallbackQueue();
     void Push(scoped_ptr<SyntheticGesture> gesture,
         const OnGestureCompleteCallback& callback) {
-      gestures_.push_back(gesture.release());
+      gestures_.push_back(std::move(gesture));
       callbacks_.push(callback);
     }
     void Pop() {

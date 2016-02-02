@@ -63,7 +63,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
     AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
     scoped_ptr<AudioBus> audio_bus =
         AudioBus::WrapMemory(params, buffer->audio);
-    audio_buses_.push_back(audio_bus.release());
+    audio_buses_.push_back(std::move(audio_bus));
     ptr += shared_memory_segment_size_;
   }
 }
@@ -252,7 +252,7 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
   scoped_ptr<AudioBus> audio_bus =
       AudioBus::Create(data->channels(), data->frames());
   data->CopyTo(audio_bus.get());
-  overflow_buses_.push_back(audio_bus.release());
+  overflow_buses_.push_back(std::move(audio_bus));
 
   DCHECK_LE(overflow_buses_.size(), static_cast<size_t>(kMaxOverflowBusesSize));
   DCHECK_EQ(overflow_params_.size(), overflow_buses_.size());
