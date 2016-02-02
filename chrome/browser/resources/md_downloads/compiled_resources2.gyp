@@ -24,9 +24,9 @@
     {
       'target_name': 'item',
       'dependencies': [
-        # TODO(dbeam): create compiled_resources2.gyp files for Polymer.
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-behaviors/compiled_resources2.gyp:paper-inky-focus-behavior-extracted',
         'constants',
         'action_service',
         'externs',
@@ -41,6 +41,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
         '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:command',
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-list/compiled_resources2.gyp:iron-list-extracted',
         'action_service',
         'item',
         'toolbar',

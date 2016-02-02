@@ -149,7 +149,8 @@ cr.define('downloads', function() {
     updateItem_: function(index, data) {
       this.set('items_.' + index, data);
       this.updateHideDates_(index, index);
-      this.$['downloads-list'].updateSizeForItem(index);
+      var list = /** @type {!IronListElement} */(this.$['downloads-list']);
+      list.updateSizeForItem(index);
     },
   });
 
