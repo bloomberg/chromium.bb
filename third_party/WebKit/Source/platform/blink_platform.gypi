@@ -7,8 +7,6 @@
       'AsyncFileSystemCallbacks.h',
       'CalculationValue.h',
       'CheckedInt.h',
-      'Clock.cpp',
-      'Clock.h',
       'ContentDecryptionModuleResult.h',
       'ContentSettingCallbacks.cpp',
       'ContentSettingCallbacks.h',
@@ -1000,7 +998,6 @@
       'win/HWndDC.h',
     ],
     'platform_test_files': [
-      'ClockTest.cpp',
       'DecimalTest.cpp',
       'DragImageTest.cpp',
       'JSONParserTest.cpp',
