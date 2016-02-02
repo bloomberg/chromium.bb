@@ -32,8 +32,12 @@ class SimpleLens(object):
 class LoadingModelTestCase(unittest.TestCase):
 
   def setUp(self):
+    self.old_lens = request_dependencies_lens.RequestDependencyLens
     request_dependencies_lens.RequestDependencyLens = SimpleLens
     self._next_request_id = 0
+
+  def tearDown(self):
+    request_dependencies_lens.RequestDependencyLens = self.old_lens
 
   def MakeParserRequest(self, url, source_url, start_time, end_time,
                         magic_content_type=False):

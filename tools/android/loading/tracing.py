@@ -43,14 +43,26 @@ class TracingTrack(devtools_monitor.Track):
 
     self._event_msec_index = None
     self._event_lists = None
+    self._base_msec = None
 
   def Handle(self, method, event):
     for e in event['params']['value']:
-      self._events.append(Event(e))
+      event = Event(e)
+      self._events.append(event)
+      if self._base_msec is None or event.start_msec < self._base_msec:
+        self._base_msec = event.start_msec
     # Just invalidate our indices rather than trying to be fancy and
     # incrementally update.
     self._event_msec_index = None
     self._event_lists = None
+
+  def GetFirstEventMillis(self):
+    """Find the canonical start time for this track.
+
+    Returns:
+      The millisecond timestamp of the first request.
+    """
+    return self._base_msec
 
   def GetEvents(self):
     return self._events
@@ -89,6 +101,13 @@ class TracingTrack(devtools_monitor.Track):
     events = [Event(e) for e in json_dict['events']]
     tracing_track = TracingTrack(None)
     tracing_track._events = events
+    tracing_track._base_msec = events[0].start_msec if events else 0
+    for e in events[1:]:
+      if e.type == 'M':
+        continue  # No timestamp for metadata events.
+      assert e.start_msec > 0
+      if e.start_msec < tracing_track._base_msec:
+        tracing_track._base_msec = e.start_msec
     return tracing_track
 
   def EventsEndingBetween(self, start_msec, end_msec):
@@ -129,7 +148,6 @@ class TracingTrack(devtools_monitor.Track):
     join and track the nesting of async, flow and other spanning events.
 
     Events such as instant and counter events that aren't indexable are skipped.
-
     """
     if self._event_msec_index is not None:
       return  # Already indexed.
@@ -185,6 +203,7 @@ class TracingTrack(devtools_monitor.Track):
           'N': self._ObjectCreated,
           'D': self._ObjectDestroyed,
           'X': self._Ignore,
+          'M': self._Ignore,
           None: self._Ignore,
           }
 

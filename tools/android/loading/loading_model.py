@@ -30,19 +30,21 @@ class ResourceGraph(object):
   Set parameters:
     cache_all: if true, assume zero loading time for all resources.
   """
-  def __init__(self, trace, content_lens=None):
+  def __init__(self, trace, content_lens=None, frame_lens=None):
     """Create from a LoadingTrace (or json of a trace).
 
     Args:
       trace: (LoadingTrace/JSON) Loading trace or JSON of a trace.
       content_lens: (ContentClassificationLens) Lens used to annotate the
                     nodes, or None.
+      frame_lens: (FrameLoadLens) Lens used to augment graph with load nodes.
     """
     if type(trace) == dict:
       trace = loading_trace.LoadingTrace.FromJsonDict(trace)
+    self._trace = trace
     self._content_lens = content_lens
+    self._frame_lens = frame_lens
     self._BuildDag(trace)
-    self._global_start = min([n.StartTime() for n in self._node_info])
     # Sort before splitting children so that we can correctly dectect if a
     # reparented child is actually a dependency for a child of its new parent.
     try:
@@ -112,15 +114,22 @@ class ResourceGraph(object):
     if node_filter is not None:
       self._node_filter = node_filter
 
-  def Nodes(self):
-    """Return iterable of all nodes via their _NodeInfos.
+  def Nodes(self, sort=False):
+    """Return iterable of all nodes via their NodeInfos.
+
+    Args:
+      sort: if true, return nodes in sorted order. This may prune additional
+        nodes from the unsorted list (eg, non-root, non-ad nodes reachable only
+        by ad nodes)
 
     Returns:
-      Iterable of node infos in arbitrary order.
+      Iterable of node infos.
+
     """
-    for n in self._node_info:
-      if self._node_filter(n.Node()):
-        yield n
+    if sort:
+      return (self._node_info[n.Index()]
+              for n in dag.TopologicalSort(self._nodes, self._node_filter))
+    return (n for n in self._node_info if self._node_filter(n.Node()))
 
   def EdgeCosts(self, node_filter=None):
     """Edge costs.
@@ -140,7 +149,7 @@ class ResourceGraph(object):
         continue
       for s in n.Node().Successors():
         if node_filter(s):
-          total += self._EdgeCost(n.Node(), s)
+          total += self.EdgeCost(n.Node(), s)
     return total
 
   def Intersect(self, other_nodes):
@@ -173,10 +182,10 @@ class ResourceGraph(object):
     for n in dag.TopologicalSort(self._nodes, self._node_filter):
       cost = 0
       if n.Predecessors():
-        cost = max([costs[p.Index()] + self._EdgeCost(p, n)
+        cost = max([costs[p.Index()] + self.EdgeCost(p, n)
                     for p in n.Predecessors()])
       if not self._cache_all:
-        cost += self._NodeCost(n)
+        cost += self.NodeCost(n)
       costs[n.Index()] = cost
     max_cost = max(costs)
     assert max_cost > 0  # Otherwise probably the filter went awry.
@@ -205,68 +214,11 @@ class ResourceGraph(object):
     node_info = self._node_info[node.Index()]
     return not (node_info.IsAd() or node_info.IsTracking())
 
-  def MakeGraphviz(self, output, highlight=None):
-    """Output a graphviz representation of our DAG.
-
-    Args:
-      output: a file-like output stream which recieves a graphviz dot.
-      highlight: a list of node items to emphasize. Any resource url which
-        contains any highlight text will be distinguished in the output.
-    """
-    output.write("""digraph dependencies {
-    rankdir = LR;
-    """)
-    orphans = set()
-    try:
-      sorted_nodes = dag.TopologicalSort(self._nodes,
-                                         node_filter=self._node_filter)
-    except AssertionError as exc:
-      sys.stderr.write('Bad topological sort: %s\n'
-                       'Writing children in order\n' % str(exc))
-      sorted_nodes = self._nodes
-    for n in sorted_nodes:
-      if not n.Successors() and not n.Predecessors():
-        orphans.add(n)
-    if orphans:
-      output.write("""subgraph cluster_orphans {
-  color=black;
-  label="Orphans";
-""")
-      for n in orphans:
-        output.write(self._GraphvizNode(n.Index(), highlight))
-      output.write('}\n')
-
-    output.write("""subgraph cluster_nodes {
-  color=invis;
-""")
-    for n in sorted_nodes:
-      if not n.Successors() and not n.Predecessors():
-        continue
-      output.write(self._GraphvizNode(n.Index(), highlight))
-
-    for n in sorted_nodes:
-      for s in n.Successors():
-        style = 'color = orange'
-        annotations = self._EdgeAnnotation(n, s)
-        if 'redirect' in annotations:
-          style = 'color = black'
-        elif 'parser' in annotations:
-          style = 'color = red'
-        elif 'stack' in annotations:
-          style = 'color = blue'
-        elif 'script_inferred' in annotations:
-          style = 'color = purple'
-        if 'timing' in annotations:
-          style += '; style=dashed'
-        arrow = '[%s; label="%s"]' % (style, self._EdgeCost(n, s))
-        output.write('%d -> %d %s;\n' % (n.Index(), s.Index(), arrow))
-    output.write('}\n}\n')
-
   def ResourceInfo(self):
     """Get resource info.
 
     Returns:
-      A list of _NodeInfo objects that describe the resources fetched.
+      A list of NodeInfo objects that describe the resources fetched.
     """
     return self._node_info
 
@@ -295,31 +247,45 @@ class ResourceGraph(object):
     assert len(visited) == len(self._nodes)
     return '\n'.join(output)
 
+  def NodeInfo(self, node):
+    """Return the node info for a graph node.
+
+    Args:
+      node: (int, dag.Node or NodeInfo) a node representation. An int is taken
+      to be the node's index.
+
+    Returns:
+      The NodeInfo instance corresponding to the node.
+    """
+    if type(node) is self._NodeInfo:
+      return node
+    elif type(node) is int:
+      return self._node_info[node]
+    return self._node_info[node.Index()]
+
+  def ShortName(self, node):
+    """Convenience function for redirecting to NodeInfo."""
+    return self.NodeInfo(node).ShortName()
+
+  def Url(self, node):
+    """Convenience function for redirecting to NodeInfo."""
+    return self.NodeInfo(node).Url()
+
+  def NodeCost(self, node):
+    """Convenience function for redirecting to NodeInfo."""
+    return self.NodeInfo(node).NodeCost()
+
+  def EdgeCost(self, parent, child):
+    """Convenience function for redirecting to NodeInfo."""
+    return self.NodeInfo(parent).EdgeCost(self.NodeInfo(child))
+
+  def EdgeAnnotation(self, parent, child):
+    """Convenience function for redirecting to NodeInfo."""
+    return self.NodeInfo(parent).EdgeAnnotation(self.NodeInfo(child))
+
   ##
   ## Internal items
   ##
-
-  _CONTENT_KIND_TO_COLOR = {
-      'application':     'blue',      # Scripts.
-      'font':            'grey70',
-      'image':           'orange',    # This probably catches gifs?
-      'video':           'hotpink1',
-      }
-
-  _CONTENT_TYPE_TO_COLOR = {
-      'html':            'red',
-      'css':             'green',
-      'script':          'blue',
-      'javascript':      'blue',
-      'json':            'purple',
-      'gif':             'grey',
-      'image':           'orange',
-      'jpeg':            'orange',
-      'png':             'orange',
-      'plain':           'brown3',
-      'octet-stream':    'brown3',
-      'other':           'white',
-      }
 
   # This resource type may induce a timing dependency. See _SplitChildrenByTime
   # for details.
@@ -342,19 +308,28 @@ class ResourceGraph(object):
 
       Args:
         node: The node to augment.
-        request: The request associated with this node.
+        request: The request associated with this node, or an (index, msec)
+          tuple.
       """
-      self._request = request
+      self._node = node
       self._is_ad = False
       self._is_tracking = False
-      self._node = node
       self._edge_costs = {}
       self._edge_annotations = {}
-      # All fields in timing are millis relative to request_time, which is epoch
-      # seconds.
-      self._node_cost = max(
-          [0] + [t for f, t in request.timing._asdict().iteritems()
-                 if f != 'request_time'])
+
+      if type(request) == tuple:
+        self._request = None
+        self._node_cost = 0
+        self._shortname = 'LOAD %s' % request[0]
+        self._start_time = request[1]
+      else:
+        self._shortname = None
+        self._start_time = None
+        self._request = request
+        # All fields in timing are millis relative to request_time.
+        self._node_cost = max(
+            [0] + [t for f, t in request.timing._asdict().iteritems()
+                   if f != 'request_time'])
 
     def __str__(self):
       return self.ShortName()
@@ -387,25 +362,31 @@ class ResourceGraph(object):
       return self._node_cost
 
     def EdgeCost(self, s):
-      return self._edge_costs[s]
+      return self._edge_costs.get(s, 0)
 
     def StartTime(self):
+      if self._start_time:
+        return self._start_time
       return self._request.timing.request_time * 1000
 
     def EndTime(self):
-      return self._request.timing.request_time * 1000 + self._node_cost
+      return self.StartTime() + self._node_cost
 
     def EdgeAnnotation(self, s):
       assert s.Node() in self.Node().Successors()
       return self._edge_annotations.get(s, [])
 
     def ContentType(self):
+      if self._request is None:
+        return 'synthetic'
       return self._request.GetContentType()
 
     def ShortName(self):
       """Returns either the hostname of the resource, or the filename,
       or the end of the path. Tries to include the domain as much as possible.
       """
+      if self._shortname:
+        return self._shortname
       parsed = urlparse.urlparse(self._request.url)
       path = parsed.path
       hostname = parsed.hostname if parsed.hostname else '?.?.?'
@@ -441,9 +422,9 @@ class ResourceGraph(object):
       old_parent.RemoveSuccessor(), etc.
 
       Args:
-        old_parent: the _NodeInfo of a current parent of self. We assert this
+        old_parent: the NodeInfo of a current parent of self. We assert this
           is actually a parent.
-        new_parent: the _NodeInfo of the new parent. We assert it is not already
+        new_parent: the NodeInfo of the new parent. We assert it is not already
           a parent.
       """
       assert old_parent.Node() in self.Node().Predecessors()
@@ -457,37 +438,16 @@ class ResourceGraph(object):
         new_parent.AddEdgeAnnotation(self, a)
 
     def __eq__(self, o):
-      return self.Node().Index() == o.Node().Index()
+      """Note this works whether o is a Node or a NodeInfo."""
+      return self.Index() == o.Index()
 
     def __hash__(self):
       return hash(self.Node().Index())
 
-  def _ShortName(self, node):
-    """Convenience function for redirecting Nodes to _NodeInfo."""
-    return self._node_info[node.Index()].ShortName()
-
-  def _Url(self, node):
-    """Convenience function for redirecting Nodes to _NodeInfo."""
-    return self._node_info[node.Index()].Url()
-
-  def _NodeCost(self, node):
-    """Convenience function for redirecting Nodes to _NodeInfo."""
-    return self._node_info[node.Index()].NodeCost()
-
-  def _EdgeCost(self, parent, child):
-    """Convenience function for redirecting Nodes to _NodeInfo."""
-    return self._node_info[parent.Index()].EdgeCost(
-        self._node_info[child.Index()])
-
-  def _EdgeAnnotation(self, parent, child):
-    """Convenience function for redirecting Nodes to _NodeInfo."""
-    return self._node_info[parent.Index()].EdgeAnnotation(
-        self._node_info[child.Index()])
-
   def _BuildDag(self, trace):
     """Build DAG of resources.
 
-    Build a DAG from our requests and augment with _NodeInfo (see above) in a
+    Build a DAG from our requests and augment with NodeInfo (see above) in a
     parallel array indexed by Node.Index().
 
     Creates self._nodes and self._node_info.
@@ -527,6 +487,32 @@ class ResourceGraph(object):
       parent.Node().AddSuccessor(child.Node())
       parent.SetEdgeCost(child, edge_cost)
       parent.AddEdgeAnnotation(child, reason)
+
+    self._AugmentFrameLoads(index_by_request)
+
+  def _AugmentFrameLoads(self, index_by_request):
+    if not self._frame_lens:
+      return
+    loads = self._frame_lens.GetFrameLoadInfo()
+    load_index_to_node = {}
+    for l in loads:
+      next_index = len(self._nodes)
+      node = dag.Node(next_index)
+      node_info = self._NodeInfo(node, (l.index, l.msec))
+      load_index_to_node[l.index] = next_index
+      self._nodes.append(node)
+      self._node_info.append(node_info)
+    frame_deps = self._frame_lens.GetFrameLoadDependencies()
+    for load_idx, rq in frame_deps[0]:
+      parent = self._node_info[load_index_to_node[load_idx]]
+      child = self._node_info[index_by_request[rq]]
+      parent.Node().AddSuccessor(child.Node())
+      parent.AddEdgeAnnotation(child, 'after-load')
+    for rq, load_idx in frame_deps[1]:
+      child = self._node_info[load_index_to_node[load_idx]]
+      parent = self._node_info[index_by_request[rq]]
+      parent.Node().AddSuccessor(child.Node())
+      parent.AddEdgeAnnotation(child, 'before-load')
 
   def _SplitChildrenByTime(self, parent):
     """Split children of a node by request times.
@@ -598,50 +584,6 @@ class ResourceGraph(object):
       if children_by_end_time[end_mark].EndTime() <= current.StartTime():
         current.ReparentTo(parent, children_by_end_time[end_mark])
         children_by_end_time[end_mark].AddEdgeAnnotation(current, 'timing')
-
-  def _ContentTypeToColor(self, content_type):
-    if not content_type:
-      type_str = 'other'
-    elif '/' in content_type:
-      kind, type_str = content_type.split('/', 1)
-      if kind in self._CONTENT_KIND_TO_COLOR:
-        return self._CONTENT_KIND_TO_COLOR[kind]
-    else:
-      type_str = content_type
-    return self._CONTENT_TYPE_TO_COLOR[type_str]
-
-  def _GraphvizNode(self, index, highlight):
-    """Returns a graphviz node description for a given node.
-
-    Args:
-      index: index of the node.
-      highlight: a list of node items to emphasize. Any resource url which
-        contains any highlight text will be distinguished in the output.
-
-    Returns:
-      A string describing the resource in graphviz format.
-      The resource is color-coded according to its content type, and its shape
-      is oval if its max-age is less than 300s (or if it's not cacheable).
-    """
-    node_info = self._node_info[index]
-    color = self._ContentTypeToColor(node_info.ContentType())
-    max_age = node_info.Request().MaxAge()
-    shape = 'polygon' if max_age > 300 else 'oval'
-    styles = ['filled']
-    if highlight:
-      for fragment in highlight:
-        if fragment in node_info.Url():
-          styles.append('dotted')
-          break
-    if node_info.IsAd() or node_info.IsTracking():
-      styles += ['bold', 'diagonals']
-    return ('%d [label = "%s\\n%.2f->%.2f (%.2f)"; style = "%s"; '
-            'fillcolor = %s; shape = %s];\n'
-            % (index, node_info.ShortName(),
-               node_info.StartTime() - self._global_start,
-               node_info.EndTime() - self._global_start,
-               node_info.EndTime() - node_info.StartTime(),
-               ','.join(styles), color, shape))
 
   def _ExtractImages(self):
     """Return interesting image resources.

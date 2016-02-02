@@ -7,6 +7,7 @@
 When executed, parses a JSON dump of DevTools messages.
 """
 
+import bisect
 import collections
 import copy
 import json
@@ -72,6 +73,9 @@ class Request(object):
                  chunks received, with their offset in ms relative to
                  Timing.requestTime.
     failed: (bool) Whether the request failed.
+    start_msec: (float) Request start time, in milliseconds from chrome start.
+    end_msec: (float) Request end time, in milliseconds from chrome start.
+      start_msec.
   """
   REQUEST_PRIORITIES = ('VeryLow', 'Low', 'Medium', 'High', 'VeryHigh')
   RESOURCE_TYPES = ('Document', 'Stylesheet', 'Image', 'Media', 'Font',
@@ -103,6 +107,19 @@ class Request(object):
     self.encoded_data_length = 0
     self.data_chunks = []
     self.failed = False
+
+  @property
+  def start_msec(self):
+    return self.timing.request_time * 1000
+
+  @property
+  def end_msec(self):
+    if self.start_msec is None:
+      return None
+    return self.start_msec + max(
+        [0] + [t for f, t in self.timing._asdict().iteritems()
+               if f != 'request_time'])
+
 
   def _TimestampOffsetFromStartMs(self, timestamp):
     assert self.timing.request_time != -1
@@ -193,6 +210,11 @@ class RequestTrack(devtools_monitor.Track):
     self._requests_in_flight = {}  # requestId -> (request, status)
     self._completed_requests_by_id = {}
     self._redirects_count_by_id = collections.defaultdict(int)
+    self._indexed = False
+    self._request_start_timestamps = None
+    self._request_end_timestamps = None
+    self._requests_by_start = None
+    self._requests_by_end = None
     if connection:  # Optional for testing.
       for method in RequestTrack._METHOD_TO_HANDLER:
         self._connection.RegisterListener(method, self)
@@ -204,6 +226,7 @@ class RequestTrack(devtools_monitor.Track):
 
   def Handle(self, method, msg):
     assert method in RequestTrack._METHOD_TO_HANDLER
+    self._indexed = False
     params = msg['params']
     request_id = params['requestId']
     RequestTrack._METHOD_TO_HANDLER[method](self, request_id, params)
@@ -213,6 +236,56 @@ class RequestTrack(devtools_monitor.Track):
       logging.warning('Number of requests still in flight: %d.'
                       % len(self._requests_in_flight))
     return self._requests
+
+  def GetFirstRequestMillis(self):
+    """Find the canonical start time for this track.
+
+    Returns:
+      The millisecond timestamp of the first request.
+    """
+    assert self._requests, "No requests to analyze."
+    self._IndexRequests()
+    return self._request_start_timestamps[0]
+
+  def GetLastRequestMillis(self):
+    """Find the canonical start time for this track.
+
+    Returns:
+      The millisecond timestamp of the first request.
+    """
+    assert self._requests, "No requests to analyze."
+    self._IndexRequests()
+    return self._request_end_timestamps[-1]
+
+  def GetEventsStartingBetween(self, start_ms, end_ms):
+    """Return events that started in a range.
+
+    Args:
+      start_ms: the start time to query, in milliseconds from the first request.
+      end_ms: the end time to query, in milliseconds from the first request.
+
+    Returns:
+      A list of requests whose start time is in [start_ms, end_ms].
+    """
+    self._IndexRequests()
+    low = bisect.bisect_left(self._request_start_timestamps, start_ms)
+    high = bisect.bisect_right(self._request_start_timestamps, end_ms)
+    return self._requests_by_start[low:high]
+
+  def GetEventsEndingBetween(self, start_ms, end_ms):
+    """Return events that ended in a range.
+
+    Args:
+      start_ms: the start time to query, in milliseconds from the first request.
+      end_ms: the end time to query, in milliseconds from the first request.
+
+    Returns:
+      A list of requests whose end time is in [start_ms, end_ms].
+    """
+    self._IndexRequests()
+    low = bisect.bisect_left(self._request_end_timestamps, start_ms)
+    high = bisect.bisect_right(self._request_end_timestamps, end_ms)
+    return self._requests_by_end[low:high]
 
   def ToJsonDict(self):
     if self._requests_in_flight:
@@ -237,6 +310,24 @@ class RequestTrack(devtools_monitor.Track):
     result.inconsistent_initiators_count = metadata.get(
         cls._INCONSISTENT_INITIATORS_KEY, 0)
     return result
+
+  def _IndexRequests(self):
+    # TODO(mattcary): if we ever have requests without timing then we either
+    # need a default, or to make an index that only includes requests with
+    # timings.
+    if self._indexed:
+      return
+    valid_requests = [r for r in self._requests
+                      if r.start_msec is not None]
+    self._requests_by_start = sorted(valid_requests,
+                                     key=lambda r: r.start_msec)
+    self._request_start_timestamps = [r.start_msec
+                                      for r in self._requests_by_start]
+    self._requests_by_end = sorted(valid_requests,
+                                     key=lambda r: r.end_msec)
+    self._request_end_timestamps = [r.end_msec
+                                    for r in self._requests_by_end]
+    self._indexed = True
 
   def _RequestWillBeSent(self, request_id, params):
     # Several "requestWillBeSent" events can be dispatched in a row in the case

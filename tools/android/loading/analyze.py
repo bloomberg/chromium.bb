@@ -26,8 +26,10 @@ from pylib import constants
 
 import content_classification_lens
 import device_setup
+import frame_load_lens
 import loading_model
 import loading_trace
+import model_graph
 import trace_recorder
 
 
@@ -155,7 +157,8 @@ def _ProcessRequests(filename, ad_rules_filename='',
     content_lens = (
         content_classification_lens.ContentClassificationLens.WithRulesFiles(
             trace, ad_rules_filename, tracking_rules_filename))
-    return loading_model.ResourceGraph(trace, content_lens)
+    frame_lens = frame_load_lens.FrameLoadLens(trace)
+    return loading_model.ResourceGraph(trace, content_lens, frame_lens)
 
 
 def InvalidCommand(cmd):
@@ -188,7 +191,6 @@ def DoPng(arg_str):
   parser.add_argument('request_json')
   parser.add_argument('png_output', nargs='?')
   parser.add_argument('--eog', action='store_true')
-  parser.add_argument('--highlight')
   parser.add_argument('--noads', action='store_true')
   parser.add_argument('--ad_rules', default='')
   parser.add_argument('--tracking_rules', default='')
@@ -197,10 +199,9 @@ def DoPng(arg_str):
       args.request_json, args.ad_rules, args.tracking_rules)
   if args.noads:
     graph.Set(node_filter=graph.FilterAds)
+  visualization = model_graph.GraphVisualization(graph)
   tmp = tempfile.NamedTemporaryFile()
-  graph.MakeGraphviz(
-      tmp,
-      highlight=args.highlight.split(',') if args.highlight else None)
+  visualization.OutputDot(tmp)
   tmp.flush()
   png_output = args.png_output
   if not png_output:
