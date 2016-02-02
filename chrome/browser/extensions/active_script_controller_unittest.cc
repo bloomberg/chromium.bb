@@ -60,6 +60,8 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
   // Request an injection for the given |extension|.
   void RequestInjection(const Extension* extension);
+  void RequestInjection(const Extension* extension,
+                        UserScript::RunLocation run_location);
 
   // Returns the number of times a given extension has had a script execute.
   size_t GetExecutionCountForExtension(const std::string& extension_id) const;
@@ -89,13 +91,14 @@ class ActiveScriptControllerUnitTest : public ChromeRenderViewHostTestHarness {
   std::map<std::string, int> extension_executions_;
 
   scoped_refptr<const Extension> extension_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActiveScriptControllerUnitTest);
 };
 
 ActiveScriptControllerUnitTest::ActiveScriptControllerUnitTest()
     : feature_override_(FeatureSwitch::scripts_require_action(),
                         FeatureSwitch::OVERRIDE_ENABLED),
-      active_script_controller_(NULL) {
-}
+      active_script_controller_(nullptr) {}
 
 ActiveScriptControllerUnitTest::~ActiveScriptControllerUnitTest() {
 }
@@ -138,8 +141,14 @@ bool ActiveScriptControllerUnitTest::RequiresUserConsent(
 
 void ActiveScriptControllerUnitTest::RequestInjection(
     const Extension* extension) {
+  RequestInjection(extension, UserScript::DOCUMENT_IDLE);
+}
+
+void ActiveScriptControllerUnitTest::RequestInjection(
+    const Extension* extension,
+    UserScript::RunLocation run_location) {
   controller()->RequestScriptInjectionForTesting(
-      extension,
+      extension, run_location,
       GetExecutionCallbackForExtension(extension->id()));
 }
 
@@ -175,7 +184,7 @@ void ActiveScriptControllerUnitTest::SetUp() {
 
   TabHelper::CreateForWebContents(web_contents());
   TabHelper* tab_helper = TabHelper::FromWebContents(web_contents());
-  // These should never be NULL.
+  // These should never be null.
   DCHECK(tab_helper);
   active_script_controller_ = tab_helper->active_script_controller();
   DCHECK(active_script_controller_);
@@ -427,6 +436,52 @@ TEST_F(ActiveScriptControllerUnitTest, TestAlwaysRun) {
   // Only the "always run" origin should be allowed to run without user consent.
   NavigateAndCommit(GURL("https://www.google.com/foo/bar"));
   EXPECT_FALSE(RequiresUserConsent(extension));
+}
+
+TEST_F(ActiveScriptControllerUnitTest, TestDifferentScriptRunLocations) {
+  const Extension* extension = AddExtension();
+  ASSERT_TRUE(extension);
+
+  NavigateAndCommit(GURL("https://www.foo.com"));
+
+  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+
+  RequestInjection(extension, UserScript::DOCUMENT_END);
+  EXPECT_EQ(BLOCKED_ACTION_SCRIPT_OTHER,
+            controller()->GetBlockedActions(extension));
+  RequestInjection(extension, UserScript::DOCUMENT_IDLE);
+  EXPECT_EQ(BLOCKED_ACTION_SCRIPT_OTHER,
+            controller()->GetBlockedActions(extension));
+  RequestInjection(extension, UserScript::DOCUMENT_START);
+  EXPECT_EQ(BLOCKED_ACTION_SCRIPT_AT_START | BLOCKED_ACTION_SCRIPT_OTHER,
+            controller()->GetBlockedActions(extension));
+
+  controller()->OnClicked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+}
+
+TEST_F(ActiveScriptControllerUnitTest, TestWebRequestBlocked) {
+  const Extension* extension = AddExtension();
+  ASSERT_TRUE(extension);
+
+  NavigateAndCommit(GURL("https://www.foo.com"));
+
+  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+  EXPECT_FALSE(controller()->WantsToRun(extension));
+
+  controller()->OnWebRequestBlocked(extension);
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST,
+            controller()->GetBlockedActions(extension));
+  EXPECT_TRUE(controller()->WantsToRun(extension));
+
+  RequestInjection(extension);
+  EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST | BLOCKED_ACTION_SCRIPT_OTHER,
+            controller()->GetBlockedActions(extension));
+  EXPECT_TRUE(controller()->WantsToRun(extension));
+
+  NavigateAndCommit(GURL("https://www.bar.com"));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, controller()->GetBlockedActions(extension));
+  EXPECT_FALSE(controller()->WantsToRun(extension));
 }
 
 }  // namespace extensions

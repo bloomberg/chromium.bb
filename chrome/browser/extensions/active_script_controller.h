@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/user_script.h"
@@ -60,8 +61,14 @@ class ActiveScriptController : public content::WebContentsObserver,
   // been clicked, running any pending tasks that were previously shelved.
   void OnClicked(const Extension* extension);
 
-  // Returns true if the given |extension| has a pending script that wants to
-  // run.
+  // Called when a webRequest event for the given |extension| was blocked.
+  void OnWebRequestBlocked(const Extension* extension);
+
+  // Returns a bitmask of BlockedActionType for the actions that have been
+  // blocked for the given extension.
+  int GetBlockedActions(const Extension* extension);
+
+  // Returns true if the given |extension| has any blocked actions.
   bool WantsToRun(const Extension* extension);
 
   int num_page_requests() const { return num_page_requests_; }
@@ -74,14 +81,27 @@ class ActiveScriptController : public content::WebContentsObserver,
     return RequiresUserConsentForScriptInjection(extension, type);
   }
   void RequestScriptInjectionForTesting(const Extension* extension,
+                                        UserScript::RunLocation run_location,
                                         const base::Closure& callback) {
-    return RequestScriptInjection(extension, callback);
+    return RequestScriptInjection(extension, run_location, callback);
   }
 #endif  // defined(UNIT_TEST)
 
  private:
-  typedef std::vector<base::Closure> PendingRequestList;
-  typedef std::map<std::string, PendingRequestList> PendingRequestMap;
+  struct PendingScript {
+    PendingScript(UserScript::RunLocation run_location,
+                  const base::Closure& permit_script);
+    ~PendingScript();
+
+    // The run location that the script wants to inject at.
+    UserScript::RunLocation run_location;
+
+    // The callback to run when the script is permitted by the user.
+    base::Closure permit_script;
+  };
+
+  using PendingScriptList = std::vector<PendingScript>;
+  using PendingScriptMap = std::map<std::string, PendingScriptList>;
 
   // Returns true if the extension requesting script injection requires
   // user consent. If this is true, the caller should then register a request
@@ -93,6 +113,7 @@ class ActiveScriptController : public content::WebContentsObserver,
   // |callback|. The only assumption that can be made about when (or if)
   // |callback| is run is that, if it is run, it will run on the current page.
   void RequestScriptInjection(const Extension* extension,
+                              UserScript::RunLocation run_location,
                               const base::Closure& callback);
 
   // Runs any pending injections for the corresponding extension.
@@ -101,6 +122,7 @@ class ActiveScriptController : public content::WebContentsObserver,
   // Handle the RequestScriptInjectionPermission message.
   void OnRequestScriptInjectionPermission(const std::string& extension_id,
                                           UserScript::InjectionType script_type,
+                                          UserScript::RunLocation run_location,
                                           int64_t request_id);
 
   // Grants permission for the given request to run.
@@ -137,8 +159,11 @@ class ActiveScriptController : public content::WebContentsObserver,
   // case if the user never enabled the scripts-require-action flag.
   bool was_used_on_page_;
 
-  // The map of extension_id:pending_request of all pending requests.
-  PendingRequestMap pending_requests_;
+  // The map of extension_id:pending_request of all pending script requests.
+  PendingScriptMap pending_scripts_;
+
+  // A set of ids for which the webRequest API was blocked on the page.
+  std::set<std::string> web_request_blocked_;
 
   // The extensions which have been granted permission to run on the given page.
   // TODO(rdevlin.cronin): Right now, this just keeps track of extensions that

@@ -28,13 +28,19 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace extensions {
+
+ActiveScriptController::PendingScript::PendingScript(
+    UserScript::RunLocation run_location,
+    const base::Closure& permit_script)
+    : run_location(run_location), permit_script(permit_script) {}
+
+ActiveScriptController::PendingScript::~PendingScript() {}
 
 ActiveScriptController::ActiveScriptController(
     content::WebContents* web_contents)
@@ -66,12 +72,44 @@ void ActiveScriptController::OnActiveTabPermissionGranted(
 }
 
 void ActiveScriptController::OnClicked(const Extension* extension) {
-  DCHECK(ContainsKey(pending_requests_, extension->id()));
+  DCHECK(ContainsKey(pending_scripts_, extension->id()));
   RunPendingForExtension(extension);
 }
 
+void ActiveScriptController::OnWebRequestBlocked(const Extension* extension) {
+  // TODO(devlin): Call this.
+  web_request_blocked_.insert(extension->id());
+}
+
+int ActiveScriptController::GetBlockedActions(const Extension* extension) {
+  int blocked_actions = BLOCKED_ACTION_NONE;
+  if (web_request_blocked_.count(extension->id()) != 0)
+    blocked_actions |= BLOCKED_ACTION_WEB_REQUEST;
+  auto iter = pending_scripts_.find(extension->id());
+  if (iter != pending_scripts_.end()) {
+    for (const PendingScript& script : iter->second) {
+      switch (script.run_location) {
+        case UserScript::DOCUMENT_START:
+          blocked_actions |= BLOCKED_ACTION_SCRIPT_AT_START;
+          break;
+        case UserScript::DOCUMENT_END:
+        case UserScript::DOCUMENT_IDLE:
+        case UserScript::BROWSER_DRIVEN:
+          blocked_actions |= BLOCKED_ACTION_SCRIPT_OTHER;
+          break;
+        case UserScript::UNDEFINED:
+        case UserScript::RUN_DEFERRED:
+        case UserScript::RUN_LOCATION_LAST:
+          NOTREACHED();
+      }
+    }
+  }
+
+  return blocked_actions;
+}
+
 bool ActiveScriptController::WantsToRun(const Extension* extension) {
-  return pending_requests_.count(extension->id()) > 0;
+  return GetBlockedActions(extension) != BLOCKED_ACTION_NONE;
 }
 
 PermissionsData::AccessType
@@ -101,10 +139,11 @@ ActiveScriptController::RequiresUserConsentForScriptInjection(
 
 void ActiveScriptController::RequestScriptInjection(
     const Extension* extension,
+    UserScript::RunLocation run_location,
     const base::Closure& callback) {
   CHECK(extension);
-  PendingRequestList& list = pending_requests_[extension->id()];
-  list.push_back(callback);
+  PendingScriptList& list = pending_scripts_[extension->id()];
+  list.push_back(PendingScript(run_location, callback));
 
   // If this was the first entry, we need to notify that a new extension wants
   // to run.
@@ -130,13 +169,13 @@ void ActiveScriptController::RunPendingForExtension(
   // callbacks adds more entries.
   permitted_extensions_.insert(extension->id());
 
-  PendingRequestMap::iterator iter = pending_requests_.find(extension->id());
-  if (iter == pending_requests_.end())
+  PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
+  if (iter == pending_scripts_.end())
     return;
 
-  PendingRequestList requests;
-  iter->second.swap(requests);
-  pending_requests_.erase(extension->id());
+  PendingScriptList scripts;
+  iter->second.swap(scripts);
+  pending_scripts_.erase(extension->id());
 
   // Clicking to run the extension counts as granting it permission to run on
   // the given tab.
@@ -146,11 +185,8 @@ void ActiveScriptController::RunPendingForExtension(
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   // Run all pending injections for the given extension.
-  for (PendingRequestList::iterator request = requests.begin();
-       request != requests.end();
-       ++request) {
-    request->Run();
-  }
+  for (PendingScript& pending_script : scripts)
+    pending_script.permit_script.Run();
 
   // The extension ran, so we need to update the ExtensionActionAPI that we no
   // longer want to act.
@@ -160,6 +196,7 @@ void ActiveScriptController::RunPendingForExtension(
 void ActiveScriptController::OnRequestScriptInjectionPermission(
     const std::string& extension_id,
     UserScript::InjectionType script_type,
+    UserScript::RunLocation run_location,
     int64_t request_id) {
   if (!crx_file::id_util::IdIsValid(extension_id)) {
     NOTREACHED() << "'" << extension_id << "' is not a valid id.";
@@ -184,10 +221,9 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
       // This base::Unretained() is safe, because the callback is only invoked
       // by this object.
       RequestScriptInjection(
-          extension,
+          extension, run_location,
           base::Bind(&ActiveScriptController::PermitScriptInjection,
-                     base::Unretained(this),
-                     request_id));
+                     base::Unretained(this), request_id));
       break;
     case PermissionsData::ACCESS_DENIED:
       // We should usually only get a "deny access" if the page changed (as the
@@ -233,7 +269,7 @@ void ActiveScriptController::LogUMA() const {
         permitted_extensions_.size());
     UMA_HISTOGRAM_COUNTS_100(
         "Extensions.ActiveScriptController.DeniedExtensions",
-        pending_requests_.size());
+        pending_scripts_.size());
   }
 }
 
@@ -258,7 +294,8 @@ void ActiveScriptController::DidNavigateMainFrame(
   LogUMA();
   num_page_requests_ = 0;
   permitted_extensions_.clear();
-  pending_requests_.clear();
+  pending_scripts_.clear();
+  web_request_blocked_.clear();
   was_used_on_page_ = false;
 }
 
@@ -266,9 +303,9 @@ void ActiveScriptController::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  PendingRequestMap::iterator iter = pending_requests_.find(extension->id());
-  if (iter != pending_requests_.end()) {
-    pending_requests_.erase(iter);
+  PendingScriptMap::iterator iter = pending_scripts_.find(extension->id());
+  if (iter != pending_scripts_.end()) {
+    pending_scripts_.erase(iter);
     ExtensionActionAPI::Get(browser_context_)->
         NotifyPageActionsChanged(web_contents());
   }

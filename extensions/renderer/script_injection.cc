@@ -195,10 +195,8 @@ void ScriptInjection::RequestPermissionFromBrowser() {
   // invalid request (which is treated like a notification).
   request_id_ = g_next_pending_id++;
   render_frame_->Send(new ExtensionHostMsg_RequestScriptInjectionPermission(
-      render_frame_->GetRoutingID(),
-      host_id().id(),
-      injector_->script_type(),
-      request_id_));
+      render_frame_->GetRoutingID(), host_id().id(), injector_->script_type(),
+      run_location_, request_id_));
 }
 
 void ScriptInjection::NotifyWillNotInject(

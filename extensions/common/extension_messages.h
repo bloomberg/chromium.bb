@@ -41,6 +41,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::SocketPermissionRequest::OperationType,
 IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::InjectionType,
                           extensions::UserScript::INJECTION_TYPE_LAST)
 
+IPC_ENUM_TRAITS_MAX_VALUE(extensions::UserScript::RunLocation,
+                          extensions::UserScript::RUN_LOCATION_LAST - 1)
+
 IPC_ENUM_TRAITS_MAX_VALUE(HostID::HostType, HostID::HOST_TYPE_LAST)
 
 // Parameters structure for ExtensionHostMsg_AddAPIActionToActivityLog and
@@ -698,9 +701,10 @@ IPC_MESSAGE_ROUTED2(ExtensionHostMsg_ContentScriptsExecuting,
 // If request id is -1, this signals that the request has already ran, and this
 // merely serves as a notification. This happens when the feature to disable
 // scripts running without user consent is not enabled.
-IPC_MESSAGE_ROUTED3(ExtensionHostMsg_RequestScriptInjectionPermission,
+IPC_MESSAGE_ROUTED4(ExtensionHostMsg_RequestScriptInjectionPermission,
                     std::string /* extension id */,
                     extensions::UserScript::InjectionType /* script type */,
+                    extensions::UserScript::RunLocation /* run location */,
                     int64_t /* request id */)
 
 // Sent from the browser to the renderer in reply to a

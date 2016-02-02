@@ -531,6 +531,7 @@
       'browser/blacklist_state.h',
       'browser/blob_holder.cc',
       'browser/blob_holder.h',
+      'browser/blocked_action_type.h',
       'browser/browser_context_keyed_api_factory.h',
       'browser/browser_context_keyed_service_factories.cc',
       'browser/browser_context_keyed_service_factories.h',

@@ -124,8 +124,8 @@ TEST_F(LocationBarControllerUnitTest, LocationBarDisplaysPageActions) {
   ActiveScriptController* active_script_controller =
       ActiveScriptController::GetForWebContents(web_contents());
   ASSERT_TRUE(active_script_controller);
-  active_script_controller->RequestScriptInjectionForTesting(no_action,
-                                                             base::Closure());
+  active_script_controller->RequestScriptInjectionForTesting(
+      no_action, UserScript::DOCUMENT_IDLE, base::Closure());
   current_actions = controller->GetCurrentActions();
   ASSERT_EQ(2u, current_actions.size());
   // Check that each extension is present in the vector.
@@ -136,8 +136,8 @@ TEST_F(LocationBarControllerUnitTest, LocationBarDisplaysPageActions) {
 
   // If we request a script injection for an extension that already has a
   // page action, only one action should be visible.
-  active_script_controller->RequestScriptInjectionForTesting(page_action,
-                                                             base::Closure());
+  active_script_controller->RequestScriptInjectionForTesting(
+      page_action, UserScript::DOCUMENT_IDLE, base::Closure());
   current_actions = controller->GetCurrentActions();
   ASSERT_EQ(2u, current_actions.size());
   EXPECT_TRUE(current_actions[0]->extension_id() == no_action->id() ||
