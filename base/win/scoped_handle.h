@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "base/base_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -108,6 +109,8 @@ class GenericScopedHandle {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierWrongOwner);
+  FRIEND_TEST_ALL_PREFIXES(ScopedHandleTest, ActiveVerifierUntrackedHandle);
   Handle handle_;
 };
 

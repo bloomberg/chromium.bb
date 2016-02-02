@@ -40,7 +40,10 @@
 #endif  // OS_IOS
 #endif  // OS_MACOSX
 
-#if !defined(OS_WIN)
+#if defined(OS_WIN)
+#include "base/debug/close_handle_hook_win.h"
+#include "base/win/windows_version.h"
+#else
 #include "base/i18n/rtl.h"
 #if !defined(OS_IOS)
 #include "base/strings/string_util.h"
@@ -317,6 +320,8 @@ void TestSuite::Initialize() {
 
   CHECK(debug::EnableInProcessStackDumping());
 #if defined(OS_WIN)
+  base::debug::InstallHandleHooks();
+
   RouteStdioToConsole(true);
   // Make sure we run with high resolution timer to minimize differences
   // between production code and test code.

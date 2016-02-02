@@ -139,6 +139,11 @@
           ],
         }],
         ['OS == "win"', {
+          'conditions': [
+            ['win_disable_handle_verifier_hooks == 1', {
+              'defines': ['DISABLE_HANDLE_VERIFIER_HOOKS'],
+            }],
+          ],
           # Specify delayload for base.dll.
           'msvs_settings': {
             'VCLinkerTool': {
@@ -701,6 +706,9 @@
               'dependencies': [
                 '../third_party/icu/icu.gyp:icudata',
               ],
+            }],
+            ['win_disable_handle_verifier_hooks == 1', {
+                'defines': ['DISABLE_HANDLE_VERIFIER_HOOKS'],
             }],
           ],
         }, {  # OS != "win"
