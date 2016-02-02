@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/crash_upload_list.h"
@@ -168,8 +169,16 @@ void CrashesDOMHandler::UpdateUI() {
   base::FundamentalValue enabled(crash_reporting_enabled);
   base::FundamentalValue dynamic_backend(system_crash_reporter);
   base::StringValue version(version_info::GetVersionNumber());
-  web_ui()->CallJavascriptFunction(crash::kCrashesUIUpdateCrashList, enabled,
-                                   dynamic_backend, crash_list, version);
+  base::StringValue os_string(base::SysInfo::OperatingSystemName() + " " +
+                              base::SysInfo::OperatingSystemVersion());
+
+  std::vector<const base::Value*> args;
+  args.push_back(&enabled);
+  args.push_back(&dynamic_backend);
+  args.push_back(&crash_list);
+  args.push_back(&version);
+  args.push_back(&os_string);
+  web_ui()->CallJavascriptFunction(crash::kCrashesUIUpdateCrashList, args);
 }
 
 }  // namespace

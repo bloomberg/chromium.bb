@@ -18,8 +18,9 @@ function requestCrashes() {
  * @param {boolean} dynamicBackend Whether the crash backend is dynamic.
  * @param {array} crashes The list of crashes.
  * @param {string} version The browser version.
+ * @param {string} os The OS name and version.
  */
-function updateCrashList(enabled, dynamicBackend, crashes, version) {
+function updateCrashList(enabled, dynamicBackend, crashes, version, os) {
   $('countBanner').textContent = loadTimeData.getStringF('crashCountFormat',
                                                          crashes.length);
 
@@ -55,24 +56,24 @@ function updateCrashList(enabled, dynamicBackend, crashes, version) {
     var linkBlock = document.createElement('p');
     var link = document.createElement('a');
     var commentLines = [
+      'IMPORTANT: Your crash has already been automatically reported ' +
+      'to our crash system. Please file this bug only if you can provide ' +
+      'more information about it.',
+      '',
+      '',
       'Chrome Version: ' + version,
-      // TODO(tbreisacher): fill in the OS automatically?
-      'Operating System: e.g., "Windows 7", "Mac OSX 10.6"',
+      'Operating System: ' + os,
       '',
       'URL (if applicable) where crash occurred:',
       '',
       'Can you reproduce this crash?',
       '',
-      'What steps will reproduce this crash? (or if it\'s not ' +
-      'reproducible, what were you doing just before the crash)?',
-      '',
+      'What steps will reproduce this crash? (If it\'s not ' +
+      'reproducible, what were you doing just before the crash?)',
       '1.', '2.', '3.',
       '',
-      '*Please note that issues filed with no information filled in ' +
-      'above will be marked as WontFix*',
-      '',
       '****DO NOT CHANGE BELOW THIS LINE****',
-      'report_id:' + crash.id
+      'Crash ID: crash/' + crash.id
     ];
     var params = {
       template: 'Crash Report',

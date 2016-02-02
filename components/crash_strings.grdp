@@ -11,10 +11,10 @@
     Crash ID <ph name="CRASH_ID">$1<ex>8fa95dbb6f2ec862</ex></ph> (<ph name="CRASH_LOCAL_ID">$2<ex>Chrome</ex></ph>)
   </message>
   <message name="IDS_CRASH_CRASH_TIME_FORMAT" desc="Format for crash entry occurence time on chrome://crashes">
-    Occurred <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
+    Automatically reported <ph name="CRASH_TIME">$1<ex>Tuesday, January 25, 2011 2:58:02 PM</ex></ph>
   </message>
   <message name="IDS_CRASH_BUG_LINK_LABEL" desc="Link text for filing a crash bug on chrome://crashes">
-    File bug
+    Provide additional details
   </message>
   <message name="IDS_CRASH_NO_CRASHES_MESSAGE" desc="The explanatory message for chrome://crashes when there are no crashes">
     You have no recently reported crashes.  Crashes that occurred when crash reporting was disabled will not appear here.
