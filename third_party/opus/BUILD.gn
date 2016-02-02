@@ -56,6 +56,13 @@ if (use_opus_rtcd) {
   }
 }
 
+config("opus_warnings") {
+  if (is_clang && !is_nacl) {
+    # TODO(thakis): Remove once silk/macros.h has been fixed
+    cflags = [ "-Wno-expansion-to-defined" ]
+  }
+}
+
 source_set("opus") {
   gypi_values = exec_script("//build/gypi_to_gn.py",
                             [ rebase_path("opus_srcs.gypi") ],
@@ -74,7 +81,12 @@ source_set("opus") {
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [
+    "//build/config/compiler:no_chromium_code",
+
+    # Must be after no_chromium_code to have an effect:
+    ":opus_warnings",
+  ]
   public_configs = [ ":opus_config" ]
 
   if (is_win) {

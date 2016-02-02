@@ -55,12 +55,6 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
 
-// This is available in newer clang revisions... but alas, Chrome has not rolled
-// that far yet.
-AST_MATCHER(clang::FunctionDecl, isDefaulted) {
-  return Node.isDefaulted();
-}
-
 // A method is from Blink if it is from the Blink namespace or overrides a
 // method from the Blink namespace.
 bool IsBlinkMethod(const clang::CXXMethodDecl& decl) {

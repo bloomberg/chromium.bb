@@ -883,16 +883,6 @@ config("default_warnings") {
         "-Wno-shift-negative-value",
       ]
     }
-
-    if (exec_script("//tools/clang/scripts/update.py",
-                    [ "--print-revision" ],
-                    "trim string") != "257955-1") {
-      cflags += [
-        # TODO(thakis): Remove once
-        # https://chromium-review.googlesource.com/#/c/324860/ is in.
-        "-Wno-constant-conversion",
-      ]
-    }
   }
 }
 

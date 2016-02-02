@@ -59,6 +59,12 @@
         'OPUS_BUILD',
         'OPUS_EXPORT=',
       ],
+      'variables': {
+        'clang_warning_flags': [
+          # TODO(thakis): Remove once silk/macros.h has been fixed
+          '-Wno-expansion-to-defined',
+        ],
+      },
       'include_dirs': [
         'src/celt',
         'src/include',
