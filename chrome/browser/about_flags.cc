@@ -806,7 +806,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"top-chrome-md",
      IDS_FLAGS_TOP_CHROME_MD,
      IDS_FLAGS_TOP_CHROME_MD_DESCRIPTION,
-     kOsWin | kOsLinux | kOsCrOS,
+     kOsWin | kOsLinux | kOsCrOS | kOsMac,
      MULTI_VALUE_TYPE(kTopChromeMaterialDesignChoices)},
 #endif
     {"touch-events",

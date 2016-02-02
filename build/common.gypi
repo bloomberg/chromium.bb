@@ -257,8 +257,9 @@
             'enable_hidpi%': 1,
           }],
 
-          # Enable Top Chrome Material Design on Chrome OS, Windows, and Linux.
-          ['chromeos==1 or OS=="win" or OS=="linux"', {
+          # Enable Top Chrome Material Design on Chrome OS, Windows, and Linux,
+          # and Mac.
+          ['chromeos==1 or OS=="win" or OS=="linux" or OS=="mac"', {
             'enable_topchrome_md%': 1,
           }],
 

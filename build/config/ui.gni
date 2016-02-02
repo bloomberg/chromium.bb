@@ -49,7 +49,7 @@ declare_args() {
 
   # Indicates if material design elements in the top chrome of the browser are
   # enabled.
-  enable_topchrome_md = is_chromeos || is_win || is_linux
+  enable_topchrome_md = is_chromeos || is_win || is_linux || is_mac
 
   # Indicates if Wayland display server support is enabled.
   enable_wayland_server = is_chromeos
