@@ -4,6 +4,7 @@
 
 #include "extensions/common/permissions/permissions_data.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/command_line.h"

@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
+#include "ui/base/accelerators/accelerator.h"
 
 // A class which controls volume when F8-10 or a multimedia key for volume is
 // pressed.

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/base64.h"
@@ -383,7 +384,7 @@ Extension::ManifestData* Extension::GetManifestData(const std::string& key)
 void Extension::SetManifestData(const std::string& key,
                                 Extension::ManifestData* data) {
   DCHECK(!finished_parsing_manifest_ && thread_checker_.CalledOnValidThread());
-  manifest_data_[key] = linked_ptr<ManifestData>(data);
+  manifest_data_[key] = scoped_ptr<ManifestData>(data);
 }
 
 Manifest::Location Extension::location() const {

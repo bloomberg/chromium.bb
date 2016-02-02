@@ -28,6 +28,7 @@
 #include "grit/theme_resources.h"
 #include "sync/api/string_ordinal.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"

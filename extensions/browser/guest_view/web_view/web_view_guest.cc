@@ -60,6 +60,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 #include "url/url_constants.h"
 
 using base::UserMetricsAction;
