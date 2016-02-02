@@ -7,6 +7,7 @@
 import collections
 import logging
 import os
+import urlparse
 
 import loading_trace
 import request_track
@@ -31,6 +32,7 @@ class ContentClassificationLens(object):
     self._tracking_requests = set()
     self._ad_matcher = _RulesMatcher(ad_rules, True)
     self._tracking_matcher = _RulesMatcher(tracking_rules, True)
+    self._document_url = self._GetDocumentUrl()
     self._GroupRequestsByFrameId()
     self._LabelRequests()
 
@@ -73,10 +75,20 @@ class ContentClassificationLens(object):
   def _LabelRequests(self):
     for request in self._requests:
       request_id = request.request_id
-      if self._ad_matcher.Matches(request):
+      if self._ad_matcher.Matches(request, self._document_url):
         self._ad_requests.add(request_id)
-      if self._tracking_matcher.Matches(request):
+      if self._tracking_matcher.Matches(request, self._document_url):
         self._tracking_requests.add(request_id)
+
+  def _GetDocumentUrl(self):
+    main_frame_id = self._trace.page_track.GetMainFrameId()
+    # Take the last one as JS redirects can change the document URL.
+    document_url = None
+    for r in self._requests:
+      # 304: not modified.
+      if r.frame_id == main_frame_id and r.status in (200, 304):
+        document_url = r.document_url
+    return document_url
 
 
 class _RulesMatcher(object):
@@ -106,20 +118,23 @@ class _RulesMatcher(object):
     else:
       self._matcher = None
 
-  def Matches(self, request):
+  def Matches(self, request, document_url):
     """Returns whether a request matches one of the rules."""
     if self._matcher is None:
       return False
     url = request.url
-    return self._matcher.should_block(url, self._GetOptions(request))
+    return self._matcher.should_block(
+        url, self._GetOptions(request, document_url))
 
   @classmethod
-  def _GetOptions(cls, request):
+  def _GetOptions(cls, request, document_url):
     options = {}
     resource_type = request.resource_type
     option = cls._RESOURCE_TYPE_TO_OPTIONS_KEY.get(resource_type)
     if option:
       options[option] = True
+    if cls._IsThirdParty(request.url, document_url):
+      options['third-party'] = True
     return options
 
   @classmethod
@@ -129,3 +144,30 @@ class _RulesMatcher(object):
     else:
       return [rule for rule in rules
               if not rule.startswith(cls._WHITELIST_PREFIX)]
+
+  @classmethod
+  def _IsThirdParty(cls, url, document_url):
+    # Common definition of "third-party" is "not from the same TLD+1".
+    # Unfortunately, knowing what is a TLD is not trivial. To do it without a
+    # database, we use the following simple (and incorrect) rules:
+    # - co.{in,uk,jp,hk} is a TLD
+    # - com.{au,hk} is a TLD
+    # Otherwise, this is the part after the last dot.
+    return cls._GetTldPlusOne(url) != cls._GetTldPlusOne(document_url)
+
+  @classmethod
+  def _GetTldPlusOne(cls, url):
+    hostname = urlparse.urlparse(url).hostname
+    if not hostname:
+      return hostname
+    parts = hostname.split('.')
+    if len(parts) <= 2:
+      return hostname
+    tld_parts_count = 1
+    may_be_tld = parts[-2:]
+    if may_be_tld[0] == 'co' and may_be_tld[1] in ('in', 'uk', 'jp'):
+      tld_parts_count = 2
+    elif may_be_tld[0] == 'com' and may_be_tld[1] in ('au', 'hk'):
+      tld_parts_count = 2
+    tld_plus_one = '.'.join(parts[-(tld_parts_count + 1):])
+    return tld_plus_one

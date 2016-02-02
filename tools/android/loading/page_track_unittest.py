@@ -53,6 +53,13 @@ class PageTrackTest(unittest.TestCase):
     with self.assertRaises(AssertionError):
       page_track.Handle(msg['method'], msg)
 
+  def testGetMainFrameId(self):
+    devtools_connection = MockDevToolsConnection()
+    page_track = PageTrack(devtools_connection)
+    for msg in PageTrackTest._EVENTS:
+      page_track.Handle(msg['method'], msg)
+    self.assertEquals('1234.1', page_track.GetMainFrameId())
+
 
 if __name__ == '__main__':
   unittest.main()

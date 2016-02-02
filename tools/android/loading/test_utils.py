@@ -6,15 +6,7 @@
 
 import devtools_monitor
 import loading_trace
-
-
-class FakeTrack(devtools_monitor.Track):
-  def __init__(self, events):
-    super(FakeTrack, self).__init__(None)
-    self._events = events
-
-  def GetEvents(self):
-    return self._events
+import page_track
 
 
 class FakeRequestTrack(devtools_monitor.Track):
@@ -32,9 +24,23 @@ class FakeRequestTrack(devtools_monitor.Track):
     return event
 
 
+class FakePageTrack(devtools_monitor.Track):
+  def __init__(self, events):
+    super(FakePageTrack, self).__init__(None)
+    self._events = events
+
+  def GetEvents(self):
+    return self._events
+
+  def GetMainFrameId(self):
+    event = self._events[0]
+    # Make sure our laziness is not an issue here.
+    assert event['method'] == page_track.PageTrack.FRAME_STARTED_LOADING
+    return event['frame_id']
+
+
 def LoadingTraceFromEvents(requests, page_events=None):
   """Returns a LoadingTrace instance from a list of requests and page events."""
   request_track = FakeRequestTrack(requests)
-  page_track = FakeTrack(page_events if page_events else [])
-  return loading_trace.LoadingTrace(
-      None, None, page_track, request_track, None)
+  page = FakePageTrack(page_events if page_events else [])
+  return loading_trace.LoadingTrace(None, None, page, request_track, None)

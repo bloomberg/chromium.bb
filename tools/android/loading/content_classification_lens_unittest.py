@@ -12,18 +12,46 @@ import test_utils
 
 
 class ContentClassificationLensTestCase(unittest.TestCase):
+  _DOCUMENT_URL = 'http://bla.com'
+  _MAIN_FRAME_ID = '123.1'
   _REQUEST = Request.FromJsonDict({'url': 'http://bla.com',
+                                   'document_url': _DOCUMENT_URL,
                                    'request_id': '1234.1',
-                                   'frame_id': '123.1',
+                                   'frame_id': _MAIN_FRAME_ID,
                                    'initiator': {'type': 'other'},
                                    'timestamp': 2,
+                                   'status': 200,
                                    'timing': TimingFromDict({})})
-  _MAIN_FRAME_ID = '123.1'
   _PAGE_EVENTS = [{'method': 'Page.frameStartedLoading',
                    'frame_id': _MAIN_FRAME_ID},
                   {'method': 'Page.frameAttached',
                    'frame_id': '123.13', 'parent_frame_id': _MAIN_FRAME_ID}]
   _RULES = ['bla.com']
+
+  def testGetDocumentUrl(self):
+    trace = test_utils.LoadingTraceFromEvents(
+        [self._REQUEST], self._PAGE_EVENTS)
+    lens = ContentClassificationLens(trace, [], [])
+    self.assertEquals(self._DOCUMENT_URL, lens._GetDocumentUrl())
+    # Don't be fooled by redirects.
+    request = copy.deepcopy(self._REQUEST)
+    request.status = 302
+    request.document_url = 'http://www.bla.com'
+    trace = test_utils.LoadingTraceFromEvents(
+        [request, self._REQUEST], self._PAGE_EVENTS)
+    lens = ContentClassificationLens(trace, [], [])
+    self.assertEquals(self._DOCUMENT_URL, lens._GetDocumentUrl())
+
+  def testGetDocumentUrlSeveralChanges(self):
+    request = copy.deepcopy(self._REQUEST)
+    request.status = 200
+    request.document_url = 'http://www.blabla.com'
+    request2 = copy.deepcopy(request)
+    request2.document_url = 'http://www.blablabla.com'
+    trace = test_utils.LoadingTraceFromEvents(
+        [self._REQUEST, request, request2], self._PAGE_EVENTS)
+    lens = ContentClassificationLens(trace, [], [])
+    self.assertEquals(request2.document_url, lens._GetDocumentUrl())
 
   def testNoRules(self):
     trace = test_utils.LoadingTraceFromEvents(
@@ -53,18 +81,18 @@ class ContentClassificationLensTestCase(unittest.TestCase):
     self.assertFalse(lens.IsAdFrame(self._MAIN_FRAME_ID, .5))
 
   def testAdFrame(self):
-    request = self._REQUEST
+    request = copy.deepcopy(self._REQUEST)
     request.frame_id = '123.123'
     trace = test_utils.LoadingTraceFromEvents(
         [request] * 10 + [self._REQUEST] * 5, self._PAGE_EVENTS)
     lens = ContentClassificationLens(trace, self._RULES, [])
     self.assertTrue(lens.IsAdFrame(request.frame_id, .5))
 
-
 class _MatcherTestCase(unittest.TestCase):
   _RULES_WITH_WHITELIST = ['/thisisanad.', '@@myadvertisingdomain.com/*',
                            '@@||www.mydomain.com/ads/$elemhide']
   _SCRIPT_RULE = 'domainwithscripts.com/*$script'
+  _THIRD_PARTY_RULE = 'domainwithscripts.com/*$third-party'
   _SCRIPT_REQUEST = Request.FromJsonDict(
       {'url': 'http://domainwithscripts.com/bla.js',
        'resource_type': 'Script',
@@ -84,8 +112,29 @@ class _MatcherTestCase(unittest.TestCase):
     matcher = _RulesMatcher([self._SCRIPT_RULE], False)
     request = copy.deepcopy(self._SCRIPT_REQUEST)
     request.resource_type = 'Stylesheet'
-    self.assertFalse(matcher.Matches(request))
-    self.assertTrue(matcher.Matches(self._SCRIPT_REQUEST))
+    self.assertFalse(matcher.Matches(
+        request, ContentClassificationLensTestCase._DOCUMENT_URL))
+    self.assertTrue(matcher.Matches(
+        self._SCRIPT_REQUEST, ContentClassificationLensTestCase._DOCUMENT_URL))
+
+  def testGetTldPlusOne(self):
+    self.assertEquals(
+        'easy.com',
+        _RulesMatcher._GetTldPlusOne('http://www.easy.com/hello/you'))
+    self.assertEquals(
+        'not-so-easy.co.uk',
+        _RulesMatcher._GetTldPlusOne('http://www.not-so-easy.co.uk/hello/you'))
+    self.assertEquals(
+        'hard.co.uk',
+        _RulesMatcher._GetTldPlusOne('http://hard.co.uk/'))
+
+  def testThirdPartyRule(self):
+    matcher = _RulesMatcher([self._THIRD_PARTY_RULE], False)
+    request = copy.deepcopy(self._SCRIPT_REQUEST)
+    document_url = 'http://www.domainwithscripts.com/good-morning'
+    self.assertFalse(matcher.Matches(request, document_url))
+    document_url = 'http://anotherdomain.com/good-morning'
+    self.assertTrue(matcher.Matches(request, document_url))
 
 
 if __name__ == '__main__':

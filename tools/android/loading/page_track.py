@@ -9,6 +9,7 @@ class PageTrack(devtools_monitor.Track):
   """Records the events from the page track."""
   _METHODS = ('Page.frameStartedLoading', 'Page.frameStoppedLoading',
               'Page.frameAttached')
+  FRAME_STARTED_LOADING = 'Page.frameStartedLoading'
   def __init__(self, connection):
     super(PageTrack, self).__init__(connection)
     self._connection = connection
@@ -26,7 +27,7 @@ class PageTrack(devtools_monitor.Track):
     frame_id = params['frameId']
     should_stop = False
     event = {'method': method, 'frame_id': frame_id}
-    if method == 'Page.frameStartedLoading':
+    if method == self.FRAME_STARTED_LOADING:
       if self._main_frame_id is None:
         self._main_frame_id = params['frameId']
       self._pending_frames.add(frame_id)
@@ -52,6 +53,14 @@ class PageTrack(devtools_monitor.Track):
 
   def ToJsonDict(self):
     return {'events': [event for event in self._events]}
+
+  def GetMainFrameId(self):
+    """Returns the Id (str) of the main frame, or raises a ValueError."""
+    for event in self._events:
+      if event['method'] == self.FRAME_STARTED_LOADING:
+        return event['frame_id']
+    else:
+      raise ValueError('No frame loads in the track.')
 
   @classmethod
   def FromJsonDict(cls, json_dict):
