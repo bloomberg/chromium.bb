@@ -148,39 +148,11 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
                                       IPC::Channel::Mode mode) {
   const std::string& name = handle->name;
 
-  int socket_fd = socket(PF_UNIX, SOCK_STREAM, 0);
-  ASSERT_GE(socket_fd, 0) << name;
-  ASSERT_GE(fcntl(socket_fd, F_SETFL, O_NONBLOCK), 0);
-  struct sockaddr_un server_address = { 0 };
-  memset(&server_address, 0, sizeof(server_address));
-  server_address.sun_family = AF_UNIX;
-  int path_len = snprintf(server_address.sun_path, IPC::kMaxSocketNameLength,
-                          "%s", name.c_str());
-  DCHECK_EQ(static_cast<int>(name.length()), path_len);
-  size_t server_address_len = offsetof(struct sockaddr_un,
-                                       sun_path) + path_len + 1;
-
+  int socket_fd = 0;
   if (mode == IPC::Channel::MODE_NAMED_SERVER) {
-    // Only one server at a time. Cleanup garbage if it exists.
-    unlink(name.c_str());
-    // Make sure the path we need exists.
-    base::FilePath path(name);
-    base::FilePath dir_path = path.DirName();
-    ASSERT_TRUE(base::CreateDirectory(dir_path));
-    ASSERT_GE(bind(socket_fd,
-                   reinterpret_cast<struct sockaddr *>(&server_address),
-                   server_address_len), 0) << server_address.sun_path
-                                           << ": " << strerror(errno)
-                                           << "(" << errno << ")";
-    ASSERT_GE(listen(socket_fd, SOMAXCONN), 0) << server_address.sun_path
-                                               << ": " << strerror(errno)
-                                               << "(" << errno << ")";
+    IPC::CreateServerUnixDomainSocket(base::FilePath(name), &socket_fd);
   } else if (mode == IPC::Channel::MODE_NAMED_CLIENT) {
-    ASSERT_GE(connect(socket_fd,
-                      reinterpret_cast<struct sockaddr *>(&server_address),
-                      server_address_len), 0) << server_address.sun_path
-                                              << ": " << strerror(errno)
-                                              << "(" << errno << ")";
+    IPC::CreateClientUnixDomainSocket(base::FilePath(name), &socket_fd);
   } else {
     FAIL() << "Unknown mode " << mode;
   }
