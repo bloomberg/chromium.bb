@@ -332,7 +332,9 @@ AudioPlayer.prototype.onError_ = function() {
  * @private
  */
 AudioPlayer.prototype.onResize_ = function(event) {
-  var trackListHeight = this.player_.$.trackList.clientHeight;
+  var trackListHeight =
+          (/** @type {{trackList:TrackListElement}} */ (this.player_.$))
+          .trackList.clientHeight;
   if (trackListHeight > AudioPlayer.TOP_PADDING_HEIGHT) {
     this.isPlaylistExpanded_ = true;
     this.player_.playlistExpanded = true;
