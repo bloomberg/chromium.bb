@@ -810,16 +810,6 @@ name=bug_580636_a
 system call NtDuplicateObject
 KERNELBASE.dll!DuplicateHandle
 ...
-*!ChildProcessHostMsg_AllocatedSharedBitmap::ChildProcessHostMsg_AllocatedSharedBitmap
-*!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
-
-HANDLE LEAK
-name=bug_580636_b
-system call NtDuplicateObject
-KERNELBASE.dll!DuplicateHandle
-...
-...
-content.dll!content::HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory
-content.dll!content::RenderMessageFilter::AllocateLockedDiscardableSharedMemoryOnFileThread
+ipc.dll!IPC::internal::HandleAttachmentWin::HandleAttachmentWin
 
 
