@@ -197,7 +197,7 @@ void Geolocation::startRequest(GeoNotifier *notifier)
     recordOriginTypeAccess();
     String errorMessage;
     if (!frame()->settings()->allowGeolocationOnInsecureOrigins() && !executionContext()->isSecureContext(errorMessage)) {
-        notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
+        notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, errorMessage));
         return;
     }
 
@@ -206,7 +206,7 @@ void Geolocation::startRequest(GeoNotifier *notifier)
         Element* owner = document()->ownerElement();
         if (owner && owner->hasAttribute(HTMLNames::permissionsAttr)) {
             String errorMessage = "A cross-origin iframe needs its permissions attribute properly set in order to use the geolocation API.";
-            notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
+            notifier->setFatalError(PositionError::create(PositionError::PERMISSION_DENIED, errorMessage));
             return;
         }
     }
