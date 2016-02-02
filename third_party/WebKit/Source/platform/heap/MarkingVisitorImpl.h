@@ -41,9 +41,6 @@ protected:
             return;
 
         ASSERT(ThreadState::current()->isInGC());
-#if !defined(NDEBUG)
-        ASSERT(Heap::findPageFromAddress(header));
-#endif
         ASSERT(toDerived()->markingMode() != Visitor::WeakProcessing);
 
         header->mark();
