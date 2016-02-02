@@ -113,7 +113,7 @@ do_package() {
   # link-time code rewriting, but it might leave the symbol dependency in
   # place -- there are no guarantees.
   BAD_DIFF=0
-  LANG=C diff -u "$SCRIPTDIR/expected_deps_$ARCHITECTURE" \
+  diff "$SCRIPTDIR/expected_deps_$ARCHITECTURE" \
       <(echo "${DETECTED_DEPENDS}" | grep -v '^ld-linux.*\(GLIBC_2\.3\)') \
       || BAD_DIFF=1
   if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
