@@ -121,7 +121,7 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
 
     LayoutPoint childPoint = paintOffset;
     if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
+        childPoint = LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())), childPoint);
 
     ObjectPainter(*LineLayoutAPIShim::constLayoutObjectFrom(inlineBox.lineLayoutItem())).paintAsPseudoStackingContext(paintInfo, childPoint);
 }
