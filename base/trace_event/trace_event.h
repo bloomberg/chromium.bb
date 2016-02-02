@@ -940,13 +940,13 @@ class TraceEventSamplingStateScope {
   const char* previous_state_;
 };
 
-using TraceContext = const void*;
+using TraceContext = trace_event_internal::TraceID;
 
 class TraceScopedContext {
  public:
   TraceScopedContext(const char* category_group,
                      const char* name,
-                     TraceContext context)
+                     trace_event_internal::TraceID::DontMangle context)
       : category_group_(category_group), name_(name), context_(context) {
     TRACE_EVENT_ENTER_CONTEXT(category_group_, name_, context_);
   }
@@ -958,7 +958,7 @@ class TraceScopedContext {
  private:
   const char* category_group_;
   const char* name_;
-  TraceContext context_;
+  trace_event_internal::TraceID::DontMangle context_;
   DISALLOW_COPY_AND_ASSIGN(TraceScopedContext);
 };
 
@@ -966,8 +966,6 @@ class TraceScopedContext {
 
 namespace base {
 namespace trace_event {
-
-using trace_event_internal::TraceContext;
 
 template<typename IDType> class TraceScopedTrackableObject {
  public:

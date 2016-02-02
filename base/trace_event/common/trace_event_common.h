@@ -974,7 +974,8 @@
       TRACE_EVENT_PHASE_LEAVE_CONTEXT, category_group, name,     \
       TRACE_ID_DONT_MANGLE(context), TRACE_EVENT_FLAG_NONE)
 #define TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context) \
-  INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name, context)
+  INTERNAL_TRACE_EVENT_SCOPED_CONTEXT(category_group, name,       \
+                                      TRACE_ID_DONT_MANGLE(context))
 
 // Macro to efficiently determine if a given category group is enabled.
 #define TRACE_EVENT_CATEGORY_GROUP_ENABLED(category_group, ret)             \

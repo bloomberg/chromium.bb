@@ -511,11 +511,12 @@ void TraceWithAllMacroVariants(WaitableEvent* task_complete_event) {
     TRACE_EVENT1(kControlCharacters, kControlCharacters,
                  kControlCharacters, kControlCharacters);
 
-    TraceContext context(reinterpret_cast<TraceContext>(0x20151021));
-    TRACE_EVENT_ENTER_CONTEXT("all", "TRACE_EVENT_ENTER_CONTEXT call", context);
-    TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call", context);
+    TRACE_EVENT_ENTER_CONTEXT("all", "TRACE_EVENT_ENTER_CONTEXT call",
+                              TRACE_ID_WITH_SCOPE("scope", 0x20151021));
+    TRACE_EVENT_LEAVE_CONTEXT("all", "TRACE_EVENT_LEAVE_CONTEXT call",
+                              TRACE_ID_WITH_SCOPE("scope", 0x20151021));
     TRACE_EVENT_SCOPED_CONTEXT("all", "TRACE_EVENT_SCOPED_CONTEXT call",
-                               context);
+                               0x20151021);
   }  // Scope close causes TRACE_EVENT0 etc to send their END events.
 
   if (task_complete_event)
@@ -908,7 +909,10 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
     EXPECT_EQ("(", ph);
 
+    std::string scope;
     std::string id;
+    EXPECT_TRUE((item && item->GetString("scope", &scope)));
+    EXPECT_EQ("scope", scope);
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
   }
@@ -919,7 +923,10 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_TRUE((item && item->GetString("ph", &ph)));
     EXPECT_EQ(")", ph);
 
+    std::string scope;
     std::string id;
+    EXPECT_TRUE((item && item->GetString("scope", &scope)));
+    EXPECT_EQ("scope", scope);
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
   }
@@ -934,6 +941,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ("(", ph);
 
     std::string id;
+    EXPECT_FALSE((item && item->HasKey("scope")));
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
   }
@@ -945,6 +953,7 @@ void ValidateAllTraceMacrosCreatedData(const ListValue& trace_parsed) {
     EXPECT_EQ(")", ph);
 
     std::string id;
+    EXPECT_FALSE((item && item->HasKey("scope")));
     EXPECT_TRUE((item && item->GetString("id", &id)));
     EXPECT_EQ("0x20151021", id);
   }
