@@ -146,10 +146,8 @@ private:
     // If the image is large enough, calls destroyDecodedData().
     void destroyDecodedDataIfNecessary();
 
-    // Generally called by destroyDecodedData(), destroys whole-image metadata
-    // and notifies observers that the memory footprint has (hopefully)
-    // decreased by |frameBytesCleared|.
-    void destroyMetadataAndNotify(size_t frameBytesCleared);
+    // Notifies observers that the memory footprint has changed.
+    void notifyMemoryChanged(int delta);
 
     // Whether or not size is available yet.
     bool isSizeAvailable();

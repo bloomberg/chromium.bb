@@ -78,6 +78,8 @@ public:
     size_t frameDecodedSize(size_t frame) { return m_image->m_frames[frame].m_frameBytes; }
     size_t decodedFramesCount() const { return m_image->m_frames.size(); }
 
+    void setFirstFrameNotComplete() { m_image->m_frames[0].m_isComplete = false; }
+
     void loadImage(const char* fileName, bool loadAllFrames = true)
     {
         RefPtr<SharedBuffer> imageData = readFile(fileName);
@@ -230,8 +232,8 @@ TEST_F(BitmapImageTest, icoHasWrongFrameDimensions)
 TEST_F(BitmapImageTest, correctDecodedDataSize)
 {
     // When requesting a frame of a multi-frame GIF causes another frame to be
-    // decoded as well, both frames' sizes should be included in the decoded
-    // size changed notification.
+    // decoded as well, both frames' sizes should be reported by the source and
+    // thus included in the decoded size changed notification.
     loadImage("/LayoutTests/fast/images/resources/anim_none.gif", false);
     frameAtIndex(1);
     int frameSize = static_cast<int>(m_image->size().area() * sizeof(ImageFrame::PixelData));
@@ -243,6 +245,22 @@ TEST_F(BitmapImageTest, correctDecodedDataSize)
     setCurrentFrame(2);
     destroyDecodedData(false);
     EXPECT_EQ(-frameSize, m_imageObserver.m_lastDecodedSizeChangedDelta);
+}
+
+TEST_F(BitmapImageTest, recachingFrameAfterDataChanged)
+{
+    loadImage("/LayoutTests/fast/images/resources/green.jpg");
+    setFirstFrameNotComplete();
+    EXPECT_GT(m_imageObserver.m_lastDecodedSizeChangedDelta, 0);
+    m_imageObserver.m_lastDecodedSizeChangedDelta = 0;
+
+    // Calling dataChanged causes the cache to flush, but doesn't affect the
+    // source's decoded frames. It shouldn't affect decoded size.
+    m_image->dataChanged(true);
+    EXPECT_EQ(0, m_imageObserver.m_lastDecodedSizeChangedDelta);
+    // Recaching the first frame also shouldn't affect decoded size.
+    m_image->imageForCurrentFrame();
+    EXPECT_EQ(0, m_imageObserver.m_lastDecodedSizeChangedDelta);
 }
 
 class BitmapImageDeferredDecodingTest : public BitmapImageTest {

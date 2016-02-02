@@ -365,6 +365,8 @@ void ImageResource::decodedSizeChanged(const blink::Image* image, int delta)
     if (!image || image != m_image)
         return;
 
+    // TODO(bsep): Crash on underflow, which is possible if an error causes
+    // decodedSize to be 0.
     setDecodedSize(decodedSize() + delta);
 }
 

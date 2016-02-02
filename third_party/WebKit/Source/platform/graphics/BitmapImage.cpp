@@ -112,15 +112,6 @@ bool BitmapImage::currentFrameHasSingleSecurityOrigin() const
     return true;
 }
 
-int BitmapImage::totalFrameBytes()
-{
-    const size_t numFrames = frameCount();
-    size_t totalBytes = 0;
-    for (size_t i = 0; i < numFrames; ++i)
-        totalBytes += m_source.frameBytesAtIndex(i);
-    return safeCast<int>(totalBytes);
-}
-
 void BitmapImage::destroyDecodedData(bool destroyAll)
 {
     for (size_t i = 0; i < m_frames.size(); ++i) {
@@ -130,7 +121,8 @@ void BitmapImage::destroyDecodedData(bool destroyAll)
         m_frames[i].clear(false);
     }
 
-    destroyMetadataAndNotify(m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame));
+    size_t frameBytesCleared = m_source.clearCacheExceptFrame(destroyAll ? kNotFound : m_currentFrame);
+    notifyMemoryChanged(-safeCast<int>(frameBytesCleared));
 }
 
 void BitmapImage::destroyDecodedDataIfNecessary()
@@ -147,10 +139,19 @@ void BitmapImage::destroyDecodedDataIfNecessary()
     }
 }
 
-void BitmapImage::destroyMetadataAndNotify(size_t frameBytesCleared)
+void BitmapImage::notifyMemoryChanged(int delta)
 {
-    if (frameBytesCleared && imageObserver())
-        imageObserver()->decodedSizeChanged(this, -safeCast<int>(frameBytesCleared));
+    if (delta && imageObserver())
+        imageObserver()->decodedSizeChanged(this, delta);
+}
+
+int BitmapImage::totalFrameBytes()
+{
+    const size_t numFrames = frameCount();
+    size_t totalBytes = 0;
+    for (size_t i = 0; i < numFrames; ++i)
+        totalBytes += m_source.frameBytesAtIndex(i);
+    return safeCast<int>(totalBytes);
 }
 
 void BitmapImage::cacheFrame(size_t index)
@@ -160,7 +161,6 @@ void BitmapImage::cacheFrame(size_t index)
         m_frames.grow(numFrames);
 
     int deltaBytes = totalFrameBytes();
-
 
     // We are caching frame snapshots.  This is OK even for partially decoded frames,
     // as they are cleared by dataChanged() when new data arrives.
@@ -182,8 +182,7 @@ void BitmapImage::cacheFrame(size_t index)
     // just the current frame size, because some multi-frame images may require
     // decoding multiple frames to decode the current frame.
     deltaBytes = totalFrameBytes() - deltaBytes;
-    if (deltaBytes && imageObserver())
-        imageObserver()->decodedSizeChanged(this, deltaBytes);
+    notifyMemoryChanged(deltaBytes);
 }
 
 void BitmapImage::updateSize() const
@@ -234,16 +233,13 @@ bool BitmapImage::dataChanged(bool allDataReceived)
     // start of the frame data), and any or none of them might be the particular
     // frame affected by appending new data here. Thus we have to clear all the
     // incomplete frames to be safe.
-    size_t frameBytesCleared = 0;
     for (size_t i = 0; i < m_frames.size(); ++i) {
         // NOTE: Don't call frameIsCompleteAtIndex() here, that will try to
         // decode any uncached (i.e. never-decoded or
         // cleared-on-a-previous-pass) frames!
-        size_t frameBytes = m_frames[i].m_frameBytes;
         if (m_frames[i].m_haveMetadata && !m_frames[i].m_isComplete)
-            frameBytesCleared += (m_frames[i].clear(true) ? frameBytes : 0);
+            m_frames[i].clear(true);
     }
-    destroyMetadataAndNotify(frameBytesCleared);
 
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
