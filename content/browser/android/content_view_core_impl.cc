@@ -1154,15 +1154,6 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(
                            gfx::PointF(x2 / dpi_scale(), y2 / dpi_scale()));
 }
 
-void ContentViewCoreImpl::MoveCaret(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    jfloat x,
-                                    jfloat y) {
-  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
-  if (rwhv)
-    rwhv->MoveCaret(gfx::Point(x / dpi_scale_, y / dpi_scale_));
-}
-
 void ContentViewCoreImpl::DismissTextHandles(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();

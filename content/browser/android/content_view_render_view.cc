@@ -99,14 +99,7 @@ void ContentViewRenderView::SetOverlayVideoMode(
     const JavaParamRef<jobject>& obj,
     bool enabled) {
   compositor_->SetHasTransparentBackground(enabled);
-  SetNeedsComposite(env, obj);
-}
-
-void ContentViewRenderView::SetNeedsComposite(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (compositor_)
-    compositor_->SetNeedsComposite();
+  compositor_->SetNeedsComposite();
 }
 
 void ContentViewRenderView::UpdateLayerTreeHost() {
@@ -124,11 +117,4 @@ void ContentViewRenderView::InitCompositor() {
     compositor_.reset(Compositor::Create(this, root_window_));
 }
 
-jlong ContentViewRenderView::GetUIResourceProvider(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (!compositor_)
-    return 0;
-  return reinterpret_cast<intptr_t>(&compositor_->GetUIResourceProvider());
-}
 }  // namespace content

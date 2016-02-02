@@ -207,10 +207,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 jfloat y1,
                                 jfloat x2,
                                 jfloat y2);
-  void MoveCaret(JNIEnv* env,
-                 const base::android::JavaParamRef<jobject>& obj,
-                 jfloat x,
-                 jfloat y);
   void DismissTextHandles(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj);
   void SetTextHandlesTemporarilyHidden(
@@ -236,7 +232,6 @@ class ContentViewCoreImpl : public ContentViewCore,
                 jboolean focused);
 
   jint GetBackgroundColor(JNIEnv* env, jobject obj);
-  void SetBackgroundColor(JNIEnv* env, jobject obj, jint color);
   void SetAllowJavascriptInterfacesInspection(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

@@ -3252,8 +3252,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     private native void nativeSelectBetweenCoordinates(
             long nativeContentViewCoreImpl, float x1, float y1, float x2, float y2);
 
-    private native void nativeMoveCaret(long nativeContentViewCoreImpl, float x, float y);
-
     private native void nativeDismissTextHandles(long nativeContentViewCoreImpl);
     private native void nativeSetTextHandlesTemporarilyHidden(
             long nativeContentViewCoreImpl, boolean hidden);
