@@ -275,11 +275,11 @@ fi
 # Format it nicely and save it for comparison.
 # The grep -v is for a duplicate libc6 dep caused by Lucid glibc silliness.
 echo "$DPKG_SHLIB_DEPS" | sed 's/, /\n/g' | \
-  grep -v '^libc6 (>= 2.3.6-6~)$' > actual
+  grep -v '^libc6 (>= 2.3.6-6~)$' | LANG=C sort > actual
 
 # Compare the expected dependency list to the generate list.
 BAD_DIFF=0
-diff "$SCRIPTDIR/expected_deps_$TARGETARCH" actual || BAD_DIFF=1
+diff -u "$SCRIPTDIR/expected_deps_$TARGETARCH" actual || BAD_DIFF=1
 if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
