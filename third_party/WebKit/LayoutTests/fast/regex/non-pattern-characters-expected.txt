@@ -146,7 +146,7 @@ PASS regexp.lastIndex is 0
 Testing regexp: [invalid {} variations]
 PASS /{0}/ threw exception SyntaxError: Invalid regular expression: /{0}/: Nothing to repeat.
 PASS /{1,0}/ threw exception SyntaxError: Invalid regular expression: /{1,0}/: Nothing to repeat.
-PASS /a{1,0}/ threw exception SyntaxError: Invalid regular expression: /a{1,0}/: numbers out of order in {} quantifier..
+PASS /a{1,0}/ threw exception SyntaxError: Invalid regular expression: /a{1,0}/: numbers out of order in {} quantifier.
 
 Testing regexp: /}/gm
 PASS regexp.test('}') is true
