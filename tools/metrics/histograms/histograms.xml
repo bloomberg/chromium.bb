@@ -3976,6 +3976,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cast.Sender.FullscreenControlsActionWithMediaElement"
+    enum="MediaCommand">
+  <owner>aberent@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <summary>
+    Record each interaction with the fullscreen remote playback controls in
+    cases when the corresponding media element on the page was present.
+  </summary>
+</histogram>
+
+<histogram name="Cast.Sender.FullscreenControlsActionWithoutMediaElement"
+    enum="MediaCommand">
+  <owner>aberent@chromium.org</owner>
+  <owner>avayvod@chromium.org</owner>
+  <summary>
+    Record each interaction with the fullscreen remote playback controls in
+    cases when the corresponding media element on the page was not present.
+  </summary>
+</histogram>
+
 <histogram name="Cast.Sender.MediaElementPresentWhenShowFullscreenControls"
     enum="BooleanPresent">
   <owner>aberent@chromium.org</owner>
@@ -71513,6 +71533,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Neutral"/>
   <int value="1" label="Dubious (deprecated August 2015)"/>
   <int value="2" label="Non-Secure"/>
+</enum>
+
+<enum name="MediaCommand" type="int">
+  <int value="0" label="Resume"/>
+  <int value="1" label="Pause"/>
+  <int value="2" label="Seek"/>
 </enum>
 
 <enum name="MediaContainers" type="int">

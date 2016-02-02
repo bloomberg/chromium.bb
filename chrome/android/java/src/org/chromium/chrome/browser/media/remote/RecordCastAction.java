@@ -21,6 +21,13 @@ public class RecordCastAction {
     public static final int DEVICE_TYPE_NON_CAST_YOUTUBE = 2;
     public static final int DEVICE_TYPE_COUNT = 3;
 
+    // UMA histogram values for the fullscreen controls the user could tap.
+    // Keep in sync with the MediaCommand enum in histograms.xml
+    public static final int FULLSCREEN_CONTROLS_RESUME = 0;
+    public static final int FULLSCREEN_CONTROLS_PAUSE = 1;
+    public static final int FULLSCREEN_CONTROLS_SEEK = 2;
+    public static final int FULLSCREEN_CONTROLS_COUNT = 3;
+
     /**
      * Record the type of cast receiver we to which we are casting.
      * @param playerType the type of cast receiver.
@@ -91,6 +98,27 @@ public class RecordCastAction {
             RecordHistogram.recordBooleanHistogram(
                     "Cast.Sender.MediaElementPresentWhenShowFullscreenControls",
                     isMediaElementAlive);
+        }
+    }
+
+    /**
+     * Record when an action was taken on the {@link ExpandedControllerActivity} by the user.
+     * Notes if the corresponding media element has been alive at that point in time.
+     *
+     * @param action one of the FULLSCREEN_CONTROLS_* constants defined above.
+     * @param isMediaElementAlive if the media element is alive.
+     */
+    public static void recordFullscreenControlsAction(int action, boolean isMediaElementAlive) {
+        if (!LibraryLoader.isInitialized()) return;
+
+        if (isMediaElementAlive) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Cast.Sender.FullscreenControlsActionWithMediaElement",
+                    action, FULLSCREEN_CONTROLS_COUNT);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Cast.Sender.FullscreenControlsActionWithoutMediaElement",
+                    action, FULLSCREEN_CONTROLS_COUNT);
         }
     }
 

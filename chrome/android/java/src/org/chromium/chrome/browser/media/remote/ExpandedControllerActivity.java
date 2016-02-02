@@ -57,6 +57,9 @@ public class ExpandedControllerActivity
         public void onStart() {
             if (mMediaRouteController == null) return;
             mMediaRouteController.resume();
+            RecordCastAction.recordFullscreenControlsAction(
+                    RecordCastAction.FULLSCREEN_CONTROLS_RESUME,
+                    mMediaRouteController.getMediaStateListener() != null);
         }
 
         @Override
@@ -70,6 +73,9 @@ public class ExpandedControllerActivity
         public void onPause() {
             if (mMediaRouteController == null) return;
             mMediaRouteController.pause();
+            RecordCastAction.recordFullscreenControlsAction(
+                    RecordCastAction.FULLSCREEN_CONTROLS_PAUSE,
+                    mMediaRouteController.getMediaStateListener() != null);
         }
 
         @Override
@@ -88,6 +94,9 @@ public class ExpandedControllerActivity
         public void onSeekTo(long pos) {
             if (mMediaRouteController == null) return;
             mMediaRouteController.seekTo(pos);
+            RecordCastAction.recordFullscreenControlsAction(
+                    RecordCastAction.FULLSCREEN_CONTROLS_SEEK,
+                    mMediaRouteController.getMediaStateListener() != null);
         }
 
         @Override
