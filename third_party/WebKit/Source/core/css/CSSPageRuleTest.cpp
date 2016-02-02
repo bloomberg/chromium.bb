@@ -42,6 +42,10 @@ TEST(CSSPageRule, selectorText)
     pageRule->setSelectorText(":hover");
     EXPECT_EQ(":left", pageRule->selectorText());
 
+    // set invalid page selector.
+    pageRule->setSelectorText("right { bla");
+    EXPECT_EQ(":left", pageRule->selectorText());
+
     // set page pseudo class selector.
     pageRule->setSelectorText(":right");
     EXPECT_EQ(":right", pageRule->selectorText());
