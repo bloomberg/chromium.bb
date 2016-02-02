@@ -92,6 +92,7 @@ class ChromeProxyHTML5Test(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.html5test.html5test'
 
 
+@benchmark.Enabled(*DESKTOP_PLATFORMS)
 class ChromeProxyYouTube(ChromeProxyBenchmark):
   tag = 'youtube'
   test = measurements.ChromeProxyYouTube
