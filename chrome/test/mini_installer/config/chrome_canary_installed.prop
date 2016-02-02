@@ -31,8 +31,7 @@
       }
     },
     "HKEY_CURRENT_USER\\Software\\Classes\\$CHROME_SHORT_NAME_SXS$USER_SPECIFIC_REGISTRY_SUFFIX": {
-      "condition": "$WINDOWS_VERSION >= $VERSION_WIN8",
-      "exists": "required"
+      "exists": "forbidden"
     }
   }
 }

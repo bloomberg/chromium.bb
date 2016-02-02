@@ -43,8 +43,7 @@
       }
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
-      "condition": "$WINDOWS_VERSION >= $VERSION_WIN8",
-      "exists": "required"
+      "exists": "forbidden"
     }
   }
 }
