@@ -69,6 +69,7 @@
 #include "platform/PlatformGestureEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceResponse.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
@@ -934,7 +935,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     // The frameRect is already in absolute space of the local frame to the plugin.
     windowRect = frameRect();
     // Map up to the root frame.
-    windowRect = enclosingIntRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox());
+    windowRect = pixelSnappedIntRect(LayoutRect(m_element->document().view()->layoutView()->localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())), TraverseDocumentBoundaries).boundingBox()));
     // Finally, adjust for scrolling of the root frame, which the above does not take into account.
     windowRect.moveBy(roundedIntPoint(-rootView->viewRect().location()));
 
