@@ -655,8 +655,7 @@ def generate_telemetry_test(tester_name, tester_config,
   if 'extra_browser_args' in test_config:
     extra_browser_args_string += ' ' + ' '.join(
         test_config['extra_browser_args'])
-  test_args.append('--extra-browser-args=\"' + extra_browser_args_string +
-                   '\"')
+  test_args.append('--extra-browser-args=' + extra_browser_args_string)
   if 'args' in test_config:
     test_args.extend(substitute_args(tester_config, test_config['args']))
   # The step name must end in 'test' or 'tests' in order for the

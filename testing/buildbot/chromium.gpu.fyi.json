@@ -123,7 +123,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -146,7 +146,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -169,7 +169,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -192,7 +192,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -215,7 +215,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -238,7 +238,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -261,7 +261,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -298,7 +298,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -321,7 +321,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -344,7 +344,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -369,7 +369,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -512,7 +512,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -535,7 +535,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -558,7 +558,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -581,7 +581,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -604,7 +604,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -627,7 +627,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -650,7 +650,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -687,7 +687,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -710,7 +710,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -733,7 +733,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -758,7 +758,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -901,7 +901,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -924,7 +924,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -947,7 +947,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -970,7 +970,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -993,7 +993,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1016,7 +1016,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -1039,7 +1039,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -1076,7 +1076,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -1099,7 +1099,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -1122,7 +1122,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -1147,7 +1147,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -1290,7 +1290,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -1313,7 +1313,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -1336,7 +1336,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -1359,7 +1359,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -1382,7 +1382,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1405,7 +1405,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -1428,7 +1428,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -1465,7 +1465,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -1488,7 +1488,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -1511,7 +1511,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -1536,7 +1536,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -1685,7 +1685,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -1708,7 +1708,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -1731,7 +1731,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -1754,7 +1754,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -1777,7 +1777,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1800,7 +1800,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -1823,7 +1823,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -1860,7 +1860,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -1883,7 +1883,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -1906,7 +1906,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -1931,7 +1931,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -2066,7 +2066,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -2089,7 +2089,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -2112,7 +2112,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -2135,7 +2135,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -2158,7 +2158,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2181,7 +2181,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -2204,7 +2204,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -2241,7 +2241,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -2264,7 +2264,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -2287,7 +2287,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -2312,7 +2312,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -2446,7 +2446,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -2469,7 +2469,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -2492,7 +2492,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -2515,7 +2515,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -2538,7 +2538,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2561,7 +2561,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -2584,7 +2584,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -2621,7 +2621,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -2644,7 +2644,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -2667,7 +2667,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -2692,7 +2692,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -2835,7 +2835,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -2858,7 +2858,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -2881,7 +2881,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -2904,7 +2904,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -2927,7 +2927,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2950,7 +2950,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -2973,7 +2973,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -3010,7 +3010,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -3033,7 +3033,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -3056,7 +3056,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -3081,7 +3081,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -3230,7 +3230,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -3253,7 +3253,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -3276,7 +3276,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -3299,7 +3299,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -3322,7 +3322,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -3345,7 +3345,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -3368,7 +3368,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -3405,7 +3405,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -3428,7 +3428,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -3451,7 +3451,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -3476,7 +3476,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -3617,7 +3617,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -3641,7 +3641,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -3665,7 +3665,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -3689,7 +3689,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -3713,7 +3713,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -3737,7 +3737,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -3761,7 +3761,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -3799,7 +3799,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -3823,7 +3823,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -3847,7 +3847,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -3873,7 +3873,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -4031,7 +4031,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -4055,7 +4055,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -4079,7 +4079,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -4103,7 +4103,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -4127,7 +4127,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -4151,7 +4151,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -4175,7 +4175,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -4213,7 +4213,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -4237,7 +4237,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -4261,7 +4261,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -4287,7 +4287,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -4429,7 +4429,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -4453,7 +4453,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -4477,7 +4477,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -4501,7 +4501,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -4525,7 +4525,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -4549,7 +4549,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -4573,7 +4573,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -4611,7 +4611,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -4635,7 +4635,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -4659,7 +4659,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -4685,7 +4685,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -4843,7 +4843,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -4867,7 +4867,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -4891,7 +4891,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -4915,7 +4915,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -4939,7 +4939,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -4963,7 +4963,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -4987,7 +4987,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -5025,7 +5025,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -5049,7 +5049,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -5073,7 +5073,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -5099,7 +5099,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -5269,7 +5269,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -5292,7 +5292,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -5315,7 +5315,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -5338,7 +5338,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -5361,7 +5361,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -5384,7 +5384,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -5407,7 +5407,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -5444,7 +5444,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -5467,7 +5467,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -5490,7 +5490,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -5515,7 +5515,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -5538,7 +5538,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -5561,7 +5561,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -5745,7 +5745,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -5768,7 +5768,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -5791,7 +5791,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -5814,7 +5814,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -5837,7 +5837,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -5860,7 +5860,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -5883,7 +5883,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -5920,7 +5920,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -5943,7 +5943,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -5966,7 +5966,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -5991,7 +5991,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -6014,7 +6014,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -6037,7 +6037,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -6234,7 +6234,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -6257,7 +6257,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -6280,7 +6280,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -6303,7 +6303,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -6326,7 +6326,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -6349,7 +6349,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -6372,7 +6372,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -6409,7 +6409,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -6432,7 +6432,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -6455,7 +6455,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -6480,7 +6480,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -6503,7 +6503,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -6526,7 +6526,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -6740,7 +6740,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -6763,7 +6763,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -6786,7 +6786,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -6809,7 +6809,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -6832,7 +6832,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -6855,7 +6855,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -6878,7 +6878,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -6915,7 +6915,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -6938,7 +6938,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -6961,7 +6961,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -6986,7 +6986,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -7009,7 +7009,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -7032,7 +7032,7 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -7201,7 +7201,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -7224,7 +7224,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -7247,7 +7247,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -7270,7 +7270,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -7293,7 +7293,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -7316,7 +7316,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -7339,7 +7339,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -7376,7 +7376,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -7399,7 +7399,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -7422,7 +7422,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -7447,7 +7447,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -7470,7 +7470,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -7493,7 +7493,7 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
@@ -7677,7 +7677,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "context_lost_tests",
@@ -7700,7 +7700,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_process_launch_tests",
@@ -7723,7 +7723,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "gpu_rasterization_tests",
@@ -7746,7 +7746,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "hardware_accelerated_feature_tests",
@@ -7769,7 +7769,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -7792,7 +7792,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "memory_test",
@@ -7815,7 +7815,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
@@ -7852,7 +7852,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "screenshot_sync_tests",
@@ -7875,7 +7875,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "trace_test",
@@ -7898,7 +7898,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
           "--webgl-conformance-version=2.0.0",
           "--webgl2-only=true"
         ],
@@ -7923,7 +7923,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_d3d9_tests",
@@ -7946,7 +7946,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=gl"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_gl_tests",
@@ -7969,7 +7969,7 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\""
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "webgl_conformance_tests",
