@@ -134,11 +134,22 @@ class PerfProvider : public base::NonThreadSafe,
       const std::vector<uint8_t>& perf_data,
       const std::vector<uint8_t>& perf_stat);
 
+  // Called when a session restore has finished.
+  void OnSessionRestoreDone(int num_tabs_restored);
+
+  // Turns off perf collection. Does not delete any data that was already
+  // collected and stored in |cached_perf_data_|.
+  void Deactivate();
+
   const CollectionParams& collection_params() const {
     return collection_params_;
   }
   const RandomSelector& command_selector() const {
     return command_selector_;
+  }
+
+  const base::OneShotTimer& timer() const {
+    return timer_;
   }
 
  private:
@@ -173,13 +184,6 @@ class PerfProvider : public base::NonThreadSafe,
   // Turns on perf collection. Resets the timer that's used to schedule
   // collections.
   void OnUserLoggedIn();
-
-  // Called when a session restore has finished.
-  void OnSessionRestoreDone(int num_tabs_restored);
-
-  // Turns off perf collection. Does not delete any data that was already
-  // collected and stored in |cached_perf_data_|.
-  void Deactivate();
 
   // Selects a random time in the upcoming profiling interval that begins at
   // |next_profiling_interval_start_|. Schedules |timer_| to invoke

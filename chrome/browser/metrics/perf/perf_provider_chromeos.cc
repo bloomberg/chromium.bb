@@ -453,9 +453,10 @@ void PerfProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
     return;
 
   // Collect a profile only 1/|sampling_factor| of the time, to avoid
-  // collecting too much data.
+  // collecting too much data. (0 means disable the trigger)
   const auto& resume_params = collection_params_.resume_from_suspend();
-  if (base::RandGenerator(resume_params.sampling_factor()) != 0)
+  if (resume_params.sampling_factor() == 0 ||
+      base::RandGenerator(resume_params.sampling_factor()) != 0)
     return;
 
   // Override any existing profiling.
@@ -480,9 +481,12 @@ void PerfProvider::OnSessionRestoreDone(int num_tabs_restored) {
 
   // Collect a profile only 1/|sampling_factor| of the time, to
   // avoid collecting too much data and potentially causing UI latency.
+  // (0 means disable the trigger)
   const auto& restore_params = collection_params_.restore_session();
-  if (base::RandGenerator(restore_params.sampling_factor()) != 0)
+  if (restore_params.sampling_factor() == 0 ||
+      base::RandGenerator(restore_params.sampling_factor()) != 0) {
     return;
+  }
 
   const auto min_interval = base::TimeDelta::FromSeconds(
       kMinIntervalBetweenSessionRestoreCollectionsInSec);
