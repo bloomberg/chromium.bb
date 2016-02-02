@@ -361,34 +361,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         parsedValue = parseBorderImage(propId);
         break;
 
-    case CSSPropertyBorderImageOutset:
-    case CSSPropertyWebkitMaskBoxImageOutset: {
-        RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
-        if (parseBorderImageOutset(result))
-            return result.release();
-        return nullptr;
-    }
-    case CSSPropertyBorderImageRepeat:
-    case CSSPropertyWebkitMaskBoxImageRepeat: {
-        RefPtrWillBeRawPtr<CSSValue> result = nullptr;
-        if (parseBorderImageRepeat(result))
-            return result.release();
-        return nullptr;
-    }
-    case CSSPropertyBorderImageSlice:
-    case CSSPropertyWebkitMaskBoxImageSlice: {
-        RefPtrWillBeRawPtr<CSSBorderImageSliceValue> result = nullptr;
-        if (parseBorderImageSlice(propId, result))
-            return result.release();
-        return nullptr;
-    }
-    case CSSPropertyBorderImageWidth:
-    case CSSPropertyWebkitMaskBoxImageWidth: {
-        RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
-        if (parseBorderImageWidth(result))
-            return result.release();
-        return nullptr;
-    }
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
             validPrimitive = true;
