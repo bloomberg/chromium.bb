@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<!-- TODO(iclelland): Generate this sample key during the build. The key below
-  will expire in 2033, but it would be better to always have a key which is
-  guaranteed to be valid when the tests are run. -->
+<!-- TODO(iclelland): Generate these sample tokens during the build. The tokens
+  below will expire in 2033, but it would be better to always have tokens which
+  are guaranteed to be valid when the tests are run. -->
 <meta name="api-experiments" content="0Z9yc32TDc+Jmn5LbxRS9b4AcU5mBdJR3SG42cfiq84ferbaogVMNqJnyQHAFJ1cbe4gywThVX4w+ZYcktfIBA==|http://127.0.0.1:8000|Grokalyze|2000000000" />
 <meta name="api-experiments" content="vwg3nKe6n5/EXh83rDzj1/AOL/FkpXP8CMC53/kjWcOH1smcZuzp431/5bEf39ZPOh6P2sjKsl/LPL7nIoycAg==|http://127.0.0.1:8000|Frobulate|2000000000" />
 <meta name="api-experiments" content="CVmciymFpxQj8T1ywqJLpNAIUqVLKMmeMSvYqL27XsJZhwFGS3Dl3igRUnzE5GByOUe0fIrcyVDLA7n8KovqAw==|http://127.0.0.1:8000|EnableMarqueeTag|2000000000" />
-<title>Test Sample API when experiment enabled</title>
+<title>Test Sample API when trial is enabled and multiple tokens are present</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/experiments.js"></script>
+<script src="resources/origin_trials.js"></script>
 <script>
 
-// The experiment is enabled, and the correct token can be found between two
-// other tokens.
+// The trial is enabled, and the correct token can be found between two other
+// tokens.
 expect_success();
 
 </script>

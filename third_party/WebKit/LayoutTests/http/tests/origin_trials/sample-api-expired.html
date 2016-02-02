@@ -4,14 +4,14 @@
   will expire in 2033, but it would be better to always have a key which is
   guaranteed to be valid when the tests are run. -->
 <meta name="api-experiments" content="ktI/SoAgEf1rzplbPPeG44jQv/t4eVFkBq6K22TBP++y3rQurg/RL5iuisXrTlBimad9rlKqOn9MgQKj+O4MDw==|http://127.0.0.1:8000|Frobulate|1000000000" />
-<title>Test Sample API when experiment enabled</title>
+<title>Test Sample API when trial has expired</title>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharness-helpers.js"></script>
 <script src="../resources/testharnessreport.js"></script>
-<script src="resources/experiments.js"></script>
+<script src="resources/origin_trials.js"></script>
 <script>
 
-// The experiment is not enabled, as the provided API key is expired (although
-// it has a valid signature.)
+// The trial is not enabled, as the provided token is expired (although it has a
+// valid signature.)
 expect_failure();
 </script>
