@@ -16,8 +16,9 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
-// Type converters to convert objects between internal device/usb data types and
-// public Mojo interface data types.
+// Type converters to translate between internal device/usb data types and
+// public Mojo interface data types. This must be included by any source file
+// that uses these conversions explicitly or implicitly.
 
 namespace device {
 class UsbDevice;
@@ -119,6 +120,13 @@ struct TypeConverter<device::usb::WebUsbDescriptorSetPtr,
 template <>
 struct TypeConverter<device::usb::DeviceInfoPtr, device::UsbDevice> {
   static device::usb::DeviceInfoPtr Convert(const device::UsbDevice& device);
+};
+
+template <>
+struct TypeConverter<device::usb::IsochronousPacketPtr,
+                     device::UsbDeviceHandle::IsochronousPacket> {
+  static device::usb::IsochronousPacketPtr Convert(
+      const device::UsbDeviceHandle::IsochronousPacket& packet);
 };
 
 }  // namespace mojo
