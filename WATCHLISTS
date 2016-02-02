@@ -597,6 +597,9 @@
       'filepath': 'chrome/browser/resources/options/|'\
           'chrome/browser/ui/webui/options/',
     },
+    'origin_trials': {
+      'filepath': 'origin_trials',
+    },
     'overview_mode': {
       'filepath': 'ash/wm/overview/',
     },
@@ -1260,7 +1263,8 @@
                  'vabr+watchlistautofill@chromium.org'],
     'automation': ['robertshield@chromium.org'],
     'background_sync': ['jkarlin+watch@chromium.org','peter@chromium.org',
-                        'iclelland+watch@chromium.org'],
+                        'iclelland+watch@chromium.org',
+                        'chasej+watch@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
@@ -1430,6 +1434,7 @@
     'omnibox': ['suzhe@chromium.org'],
     'options': ['dbeam+watch-options@chromium.org',
                 'michaelpg+watch-options@chromium.org'],
+    'origin_trials': ['chasej+watch@chromium.org'],
     'overview_mode': ['tdanderson+overview@chromium.org'],
     'ozone': ['kalyan.kondapally@intel.com', 'ozone-reviews@chromium.org'],
     'page_load_metrics' : ['csharrison+watch@chromium.org',
