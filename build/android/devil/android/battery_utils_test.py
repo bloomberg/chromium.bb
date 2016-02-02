@@ -19,7 +19,7 @@ from devil.android import device_utils
 from devil.android import device_utils_test
 from devil.utils import mock_calls
 
-with devil_env.SysPath(devil_env.config.LocalPath('pymock')):
+with devil_env.SysPath(devil_env.PYMOCK_PATH):
   import mock # pylint: disable=import-error
 
 _DUMPSYS_OUTPUT = [
@@ -248,12 +248,14 @@ class BatteryUtilsChargeDevice(BatteryUtilsTest):
     with self.assertCalls(
         (self.call.battery.SetCharging(True)),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'level', '50'], check_return=True), []),
+            ['dumpsys', 'battery', 'set', 'level', '50'],
+            check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.battery.GetBatteryInfo(), {'level': '50'}),
         (self.call.device.RunShellCommand(
-            ['dumpsys', 'battery', 'level', '50'], check_return=True), []),
+            ['dumpsys', 'battery', 'set', 'level', '50'],
+            check_return=True), []),
         (self.call.device.RunShellCommand(
             ['dumpsys', 'battery', 'reset'], check_return=True), []),
         (self.call.battery.GetBatteryInfo(), {'level': '100'})):
