@@ -44,6 +44,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // SaveCardBubbleView
   void Hide() override;
 
+  // views::BubbleDelegateView
+  scoped_ptr<views::View> CreateFootnoteView() override;
+
   // views::View
   gfx::Size GetPreferredSize() const override;
 
@@ -67,7 +70,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   ~SaveCardBubbleViews() override;
 
   scoped_ptr<views::View> CreateMainContentView();
-  scoped_ptr<views::View> CreateFootnoteView();
 
   // views::BubbleDelegateView
   void Init() override;

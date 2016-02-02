@@ -208,9 +208,8 @@ NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   frame->SetBubbleBorder(std::move(border));
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
-    View* titlebar_view = delegate->CreateTitlebarExtraView();
-    if (titlebar_view)
-      frame->SetTitlebarExtraView(titlebar_view);
+    frame->SetTitlebarExtraView(
+        make_scoped_ptr(delegate->CreateTitlebarExtraView()));
   }
   return frame;
 }

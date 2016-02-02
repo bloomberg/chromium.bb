@@ -46,10 +46,11 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // Recalculate the anchor position for this bubble.
   void UpdateAnchorView();
 
-  void InitLayout(const ExtensionInstalledBubble& bubble);
+  void InitLayout();
 
  private:
   // views::BubbleDelegateView:
+  scoped_ptr<views::View> CreateFootnoteView() override;
   void WindowClosing() override;
   gfx::Rect GetAnchorRect() const override;
   void OnWidgetClosing(views::Widget* widget) override;
@@ -65,14 +66,12 @@ class ExtensionInstalledBubbleView : public BubbleSyncPromoDelegate,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  const ExtensionInstalledBubble* bubble_;
   BubbleReference bubble_reference_;
   const extensions::Extension* extension_;
   Browser* browser_;
   ExtensionInstalledBubble::BubbleType type_;
   ExtensionInstalledBubble::AnchorPosition anchor_position_;
-
-  // The sync promo section of the bubble.
-  BubbleSyncPromoView* sync_promo_;
 
   // The button to close the bubble.
   views::LabelButton* close_;

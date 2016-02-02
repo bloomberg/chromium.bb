@@ -15,6 +15,7 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -77,6 +78,22 @@ void SaveCardBubbleViews::Hide() {
   Close();
 }
 
+scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
+  if (controller_->GetLegalMessageLines().empty())
+    return nullptr;
+
+  // Use BoxLayout to provide insets around the label.
+  scoped_ptr<View> view(new View());
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
+
+  // Add a StyledLabel for each line of the legal message.
+  for (const LegalMessageLine& line : controller_->GetLegalMessageLines())
+    view->AddChildView(CreateLegalMessageLineLabel(line, this).release());
+
+  return view;
+}
+
 gfx::Size SaveCardBubbleViews::GetPreferredSize() const {
   return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
 }
@@ -137,9 +154,7 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   scoped_ptr<View> view(new View());
   view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           GetBubbleFrameView()->GetTitleInsets().left(),
-                           views::kUnrelatedControlHorizontalSpacing,
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
                            views::kUnrelatedControlLargeHorizontalSpacing));
 
   // Add a title label. (We don't simply override WidgetDelegate::GetWindowTitle
@@ -216,33 +231,9 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   return view;
 }
 
-// Create view containing the legal message text.
-scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
-  // Use BoxLayout to provide insets around the label.
-  scoped_ptr<View> view(new View());
-  view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical,
-                           GetBubbleFrameView()->GetTitleInsets().left(),
-                           views::kUnrelatedControlHorizontalSpacing, 0));
-  view->SetBorder(
-      views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
-  view->set_background(
-      views::Background::CreateSolidBackground(kLightShadingColor));
-
-  // Add a StyledLabel for each line of the legal message.
-  for (const LegalMessageLine& line : controller_->GetLegalMessageLines())
-    view->AddChildView(CreateLegalMessageLineLabel(line, this).release());
-
-  return view;
-}
-
 void SaveCardBubbleViews::Init() {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   AddChildView(CreateMainContentView().release());
-  if (!controller_->GetLegalMessageLines().empty())
-    AddChildView(CreateFootnoteView().release());
-
-  set_margins(gfx::Insets(1, 0, 1, 0));
 }
 
 }  // namespace autofill

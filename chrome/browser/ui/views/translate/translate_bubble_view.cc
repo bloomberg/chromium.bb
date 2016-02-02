@@ -272,9 +272,6 @@ TranslateBubbleView::TranslateBubbleView(
     translate_executed_ = true;
   }
 
-  set_margins(gfx::Insets(views::kPanelVertMargin, views::kPanelHorizMargin,
-                          views::kPanelVertMargin, views::kPanelHorizMargin));
-
   translate_bubble_view_ = this;
 }
 

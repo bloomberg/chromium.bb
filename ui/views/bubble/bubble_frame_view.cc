@@ -20,6 +20,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -35,6 +36,12 @@ const int kTitleRightInset = 7;
 
 // The horizontal padding between the title and the icon.
 const int kTitleHorizontalPadding = 5;
+
+// Background color of the footnote view.
+const SkColor kFootnoteBackgroundColor = SkColorSetRGB(245, 245, 245);
+
+// Color of the top border of the footnote.
+const SkColor kFootnoteBorderColor = SkColorSetRGB(229, 229, 229);
 
 // Get the |vertical| or horizontal amount that |available_bounds| overflows
 // |window_bounds|.
@@ -73,6 +80,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
       title_(nullptr),
       close_(nullptr),
       titlebar_extra_view_(nullptr),
+      footnote_container_(nullptr),
       close_button_clicked_(false) {
   AddChildView(title_icon_);
 
@@ -121,6 +129,10 @@ gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
   gfx::Rect client_bounds = GetLocalBounds();
   client_bounds.Inset(GetInsets());
   client_bounds.Inset(bubble_border_->GetInsets());
+  if (footnote_container_) {
+    client_bounds.set_height(client_bounds.height() -
+                             footnote_container_->height());
+  }
   return client_bounds;
 }
 
@@ -298,6 +310,15 @@ void BubbleFrameView::Layout() {
     titlebar_extra_view_bounds.Subtract(bounds);
     titlebar_extra_view_->SetBoundsRect(titlebar_extra_view_bounds);
   }
+
+  if (footnote_container_) {
+    gfx::Rect local_bounds = GetLocalBounds();
+    local_bounds.Inset(bubble_border_->GetInsets());
+    int height = footnote_container_->GetHeightForWidth(local_bounds.width());
+    footnote_container_->SetBounds(local_bounds.x(),
+                                   local_bounds.bottom() - height,
+                                   local_bounds.width(), height);
+  }
 }
 
 const char* BubbleFrameView::GetClassName() const {
@@ -338,11 +359,31 @@ void BubbleFrameView::SetBubbleBorder(scoped_ptr<BubbleBorder> border) {
   set_background(new views::BubbleBackground(bubble_border_));
 }
 
-void BubbleFrameView::SetTitlebarExtraView(View* view) {
-  DCHECK(view);
+void BubbleFrameView::SetTitlebarExtraView(scoped_ptr<View> view) {
+  if (!view)
+    return;
+
   DCHECK(!titlebar_extra_view_);
-  AddChildView(view);
-  titlebar_extra_view_ = view;
+  titlebar_extra_view_ = view.release();
+  AddChildView(titlebar_extra_view_);
+}
+
+void BubbleFrameView::SetFootnoteView(scoped_ptr<View> view) {
+  if (!view)
+    return;
+
+  DCHECK(!footnote_container_);
+
+  footnote_container_ = new views::View();
+  footnote_container_->SetLayoutManager(
+      new BoxLayout(BoxLayout::kVertical, content_margins_.left(),
+                    content_margins_.top(), 0));
+  footnote_container_->set_background(
+      Background::CreateSolidBackground(kFootnoteBackgroundColor));
+  footnote_container_->SetBorder(
+      Border::CreateSolidSidedBorder(1, 0, 0, 0, kFootnoteBorderColor));
+  footnote_container_->AddChildView(view.release());
+  AddChildView(footnote_container_);
 }
 
 gfx::Rect BubbleFrameView::GetUpdatedWindowBounds(const gfx::Rect& anchor_rect,
@@ -464,12 +505,17 @@ gfx::Size BubbleFrameView::GetSizeForClientSize(
   title_bar_width += title_label_size.width();
   if (close_->visible())
     title_bar_width += close_->width() + 1;
-  if (titlebar_extra_view_ != NULL)
+  if (titlebar_extra_view_)
     title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
   gfx::Size size(client_size);
   size.SetToMax(gfx::Size(title_bar_width, 0));
+
   const gfx::Insets insets(GetInsets());
   size.Enlarge(insets.width(), insets.height());
+
+  if (footnote_container_)
+    size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
+
   return size;
 }
 

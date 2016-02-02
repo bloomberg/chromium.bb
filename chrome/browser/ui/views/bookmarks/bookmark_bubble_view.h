@@ -71,6 +71,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // views::BubbleDelegateView:
   const char* GetClassName() const override;
   views::View* GetInitiallyFocusedView() override;
+  scoped_ptr<views::View> CreateFootnoteView() override;
 
   // Creates a BookmarkBubbleView.
   BookmarkBubbleView(views::View* anchor_view,
@@ -137,9 +138,6 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
   // Combobox showing a handful of folders the user can choose from, including
   // the current parent.
   views::Combobox* parent_combobox_;
-
-  // Bookmark sync promo view, if displayed.
-  views::View* sync_promo_view_;
 
   // When the destructor is invoked should the bookmark be removed?
   bool remove_bookmark_;

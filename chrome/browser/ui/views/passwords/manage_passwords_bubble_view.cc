@@ -156,6 +156,8 @@ views::StyledLabel::RangeStyleInfo GetLinkStyle() {
 
 // Given a layout and a model, add an appropriate title using a
 // SINGLE_VIEW_COLUMN_SET, followed by a spacer row.
+// TODO(estade): make this a title, the link a TitlebarExtraView, and remove the
+// custom margins in the ctor.
 void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
   views::Label* title_label = new views::Label(model->title());
   title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -795,6 +797,8 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
+  // TODO(estade): Make the title row a regular bubble title and remove this
+  // margin customization.
   const int top_margin = ShouldShowCloseButton() ? margins().top()
                                                  : views::kPanelVertMargin;
   set_margins(gfx::Insets(top_margin, views::kPanelHorizMargin,

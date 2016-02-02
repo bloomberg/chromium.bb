@@ -115,12 +115,12 @@ class HeadingAndCloseButtonView : public views::View {
 ExtensionInstalledBubbleView::ExtensionInstalledBubbleView(
     ExtensionInstalledBubble* bubble,
     BubbleReference bubble_reference)
-    : bubble_reference_(bubble_reference),
+    : bubble_(bubble),
+      bubble_reference_(bubble_reference),
       extension_(bubble->extension()),
       browser_(bubble->browser()),
       type_(bubble->type()),
       anchor_position_(bubble->anchor_position()),
-      sync_promo_(nullptr),
       close_(nullptr),
       manage_shortcut_(nullptr) {}
 
@@ -174,6 +174,15 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   if (!reference_view)
     reference_view = browser_view->GetToolbarView()->app_menu_button();
   SetAnchorView(reference_view);
+}
+
+scoped_ptr<views::View> ExtensionInstalledBubbleView::CreateFootnoteView() {
+  if (!(bubble_->options() & ExtensionInstalledBubble::SIGN_IN_PROMO))
+    return nullptr;
+
+  return scoped_ptr<views::View>(
+      new BubbleSyncPromoView(this, IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
+                              IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW));
 }
 
 void ExtensionInstalledBubbleView::WindowClosing() {
@@ -249,8 +258,7 @@ void ExtensionInstalledBubbleView::LinkClicked(views::Link* source,
   chrome::Navigate(&params);
 }
 
-void ExtensionInstalledBubbleView::InitLayout(
-    const ExtensionInstalledBubble& bubble) {
+void ExtensionInstalledBubbleView::InitLayout() {
   // The Extension Installed bubble takes on various forms, depending on the
   // type of extension installed. In general, though, they are all similar:
   //
@@ -268,8 +276,7 @@ void ExtensionInstalledBubbleView::InitLayout(
   //     or a link to configure the keybinding shortcut (if one exists).
   // Extra info can include a promo for signing into sync.
 
-  set_margins(gfx::Insets(views::kPanelVertMargin, 0, 0, 0));
-
+  const ExtensionInstalledBubble& bubble = *bubble_;
   // The number of rows in the content section of the bubble.
   int main_content_row_count = 1;
   if (bubble.options() & ExtensionInstalledBubble::HOW_TO_USE)
@@ -282,26 +289,16 @@ void ExtensionInstalledBubbleView::InitLayout(
   views::GridLayout* layout = new views::GridLayout(this);
   SetLayoutManager(layout);
 
-  enum ColumnSetId {
-    MAIN_COLUMN_SET = 0,
-    SYNC_PROMO_COLUMN_SET,
-  };
+  const int cs_id = 0;
 
-  views::ColumnSet* main_cs = layout->AddColumnSet(MAIN_COLUMN_SET);
-  // Note: the left padding column is set to kUnrelatedControlHorizontalSpacing
-  // so that the distance between the left edge and the icon matches the
-  // distance between the icon and the content.
-  main_cs->AddPaddingColumn(0 /* not resizable */,
-                            views::kUnrelatedControlHorizontalSpacing);
+  views::ColumnSet* main_cs = layout->AddColumnSet(cs_id);
   // Icon column.
   main_cs->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
   main_cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
-  // Heading column:
+  // Heading column.
   main_cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::FIXED, kRightColumnWidth, 0);
-  main_cs->AddPaddingColumn(0 /* not resizable */,
-                            views::kUnrelatedControlHorizontalSpacing);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   const gfx::FontList& font_list = rb.GetFontList(ui::ResourceBundle::BaseFont);
@@ -316,7 +313,7 @@ void ExtensionInstalledBubbleView::InitLayout(
   icon->SetImageSize(size);
   icon->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
 
-  layout->StartRow(0, MAIN_COLUMN_SET);
+  layout->StartRow(0, cs_id);
   layout->AddView(icon, 1, main_content_row_count);
 
   // Add the heading (for all options).
@@ -335,8 +332,8 @@ void ExtensionInstalledBubbleView::InitLayout(
   layout->AddView(heading_and_close);
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  auto add_content_view = [&layout](views::View* view) {
-    layout->StartRow(0, MAIN_COLUMN_SET);
+  auto add_content_view = [&layout, &cs_id](views::View* view) {
+    layout->StartRow(0, cs_id);
     // Skip the icon column.
     layout->SkipColumns(1);
     layout->AddView(view);
@@ -359,17 +356,6 @@ void ExtensionInstalledBubbleView::InitLayout(
     add_content_view(CreateLabel(
         l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALLED_MANAGE_INFO),
         font_list));
-  }
-
-  if (bubble.options() & ExtensionInstalledBubble::SIGN_IN_PROMO) {
-    views::ColumnSet* sync_cs = layout->AddColumnSet(SYNC_PROMO_COLUMN_SET);
-    sync_cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                       views::GridLayout::USE_PREF, 0, 0);
-    layout->StartRow(0, SYNC_PROMO_COLUMN_SET);
-    sync_promo_ = new BubbleSyncPromoView(
-        this, IDS_EXTENSION_INSTALLED_SYNC_PROMO_LINK_NEW,
-        IDS_EXTENSION_INSTALLED_SYNC_PROMO_NEW);
-    layout->AddView(sync_promo_);
   }
 }
 
@@ -424,7 +410,7 @@ void ExtensionInstalledBubbleUi::Show(BubbleReference bubble_reference) {
                                 ? views::BubbleBorder::TOP_LEFT
                                 : views::BubbleBorder::TOP_RIGHT);
 
-  delegate_view_->InitLayout(*bubble_);
+  delegate_view_->InitLayout();
 
   views::BubbleDelegateView::CreateBubble(delegate_view_)->Show();
   content::RecordAction(
