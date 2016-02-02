@@ -2325,6 +2325,9 @@ Chrome will scan for nearby pages when your device is unlocked. These pages will
       <message name="IDS_PHYSICAL_WEB_REFRESH" desc="The label for a button that initiates a scan for nearby URLs">
         Refresh
       </message>
+      <message name="IDS_PHYSICAL_WEB_LAUNCH_BUTTON" desc="The label for a button that opens a list of nearby URLs">
+        See what's nearby
+      </message>
     </messages>
   </release>
 </grit>

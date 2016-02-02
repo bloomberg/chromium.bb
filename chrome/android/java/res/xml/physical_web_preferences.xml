@@ -19,4 +19,8 @@
         android:key="physical_web_learn_more"
         chrome:helpContext="@string/help_context_physical_web" />
 
+    <org.chromium.chrome.browser.preferences.ButtonPreference
+        android:key="physical_web_launch"
+        android:title="@string/physical_web_launch_button" />
+
 </PreferenceScreen>

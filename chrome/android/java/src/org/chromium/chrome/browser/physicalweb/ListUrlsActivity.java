@@ -38,6 +38,7 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
     public static final String REFERER_KEY = "referer";
     public static final int NOTIFICATION_REFERER = 1;
     public static final int OPTIN_REFERER = 2;
+    public static final int PREFERENCE_REFERER = 3;
     private static final String TAG = "PhysicalWeb";
 
     private Context mContext;
