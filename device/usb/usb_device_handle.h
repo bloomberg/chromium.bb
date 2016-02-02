@@ -40,18 +40,9 @@ enum UsbTransferStatus {
 // UsbDeviceHandle class provides basic I/O related functionalities.
 class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
  public:
-  struct IsochronousPacket {
-    uint32_t length;
-    uint32_t transferred_length;
-    UsbTransferStatus status;
-  };
-
   using ResultCallback = base::Callback<void(bool)>;
   using TransferCallback = base::Callback<
       void(UsbTransferStatus, scoped_refptr<net::IOBuffer>, size_t)>;
-  using IsochronousTransferCallback =
-      base::Callback<void(scoped_refptr<net::IOBuffer>,
-                          const std::vector<IsochronousPacket>& packets)>;
 
   enum TransferRequestType { STANDARD, CLASS, VENDOR, RESERVED };
   enum TransferRecipient { DEVICE, INTERFACE, ENDPOINT, OTHER };
@@ -90,21 +81,17 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                unsigned int timeout,
                                const TransferCallback& callback) = 0;
 
-  virtual void IsochronousTransferIn(
-      uint8_t endpoint_number,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) = 0;
-
-  virtual void IsochronousTransferOut(
-      uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) = 0;
+  virtual void IsochronousTransfer(UsbEndpointDirection direction,
+                                   uint8_t endpoint,
+                                   scoped_refptr<net::IOBuffer> buffer,
+                                   size_t length,
+                                   unsigned int packets,
+                                   unsigned int packet_length,
+                                   unsigned int timeout,
+                                   const TransferCallback& callback) = 0;
 
   virtual void GenericTransfer(UsbEndpointDirection direction,
-                               uint8_t endpoint_number,
+                               uint8_t endpoint,
                                scoped_refptr<net::IOBuffer> buffer,
                                size_t length,
                                unsigned int timeout,
@@ -122,7 +109,6 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
 
   virtual ~UsbDeviceHandle();
 
- private:
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceHandle);
 };
 

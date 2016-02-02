@@ -6,12 +6,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
-
 #include <map>
-#include <numeric>
 #include <queue>
 #include <set>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -37,7 +34,7 @@ namespace {
 
 class ConfigBuilder {
  public:
-  explicit ConfigBuilder(uint8_t value) { config_.configuration_value = value; }
+  ConfigBuilder(uint8_t value) { config_.configuration_value = value; }
 
   ConfigBuilder& AddInterface(uint8_t interface_number,
                               uint8_t alternate_setting,
@@ -105,35 +102,21 @@ void ExpectTransferInAndThen(TransferStatus expected_status,
   continuation.Run();
 }
 
-void ExpectPacketsOutAndThen(const std::vector<uint32_t>& expected_packets,
-                             const base::Closure& continuation,
-                             mojo::Array<IsochronousPacketPtr> actual_packets) {
+void ExpectPacketsAndThen(
+    TransferStatus expected_status,
+    const std::vector<std::vector<uint8_t>>& expected_packets,
+    const base::Closure& continuation,
+    TransferStatus actual_status,
+    mojo::Array<mojo::Array<uint8_t>> actual_packets) {
+  EXPECT_EQ(expected_status, actual_status);
   ASSERT_EQ(expected_packets.size(), actual_packets.size());
   for (size_t i = 0; i < expected_packets.size(); ++i) {
-    EXPECT_EQ(expected_packets[i], actual_packets[i]->transferred_length)
-        << "Packet lengths differ at index: " << i;
-    EXPECT_EQ(TransferStatus::COMPLETED, actual_packets[i]->status)
-        << "Packet at index " << i << " not completed.";
-  }
-  continuation.Run();
-}
-
-void ExpectPacketsInAndThen(const std::vector<uint8_t>& expected_bytes,
-                            const std::vector<uint32_t>& expected_packets,
-                            const base::Closure& continuation,
-                            mojo::Array<uint8_t> actual_bytes,
-                            mojo::Array<IsochronousPacketPtr> actual_packets) {
-  ASSERT_EQ(expected_packets.size(), actual_packets.size());
-  for (size_t i = 0; i < expected_packets.size(); ++i) {
-    EXPECT_EQ(expected_packets[i], actual_packets[i]->transferred_length)
-        << "Packet lengths differ at index: " << i;
-    EXPECT_EQ(TransferStatus::COMPLETED, actual_packets[i]->status)
-        << "Packet at index " << i << " not completed.";
-  }
-  ASSERT_EQ(expected_bytes.size(), actual_bytes.size());
-  for (size_t i = 0; i < expected_bytes.size(); ++i) {
-    EXPECT_EQ(expected_bytes[i], actual_bytes[i])
-        << "Contents differ at index: " << i;
+    EXPECT_EQ(expected_packets[i].size(), actual_packets[i].size())
+        << "Packet sizes differ at index: " << i;
+    for (size_t j = 0; j < expected_packets[i].size(); ++j) {
+      EXPECT_EQ(expected_packets[i][j], actual_packets[i][j])
+          << "Contents of packet " << i << " differ at index " << j;
+    }
   }
   continuation.Run();
 }
@@ -203,11 +186,8 @@ class USBDeviceImplTest : public testing::Test {
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ControlTransfer));
     ON_CALL(mock_handle(), GenericTransfer(_, _, _, _, _, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::GenericTransfer));
-    ON_CALL(mock_handle(), IsochronousTransferIn(_, _, _, _))
-        .WillByDefault(Invoke(this, &USBDeviceImplTest::IsochronousTransferIn));
-    ON_CALL(mock_handle(), IsochronousTransferOut(_, _, _, _, _))
-        .WillByDefault(
-            Invoke(this, &USBDeviceImplTest::IsochronousTransferOut));
+    ON_CALL(mock_handle(), IsochronousTransfer(_, _, _, _, _, _, _, _))
+        .WillByDefault(Invoke(this, &USBDeviceImplTest::IsochronousTransfer));
 
     return proxy;
   }
@@ -226,22 +206,8 @@ class USBDeviceImplTest : public testing::Test {
     mock_inbound_data_.push(data);
   }
 
-  void AddMockInboundPackets(
-      const std::vector<uint8_t>& data,
-      const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-    mock_inbound_data_.push(data);
-    mock_inbound_packets_.push(packets);
-  }
-
   void AddMockOutboundData(const std::vector<uint8_t>& data) {
     mock_outbound_data_.push(data);
-  }
-
-  void AddMockOutboundPackets(
-      const std::vector<uint8_t>& data,
-      const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-    mock_outbound_data_.push(data);
-    mock_outbound_packets_.push(packets);
   }
 
  private:
@@ -370,59 +336,18 @@ class USBDeviceImplTest : public testing::Test {
       OutboundTransfer(buffer, length, callback);
   }
 
-  void IsochronousTransferIn(
-      uint8_t endpoint_number,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const UsbDeviceHandle::IsochronousTransferCallback& callback) {
-    ASSERT_FALSE(mock_inbound_data_.empty());
-    const std::vector<uint8_t>& bytes = mock_inbound_data_.front();
-    size_t length = bytes.size();
-    scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(length);
-    std::copy(bytes.begin(), bytes.end(), buffer->data());
-    mock_inbound_data_.pop();
-
-    ASSERT_FALSE(mock_inbound_packets_.empty());
-    std::vector<UsbDeviceHandle::IsochronousPacket> packets =
-        mock_inbound_packets_.front();
-    ASSERT_EQ(packets.size(), packet_lengths.size());
-    for (size_t i = 0; i < packets.size(); ++i) {
-      EXPECT_EQ(packets[i].length, packet_lengths[i])
-          << "Packet lengths differ at index: " << i;
-    }
-    mock_inbound_packets_.pop();
-
-    callback.Run(buffer, packets);
-  }
-
-  void IsochronousTransferOut(
-      uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const UsbDeviceHandle::IsochronousTransferCallback& callback) {
-    ASSERT_FALSE(mock_outbound_data_.empty());
-    const std::vector<uint8_t>& bytes = mock_outbound_data_.front();
-    size_t length =
-        std::accumulate(packet_lengths.begin(), packet_lengths.end(), 0u);
-    ASSERT_EQ(bytes.size(), length);
-    for (size_t i = 0; i < length; ++i) {
-      EXPECT_EQ(bytes[i], buffer->data()[i]) << "Contents differ at index: "
-                                             << i;
-    }
-    mock_outbound_data_.pop();
-
-    ASSERT_FALSE(mock_outbound_packets_.empty());
-    std::vector<UsbDeviceHandle::IsochronousPacket> packets =
-        mock_outbound_packets_.front();
-    ASSERT_EQ(packets.size(), packet_lengths.size());
-    for (size_t i = 0; i < packets.size(); ++i) {
-      EXPECT_EQ(packets[i].length, packet_lengths[i])
-          << "Packet lengths differ at index: " << i;
-    }
-    mock_outbound_packets_.pop();
-
-    callback.Run(buffer, packets);
+  void IsochronousTransfer(UsbEndpointDirection direction,
+                           uint8_t endpoint,
+                           scoped_refptr<net::IOBuffer> buffer,
+                           size_t length,
+                           unsigned int packets,
+                           unsigned int packet_length,
+                           unsigned int timeout,
+                           const UsbDeviceHandle::TransferCallback& callback) {
+    if (direction == USB_DIRECTION_INBOUND)
+      InboundTransfer(callback);
+    else
+      OutboundTransfer(buffer, length, callback);
   }
 
   scoped_ptr<base::MessageLoop> message_loop_;
@@ -436,10 +361,6 @@ class USBDeviceImplTest : public testing::Test {
 
   std::queue<std::vector<uint8_t>> mock_inbound_data_;
   std::queue<std::vector<uint8_t>> mock_outbound_data_;
-  std::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
-      mock_inbound_packets_;
-  std::queue<std::vector<UsbDeviceHandle::IsochronousPacket>>
-      mock_outbound_packets_;
 
   std::set<uint8_t> claimed_interfaces_;
 
@@ -837,52 +758,56 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
     loop.Run();
   }
 
-  std::vector<UsbDeviceHandle::IsochronousPacket> fake_packets(4);
-  for (size_t i = 0; i < fake_packets.size(); ++i) {
-    fake_packets[i].length = 8;
-    fake_packets[i].transferred_length = 8;
-    fake_packets[i].status = USB_TRANSFER_COMPLETED;
-  }
-  std::vector<uint32_t> fake_packet_lengths(4, 8);
+  std::string outbound_packet_data = "aaaaaaaabbbbbbbbccccccccdddddddd";
+  std::vector<uint8_t> fake_outbound_packets(outbound_packet_data.size());
+  std::copy(outbound_packet_data.begin(), outbound_packet_data.end(),
+            fake_outbound_packets.begin());
 
-  std::vector<uint32_t> expected_transferred_lengths(4, 8);
-
-  std::string outbound_data = "aaaaaaaabbbbbbbbccccccccdddddddd";
-  std::vector<uint8_t> fake_outbound_data(outbound_data.size());
-  std::copy(outbound_data.begin(), outbound_data.end(),
-            fake_outbound_data.begin());
-
-  std::string inbound_data = "ddddddddccccccccbbbbbbbbaaaaaaaa";
-  std::vector<uint8_t> fake_inbound_data(inbound_data.size());
-  std::copy(inbound_data.begin(), inbound_data.end(),
-            fake_inbound_data.begin());
+  std::string inbound_packet_data = "ddddddddccccccccbbbbbbbbaaaaaaaa";
+  std::vector<uint8_t> fake_inbound_packets(inbound_packet_data.size());
+  std::copy(inbound_packet_data.begin(), inbound_packet_data.end(),
+            fake_inbound_packets.begin());
 
   AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
-  AddMockOutboundPackets(fake_outbound_data, fake_packets);
-  AddMockInboundPackets(fake_inbound_data, fake_packets);
+  AddMockOutboundData(fake_outbound_packets);
+  AddMockInboundData(fake_inbound_packets);
 
   EXPECT_CALL(mock_handle(),
-              IsochronousTransferOut(0x01, _, fake_packet_lengths, 0, _));
+              IsochronousTransfer(USB_DIRECTION_OUTBOUND, 0x01, _,
+                                  fake_outbound_packets.size(), 4, 8, 0, _));
 
   {
     base::RunLoop loop;
+    mojo::Array<mojo::Array<uint8_t>> packets =
+        mojo::Array<mojo::Array<uint8_t>>::New(4);
+    for (size_t i = 0; i < 4; ++i) {
+      std::vector<uint8_t> bytes(8);
+      std::copy(outbound_packet_data.begin() + i * 8,
+                outbound_packet_data.begin() + i * 8 + 8, bytes.begin());
+      packets[i].Swap(&bytes);
+    }
     device->IsochronousTransferOut(
-        1, mojo::Array<uint8_t>::From(fake_outbound_data),
-        mojo::Array<uint32_t>::From(fake_packet_lengths), 0,
-        base::Bind(&ExpectPacketsOutAndThen, expected_transferred_lengths,
+        1, std::move(packets), 0,
+        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
 
   EXPECT_CALL(mock_handle(),
-              IsochronousTransferIn(0x81, fake_packet_lengths, 0, _));
+              IsochronousTransfer(USB_DIRECTION_INBOUND, 0x81, _,
+                                  fake_inbound_packets.size(), 4, 8, 0, _));
 
   {
     base::RunLoop loop;
+    std::vector<std::vector<uint8_t>> packets(4);
+    for (size_t i = 0; i < 4; ++i) {
+      packets[i].resize(8);
+      std::copy(inbound_packet_data.begin() + i * 8,
+                inbound_packet_data.begin() + i * 8 + 8, packets[i].begin());
+    }
     device->IsochronousTransferIn(
-        1, mojo::Array<uint32_t>::From(fake_packet_lengths), 0,
-        base::Bind(&ExpectPacketsInAndThen, fake_inbound_data,
-                   expected_transferred_lengths, loop.QuitClosure()));
+        1, 4, 8, 0, base::Bind(&ExpectPacketsAndThen, TransferStatus::COMPLETED,
+                               packets, loop.QuitClosure()));
     loop.Run();
   }
 

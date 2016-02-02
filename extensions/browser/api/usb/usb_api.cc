@@ -4,8 +4,6 @@
 
 #include "extensions/browser/api/usb/usb_api.h"
 
-#include <algorithm>
-#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -470,8 +468,7 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
   } else {
     scoped_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->Append(std::move(transfer_info));
-    // Using ErrorWithArguments is discouraged but required to provide the
-    // detailed transfer info as the transfer may have partially succeeded.
+    // Returning arguments with an error is wrong but we're stuck with it.
     Respond(ErrorWithArguments(std::move(error_args),
                                ConvertTransferStatusToApi(status)));
   }
@@ -1137,87 +1134,46 @@ ExtensionFunction::ResponseAction UsbIsochronousTransferFunction::Run() {
   size_t size = 0;
   UsbEndpointDirection direction = device::USB_DIRECTION_INBOUND;
 
-  if (!ConvertDirectionFromApi(generic_transfer.direction, &direction))
+  if (!ConvertDirectionFromApi(generic_transfer.direction, &direction)) {
     return RespondNow(Error(kErrorConvertDirection));
+  }
 
-  if (!GetTransferSize(generic_transfer, &size))
+  if (!GetTransferSize(generic_transfer, &size)) {
     return RespondNow(Error(kErrorInvalidTransferLength));
+  }
 
-  if (transfer.packets < 0 || transfer.packets >= kMaxPackets)
+  if (transfer.packets < 0 || transfer.packets >= kMaxPackets) {
     return RespondNow(Error(kErrorInvalidNumberOfPackets));
-  size_t packets = transfer.packets;
+  }
 
+  unsigned int packets = transfer.packets;
   if (transfer.packet_length < 0 ||
       transfer.packet_length >= kMaxPacketLength) {
     return RespondNow(Error(kErrorInvalidPacketLength));
   }
 
-  size_t total_length = packets * transfer.packet_length;
-  if (packets > size || total_length > size)
+  unsigned int packet_length = transfer.packet_length;
+  const uint64_t total_length = packets * packet_length;
+  if (packets > size || total_length > size) {
     return RespondNow(Error(kErrorTransferLength));
-  std::vector<uint32_t> packet_lengths(packets, transfer.packet_length);
+  }
+
+  scoped_refptr<net::IOBuffer> buffer =
+      CreateBufferForTransfer(generic_transfer, direction, size);
+  if (!buffer.get()) {
+    return RespondNow(Error(kErrorMalformedParameters));
+  }
 
   int timeout = generic_transfer.timeout ? *generic_transfer.timeout : 0;
-  if (timeout < 0)
+  if (timeout < 0) {
     return RespondNow(Error(kErrorInvalidTimeout));
-
-  if (direction == device::USB_DIRECTION_INBOUND) {
-    device_handle->IsochronousTransferIn(
-        generic_transfer.endpoint, packet_lengths, timeout,
-        base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
-  } else {
-    scoped_refptr<net::IOBuffer> buffer = CreateBufferForTransfer(
-        generic_transfer, direction, transfer.packets * transfer.packet_length);
-    if (!buffer.get())
-      return RespondNow(Error(kErrorMalformedParameters));
-
-    device_handle->IsochronousTransferOut(
-        generic_transfer.endpoint, buffer.get(), packet_lengths, timeout,
-        base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
   }
+
+  device_handle->IsochronousTransfer(
+      direction, generic_transfer.endpoint, buffer.get(), size, packets,
+      packet_length, timeout,
+      base::Bind(&UsbIsochronousTransferFunction::OnCompleted, this));
   return RespondLater();
-}
-
-void UsbIsochronousTransferFunction::OnCompleted(
-    scoped_refptr<net::IOBuffer> data,
-    const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-  size_t length = std::accumulate(
-      packets.begin(), packets.end(), 0,
-      [](const size_t& a, const UsbDeviceHandle::IsochronousPacket& packet) {
-        return a + packet.transferred_length;
-      });
-  scoped_ptr<char[]> buffer(new char[length]);
-
-  UsbTransferStatus status = device::USB_TRANSFER_COMPLETED;
-  size_t buffer_offset = 0;
-  size_t data_offset = 0;
-  for (const auto& packet : packets) {
-    // Capture the error status of the first unsuccessful packet.
-    if (status == device::USB_TRANSFER_COMPLETED &&
-        packet.status != device::USB_TRANSFER_COMPLETED) {
-      status = packet.status;
-    }
-
-    memcpy(&buffer[buffer_offset], data->data() + data_offset,
-           packet.transferred_length);
-    buffer_offset += packet.transferred_length;
-    data_offset += packet.length;
-  }
-
-  scoped_ptr<base::DictionaryValue> transfer_info(new base::DictionaryValue());
-  transfer_info->SetInteger(kResultCodeKey, status);
-  transfer_info->Set(kDataKey,
-                     new base::BinaryValue(std::move(buffer), length));
-  if (status == device::USB_TRANSFER_COMPLETED) {
-    Respond(OneArgument(std::move(transfer_info)));
-  } else {
-    scoped_ptr<base::ListValue> error_args(new base::ListValue());
-    error_args->Append(std::move(transfer_info));
-    // Using ErrorWithArguments is discouraged but required to provide the
-    // detailed transfer info as the transfer may have partially succeeded.
-    Respond(ErrorWithArguments(std::move(error_args),
-                               ConvertTransferStatusToApi(status)));
-  }
 }
 
 UsbResetDeviceFunction::UsbResetDeviceFunction() {
@@ -1254,8 +1210,7 @@ void UsbResetDeviceFunction::OnComplete(bool success) {
 
     scoped_ptr<base::ListValue> error_args(new base::ListValue());
     error_args->AppendBoolean(false);
-    // Using ErrorWithArguments is discouraged but required to maintain
-    // compatibility with existing applications.
+    // Returning arguments with an error is wrong but we're stuck with it.
     Respond(ErrorWithArguments(std::move(error_args), kErrorResetDevice));
   }
 }

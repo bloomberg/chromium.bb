@@ -352,18 +352,14 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                               query.buffer, query.size));
   }
 
-  void IsochronousTransferIn(
-      uint8_t endpoint_number,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) override {}
-
-  void IsochronousTransferOut(
-      uint8_t endpoint_number,
-      scoped_refptr<net::IOBuffer> buffer,
-      const std::vector<uint32_t>& packet_lengths,
-      unsigned int timeout,
-      const IsochronousTransferCallback& callback) override {}
+  void IsochronousTransfer(UsbEndpointDirection direction,
+                           uint8_t endpoint,
+                           scoped_refptr<net::IOBuffer> buffer,
+                           size_t length,
+                           unsigned int packets,
+                           unsigned int packet_length,
+                           unsigned int timeout,
+                           const TransferCallback& callback) override {}
 
  protected:
   virtual ~MockUsbDeviceHandle() {}

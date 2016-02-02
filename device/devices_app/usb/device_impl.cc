@@ -5,11 +5,7 @@
 #include "device/devices_app/usb/device_impl.h"
 
 #include <stddef.h>
-
-#include <algorithm>
-#include <numeric>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -132,46 +128,32 @@ void OnControlTransferOutPermissionCheckComplete(
   }
 }
 
-mojo::Array<IsochronousPacketPtr> BuildIsochronousPacketArray(
-    mojo::Array<uint32_t> packet_lengths,
-    TransferStatus status) {
-  mojo::Array<IsochronousPacketPtr> packets(packet_lengths.size());
-  for (size_t i = 0; i < packet_lengths.size(); ++i) {
-    packets[i] = IsochronousPacket::New();
-    packets[i]->length = packet_lengths[i];
-    packets[i]->status = status;
-  }
-  return packets;
-}
-
 void OnIsochronousTransferIn(
     scoped_ptr<Device::IsochronousTransferInCallback> callback,
+    uint32_t packet_size,
+    UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
-    const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-  mojo::Array<uint8_t> data;
+    size_t buffer_size) {
+  size_t num_packets = buffer_size / packet_size;
+  mojo::Array<mojo::Array<uint8_t>> packets(num_packets);
   if (buffer) {
-    // TODO(rockot/reillyg): We should change UsbDeviceHandle to use a
-    // std::vector<uint8_t> instead of net::IOBuffer. Then we could move
-    // instead of copy.
-    uint32_t buffer_size =
-        std::accumulate(packets.begin(), packets.end(), 0u,
-                        [](const uint32_t& a,
-                           const UsbDeviceHandle::IsochronousPacket& packet) {
-                          return a + packet.length;
-                        });
-    std::vector<uint8_t> bytes(buffer_size);
-    std::copy(buffer->data(), buffer->data() + buffer_size, bytes.begin());
-    data.Swap(&bytes);
+    for (size_t i = 0; i < num_packets; ++i) {
+      size_t packet_index = i * packet_size;
+      std::vector<uint8_t> bytes(packet_size);
+      std::copy(buffer->data() + packet_index,
+                buffer->data() + packet_index + packet_size, bytes.begin());
+      packets[i].Swap(&bytes);
+    }
   }
-  callback->Run(std::move(data),
-                mojo::Array<IsochronousPacketPtr>::From(packets));
+  callback->Run(mojo::ConvertTo<TransferStatus>(status), std::move(packets));
 }
 
 void OnIsochronousTransferOut(
     scoped_ptr<Device::IsochronousTransferOutCallback> callback,
+    UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
-    const std::vector<UsbDeviceHandle::IsochronousPacket>& packets) {
-  callback->Run(mojo::Array<IsochronousPacketPtr>::From(packets));
+    size_t buffer_size) {
+  callback->Run(mojo::ConvertTo<TransferStatus>(status));
 }
 
 }  // namespace
@@ -416,46 +398,58 @@ void DeviceImpl::GenericTransferOut(
 
 void DeviceImpl::IsochronousTransferIn(
     uint8_t endpoint_number,
-    mojo::Array<uint32_t> packet_lengths,
+    uint32_t num_packets,
+    uint32_t packet_length,
     uint32_t timeout,
     const IsochronousTransferInCallback& callback) {
   if (!device_handle_) {
-    callback.Run(mojo::Array<uint8_t>(),
-                 BuildIsochronousPacketArray(std::move(packet_lengths),
-                                             TransferStatus::TRANSFER_ERROR));
+    callback.Run(TransferStatus::TRANSFER_ERROR,
+                 mojo::Array<mojo::Array<uint8_t>>());
     return;
   }
 
   auto callback_ptr =
       make_scoped_ptr(new IsochronousTransferInCallback(callback));
   uint8_t endpoint_address = endpoint_number | 0x80;
-  device_handle_->IsochronousTransferIn(
-      endpoint_address, packet_lengths.storage(), timeout,
-      base::Bind(&OnIsochronousTransferIn, base::Passed(&callback_ptr)));
+  size_t transfer_size = static_cast<size_t>(num_packets) * packet_length;
+  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(transfer_size);
+  device_handle_->IsochronousTransfer(
+      USB_DIRECTION_INBOUND, endpoint_address, buffer, transfer_size,
+      num_packets, packet_length, timeout,
+      base::Bind(&OnIsochronousTransferIn, base::Passed(&callback_ptr),
+                 packet_length));
 }
 
 void DeviceImpl::IsochronousTransferOut(
     uint8_t endpoint_number,
-    mojo::Array<uint8_t> data,
-    mojo::Array<uint32_t> packet_lengths,
+    mojo::Array<mojo::Array<uint8_t>> packets,
     uint32_t timeout,
     const IsochronousTransferOutCallback& callback) {
   if (!device_handle_) {
-    callback.Run(BuildIsochronousPacketArray(std::move(packet_lengths),
-                                             TransferStatus::TRANSFER_ERROR));
+    callback.Run(TransferStatus::TRANSFER_ERROR);
     return;
   }
 
   auto callback_ptr =
       make_scoped_ptr(new IsochronousTransferOutCallback(callback));
   uint8_t endpoint_address = endpoint_number;
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-  {
-    const std::vector<uint8_t>& storage = data.storage();
-    std::copy(storage.begin(), storage.end(), buffer->data());
+  uint32_t packet_size = 0;
+  for (size_t i = 0; i < packets.size(); ++i) {
+    packet_size =
+        std::max(packet_size, static_cast<uint32_t>(packets[i].size()));
   }
-  device_handle_->IsochronousTransferOut(
-      endpoint_address, buffer, packet_lengths.storage(), timeout,
+  size_t transfer_size = packet_size * packets.size();
+  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(transfer_size);
+  memset(buffer->data(), 0, transfer_size);
+  for (size_t i = 0; i < packets.size(); ++i) {
+    uint8_t* packet =
+        reinterpret_cast<uint8_t*>(&buffer->data()[i * packet_size]);
+    DCHECK_LE(packets[i].size(), static_cast<size_t>(packet_size));
+    memcpy(packet, packets[i].storage().data(), packets[i].size());
+  }
+  device_handle_->IsochronousTransfer(
+      USB_DIRECTION_OUTBOUND, endpoint_address, buffer, transfer_size,
+      static_cast<uint32_t>(packets.size()), packet_size, timeout,
       base::Bind(&OnIsochronousTransferOut, base::Passed(&callback_ptr)));
 }
 
