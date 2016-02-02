@@ -44,10 +44,6 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   void RemoveDevice(const url::Origin& origin,
                     const std::string& device_address);
 
-  // TODO(ortuno): Add function to check if origin is allowed to access
-  // a device's service and add tests for that function.
-  // https://crbug.com/493460
-
   // Returns the Bluetooth Device's id for |origin|. Returns an empty string
   // if |origin| is not allowed to access the device.
   const std::string& GetDeviceId(const url::Origin& origin,
@@ -57,6 +53,12 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   // there is no such |device_id| in |origin|, returns an empty string.
   const std::string& GetDeviceAddress(const url::Origin& origin,
                                       const std::string& device_id);
+
+  // Returns true if the origin has previously been granted access to
+  // the service.
+  bool IsOriginAllowedToAccessService(const url::Origin& origin,
+                                      const std::string& device_id,
+                                      const std::string& service_uuid) const;
 
  private:
   typedef std::map<std::string, std::string> DeviceAddressToIdMap;

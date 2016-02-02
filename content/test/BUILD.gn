@@ -606,6 +606,7 @@ test("content_unittests") {
     "//crypto",
     "//device/battery",
     "//device/battery:mojo_bindings",
+    "//device/bluetooth",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
     "//net:extras",

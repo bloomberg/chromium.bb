@@ -696,8 +696,12 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::GET_PRIMARY_SERVICE);
   RecordGetPrimaryServiceService(BluetoothUUID(service_uuid));
 
-  // TODO(ortuno): Check if service_uuid is in "allowed services"
-  // https://crbug.com/493460
+  if (!allowed_devices_map_.IsOriginAllowedToAccessService(
+          GetOrigin(frame_routing_id), device_id, service_uuid)) {
+    Send(new BluetoothMsg_GetPrimaryServiceError(
+        thread_id, request_id, WebBluetoothError::NotAllowedToAccessService));
+    return;
+  }
 
   const CacheQueryResult query_result =
       QueryCacheForDevice(GetOrigin(frame_routing_id), device_id);
@@ -1426,6 +1430,12 @@ BluetoothDispatcherHost::QueryCacheForService(
   result.service = result.device->GetGattService(service_instance_id);
   if (result.service == nullptr) {
     result.outcome = CacheQueryOutcome::NO_SERVICE;
+  } else if (!allowed_devices_map_.IsOriginAllowedToAccessService(
+                 origin, device_id,
+                 result.service->GetUUID().canonical_value())) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN);
+    return CacheQueryResult(CacheQueryOutcome::BAD_RENDERER);
   }
   return result;
 }

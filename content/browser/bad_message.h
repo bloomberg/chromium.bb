@@ -130,6 +130,7 @@ enum BadMessageReason {
   ACI_WRONG_STORAGE_PARTITION = 106,
   RDHI_WRONG_STORAGE_PARTITION = 107,
   RDH_INVALID_REQUEST_ID = 108,
+  BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN = 109,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

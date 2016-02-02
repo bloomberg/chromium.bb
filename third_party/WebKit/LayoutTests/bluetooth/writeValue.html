@@ -10,7 +10,8 @@ test(t => { assert_exists(window, 'testRunner'); t.done(); },
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -26,7 +27,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -42,7 +44,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -74,7 +77,8 @@ gatt_errors_tests.forEach(testSpec => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -89,7 +93,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))
@@ -101,7 +106,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => service.getCharacteristic('gap.device_name'))

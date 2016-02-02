@@ -128,6 +128,24 @@ const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
                                                    : id_iter->second;
 }
 
+bool BluetoothAllowedDevicesMap::IsOriginAllowedToAccessService(
+    const url::Origin& origin,
+    const std::string& device_id,
+    const std::string& service_uuid) const {
+  auto id_map_iter = origin_to_device_id_to_services_map_.find(origin);
+  if (id_map_iter == origin_to_device_id_to_services_map_.end()) {
+    return false;
+  }
+
+  const auto& device_id_to_services_map = id_map_iter->second;
+
+  auto id_iter = device_id_to_services_map.find(device_id);
+
+  return id_iter == device_id_to_services_map.end()
+             ? false
+             : ContainsKey(id_iter->second, service_uuid);
+}
+
 std::string BluetoothAllowedDevicesMap::GenerateDeviceId() {
   std::string device_id = GetBase64Id();
   while (ContainsKey(device_id_set_, device_id)) {

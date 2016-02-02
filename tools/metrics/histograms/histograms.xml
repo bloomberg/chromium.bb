@@ -58036,6 +58036,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="106" label="ACI_WRONG_STORAGE_PARTITION"/>
   <int value="107" label="RDHI_WRONG_STORAGE_PARTITION"/>
   <int value="108" label="RDH_INVALID_REQUEST_ID"/>
+  <int value="109" label="BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">

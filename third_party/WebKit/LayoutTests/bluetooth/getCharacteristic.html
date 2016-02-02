@@ -10,7 +10,8 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => {
@@ -25,7 +26,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattService => gattService.getPrimaryService('generic_access'))
     .then(service => {
@@ -43,7 +45,8 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Characteristic not found in device.',
                                   'NotFoundError');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => Promise.all(
@@ -57,7 +60,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => Promise.all(
@@ -75,7 +79,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(services => Promise.all(
@@ -99,7 +104,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => {

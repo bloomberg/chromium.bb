@@ -1138,6 +1138,7 @@
             '../crypto/crypto.gyp:crypto',
             '../device/battery/battery.gyp:device_battery',
             '../device/battery/battery.gyp:device_battery_mojo_bindings',
+            '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gpu',
             '../gpu/gpu.gyp:gpu_unittest_utils',

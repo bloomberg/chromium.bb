@@ -10,7 +10,8 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
@@ -26,7 +27,8 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let expected = new DOMException('Service not found in device.',
                                   'NotFoundError');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['glucose']})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [assert_promise_rejects_with_message(
@@ -49,7 +51,8 @@ promise_test(() => {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('DelayedServicesDiscoveryAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['battery_service']})
     .then(device => device.connectGATT())
     .then(gattServer => {
       return assert_promise_rejects_with_message(
@@ -59,9 +62,46 @@ promise_test(() => {
 }, 'Request for wrong service. Must reject with NotFoundError even when the services' +
    ' are not immediately discovered');
 
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  let expected = new DOMException('Origin is not allowed to access the ' +
+                                  'service. Remember to add the service to a ' +
+                                  'filter or to optionalServices in ' +
+                                  'requestDevice().',
+                                  'SecurityError');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => Promise.all(
+      [assert_promise_rejects_with_message(
+        gattServer.getPrimaryService(glucose.alias), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(glucose.name), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(glucose.uuid), expected)]));
+}, 'Request for absent service without permission. Reject with SecurityError.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  let expected = new DOMException('Origin is not allowed to access the ' +
+                                  'service. Remember to add the service to a ' +
+                                  'filter or to optionalServices in ' +
+                                  'requestDevice().',
+                                  'SecurityError');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => Promise.all(
+      [assert_promise_rejects_with_message(
+        gattServer.getPrimaryService(generic_access.alias), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(generic_access.name), expected),
+       assert_promise_rejects_with_message(
+         gattServer.getPrimaryService(generic_access.uuid), expected)]));
+}, 'Request for present service without permission. Reject with SecurityError.');
+
 promise_test(function() {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
@@ -79,7 +119,8 @@ promise_test(function() {
 
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
-  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
+                                   optionalServices: ['generic_access']})
     .then(device => device.connectGATT())
     .then(gattServer => Promise.all(
       [gattServer.getPrimaryService(generic_access.alias),
