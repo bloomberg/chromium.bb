@@ -203,6 +203,12 @@ public class ContentShellActivity extends Activity {
         super.startActivity(i);
     }
 
+    @Override
+    protected void onDestroy() {
+        if (mShellManager != null) mShellManager.destroy();
+        super.onDestroy();
+    }
+
     public Intent getLastSentIntent() {
         return mLastSentIntent;
     }

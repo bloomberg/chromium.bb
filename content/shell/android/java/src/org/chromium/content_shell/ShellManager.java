@@ -178,6 +178,16 @@ public class ShellManager extends FrameLayout {
         removeView(shellView);
     }
 
+    /**
+     * Destroys the Shell manager and associated components.
+     */
+    public void destroy() {
+        // Remove active shell (Currently single shell support only available).
+        removeShell(mActiveShell);
+        mContentViewRenderView.destroy();
+        mContentViewRenderView = null;
+    }
+
     private static native void nativeInit(Object shellManagerInstance);
     private static native void nativeLaunchShell(String url);
 }
