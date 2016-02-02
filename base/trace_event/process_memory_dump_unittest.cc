@@ -206,8 +206,8 @@ TEST(ProcessMemoryDumpTest, CountResidentBytes) {
   size_t res1 = ProcessMemoryDump::CountResidentBytes(memory1.get(), size1);
   ASSERT_EQ(res1, size1);
 
-  // Allocate a large memory segment (>32Mib).
-  const size_t kVeryLargeMemorySize = 34 * 1024 * 1024;
+  // Allocate a large memory segment (> 8Mib).
+  const size_t kVeryLargeMemorySize = 15 * 1024 * 1024;
   scoped_ptr<char, base::AlignedFreeDeleter> memory2(
       static_cast<char*>(base::AlignedAlloc(kVeryLargeMemorySize, page_size)));
   memset(memory2.get(), 0, kVeryLargeMemorySize);
