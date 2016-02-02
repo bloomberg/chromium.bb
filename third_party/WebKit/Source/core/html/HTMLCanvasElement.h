@@ -101,8 +101,8 @@ public:
     String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
     String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
 
-    void toBlob(ScriptState*, BlobCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
-    void toBlob(ScriptState* scriptState, BlobCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(scriptState, callback, mimeType, ScriptValue(), exceptionState); }
+    void toBlob(BlobCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
+    void toBlob(BlobCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(callback, mimeType, ScriptValue(), exceptionState); }
 
     // Used for canvas capture.
     void addListener(CanvasDrawListener*);
