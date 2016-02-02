@@ -420,7 +420,9 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
     if (!mdpinfo->disabled) {
       if (mdpinfo->consecutive_failures >= kMaxConsecutiveFailuresCount) {
         mdpinfo->disabled = true;
-        disabled_reason = "Dump failed multiple times consecutively.";
+        disabled_reason =
+            "Dump failure, possibly related with sandboxing (crbug.com/461788)."
+            " Try --no-sandbox.";
       } else if (post_task_failed && mdpinfo->task_runner) {
         // Don't disable unbound dump providers. The utility thread is normally
         // shutdown when disabling the trace and getting here in this case is
