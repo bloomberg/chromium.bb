@@ -45,6 +45,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1553358976309200471">Atualizar o Chrome</translation>
 <translation id="1557201757634521564">Deteção automática de codificação</translation>
 <translation id="1568822834048182062">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google.</translation>
+<translation id="1592483623187843893">Marcador guardado offline</translation>
 <translation id="1620510694547887537">Câmara</translation>
 <translation id="1623104350909869708">Evitar que esta página crie caixas de diálogo adicionais</translation>
 <translation id="1641113438599504367">Navegação segura</translation>
@@ -86,6 +87,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2138201775715568214">A procurar páginas da Web física próximas</translation>
 <translation id="2139186145475833000">Adicionar ao ecrã principal</translation>
 <translation id="2154710561487035718">Copiar URL</translation>
+<translation id="21570240866965662">Ligação lenta</translation>
 <translation id="219985413780390209">Proteja-se e ao seu dispositivo contra sites perigosos</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refinar</translation>
@@ -109,6 +111,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="2512222046227390255">Preenchimento autom. formulários</translation>
+<translation id="2521102375070725336">Marcador guardado offline em <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">A Poupança de dados está ativada. Pode geri-la nas Definições.</translation>
 <translation id="2532336938189706096">Visualização na Web</translation>
 <translation id="2536728043171574184">Visualização de uma cópia offline desta página</translation>
@@ -131,14 +134,12 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2891154217021530873">Parar carregamento da página</translation>
 <translation id="2902702728133930130">O Chrome falhou durante o arranque com um erro inesperado.</translation>
 <translation id="2903493209154104877">Endereços</translation>
-<translation id="2904413602477443379">Escolher uma pasta</translation>
 <translation id="2913331724188855103">Permitir que os sites guardem e leiam dados de cookies (recomendado)</translation>
 <translation id="2956410042958133412">Esta conta é gerida por <ph name="PARENT_NAME_1" /> e por <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2996809686854298943">URL obrigatório</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
-<translation id="3039671569659952257">Eliminar pasta</translation>
 <translation id="3063601790762993062">Guardar vídeo</translation>
 <translation id="306566828762083630">O armazenamento do dispositivo está cheio. Remova outros dados multimédia para libertar espaço.</translation>
 <translation id="307329814453917357">Oferecer-se para traduzir páginas com o Google Tradutor</translation>
@@ -146,6 +147,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3090193911106258841">A aceder à entrada de áudio e de vídeo</translation>
 <translation id="3102119246920354026">Cache</translation>
 <translation id="3137521801621304719">Sair do modo de navegação anónima</translation>
+<translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3190152372525844641">Ative as autorizações para o Chrome nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
 <translation id="3207960819495026254">Adicionado aos marcadores</translation>
@@ -157,7 +159,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="3269093882174072735">Carregar imagem</translation>
 <translation id="3278850099957560514">Gaste menos em dados ao utilizar o Google para otimizar as páginas que visitar. As páginas acedidas através de ligações privadas (HTTPS) ou em separadores de navegação anónima não são otimizadas ou vistas pela Google.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
-<translation id="3287852534598822456">O marcador já não existe. Atualize.</translation>
 <translation id="3303414029551471755">Pretende transferir o conteúdo?</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3350687908700087792">Fechar todos os separadores de navegação anónima</translation>
@@ -170,6 +171,7 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="3485544713029068372">Smart Lock para palavras-passe</translation>
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
+<translation id="3501331331116143684">Página guardada offline em <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3527085408025491307">Pasta</translation>
 <translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
@@ -195,6 +197,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="3988213473815854515">A localização é permitida</translation>
 <translation id="3992315671621218278">Guardar link</translation>
 <translation id="4002066346123236978">Título</translation>
+<translation id="4035611068038188272">Atualmente, os marcadores ocupam <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
 <translation id="4042870126885713738">Mostrar sugestões quando um endereço Web não responder ou não for possível estabelecer ligação</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4059119910594077751">Toque no botão de retrocesso para sair do ecrã inteiro.</translation>
@@ -206,11 +209,14 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4116939199945053760"><ph name="SITE" /> pretende <ph name="BEGIN_LINK" />sincronizar com<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
+<translation id="4193864812412988973">A visualizar uma cópia offline deste marcador</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
+<translation id="4198229475320555619">Marcador com <ph name="PAGE_SIZE_STRING" /> guardado offline</translation>
 <translation id="423410644998903704">O Chrome necessita de acesso às autorizações para as partilhar com este site.</translation>
 <translation id="424696723690217687">Descobrir páginas Web enviadas por objetos próximos.
 
 O Chrome procura páginas próximas quando o seu dispositivo está desbloqueado. Estas páginas passam por um serviço Google para melhorar a qualidade dos resultados da página.</translation>
+<translation id="4254813446494774748">Idioma de tradução:</translation>
 <translation id="4256782883801055595">Licenças de código aberto</translation>
 <translation id="4259722352634471385">A navegação está bloqueada: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Copiar endereço do link</translation>
@@ -221,18 +227,17 @@ O Chrome procura páginas próximas quando o seu dispositivo está desbloqueado.
 <translation id="4334294535648607276">Transferência concluída.</translation>
 <translation id="4350413759959745971">Mover páginas guardadas</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
-<translation id="4357362091209756047">Não vê o seu dispositivo? <ph name="BEGIN_LINK1" />Procure novamente<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />Obtenha ajuda<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Não controlado</translation>
 <translation id="4378154925671717803">Telefone</translation>
 <translation id="4412992751769744546">Permitir cookies de terceiros</translation>
 <translation id="4440256989292146959">Navegar mais por menos</translation>
 <translation id="4452548195519783679">Adicionado aos marcadores em <ph name="FOLDER_NAME" /></translation>
+<translation id="4498934959426056365">Geração de chaves</translation>
 <translation id="4505554159887937799">Guardados offline</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{Há # dia}other{Há # dias}}</translation>
 <translation id="4522570452068850558">Detalhes</translation>
 <translation id="4526249700380860531">Ver e gerir as palavras-passe guardadas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Escolher pasta</translation>
-<translation id="4543087392704641517">Título do marcador</translation>
 <translation id="4543661749405994812">Copiar endereço de email</translation>
 <translation id="4581964774250883625">Entrou no modo de navegação anónima.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{Há # minuto}other{Há # minutos}}</translation>
@@ -256,7 +261,6 @@ O Chrome procura páginas próximas quando o seu dispositivo está desbloqueado.
 <translation id="4836364883164334657">A sua ligação a este site não é privada. É possível que utilizadores mal intencionados estejam a tentar roubar as suas informações (por exemplo, fotos, palavras-passe, mensagens e cartões de crédito) de <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Ler mais</translation>
 <translation id="4850886885716139402">Ver</translation>
-<translation id="4871370605780490696">Adicionar marcador</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
 <translation id="4927198283430892231">Atualmente, as páginas guardadas ocupam <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -342,7 +346,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5765780083710877561">Descrição:</translation>
 <translation id="5771382037724542929">Pretende substituir o ficheiro <ph name="FILE_NAME" /> existente no diretório <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Permissões</translation>
-<translation id="5806294296882899667">Erro ao carregar a predefinição</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Há # hora}other{Há # horas}}</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
 <translation id="5832934273103296195">Expandida – clicar para reduzir</translation>
@@ -369,6 +372,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6075798973483050474">Editar página inicial</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6112702117600201073">A atualizar a página</translation>
+<translation id="6127379762771434464">Item removido</translation>
 <translation id="6138140242378429169">Tornar a página compatível com dispositivos móveis</translation>
 <translation id="6140912465461743537">País/região</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
@@ -391,6 +395,7 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6406506848690869874">Sincronização</translation>
 <translation id="6409731863280057959">Pop-ups</translation>
 <translation id="641643625718530986">Imprimir…</translation>
+<translation id="6447570251829705777">Marcador não disponível offline</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Pesquisa e sugestões de URL</translation>
 <translation id="6458785801851713928">A sincronização não está disponível para o seu domínio.</translation>
@@ -435,23 +440,24 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Pastas</translation>
 <translation id="6978479750597523876">Repor definições de tradução</translation>
-<translation id="6979922938747275756">Ocorreu um erro ao carregar as pastas</translation>
 <translation id="6981982820502123353">Acessibilidade</translation>
 <translation id="6990079615885386641">Obter a aplicação na Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Comunicar automaticamente detalhes de possíveis incidentes de segurança à Google</translation>
 <translation id="6999892069268112724">Confirmar Conta Google</translation>
 <translation id="7019652137705190998">Aceda ao modo de navegação anónima para navegar em privado ou iniciar sessão temporariamente</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> transferido</translation>
+<translation id="7022756207310403729">Abrir no navegador</translation>
 <translation id="7026897394897382018">Ativar Poupança de dados</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7056999826593229648">Ligação lenta detetada</translation>
+<translation id="7057058088140140610">Cartões de crédito e endereços com o Google Payments</translation>
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="7094922512924405309">Não foram encontradas páginas da Web física próximas</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> separadores abertos</translation>
 <translation id="7096034533295549981">A carregar vídeo</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7191430249889272776">Separador aberto em segundo plano.</translation>
-<translation id="7201341158316793215">A remover…</translation>
 <translation id="7208788139759694678">Poupança de dados desativada</translation>
 <translation id="7243308994586599757">Opções disponíveis junto à parte inferior do ecrã</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> utiliza a sua localização para mostrar resultados da pesquisa locais</translation>
@@ -486,17 +492,16 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7626032353295482388">Bem-vindo ao Chrome</translation>
 <translation id="7634554953375732414">A sua ligação a este site não é privada.</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
-<translation id="764743049316168389">Pasta <ph name="FOLDER_NAME" /></translation>
 <translation id="7648422057306047504">Encriptar palavras-passe com credenciais Google</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665369617277396874">Adicionar conta</translation>
+<translation id="7690588279513156836">Carregar original</translation>
 <translation id="7735023902678907596">As páginas que visualizar em separadores de navegação anónima não são guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros transferidos ou as páginas guardadas são mantidos.
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do fornecedor de serviços de Internet, nem os Websites que visitar.</translation>
 <translation id="7761240775244195612">Pretende eliminar <ph name="PAGES_NUMBER" /> cópias offline não utilizadas no último mês? Esta ação permite apagar <ph name="TOTAL_PAGE_SIZE" /> de espaço.</translation>
 <translation id="7764225426217299476">Adicionar endereço</translation>
 <translation id="7765158879357617694">Mover</translation>
-<translation id="7767746238359002192">Visitar página para guardar offline</translation>
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
 <translation id="7784213092572143271">Página guardada</translation>
 <translation id="7788788617745289808">O Chrome necessita de acesso à câmara para a partilhar com este site.</translation>
@@ -509,10 +514,10 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="7876243839304621966">Remover tudo</translation>
 <translation id="7925108652071887026">Dados de preenchimento automático</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
+<translation id="7949961459945740081">Obter funcionalidades recentes</translation>
 <translation id="7961015016161918242">Nunca</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
-<translation id="7989222512959629388">A guardar…</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
 <translation id="7999064672810608036">Tem a certeza de que pretende limpar todos os dados locais, incluindo cookies, e repor todas as autorizações para este Website?</translation>
 <translation id="8007176423574883786">Desativada para este dispositivo</translation>
@@ -525,7 +530,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="8106211421800660735">Número de cartão de crédito</translation>
 <translation id="813082847718468539">Ver informações do Web site</translation>
 <translation id="8137558756159375272">Tocar para pesquisar envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Pode desativá-la em <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" />.</translation>
-<translation id="8143660160623733249">Nome da pasta</translation>
 <translation id="8146397137182589628">Não guardada offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> contas</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
@@ -561,9 +565,11 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 
 Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transferido.</translation>
 <translation id="8660471606262461360">Do Google Payments</translation>
+<translation id="8675945939500569406">Ativar a Web física?</translation>
 <translation id="8676374126336081632">Limpar texto</translation>
 <translation id="869891660844655955">Data de expiração</translation>
 <translation id="8699799819461268362">Filtro Google SafeSites</translation>
+<translation id="8701537995684343047">Aceder ao marcador para guardar offline</translation>
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8727142376512517020">Não voltar a mostrar</translation>
@@ -596,16 +602,15 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9100610230175265781">Frase de acesso obrigatória</translation>
 <translation id="9133515669113036225">Repor as credenciais do dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
-<translation id="9156605176886108508">Nenhuma pasta de marcadores</translation>
+<translation id="9151532766011674069">Marcador guardado offline. O armazenamento está quase cheio.</translation>
 <translation id="917685106653909562">Páginas da Web física próximas</translation>
 <translation id="9187199695613236444">Visualização compatível com dispositivos móveis</translation>
 <translation id="9192643434065497760">Ative o Bluetooth nas <ph name="BEGIN_LINK" />definições do dispositivo<ph name="END_LINK" /> para permitir a sincronização.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página inicial</translation>
 <translation id="938850635132480979">Erro: <ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">Nova pasta</translation>
 <translation id="945632385593298557">Aceder ao microfone</translation>
+<translation id="954352821720225055">Marcador não disponível offline. O armazenamento está quase cheio.</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>
-<translation id="971774202801778802">URL do marcador</translation>
 <translation id="983192555821071799">Fechar todos os separadores</translation>
 </translationbundle>

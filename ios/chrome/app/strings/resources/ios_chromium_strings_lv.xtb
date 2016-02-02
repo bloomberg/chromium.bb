@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1185134272377778587">Par Chromium</translation>
+<translation id="1472013873724362412">Jūsu konts nedarbojas pārlūkā Chromium. Sazinieties ar savu domēna administratoru vai pierakstieties, izmantojot parastu Google kontu.</translation>
+<translation id="2195025571279539885">Vai vēlaties, lai Chromium nākamreiz piedāvātu šīs vietnes lapas, kuru saturs ir šādā valodā: <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="3805899903892079518">Chromium nevar piekļūt jūsu fotoattēliem un videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="6068866989048414399">Chromium pakalpojumu sniegšanas noteikumi</translation>
 <translation id="6424492062988593837">Lietojumprogramma Chromium ir uzlabota! Ir pieejama jauna versija.</translation>
 <translation id="6600954340915313787">Nokopēta pārlūkā Chrome.</translation>
 <translation id="7337881442233988129">Chromium</translation>

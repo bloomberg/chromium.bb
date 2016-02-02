@@ -100,6 +100,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxytjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
+<translation id="1438739959477268107">Standardinnstilling for nøkkelgenerering</translation>
 <translation id="1454846751303307294">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
@@ -682,6 +683,9 @@
 <translation id="3273221114520206906">Standard JavaScript-innstilling</translation>
 <translation id="3288595667065905535">Utgivelseskanal</translation>
 <translation id="3292147213643666827">Aktiverer <ph name="PRODUCT_NAME" /> til å fungere som mellomtjener mellom <ph name="CLOUD_PRINT_NAME" /> og tidligere skrivere tilkoblet denne datamaskinen. Hvis innstillingen er aktivert eller ikke konfigurert, kan brukerne aktivere mellomtjener for Google Cloud Print ved hjelp av autentisering i Google-kontoen. Hvis denne innstillingen er deaktivert, kan ikke brukere aktivere mellomtjeneren, og får ikke tilgang til å dele datamaskinens skrivere med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
 
@@ -729,6 +733,7 @@
       Hvis du slår på denne innstillingen, er sikkerhetsmodusen for YouTube alltid på.
 
       Hvis du slår av denne innstillingen eller ikke spesifiserer noen verdi, blir ikke sikkerhetsmodusen for YouTube slått på ved tvang.</translation>
+<translation id="3750220015372671395">Blokkér nøkkelgenerering på disse nettstedene</translation>
 <translation id="3756011779061588474">Blokkering av utviklermodus</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
@@ -871,6 +876,9 @@
 
           Denne regelen er bare for intern bruk i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Forsinkelser for skjermlås</translation>
+<translation id="423797045246308574">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som ikke har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenAllowedForUrls», overstyrer denne regelen disse unntakene.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
 <translation id="4250680216510889253">Nei</translation>
 <translation id="427632463972968153">Angir parameterene som brukes når du utfører et bildesøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {imageThumbnail} i eksempelet ovenfor, blir den erstattet med virkelige miniatyrbildedata.
 
@@ -879,6 +887,9 @@
           Denne innstillingen brukes bare hvis «DefaultSearchProviderEnabled»-innstillingen er aktivert.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4325690621216251241">Legg til en avloggingsknapp for systemstatusfeltet</translation>
+<translation id="4347908978527632940">Hvis verdien er «true» (sann) og brukeren er en administrert bruker, kan andre Android-apper sende forespørsler om brukerens nettbegrensninger gjennom en innholdsleverandør.
+
+          Hvis verdien er «false» (usann) eller ikke spesifisert, returnerer innholdsleverandøren ingen informasjon.</translation>
 <translation id="4349746760316962317">Konfigurerer katalogen <ph name="PRODUCT_NAME" /> bruker til å lagre bufrede filer på disken.
 
       Hvis du angir denne regelen, bruker <ph name="PRODUCT_NAME" /> den oppgitte katalogen uansett om brukeren har spesifisert «--disk-cache-dir»-flagget eller ikke.
@@ -1376,6 +1387,7 @@
           Innstillingsverdien bør angis i millisekunder. Verdien må være mindre enn inaktivitetsforsinkelsen.</translation>
 <translation id="6111936128861357925">Tillat dinosaurspill-påskeegget</translation>
 <translation id="6114416803310251055">avskrevet</translation>
+<translation id="6133088669883929098">Tillat alle nettsteder å bruke nøkkelgenerering</translation>
 <translation id="6145799962557135888">Gjør at du kan angi en liste over nettadressemønstre som angir hvilke nettsteder som får kjøre JavaScript.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultJavaScriptSetting hvis denne er angitt, eller fra brukerens egen konfigurasjoner hvis den nevnte retningslinjen ikke er angitt.</translation>
@@ -1654,6 +1666,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Standardverdien på 32 brukes om denne retningslinjen ikke er angitt.</translation>
 <translation id="6943577887654905793">Innstillingsnavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
+<translation id="6956272732789158625">Ikke tillat noen nettsteder å bruke nøkkelgenerering</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
@@ -1810,6 +1823,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne innstillingen ikke angis eller angis som «true», rapporterer registrerte enheter om eget operativsystem og fastvareversjon med jevne mellomrom. Hvis innstillingen angis som «false», blir ikke versjonsinformasjon rapportert.</translation>
 <translation id="7511361072385293666">Hvis denne regelen settes til «sann» eller ikke spesifiseres, er bruk av QUIC-protokollen tillatt i <ph name="PRODUCT_NAME" />.
       Hvis denne regelen settes til «usann», er ikke bruk av QUIC-protokollen tillatt.</translation>
+<translation id="7519251620064708155">Tillat nøkkelgenerering på disse nettstedene</translation>
 <translation id="7523476810162382273">Send overvåkingspulser til administrasjonstjeneren</translation>
 <translation id="7529100000224450960">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer.
 
@@ -2030,6 +2044,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8300455783946254851">Når denne regelen er satt til true (sann), blir Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> slått av. Ved slike tilfeller synkroniseres dataene bare med Google Disk når enheten er tilkoblet via Wi-Fi eller Ethernet.
 
           Hvis denne regelen ikke er spesifisert, eller hvis den er satt til false (usann), kan brukerne overføre filer til Google Disk via mobiltilkoblinger.</translation>
+<translation id="8312129124898414409">Gjør det mulig å angi om nettsteder har tillatelse til å bruke nøkkelgenerering. Bruk av nøkkelgenerering kan enten være tillatt for alle nettsteder eller blokkert for alle nettsteder.
+
+          Hvis denne regelen ikke angis, brukes «BlockKeygen», og brukeren kan endre den.</translation>
 <translation id="8329984337216493753">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.
@@ -2228,6 +2245,7 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
+<translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9104138886225968319">Send overvåkningsimpulser til administrasjonstjeneren for å tillate at

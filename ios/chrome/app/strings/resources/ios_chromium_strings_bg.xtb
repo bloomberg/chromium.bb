@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1185134272377778587">Всичко за Chromium</translation>
+<translation id="1472013873724362412">Профилът ви не е съвместим с Chromium. Моля, свържете се с администратора на домейна си или влезте с обикновен профил в Google.</translation>
+<translation id="2195025571279539885">Искате ли следващия път Chromium да предложи да преведе от <ph name="LANGUAGE_NAME" /> страниците от този сайт?</translation>
+<translation id="3805899903892079518">Chromium няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
+<translation id="6068866989048414399">Общи условия на Chromium</translation>
 <translation id="6424492062988593837">Chromium току-що се подобри! Налице е нова версия.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

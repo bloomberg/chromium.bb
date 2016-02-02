@@ -102,6 +102,7 @@ Pokud je tato zásada nastavena na hodnotu False, <ph name="PRODUCT_NAME" /> vyt
 <translation id="1426410128494586442">Ano</translation>
 <translation id="1427655258943162134">Adresa (nebo adresa URL) proxy serveru</translation>
 <translation id="1435659902881071157">Konfigurace sítě na úrovni zařízení</translation>
+<translation id="1438739959477268107">Výchozí nastavení generování klíčů</translation>
 <translation id="1454846751303307294">Umožňuje nastavit seznam vzorů adres URL stránek, kterým není povoleno spouštět JavaScript.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -687,6 +688,9 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
       Pokud je toto nastavení aktivované nebo není nakonfigurované, mohou uživatelé proxy server pro tisk z cloudu aktivovat ověřením pomocí účtu Google.
 
       Pokud je toto nastavení deaktivováno, uživatelé proxy server nebudou moci aktivovat a počítač nebude moci sdílet připojené tiskárny se službou <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
+
+Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
 
@@ -734,6 +738,7 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
 Pokud toto nastavení aktivujete, Bezpečný režim na YouTube bude vždy aktivní.
 
 Pokud toto nastavení deaktivujete nebo ho ponecháte nenastavené, Bezpečný režim YouTube vynucen nebude.</translation>
+<translation id="3750220015372671395">Blokovat generování klíčů na těchto stránkách</translation>
 <translation id="3756011779061588474">Blokovat režim pro vývojáře</translation>
 <translation id="3758249152301468420">Deaktivovat nástroje pro vývojáře</translation>
 <translation id="3765260570442823273">Doba zobrazení zprávy s upozorněním na odhlášení z důvodu nečinnosti</translation>
@@ -891,6 +896,9 @@ Hodnotu zásady je třeba zadat v sekundách. Hodnota musí být minimálně 360
 
 Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Prodlevy uzamčení obrazovky</translation>
+<translation id="423797045246308574">Umožňuje nastavit seznam vzorů adres URL webových stránek, které nemají povoleno generovat klíče. Pokud je uveden vzor adres URL v zásadě KeygenAllowedForUrls, tato zásada tyto výjimky přepíše.
+
+Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="427632463972968153">Udává parametry, které se použijí při vyhledávání podle obrázku pomocí metody POST. Sestává z párů název–hodnota oddělených čárkou. Pokud je hodnotou parametr šablony (např. {imageThumbnail} v příkladu výše), bude nahrazen skutečnými údaji vyhledávacích dotazů.
 
@@ -899,6 +907,9 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 nebo novější</translation>
 <translation id="4325690621216251241">Přidat na hlavní panel systému tlačítko pro odhlášení</translation>
+<translation id="4347908978527632940">Pokud je tato zásada nastavena na hodnotu true a jedná se o dozorovaného uživatele, ostatní aplikace pro Android mohou prostřednictvím poskytovatele obsahu zjišťovat, jaká omezení přístupu k webu se na uživatele vztahují.
+
+          Pokud je nastavena na hodnotu false nebo nastavena není, poskytovatel obsahu nevrátí žádné informace.</translation>
 <translation id="4349746760316962317">Slouží ke konfiguraci adresáře, který bude <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
 
       Pokud tuto zásadu nastavíte, <ph name="PRODUCT_NAME" /> bude používat stanovený adresář bez ohledu na to, zda uživatel zadal příznak „--disk-cache-dir“.
@@ -1403,6 +1414,7 @@ Pokud je zásada nastavena na hodnotu false, hardwarová akcelerace bude zakáz�
           Hodnota této zásady se zadává v milisekundách. Pokud zadáte hodnotu vyšší než je prodleva při nečinnosti, použije se hodnota prodlevy při nečinnosti.</translation>
 <translation id="6111936128861357925">Povolit hru s dinosaurem</translation>
 <translation id="6114416803310251055">zastaralé</translation>
+<translation id="6133088669883929098">Povolit všem webům generovat klíče</translation>
 <translation id="6145799962557135888">Umožňuje nastavit seznam vzorů adres URL stránek, kterým je povoleno spouštět JavaScript.
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultJavaScriptSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
@@ -1680,6 +1692,7 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
      Není-li zásada nastavena, bude použita výchozí hodnota, což je 32.</translation>
 <translation id="6943577887654905793">Název nastavení v systémech Mac/Linux:</translation>
 <translation id="69525503251220566">Parametr poskytující funkci vyhledávání podle obrázku pro výchozího poskytovatele vyhledávání</translation>
+<translation id="6956272732789158625">Nepovolit žádnému webu generovat klíče</translation>
 <translation id="6997592395211691850">Určuje, zda jsou online kontroly OCSP/CRL vyžadovány pro místní kotvy důvěryhodnosti.</translation>
 <translation id="7003334574344702284">Je-li tato zásada aktivovaná, vynucuje import uložených hesel z předchozího výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
 
@@ -1839,6 +1852,7 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, optimaliz
       Pokud tato zásada není nastavena nebo je nastavena na hodnotu True, budou registrovaná zařízení pravidelně hlásit verzi operačního systému a firmwaru. Pokud je nastavena na hodnotu False, informace o verzi se hlásit nebudou.</translation>
 <translation id="7511361072385293666">Pokud je tato zásada nastavena na hodnotu true nebo nebo nastavena není, je v prohlížeči <ph name="PRODUCT_NAME" /> povoleno použití protokolu QUIC.
 Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je zakázáno.</translation>
+<translation id="7519251620064708155">Povolit generování klíčů na těchto webech</translation>
 <translation id="7523476810162382273">Odesílat sledovací pakety heartbeat na server správy</translation>
 <translation id="7529100000224450960">Umožňuje nastavit seznam vzorů adres URL stránek, které mají povoleno otevírat vyskakovací okna.
 
@@ -2057,6 +2071,9 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="8300455783946254851">Pokud je nastavena na hodnotu True, zakáže synchronizaci Disku Google v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> při použití mobilního připojení. Data se na Disk Google synchronizují pouze při připojení přes Wi-Fi nebo Ethernet.
 
 Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, uživatelé budou moci přenášet soubory na Disk Google prostřednictvím mobilních připojení.</translation>
+<translation id="8312129124898414409">Umožňuje nastavit, zda weby mohou generovat klíče. Generování klíčů je možné všem webům buď povolit, nebo zakázat.
+
+Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji bude moci změnit.</translation>
 <translation id="8329984337216493753">Tato zásada je aktivní pouze v režimu prodeje.
 
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
@@ -2245,6 +2262,7 @@ Pokud je tato zásada nastavena na textový řetězec, který zastupuje název d
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Určuje, zda aktivita videa ovlivňuje správu napájení</translation>
+<translation id="9088433379343318874">Povolit poskytovatele obsahu pro dozorovaného uživatele</translation>
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>
 <translation id="9098553063150791878">Zásady pro ověření v protokolu HTTP</translation>
 <translation id="9104138886225968319">Sledovací pakety heartbeat budou odesílány na server správy ke zjištění, zda je zařízení offline.

@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Jā</translation>
 <translation id="1427655258943162134">Starpniekservera adrese vai URL</translation>
 <translation id="1435659902881071157">Ierīces līmeņa tīkla konfigurācija</translation>
+<translation id="1438739959477268107">Atslēgu ģenerēšanas noklusējuma iestatījums</translation>
 <translation id="1454846751303307294">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām nav atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -715,6 +716,9 @@
       Ja šis iestatījums ir iespējots vai nav konfigurēts, lietotāji var iespējot mākoņdrukas starpniekserveri, autentifikācijai izmantojot savu Google kontu.
 
       Ja šis iestatījums ir atspējots, lietotāji nevarēs iespējot starpniekserveri un ierīce nevarēs koplietot tai pievienotos printerus ar <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -762,6 +766,7 @@
       Ja iespējojat šo iestatījumu, drošības režīms pakalpojumā YouTube vienmēr ir aktīvs.
 
       Ja atspējojat šo iestatījumu vai neiestatāt vērtību, drošības režīms pakalpojumā YouTube netiek izmantots piespiedu kārtā.</translation>
+<translation id="3750220015372671395">Bloķēt atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="3756011779061588474">Bloķēt izstrādātāja režīmu</translation>
 <translation id="3758249152301468420">Atspējo izstrādātāja rīkus</translation>
 <translation id="3765260570442823273">Dīkstāves atteikšanās brīdinājuma ziņojuma ilgums</translation>
@@ -920,6 +925,9 @@
 
           Šī politika ir paredzēta tikai <ph name="PRODUCT_NAME" /> iekšējai lietošanai.</translation>
 <translation id="4224610387358583899">Ekrāna bloķēšanas atlikšana</translation>
+<translation id="423797045246308574">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam nav atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenAllowedForUrls”, šie izņēmumi tiek ignorēti.
+
+          Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="4250680216510889253">Nē</translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
@@ -928,6 +936,9 @@
           Šī politika ir spēkā tikai tad, ja ir iespējota politika “DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vai jaunāka versija</translation>
 <translation id="4325690621216251241">Atteikšanās pogas pievienošana sistēmas teknei</translation>
+<translation id="4347908978527632940">Ja ir iestatīta vērtība “true” un lietotājs ir uzraudzīts lietotājs, citas Android lietotnes var nosūtīt vaicājumus par lietotāja tīmekļa ierobežojumiem, izmantojot satura nodrošinātāju.
+
+          Ja ir iestatīta vērtība “false” vai vērtība nav iestatīta, satura nodrošinātājs neatgriež nekādu informāciju.</translation>
 <translation id="4349746760316962317">Tiek konfigurēts direktorijs, kas pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots kešatmiņā ievietoto failu glabāšanai diskā.
 
       Ja šī politika ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> tiek lietots norādītais direktorijs neatkarīgi no tā, vai lietotājs ir norādījis karodziņu “--disk-cache-dir”.
@@ -1437,6 +1448,7 @@
           Politikas vērtība ir jānorāda milisekundēs. Vērtības vienmēr būs mazākas nekā neaktivitātes atlikšana.</translation>
 <translation id="6111936128861357925">Dinozauru spēles atļaušana</translation>
 <translation id="6114416803310251055">novecojis</translation>
+<translation id="6133088669883929098">Atļaut izmantot atslēgu ģenerēšanu visās vietnēs</translation>
 <translation id="6145799962557135888">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts izpildīt JavaScript.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultJavaScriptSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
@@ -1719,6 +1731,7 @@
       Ja šī politika nav iestatīta, tiks izmantota noklusējuma vērtība (32).</translation>
 <translation id="6943577887654905793">Mac/Linux preferences nosaukums:</translation>
 <translation id="69525503251220566">Parametrs, kas noklusējuma meklēšanas pakalpojumu sniedzējam nodrošina funkciju Meklēšana pēc attēla</translation>
+<translation id="6956272732789158625">Neatļaut izmantot atslēgu ģenerēšanu nevienā vietnē</translation>
 <translation id="6997592395211691850">Vai lokāliem uzticamības enkuriem ir nepieciešama OCSP/CRL pārbaude</translation>
 <translation id="7003334574344702284">Šī politika (ja tā ir iespējota) liek importēt saglabātās paroles no iepriekšējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
@@ -1882,6 +1895,7 @@
       Ja šī politika nav iestatīta vai tās iestatījums ir “True”, reģistrētās ierīces ik pa laikam ziņos par OS un programmaparatūras versiju. Ja iestatījums ir “False”, informācija par versiju netiek ziņota.</translation>
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
+<translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
 <translation id="7523476810162382273">Periodisku kontrolziņojumu sūtīšana uz pārvaldības serveri</translation>
 <translation id="7529100000224450960">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts atvērt uznirstošos logus.
 
@@ -2110,6 +2124,9 @@
 <translation id="8300455783946254851">Ja šai opcijai ir iestatīta vērtība Patiesa, tiek atspējota failu sinhronizācija ar Google disku operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, kad tiek izmantots mobilais savienojums. Dati tiek sinhronizēti ar Google disku tikai tad, ja ir izveidots Wi-Fi vai Ethernet savienojums.
 
           Ja šī opcija nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku, izmantojot mobilos savienojumus.</translation>
+<translation id="8312129124898414409">Ļauj iestatīt, vai vietnēs ir atļauts izmantot atslēgu ģenerēšanu. Atslēgu ģenerēšanas izmantošana var tikt atļauta vai noraidīta visām vietnēm.
+
+          Ja šī politika nav iestatīta, tiks lietota politika “BlockKeygen” un lietotājs to varēs mainīt.</translation>
 <translation id="8329984337216493753">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Ja politika DeviceIdleLogoutTimeout ir norādīta, tā definē brīdinājuma lodziņa ilgumu ar atpakaļskaitīšanas taimeri, kas tiek rādīts lietotājam pirms atteikšanās izpildes.
@@ -2324,6 +2341,7 @@
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
 definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Video darbības ietekmes uz jaudas pārvaldību norādīšana</translation>
+<translation id="9088433379343318874">Iespējot uzraudzītā lietotāja satura nodrošinātāju</translation>
 <translation id="9096086085182305205">Autentifikācijas serveru baltais saraksts</translation>
 <translation id="9098553063150791878">HTTP autentifikācijas politikas</translation>
 <translation id="9104138886225968319">Pārvaldības serverim tiek nosūtīti periodiski pārraudzības kontrolziņojumi, lai

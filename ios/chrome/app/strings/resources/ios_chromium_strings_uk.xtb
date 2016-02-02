@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1185134272377778587">Про Chromium</translation>
+<translation id="1472013873724362412">Ваш обліковий запис не працює в Chromium. Зв’яжіться з адміністратором свого домену або ввійдіть у звичайний обліковий запис Google.</translation>
+<translation id="2195025571279539885">Хочете, щоб Chromium наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="3805899903892079518">Chromium не має доступу до ваших фото чи відео. Надайте доступ у меню iOS "Параметри &gt; Конфіденційність &gt; Фото".</translation>
+<translation id="6068866989048414399">Умови використання Chromium</translation>
 <translation id="6424492062988593837">Chromium став ще кращим! Доступна нова версія.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

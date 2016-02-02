@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1185134272377778587">About Chromium</translation>
+<translation id="1472013873724362412">Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.</translation>
+<translation id="2195025571279539885">Would you like Chromium to offer to translate <ph name="LANGUAGE_NAME" /> pages from this site next time?</translation>
+<translation id="3805899903892079518">Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="6068866989048414399">Chromium Terms of Service</translation>
 <translation id="6424492062988593837">Chromium just got better! A new version is available.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

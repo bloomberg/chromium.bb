@@ -10,7 +10,7 @@
 <translation id="3713769522066937702">ഈ തപാൽ കോഡ് ഫോർമാറ്റ് അംഗീകൃതമല്ല. സാധുവായ ഒരു തപാൽ കോഡിനുള്ള ഉദാഹരണമിതാണ്: <ph name="EXAMPLE" />. നിങ്ങളുടെ തപാൽ കോഡ് അറിയില്ലേ? അത് <ph name="BEGIN_LINK" />ഇവിടെ<ph name="END_LINK" /> കണ്ടെത്തുക.</translation>
 <translation id="3882422586004212847">ഈ തപാൽ കോഡ് ഫോർമാറ്റ് അംഗീകൃതമല്ല. സാധുവായ ഒരു തപാൽ കോഡിനുള്ള ഉദാഹരണമിതാണ്: <ph name="EXAMPLE" />.</translation>
 <translation id="3885155851504623709">പാരിഷ്</translation>
-<translation id="43113324827158664">ഇത് ശൂന്യമാക്കി ഇടാനാവില്ല.</translation>
+<translation id="43113324827158664">ഇത് നിർബന്ധമായും പൂരിപ്പിച്ചിരിക്കണം.</translation>
 <translation id="4376888869070172068">ഈ പോസ്റ്റൽ കോഡ് ഫോർമാറ്റ് അംഗീകരിക്കപ്പെട്ടില്ല.</translation>
 <translation id="4518701284698680367">നിങ്ങൾ ഒരു തപാൽ കോഡ് നൽകണം, ഉദാഹരണത്തിന് <ph name="EXAMPLE" />. നിങ്ങളുടെ തപാൽ കോഡ് അറിയില്ലേ? അത് <ph name="BEGIN_LINK" />ഇവിടെ<ph name="END_LINK" /> കണ്ടെത്തുക.</translation>
 <translation id="5089810972385038852">സ്റ്റേറ്റ്</translation>
@@ -30,7 +30,7 @@
 <translation id="6970216967273061347">ജില്ല</translation>
 <translation id="7087282848513945231">രാജ്യം</translation>
 <translation id="7139724024395191329">എമിറേറ്റ്</translation>
-<translation id="7393381084163773901">സ്‌ട്രീറ്റ് വിലാസം</translation>
+<translation id="7393381084163773901">സ്ഥല വിലാസം</translation>
 <translation id="7602447984296396718">ഈ തപാൽ കോഡ് ഈ വിലാസത്തിന്റെ ബാക്കി ഭാഗവുമായി പൊരുത്തപ്പെടുന്നതായി തോന്നുന്നില്ല.</translation>
 <translation id="7738983109397305830">ഈ തപാൽ കോഡ് ഈ വിലാസത്തിന്റെ ബാക്കിഭാഗങ്ങളുമായി പൊരുത്തപ്പെടുന്നതുപോലെ തോന്നുന്നില്ല. നിങ്ങളുടെ തപാൽ കോഡ് അറിയില്ലേ? അത് <ph name="BEGIN_LINK" />ഇവിടെ<ph name="END_LINK" /> കണ്ടെത്തുക.</translation>
 <translation id="777702478322588152">പ്രിഫെക്‌ചർ</translation>

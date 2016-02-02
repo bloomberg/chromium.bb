@@ -45,6 +45,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自動偵測編碼</translation>
 <translation id="1568822834048182062">系統會將您的書籤、歷史紀錄、密碼和其他設定與您的 Google 帳戶同步處理。</translation>
+<translation id="1592483623187843893">已儲存離線書籤</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1623104350909869708">防止這個網頁產生其他對話方塊</translation>
 <translation id="1641113438599504367">安全瀏覽</translation>
@@ -86,6 +87,7 @@
 <translation id="2138201775715568214">正在尋找附近的實體化網路網頁</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
 <translation id="2154710561487035718">複製網址</translation>
+<translation id="21570240866965662">連線速度緩慢</translation>
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">修正搜尋</translation>
@@ -109,6 +111,7 @@
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2512222046227390255">自動填入表單</translation>
+<translation id="2521102375070725336">已將離線書籤儲存至「<ph name="FOLDER_NAME" />」</translation>
 <translation id="2526148617758225454">Data Saver 已開啟，您可以在 [設定] 中管理這項擴充功能。</translation>
 <translation id="2532336938189706096">網頁檢視</translation>
 <translation id="2536728043171574184">目前瀏覽的是這個網頁的離線複本</translation>
@@ -131,14 +134,12 @@
 <translation id="2891154217021530873">停止載入網頁</translation>
 <translation id="2902702728133930130">發生未預期的錯誤，Chrome 啟動失敗。</translation>
 <translation id="2903493209154104877">地址</translation>
-<translation id="2904413602477443379">選擇資料夾</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2956410042958133412">這個帳戶受 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
-<translation id="3039671569659952257">刪除資料夾</translation>
 <translation id="3063601790762993062">儲存影片</translation>
 <translation id="306566828762083630">您的裝置儲存空間已用盡，請移除其他媒體以釋出空間。</translation>
 <translation id="307329814453917357">可使用「Google 翻譯」翻譯網頁內容</translation>
@@ -146,6 +147,7 @@
 <translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
 <translation id="3102119246920354026">快取</translation>
 <translation id="3137521801621304719">離開無痕模式</translation>
+<translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3190152372525844641">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這些權限。</translation>
 <translation id="3198916472715691905">儲存了 <ph name="STORAGE_AMOUNT" /> 的資料</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
@@ -157,7 +159,6 @@
 <translation id="3269093882174072735">載入圖片</translation>
 <translation id="3278850099957560514">讓 Google 對您要造訪的網頁進行最佳化處理，進而減少數據用量。使用私人連線 (HTTPS) 或無痕式分頁存取網頁時，Google 不會對這些網頁進行最佳化處理，也不會偵測到這些網頁。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
-<translation id="3287852534598822456">書籤已不存在，請重新整理。</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
@@ -170,6 +171,7 @@
 <translation id="3435896845095436175">啟用</translation>
 <translation id="3485544713029068372">密碼專用 Smart Lock</translation>
 <translation id="3492207499832628349">新無痕式分頁</translation>
+<translation id="3501331331116143684">已將離線網頁儲存至「<ph name="FOLDER_NAME" />」</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
@@ -195,6 +197,7 @@
 <translation id="3988213473815854515">禁止存取位置資訊</translation>
 <translation id="3992315671621218278">儲存連結</translation>
 <translation id="4002066346123236978">標題</translation>
+<translation id="4035611068038188272">書籤目前使用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的儲存空間。</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="4056223980640387499">深褐色調</translation>
 <translation id="4059119910594077751">輕觸返回按鈕即可結束全螢幕模式。</translation>
@@ -206,11 +209,14 @@
 <translation id="4116939199945053760"><ph name="SITE" /> 要求與下列藍牙裝置<ph name="BEGIN_LINK" />配對<ph name="END_LINK" />：</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
+<translation id="4193864812412988973">目前瀏覽的是這個書籤的離線複本</translation>
 <translation id="4195643157523330669">在新分頁中開啟</translation>
+<translation id="4198229475320555619">已儲存離線書籤 (大小：<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="423410644998903704">Chrome 需要存取權限，才能與這個網站分享。</translation>
 <translation id="424696723690217687">偵測附近裝置傳送的網頁。
 
 Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Google 服務處理過後，可讓網頁搜尋結果的品質更臻完善。</translation>
+<translation id="4254813446494774748">翻譯語言：</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4259722352634471385">瀏覽的網址已封鎖：<ph name="URL" /></translation>
 <translation id="4269820728363426813">複製連結網址</translation>
@@ -221,18 +227,17 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4334294535648607276">下載完成。</translation>
 <translation id="4350413759959745971">移動儲存的網頁</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
-<translation id="4357362091209756047">找不到您的裝置嗎？請<ph name="BEGIN_LINK1" />重新搜尋<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />尋求協助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不受控制</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
 <translation id="4440256989292146959">在節省數據用量的情況下瀏覽更多網頁</translation>
 <translation id="4452548195519783679">已將書籤加入「<ph name="FOLDER_NAME" />」</translation>
+<translation id="4498934959426056365">金鑰產生</translation>
 <translation id="4505554159887937799">儲存的離線網頁</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4532845899244822526">選擇資料夾</translation>
-<translation id="4543087392704641517">書籤標題</translation>
 <translation id="4543661749405994812">複製電子郵件地址</translation>
 <translation id="4581964774250883625">您已啟用無痕模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分鐘前}other{# 分鐘前}}</translation>
@@ -256,7 +261,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="4836364883164334657">您與這個網站之間的連線不是私人連線。攻擊者可能會嘗試從 <ph name="DOMAIN_NAME" /> 竊取您的資訊 (例如相片、密碼、郵件和信用卡資訊)。</translation>
 <translation id="4842511359652954519">閱讀完整內容</translation>
 <translation id="4850886885716139402">檢視</translation>
-<translation id="4871370605780490696">新增書籤</translation>
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
 <translation id="4927198283430892231">已儲存的網頁目前佔用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />。</translation>
@@ -342,7 +346,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5771382037724542929">您要取代「<ph name="DIRECTORY_NAME" />」目錄中現有的 <ph name="FILE_NAME" /> 嗎？</translation>
 <translation id="5804241973901381774">權限</translation>
-<translation id="5806294296882899667">載入預設值時發生錯誤</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
 <translation id="5817918615728894473">配對</translation>
 <translation id="5832934273103296195">已展開 - 按一下即可收合</translation>
@@ -369,6 +372,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6075798973483050474">編輯首頁</translation>
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6112702117600201073">重新整理網頁</translation>
+<translation id="6127379762771434464">已移除項目</translation>
 <translation id="6138140242378429169">讓網頁適合透過行動裝置瀏覽</translation>
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據流量</translation>
@@ -391,6 +395,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6406506848690869874">同步</translation>
 <translation id="6409731863280057959">彈出式視窗</translation>
 <translation id="641643625718530986">列印…</translation>
+<translation id="6447570251829705777">無法離線存取書籤</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜尋與網址建議</translation>
 <translation id="6458785801851713928">您的網域無法進行同步處理</translation>
@@ -435,23 +440,24 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6965382102122355670">確定</translation>
 <translation id="6973630695168034713">資料夾</translation>
 <translation id="6978479750597523876">重設翻譯設定</translation>
-<translation id="6979922938747275756">載入資料夾時發生錯誤</translation>
 <translation id="6981982820502123353">協助工具</translation>
 <translation id="6990079615885386641">從 Google Play 商店取得應用程式：<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6999892069268112724">確認 Google 帳戶</translation>
 <translation id="7019652137705190998">您可以使用無痕模式進入私密瀏覽狀態或暫時登入</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
+<translation id="7022756207310403729">在瀏覽器中開啟</translation>
 <translation id="7026897394897382018">啟用 Data Saver</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7053983685419859001">封鎖</translation>
+<translation id="7056999826593229648">偵測到連線速度緩慢</translation>
+<translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
 <translation id="7094922512924405309">找不到附近的實體化網路網頁</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 個開啟的分頁</translation>
 <translation id="7096034533295549981">正在載入影片</translation>
 <translation id="7180611975245234373">重新整理</translation>
 <translation id="7191430249889272776">已在背景開啟分頁。</translation>
-<translation id="7201341158316793215">移除中…</translation>
 <translation id="7208788139759694678">已停用 Data Saver</translation>
 <translation id="7243308994586599757">選項在接近畫面底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 會使用您的位置資訊來顯示當地搜尋結果</translation>
@@ -486,17 +492,16 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7634554953375732414">您與這個網站建立了非私人連線。</translation>
 <translation id="7638584964844754484">通關密語不正確</translation>
-<translation id="764743049316168389"><ph name="FOLDER_NAME" />資料夾</translation>
 <translation id="7648422057306047504">使用 Google 憑證為密碼加密</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">新增帳戶</translation>
+<translation id="7690588279513156836">載入原始版本</translation>
 <translation id="7735023902678907596">當您關閉所有無痕式分頁後，您在其中瀏覽的網頁不會保留在瀏覽器紀錄、Cookie 儲存庫或搜尋紀錄中，但系統會將您下載的檔案或儲存的網頁全都保留下來。
 
 不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主、網際網路服務供應商以及您所造訪的網站仍然可以追蹤您的瀏覽紀錄。</translation>
 <translation id="7761240775244195612">您要刪除上個月未使用的 <ph name="PAGES_NUMBER" /> 個離線複本嗎？這樣可以釋出 <ph name="TOTAL_PAGE_SIZE" /> 的空間。</translation>
 <translation id="7764225426217299476">新增地址</translation>
 <translation id="7765158879357617694">移動</translation>
-<translation id="7767746238359002192">前往您要離線儲存的網頁</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="7784213092572143271">網頁已儲存</translation>
 <translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
@@ -509,10 +514,10 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="7876243839304621966">全部移除</translation>
 <translation id="7925108652071887026">自動填入資料</translation>
 <translation id="7947953824732555851">接受並登入</translation>
+<translation id="7949961459945740081">取得最新功能</translation>
 <translation id="7961015016161918242">永不</translation>
 <translation id="7963646190083259054">供應商：</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
-<translation id="7989222512959629388">儲存中…</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
@@ -525,7 +530,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>
-<translation id="8143660160623733249">資料夾名稱</translation>
 <translation id="8146397137182589628">未離線儲存</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> 個帳戶</translation>
 <translation id="8168435359814927499">內容</translation>
@@ -561,9 +565,11 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 
 如要取得新授權，請先連線至網際網路，然後再播放您已下載的內容。</translation>
 <translation id="8660471606262461360">來自 Google Payments</translation>
+<translation id="8675945939500569406">要開啟實體化網路嗎？</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8699799819461268362">Google 安全網站篩選器</translation>
+<translation id="8701537995684343047">造訪書籤即可儲存離線複本</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8727142376512517020">不要再顯示這個對話方塊</translation>
@@ -596,16 +602,15 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9133515669113036225">重設裝置憑證</translation>
 <translation id="9137013805542155359">顯示原文</translation>
-<translation id="9156605176886108508">沒有書籤資料夾</translation>
+<translation id="9151532766011674069">已儲存離線書籤。儲存空間即將用盡。</translation>
 <translation id="917685106653909562">附近的實體化網路網頁</translation>
 <translation id="9187199695613236444">適合透過行動裝置瀏覽的檢視模式</translation>
 <translation id="9192643434065497760">如要允許配對，請在<ph name="BEGIN_LINK" />裝置設定<ph name="END_LINK" />中開啟藍牙功能。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">新增資料夾</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
+<translation id="954352821720225055">儲存空間即將用盡，因此無法離線存取書籤。</translation>
 <translation id="969096075394517431">變更語言</translation>
-<translation id="971774202801778802">書籤網址</translation>
 <translation id="983192555821071799">關閉所有分頁</translation>
 </translationbundle>

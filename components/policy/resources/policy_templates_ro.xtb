@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
+<translation id="1438739959477268107">Setarea prestabilită pentru generarea cheilor</translation>
 <translation id="1454846751303307294">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care nu au permisiunea de a rula JavaScript. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="1464848559468748897">Controlează comportamentul utilizatorilor în timpul unei sesiuni cu profiluri multiple pe dispozitivele <ph name="PRODUCT_OS_NAME" />.
 
@@ -648,6 +649,9 @@
       Dacă această setare este activată sau nu este configurată, utilizatorii pot activa proxy-ul Cloud Print autentificându-se cu Contul Google.
 
       Dacă această setare este dezactivată, utilizatorii nu pot activa proxy-ul, iar computerul nu va putea să permită accesul <ph name="CLOUD_PRINT_NAME" /> la imprimantele sale.</translation>
+<translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
+
+          Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
 
@@ -695,6 +699,7 @@
       Dacă activezi această setare, Modul sigur pe YouTube este activ întotdeauna.
 
       Dacă această setare este dezactivată sau nu este configurată, nu se impune Modul sigur pe YouTube.</translation>
+<translation id="3750220015372671395">Blochează generarea cheilor pe aceste site-uri</translation>
 <translation id="3756011779061588474">Blocați modul pentru dezvoltatori</translation>
 <translation id="3758249152301468420">Dezactivează instrumentele pentru dezvoltatori</translation>
 <translation id="3765260570442823273">Durata mesajului de avertizare privind deconectarea din cauza inactivității</translation>
@@ -830,6 +835,9 @@
 
           Această politică este destinată utilizării la nivel intern de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Intervalele până la blocarea ecranului</translation>
+<translation id="423797045246308574">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce nu au permisiunea să folosească generarea cheilor. Dacă în „KeygenAllowedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
+
+          Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="427632463972968153">Specifică parametrii utilizați la căutarea de imagini cu POST. Politica este alcătuită din perechi nume/valoare separate prin virgulă. Dacă o valoare este un parametru șablon, precum {imageThumbnail} din exemplul de mai sus, acesta va fi înlocuit cu datele miniaturii imaginii reale.
 
@@ -838,6 +846,9 @@
           Această politică este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 sau o versiune ulterioară</translation>
 <translation id="4325690621216251241">Adăugați un buton de deconectare în bara de sistem</translation>
+<translation id="4347908978527632940">Dacă este activată, iar utilizatorul este unul monitorizat, alte aplicații Android pot interoga restricțiile web ale utilizatorului printr-un furnizor de conținut.
+
+          Dacă este dezactivată sau nu este configurată, furnizorul de conținut nu va returna informații.</translation>
 <translation id="4349746760316962317">Configurează directorul pe care <ph name="PRODUCT_NAME" /> îl va folosi pentru a stoca fișierele din memoria cache pe disc.
 
       Dacă configurezi această politică, <ph name="PRODUCT_NAME" /> va folosi directorul indicat, indiferent dacă utilizatorul a specificat semnalizatorul „--disk-cache-dir”.
@@ -1292,6 +1303,7 @@
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici decât intervalul de inactivitate.</translation>
 <translation id="6111936128861357925">Permite jocul ascuns cu dinozaurul</translation>
 <translation id="6114416803310251055">învechit</translation>
+<translation id="6133088669883929098">Permite tuturor site-urilor să folosească generarea cheilor</translation>
 <translation id="6145799962557135888">Vă permite să setați o listă de modele pentru adresele URL ce specifică site-urile care au permisiunea de a rula JavaScript. Dacă această politică este lăsată nesetată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultJavaScriptSetting”, dacă aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6151775819333710697">
           Dacă această setare este activată, utilizatorii pot configura <ph name="PRODUCT_NAME" /> să memoreze parolele
@@ -1530,6 +1542,7 @@
       Dacă această politică nu este setată, va fi utilizată valoarea prestabilită, 32.</translation>
 <translation id="6943577887654905793">Nume preferință Mac/Linux:</translation>
 <translation id="69525503251220566">Parametru care pune la dispoziție funcția Căutare după imagine pentru furnizorul de căutare prestabilit</translation>
+<translation id="6956272732789158625">Nu permite niciunui site să folosească generarea cheilor</translation>
 <translation id="6997592395211691850">Dacă verificările OCSP/CRL online sunt necesare sau nu pentru ancorele de încredere locale</translation>
 <translation id="7003334574344702284">Dacă este activată, această politică forțează importarea parolelor salvate din browserul prestabilit anterior. Dacă este activată, această politică afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, parolele salvate nu sunt importate. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="7003746348783715221">Preferințe <ph name="PRODUCT_NAME" /></translation>
@@ -1674,6 +1687,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă setarea nu este configurată sau dacă este activată, dispozitivele înscrise vor raporta periodic versiunea sistemului de operare și versiunea de firmware. Dacă setarea este dezactivată, nu vor fi raportate informații privind versiunea.</translation>
 <translation id="7511361072385293666">Dacă această politică este activată sau nu este configurată, este permisă folosirea protocolului QUIC în <ph name="PRODUCT_NAME" />.
       Dacă această politică este dezactivată, nu este permisă folosirea protocolului QUIC.</translation>
+<translation id="7519251620064708155">Permite generarea cheilor pe aceste site-uri</translation>
 <translation id="7523476810162382273">Trimite semnale de monitorizare serverului de gestionare</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
@@ -1879,6 +1893,9 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8300455783946254851">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /> la folosirea unei conexiuni celulare. În acest caz, datele sunt sincronizate cu Google Drive numai când există o conexiune Wi-Fi sau Ethernet.
 
           Dacă nu este configurată sau dacă este dezactivată, utilizatorii vor putea să transfere fișiere în Google Drive prin conexiuni celulare.</translation>
+<translation id="8312129124898414409">Îți permite să setezi dacă site-urile au permisiunea de a folosi generarea cheilor. Folosirea generării cheilor poate fi permisă sau refuzată în bloc pentru toate site-urile.
+
+          Dacă această politică nu este configurată, va fi folosită opțiunea „BlockKeygen”, iar utilizatorul o va putea modifica.</translation>
 <translation id="8329984337216493753">Această politică este activă numai în modul Vânzare.
 
       Când politica DeviceIdleLogoutTimeout este specificată, aceasta definește durata casetei de avertizare cu un temporizator cu numărătoare inversă, care este afișat utilizatorului înainte de a se executa deconectarea.
@@ -2072,6 +2089,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
+<translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>
 <translation id="9098553063150791878">Politici pentru autentificarea HTTP</translation>
 <translation id="9104138886225968319">Trimite semnale de monitorizare către serverul de gestionare, pentru a permite

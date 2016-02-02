@@ -5,6 +5,7 @@
 <translation id="2874156562296220396">Google Chrome fonctionne grâce au projet Open Source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> et à d'autres <ph name="BEGIN_LINK_OSS" />logiciels libres<ph name="END_LINK_OSS" />.</translation>
 <translation id="3140883423282498090">Vos modifications seront prises en compte au prochain redémarrage de Google Chrome.</translation>
 <translation id="3444832043240812445">Cette page affiche uniquement des informations sur les erreurs récentes si vous <ph name="BEGIN_LINK" />activez l'envoi de rapports d'erreur<ph name="END_LINK" />.</translation>
+<translation id="4010643444566880169">La configuration initiale de Chrome OS n'est pas terminée.</translation>
 <translation id="5423788048750135178">Accédez au menu Chrome &gt; Paramètres &gt; (Avancés) Confidentialité,
           puis désactivez "Prélire les ressources de pages".
           Si le problème persiste, nous vous conseillons de réactiver cette option

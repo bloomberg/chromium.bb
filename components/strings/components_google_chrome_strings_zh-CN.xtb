@@ -5,6 +5,7 @@
 <translation id="2874156562296220396">Google Chrome 的诞生离不开 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 开源项目以及其他<ph name="BEGIN_LINK_OSS" />开源软件<ph name="END_LINK_OSS" />。</translation>
 <translation id="3140883423282498090">您所做的更改会在下次重新启动 Google Chrome 时生效。</translation>
 <translation id="3444832043240812445">如果<ph name="BEGIN_LINK" />启用崩溃报告<ph name="END_LINK" />，则该网页将只显示您最近的崩溃信息。</translation>
+<translation id="4010643444566880169">Chrome 操作系统尚未完成其初始设置。</translation>
 <translation id="5423788048750135178">前往 Chrome 菜单 &gt;“设置”&gt;“隐私设置”（高级设置）部分，然后停用“预提取网页资源”。
           如果这无法解决该问题，我们建议您重新启用此选项，以便改善性能。</translation>
 <translation id="6011049234605203654">依次转到 Chrome 菜单 &gt;“<ph name="SETTINGS_TITLE" />”&gt;“<ph name="ADVANCED_TITLE" />”&gt;“<ph name="PROXIES_TITLE" />”，并确保您已将配置设为“无代理”或“直接连接”。</translation>

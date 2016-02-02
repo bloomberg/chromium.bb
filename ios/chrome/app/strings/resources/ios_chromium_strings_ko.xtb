@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1185134272377778587">Chromium 정보</translation>
+<translation id="1472013873724362412">계정이 Chromium에서 작동하지 않습니다. 도메인 관리자에게 문의하거나 일반 Google 계정을 사용하여 로그인하세요.</translation>
+<translation id="2195025571279539885">다음에 Chromium에서 이 사이트의 <ph name="LANGUAGE_NAME" /> 페이지를 번역하시겠습니까?</translation>
+<translation id="3805899903892079518">Chromium에서 사진 또는 동영상에 액세스할 수 없습니다. 'iOS 설정 &gt; 개인정보 보호 &gt; 사진'에서 액세스를 허용하세요.</translation>
+<translation id="6068866989048414399">Chromium 서비스 약관</translation>
 <translation id="6424492062988593837">한층 개선된 Chromium의 최신 버전이 출시되었습니다.</translation>
 <translation id="6600954340915313787">Chrome에 복사됨</translation>
 <translation id="7337881442233988129">Chromium</translation>

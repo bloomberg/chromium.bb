@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1185134272377778587">Informácie o prehliadači Chromium</translation>
+<translation id="1472013873724362412">Váš účet nefunguje v prehliadači Chromium. Kontaktujte správcu domény alebo sa prihláste pomocou bežného účtu Google.</translation>
+<translation id="2195025571279539885">Chcete, aby prehliadač Chromium nabudúce ponúkol možnosť prekladu stránok v jazyku <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="3805899903892079518">Chromium nemá prístup k vašim fotkám ani videám. Prístup povoľte v časti Nastavenia systému iOS &gt; Súkromie &gt; Fotky.</translation>
+<translation id="6068866989048414399">Zmluvné podmienky prehliadača Chromium</translation>
 <translation id="6424492062988593837">Systém Chromium bol práve vylepšený. K dispozícii je nová verzia.</translation>
 <translation id="6600954340915313787">Skopírovaná do prehliadača Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

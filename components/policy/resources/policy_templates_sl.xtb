@@ -105,6 +105,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Naslov ali URL strežnika proxy</translation>
 <translation id="1435659902881071157">Konfiguracija omrežja na ravni naprave</translation>
+<translation id="1438739959477268107">Privzeta nastavitev ustvarjanja ključev</translation>
 <translation id="1454846751303307294">Omogoča nastavitev seznama vzorcev URL-jev, s katerimi so določena spletna mesta, ki jim ni dovoljeno izvajanje JavaScripta.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -714,6 +715,9 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če je ta nastavitev omogočena ali ni nastavljena, lahko uporabniki s preverjanjem pristnosti prek računa za Google omogočijo proxy za tiskanje v oblaku.
 
       Če je ta nastavitev onemogočena, uporabniki ne morejo omogočiti proxyja, računalnik pa tiskalnikov ne bo smel dati v skupno rabo s storitvijo <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo uporabljati ustvarjanje ključev. Če je vzorec URL-ja v »KeygenBlockedForUrls«, to preglasi te izjeme.
+
+         Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3417418267404583991">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> omogoči prijave gostov. Prijave gostov so anonimne seje uporabnikov in ne zahtevajo gesla.
 
@@ -761,6 +765,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
       Če to nastavitev omogočite, je varni način v YouTubu vedno aktiven.
 
       Če to nastavitev onemogočite ali ne nastavite vrednosti, varni način v YouTubu ni uveljavljen.</translation>
+<translation id="3750220015372671395">Blokiraj ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="3756011779061588474">Blokiranje načina za razvijalce</translation>
 <translation id="3758249152301468420">Onemogoči Orodja za razvijalce</translation>
 <translation id="3765260570442823273">Trajanje opozorila o odjavi zaradi nedejavnosti</translation>
@@ -921,6 +926,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Ta pravilnik je namenjen za notranjo uporabo v programu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Zakasnitve za zaklepanje zaslona</translation>
+<translation id="423797045246308574">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo uporabljati ustvarjanje ključev. Če je vzorec URL-ja v »KeygenAllowedForUrls«, ta pravilnik preglasi te izjeme.
+
+          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="427632463972968153">Določa parametre, uporabljene pri slikovnem iskanju z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {imageThumbnail}, bo zamenjana s pravimi podatki sličice slike.
 
@@ -929,6 +937,9 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ali novejši</translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
+<translation id="4347908978527632940">Če je omogočeno in je uporabnik zaščiteni uporabnik, lahko druge aplikacije za Android prek ponudnika vsebine pošljejo poizvedbe o uporabnikovih spletnih omejitvah.
+
+          Če ni omogočeno ali ni nastavljeno, ponudnik vsebine ne pošlje podatkov.</translation>
 <translation id="4349746760316962317">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disk.
 
       Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabljal navedeni imenik ne glede na to, ali je uporabnik določil zastavico »--disk-cache-dir« ali ne.
@@ -1438,6 +1449,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše od zakasnitve zaradi nedejavnosti.</translation>
 <translation id="6111936128861357925">Dovoli skrito igro z dinozavrom</translation>
 <translation id="6114416803310251055">zastarelo</translation>
+<translation id="6133088669883929098">Vsem spletnim mestom dovoli uporabo ustvarjanja ključev</translation>
 <translation id="6145799962557135888">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo izvajati JavaScript.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultJavaScriptSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
@@ -1724,6 +1736,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, bo uporabljena privzeta vrednost, ki je 32.</translation>
 <translation id="6943577887654905793">Ime nastavitve za Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
+<translation id="6956272732789158625">Spletnim mestom ne dovoli uporabe ustvarjanja ključev</translation>
 <translation id="6997592395211691850">Ali so potrebna spletna preverjanja OCSP/CRL za lokalna sidra zaupanja?</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
@@ -1887,6 +1900,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če nastavitev ni nastavljena ali je nastavljena na »True«, včlanjene naprave redno poročajo o različici operacijskega sistema in vdelane programske opreme. Če je nastavitev nastavljena na »False«, se podatki o različici ne poročajo.</translation>
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
+<translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
 <translation id="7523476810162382273">Pošiljanje signalov obveščanja v strežnik za upravljanje</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.
 
@@ -2112,6 +2126,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8300455783946254851">Če je ta možnost nastavljena na »True«, onemogoči sinhroniziranje Googla Drive v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> pri uporabi mobilnega omrežja. V tem primeru se podatki sinhronizirajo z Googlom Drive, samo če je na voljo povezava Wi-Fi ali ethernetna povezava.
 
           Če ta možnost ni nastavljena ali je nastavljena na »False«, bodo uporabniki lahko prenesli datoteke v Google Drive prek mobilnega omrežja.</translation>
+<translation id="8312129124898414409">Omogoča nastavitev, ali lahko spletna mesta uporabljajo ustvarjanje ključev. Uporabo ustvarjanja ključev je mogoče dovoliti ali zavrniti za vsa spletna mesta.
+
+          Če ta pravilnik ni nastavljen, bo omogočen pravilnik »BlockKeygen«, uporabnik pa ga bo lahko spremenil.</translation>
 <translation id="8329984337216493753">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Če je določen pravilnik DeviceIdleLogoutTimeout, ta pravilnik določa trajanje opozorila z odštevanjem, ki je pred odjavo prikazano uporabniku.
@@ -2323,6 +2340,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
+<translation id="9088433379343318874">Omogočanje ponudnika vsebine za zaščitene uporabnike</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>
 <translation id="9098553063150791878">Pravilniki za preverjanje pristnosti HTTP</translation>
 <translation id="9104138886225968319">Pošiljanje signalov obveščanja v strežnik za upravljanje, kar omogoča

@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Oo</translation>
 <translation id="1427655258943162134">Address o URL ng mga proxy server</translation>
 <translation id="1435659902881071157">Configuration ng network sa antas ng device</translation>
+<translation id="1438739959477268107">Default na setting sa pagbuo ng key</translation>
 <translation id="1454846751303307294">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na hindi pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -713,6 +714,9 @@
       Kung pinagana o hindi naka-configure ang setting na ito, mapapagana ng mga user ang proxy ng cloud print proxy sa pamamagitan ng pagpapatotoo sa kanilang Google Account.
 
       Kung hindi pinapagana ang setting na ito, hindi mapapagana ng mga user ang proxy, at hindi papayagan ang machine na ibahagi ang mga printer nito sa <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
 
@@ -760,6 +764,7 @@
       Kung i-enable mo ang setting na ito, palaging aktibo ang Safety Mode sa YouTube.
 
       Kung i-disable mo ang setting na ito o hindi nagtakda ng value, hindi ipapatupad ang Safety Mode sa YouTube.</translation>
+<translation id="3750220015372671395">I-block ang pagbuo ng key sa mga site na ito</translation>
 <translation id="3756011779061588474">I-block ang mode ng developer</translation>
 <translation id="3758249152301468420">Huwag paganahin ang Mga Tool ng Nag-develop</translation>
 <translation id="3765260570442823273">Tagal ng babalang mensahe ng pag-log-out ng idle</translation>
@@ -914,6 +919,9 @@
 
           Ang patakarang ito ay para sa internal na paggamit ng <ph name="PRODUCT_NAME" /> mismo.</translation>
 <translation id="4224610387358583899">Mga itinakdang oras ng screen lock</translation>
+<translation id="423797045246308574">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang pattern ng URL ay nasa 'KeygenAllowedForUrls', ino-override ng patakaran na ito ang mga pagbubukod na ito.
+
+          Kung hinayaang hindi nakatakda ang patakaran na ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
 <translation id="4250680216510889253">Hindi</translation>
 <translation id="427632463972968153">Tinutukoy ang mga parameter na ginamit kapag nagsasagawa ng paghahanap ng larawan gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {imageThumbnail} sa halimbawa sa itaas, papalitan ito ng data ng tunay na thumbnail ng larawan.
 
@@ -922,6 +930,9 @@
           Iginagalang lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o mas bago</translation>
 <translation id="4325690621216251241">Magdagdag ng button sa pag-logout sa tray ng system</translation>
+<translation id="4347908978527632940">Kung true at ang user ay isang pinangangasiwaang user, maaaring i-query ng iba pang mga Android app ang mga paghihigpit ng user sa web sa pamamagitan ng isang content provider.
+
+          Kung false o hindi naka-set, walang ibibigay na impormasyon ang content provider.</translation>
 <translation id="4349746760316962317">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME" /> para sa pag-iimbak ng mga naka-cache na file sa disk.
 
       Kung itatakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na direktoryo, tinukoy man ng user ang '--disk-cache-dir' na flag o hindi.
@@ -1428,6 +1439,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Dapat tukuyin ang value ng patakaran sa milliseconds. Itinatakda ang mga value upang maging mas maikli ang mga ito kaysa sa itinakdang oras ng pagiging idle.</translation>
 <translation id="6111936128861357925">Pahintulutan ang Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">hindi na ginagamit</translation>
+<translation id="6133088669883929098">Payagan ang lahat ng site na gumamit ng pagbuo ng key</translation>
 <translation id="6145799962557135888">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magpatakbo ng JavaScript.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultJavaScriptSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
@@ -1714,6 +1726,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang default na halaga na 32.</translation>
 <translation id="6943577887654905793">Kagustuhang pangalan ng Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
+<translation id="6956272732789158625">Huwag payagan ang anumang site na gumamit ng pagbuo ng key</translation>
 <translation id="6997592395211691850">Kung kinakailangan ang mga online na pagsusuri sa OCSP/CRL para sa mga lokal na pinagkakatiwalaang anchor</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
 
@@ -1871,6 +1884,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi nakatakda ang setting na ito o nakatakda ang ito sa True, iuulat paminsan-minsan ng mga naka-enroll na device ang bersyon ng OS at firmware. Kung nakatakda ang setting na ito sa False, hindi iuulat ang impormasyon ng bersyon.</translation>
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
+<translation id="7519251620064708155">Payagan ang pagbuo ng key sa mga site na ito</translation>
 <translation id="7523476810162382273">Magpadala ng mga pangsubaybay ng heartbeat sa server sa pamamahala</translation>
 <translation id="7529100000224450960">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magbukas ng mga popup.
 
@@ -2098,6 +2112,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8300455783946254851">Dini-disable ang pagsi-sync ng Google Drive sa <ph name="PRODUCT_OS_NAME" /> Files app kapag gumagamit ng mobile na koneksyon kapag nakatakda sa True. Sa sitwasyong iyon, naka-sync lang ang data sa Google Drive kapag nakakonekta sa pamamagitan ng WiFi o Ethernet.
 
           Kung hindi nakatakda o nakatakda sa False, makakapaglipat ang mga user ng mga file sa Google Drive sa pamamagitan ng mga mobile na koneksyon.</translation>
+<translation id="8312129124898414409">Binibigyang-daan ka na itakda kung pinapayagan ang mga website na gumamit ng pagbuo ng key. Ang paggamit ng pagbuo ng key ay maaaring pinapayagan para sa lahat ng website o tinatanggihan para sa lahat ng website.
+
+          Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'BlockKeygen' at magagawa itong baguhin ng isa pang user.</translation>
 <translation id="8329984337216493753">Sa mode ng retail lamang aktibo ang patakarang ito.
 
       Kapag nakatukoy ang DeviceIdleLogoutTimeout, tinutukoy ng patakarang ito ang tagal ng kahon ng babala gamit ang count down timer na ipinapakita sa user bago isagawa ang pag-logout.
@@ -2306,6 +2323,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Tukuyin kung nakakaapekto ang aktibidad ng video sa pamamahala ng power</translation>
+<translation id="9088433379343318874">I-enable ang content provider ng pinangangasiwaang user</translation>
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>
 <translation id="9098553063150791878">Mga patakaran para sa pagpapatotoo ng HTTP</translation>
 <translation id="9104138886225968319">Nagpapadala ng mga heartbeat sa pagsubaybay sa server sa pamamahala upang magbigay-daan

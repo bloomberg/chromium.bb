@@ -89,6 +89,7 @@
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Adreça o URL del servidor intermediari</translation>
 <translation id="1435659902881071157">Configuració de la xarxa a nivell del dispositiu</translation>
+<translation id="1438739959477268107">Configuració predeterminada de generació de claus</translation>
 <translation id="1454846751303307294">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què no està permès executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="1464848559468748897">Controla el comportament de l'usuari en una sessió multiperfil en dispositius <ph name="PRODUCT_OS_NAME" />.
 
@@ -641,6 +642,10 @@ Si aquesta política no es defineix, els usuaris podran canviar l'ús del client
 Si s'activa aquest paràmetre o si no es configura, els usuaris podran activar el servidor intermediari d'impressió al núvol en autenticar-se amb el seu compte de Google.
 
 Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor intermediari i l'ordinador no podrà compartir les seves impressores amb <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Us permet definir una llista de patrons d'URL que especifiquin els llocs que estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenBlockedForUrls", la política substitueix aquestes excepcions.
+
+
+          Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat per a tots els llocs, bé des de la política "DefaultKeygenSetting" (si està configurada), o bé des de la configuració personal definida per l'usuari.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -688,6 +693,7 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
       Si activeu aquesta opció, el mode de seguretat de YouTube està sempre activat.
 
       Si la desactiveu o no hi establiu cap valor, el mode de seguretat de YouTube no s'aplica.</translation>
+<translation id="3750220015372671395">No permetis que aquests llocs utilitzin la generació de claus</translation>
 <translation id="3756011779061588474">Bloquejar el mode de desenvolupador</translation>
 <translation id="3758249152301468420">Desactiva les eines per a desenvolupadors</translation>
 <translation id="3765260570442823273">Durada del missatge d'advertència de tancament de la sessió per inactivitat</translation>
@@ -817,6 +823,10 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Aquesta política és per a ús intern a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Temps d'inactivitat per al bloqueig de pantalla</translation>
+<translation id="423797045246308574">Us permet definir una llista de patrons d'URL que especifiquin els llocs que no estan autoritzats a utilitzar la generació de claus. Si un patró d'URL està configurat com a "KeygenAllowedForUrls", la política substitueix aquestes excepcions.
+
+
+          Si aquesta política es deixa sense establir, s'utilitzarà el valor predeterminat per a tots els llocs, bé des de la política "DefaultKeygenSetting" (si està configurada), o bé des de la configuració personal definida per l'usuari.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
@@ -825,6 +835,9 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o una versió posterior</translation>
 <translation id="4325690621216251241">Afegeix un botó de tancament de sessió a la safata del sistema</translation>
+<translation id="4347908978527632940">Si la política s'estableix en "true" i l'usuari és un usuari supervisat, altres aplicacions d'Android poden sol·licitar les restriccions web de l'usuari a un proveïdor de contingut.
+
+          Si s'estableix en "false" o no s'estableix, el proveïdor de contingut no ofereix informació.</translation>
 <translation id="4349746760316962317">Configura el directori que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers a la memòria cau del disc.
 
       Si definiu aquesta política, <ph name="PRODUCT_NAME" /> farà servir el directori proporcionat independentment de si l'usuari ha especificat la marca "--disk-cache-dir" o no.
@@ -1274,6 +1287,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
+<translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
 <translation id="6145799962557135888">Us permet definir una llista de patrons d'URL que especifiquen els llocs que no poden executar JavaScript. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultJavaScriptSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="6151775819333710697">
           Si aquesta opció de configuració està activada, els usuaris poden fer que <ph name="PRODUCT_NAME" /> memoritzi contrasenyes
@@ -1512,6 +1526,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si no es defineix aquesta política, el valor predeterminat que s'utilitzarà serà 32.</translation>
 <translation id="6943577887654905793">Nom de la preferència de Mac/Linux:</translation>
 <translation id="69525503251220566">Paràmetre que proporciona la funció de cerca per imatge per al proveïdor de cerca predeterminat</translation>
+<translation id="6956272732789158625">No permetis que cap lloc utilitzi la generació de claus</translation>
 <translation id="6997592395211691850">Si es requereixen comprovacions d'OCSP/CRL en línia per a ancoratges de confiança locals</translation>
 <translation id="7003334574344702284">Si està activada, aquesta política fa que les contrasenyes desades s'importin des del navegador predeterminat anterior. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, les contrasenyes desades no s'importaran. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="7003746348783715221">Preferències de <ph name="PRODUCT_NAME" /></translation>
@@ -1658,6 +1673,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquest opció de configuració no s'estableix o s'estableix com a certa, els dispositius inscrits informaran de la versió de SO i de microprogramari de manera periòdica. Si s'estableix com a falsa, no s'enviarà informació sobre la versió.</translation>
 <translation id="7511361072385293666">Si aquesta política s'estableix en "true" o no es configura, es permet utilitzar el protocol QUIC a <ph name="PRODUCT_NAME" />.
       Si aquesta política s'estableix en "false", no es permet utilitzar el protocol QUIC.</translation>
+<translation id="7519251620064708155">Permet que aquests llocs utilitzin la generació de claus</translation>
 <translation id="7523476810162382273">Envia batecs de supervisió al servidor de gestió</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
@@ -1861,6 +1877,9 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8300455783946254851">Si s'utilitza el valor true per a aquesta política, es desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /> quan s'utilitza una connexió mòbil. En aquest cas, les dades només se sincronitzen amb Google Drive quan hi ha connexió Wi-Fi o Ethernet.
 
           Si aquesta política no es defineix o si es defineix com a false, els usuaris podran transferir fitxers a Google Drive mitjançant connexions mòbils.</translation>
+<translation id="8312129124898414409">Us permet definir si els llocs web estan autoritzats a utilitzar la generació de claus. L'ús de la generació de claus es pot autoritzar o denegar per al conjunt total de llocs web.
+
+          Si aquesta política es deixa sense establir, s'utilitzarà "BlockKeygen" i l'usuari podrà canviar-la.</translation>
 <translation id="8329984337216493753">Aquesta política només està activa en mode de venta.
 
       Quan DeviceIdleLogoutTimeout estigui especificat, aquesta política defineix la durada del quadre d'advertència amb un temporitzador de compte enrere que es mostra a l'usuari abans no s'executi el tancament de sessió.
@@ -2057,6 +2076,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
+<translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>
 <translation id="9098553063150791878">Polítiques per a l'autenticació HTTP</translation>
 <translation id="9104138886225968319">Envia batecs de supervisió al servidor de gestió, de manera que

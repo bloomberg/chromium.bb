@@ -45,6 +45,7 @@
 <translation id="1553358976309200471">更新 Chrome</translation>
 <translation id="1557201757634521564">自动检测编码</translation>
 <translation id="1568822834048182062">系统会将您保存的书签、历史记录、密码和其他设置同步到您的 Google 帐户。</translation>
+<translation id="1592483623187843893">书签已离线保存</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
 <translation id="1641113438599504367">安全浏览</translation>
@@ -86,6 +87,7 @@
 <translation id="2138201775715568214">正在查找附近的“实物网”网页</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
 <translation id="2154710561487035718">复制网址</translation>
+<translation id="21570240866965662">网速很慢</translation>
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">优化</translation>
@@ -109,6 +111,7 @@
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2501278716633472235">返回</translation>
 <translation id="2512222046227390255">自动填充表单</translation>
+<translation id="2521102375070725336">书签已离线保存到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="2526148617758225454">流量节省程序已启用。您可以在“设置”中对其进行管理。</translation>
 <translation id="2532336938189706096">网页视图</translation>
 <translation id="2536728043171574184">正在查看此网页的离线副本</translation>
@@ -131,14 +134,12 @@
 <translation id="2891154217021530873">停止加载网页</translation>
 <translation id="2902702728133930130">由于出现意外错误，Chrome 启动失败。</translation>
 <translation id="2903493209154104877">地址</translation>
-<translation id="2904413602477443379">选择文件夹</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2956410042958133412">该帐户由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
-<translation id="3039671569659952257">删除文件夹</translation>
 <translation id="3063601790762993062">保存视频</translation>
 <translation id="306566828762083630">设备存储空间已用尽，请移除其他媒体内容以释放空间。</translation>
 <translation id="307329814453917357">询问是否要使用“Google 翻译”来翻译网页内容</translation>
@@ -146,6 +147,7 @@
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
 <translation id="3102119246920354026">缓存</translation>
 <translation id="3137521801621304719">退出隐身模式</translation>
+<translation id="3177909033752230686">网页语言：</translation>
 <translation id="3190152372525844641">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这些权限。</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
 <translation id="3207960819495026254">已加书签</translation>
@@ -157,7 +159,6 @@
 <translation id="3269093882174072735">加载图片</translation>
 <translation id="3278850099957560514">只需使用 Google 优化您所访问的网页，即可节省数据流量。Google 既不会优化也不会看到您通过私密连接 (HTTPS) 或在隐身标签页中访问的网页。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
-<translation id="3287852534598822456">书签已不存在，请刷新。</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
@@ -170,6 +171,7 @@
 <translation id="3435896845095436175">启用</translation>
 <translation id="3485544713029068372">Smart Lock（密码专用）</translation>
 <translation id="3492207499832628349">新的隐身标签页</translation>
+<translation id="3501331331116143684">网页已离线保存到“<ph name="FOLDER_NAME" />”</translation>
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="360480449234699036">无需离开所在页面，即可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片、搜索结果及其他详细信息。
@@ -195,6 +197,7 @@
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3992315671621218278">保存链接</translation>
 <translation id="4002066346123236978">标题</translation>
+<translation id="4035611068038188272">书签目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
 <translation id="4059119910594077751">触摸“返回”按钮即可退出全屏模式。</translation>
@@ -206,11 +209,14 @@
 <translation id="4116939199945053760"><ph name="SITE" /> 希望<ph name="BEGIN_LINK" />与以下设备配对<ph name="END_LINK" />：</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
+<translation id="4193864812412988973">正在查看的是此书签的离线副本</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
+<translation id="4198229475320555619">书签已离线保存 (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
 <translation id="424696723690217687">发现附近物体传送的网页。
 
 当您的设备处于解锁状态时，Chrome 会检测附近的网页。然后，相关 Google 服务处理这些网页，以提高网页搜索结果的质量。</translation>
+<translation id="4254813446494774748">翻译语言：</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4269820728363426813">复制链接地址</translation>
@@ -221,18 +227,17 @@
 <translation id="4334294535648607276">下载完毕。</translation>
 <translation id="4350413759959745971">移动保存的网页</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
-<translation id="4357362091209756047">没看到您的设备？<ph name="BEGIN_LINK1" />重新搜索<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />寻求帮助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不限</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4440256989292146959">加载更快，流量更省</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
+<translation id="4498934959426056365">密钥生成</translation>
 <translation id="4505554159887937799">已离线保存</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 天前}other{# 天前}}</translation>
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4532845899244822526">选择文件夹</translation>
-<translation id="4543087392704641517">书签标题</translation>
 <translation id="4543661749405994812">复制电子邮件地址</translation>
 <translation id="4581964774250883625">您已进入隐身模式。</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# 分钟前}other{# 分钟前}}</translation>
@@ -256,7 +261,6 @@
 <translation id="4836364883164334657">您与此网站之间的连接不是私密连接。攻击者可能会试图从 <ph name="DOMAIN_NAME" /> 窃取您的信息（例如照片、密码、电子邮件和信用卡信息）。</translation>
 <translation id="4842511359652954519">了解详情</translation>
 <translation id="4850886885716139402">视图</translation>
-<translation id="4871370605780490696">添加书签</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4927198283430892231">保存的网页目前占用了 <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> 的空间。</translation>
@@ -342,7 +346,6 @@
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5771382037724542929">要替换“<ph name="DIRECTORY_NAME" />”目录中现有的 <ph name="FILE_NAME" /> 吗？</translation>
 <translation id="5804241973901381774">权限</translation>
-<translation id="5806294296882899667">加载默认书签文件夹时出现错误</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
 <translation id="5832934273103296195">已展开 - 点击即可折叠</translation>
@@ -369,6 +372,7 @@
 <translation id="6075798973483050474">修改主页</translation>
 <translation id="6108923351542677676">正在设置…</translation>
 <translation id="6112702117600201073">正在刷新页面</translation>
+<translation id="6127379762771434464">条目已移除</translation>
 <translation id="6138140242378429169">使网页适合移动设备</translation>
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
@@ -391,6 +395,7 @@
 <translation id="6406506848690869874">同步</translation>
 <translation id="6409731863280057959">弹出式窗口</translation>
 <translation id="641643625718530986">打印…</translation>
+<translation id="6447570251829705777">无法为书签创建离线副本</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">搜索和网址建议</translation>
 <translation id="6458785801851713928">您的网域不支持同步。</translation>
@@ -435,23 +440,24 @@
 <translation id="6965382102122355670">确定</translation>
 <translation id="6973630695168034713">文件夹</translation>
 <translation id="6978479750597523876">重置翻译设置</translation>
-<translation id="6979922938747275756">加载文件夹时出现错误</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="6990079615885386641">从 Google Play 商店下载应用：<ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">自动向Google报告可能出现的安全事件详情</translation>
 <translation id="6999892069268112724">确认 Google 帐户</translation>
 <translation id="7019652137705190998">进入隐身模式可进行私密浏览或临时登录</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
+<translation id="7022756207310403729">在浏览器中打开</translation>
 <translation id="7026897394897382018">启用流量节省程序</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7053983685419859001">禁止</translation>
+<translation id="7056999826593229648">检测到网速很慢</translation>
+<translation id="7057058088140140610">使用 Google Payments 存储的信用卡和地址信息</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> 个打开的标签页</translation>
 <translation id="7096034533295549981">加载视频</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7191430249889272776">标签页已在后台打开。</translation>
-<translation id="7201341158316793215">正在移除…</translation>
 <translation id="7208788139759694678">流量节省程序已停用</translation>
 <translation id="7243308994586599757">选项在靠近屏幕底部的位置</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> 将根据您的位置信息显示本地搜索结果</translation>
@@ -486,17 +492,16 @@
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
 <translation id="7634554953375732414">您与此网站建立的不是私密连接。</translation>
 <translation id="7638584964844754484">密码不正确</translation>
-<translation id="764743049316168389">“<ph name="FOLDER_NAME" />”文件夹</translation>
 <translation id="7648422057306047504">使用 Google 凭据加密密码</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7665369617277396874">添加帐户</translation>
+<translation id="7690588279513156836">加载原始网站</translation>
 <translation id="7735023902678907596">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件和保存的所有网页均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商以及您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7761240775244195612">要删除上个月未使用的 <ph name="PAGES_NUMBER" /> 份离线副本吗？这会释放 <ph name="TOTAL_PAGE_SIZE" /> 的空间。</translation>
 <translation id="7764225426217299476">添加地址</translation>
 <translation id="7765158879357617694">移动</translation>
-<translation id="7767746238359002192">访问该网页以离线保存</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="7784213092572143271">网页已保存</translation>
 <translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
@@ -509,10 +514,10 @@
 <translation id="7876243839304621966">全部删除</translation>
 <translation id="7925108652071887026">自动填充数据</translation>
 <translation id="7947953824732555851">接受并登录</translation>
+<translation id="7949961459945740081">获取最新功能</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7963646190083259054">供应商：</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
-<translation id="7989222512959629388">正在保存…</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
 <translation id="8007176423574883786">已对此设备停用</translation>
@@ -525,7 +530,6 @@
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>
-<translation id="8143660160623733249">文件夹名称</translation>
 <translation id="8146397137182589628">未离线保存</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> 个帐户</translation>
 <translation id="8168435359814927499">内容</translation>
@@ -561,9 +565,11 @@
 
 要获得新的许可，请连接到互联网并播放您下载的内容。</translation>
 <translation id="8660471606262461360">来自 Google Payments</translation>
+<translation id="8675945939500569406">要启用实物网吗？</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8699799819461268362">Google SafeSites 过滤功能</translation>
+<translation id="8701537995684343047">访问书签以离线保存</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8727142376512517020">不要再显示此对话框</translation>
@@ -596,16 +602,15 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9133515669113036225">重置设备凭据</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
-<translation id="9156605176886108508">没有书签文件夹</translation>
+<translation id="9151532766011674069">书签已离线保存，但存储空间即将用尽。</translation>
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">家庭</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">新建文件夹</translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
+<translation id="954352821720225055">存储空间即将用尽，无法为书签创建离线副本。</translation>
 <translation id="969096075394517431">更改语言</translation>
-<translation id="971774202801778802">书签网址</translation>
 <translation id="983192555821071799">关闭所有标签页</translation>
 </translationbundle>

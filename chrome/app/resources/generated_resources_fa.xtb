@@ -65,6 +65,7 @@
 <translation id="1090126737595388931">بدون برنامه‌های در حال اجرا در پس‌زمینه</translation>
 <translation id="1091767800771861448">‏برای رد شدن، ESCAPE را فشار دهید (فقط ساخت‌های غیررسمی).</translation>
 <translation id="1093457606523402488">شبکه‌های قابل مشاهده:</translation>
+<translation id="1094607894174825014">عملیات خواندن یا نوشتن با فاصله نامعتبری در این دستگاه درخواست شد: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="1095631072651601838">هویت <ph name="ORGANIZATION" /> در <ph name="LOCALITY" /> توسط <ph name="ISSUER" /> تأیید شده است. اطلاعات شفافیت گواهینامه توسط سرور ارائه شد، اما یک یا چند گزارش شفافیت گواهینامه تشخیص داده نشد.</translation>
 <translation id="1097091804514346906">شمارنده‌های حجم داده را در کادر گفتگوی «پاک کردن داده‌های محصول مرور»، نشان می‌دهد.</translation>
 <translation id="1097507499312291972">برای کنترل و مشاهده وب‌سایت‌هایی که این شخص بازدید می‌کند، <ph name="BEGIN_SIGN_IN_LINK" />وارد سیستم شوید<ph name="END_SIGN_IN_LINK" />.</translation>
@@ -109,6 +110,7 @@
 <translation id="1155759005174418845">کاتالان</translation>
 <translation id="1156185823432343624">میزان صدا: بی‌صدا</translation>
 <translation id="1156689104822061371">طرح‌بندی صفحه‌کلید:</translation>
+<translation id="1158054703003659942">به‌عنوان نشانک فعال شد</translation>
 <translation id="1158274711289833876">‏اتصال امن TLS</translation>
 <translation id="1160536908808547677">پس از بزرگ‌نمایی، عناصر با وضعیت ثابت و نوارهای پیمایش مقیاس‌بندی‌شده به این محل نمایش پیوست می‌شوند.</translation>
 <translation id="1161575384898972166">لطفاً برای صدور مجوز سرویس گیرنده، به <ph name="TOKEN_NAME" /> وارد شوید.</translation>
@@ -425,6 +427,7 @@
 <translation id="1598233202702788831">سرپرست سیستم شما به‌روزرسانی‌ها را غیرفعال کرده است.</translation>
 <translation id="1598604884989842103">‏فعال کردن واسط کاربر بزرگ کردن TouchView برای آزمایش</translation>
 <translation id="1600857548979126453">دسترسی به مرحله پایانی اشکال‌زدای صفحه</translation>
+<translation id="1601247446845604757">‏نمونه اولیه WebGL 2.0</translation>
 <translation id="1601560923496285236">اعمال</translation>
 <translation id="1603914832182249871">(ناشناس)</translation>
 <translation id="1607220950420093847">حساب شما ممکن است حذف یا غیر فعال شده باشد. لطفاً از سیستم خارج شوید.</translation>
@@ -454,6 +457,7 @@
 <translation id="1642494467033190216">راه‌اندازی مجدد و برداشتن محافظت ویژگی‌های ریشه قبل از فعال کردن ویژگی‌های رفع‌اشکال دیگر لازم است.</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1645228020260124617"><ph name="PRECENTAGE" />٪</translation>
+<translation id="1645870377513700713">اعلان‌های بومی را فعال می‌کند.</translation>
 <translation id="1646136617204068573">صفحه‌کلید مجارستانی</translation>
 <translation id="164729547906544836">صفحه‌کلید تامیل (نویسه‌گردانی هندی)</translation>
 <translation id="164814987133974965">کاربر نظارت شده می‌تواند وب را با راهنمایی شما کاوش کند. شما به عنوان مدیر کاربر نظارت شده می‌توانید
@@ -474,7 +478,6 @@
 <translation id="166278006618318542">الگوریتم کلید عمومی موضوع</translation>
 <translation id="1662837784918284394">(هیچکدام)</translation>
 <translation id="1663298465081438178">قابلیت‌های خوب بدون دردسر.</translation>
-<translation id="1664310274171851702">فقط اتصال‌های اول‌شخص ایمن</translation>
 <translation id="1665611772925418501">امکان تغییر این فایل وجود نداشت.</translation>
 <translation id="1665770420914915777">استفاده از صفحه «برگه جدید»</translation>
 <translation id="1666288758713846745">پویا</translation>
@@ -877,6 +880,7 @@
 <translation id="2282146716419988068">‏پردازش GPU</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2286454467119466181">ساده</translation>
+<translation id="2286950485307333924">‏اکنون در سیستم Chrome هستید</translation>
 <translation id="2287590536030307392">همه اتصالات بی‌سیم را غیرفعال کنید.</translation>
 <translation id="2289383640829819703">دانلودی پیدا نشد.</translation>
 <translation id="2291643155573394834">برگه بعدی</translation>
@@ -919,6 +923,7 @@
 <translation id="2351520734632194850"><ph name="MHZ" /> مگاهرتز</translation>
 <translation id="2352662711729498748">کمتر از ۱ مگابایت</translation>
 <translation id="2356070529366658676">سؤال شود</translation>
+<translation id="2357949918965361754">‏می‌توانید از این قابلیت برای نمایش محتوا از Chrome روی تلویزیون یا دستگاه‌های دیگرتان استفاده کنید.</translation>
 <translation id="2359345697448000899">با کلیک کردن روی افزونه‌ها در منوی ابزار، برنامه‌های افزودنی خود را مدیریت کنید.</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="236128817791440714">‏توصیه می‌شود: راه‌اندازی Smart Lock برای Android</translation>
@@ -1300,6 +1305,7 @@
 <translation id="2870560284913253234">سایت</translation>
 <translation id="2870836398458454343">‏نویسه‌گردانی (marhaban ← مرحبا)</translation>
 <translation id="2871813825302180988">از این حساب از قبل در این دستگاه استفاده می‌شود.</translation>
+<translation id="2872304893053368447">‏گروه‌بندی سابقه براساس دامنه وب‌سایت (برای مثال google.com) در chrome://history.</translation>
 <translation id="2872353916818027657">تعویض مانیتور اصلی</translation>
 <translation id="287286579981869940">افزودن <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">خاموش کردن</translation>
@@ -1470,6 +1476,7 @@
 <translation id="3116361045094675131">صفحه‌کلید انگلیسی</translation>
 <translation id="3117812041123364382">فعال/غیرفعال کردن صفحه‌کلید مجازی شناور.</translation>
 <translation id="3118319026408854581">راهنمای <ph name="PRODUCT_NAME" /></translation>
+<translation id="3120430004221004537">رمزگذاری برای عملیات موردنظر در این دستگاه کافی نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="3121793941267913344">این دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> بازنشانی شود</translation>
 <translation id="3122162841865761901">آزمایش‌های ابزار برنامه‌نویس</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1493,6 +1500,7 @@
 <translation id="3135204511829026971">چرخش صفحه</translation>
 <translation id="313535638642906552">EmbeddedSearch API</translation>
 <translation id="3140353188828248647">فوکوس نوار آدرس</translation>
+<translation id="3141917231319778873">درخواست موردنظر در این دستگاه پشتیبانی نمی‌شود: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="3144126448740580210">تمام</translation>
 <translation id="3144135466825225871">‏فایل crx جایگزین نشد. بررسی کنید که آیا فایل در حال استفاده است یا نه.</translation>
 <translation id="3144647712221361880">بازکردن پیوند به‌عنوان</translation>
@@ -1608,6 +1616,7 @@
 <translation id="3303818374450886607">کپی ها</translation>
 <translation id="3305389145870741612">مراحل قالب‌بندی چند ثانیه طول می‌کشد. لطفاً منتظر بمانید.</translation>
 <translation id="3305661444342691068">‏باز کردن PDF در پیش‌نمایش</translation>
+<translation id="3306684685104080068">‏ارسال محتوا را به خدمات مبتنی بر رایانش ابری مانند Google Hangouts فعال کنید.</translation>
 <translation id="3306897190788753224">به‌صورت موقت شخصی کردن مکالمه، پیشنهادات براساس سابقه و دیکشنری کاربر از کار بیفتد.</translation>
 <translation id="3307950238492803740">رفع اشکال همه چیز.</translation>
 <translation id="3308006649705061278">‏واحد سازمانی (OU)</translation>
@@ -1678,6 +1687,7 @@
 <translation id="3391716558283801616">برگه ۷</translation>
 <translation id="3392020134425442298">بازیابی فایل مخرب</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> می‌خواهد از دوربین و میکروفن شما استفاده کند.</translation>
+<translation id="3394279550557729862">پشتیبانی استفاده از اعلان‌های خرابی بومی و مرکز اعلان را در پلتفورمی که قرار دارند فعال می‌کند.</translation>
 <translation id="3396331542604645348">چاپگر انتخابی موجود نیست یا به درستی نصب نشده است. چاپگر خود را بررسی کرده یا چاپگر دیگری را انتخاب کنید.</translation>
 <translation id="3399597614303179694">صفحه‌کلید مقدونی</translation>
 <translation id="3401130144947259741">‏اگر فعال شود، رویدادهای ردیابی به «ردیاب رویداد برای Windows‏» (ETW) صادر می‌شوند و می‌توانند با ابزاری مانند UIF یا ETW یا Xperf ضبط شوند.</translation>
@@ -1951,6 +1961,7 @@
 <translation id="3752582316358263300">تأیید...</translation>
 <translation id="3752673729237782832">دستگاه‌های من</translation>
 <translation id="3753641128651686748">«<ph name="BUNDLE_NAME" />» این برنامه‌ها را برای <ph name="USER_NAME" /> اضافه می‌کند.</translation>
+<translation id="3755237144397196888">‏فعال کردن این گزینه به برنامه‌های وب اجازه می‌دهد به قابلیت‌های آزمایشی WebGL 2.0 دسترسی داشته باشند. این گزینه فقط باید برای تولید برنامه استفاده شود و نباید هنگام مرور سایت‌های وب اختیاری مورد استفاده قرار گیرد.</translation>
 <translation id="3755411799582650620"><ph name="PHONE_NAME" /> شما اکنون می‌تواند قفل این <ph name="DEVICE_TYPE" /> را نیز باز کند.</translation>
 <translation id="3758201569871381925">‏لطفاً مطمئن شوید که دستگاه Hotrod شما روشن و به تلویزیون متصل است.</translation>
 <translation id="375841316537350618">در حال بارگیری اسکریپت پروکسی ...</translation>
@@ -2035,6 +2046,7 @@
 <translation id="3857773447683694438">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</translation>
 <translation id="3858678421048828670">صفحه‌کلید ایتالیایی</translation>
 <translation id="3859360505208332355">همیشه به این افزایه‌ها در <ph name="HOST" /> اجازه داده شود</translation>
+<translation id="3862134173397075045">‏به تجربه ارسال محتوا در Chrome خوش آمدید!</translation>
 <translation id="3866249974567520381">توضیح</translation>
 <translation id="3866443872548686097">رسانه بازیابی شما آماده است. می‌توانید آن را از سیستم خود جدا کنید.</translation>
 <translation id="3867944738977021751">فیلدهای گواهی</translation>
@@ -2174,6 +2186,7 @@
 <translation id="4092067639640979396">پشتیبانی آزمایشی اندازه‌گیری را با استفاده از نزدیک کردن انگشتان به هم فعال می‌کند.</translation>
 <translation id="4092878864607680421">جدیدترین نسخه برنامه "<ph name="APP_NAME" />" به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
 <translation id="4093955363990068916">فایل محلی:</translation>
+<translation id="4095176652090536196">گروه‌بندی سابقه براساس دامنه</translation>
 <translation id="409579654357498729">‏افزودن به Cloud Print</translation>
 <translation id="4096508467498758490">غیرفعال کردن افزونه‌های حالت برنامه‌نویس</translation>
 <translation id="4098354747657067197">سایت پیش‌رو فریب‌کار است</translation>
@@ -2316,7 +2329,6 @@
 <translation id="4322394346347055525">بستن برگه‌های دیگر</translation>
 <translation id="4325378361067528777">‏فعال کردن حالت پس‌زمینه Push API</translation>
 <translation id="4326999707196471878">‏کادرهای گفتگوی Toolkit-Views Browser.</translation>
-<translation id="4330406155931244378">فعال‌سازی غلط‌گیر املای چندزبانه</translation>
 <translation id="4333854382783149454">‏PKCS #1 SHA-1 با رمزگذاری RSA</translation>
 <translation id="4335713051520279344">این رایانه بعد از ۱ ثانیه بازنشانی می‌شود.
 کلید دلخواهی را فشار دهید تا کاوش ادامه پیدا کند.</translation>
@@ -2410,6 +2422,7 @@
 <translation id="4495419450179050807">در این صفحه نشان داده نشود</translation>
 <translation id="449680153165689114">فعال کردن با برجسته کردن فیلد</translation>
 <translation id="449782841102640887">ایمن باشید</translation>
+<translation id="4498934959426056365">تولید کلید</translation>
 <translation id="450099669180426158">نماد علامت تعجب</translation>
 <translation id="4501530680793980440">تأیید حذف</translation>
 <translation id="4504940961672722399">با کلیک کردن روی این نماد یا با فشار دادن <ph name="EXTENSION_SHORTCUT" /> از این برنامه افزودنی استفاده کنید.</translation>
@@ -2498,6 +2511,7 @@
 <translation id="4641539339823703554">‏Chrome نمی‌تواند زمان سیستم را تنظیم کند. لطفاً زمان را در زیر بررسی کرده و در صورت لزوم آن را درست کنید.</translation>
 <translation id="4641635164232599739"><ph name="FILE_NAME" /> معمولاً دانلود نمی‌شود و ممکن است خطرناک باشد.</translation>
 <translation id="4643612240819915418">&amp;باز کردن فایل ویدئویی در برگهٔ جدید</translation>
+<translation id="4644809172724549836">‏مداخله نماینده کاربر برای بارکردن WebFonts.</translation>
 <translation id="4645676300727003670">&amp;حفظ</translation>
 <translation id="4647090755847581616">&amp;بستن برگه </translation>
 <translation id="4647697156028544508">لطفاً پین را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
@@ -3164,6 +3178,7 @@
 <translation id="5618075537869101857">وای، برنامه کاربردی کیوسک راه‌اندازی نشد.</translation>
 <translation id="5618333180342767515">(این مرحله ممکن است چند دقیقه طول بکشد)</translation>
 <translation id="5618972959246891967">تاریخ سیستم</translation>
+<translation id="56197088284879152">اتصال برای کنترل دستگاه راه دور «<ph name="DEVICE_NAME" />» مسدود شده است.</translation>
 <translation id="5620568081365989559">‏DevTools درخواست دسترسی کامل به <ph name="FOLDER_PATH" /> را دارد. مراقب باشید هیچ اطلاعات حساسی را در دسترس قرار ندهید.</translation>
 <translation id="5620612546311710611">آمار استفاده</translation>
 <translation id="5622017037336776003">‏باز کردن PDF در Reader</translation>
@@ -3270,6 +3285,7 @@
 <translation id="5771816112378578655">راه‌اندازی در حال انجام...</translation>
 <translation id="5771849619911534867">اسکن دستگاه متوقف شد.</translation>
 <translation id="5772177959740802111">‏پشتیبانی آزمایشی Chromecast از Video Player</translation>
+<translation id="577322787686508614">عملیات خواندن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="5773733305264798510">‏غیرفعال کردن تأخیر Agnostic AEC در WebRTC</translation>
 <translation id="5774295353725270860">بازکردن برنامه فایل‌ها</translation>
 <translation id="5774515636230743468">اظهارنامه:</translation>
@@ -3301,6 +3317,7 @@
 <translation id="5819442873484330149">مجموعه هانگول ۳ (نهایی)</translation>
 <translation id="5819484510464120153">ایجاد &amp;میانبرهای برنامه...</translation>
 <translation id="5822838715583768518">راه‌اندازی برنامه</translation>
+<translation id="5824480603702411398">به‌عنوان صفحه ذخیره‌شده فعال شد</translation>
 <translation id="5826507051599432481">‏نام مشترک (CN)</translation>
 <translation id="5827266244928330802">Safari</translation>
 <translation id="5828228029189342317">شما تنظیمات را به گونه‌ای انجام داده‌اید که برخی از انواع فایل‌ها بعد از دانلود به صورت خودکار باز شوند.</translation>
@@ -3465,7 +3482,6 @@
 <translation id="6080689532560039067">بررسی زمان سیستم</translation>
 <translation id="6080696365213338172">شما با استفاده از گواهی ارائه شده توسط سرپرست سیستم به محتوا دسترسی پیدا کرده‌اید. داده‌هایی که به <ph name="DOMAIN" /> ارائه می‌کنید ممکن است توسط سرپرست سیستم رهگیری شوند.</translation>
 <translation id="6082651258230788217">نمایش در نوار ابزار</translation>
-<translation id="6084983096586510630">فقط اتصال‌های اول‌شخص</translation>
 <translation id="6086611700618935897">پشتیبانی نوشتن «پروتکل انتقال رسانه»</translation>
 <translation id="6086814797483779854">با کلیک کردن اجرا شود</translation>
 <translation id="6086846494333236931">سرپرست سیستم شما نصب کرده است.</translation>
@@ -3494,6 +3510,7 @@
 <translation id="6120816415558830169">‏با استفاده از &lt;a&gt;<ph name="EXTENSION" />&lt;/a&gt; بارگیری شده</translation>
 <translation id="6122081475643980456">اتصال اینترنت شما کنترل می‌شود</translation>
 <translation id="6122093587541546701">ایمیل (اختیاری):</translation>
+<translation id="6122875415561139701">عملیات نوشتن در این دستگاه مجاز نیست: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="6124650939968185064">افزودنه‌های زیر به این برنامه افزودنی وابسته هستند:</translation>
 <translation id="6129938384427316298">‏نظر گواهی Netscape</translation>
 <translation id="6129953537138746214">فضا</translation>
@@ -3561,6 +3578,7 @@
 <translation id="6231148928368101651">پانل‌ها</translation>
 <translation id="6231881193380278751">‏افزودن پارامتر جستار در نشانی وب برای بازخوانی خودکار صفحه: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">باتری</translation>
+<translation id="6236512433562156050">‏مداخله نماینده کاربر برای بارکردن WebFonts فعال می‌شود.</translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="6243774244933267674">سرور در دسترس نیست</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
@@ -3753,6 +3771,7 @@
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />توجه:<ph name="END_BOLD" /> فقط درصورتی آن را فعال کنید که اطلاع دارید چه کاری انجام می‌دهید یا از شما خواسته شده باشد این کار را انجام دهید، زیرا جمع‌آوری داده‌ها ممکن است عملکرد را کاهش دهد.</translation>
 <translation id="654233263479157500">از یک سرویس وب برای کمک به برطرف کردن خطاهای پیمایش استفاده شود</translation>
 <translation id="6545834809683560467">استفاده از یک سرویس پیش‌بینی برای کمک به تکمیل جستجوها و نشانی‌های وب تایپ شده در نوار آدرس یا کادر جستجوی راه‌انداز برنامه</translation>
+<translation id="6546624164157740757">برگه: <ph name="CHROME_TAB_TITLE" /></translation>
 <translation id="6546686722964485737">‏پیوستن به شبکه Wimax</translation>
 <translation id="6547316139431024316">برای این برنامه افزودنی دیگر هشدار داده نشود</translation>
 <translation id="6549689063733911810">اخیر</translation>
@@ -3891,7 +3910,6 @@
 <translation id="6766534397406211000">آزمایشی را فعال می‌کند که مرکز پیام همیشه با حذف اعلان، به بالا پیمایش کند.</translation>
 <translation id="6769712124046837540">در حال افزودن چاپگر...</translation>
 <translation id="6771503742377376720">یک ارائه دهنده مجوز است</translation>
-<translation id="6772186257078173656">پشتیبانی را برای غلط‌گیر املای چندزبانه به‌صورت هم‌زمان روشن می‌کند.</translation>
 <translation id="6773575010135450071">عملکردهای بیشتر...</translation>
 <translation id="6775029867846481468">{NUM_ITEMS,plural, =1{این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند، اما موارد همگام‌سازی شده از دستگاه‌های دیگر پاکسازی نمی‌شوند.}one{این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند، اما موارد همگام‌سازی شده از دستگاه‌های دیگر پاکسازی نمی‌شوند.}other{این کار $1 مورد را برای همیشه از این دستگاه حذف می‌کند، اما موارد همگام‌سازی شده از دستگاه‌های دیگر پاکسازی نمی‌شوند.}}</translation>
 <translation id="6780439250949340171">مدیریت سایر تنظیمات</translation>
@@ -3988,6 +4006,7 @@
         در پشت این مسیر است به احتمال زیاد مقدار زیادی از محتوا را خراب می‌کند.</translation>
 <translation id="6935367737854035550">عناصر طراحی سه‌بعدی را در واسط‌های کاربر بالای مرورگر تنظیم می‌کند.</translation>
 <translation id="6937152069980083337">‏ورودی ژاپنی Google (برای صفحه‌کلید آمریکایی)</translation>
+<translation id="693807610556624488">عملیات نوشتن از حداکثر طول مجاز ویژگی برای این دستگاه بیشتر می‌شود: «<ph name="DEVICE_NAME" />».</translation>
 <translation id="6939777852457331078">‏صفحه‌کلید US Workman</translation>
 <translation id="6941427089482296743">حذف همه نشان داده شده‌ها</translation>
 <translation id="6941937518557314510">لطفاً به سیستم <ph name="TOKEN_NAME" /> وارد شوید تا بتوانید <ph name="HOST_NAME" /> را با گواهی خود تأیید اعتبار کنید.</translation>
@@ -4082,6 +4101,7 @@
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7054808953701320293">متوجه شدم، دیگر به من نشان داده نشود.</translation>
 <translation id="7056526158851679338">&amp;بازرسی دستگاه‌ها</translation>
+<translation id="7057058088140140610">‏کارت‌های اعتباری و آدرس‌های مورد استفاده در Google Payments</translation>
 <translation id="7059858479264779982">تنظیم روی اجرای خودکار</translation>
 <translation id="7061692898138851896">ذخیره خودکار گذرواژه‌ها</translation>
 <translation id="7063129466199351735">در حال پردازش میان‌برها...</translation>
@@ -4207,6 +4227,7 @@
 <translation id="7257173066616499747">‏شبکه‌های Wi-Fi</translation>
 <translation id="7257666756905341374">خواندن داده‌هایی که کپی و جای‌گذاری می‌کنید</translation>
 <translation id="7260002739296185724">‏استفاده از AVFoundation را برای ضبط ویدیو فعال کنید تا کنترل دستگاه ویدیو در OS X &gt;= 10.7. در غیر این صورت QTKit استفاده شود.</translation>
+<translation id="7260504762447901703">لغو دسترسی</translation>
 <translation id="7262004276116528033">این خدمات ورود به سیستم توسط <ph name="SAML_DOMAIN" /> میزبانی شده است</translation>
 <translation id="7262221505565121">استثناهای دستیابی افزایه آزمایشی نشده</translation>
 <translation id="7264275118036872269">شروع کاوش دستگاه بلوتوث ناموفق بود.</translation>
@@ -4253,6 +4274,7 @@
 <translation id="7340431621085453413"><ph name="FULLSCREEN_ORIGIN" /> اکنون در حالت تمام صفحه است.</translation>
 <translation id="7341982465543599097">بسیار کوتاه</translation>
 <translation id="734303607351427494">مدیریت موتورهای جستجو...</translation>
+<translation id="7343116142376328522">به هیچ سایتی اجازه داده نشود از تولید کلید در فرم‌ها استفاده کند (توصیه می‌شود)</translation>
 <translation id="7345706641791090287">گذرواژه‌تان را تأیید کنید</translation>
 <translation id="734651947642430719">‏روش ورودی تامیل (InScript)</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
@@ -4275,6 +4297,7 @@
 <translation id="7377169924702866686">‏Caps Lock روشن است.</translation>
 <translation id="7378627244592794276">نه</translation>
 <translation id="7378810950367401542">/</translation>
+<translation id="7378858126397188021">استثناهای تولید کلید</translation>
 <translation id="7382160026931194400">|تنظیمات محتوا| و #موتور جستجو# که ذخیره شده‌اند پاک نمی‌شوند و ممکن است عادات مرور شما را منعکس کنند.</translation>
 <translation id="7385854874724088939">هنگام سعی برای چاپ، اشتباهی رخ داده است. لطفاً چاپگر خود را بررسی کنید و دوباره امتحان کنید.</translation>
 <translation id="7386824183915085801">‏نسخه Chrome و سیستم عامل شما به علاوه اطلاعاتی که در بالا انتخاب کرده‌اید تا اضافه شود، 
@@ -4295,6 +4318,7 @@
 <translation id="7392915005464253525">با&amp;ز کردن مجدد پنجره بسته</translation>
 <translation id="7393449708074241536">این کار <ph name="TOTAL_COUNT" /> مورد را برای همیشه از این دستگاه حذف می‌کند.</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> در هنگام راه‌اندازی سیستم شروع به کار می‌کند و در پس‌زمینه همچنان فعال خواهد بود، حتی زمانی که تمام پنجره‌های دیگر <ph name="PRODUCT_NAME" /> را ببندید.</translation>
+<translation id="7396863776022882342">به همه سایت‌ها اجازه داده شود از تولید کلید در فرم‌ها استفاده کنند.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>
 <translation id="740083207982962331">‏لطفاً صبر کنید تا Chromebox شما مجدداً راه‌اندازی شود...</translation>
 <translation id="7401543881546089382">حذف میان‌بر</translation>
@@ -4522,7 +4546,6 @@
 <translation id="7765158879357617694">انتقال</translation>
 <translation id="7766807826975222231">شرکت در تور</translation>
 <translation id="7767646430896201896">گزینه‌ها:</translation>
-<translation id="7768981235767647187">این مورد غیرمنتظره بود؟ آن را با ما در میان بگذارید!</translation>
 <translation id="7769353642898261262">نحوه ایمن کردن تلفن</translation>
 <translation id="7771452384635174008">صفحه آرایی</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
@@ -4591,8 +4614,10 @@
 <translation id="7852934890287130200">ایجاد، تغییر یا حذف نمایه‌ها</translation>
 <translation id="7853747251428735">‏ابزارهای بیشتر (‎&amp;L)</translation>
 <translation id="7853966320808728790">‏BÉPO فرانسوی</translation>
+<translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7857823885309308051">ممکن است یک دقیقه بطول انجامد...</translation>
 <translation id="7857949311770343000">این صفحه برگه جدیدی است که منتظرش بودید؟</translation>
+<translation id="7858929532264920831">تولید کلید</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7861215335140947162">&amp;فایلهای بارگیری‌شده</translation>
 <translation id="7864539943188674973">غیرفعال کردن بلوتوث</translation>

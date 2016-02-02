@@ -89,6 +89,7 @@
 <translation id="1426410128494586442">はい</translation>
 <translation id="1427655258943162134">プロキシ サーバーのアドレスまたは URL</translation>
 <translation id="1435659902881071157">デバイス レベルのネットワーク設定</translation>
+<translation id="1438739959477268107">デフォルトのキー生成設定</translation>
 <translation id="1454846751303307294">JavaScript の実行を許可しないサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultJavaScriptSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="1464848559468748897"><ph name="PRODUCT_OS_NAME" /> 搭載デバイス上のマルチプロフィール セッションでのユーザーの行動を制御します。
 
@@ -636,6 +637,9 @@
       この設定が有効な場合または未設定の場合、ユーザーは Google アカウントでの認証によってクラウド プリント プロキシを有効にできます。
 
       この設定が無効な場合、ユーザーはプロキシを有効にできず、パソコンはプリンタを <ph name="CLOUD_PRINT_NAME" /> と共有できません。</translation>
+<translation id="3322771899429619102">キー生成を使用できるサイトの URL パターンを登録します。URL パターンが「KeygenBlockedForUrls」にも含まれる場合、この例外ポリシーは無視されます。
+
+          このポリシーが未設定の場合は、「DefaultKeygenSetting」ポリシー（設定されている場合）またはユーザー個人の設定で指定されているすべてのサイトに対し、全体向けの既定値が使用されます。</translation>
 <translation id="3381968327636295719">ホスト ブラウザをデフォルトで使用する</translation>
 <translation id="3417418267404583991">このポリシーを true に設定した場合または未設定の場合、<ph name="PRODUCT_OS_NAME" /> ではゲスト ログインが有効になります。ゲスト ログインは匿名ユーザーのセッションで、パスワードが不要です。
 
@@ -683,6 +687,7 @@
       この設定を有効にすると、YouTube のセーフモードは常に有効になります。
 
       この設定を無効にした場合、または値を設定しない場合、YouTube のセーフモードは有効になりません。</translation>
+<translation id="3750220015372671395">指定サイトでのキー生成をブロックする</translation>
 <translation id="3756011779061588474">デベロッパー モードをブロックする</translation>
 <translation id="3758249152301468420">デベロッパー ツールを無効にする</translation>
 <translation id="3765260570442823273">アイドル時のログアウト警告メッセージの表示期間</translation>
@@ -812,6 +817,9 @@
 
           このポリシーは <ph name="PRODUCT_NAME" /> 自体が内部で使用するためのものです。</translation>
 <translation id="4224610387358583899">画面ロック遅延時間</translation>
+<translation id="423797045246308574">キー生成を使用できないサイトの URL パターンを登録します。URL パターンが「KeygenAllowedForUrls」にも含まれる場合は、このブロック ポリシーが優先されます。
+
+          このポリシーが未設定の場合は、「DefaultKeygenSetting」ポリシー（設定されている場合）またはユーザー個人の設定で指定されているすべてのサイトに対し、全体向けの既定値が使用されます。</translation>
 <translation id="4250680216510889253">いいえ</translation>
 <translation id="427632463972968153">POST を使って画像検索を行うときに使用するパラメータを指定します。名前と値のペアをカンマで区切って指定します。値がテンプレート パラメータ（上記の例の {imageThumbnail} など）の場合は、実際の画像サムネイルのデータに置き換えられます。
 
@@ -820,6 +828,9 @@
           このポリシーは「DefaultSearchProviderEnabled」ポリシーが有効な場合にのみ適用されます。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 以降</translation>
 <translation id="4325690621216251241">システム トレイにログアウト ボタンを追加する</translation>
+<translation id="4347908978527632940">true に設定した場合、監視対象ユーザーについて、他の Android アプリからコンテンツ プロバイダを介してウェブ制限を問い合わせることができます。
+
+          false に設定した場合、または未設定の場合、コンテンツ プロバイダから情報は返されません。</translation>
 <translation id="4349746760316962317">キャッシュされたファイルをディスクに保存するときに <ph name="PRODUCT_NAME" /> が使用するディレクトリを設定します。
 
       このポリシーを設定した場合は、ユーザーが「--disk-cache-dir」フラグを指定していても、ここで指定したディレクトリが <ph name="PRODUCT_NAME" /> で使用されます。
@@ -1271,6 +1282,7 @@ Active Directory ドメインに参加していない Windows インスタンス
           ポリシーの値はミリ秒単位で指定してください。アイドル時間より長い値は指定できません。</translation>
 <translation id="6111936128861357925">恐竜のイースター エッグゲームを許可する</translation>
 <translation id="6114416803310251055">廃止予定</translation>
+<translation id="6133088669883929098">すべてのサイトにキー生成の使用を許可する</translation>
 <translation id="6145799962557135888">JavaScript の実行を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultJavaScriptSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="6151775819333710697">
           この設定が有効になっていると、ユーザーは <ph name="PRODUCT_NAME" /> にパスワードを記憶させる
@@ -1509,6 +1521,7 @@ Active Directory ドメインに参加していない Windows インスタンス
       このポリシーが未設定の場合、デフォルト値の 32 が使用されます。</translation>
 <translation id="6943577887654905793">Mac/Linux 設定名:</translation>
 <translation id="69525503251220566">既定の検索プロバイダに画像検索機能を提供するパラメータ</translation>
+<translation id="6956272732789158625">すべてのサイトにキー生成の使用を許可しない</translation>
 <translation id="6997592395211691850">ローカルの信頼済みアンカーにオンラインの OCSP/CRL チェックが必要かどうかを示します</translation>
 <translation id="7003334574344702284">このポリシーを有効にすると、以前の既定のブラウザで保存されたパスワードがインポートされます。有効にすると、このポリシーはインポート ダイアログにも影響します。無効にすると、保存されたパスワードはインポートされません。このポリシーが未設定の場合、インポートするかどうかをユーザーに尋ねるか、自動的にインポートされます。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> の設定</translation>
@@ -1657,6 +1670,7 @@ Active Directory ドメインに参加していない Windows インスタンス
       この設定が未設定か、True に設定されている場合、登録デバイスでは定期的に OS とファームウェアのバージョンが報告されます。この設定が False に設定されている場合、バージョン情報は報告されません。</translation>
 <translation id="7511361072385293666">このポリシーを true に設定した場合や未設定の場合、<ph name="PRODUCT_NAME" /> での QUIC プロトコルの使用が許可されます。
       このポリシーを false に設定した場合、QUIC プロトコルの使用は許可されません。</translation>
+<translation id="7519251620064708155">指定サイトでのキー生成を許可する</translation>
 <translation id="7523476810162382273">管理サーバーに監視用ハートビートを送信する</translation>
 <translation id="7529100000224450960">ポップアップ表示を許可するサイトを指定する URL パターンのリストを設定できます。このポリシーが未設定の場合、グローバルのデフォルト値がすべてのサイトで使用されます。グローバルのデフォルト値は「DefaultPopupsSetting」ポリシーの値か、この値が未設定の場合はユーザーの個人設定の値です。</translation>
 <translation id="7529144158022474049">自動更新の散乱係数</translation>
@@ -1854,6 +1868,9 @@ Active Directory ドメインに参加していない Windows インスタンス
 <translation id="8300455783946254851">True に設定すると、携帯回線接続の使用時に <ph name="PRODUCT_OS_NAME" /> ファイル アプリで Google ドライブの同期が無効になります。この場合、データが Google ドライブに同期されるのは、Wi-Fi またはイーサネット接続時のみとなります。
 
           未設定の場合、または False に設定した場合、ユーザーは携帯回線接続を使用して Google ドライブにファイルを転送できるようになります。</translation>
+<translation id="8312129124898414409">ウェブサイトがキー生成を使用できるかどうかを設定します。すべてのサイトを対象に、キー生成の使用を許可または禁止できます。
+
+          このポリシーが未設定の場合は「BlockKeygen」が使用されます。ユーザーはこの設定を変更できます。</translation>
 <translation id="8329984337216493753">このポリシーは小売りモードでのみアクティブになります。
 
       DeviceIdleLogoutTimeout が指定されている場合、このポリシーは、カウントダウン タイマー付き警告ボックスがユーザーに表示されてからログアウトが実行されるまでの時間を定義します。
@@ -2039,6 +2056,7 @@ Google ウェブ検索のクエリの実行時に SafeSearch を強制適用す�
 <translation id="9035964157729712237">ブラックリストから除外する拡張機能 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 端末のユーザーごとにプッシュ型ネットワーク設定を適用できます。ネットワーク設定は、Open Network Configuration 形式（<ph name="ONC_SPEC_URL" /> を参照）で定義された JSON 形式の文字列です。</translation>
 <translation id="9084985621503260744">動画操作を電源管理に関連付けるかどうかを指定する</translation>
+<translation id="9088433379343318874">監視対象ユーザーのコンテンツ プロバイダを有効にする</translation>
 <translation id="9096086085182305205">認証サーバーのホワイトリスト</translation>
 <translation id="9098553063150791878">HTTP 認証のポリシー</translation>
 <translation id="9104138886225968319">監視用のハートビートを管理サーバーに送信し、デバイスがオフラインの場合にサーバーで検知できるようにします。

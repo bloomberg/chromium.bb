@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
+<translation id="1438739959477268107">Tetapan penghasilan kunci lalai</translation>
 <translation id="1454846751303307294">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -715,6 +716,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika tetapan ini didayakan atau tidak dikonfigurasi, pengguna boleh mendayakan proksi cetakan awan melalui pengesahan dengan akaun Google mereka.
 
       Jika tetapan ini dilumpuhkan, pengguna tidak dapat mendayakan proksi, dan mesin tidak akan dibenarkan untuk berkongsi pencetaknya dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Membenarkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menggunakan penghasilan kunci. Pengecualian akan dibatalkan jika pola url berada dalam 'KeygenBlockedForUrls'.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
 
@@ -762,6 +766,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika anda mendayakan tetapan ini, Mod Keselamatan di YouTube sentiasa diaktifkan.
 
       Jika anda melumpuhkan tetapan ini atau tidak menetapkan nilai, Mod Keselamatan di YouTube tidak dikuatkuasakan.</translation>
+<translation id="3750220015372671395">Sekat penghasilan kunci pada tapak ini</translation>
 <translation id="3756011779061588474">Sekat mod pembangun</translation>
 <translation id="3758249152301468420">Lumpuhkan Alatan Pembangun</translation>
 <translation id="3765260570442823273">Tempoh mesej amaran log keluar melahu</translation>
@@ -919,6 +924,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Dasar ini adalah untuk kegunaan dalaman oleh <ph name="PRODUCT_NAME" /> sendiri.</translation>
 <translation id="4224610387358583899">Kelewatan kunci skrin</translation>
+<translation id="423797045246308574">Membenarkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menggunakan penghasilan kunci. Dasar ini membatalkan pengecualian ini jika pola url berada dalam 'KeygenAllowedForUrls'.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan apabila melakukan carian imej dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {imageThumbnail} dalam contoh di atas, nilai ini akan digantikan dengan data lakaran kecil imej yang sebenar.
 
@@ -927,6 +935,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Dasar ini hanya dipatuhi jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau lebih baharu</translation>
 <translation id="4325690621216251241">Tambahkan butang log keluar pada dulang sistem</translation>
+<translation id="4347908978527632940">Jika benar dan pengguna merupakan pengguna di bawah seliaan, maka apl Android lain boleh mengemukakan pertanyaan berkaitan pengehadan web pengguna melalui penyedia kandungan.
+
+          Jika palsu atau tanpa ditetapkan, maka penyedia kandungan tidak mengembalikan sebarang maklumat.</translation>
 <translation id="4349746760316962317">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang disediakan tanpa mengira sama ada pengguna telah menentukan bendera '--disk-cache-dir' atau tidak.
@@ -1433,6 +1444,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Nilai dasar mesti dinyatakan dalam milisaat. Nilai diketatkan menjadi kurang daripada kelewatan melahu.</translation>
 <translation id="6111936128861357925">Benarkan Permainan Telur Easter Dinosaur</translation>
 <translation id="6114416803310251055">dikecam</translation>
+<translation id="6133088669883929098">Benarkan semua tapak untuk menggunakan penghasilan kunci</translation>
 <translation id="6145799962557135888">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menjalankan JavaScript.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultJavaScriptSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1717,6 +1729,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai, iaitu 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
+<translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
 <translation id="6997592395211691850">Sama ada semakan OCSP/CRL dalam talian diperlukan untuk pengukuhan kepercayaan setempat</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 
@@ -1876,6 +1889,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika tetapan ini ditetapkan kepada tidak benar atau ditetapkan ke Benar, peranti tersenarai akan melaporkan versi OS dan perisian tegar secara berkala. Jika tetapan ini ditetapkan ke Tidak Benar, maklimat versi tidak akan dilaporkan.</translation>
 <translation id="7511361072385293666">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, penggunaan protokol QUIC dalam <ph name="PRODUCT_NAME" /> dibenarkan.
       Jika dasar ini ditetapkan kepada palsu, penggunaan protokol QUIC tidak dibenarkan.</translation>
+<translation id="7519251620064708155">Benarkan penghasilan kunci pada tapak ini</translation>
 <translation id="7523476810162382273">Hantar pemantauan degupan jantung ke pelayan pengurusan</translation>
 <translation id="7529100000224450960">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk membuka pop timbul.
 
@@ -2105,6 +2119,9 @@ Halaman yang dibuka semasa permulaan dikawal oleh dasar RestoreOnStartup.
 <translation id="8300455783946254851">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> semasa menggunakan sambungan selular apabila ditetapkan kepada Benar. Jika ini berlaku, data hanya akan disegerakkan ke Google Drive semasa disambungkan melalui Wi-Fi atau Ethernet.
 
           Jika tidak ditetapkan atau ditetapkan kepada Palsu, pengguna akan dapat memindahkan fail ke Google Drive melalui sambungan selular.</translation>
+<translation id="8312129124898414409">Membenarkan anda untuk menetapkan sama ada tapak web dibenarkan untuk menggunakan penghasilan kunci. Menggunakan penghasilan kunci boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
+
+          Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockKeygen' akan digunakan dan pengguna akan dapat menukarnya.</translation>
 <translation id="8329984337216493753">Dasar ini aktif dalam mod runcit sahaja.
 
       Apabila DeviceIdleLogoutTimeout ditetapkan, dasar ini mentakrifkan tempoh kotak amaran dengan pemasa kira turun yang dipaparkan kepada pengguna sebelum log keluar dilaksanakan.
@@ -2317,6 +2334,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
+<translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>
 <translation id="9098553063150791878">Dasar untuk pengesahan HTTP</translation>
 <translation id="9104138886225968319">Hantar degupan jantung pemantauan ke pelayan pengurusan, untuk membenarkan

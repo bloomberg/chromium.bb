@@ -86,6 +86,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede em nível de dispositivo</translation>
+<translation id="1438739959477268107">Configuração padrão de geração de chaves</translation>
 <translation id="1454846751303307294">Permite que você defina uma lista de padrões de URL que especificam sites sem permissão para executar JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="1464848559468748897">Controla o comportamento do usuário em uma sessão de diversos perfis nos dispositivos com <ph name="PRODUCT_OS_NAME" />.
 
@@ -625,6 +626,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
      Se essa configuração estiver ativada ou não configurada, os usuários poderão ativar o proxy de impressão em nuvem pela autenticação com sua Conta do Google.
 
       Se essa configuração for desativada, os usuários não poderão ativar o proxy, e a máquina não terá permissão para compartilhar as impressoras com o <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
+
+          Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
 <translation id="3428247105888806363">Ativar previsão de rede</translation>
@@ -670,6 +674,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta configuração é ativada, o modo de segurança do YouTube fica sempre ativo.
 
       Se esta configuração é desativada ou se nenhum valor é definido, o modo de segurança do YouTube não é aplicado.</translation>
+<translation id="3750220015372671395">Bloquear a geração de chaves nesses sites</translation>
 <translation id="3756011779061588474">Bloquear modo de desenvolvedor</translation>
 <translation id="3758249152301468420">Desativar Ferramentas de desenvolvedor</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de saída de usuário ocioso</translation>
@@ -799,6 +804,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Esta política é destinada a uso interno do próprio <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Tempo de espera para bloqueio de tela</translation>
+<translation id="423797045246308574">Permite que você defina uma lista de padrões de URL que especificam sites que não têm permissão para usar a geração de chaves. Se um padrão de URL estiver na política "KeygenAllowedForUrls", ela substituirá essas exceções.
+
+          Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="427632463972968153">Especifica os parâmetros usados ao pesquisar imagens com POST. Consiste em pares de nomes/valores separados por vírgula. Se um valor for um parâmetro de modelo, como {imageThumbnail} no exemplo acima, ele será substituído por dados de miniaturas de pesquisa reais.
 
@@ -807,6 +815,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Esta política só é seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4325690621216251241">Adicionar um botão de logout à bandeja do sistema</translation>
+<translation id="4347908978527632940">Se essa política for definida como "true", e o usuário for um usuário supervisionado, outros apps do Android poderão consultar restrições da Web do usuário por meio de um provedor de conteúdo.
+
+          Se for definida como "false" ou não for definida, o provedor de conteúdo não retornará nenhuma informação.</translation>
 <translation id="4349746760316962317">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar arquivos em cache no disco.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado a sinalização "--disk-cache-dir" ou não.
@@ -1248,6 +1259,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           O valor da política deve ser especificado em milissegundos. Os valores são fixados para serem menores que o tempo de espera de inatividade.</translation>
 <translation id="6111936128861357925">Permitir jogo easter egg de dinossauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
+<translation id="6133088669883929098">Permitir que todos os sites usem a geração de chaves</translation>
 <translation id="6145799962557135888">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para executar o JavaScript. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultJavaScriptSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="6151775819333710697">
           Quando essa configuração está ativada, os usuários podem permitir que o <ph name="PRODUCT_NAME" /> memorize senhas
@@ -1482,6 +1494,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política for deixada sem definição, o valor padrão de 32 será utilizado.</translation>
 <translation id="6943577887654905793">Nome de preferência Mac/Linux:</translation>
 <translation id="69525503251220566">Parâmetro que fornece recursos de pesquisa por imagem para o provedor de pesquisa padrão</translation>
+<translation id="6956272732789158625">Não permitir que nenhum site use a geração de chaves</translation>
 <translation id="6997592395211691850">Define se as verificações de OCSP/CRL on-line são obrigatórias para âncoras de confiança local</translation>
 <translation id="7003334574344702284">Se ativada, esta política força a importação de senhas a partir do navegador padrão anterior. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, as senhas salvas não são importadas. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
@@ -1627,6 +1640,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se essa configuração não for definida ou for definida como "True", os dispositivos inscritos informarão a versão do sistema operacional e do firmware periodicamente. Se essa configuração for definida como "False", as informações de versão não serão informadas.</translation>
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
+<translation id="7519251620064708155">Permitir a geração de chaves nesses sites</translation>
 <translation id="7523476810162382273">Enviar batimentos cardíacos monitorados para o servidor de gerenciamento</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
@@ -1830,6 +1844,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando o uso de uma conexão via dispositivo móvel está configurada como "true". Nesse caso, os dados são sincronizados no Google Drive apenas quando a conexão é via WiFi ou Ethernet.
 
           Se não está configurado ou está definida como "False", os usuários podem transferir arquivos para o Google Drive por conexões via celular.</translation>
+<translation id="8312129124898414409">Permite que você defina se os websites estão autorizados a usar a geração de chaves. O uso da geração de chaves pode ser permitido para todos os websites ou negado para todos eles.
+
+          Se esta política não for definida, será usada a política "BlockKeygen", mas o usuário poderá modificá-la.</translation>
 <translation id="8329984337216493753">Esta política é ativa somente no modo de varejo. Quando o DeviceIdleLogoutTimeout for especificado, esta política definirá a duração da caixa de aviso com contagem regressiva que será mostrada ao usuário antes da desconexão. O valor da política deve ser especificado em milésimos de segundos.</translation>
 <translation id="8344454543174932833">Importar favoritos do navegador padrão na primeira execução</translation>
 <translation id="8360452361555133173">Ativar a exibição da página de boas-vindas na primeira inicialização do navegador após a atualização do sistema operacional.
@@ -2013,6 +2030,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica se a atividade de vídeo afeta o gerenciamento de energia</translation>
+<translation id="9088433379343318874">Ativar o provedor de conteúdo de usuário supervisionado</translation>
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9104138886225968319">Enviar batimentos cardíacos de monitoramento ao servidor de gerenciamento para permitir

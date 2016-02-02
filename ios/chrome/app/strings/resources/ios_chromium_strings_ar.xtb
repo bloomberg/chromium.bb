@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1185134272377778587">‏حول Chromium</translation>
+<translation id="1472013873724362412">‏لا يعمل حسابك على Chromium. يُرجى الاتصال بمشرف النطاق أو استخدام حساب Google عادي لتسجيل الدخول.</translation>
+<translation id="2195025571279539885">‏هل ترغب في أن يعرض Chromium ترجمة صفحات <ph name="LANGUAGE_NAME" /> من موقع الويب هذا في المرة القادمة؟</translation>
+<translation id="3805899903892079518">‏لا تتوفر لدى Chromium إمكانية الدخول إلى الصور أو مقاطع الفيديو. تستطيع تمكين الدخول في إعدادات نظام التشغيل iOS &gt; الخصوصية &gt; الصور.</translation>
+<translation id="6068866989048414399">‏بنود خدمة Chromium</translation>
 <translation id="6424492062988593837">‏لقد أصبح Chromium أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
 <translation id="6600954340915313787">‏تم النسخ إلى Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

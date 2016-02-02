@@ -5,6 +5,7 @@
 <translation id="2874156562296220396">Google Chrome er tilgjengelig som følge av prosjektet for åpen kilde, <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />, og annen <ph name="BEGIN_LINK_OSS" />programvare for åpen kilde<ph name="END_LINK_OSS" />.</translation>
 <translation id="3140883423282498090">Endringene dine trer i kraft neste gang du starter Google Chrome.</translation>
 <translation id="3444832043240812445">Denne siden viser kun informasjon om nylige programstopp hvis du <ph name="BEGIN_LINK" />aktiverer rapportering av programstopp<ph name="END_LINK" />.</translation>
+<translation id="4010643444566880169">Chrome OS har ikke vært gjennom den innledende konfigurasjonen.</translation>
 <translation id="5423788048750135178">Gå til Chrome-menyen &gt; Innstillinger &gt; (Avansert) Personvern,
           og slå av alternativet for henting av sideressurser på forhånd.
           Hvis ikke dette løser problemet, bør du slå på dette alternativet

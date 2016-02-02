@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1427655258943162134">Tarpinio serverio adresas arba URL</translation>
 <translation id="1435659902881071157">Įrenginio lygio tinklo konfigūracija</translation>
+<translation id="1438739959477268107">Numatytasis rakto generavimo nustatymas</translation>
 <translation id="1454846751303307294">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -714,6 +715,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą arba jo nekonfigūruosite, naudotojai galės įgalinti spausdinimo iš debesies įgaliotąjį serverį, tapatumą nustatydami pagal savo „Google“ paskyrą.
 
       Jei šio nustatymo neleisite, naudotojai negalės įgalinti tarpinio serverio, o kompiuteriui bus neleidžiama bendrinti prijungtų spausdintuvų su „<ph name="CLOUD_PRINT_NAME" />“.</translation>
+<translation id="3322771899429619102">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama naudoti rakto generavimą, sąrašą. Jei URL šablonas yra politikoje „KeygenBlockedForUrls“, šių išimčių nepaisoma.
+
+          Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
 
@@ -761,6 +765,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą, „YouTube“ saugos režimas bus visada aktyvus.
 
       Jei šį nustatymą išjungsite arba nenustatysite vertės, „YouTube“ saugos režimas nebus vykdomas.</translation>
+<translation id="3750220015372671395">Blokuoti rakto generavimą šiose svetainėse</translation>
 <translation id="3756011779061588474">Blokuoti kūrėjo režimą</translation>
 <translation id="3758249152301468420">Neleisti kūrėjo įrankių</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
@@ -921,6 +926,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
 Ši politika skirta naudoti tik „<ph name="PRODUCT_NAME" />“ viduje.</translation>
 <translation id="4224610387358583899">Ekrano užrakto delsos laikotarpiai</translation>
+<translation id="423797045246308574">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama naudoti rakto generavimo, sąrašą. Jei URL šablonas yra politikoje „KeygenAllowedForUrls“, šioje politikoje nepaisoma šių išimčių.
+
+          Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="427632463972968153">Nurodomi parametrai, naudojami atliekant vaizdų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {imageThumbnail} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais vaizdo miniatiūros duomenimis.
 
@@ -929,6 +937,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Šios politikos laikomasi, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
 <translation id="4320376026953250541">„Microsoft Windows XP“ SP2 arba naujesnė versija</translation>
 <translation id="4325690621216251241">Pridėti atsijungimo mygtuką prie sistemos dėklo</translation>
+<translation id="4347908978527632940">Jei nustatyta „true“ ir naudotojas yra prižiūrimas naudotojas, tada kitos „Android“ programos gali teikti naudotojo žiniatinklio apribojimų užklausas per turinio teikėją.
+
+          Jei nustatyta „false“ arba nenustatyta, turinio teikėjas nepateikia jokios informacijos.</translation>
 <translation id="4349746760316962317">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams saugoti diske.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodytą katalogą, nesvarbu, ar naudotojas nurodys žymą „--disk-cache-dir“, ar ne.
@@ -1438,6 +1449,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės apribojamos, kad būtų mažesnės nei neaktyvumo laikotarpis.</translation>
 <translation id="6111936128861357925">Leisti dinozaurų Velykų kiaušinių žaidimą</translation>
 <translation id="6114416803310251055">nepatvirtinta</translation>
+<translation id="6133088669883929098">Leisti visoms svetainėms naudoti rakto generavimą</translation>
 <translation id="6145799962557135888">Leidžiama nurodyti URL šablonų, nurodančių svetaines, kuriose leidžiama paleisti „JavaScript“, sąrašą.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis „JavaScript“ nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
@@ -1724,6 +1736,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Nenustačius šios politikos, bus naudojama numatytoji vertė, kuri yra 32.</translation>
 <translation id="6943577887654905793">„Mac“ / „Linux“ nuostatos pavadinimas:</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
+<translation id="6956272732789158625">Neleisti jokiai svetainei naudoti rakto generavimo</translation>
 <translation id="6997592395211691850">Ar internetinės OCSP / CRL patikros reikalingos vietiniams patikimiems prieraišams</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
@@ -1887,6 +1900,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei šis nustatymas nenustatytas arba nustatytas kaip „True“, užregistruoti įrenginiai periodiškai pateiks OS ir programinės aparatinės įrangos versiją. Jei nustatymas nustatytas kaip „False“, versijos informacija nebus pateikta.</translation>
 <translation id="7511361072385293666">Jei ši politika nustatyta į „true“ arba yra nenustatyta, QUIC protokolo naudojimas sistemoje „<ph name="PRODUCT_NAME" />“ leidžiamas.
       Jei ši politika nustatyta į „false“ QUIC protokolo naudojimas neleidžiamas.</translation>
+<translation id="7519251620064708155">Leisti rakto generavimą šiose svetainėse</translation>
 <translation id="7523476810162382273">Stebėjimo ritmų siuntimas valdymo serveriui</translation>
 <translation id="7529100000224450960">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama atidaryti iššokančiuosius langus, sąrašą.
 
@@ -2114,6 +2128,9 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8300455783946254851">Jei reikšmė nustatyta kaip „true“, naudojant korinio tinklo ryšį išjungiamas „Google“ disko sinchronizavimas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“. Tokiu atveju duomenys sinchronizuojami su „Google“ disku, kai prisijungiama prie „Wi-Fi“ ar eterneto.
 
           Jei politika nenustatyta arba reikšmė yra „false“, naudotojai galės perkelti failus į „Google“ diską korinio tinklo ryšiu.</translation>
+<translation id="8312129124898414409">Leidžiama nustatyti, ar svetainėse leidžiama naudoti rakto generavimą. Naudoti rakto generavimą gali būti leidžiama arba draudžiama visose svetainėse.
+
+          Nenustačius šios politikos, bus naudojama „BlockKeygen“ ir naudotojas galės tai pakeisti.</translation>
 <translation id="8329984337216493753">Ši politika aktyvi tik mažmeninės prekybos režimu.
 
       Kai nurodyta „Įrenginio neveikos būsenos atjungimo skirtasis laikas“, pagal šią politiką apibrėžiama įspėjimo laukelio su laiko skaičiavimo atgal laikmačiu, kuris rodomas naudotojui prieš atjungiant, trukmė.
@@ -2325,6 +2342,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
+<translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>
 <translation id="9098553063150791878">HTTP autentifikavimo politika</translation>
 <translation id="9104138886225968319">Siunčiami stebėjimo kontroliniai signalai į valdymo serverį, kad serveryje būtų galima

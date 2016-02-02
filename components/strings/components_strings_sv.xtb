@@ -23,6 +23,7 @@
 <translation id="1146673768181266552">Krasch-id <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom datorns operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="1152921474424827756">Öppna en <ph name="BEGIN_LINK" />cachad kopia<ph name="END_LINK" /> av <ph name="URL" /></translation>
+<translation id="1158211211994409885"><ph name="HOST_NAME" /> stängde oväntat ner anslutningen.</translation>
 <translation id="1175364870820465910">Skriv &amp;ut...</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1195447618553298278">Okänt fel.</translation>
@@ -40,6 +41,7 @@
 <translation id="1339601241726513588">Registreringsdomän:</translation>
 <translation id="1344588688991793829">Inställningar för Autofyll i Chromium …</translation>
 <translation id="1375198122581997741">Om version</translation>
+<translation id="139305205187523129"><ph name="HOST_NAME" /> skickade ingen data.</translation>
 <translation id="1407135791313364759">Öppna alla</translation>
 <translation id="1413809658975081374">Sekretessfel</translation>
 <translation id="1426410128494586442">Ja</translation>
@@ -65,7 +67,6 @@
 <translation id="1706954506755087368">{1,plural, =1{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla i morgon. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}other{Det gick inte att bevisa att serverns identitet är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat uppges börja gälla om # dagar. Det kan bero på att servern är felkonfigurerad eller att anslutningen har blivit kapad.}}</translation>
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
-<translation id="1737968601308870607">Rapportera fel</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
 <translation id="1753706481035618306">Sidnummer</translation>
 <translation id="1763864636252898013">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom enhetens operativsystem inte litar på dess säkerhetscertifikat. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
@@ -77,6 +78,7 @@
 <translation id="1871625979288021266">Osäker port har blockerats</translation>
 <translation id="1883255238294161206">Komprimera lista</translation>
 <translation id="1898423065542865115">Filtrering</translation>
+<translation id="1911837502049945214"><ph name="HOST_NAME" /> godkände inte inloggningscertifikatet eller så har inloggningscertifikatet upphört att gälla.</translation>
 <translation id="194030505837763158">Öppna <ph name="LINK" /></translation>
 <translation id="1958820272620550857">Spärra objekt</translation>
 <translation id="1962204205936693436">Bokmärken på <ph name="DOMAIN" /></translation>
@@ -101,6 +103,7 @@
       Start &gt; Kontrollpanelen &gt; Nätverk och Internet &gt; Nätverks- och delningscenter &gt; Felsök problem (längst ned) &gt; Internetanslutningar.
       <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Fullständig administrativ åtkomst</translation>
+<translation id="2166378884831602661">Webbplatsen kan inte tillhandahålla en säker anslutning</translation>
 <translation id="2171101176734966184">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som signerats med en svag signaturalgoritm. Det innebär att säkerhetsuppgifterna som servern visar kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
 <translation id="2181821976797666341">Policyer</translation>
 <translation id="2212735316055980242">Policyn hittades inte</translation>
@@ -110,6 +113,7 @@
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2279770628980885996">Ett oväntat tillstånd gjorde att servern inte kunde uppfylla begäran.</translation>
 <translation id="2282872951544483773">Otillgängliga experiment</translation>
+<translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
 <translation id="229702904922032456">Ett rotcertifikat eller indirekt certifikat har upphört att gälla.</translation>
 <translation id="230155334948463882">Har du ett nytt kort?</translation>
 <translation id="2328300916057834155">Ignorerade ogiltigt bokmärke vid index <ph name="ENTRY_INDEX" /></translation>
@@ -131,6 +135,7 @@
 <translation id="2495093607237746763">Om alternativet är markerat sparar Chromium en kopia av kortet på enheten så att det går snabbare att fylla i formulär.</translation>
 <translation id="2498091847651709837">Läs in ett nytt kort</translation>
 <translation id="2516305470678292029">Användargränssnittsalternativ</translation>
+<translation id="255002559098805027"><ph name="HOST_NAME" /> skickade ett ogiltigt svar.</translation>
 <translation id="2552545117464357659">Nyare</translation>
 <translation id="2556876185419854533">&amp;Ånga Redigera</translation>
 <translation id="2587841377698384444">Id för katalog-API:</translation>
@@ -142,6 +147,7 @@
 <translation id="2653659639078652383">Skicka</translation>
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
 <translation id="2704283930420550640">Värdet matchar inte formatet.</translation>
+<translation id="2705137772291741111">Det gick inte att läsa den sparade (cachelagrade) kopian av webbplatsen.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
 <translation id="2721148159707890343">Begäran genomfördes</translation>
 <translation id="2728127805433021124">Serverns certifikat är signerat med en svag signaturalgoritm.</translation>
@@ -150,6 +156,7 @@
 <translation id="2784949926578158345">Anslutningen  återställdes.</translation>
 <translation id="2824775600643448204">Adress- och sökfält</translation>
 <translation id="2835170189407361413">Rensa formuläret</translation>
+<translation id="284702764277384724">Servercertifikatet på <ph name="HOST_NAME" /> verkar vara falskt.</translation>
 <translation id="2855922900409897335">Verifiera ditt <ph name="CREDIT_CARD" /></translation>
 <translation id="2897655920961181107">Den begärda porten är osäker och har blockerats.</translation>
 <translation id="2909946352844186028">En nätverksförändring upptäcktes.</translation>
@@ -173,6 +180,7 @@
 <translation id="3024663005179499861">Felaktig policytyp</translation>
 <translation id="3093245981617870298">Du är offline.</translation>
 <translation id="3105172416063519923">Tillgångs-id:</translation>
+<translation id="3109728660330352905">Du är inte behörig att se den här sidan.</translation>
 <translation id="3118046075435288765">Servern kopplade oväntat från anslutningen.</translation>
 <translation id="31454997771848827">Gruppdomäner</translation>
 <translation id="3145945101586104090">Det gick inte att avkoda svaret</translation>
@@ -202,6 +210,7 @@
 <translation id="3380365263193509176">Okänt fel</translation>
 <translation id="3380864720620200369">Klient-ID:</translation>
 <translation id="340013220407300675">Det är möjligt att hackare försöker stjäla dina uppgifter från <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (till exempel lösenord, meddelanden eller kreditkort).</translation>
+<translation id="3422472998109090673"><ph name="HOST_NAME" /> kan inte nås för tillfället.</translation>
 <translation id="3427342743765426898">&amp;Gör om Redigera</translation>
 <translation id="3435896845095436175">Aktivera</translation>
 <translation id="3447661539832366887">Enhetens ägare har stängt av dinosauriespelet.</translation>
@@ -246,10 +255,13 @@
 <translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="3950924596163729246">Det går inte att ansluta nätverket.</translation>
 <translation id="3963721102035795474">Läsarläge</translation>
+<translation id="3973234410852337861"><ph name="HOST_NAME" /> har blockerats</translation>
+<translation id="4021036232240155012">DNS är en webbtjänst som översätter namnet på en webbplats till motsvarande internetadress.</translation>
 <translation id="4030383055268325496">&amp;Ångra Lägg till</translation>
 <translation id="4032534284272647190">Åtkomst nekad till <ph name="URL" />.</translation>
 <translation id="404928562651467259">VARNING</translation>
 <translation id="4058922952496707368">Nyckel <ph name="SUBKEY" />: <ph name="ERROR" /></translation>
+<translation id="4075732493274867456">Klienten och servern har inte stöd för en gemensam SSL-protokollversion eller chiffersvit.</translation>
 <translation id="4079302484614802869">Proxykonfigurationen är inställd på att använda en webbadress med PAC-skript, inte fasta proxyservrar.</translation>
 <translation id="409504436206021213">Hämta inte sidan igen</translation>
 <translation id="4103249731201008433">Enhetens serienummer är ogiltigt</translation>
@@ -288,6 +300,7 @@
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Servern kunde inte bevisa att den är <ph name="DOMAIN" /> eftersom dess säkerhetscertifikat innehåller fel. Detta kan orsakas av en felaktig konfigurering eller att någon spärrar anslutningen.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> blockerades</translation>
+<translation id="4708268264240856090">Anslutningen avbröts</translation>
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
 <translation id="4744603770635761495">Sökväg till körbar fil</translation>
@@ -336,12 +349,18 @@
 <translation id="540969355065856584">Servern kunde inte bevisa att det är <ph name="DOMAIN" />. Dess säkerhetscertifikat är inte giltigt för närvarande. Detta kan bero på en felaktig konfiguration eller att någon kapat din anslutning.</translation>
 <translation id="5421136146218899937">Ta bort webbinformation...</translation>
 <translation id="5430298929874300616">Ta bort bokmärke</translation>
+<translation id="5431657950005405462">Filen hittades inte</translation>
 <translation id="5439770059721715174">Schemavalideringsfel i <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
 <translation id="5447330194051379405">Visa alla sparade sidor</translation>
+<translation id="5452270690849572955">Sidan på <ph name="HOST_NAME" /> kan inte hittas</translation>
 <translation id="5455374756549232013">Felaktig tidsstämpel för policy</translation>
 <translation id="5470861586879999274">&amp;Gör om Redigera</translation>
+<translation id="5492298309214877701">Webbplatsen på företagets, organisationens eller skolans intranät har samma webbadress som en extern webbplats.
+    <ph name="LINE_BREAK" />
+    Testa med att kontakta systemadministratören.</translation>
 <translation id="5498951625591520696">Det går inte att nå servern.</translation>
 <translation id="5509780412636533143">Hanterade bokmärken</translation>
+<translation id="5510766032865166053">Den kan ha flyttats eller tagits bort.</translation>
 <translation id="5523118979700054094">Policynamn</translation>
 <translation id="552553974213252141">Extraherades texten korrekt?</translation>
 <translation id="5540224163453853">Det gick inte att hitta den önskade artikeln.</translation>
@@ -349,13 +368,14 @@
 <translation id="5556459405103347317">Hämta igen</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Hantering stöds inte</translation>
+<translation id="5617949217645503996"><ph name="HOST_NAME" /> omdirigerade dig för många gånger.</translation>
 <translation id="5629630648637658800">Det gick inte att läsa in policyinställningarna</translation>
 <translation id="5631439013527180824">Ogiltig enhetshanteringstoken</translation>
 <translation id="5650551054760837876">Inga sökresultat hittades.</translation>
 <translation id="5677928146339483299">Blockerad</translation>
-<translation id="5680545064257783621">Har ett avstängningsreglage för förbättrade experiment med bokmärken</translation>
 <translation id="5720705177508910913">Aktuell användare</translation>
 <translation id="5813119285467412249">&amp;Gör om Lägg till</translation>
+<translation id="5869405914158311789">Webbplatsen kan inte nås</translation>
 <translation id="5872918882028971132">Föräldratips</translation>
 <translation id="5900623698597156974">Ett alternativ för TLS 1.0 kunde utföra en handskakning med servern, men vi godkänner inte längre alternativ för TLS 1.0. Servern måste uppdateras så att den korrekt implementerar versionsförhandling och helst har stöd för TLS 1.2.</translation>
 <translation id="59107663811261420">Den här korttypen stöds inte i Google Payments för den här säljaren. Välj ett annat kort.</translation>
@@ -370,9 +390,9 @@
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="6044718745395562198">Datorn är offline.</translation>
 <translation id="6060685159320643512">Försiktigt, experimenten kan vara skadliga</translation>
 <translation id="6093795393556121384">Ditt kort har verifierats</translation>
-<translation id="6099520380851856040">Inträffade <ph name="CRASH_TIME" /></translation>
 <translation id="6146055958333702838">Kontrollera kablar och starta om routrar, modem och andra nätverksenheter
     som används.</translation>
 <translation id="6151417162996330722">Servercertifikatet har för lång giltighetstid.</translation>
@@ -388,6 +408,7 @@
 <translation id="6263376278284652872">Bokmärken för <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="6282194474023008486">Postnummer</translation>
+<translation id="6305205051461490394"><ph name="URL" /> kan inte nås.</translation>
 <translation id="6321917430147971392">Kontrollera DNS-inställningarna</translation>
 <translation id="6328639280570009161">Prova att inaktivera nätverksförslag</translation>
 <translation id="6337534724793800597">Filtrera policy efter namn</translation>
@@ -396,6 +417,7 @@
 <translation id="6387478394221739770">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår betakanal på chrome.com/beta.</translation>
 <translation id="6391832066170725637">Det gick inte att hitta filen eller katalogen.</translation>
 <translation id="641480858134062906"><ph name="URL" /> kunde inte laddas</translation>
+<translation id="6433595998831338502"><ph name="HOST_NAME" /> avvisade anslutningen.</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6451458296329894277">Bekräfta återsändning av formulär</translation>
 <translation id="6458467102616083041">Ignoreras eftersom standardsökmotorn är inaktiverad av en policy.</translation>
@@ -408,6 +430,7 @@
 <translation id="6533019874004191247">Webbadressen stöds inte.</translation>
 <translation id="6550675742724504774">Alternativ</translation>
 <translation id="6596325263575161958">Krypteringsalternativ</translation>
+<translation id="6610562986279010327">Det går inte att öppna den här webbadressen i Chrome</translation>
 <translation id="6626108645084335023">Väntar på DNS-undersökning.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Sök</translation>
 <translation id="6634865548447745291">Det går inte att besöka <ph name="SITE" /> just nu på grund av att <ph name="BEGIN_LINK" />det här certifikatet har återkallats<ph name="END_LINK" />. Nätverksfel och attacker är vanligtvis tillfälliga så sidan fungerar troligen senare.</translation>
@@ -416,10 +439,12 @@
 <translation id="6646897916597483132">Ange den fyrsiffriga CVC-koden från kortets framsida</translation>
 <translation id="6671697161687535275">Vill du ta bort formulärförslaget från Chromium?</translation>
 <translation id="6710213216561001401">Föregående</translation>
+<translation id="6711464428925977395">Något är fel med proxyservern eller så är adressen felaktig.</translation>
 <translation id="674375294223700098">Fel - okänt servercertifikat.</translation>
 <translation id="6746710319270251222">Flera olika rubriker med "Content-Length" togs emot. Eftersom vi vill förhindra
     attacker med delade HTTP-svar är detta inte tillåtet.</translation>
 <translation id="6753269504797312559">Policyvärde</translation>
+<translation id="6757797048963528358">Enheten gick i viloläge.</translation>
 <translation id="6781404225664080496">Begäranden till den här webbadressen har stoppats tillfälligt.</translation>
 <translation id="6800914069727136216">I innehållspaket</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -456,6 +481,7 @@
 <translation id="7186367841673660872">Sidan har översatts från<ph name="ORIGINAL_LANGUAGE" />till<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
 <translation id="7208899522964477531">Sök i <ph name="SITE_NAME" /> efter <ph name="SEARCH_TERMS" /></translation>
+<translation id="7210863904660874423"><ph name="HOST_NAME" /> följer inte säkerhetsstandarderna.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /> om problemet.</translation>
 <translation id="7225807090967870017">Programversions-ID</translation>
 <translation id="725866823122871198">Det gick inte att upprätta en privat anslutning till <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> eftersom datorns datum och tid (<ph name="DATE_AND_TIME" />) inte stämmer.</translation>
@@ -489,9 +515,11 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7569952961197462199">Vill du ta bort kreditkortet från Chrome?</translation>
 <translation id="7578104083680115302">Betala snabbt på webbplatser och i appar på olika enheter med kort som du har sparat hos Google.</translation>
 <translation id="7592362899630581445">Serverns certifikat strider mot namnrestriktionerna.</translation>
+<translation id="759889825892636187"><ph name="HOST_NAME" /> kan för närvarande inte hantera förfrågan.</translation>
 <translation id="7600965453749440009">Översätt aldrig från <ph name="LANGUAGE" /></translation>
-<translation id="7606563002701561706">Förbättrade bokmärken</translation>
+<translation id="7602848207066046655">Det gick inte att hitta <ph name="HOST_NAME" />s server <ph name="BEGIN_ABBR" />.</translation>
 <translation id="7610193165460212391">Värdet är utanför intervallet <ph name="VALUE" />.</translation>
+<translation id="7613889955535752492">Upphör: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har redan data som krypteras med en annan version av ditt lösenord till Google-kontot. Ange det nedan.</translation>
 <translation id="7637571805876720304">Vill du ta bort kreditkortet från Chromium?</translation>
 <translation id="7643817847124207232">Internet-anslutningen har frånkopplats.</translation>
@@ -500,8 +528,10 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7668654391829183341">Okänd enhet</translation>
 <translation id="7674629440242451245">Är du intresserad av häftiga nya funktioner i Chrome? Pröva vår utvecklarkanal på chrome.com/dev.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsätt till <ph name="SITE" /> (osäkert)<ph name="END_LINK" /></translation>
+<translation id="7716424297397655342">Det går inte att läsa in webbplatsen från cachelagringen</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
+<translation id="7758069387465995638">Anslutningen kan ha blockerats av en brandvägg eller antivirusprogram.</translation>
 <translation id="7760914272566804712">Du kan försöka felsöka problemet på följande sätt:
       <ph name="LINE_BREAK" />
       <ph name="PLATFORM_TEXT" /></translation>
@@ -530,11 +560,13 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8075539548641175231">Dina data har krypterats med din lösenfras för synkronisering den <ph name="TIME" />. Ange den nedan.</translation>
 <translation id="8088680233425245692">Det gick inte att visa artikeln.</translation>
 <translation id="8091372947890762290">Aktiveringen väntar på servern</translation>
+<translation id="8149426793427495338">Datorn gick i viloläge.</translation>
 <translation id="8150722005171944719">Det går inte att läsa filen på <ph name="URL" />. Den kan ha tagits bort eller flyttats, eller så krävs behörighet för att få åtkomst till den.</translation>
 <translation id="8194797478851900357">&amp;Ångra Flytta</translation>
 <translation id="8201077131113104583">Ogiltig webbadress för uppdatering för tillägg med id <ph name="EXTENSION_ID" />.</translation>
 <translation id="8204086856545141093">Förfrågningar till servern har blockerats av en policy.</translation>
 <translation id="8218327578424803826">Tilldelad plats:</translation>
+<translation id="8225771182978767009">Personen som konfigurerade datorn har valt att blockera den här webbplatsen.</translation>
 <translation id="8240446052814166959">Kontrollera proxyinställningarna eller kontakta nätverksadministratören om du
       vill kontrollera att proxyservern fungerar.
       <ph name="PLATFORM_TEXT" /></translation>
@@ -552,6 +584,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8294431847097064396">Källa</translation>
 <translation id="8308427013383895095">Det gick inte att översätta på grund av ett nätverksfel.</translation>
 <translation id="8311778656528046050">Vill du hämta sidan igen?</translation>
+<translation id="8332188693563227489">Åtkomst nekades till <ph name="HOST_NAME" />.</translation>
 <translation id="8349305172487531364">Bokmärkesfältet</translation>
 <translation id="8364627913115013041">Inte angiven.</translation>
 <translation id="8412145213513410671">Krascher (<ph name="CRASH_COUNT" />)</translation>
@@ -560,6 +593,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8437238597147034694">&amp;Ångra Flytta</translation>
 <translation id="8488350697529856933">Gäller för</translation>
 <translation id="8494979374722910010">Försöket att ansluta till servern misslyckades.</translation>
+<translation id="8498891568109133222"><ph name="HOST_NAME" /> tog för lång tid på sig att svara.</translation>
 <translation id="8508677083825928015">Förhämta resurser så att sidor läses in snabbare.</translation>
 <translation id="8530504477309582336">Den här korttypen stöds inte i Google Payments. Välj ett annat kort.</translation>
 <translation id="8550022383519221471">Synkroniseringstjänsten är inte tillgänglig för din domän.</translation>
@@ -574,9 +608,11 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8738058698779197622">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig endast är giltiga under vissa tidsperioder. Chromium kan inte verifiera certifikaten eftersom klockan på enheten inte stämmer.</translation>
+<translation id="8740359287975076522">Det gick inte att hitta <ph name="HOST_NAME" />s &lt;abbr id="dnsDefinition"&gt;DNS-adress&lt;/abbr&gt;. Diagnostiserar problemet.</translation>
 <translation id="8790007591277257123">&amp;Gör om Ta bort</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8804164990146287819">Sekretesspolicy</translation>
+<translation id="88201174049725495">Alla besök på den här webbadressen som görs av ett tillägg är för tillfället inte tillåtna.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="8824019021993735287">Det gick inte att verifiera kortet. Försök igen senare.</translation>
 <translation id="8834246243508017242">Aktivera Autofyll från Kontakter …</translation>
@@ -590,6 +626,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="889901481107108152">Experimentet finns tyvärr inte på din plattform.</translation>
 <translation id="890308499387283275">Det gick inte att ladda ned filen i Chrome.</translation>
 <translation id="8903921497873541725">Zooma in</translation>
+<translation id="8931333241327730545">Vill du spara det här kortet i ditt Google-konto?</translation>
 <translation id="8932102934695377596">Klockan går efter</translation>
 <translation id="8940229512486821554">Kör kommandot <ph name="EXTENSION_NAME" /> för: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8954894007019320973">(forts)</translation>
@@ -602,6 +639,7 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="9020542370529661692">Den här sidan har översatts till <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9049981332609050619">Du försökte nå <ph name="DOMAIN" /> men servern angav ett ogiltigt certifikat.</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
+<translation id="9092364396508701805">Sidan på <ph name="HOST_NAME" /> fungerar inte</translation>
 <translation id="9103872766612412690">På <ph name="SITE" /> används normalt kryptering (SSL) för att skydda din information. När Chromium försökte ansluta till <ph name="SITE" /> den här gången skickade webbplatsen tillbaka ovanliga och felaktiga uppgifter. Sådant kan hända när en angripare utger sig för att vara <ph name="SITE" /> eller när anslutningen har avbrutits av en Wi-Fi-inloggningsskärm. Din information är fortfarande säker eftersom Chromium avbröt anslutningen innan någon data utbyttes.</translation>
 <translation id="9125941078353557812">Ange den tresiffriga CVC-koden från kortets baksida</translation>
 <translation id="9137013805542155359">Visa original</translation>
@@ -610,7 +648,9 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="9157595877708044936">Konfigurerar...</translation>
 <translation id="9170848237812810038">&amp;Ångra</translation>
 <translation id="917450738466192189">Servercertifikatet är ogiltigt.</translation>
+<translation id="9183425211371246419"><ph name="HOST_NAME" /> använder ett protokoll som inte stöds.</translation>
 <translation id="9207861905230894330">Det gick inte att lägga till artikeln.</translation>
+<translation id="933612690413056017">Det finns ingen internetanslutning</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">RENSA FORMULÄRET</translation>
 <translation id="969892804517981540">Officiell version</translation>

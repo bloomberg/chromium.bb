@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1185134272377778587">Acerca de Chromium</translation>
+<translation id="1472013873724362412">Tu cuenta no funciona en Chromium. Comunícate con tu administrador de dominio o utiliza una cuenta común de Google para acceder.</translation>
+<translation id="2195025571279539885">¿Quieres que Google Chrome te ofrezca traducir las páginas de este sitio que estén en <ph name="LANGUAGE_NAME" /> la próxima vez?</translation>
+<translation id="3805899903892079518">Chromium no tiene acceso a tus fotos o videos. Habilita el acceso en Configuración de iOS &gt; Privacidad &gt; Fotos.</translation>
+<translation id="6068866989048414399">Condiciones del servicio de Chromium</translation>
 <translation id="6424492062988593837">¡Chromium mejoró! Hay una nueva versión disponible.</translation>
 <translation id="6600954340915313787">Se copió en Chrome.</translation>
 <translation id="7337881442233988129">Chromium</translation>

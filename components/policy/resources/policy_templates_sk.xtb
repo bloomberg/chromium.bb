@@ -104,6 +104,7 @@
 <translation id="1426410128494586442">Áno</translation>
 <translation id="1427655258943162134">Adresa alebo webová adresa servera proxy</translation>
 <translation id="1435659902881071157">Konfigurácia siete na úrovni zariadenia</translation>
+<translation id="1438739959477268107">Predvolené nastavenie generovania kľúčov</translation>
 <translation id="1454846751303307294">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré nemôžu spúšťať kód JavaScript.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -714,6 +715,9 @@
       Ak je toto nastavenie povolené alebo nebolo nakonfigurované, používatelia môžu povoliť server proxy pre tlač z cloudu prostredníctvom overenia totožnosti pomocou účtu Google.
 
       Ak je toto nastavenie zakázané, používatelia nebudú môcť povoliť server proxy a počítač nebude môcť zdieľať pripojené tlačiarne so službou <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu používať generovanie kľúčov. Ak sa vzor webovej adresy nachádza v zozname KeygenBlockedForUrls, tieto výnimky sa prepíšu.
+
+          Ak toto pravidlo ponecháte nenastavené, pre všetky stránky sa použije globálna predvolená hodnota buď z pravidla DefaultKeygenSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
 
@@ -761,6 +765,7 @@
       Ak toto nastavenie povolíte, Bezpečnostný režim v službe YouTube bude vždy aktívny.
 
       Ak toto nastavenie zakážete alebo nenastavíte žiadnu hodnotu, Bezpečnostný režim v službe YouTube nebude vynucovaný.</translation>
+<translation id="3750220015372671395">Blokovať generovanie kľúčov na týchto weboch</translation>
 <translation id="3756011779061588474">Blokovať režim pre vývojárov</translation>
 <translation id="3758249152301468420">Zakázať Nástroje pre vývojárov</translation>
 <translation id="3765260570442823273">Doba zobrazenia správy s upozornením na odhlásenie  z dôvodu nečinnosti</translation>
@@ -913,6 +918,9 @@
 
           Toto pravidlo sa vzťahuje iba na interné používanie prehliadača <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Oneskorenia uzamknutia obrazovky</translation>
+<translation id="423797045246308574">Umožňuje nastaviť zoznam vzorov webových adries určujúcich stránky, ktoré nemôžu používať generovanie kľúčov. Ak sa vzor webovej adresy nachádza v zozname KeygenAllowedForUrls, toto pravidlo dané výnimky prepíše.
+
+          Ak toto pravidlo ponecháte nenastavené, pre všetky stránky sa použije globálna predvolená hodnota buď z pravidla DefaultKeygenSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="427632463972968153">Určuje parametre, ktoré sa použijú pri hľadaní obrázkov pomocou metódy POST. Pozostáva z párov názov/hodnota oddelených čiarkami. Ak je hodnota parameter šablóny, napr. hodnota {imageThumbnail} v príklade vyššie, bude nahradená údajmi skutočnej miniatúry obrázkov.
 
@@ -921,6 +929,9 @@
           Toto pravidlo sa rešpektuje iba v prípade, ak je povolené pravidlo DefaultSearchProviderEnabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 alebo novší</translation>
 <translation id="4325690621216251241">Pridať do oblasti oznámení tlačidlo odhlásenia</translation>
+<translation id="4347908978527632940">Ak je nastavená hodnota True a ide o kontrolovaného používateľa, ďalšie aplikácie pre Android sa môžu dopytovať na webové obmedzenia používateľa prostredníctvom poskytovateľa obsahu.
+
+          Ak je nastavená hodnota False alebo toto pravidlo nenastavíte, potom poskytovateľ obsahu nevráti žiadne informácie.</translation>
 <translation id="4349746760316962317">Umožňuje nakonfigurovať adresár na disku, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať na ukladanie súborov vo vyrovnávacej pamäti.
 
       Ak nastavíte toto pravidlo, prehliadač <ph name="PRODUCT_NAME" /> bude používať zadaný adresár bez ohľadu na to, či používateľ určil príznak „--disk-cache-dir“.
@@ -1428,6 +1439,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
           Hodnota tohto pravidla sa zadáva v milisekundách. Ak zadáte hodnotu vyššiu ako je čas nečinnosti, použije sa hodnota času nečinnosti.</translation>
 <translation id="6111936128861357925">Povoliť hru s dinosaurom</translation>
 <translation id="6114416803310251055">zamietnuté</translation>
+<translation id="6133088669883929098">Povoliť všetkým webovým stránkam používať generovanie kľúčov</translation>
 <translation id="6145799962557135888">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu spúšťať kód JavaScript.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultJavaScriptSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
@@ -1714,6 +1726,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak toto pravidlo ponecháte nenastavené, použije sa predvolená hodnota (32).</translation>
 <translation id="6943577887654905793">Názov predvoľby v systéme Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter poskytujúci funkciu vyhľadávania podľa obrázka pre predvoleného poskytovateľa vyhľadávania</translation>
+<translation id="6956272732789158625">Nepovoliť žiadnym webovým stránkam používať generovanie kľúčov</translation>
 <translation id="6997592395211691850">Toto pravidlo určuje, či sa pre miestne dôveryhodné ukotvenia vyžadujú kontroly OCSP/CRL online</translation>
 <translation id="7003334574344702284">Ak je toto pravidlo povolené, uložené heslá sú importované z predchádzajúceho predvoleného prehliadača. Povolenie tohto pravidla má vplyv aj na dialógové okno importu.
 
@@ -1871,6 +1884,7 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
       Ak je toto nastavenie nastavené na hodnotu True, registrované zariadenia budú pravidelne nahlasovať verziu operačného systému a firmvéru. Ak je nastavené na hodnotu False, informácie o verzii sa nebudú nahlasovať.</translation>
 <translation id="7511361072385293666">Ak je toto pravidlo nastavené na možnosť True alebo nie je nastavené vôbec, použitie protokolu QUIC je v prehliadači <ph name="PRODUCT_NAME" /> povolené.
       Ak je toto pravidlo nastavené na možnosť False, použitie protokolu QUIC je zakázané.</translation>
+<translation id="7519251620064708155">Povoliť generovanie kľúčov na týchto webových stránkach</translation>
 <translation id="7523476810162382273">Odosielanie sledovania signálov heartbeat na správcovský server</translation>
 <translation id="7529100000224450960">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu otvárať kontextové okná.
 
@@ -2097,6 +2111,9 @@ Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ 
 <translation id="8300455783946254851">Ak je pravidlo nastavené na hodnotu True, zakáže v aplikácií Súbory systému <ph name="PRODUCT_OS_NAME" /> synchronizáciu služby Disk Google pri používaní mobilného pripojenia. V tomto prípade sa budú údaje v službe Disk Google synchronizovať iba pri pripojení k sieti Wi-Fi alebo Ethernet.
 
           Ak je hodnota funkcie nastavená na možnosť False, používatelia budú môcť prenášať súbory do služby Disk Google prostredníctvom mobilných pripojení.</translation>
+<translation id="8312129124898414409">Umožňuje nastaviť, či môžu webové stránky používať generovanie kľúčov. Používanie generovania kľúčov je možné buď povoliť pre všetky webové stránky, alebo ho pre všetky webové stránky zakázať.
+
+          Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo BlockKeygen a používateľ ho bude môcť zmeniť.</translation>
 <translation id="8329984337216493753">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Ak je zadané pravidlo DeviceIdleLogoutTimeout, určuje toto pravidlo dobu zobrazenia poľa s upozornením a odpočítavaním, ktoré sa používateľovi zobrazí predtým, než dôjde k odhláseniu.
@@ -2291,6 +2308,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Určuje, či prehrávanie videa ovplyvňuje správu napájania</translation>
+<translation id="9088433379343318874">Povoliť poskytovateľa obsahu pre kontrolovaného používateľa</translation>
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>
 <translation id="9098553063150791878">Pravidlá pre overenie HTTP</translation>
 <translation id="9104138886225968319">Odosielanie sledovania signálov heartbeat na správcovský server,

@@ -45,6 +45,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1553358976309200471">Zaktualizuj Chrome</translation>
 <translation id="1557201757634521564">Automatycznie wykrywaj kodowanie</translation>
 <translation id="1568822834048182062">Twoje zakładki, historia, hasła i inne ustawienia będą synchronizowane z kontem Google.</translation>
+<translation id="1592483623187843893">Zakładka została zapisana offline</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Zapobiegaj wyświetlaniu dodatkowych okien dialogowych na tej stronie</translation>
 <translation id="1641113438599504367">Bezpieczne przeglądanie</translation>
@@ -86,6 +87,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2138201775715568214">Szukam stron internetu rzeczy w pobliżu</translation>
 <translation id="2139186145475833000">Dodaj do ekranu głównego</translation>
 <translation id="2154710561487035718">Kopiuj adres URL</translation>
+<translation id="21570240866965662">Wolne połączenie</translation>
 <translation id="219985413780390209">Chroń siebie i swoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Zawęź</translation>
@@ -109,6 +111,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2512222046227390255">Autouzupełnianie formularzy</translation>
+<translation id="2521102375070725336">Zakładka została zapisana offline w folderze <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">Oszczędzanie danych jest włączone. Możesz nim zarządzać w ustawieniach.</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
 <translation id="2536728043171574184">Oglądasz kopię offline tej strony</translation>
@@ -131,14 +134,12 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2891154217021530873">Zatrzymaj wczytywanie strony</translation>
 <translation id="2902702728133930130">Podczas uruchamiania Chrome wystąpił nieoczekiwany błąd.</translation>
 <translation id="2903493209154104877">Adresy</translation>
-<translation id="2904413602477443379">Wybierz folder</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
 <translation id="2996809686854298943">Wymagany adres URL</translation>
 <translation id="3029704984691124060">Hasła nie pasują do siebie</translation>
-<translation id="3039671569659952257">Usuń folder</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
 <translation id="306566828762083630">Pamięć urządzenia jest pełna. Usuń inne pliki, by zrobić miejsce.</translation>
 <translation id="307329814453917357">Proponuj tłumaczenie stron w Tłumaczu Google</translation>
@@ -146,6 +147,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3090193911106258841">Otwieram wejście audio i wideo</translation>
 <translation id="3102119246920354026">Pamięć podręczna</translation>
 <translation id="3137521801621304719">Wyłącz tryb incognito</translation>
+<translation id="3177909033752230686">Język strony:</translation>
 <translation id="3190152372525844641">Przyznaj Chrome uprawnienia w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> zapisanych danych</translation>
 <translation id="3207960819495026254">Dodano do zakładek</translation>
@@ -157,7 +159,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="3269093882174072735">Wczytaj obraz</translation>
 <translation id="3278850099957560514">Zaoszczędź na transmisji danych dzięki optymalizacji stron przez Google. Google nie optymalizuje ani nie widzi stron, z którymi łączysz się przez HTTPS lub które przeglądasz na kartach incognito.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
-<translation id="3287852534598822456">Zakładka już nie istnieje. Odśwież widok.</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
 <translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="3350687908700087792">Zamknij wszystkie karty incognito</translation>
@@ -170,6 +171,7 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="3435896845095436175">Włącz</translation>
 <translation id="3485544713029068372">Smart Lock na hasła</translation>
 <translation id="3492207499832628349">Nowa karta incognito</translation>
+<translation id="3501331331116143684">Zapisano offline w folderze <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="360480449234699036">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Dotknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google, dzięki czemu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
@@ -195,6 +197,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
 <translation id="3992315671621218278">Zapisz link</translation>
 <translation id="4002066346123236978">Tytuł</translation>
+<translation id="4035611068038188272">Zakładki zajmują obecnie <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
@@ -206,11 +209,14 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4116939199945053760"><ph name="SITE" /> chce <ph name="BEGIN_LINK" />sparować się z<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
+<translation id="4193864812412988973">Oglądasz kopię offline tej zakładki</translation>
 <translation id="4195643157523330669">Otwórz w nowej karcie</translation>
+<translation id="4198229475320555619">Zakładka o rozmiarze <ph name="PAGE_SIZE_STRING" /> została zapisana offline</translation>
 <translation id="423410644998903704">Aby zezwolić stronie na wykorzystanie uprawnień, Chrome musi je mieć.</translation>
 <translation id="424696723690217687">Poznawaj strony internetowe z pobliskich obiektów.
 
 Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez obiekty w pobliżu. Następnie strony te trafiają do usługi Google, która zwiększa trafność wyników.</translation>
+<translation id="4254813446494774748">Język tłumaczenia:</translation>
 <translation id="4256782883801055595">Licencje open source</translation>
 <translation id="4259722352634471385">Adres zablokowany: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiuj adres linku</translation>
@@ -221,18 +227,17 @@ Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez 
 <translation id="4334294535648607276">Pobieranie ukończone.</translation>
 <translation id="4350413759959745971">Przenieś zapisane strony</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
-<translation id="4357362091209756047">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK1" />Wyszukaj ponownie<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skorzystaj z pomocy<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Zezwalaj na pliki cookie innych firm</translation>
 <translation id="4440256989292146959">Przeglądaj więcej za mniej</translation>
 <translation id="4452548195519783679">Utworzono zakładkę w folderze <ph name="FOLDER_NAME" /></translation>
+<translation id="4498934959426056365">Generowanie kluczy</translation>
 <translation id="4505554159887937799">Zapisane offline</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
 <translation id="4522570452068850558">Szczegóły</translation>
 <translation id="4526249700380860531">Wyświetlaj zapisane hasła i zarządzaj nimi na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Wybierz folder</translation>
-<translation id="4543087392704641517">Tytuł zakładki</translation>
 <translation id="4543661749405994812">Kopiuj adres e-mail</translation>
 <translation id="4581964774250883625">Jesteś w trybie incognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# minutę temu}few{# minuty temu}many{# minut temu}other{# minuty temu}}</translation>
@@ -256,7 +261,6 @@ Gdy Twoje urządzenie jest odblokowane, Chrome wyszukuje strony wysyłane przez 
 <translation id="4836364883164334657">Połączenie ze stroną nie jest prywatne. Hakerzy mogą próbować wykraść Twoje informacje z <ph name="DOMAIN_NAME" /> (np. zdjęcia, hasła, wiadomości lub dane kart kredytowych).</translation>
 <translation id="4842511359652954519">Dowiedz się więcej</translation>
 <translation id="4850886885716139402">Widok</translation>
-<translation id="4871370605780490696">Dodaj zakładkę</translation>
 <translation id="4881695831933465202">Otwórz</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
 <translation id="4927198283430892231">Zapisane strony zajmują obecnie <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -342,7 +346,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="5765780083710877561">Opis:</translation>
 <translation id="5771382037724542929">Chcesz zastąpić istniejący plik <ph name="FILE_NAME" /> w folderze <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Uprawnienia</translation>
-<translation id="5806294296882899667">Błąd przy ładowaniu domyślnego</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# godzinę temu}few{# godziny temu}many{# godzin temu}other{# godziny temu}}</translation>
 <translation id="5817918615728894473">Sparuj</translation>
 <translation id="5832934273103296195">Rozwinięty – kliknij, by zwinąć</translation>
@@ -369,6 +372,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6112702117600201073">Odświeżam stronę</translation>
+<translation id="6127379762771434464">Element został usunięty</translation>
 <translation id="6138140242378429169">Otwórz wersję na urządzenia mobilne</translation>
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
@@ -391,6 +395,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6406506848690869874">Synchronizacja</translation>
 <translation id="6409731863280057959">Wyskakujące okienka</translation>
 <translation id="641643625718530986">Drukuj…</translation>
+<translation id="6447570251829705777">Zakładka niedostępna offline</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="6448273550210938826">Podpowiedzi wyszukiwania i adresów URL</translation>
 <translation id="6458785801851713928">Synchronizacja nie jest dostępna w Twojej domenie.</translation>
@@ -435,23 +440,24 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Foldery</translation>
 <translation id="6978479750597523876">Zresetuj ustawienia tłumaczenia</translation>
-<translation id="6979922938747275756">Błąd podczas wczytywania folderów</translation>
 <translation id="6981982820502123353">Ułatwienia dostępu</translation>
 <translation id="6990079615885386641">Pobierz aplikację ze sklepu Google Play: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach</translation>
 <translation id="6999892069268112724">Potwierdź konto Google</translation>
 <translation id="7019652137705190998">Włącz tryb incognito, by przeglądać prywatnie lub zalogować się tymczasowo</translation>
 <translation id="7021515813996758557">Plik <ph name="FILE_NAME" /> został pobrany</translation>
+<translation id="7022756207310403729">Otwórz w przeglądarce</translation>
 <translation id="7026897394897382018">Włącz Oszczędzanie danych</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7053983685419859001">Blokuj</translation>
+<translation id="7056999826593229648">Wykryto wolne połączenie</translation>
+<translation id="7057058088140140610">Karty kredytowe i adresy z Google Payments</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="7094922512924405309">Nie znaleziono stron internetu rzeczy w pobliżu</translation>
 <translation id="7095930899177687653">Otwarte karty: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Wczytuję film</translation>
 <translation id="7180611975245234373">Odśwież</translation>
 <translation id="7191430249889272776">Karta otwarta w tle.</translation>
-<translation id="7201341158316793215">Usuwam…</translation>
 <translation id="7208788139759694678">Oszczędzanie danych wyłączone</translation>
 <translation id="7243308994586599757">Opcje dostępne u dołu ekranu</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> korzysta z danych o Twojej lokalizacji, by pokazywać wyniki wyszukiwania lokalnego</translation>
@@ -486,17 +492,16 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7626032353295482388">Chrome - witamy!</translation>
 <translation id="7634554953375732414">Twoje połączenie z tą witryną nie jest prywatne.</translation>
 <translation id="7638584964844754484">Nieprawidłowe hasło</translation>
-<translation id="764743049316168389">Folder <ph name="FOLDER_NAME" /></translation>
 <translation id="7648422057306047504">Zaszyfruj hasła za pomocą danych logowania Google</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7665369617277396874">Dodaj konto</translation>
+<translation id="7690588279513156836">Załaduj oryginał</translation>
 <translation id="7735023902678907596">Po zamknięciu wszystkich kart incognito wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądania, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i zapisane strony zostaną zachowane.
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
 <translation id="7761240775244195612">Usunąć kopie offline (<ph name="PAGES_NUMBER" />) nieużywane w ostatnim miesiącu? Dzięki temu zwolni się <ph name="TOTAL_PAGE_SIZE" /> miejsca.</translation>
 <translation id="7764225426217299476">Dodaj adres</translation>
 <translation id="7765158879357617694">Przenieś</translation>
-<translation id="7767746238359002192">Wejdź na stronę, by zapisać ją w trybie offline</translation>
 <translation id="7772032839648071052">Potwierdź hasło</translation>
 <translation id="7784213092572143271">Strona została zapisana</translation>
 <translation id="7788788617745289808">Aby zezwolić stronie na wykorzystanie aparatu, Chrome musi mieć do niego dostęp.</translation>
@@ -509,10 +514,10 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="7876243839304621966">Usuń wszystkie</translation>
 <translation id="7925108652071887026">Dane autouzupełniania</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
+<translation id="7949961459945740081">Używaj najnowszych funkcji</translation>
 <translation id="7961015016161918242">Nigdy</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
 <translation id="7987073022710626672">Warunki korzystania z Chrome</translation>
-<translation id="7989222512959629388">Zapisuję…</translation>
 <translation id="7998918019931843664">Otwórz ponownie zamkniętą kartę</translation>
 <translation id="7999064672810608036">Na pewno chcesz usunąć wszystkie dane lokalne (w tym pliki cookie) i zresetować uprawnienia tej witryny?</translation>
 <translation id="8007176423574883786">Wyłączona na tym urządzeniu</translation>
@@ -525,7 +530,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
 <translation id="8137558756159375272">Funkcja „Dotknij, by wyszukać” wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>
-<translation id="8143660160623733249">Nazwa folderu</translation>
 <translation id="8146397137182589628">Nie zapisano offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> kont(a)</translation>
 <translation id="8168435359814927499">Treści</translation>
@@ -561,9 +565,11 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 
 Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treści.</translation>
 <translation id="8660471606262461360">Z Google Payments</translation>
+<translation id="8675945939500569406">Włączyć internet rzeczy?</translation>
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8699799819461268362">Filtr Google SafeSites</translation>
+<translation id="8701537995684343047">Otwórz zakładkę, by zapisać ją offline</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8727142376512517020">Nie pokazuj ponownie</translation>
@@ -596,16 +602,15 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9100610230175265781">Wymagane jest hasło</translation>
 <translation id="9133515669113036225">Zresetuj dane logowania na urządzeniu</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
-<translation id="9156605176886108508">Brak folderów zakładek</translation>
+<translation id="9151532766011674069">Zakładka została zapisana offline. Pamięć jest prawie pełna.</translation>
 <translation id="917685106653909562">Strony internetu rzeczy w pobliżu</translation>
 <translation id="9187199695613236444">Wersja na urządzenia mobilne</translation>
 <translation id="9192643434065497760">Włącz Bluetooth w <ph name="BEGIN_LINK" />ustawieniach urządzenia<ph name="END_LINK" />, by umożliwić parowanie.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">Nowy folder</translation>
 <translation id="945632385593298557">Dostęp do mikrofonu</translation>
+<translation id="954352821720225055">Zakładka niedostępna offline. Pamięć jest prawie pełna.</translation>
 <translation id="969096075394517431">Zmień języki</translation>
-<translation id="971774202801778802">URL zakładki</translation>
 <translation id="983192555821071799">Zamknij wszystkie karty</translation>
 </translationbundle>

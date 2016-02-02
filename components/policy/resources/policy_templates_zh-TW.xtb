@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
+<translation id="1438739959477268107">預設金鑰產生設定</translation>
 <translation id="1454846751303307294">允許您設定網址模式清單，指定不可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="1464848559468748897">針對使用者在 <ph name="PRODUCT_OS_NAME" /> 裝置多重設定檔工作階段中的行為進行控制。
 
@@ -638,6 +639,9 @@
       不論這項政策處於啟用或未設定的狀態，使用者都可以透過 Google 帳戶驗證來啟用雲端列印 Proxy。
 
       如果您停用這項設定，使用者就無法啟用 Proxy，而且本機不得與 <ph name="CLOUD_PRINT_NAME" /> 共用自己的印表機。</translation>
+<translation id="3322771899429619102">允許您設定網址模式清單，指定可以使用金鑰產生功能的網站。如果網址模式為「KeygenBlockedForUrls」，則會覆寫這類例外狀況。
+
+          如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
 
@@ -685,6 +689,7 @@
       如果啟用這項設定，系統一律會啟用 YouTube 安全模式。
 
       如果停用這項設定或未指定設定值，則不會強制啟用 YouTube 安全模式。</translation>
+<translation id="3750220015372671395">禁止在這些網站上使用金鑰產生功能</translation>
 <translation id="3756011779061588474">封鎖開發人員模式</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
 <translation id="3765260570442823273">閒置登出時間警告訊息</translation>
@@ -814,6 +819,9 @@
 
           這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
 <translation id="4224610387358583899">螢幕鎖定延遲</translation>
+<translation id="423797045246308574">允許您設定網址模式清單，指定禁止使用金鑰產生功能的網站。如果網址模式為「KeygenAllowedForUrls」，這項政策就會覆寫這類例外狀況。
+
+          如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="427632463972968153">指定使用 POST 執行圖片搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {imageThumbnail})，系統將會以實際圖片的縮圖資料替代這個數值。
 
@@ -822,6 +830,9 @@
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 或更新版本</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
+<translation id="4347908978527632940">如果設為 true，且使用者是受監管的使用者，其他 Android 應用程式即可透過內容提供者查詢使用者的網路限制。
+
+          如果設為 false 或沒有設定，內容提供者將不會傳回任何資訊。</translation>
 <translation id="4349746760316962317">設定 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時所使用的目錄。
 
       如果設定這項政策，無論使用者是否指定「--disk-cache-dir」標記，<ph name="PRODUCT_NAME" /> 都會使用您所提供的目錄。
@@ -1273,6 +1284,7 @@
           指定政策值時需以毫秒為單位。該值必須小於閒置延遲時間值。</translation>
 <translation id="6111936128861357925">允許 Dinosaur Easter Egg Game (恐龍復活節彩蛋遊戲)</translation>
 <translation id="6114416803310251055">淘汰的</translation>
+<translation id="6133088669883929098">允許所有網站使用金鑰產生功能</translation>
 <translation id="6145799962557135888">允許您設定網址模式清單，指定可以執行 JavaScript 的網站。如果未設定這項政策，系統會從「DefaultJavaScriptSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6151775819333710697">
           啟用這項設定後，使用者即可讓 <ph name="PRODUCT_NAME" /> 記住密碼，
@@ -1509,6 +1521,7 @@
       如果您未設定這項政策，系統將採用 32 做為預設值。</translation>
 <translation id="6943577887654905793">Mac/Linux 偏好設定名稱：</translation>
 <translation id="69525503251220566">為預設搜尋引擎提供圖片搜尋功能的參數</translation>
+<translation id="6956272732789158625">不允許任何網站使用金鑰產生功能</translation>
 <translation id="6997592395211691850">是否需要為本機信任錨點執行線上 OCSP/CRL 檢查。</translation>
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
@@ -1651,6 +1664,7 @@
       如果這項政策未設定或設為 True，註冊的裝置會定期回報作業系統和韌體版本。如果設為 False，則不會回報版本資訊。</translation>
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
+<translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
 <translation id="7523476810162382273">將監控流量訊號傳送到管理伺服器</translation>
 <translation id="7529100000224450960">允許您設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
@@ -1852,6 +1866,9 @@
 <translation id="8300455783946254851">如果您設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
 
           如果您設為 False 或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 雲端硬碟。</translation>
+<translation id="8312129124898414409">允許您設定網站是否可以使用金鑰產生功能。您可以允許或禁止所有網站使用金鑰產生功能。
+
+          如果未設定這項政策，系統會使用「BlockKeygen」，不過使用者可以變更此設定。</translation>
 <translation id="8329984337216493753">這項政策只會在零售模式下啟用。
 
       指定 DeviceIdleLogoutTimeout 後，這項政策會使用倒數計時器定義警告方塊的時間，計時器會在使用者登出前顯示。
@@ -2029,6 +2046,7 @@
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
+<translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>
 <translation id="9098553063150791878">HTTP 驗證政策</translation>
 <translation id="9104138886225968319">將監控流量訊號傳送到管理伺服器，

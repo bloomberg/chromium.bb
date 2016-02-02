@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">Kyllä</translation>
 <translation id="1427655258943162134">Välityspalvelimen osoite tai URL-osoite</translation>
 <translation id="1435659902881071157">Laitetason verkon määritys</translation>
+<translation id="1438739959477268107">Oletusavaimen luomisasetus</translation>
 <translation id="1454846751303307294">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka eivät saa suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="1464848559468748897">Hallinnoi käyttäjien toimia monen profiilin käyttökerralla tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävillä laitteilla.
 
@@ -637,6 +638,9 @@ Jos tätä käytäntöä ei määritetä, käyttäjät voivat valita, haluavatko
 Jos tämä asetus on käytössä tai sitä ei ole määritetty, käyttäjät voivat ottaa pilvitulostuksen välityspalvelimen käyttöön todentamalla sen Google-tilinsä avulla.
 
 Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta käyttöön eikä kone voi jakaa tulostimiaan palvelussa <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
+
+          Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
 
@@ -684,6 +688,7 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
       Jos tämä asetus on käytössä, YouTuben rajoitettu tila on aina aktiivisena.
 
       Jos tämä asetus on pois käytöstä tai sille ei aseteta arvoa, YouTuben rajoitettua tilaa ei pakoteta käyttöön.</translation>
+<translation id="3750220015372671395">Estä avainten luominen näillä sivustoilla</translation>
 <translation id="3756011779061588474">Estä kehittäjätila</translation>
 <translation id="3758249152301468420">Poista kehittäjätyökalut käytöstä</translation>
 <translation id="3765260570442823273">Käyttämättömän käyttökerran uloskirjausvaroituksen kesto</translation>
@@ -813,6 +818,10 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 
           Tämä käytäntö on tarkoitettu tuotteen <ph name="PRODUCT_NAME" /> sisäiseen käyttöön.</translation>
 <translation id="4224610387358583899">Ruudun lukituksen viiveet</translation>
+<translation id="423797045246308574">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenAllowedForUrls-käytännössä, tämä käytäntö ohittaa nämä poikkeukset.
+
+
+          Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="4250680216510889253">Ei</translation>
 <translation id="427632463972968153">Määrittää parametrit, joita käytetään tehtäessä kuvahakuja POST-metodin avulla. Se koostuu pilkuilla erotetuista nimi/arvo-pareista. Jos arvo on malliparametri kuten yllä olevan esimerkin {imageThumbnail}, se korvataan oikeilla pikkukuvatiedoilla.
 
@@ -821,6 +830,9 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Käytäntö on voimassa vain, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 tai uudempi</translation>
 <translation id="4325690621216251241">Lisää uloskirjautumispainike järjestelmäpalkkiin</translation>
+<translation id="4347908978527632940">Jos arvo on tosi ja käyttäjä on valvottu käyttäjä, muut Android-sovellukset voivat kysyä käyttäjän verkkorajoitukset sisällöntarjoajalta.
+
+          Jos arvo on epätosi tai asetusta ei ole määritetty, sisällöntarjoaja ei palauta tietoja.</translation>
 <translation id="4349746760316962317">Määrittää hakemiston, johon <ph name="PRODUCT_NAME" /> tallentaa välimuistiin tallennettavia tiedostoja levylle.
 
 
@@ -1273,6 +1285,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
           Käytännön arvo tulee antaa millisekunteina. Arvon on oltava pienempi kuin käyttämättömyyden viive.</translation>
 <translation id="6111936128861357925">Salli dinosauruspeli</translation>
 <translation id="6114416803310251055">poistettu</translation>
+<translation id="6133088669883929098">Salli kaikkien sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6145799962557135888">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat suorittaa JavaScriptiä. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultJavaScriptSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="6151775819333710697">
           Jos tämä asetus on käytössä, käyttäjät voivat määrittää kohteen <ph name="PRODUCT_NAME" /> muistamaan
@@ -1509,6 +1522,7 @@ Jotkin verkkosovellukset käyttävät paljon yhteyksiä GETien vuoksi, joten 32:
 Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</translation>
 <translation id="6943577887654905793">Mac/Linux-asetuksen nimi:</translation>
 <translation id="69525503251220566">Parametri, joka tarjoaa kuvan perusteella haku -ominaisuuden oletushakupalvelulle</translation>
+<translation id="6956272732789158625">Älä salli sivustojen käyttää avainten luomistoimintoa.</translation>
 <translation id="6997592395211691850">Vaaditaanko paikallisilta luottamusankkureilta verkossa suoritettavat OCSP/CRL-tarkistukset vai ei</translation>
 <translation id="7003334574344702284">Tämä käytäntö pakottaa tallennettujen salasanojen tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, tallennettuja salasanoja ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda salasanat, tai ne voidaan tuoda automaattisesti.</translation>
 <translation id="7003746348783715221">Tuotteen <ph name="PRODUCT_NAME" /> asetukset</translation>
@@ -1652,6 +1666,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos arvoa ei ole määritetty tai se on tosi, laitteet ilmoittavat käyttöjärjestelmänsä ja laiteohjelmistonsa version tietyin väliajoin. Jos arvo on epätosi, versiotietoja ei ilmoiteta.</translation>
 <translation id="7511361072385293666">Jos tämän käytännön arvo on Tosi tai sitä ei aseteta, <ph name="PRODUCT_NAME" /> sallii QUIC-protokollan käytön.
       Jos käytännön arvo on Epätosi, QUIC-protokollan käyttöä ei sallita.</translation>
+<translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
 <translation id="7523476810162382273">Lähetä tarkistuspaketteja hallintapalvelimelle</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
@@ -1854,6 +1869,9 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8300455783946254851">Jos tämän asetuksen arvo on True, Google Drivea ei synkronoida tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksessa matkapuhelinverkkoyhteyden ollessa käytössä. Tiedot synkronoidaan Google Driveen vain Wi-Fi- ja Ethernet-yhteyksillä.
 
           Jos asetusta ei ole määritetty tai sen arvo on False, käyttäjät voivat siirtää tiedostoja Google Driveen matkapuhelinverkkoyhteydellä.</translation>
+<translation id="8312129124898414409">Voit määrittää, saavatko sivustot käyttää avainten luomistoimintoa. Avainten luomistoiminnon käyttäminen voi olla joko sallittua tai kiellettyä kaikille sivustoille.
+
+          Jos tätä käytäntöä ei ole määritetty, BlockKeygen-käytäntöä käytetään ja käyttäjä voi vaihtaa sen.</translation>
 <translation id="8329984337216493753">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
       Kun DeviceIdleLogoutTimeout-käytäntö on asetettu, tämä käytäntö määrittää, kuinka kauan ennen uloskirjausta käyttäjälle näytetään varoitusruutua ja uloskirjausajan laskuria.
@@ -2042,6 +2060,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Määritä, vaikuttaako videotoiminta virranhallintaan</translation>
+<translation id="9088433379343318874">Ota käyttöön valvotun käyttäjän sisällön tarjoaja</translation>
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>
 <translation id="9098553063150791878">HTTP-todennuksen käytännöt</translation>
 <translation id="9104138886225968319">Lähettää hallintapalvelimelle tarkistuspaketteja, joiden avulla

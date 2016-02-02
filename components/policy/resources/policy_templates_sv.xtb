@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
+<translation id="1438739959477268107">Standardinställningar för nyckelgenerering</translation>
 <translation id="1454846751303307294">Policyn gör att du kan ställa in en lista med webbadressmönster som anger webbplatser som inte får köra JavaScript.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har ställts in. Annars används användarens personliga konfiguration.</translation>
@@ -718,6 +719,9 @@
       Om inställningen är aktiverad eller inte har konfigurerats kan användarna aktivera molnutskriftsproxyn genom autentisering med deras Google-konton.
 
       Om inställningen inte är inaktiverad kan användarna inte aktivera proxyn och datorn tillåts inte att dela skrivare med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
+
+          Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
 
@@ -765,6 +769,7 @@
       Om du aktiverar den här inställningen är funktionen Säkert läge på YouTube alltid aktiv.
 
       Om du inaktiverar den här inställningen eller inte anger något värde tvingas inte användningen av Säkert läge på YouTube fram.</translation>
+<translation id="3750220015372671395">Blockera nyckelgenerering på dessa webbplatser</translation>
 <translation id="3756011779061588474">Blockera utvecklarläget</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="3765260570442823273">Varaktighet för varningsmeddelande för inaktivitetsutloggning</translation>
@@ -925,6 +930,9 @@
 
           Denna princip är endast för intern användning i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Skärmlåsfördröjningar</translation>
+<translation id="423797045246308574">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som inte får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenAllowedForUrls åsidosätts dessa undantag av policyn.
+
+          Om policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="427632463972968153">Anger parametrarna som används vid bildsökning med POST. Den består av kommaavgränsade namn-/värdepar. Om ett värde är en mallparameter, t.ex. {imageThumbnail} i ovanstående exempel, ersätts det av en riktig miniatyrbild.
 
@@ -933,6 +941,9 @@
           Den här policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller senare</translation>
 <translation id="4325690621216251241">Lägg till en utloggningsknapp i systemfältet</translation>
+<translation id="4347908978527632940">Om den här principen är inställd på sant och användaren är en kontrollerad användare så kan andra Android-appar fråga om användarens webbrestriktioner via en innehållsleverantör.
+
+          Om den här principen är inställd på falskt eller om det inte angivet returnerar innehållsleverantören ingen information.</translation>
 <translation id="4349746760316962317">Konfigurerar vilken katalog som ska användas för cachelagrade filer i <ph name="PRODUCT_NAME" />.
 
       Om principen har ställts in används den angivna katalogen i <ph name="PRODUCT_NAME" /> oavsett om användaren har angett flaggan --disk-cache-dir eller inte.
@@ -1442,6 +1453,7 @@
           Policyvärdet ska anges i millisekunder. Värdena har skurits ned så att de är mindre än fördröjningen innan viloläget.</translation>
 <translation id="6111936128861357925">Tillåt påskäggsspelet med dinosaurier</translation>
 <translation id="6114416803310251055">föråldrad</translation>
+<translation id="6133088669883929098">Tillåt alla webbplatser att använda nyckelgenerering</translation>
 <translation id="6145799962557135888">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får köra JavaScript.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas från policyn DefaultJavaScriptSetting om den har angetts eller användarens personliga konfiguration om den inte har det.</translation>
@@ -1727,6 +1739,7 @@
       Om policyn inte anges används standardvärdet 32.</translation>
 <translation id="6943577887654905793">Namn för Mac/Linux-inställning:</translation>
 <translation id="69525503251220566">Parameter som anger bildsökningsfunktionen för sökleverantören som är standard</translation>
+<translation id="6956272732789158625">Tillåt inte att någon webbplats använder nyckelgenerering</translation>
 <translation id="6997592395211691850">Om OCSP/CRL-kontroller online krävs för lokala tillitsankare</translation>
 <translation id="7003334574344702284">När den här policyn är aktiverad tvingas import av sparade lösenord från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
@@ -1889,6 +1902,7 @@
       Om ingen inställning görs eller om principen anges som True kommer versionsinformation om operativsystemet och den fasta programvaran regelbundet att skickas från registrerade enheter. Om principen anges som False kommer versionsinformationen inte att skickas.</translation>
 <translation id="7511361072385293666">Om den här policyn är inställd på sant eller inte har angetts är användning av QUIC-protokoll i <ph name="PRODUCT_NAME" /> tillåten.
       Om policyn är inställd på falskt är inte användning av QUIC-protokoll tillåten.</translation>
+<translation id="7519251620064708155">Tillåt nyckelgenerering på dessa webbplatser</translation>
 <translation id="7523476810162382273">Skicka övervakningspulser till hanteringsservern</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
@@ -2116,6 +2130,9 @@
 <translation id="8300455783946254851">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" /> när en mobilanslutning används. Data synkroniseras då med Google Drive endast vid anslutning via Wi-Fi eller Ethernet.
 
           Om ingen inställning görs eller om Falskt anges, kan användaren föra över filer till Google Drive via mobilanslutningar.</translation>
+<translation id="8312129124898414409">Gör att du kan ange om webbplatser får använda nyckelgenerering. Du kan antingen tillåta eller blockera användning av nyckelgenerering på alla webbplatser.
+
+          Om du inte anger policyn används BlockKeygen och inställningen kan ändras av användaren.</translation>
 <translation id="8329984337216493753">Den här policyn är bara aktiv i återförsäljarläge.
 
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
@@ -2329,6 +2346,7 @@
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
+<translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>
 <translation id="9098553063150791878">Princip för HTTP-autentisering</translation>
 <translation id="9104138886225968319">Skicka övervakningspulser till hanteringsservern så att denna kan identifiera om enheten är offline.

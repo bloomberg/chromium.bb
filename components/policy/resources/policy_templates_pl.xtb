@@ -88,6 +88,7 @@
 <translation id="1426410128494586442">Tak</translation>
 <translation id="1427655258943162134">Adres URL serwera proxy</translation>
 <translation id="1435659902881071157">Konfiguracja sieci na poziomie urządzenia</translation>
+<translation id="1438739959477268107">Domyślne ustawienie generowania kluczy</translation>
 <translation id="1454846751303307294">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie może być wykonywany kod JavaScript. W przypadku nieskonfigurowania tej zasady dla wszystkich witryn będzie używana globalna wartość domyślna pobierana z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="1464848559468748897">Kontroluje zachowanie użytkownika w sesji wieloprofilowej na urządzeniach z <ph name="PRODUCT_OS_NAME" />.
 
@@ -637,6 +638,9 @@
       Jeśli to ustawienie jest włączone lub nieskonfigurowane, użytkownicy mogą włączyć serwer proxy drukowania w chmurze, uwierzytelniając się na swoim koncie Google.
 
       W przypadku wyłączenia ustawienia użytkownicy nie mogą włączyć serwera proxy ani udostępnić w <ph name="CLOUD_PRINT_NAME" /> drukarek podłączonych do komputera.</translation>
+<translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
 
@@ -684,6 +688,7 @@
       Jeśli włączysz to ustawienie, tryb bezpieczny w YouTube będzie zawsze aktywny.
 
       Jeśli wyłączysz to ustawienie lub nie ustawisz wartości, tryb bezpieczny w YouTube nie będzie wymuszany.</translation>
+<translation id="3750220015372671395">Blokuj generowanie kluczy w tych witrynach</translation>
 <translation id="3756011779061588474">Zablokuj tryb programisty</translation>
 <translation id="3758249152301468420">Wyłącz narzędzia dla programistów</translation>
 <translation id="3765260570442823273">Czas wyświetlania ostrzeżenia o wylogowaniu z powodu bezczynności</translation>
@@ -815,6 +820,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
           Ta zasada jest przeznaczona do użytku wewnętrznego w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Opóźnienia blokady ekranu</translation>
+<translation id="423797045246308574">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których nie mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenAllowedForUrls”, zastępuje to te wyjątki.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="4250680216510889253">Nie</translation>
 <translation id="427632463972968153">Określa parametry używane przy wyszukiwaniu obrazem przy użyciu POST. Składa się z rozdzielonych przecinkami par nazwy i wartości. Jeśli wartość jest parametrem szablonu, tak jak w przykładzie powyżej {imageThumbnail}, zostanie ona zastąpiona rzeczywistymi danymi miniatury obrazu.
 
@@ -823,6 +831,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Ta zasada jest uwzględniana tyko wtedy, gdy włączona jest zasada „DefaultSearchProviderEnabled”.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP z dodatkiem SP2 lub nowszy</translation>
 <translation id="4325690621216251241">Dodaj przycisk wylogowania do paska zadań</translation>
+<translation id="4347908978527632940">Jeśli jest włączona i użytkownik jest nadzorowany, inne aplikacje na Androida mogą sprawdzać ograniczenia dostępu do internetu dla użytkownika za pośrednictwem dostawcy treści.
+
+          Jeśli jest wyłączona lub nieskonfigurowana, dostawca treści nie zwraca żadnych informacji.</translation>
 <translation id="4349746760316962317">Określa katalog, w którym <ph name="PRODUCT_NAME" /> przechowuje pliki buforowane na dysku.
 
       Jeśli ustawisz tę zasadę, <ph name="PRODUCT_NAME" /> używa wskazanego katalogu niezależnie od tego, czy użytkownik zastosował flagę „--disk-cache-dir”.
@@ -1273,6 +1284,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Wartość dla tej zasady należy określić w milisekundach. Wartości są zmniejszane tak, by były mniejsze niż opóźnienie nieaktywności.</translation>
 <translation id="6111936128861357925">Zezwól na ukrytą grę-żart z dinozaurem</translation>
 <translation id="6114416803310251055">przestarzała</translation>
+<translation id="6133088669883929098">Zezwalaj na generowanie kluczy we wszystkich witrynach</translation>
 <translation id="6145799962557135888">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których może być wykonywany kod JavaScript. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultJavaScriptSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="6151775819333710697">
           Jeśli to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> może zapamiętywać hasła użytkowników i podpowiadać
@@ -1501,6 +1513,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="6936894225179401731">Określa maksymalną liczbę jednoczesnych połączeń z serwerem proxy. Niektóre serwery proxy nie są w stanie obsłużyć dużej liczby jednoczesnych połączeń z tym samym klientem. W takiej sytuacji można rozwiązać problem, ustawiając dla tej zasady mniejszą wartość. Jej wartość powinna być mniejsza niż 100 i większa niż 6. Wartość domyślna wynosi 32. Niektóre aplikacje sieciowe używają wielu połączeń z oczekującymi żądaniami GET, dlatego zmniejszenie wartości tej zasady poniżej wartości 32 może powodować przerwy w działaniu sieci, jeśli zbyt wiele takich aplikacji będzie otwartych. Zmniejszasz wartości domyślne na własne ryzyko. W przypadku nieskonfigurowania tej zasady będzie używana wartość domyślna, czyli 32.</translation>
 <translation id="6943577887654905793">Nazwa ustawienia w systemie Mac OS/Linux:</translation>
 <translation id="69525503251220566">Parametr udostępniający funkcję wyszukiwania obrazem dla domyślnego dostawcy wyszukiwania</translation>
+<translation id="6956272732789158625">Nie zezwalaj na generowanie kluczy w żadnej witrynie</translation>
 <translation id="6997592395211691850">Określa, czy dla lokalnych kotwic zaufania są wymagane sprawdzenia online OCSP/CRL</translation>
 <translation id="7003334574344702284">Po włączeniu tej zasady wymuszany jest import zapisanych haseł z poprzedniej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia zapisane hasła nie są importowane. Jeśli zasada nie jest skonfigurowana, użytkownik może zostać zapytany, czy zaimportować hasła lub operacja ta zostanie wykonana automatycznie.</translation>
 <translation id="7003746348783715221">Ustawienia przeglądarki <ph name="PRODUCT_NAME" /></translation>
@@ -1644,6 +1657,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
       Jeśli ta zasada nie jest określona lub ma wartość Prawda, zarejestrowane urządzenia okresowo zgłaszają wersję systemu operacyjnego i oprogramowania układowego. Jeśli ta zasada ma wartość Fałsz, informacje o wersji nie są przesyłane.</translation>
 <translation id="7511361072385293666">Jeśli ta zasada jest włączona lub nieustawiona, użycie protokołu QUIC w <ph name="PRODUCT_NAME" /> jest dozwolone.
       Jeśli zasada jest wyłączona, użycie protokołu QUIC jest niedozwolone.</translation>
+<translation id="7519251620064708155">Zezwalaj na generowanie kluczy w tych witrynach</translation>
 <translation id="7523476810162382273">Wysyłaj pakiety podtrzymujące do serwera zarządzania</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
@@ -1847,6 +1861,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="8300455783946254851">Po ustawieniu wartości prawda wyłącza synchronizację Dysku Google w aplikacji Pliki w <ph name="PRODUCT_OS_NAME" />, gdy użytkownik korzysta z połączenia komórkowego. Dane są synchronizowane z Dyskiem Google tylko przez Wi-Fi lub Ethernet.
 
           Jeśli nie ustawisz tej zasady lub wybierzesz wartość fałsz, użytkownicy mogą przesyłać dane na Dysk Google przez sieć komórkową.</translation>
+<translation id="8312129124898414409">Umożliwia określenie, czy w witrynach mogą być generowane klucze. Generowanie kluczy może być dozwolone lub zabronione we wszystkich witrynach.
+
+          Jeśli ta zasada nie zostanie skonfigurowana, będzie używane ustawienie „BlockKeygen”, a użytkownik będzie mógł je zmienić.</translation>
 <translation id="8329984337216493753">Ta zasada jest aktywna tylko w trybie sklepu.
 
       W przypadku określenia zasady DeviceIdleLogoutTimeout ta zasada określa czas wyświetlania okna ostrzegawczego z licznikiem czasu, które jest wyświetlane przed wylogowaniem użytkownika.
@@ -2032,6 +2049,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
+<translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>
 <translation id="9098553063150791878">Zasady uwierzytelniania HTTP</translation>
 <translation id="9104138886225968319">Wysyłaj pakiety podtrzymujące do serwera zarządzania,

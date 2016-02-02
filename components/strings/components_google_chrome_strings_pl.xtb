@@ -5,6 +5,7 @@
 <translation id="2874156562296220396">Stworzenie przeglądarki Google Chrome było możliwe dzięki projektowi open source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> i innym <ph name="BEGIN_LINK_OSS" />programom o otwartym kodzie źródłowym<ph name="END_LINK_OSS" />.</translation>
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK" />włączenia funkcji zgłaszania awarii<ph name="END_LINK" />.</translation>
+<translation id="4010643444566880169">Nie ukończono wstępnej konfiguracji systemu operacyjnego Chrome.</translation>
 <translation id="5423788048750135178">Wybierz kolejno menu Chrome &gt; Ustawienia &gt; (Zaawansowane) Prywatność
           i wyłącz „Wstępnie pobieraj zasoby strony”.
           Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji,

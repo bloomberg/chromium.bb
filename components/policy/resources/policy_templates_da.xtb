@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller webadresse på proxyserveren</translation>
 <translation id="1435659902881071157">Netværkskonfiguration på enhedsniveau</translation>
+<translation id="1438739959477268107">Standardindstilling for nøglegenerering</translation>
 <translation id="1454846751303307294">Gør det muligt at oprette en liste over webadressemønstre for at angive websites, som ikke må køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="1464848559468748897">Kontrollér brugeradfærden i en session med flere profiler på <ph name="PRODUCT_OS_NAME" />-enheder.
 
@@ -645,6 +646,9 @@
       Hvis indstillingen er aktiveret eller ikke konfigureret, kan brugerne aktivere proxyen til Cloudprinter ved at godkende med deres Google-konto.
 
       Hvis denne indstilling er deaktiveret, kan brugerne ikke aktivere proxyen, og det vil ikke være tilladt for maskinen at dele sine printere med <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
+
+          Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -692,6 +696,7 @@
       Hvis du aktiverer denne indstilling, er Beskyttet tilstand på YouTube altid aktiveret.
 
       Hvis du deaktiverer denne indstilling eller ikke indstiller en værdi, gennemtvinges Beskyttet tilstand på YouTube ikke.</translation>
+<translation id="3750220015372671395">Bloker nøglegenerering på disse websites</translation>
 <translation id="3756011779061588474">Bloker udviklertilstand</translation>
 <translation id="3758249152301468420">Deaktiver udviklerværktøjer</translation>
 <translation id="3765260570442823273">Varighed af advarselsmeddelelsen om logout for inaktivitet</translation>
@@ -825,6 +830,9 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
 
           <ph name="PRODUCT_NAME" /> bruger selv politikken internt.</translation>
 <translation id="4224610387358583899">Forsinkelser for skærmlås</translation>
+<translation id="423797045246308574">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som ikke har tilladelse til at anvende nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
+
+          Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="4250680216510889253">Nej</translation>
 <translation id="427632463972968153">Angiver de parametre, der anvendes ved billedsøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {imageThumbnail} i ovenstående eksempel, bliver den erstattet af data om rigtige miniaturebilleder.
 
@@ -833,6 +841,9 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 eller nyere</translation>
 <translation id="4325690621216251241">Tilføj en log ud-knap til systembakken</translation>
+<translation id="4347908978527632940">Hvis den er sand, og brugeren er en administreret bruger, kan andre Android-apps sende forespørgsler vedrørende brugerens webbegrænsninger via en indholdsudbyder.
+
+          Hvis den er falsk, eller den ikke er angivet, returnerer indholdsudbyderen ikke nogen oplysninger.</translation>
 <translation id="4349746760316962317">Konfigurerer den mappe, som <ph name="PRODUCT_NAME" /> bruger til at gemme cachelagrede filer på disken.
 
       Hvis du angiver denne politik, vil <ph name="PRODUCT_NAME" /> bruge den angivne mappe, uanset om brugeren har angivet flaget "--disk-cache-dir" eller ej.
@@ -1290,6 +1301,7 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
           Værdien for politikken bør angives i millisekunder. Værdierne skal være mindre end forsinkelsen for inaktivitet.</translation>
 <translation id="6111936128861357925">Tillad det ekstra dinosaurspil</translation>
 <translation id="6114416803310251055">frarådet</translation>
+<translation id="6133088669883929098">Tillad alle websites at anvende nøglegenerering</translation>
 <translation id="6145799962557135888">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, der får lov til at køre JavaScript. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultJavaScriptSetting", hvis den er indstillet, eller brugerens personlige konfiguration.</translation>
 <translation id="6151775819333710697">
           Hvis denne indstilling er aktiveret, kan brugerne få <ph name="PRODUCT_NAME" /> til at huske adgangskoderne og angive dem automatisk, næste gang de logger ind på et website.
@@ -1538,6 +1550,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik ikke angives, anvendes standardværdien på 32.</translation>
 <translation id="6943577887654905793">Præferencenavn for Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter, der leverer funktion til billedsøgning i standardsøgemaskinen</translation>
+<translation id="6956272732789158625">Tillad ikke, at websites anvender nøglegenerering</translation>
 <translation id="6997592395211691850">Om der kræves online OCSP/CRL-kontroller for lokale tillidsankere</translation>
 <translation id="7003334574344702284">Denne politik tvinger import af gemte adgangskoder fra den tidligere standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres de gemte adgangskoder ikke. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="7003746348783715221">Præferencer for <ph name="PRODUCT_NAME" /></translation>
@@ -1683,6 +1696,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne indstilling ikke er angivet eller er angivet til Sand, rapporterer tilmeldte enheder med jævne mellemrum OS- og firmwareversionen. Hvis denne indstilling er angivet til Falsk, rapporteres versionsoplysningerne ikke</translation>
 <translation id="7511361072385293666">Hvis denne politik er angivet som Sand eller ikke er indstillet, er brug i QUIC-protokollen i <ph name="PRODUCT_NAME" /> tilladt.
       Hvis denne politik er angivet som Falsk, er brug i QUIC-protokollen ikke tilladt.</translation>
+<translation id="7519251620064708155">Tillad nøglegenerering på disse websites</translation>
 <translation id="7523476810162382273">Send overvågningsimpulser til administrationsserveren</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
@@ -1888,6 +1902,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="8300455783946254851">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" /> ved brug af en mobilforbindelse, hvis den er angivet til Sand. I dette tilfælde synkroniseres data kun med Google Drev, når der er oprettet forbindelse via Wi-Fi eller Ethernet.
 
           Hvis den ikke er indstillet eller er angivet til Falsk, kan brugerne overføre filer til Google Drev via mobilforbindelser.</translation>
+<translation id="8312129124898414409">Giver dig mulighed for at angive, om websites må anvende nøglegenerering. Brug af nøglegenerering kan enten være tilladt for alle websites eller nægtet for alle websites.
+
+          Hvis denne politik ikke angives, anvendes "BlockKeygen", og brugeren vil kunne ændre den.</translation>
 <translation id="8329984337216493753">Denne politik er kun aktiv i detailtilstand.
 
       Når DeviceIdleLogoutTimeout er angivet, definerer denne politik varigheden af advarselsfeltet med en nedtælling, der vises, inden brugeren logges ud.
@@ -2084,6 +2101,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
+<translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>
 <translation id="9098553063150791878">Politikker for HTTP-godkendelse</translation>
 <translation id="9104138886225968319">Send overvågningsimpulser til administrationsserveren, så

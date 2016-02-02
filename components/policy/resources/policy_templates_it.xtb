@@ -87,6 +87,7 @@ Se questa norma non viene impostata, verrà utilizzata la norma "AllowPlugins" e
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
+<translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
 <translation id="1454846751303307294">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
@@ -628,6 +629,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
       Se l'impostazione è attivata o non è configurata, gli utenti possono attivare il proxy Cloud Print attraverso l'autenticazione con il proprio account Google.
 
       Se l'impostazione è disattivata, gli utenti non possono attivare il proxy e il computer non può condividere le stampanti con <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenBlockedForUrls", quest'ultima ha la precedenza su queste eccezioni.
+
+          Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="3381968327636295719">Utilizza il browser host per impostazione predefinita</translation>
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
@@ -675,6 +679,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Se viene attivata questa impostazione, la Modalità di protezione di YouTube è sempre attiva.
 
       Se viene disattivata questa impostazione o se non viene impostato un valore, non viene applicata la Modalità di protezione di YouTube.</translation>
+<translation id="3750220015372671395">Blocca la generazione di chiavi su questi siti</translation>
 <translation id="3756011779061588474">Blocca modalità sviluppatore</translation>
 <translation id="3758249152301468420">Disabilita Strumenti per sviluppatori</translation>
 <translation id="3765260570442823273">Durata del messaggio di avviso di uscita per inattività</translation>
@@ -802,6 +807,9 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 
           Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Ritardi del blocco schermo</translation>
+<translation id="423797045246308574">Consente di impostare un elenco di pattern URL che specificano i siti in cui non è consentito l'utilizzo della generazione di chiavi. Se un pattern URL è indicato nella norma "KeygenAllowedForUrls", quest'ultima ha la precedenza su queste eccezioni.
+
+          Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultKeygenSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="427632463972968153">Consente di specificare i parametri utilizzati durante la ricerca di immagini con POST. Si tratta di coppie di nome/valore separate da virgole. Se un valore è il parametro di un modello, come {imageThumbnail} nell'esempio precedente, verrà sostituito con i dati delle miniature di immagini reali.
 
@@ -810,6 +818,9 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 o versione successiva</translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
+<translation id="4347908978527632940">Se la norma viene impostata su true e l'utente è supervisionato, le altre app Android possono chiedere le restrizioni web dell'utente tramite un provider di contenuti.
+
+          Se la norma è impostata su false o non è impostata, il provider di contenuti non restituisce informazioni.</translation>
 <translation id="4349746760316962317">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir".
@@ -1250,6 +1261,7 @@ La modalità di blocco dello schermo per inattività consigliata è l'attivazion
 Il valore della norma deve essere specificato in millisecondi. I valori devono essere minori del ritardo di inattività.</translation>
 <translation id="6111936128861357925">Attiva il gioco del dinosauro</translation>
 <translation id="6114416803310251055">obsoleto</translation>
+<translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
 <translation id="6145799962557135888">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'esecuzione di JavaScript. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultJavaScriptSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="6151775819333710697">
           Quando questa impostazione è attiva, gli utenti possono impostare <ph name="PRODUCT_NAME" /> affinché memorizzi le password e le inserisca automaticamente al successivo accesso a un sito.
@@ -1479,6 +1491,7 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
       Se questa norma non viene impostata viene utilizzato il valore predefinito 32.</translation>
 <translation id="6943577887654905793">Nome di preferenza per Mac/Linux:</translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
+<translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
 <translation id="6997592395211691850">Se i controlli OCSP/CRL online sono obbligatori o meno per i trust anchor locali</translation>
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
@@ -1616,6 +1629,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="749556411189861380">Consente di indicare la versione del sistema operativo e del firmware dei dispositivi registrati. Se questa impostazione non è impostata o viene impostata su True, i dispositivi registrati indicheranno periodicamente la versione del sitema operativo e del firmware. Se l'impostazione viene impostata su False, le informazioni sulla versione non verranno indicate.</translation>
 <translation id="7511361072385293666">Se questa norma viene impostata su true o non viene impostata, l'utilizzo del protocollo QUIC in <ph name="PRODUCT_NAME" /> è consentito.
      Se questa norma viene impostata su false, l'utilizzo del protocollo QUIC non è consentito.</translation>
+<translation id="7519251620064708155">Consenti la generazione di chiavi su questi siti</translation>
 <translation id="7523476810162382273">Consente di inviare heartbeat di monitoraggio al server di gestione</translation>
 <translation id="7529100000224450960">Consente di impostare un elenco di pattern URL che specificano i siti in cui è consentita l'apertura dei popup. Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPopupsSetting", se è impostata, oppure verrà utilizzata la configurazione personale dell'utente.</translation>
 <translation id="7529144158022474049">Fattore di dispersione aggiornamento automatico</translation>
@@ -1813,6 +1827,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8300455783946254851">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> utilizzando una connessione alla rete dati quando questa norma viene impostata su True. In tal caso, i dati vengono sincronizzati con Google Drive solo in presenza di una connessione alla rete Wi-Fi o Ethernet.
 
           Se questa norma non viene impostata o viene impostata su False, gli utenti possono trasferire file in Google Drive mediante connessioni alla rete dati.</translation>
+<translation id="8312129124898414409">Consente di stabilire se consentire o meno l'utilizzo della generazione di chiavi sui siti web. L'utilizzo della generazione di chiavi può essere consentito o negato per tutti i siti web.
+
+          Se questa norma non viene impostata, verrà utilizzato il valore della norma "BlockKeygen", che potrà essere modificato dagli utenti.</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
 
       Se viene specificata la norma DeviceIdleLogoutTimeout, questa norma consente di definire la durata della casella di avviso con un timer per il conto alla rovescia che viene mostrato all'utente prima dell'esecuzione dell'uscita.
@@ -1987,6 +2004,7 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
+<translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>
 <translation id="9098553063150791878">Norme relative all'autenticazione HTTP</translation>
 <translation id="9104138886225968319">Consente di inviare heartbeat di monitoraggio al server di gestione per consentire a quest'ultimo di rilevare se il dispositivo è offline.

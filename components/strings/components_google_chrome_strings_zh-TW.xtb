@@ -5,6 +5,7 @@
 <translation id="2874156562296220396">Google Chrome 的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 開放原始碼計劃與其他<ph name="BEGIN_LINK_OSS" />開放原始碼軟體<ph name="END_LINK_OSS" />的協助才得以完成。</translation>
 <translation id="3140883423282498090">您的變更將於下次重新啟動 Google Chrome 時生效。</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK" />啟用當機報告功能<ph name="END_LINK" />，這個頁面僅會顯示最近的當機資訊。</translation>
+<translation id="4010643444566880169">Chrome 作業系統未完成初始設定。</translation>
 <translation id="5423788048750135178">前往 Chrome 選單 &gt; [設定] &gt; (進階) [隱私權]
           停用 [預先擷取網頁資源]。
           如果仍然無法解決問題，建議您重新啟用這個選項，

@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa ili URL proxy poslužitelja</translation>
 <translation id="1435659902881071157">Mrežna konfiguracija na razini uređaja</translation>
+<translation id="1438739959477268107">Zadana postavka za generiranje ključeva</translation>
 <translation id="1454846751303307294">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima nije dopušteno pokretanje JavaScripta. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="1464848559468748897">Upravlja ponašanjem korisnika u sesiji s više profila na uređajima sa sustavom <ph name="PRODUCT_OS_NAME" />.
 
@@ -637,6 +638,9 @@
 <translation id="3273221114520206906">Zadana postavka JavaScripta</translation>
 <translation id="3288595667065905535">Kanal izdanja</translation>
 <translation id="3292147213643666827">Omogućuje da se proizvod <ph name="PRODUCT_NAME" /> ponaša kao proxy između pisača iz oblaka <ph name="CLOUD_PRINT_NAME" /> i pisača iz starog sustava povezanih s računalom. Ako je ova postavka onemogućena ili nije konfigurirana, korisnici mogu omogućiti proxy ispisivanja na oblaku autentifikacijom putem svojih Google računa. Ako je ova postavka onemogućena, korisnici ne mogu omogućiti proxy, a računalu neće biti dopušteno dijeljenje pisača s oblakom <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
+
+          Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -684,6 +688,7 @@
       Ako omogućite tu postavku, Siguran način rada na YouTubeu uvijek je aktivan.
 
       Ako onemogućite tu postavku ili ne postavite vrijednost, Siguran način rada na YouTubeu neće se primijeniti.</translation>
+<translation id="3750220015372671395">Blokiraj generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="3756011779061588474">Blokiraj način rada razvojnog programera</translation>
 <translation id="3758249152301468420">Onemogući Razvojne alate</translation>
 <translation id="3765260570442823273">Trajanje poruke upozorenja za odjavu u stanju mirovanja</translation>
@@ -813,6 +818,9 @@
 
           To je pravilo za internu upotrebu preglednika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Vrijeme do zaključavanja zaslona</translation>
+<translation id="423797045246308574">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenAllowedForUrls", ovo pravilo nadjačava te iznimke.
+
+          Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="4250680216510889253">Ne</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
@@ -821,6 +829,9 @@
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ili noviji</translation>
 <translation id="4325690621216251241">Dodaj gumb za odjavu na programsku traku</translation>
+<translation id="4347908978527632940">Ako se pravilo postavi na "True" i korisnik je nadzirani korisnik, onda druge Androidove aplikacije mogu postaviti upit za korisnikova ograničenja za web putem davatelja sadržaja.
+
+          Ako se pravilo postavi na "False" ili se ne postavi, onda davatelj sadržaja neće vraćati nikakve podatke.</translation>
 <translation id="4349746760316962317">Konfigurira direktorij u koji će <ph name="PRODUCT_NAME" /> spremati predmemorirane datoteke na disku.
 
       Ako postavite to pravilo, preglednik <ph name="PRODUCT_NAME" /> upotrebljavat će navedeni direktorij bez obzira je li korisnik naveo oznaku "--disk-cache-dir".
@@ -1275,6 +1286,7 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti se ograničavaju kako bi bile kraće od vremena do ulaska u stanje mirovanja.</translation>
 <translation id="6111936128861357925">Dopuštanje skrivene igre s dinosaurom</translation>
 <translation id="6114416803310251055">neodobreno</translation>
+<translation id="6133088669883929098">Dopusti svim web-lokacijama da upotrebljavaju generiranje ključeva</translation>
 <translation id="6145799962557135888">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje ne smiju pokretati JavaScript. Ako to pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultJavaScriptSetting", ako je postavljeno, odnosno iz osobne konfiguracije korisnika, ako nije.</translation>
 <translation id="6151775819333710697">
           Ako je ta postavka omogućena, <ph name="PRODUCT_NAME" /> može zapamtiti zaporke korisnika
@@ -1510,6 +1522,7 @@
       Ako to pravilo nije postavljeno, upotrebljavat će se zadana vrijednost, a to je 32.</translation>
 <translation id="6943577887654905793">Naziv Mac/Linux preferencije:</translation>
 <translation id="69525503251220566">Značajka pretraživanja po slici koja pruža parametre za zadanog davatelja usluge pretraživanja</translation>
+<translation id="6956272732789158625">Nemoj dopustiti nijednoj web-lokaciji da upotrebljava generiranje ključeva</translation>
 <translation id="6997592395211691850">Jesu li potrebne mrežne OCSP/CRL provjere za lokalna pouzdana sidra</translation>
 <translation id="7003334574344702284">Ako je omogućeno, ovo pravilo prisilno uvozi spremljene zaporke iz prethodno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, spremljene se zaporke ne uvoze. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti zaporke ili do uvoza može doći automatski.</translation>
 <translation id="7003746348783715221">Postavke za <ph name="PRODUCT_NAME" /></translation>
@@ -1652,6 +1665,7 @@
       Ako se ta postavka ne postavi ili se postavi na istinito, registrirani uređaji periodički će izvješćivati o verziji OS-a i opreme. Ako se postavka postavi na neistinito, izvješće s informacijama o verziji neće se generirati.</translation>
 <translation id="7511361072385293666">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, dopuštena je upotreba QUIC protokola na proizvodu <ph name="PRODUCT_NAME" />.
       Ako se postavi na "neistinito", upotreba QUIC protokola nije dopuštena.</translation>
+<translation id="7519251620064708155">Dopusti generiranje ključeva na ovim web-lokacijama</translation>
 <translation id="7523476810162382273">Šalji praćenje mrežnog prometa poslužitelju za upravljanje</translation>
 <translation id="7529100000224450960">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPopupsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7529144158022474049">Čimbenik raspršivanja automatskog ažuriranja</translation>
@@ -1854,6 +1868,9 @@
 <translation id="8300455783946254851">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> prilikom upotrebe mobilne veze kada je postavljeno na točno. U tom slučaju podaci se sinkroniziraju s Google diskom prilikom povezanosti putem Wi-Fi-ja ili Etherneta.
 
           Ako nije postavljeno ili je postavljeno na netočno, korisnici će moći prenositi datoteke na Google disk mobilnim vezama.</translation>
+<translation id="8312129124898414409">Omogućuje vam da postavite smiju li web-lokacije upotrebljavati generiranje ključeva. Generiranje ključeva može se dopustiti za sve web-lokacije ili odbiti za sve web-lokacije.
+
+          Ako se to pravilo ne postavi, upotrebljavat će se "BlockKeygen" i korisnik će to moći promijeniti.</translation>
 <translation id="8329984337216493753">To je pravilo aktivno samo u prodajnom načinu.
 
       Kada je pravilo "DeviceIdleLogoutTimeout" navedeno, to pravilo određuje trajanje okvira za upozorenje s odbrojavanjem koji se prikazuje korisniku prije nego što se izvrši odjava.
@@ -2045,6 +2062,7 @@
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
+<translation id="9088433379343318874">Omogući davatelja sadržaja nadziranog korisnika</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>
 <translation id="9098553063150791878">Pravila za HTTP autentifikaciju</translation>
 <translation id="9104138886225968319">Šalje praćenje mrežnog prometa poslužitelju za upravljanje kako bi

@@ -90,6 +90,7 @@
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL server proxy</translation>
 <translation id="1435659902881071157">Konfigurasi jaringan tingkat perangkat</translation>
+<translation id="1438739959477268107">Setelan pembuatan kunci default</translation>
 <translation id="1454846751303307294">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="1464848559468748897">Mengontrol perilaku pengguna di sesi multi profil di perangkat <ph name="PRODUCT_OS_NAME" />.
 
@@ -642,6 +643,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mengaktifkan proxy cloud print lewat autentikasi dengan akun Google.
 
       Jika setelan ini dinonaktifkan, pengguna tidak dapat mengaktifkan proxy tersebut, dan komputer tidak akan diizinkan berbagi printernya dengan <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang diizinkan untuk menggunakan pembuatan kunci. Jika pola URL ada di dalam 'KeygenBlockedForUrls', hal tersebut akan mengganti pengecualian ini.
+
+          Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
 
@@ -689,6 +693,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika Anda mengaktifkan setelan ini, Mode Perlindungan di YouTube selalu aktif.
 
       Jika Anda menonaktifkan setelan ini atau tidak menyetel nilai, Mode Perlindungan di YouTube tidak akan diterapkan.</translation>
+<translation id="3750220015372671395">Blokir pembuatan kunci di situs ini</translation>
 <translation id="3756011779061588474">Blokir mode pengembang</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
@@ -818,6 +823,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Kebijakan ini untuk penggunaan internal oleh <ph name="PRODUCT_NAME" /> itu sendiri.</translation>
 <translation id="4224610387358583899">Penundaan kunci layar</translation>
+<translation id="423797045246308574">Memungkinkan Anda menyetel daftar pola URL yang menentukan situs mana yang diizinkan untuk menggunakan pembuatan kunci. Jika pola URL ada di dalam 'KeygenAllowedForUrls', kebijakan ini akan mengganti pengecualian ini.
+
+          Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
 <translation id="4250680216510889253">Tidak</translation>
 <translation id="427632463972968153">Menentukan parameter yang digunakan saat melakukan penelusuran gambar dengan POST. Berisi pasangan nama/nilai yang dipisahkan koma. Jika nilai adalah parameter template, seperti {imageGambar kecil} contoh di atas, akan diganti dengan data thumbnail gambar nyata.
 
@@ -826,6 +834,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 atau yang lebih baru</translation>
 <translation id="4325690621216251241">Tambahkan tombol keluar di baki sistem</translation>
+<translation id="4347908978527632940">Jika nilai disetel ke "true" dan pengguna adalah pengguna yang dilindungi, aplikasi Android lainnya dapat mengajukan kueri batasan web pengguna melalui penyedia konten.
+
+          Jika nilai disetel ke "false" atau tidak disetel, penyedia konten tidak mengembalikan informasi apa pun.</translation>
 <translation id="4349746760316962317">Mengonfigurasi direktori yang akan digunakan oleh <ph name="PRODUCT_NAME" /> untuk menyimpan file cache di disk.
 
       Jika Anda menyetel kebijakan ini, <ph name="PRODUCT_NAME" /> akan menggunakan direktori yang diberikan terlepas apakah pengguna telah menetapkan tanda '--disk-cache-dir' atau tidak.
@@ -1276,6 +1287,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Nilai kebijakan harus ditetapkan dalam milidetik. Nilai dijepit agar kurang dari penundaan waktu menganggur.</translation>
 <translation id="6111936128861357925">Izinkan Game Dinosaur Easter Egg</translation>
 <translation id="6114416803310251055">tak lagi digunakan</translation>
+<translation id="6133088669883929098">Izinkan semua situs menggunakan pembuatan kunci</translation>
 <translation id="6145799962557135888">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang tidak diizinkan untuk menjalankan JavaScript. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultJavaScriptSetting', jika disetel, ataupun dari konfigurasi pribadi pengguna.</translation>
 <translation id="6151775819333710697">
           Jika setelan ini diaktifkan, pengguna dapat meminta <ph name="PRODUCT_NAME" /> mengingat sandi
@@ -1514,6 +1526,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini tidak disetel, nilai default 32 akan digunakan.</translation>
 <translation id="6943577887654905793">Nama preferensi Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter menyediakan fitur telusuri pakai gambar untuk penyedia penelusuran default</translation>
+<translation id="6956272732789158625">Jangan izinkan situs apa pun menggunakan pembuatan kunci</translation>
 <translation id="6997592395211691850">Meskipun OCSP/CRL sedang online dibutuhkan tautan lokal yang dipercaya ataupun tidak</translation>
 <translation id="7003334574344702284">Kebijakan ini memaksa sandi tersimpan untuk diimpor dari browser default sebelumnya, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, sandi yang disimpan tidak diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="7003746348783715221">Preferensi <ph name="PRODUCT_NAME" /></translation>
@@ -1657,6 +1670,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika setelan ini tidak disetel atau disetel ke True, perangkat terdaftar akan melaporkan versi firmware dan OS secara berkala. Jika setelan ini disetel ke False, info versi tidak akan dilaporkan.</translation>
 <translation id="7511361072385293666">Jika kebijakan ini disetel ke True atau tidak disetel, penggunaan protokol QUIC di <ph name="PRODUCT_NAME" /> akan diizinkan.
       Jika kebijakan ini disetel ke False, penggunaan protokol QUIC tidak diizinkan.</translation>
+<translation id="7519251620064708155">Izinkan pembuatan kunci di situs ini</translation>
 <translation id="7523476810162382273">Mengirim pemantauan detak jantung ke server pengelolaan</translation>
 <translation id="7529100000224450960">Memungkinkan Anda menyetel daftar pola url yang menentukan situs yang diizinkan membuka munculan. Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPopupsSetting', jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="7529144158022474049">Faktor penyebaran pembaruan otomatis</translation>
@@ -1860,6 +1874,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="8300455783946254851">Menonaktifkan sinkronisasi Google Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /> saat menggunakan sambungan seluler jika disetel ke True. Dalam kasus ini, data hanya disinkronkan ke Google Drive saat tersambung melalui Wi-Fi atau Ethernet.
 
           Jika tidak disetel atau disetel ke False, pengguna akan dapat mentransfer file ke Google Drive melalui sambungan seluler.</translation>
+<translation id="8312129124898414409">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menggunakan pembuatan kunci atau tidak. Menggunakan pembuatan kunci dapat diizinkan untuk semua situs web atau ditolak untuk semua situs web.
+
+          Jika kebijakan ini tidak disetel, 'BlockKeygen' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="8329984337216493753">Kebijakan ini aktif dalam mode eceran saja.
 
       Jika DeviceIdleLogoutTimeout ditentukan, kebijakan ini menetapkan durasi kotak peringatan dengan pewaktu hitungan mundur yang ditampilkan ke pengguna sebelum proses keluar dieksekusi.
@@ -2047,6 +2064,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
+<translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>
 <translation id="9096086085182305205">Daftar putih server autentikasi</translation>
 <translation id="9098553063150791878">Kebijakan untuk autentikasi HTTP</translation>
 <translation id="9104138886225968319">Mengirim pemantauan detak jantung ke server pengelolaan, untuk memungkinkan

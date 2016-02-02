@@ -105,6 +105,7 @@
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
+<translation id="1438739959477268107">Cài đặt tạo khóa mặc định</translation>
 <translation id="1454846751303307294">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultJavaScriptSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -709,6 +710,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này được bật hoặc không được định cấu hình, người dùng có thể bật proxy máy in máy chủ ảo bằng cách xác thực bằng tài khoản Google của họ.
 
       Nếu cài đặt này được bật, người dùng không thể bật proxy và máy sẽ không được phép chia sẻ máy in với <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
+
+          Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
@@ -756,6 +760,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn bật cài đặt này, Chế độ an toàn trên YouTube sẽ luôn bật.
 
       Nếu bạn tắt cài đặt này hoặc không đặt giá trị, Chế độ an toàn trên YouTube sẽ không được thực thi.</translation>
+<translation id="3750220015372671395">Chặn tạo khóa trên các trang web này</translation>
 <translation id="3756011779061588474">Chặn chế độ của nhà phát triển</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
@@ -909,6 +914,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Chính sách này dành cho <ph name="PRODUCT_NAME" /> sử dụng nội bộ.</translation>
 <translation id="4224610387358583899">Độ trễ khóa màn hình</translation>
+<translation id="423797045246308574">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenAllowedForUrls', chính sách này sẽ ghi đè các ngoại lệ này.
+
+          Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
 <translation id="4250680216510889253">Không</translation>
 <translation id="427632463972968153">Chỉ định tham số được dùng khi thực hiện tìm kiếm theo hình ảnh với POST. Tham số này bao gồm các cặp tên/giá trị phân tách bằng dấu phẩy. Nếu một giá trị là tham số mẫu như {searchTerms} trong ví dụ trên thì tham số đó sẽ được thay thế bằng dữ liệu hình thu nhỏ thực.
 
@@ -917,6 +925,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 hoặc mới hơn</translation>
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
+<translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
+
+          Nếu sai hoặc chưa đặt thì nhà cung cấp nội dung sẽ không trả về thông tin nào.</translation>
 <translation id="4349746760316962317">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ tệp đã lưu vào bộ nhớ cache trên đĩa.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng đã chỉ định cờ '--disk-cache-dir' hay chưa.
@@ -1426,6 +1437,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Bạn phải chỉ định giá trị chính sách bằng mili giây. Các giá trị được giới hạn ở mức nhỏ hơn khoảng thời gian trễ khi không sử dụng.</translation>
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6114416803310251055">không được chấp thuận</translation>
+<translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
 <translation id="6145799962557135888">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép chạy JavaScript.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultImagesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1705,6 +1717,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không đặt chính sách này, giá trị mặc định được sử dụng sẽ là 32.</translation>
 <translation id="6943577887654905793">Tên tùy chọn Mac/Linux:</translation>
 <translation id="69525503251220566">Tham số cung cấp tính năng tìm theo hình ảnh cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="6956272732789158625">Không cho phép bất kỳ trang web nào sử dụng tạo khóa</translation>
 <translation id="6997592395211691850">Có bắt buộc kiểm tra OCSP/CRL trực tuyến cho mẩu neo tin cậy nội bộ hay không</translation>
 <translation id="7003334574344702284">Chính sách này nếu được bật sẽ buộc mật khẩu đã lưu phải được nhập từ trình duyệt mặc định trước đó. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
@@ -1867,6 +1880,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu cài đặt này không được đặt hoặc được đặt thành Đúng, các thiết bị đã đăng ký sẽ báo cáo định kỳ phiên bản hệ điều hành và chương trình cơ sở. Nếu cài đặt này được đặt thành Sai, thông tin phiên bản sẽ không được báo cáo.</translation>
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
+<translation id="7519251620064708155">Cho phép tạo khóa trên các trang web này</translation>
 <translation id="7523476810162382273">Gửi thông tin theo dõi nhịp tim đến máy chủ quản lý</translation>
 <translation id="7529100000224450960">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép mở cửa sổ bật lên.
 
@@ -2084,6 +2098,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8300455783946254851">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi sử dụng kết nối di động đã đặt thành True. Trong trường hợp đó, dữ liệu chỉ được đồng bộ hóa với Google Drive khi được kết nối qua WiFi hoặc Ethernet.
 
           Nếu không được đặt hoặc được đặt thành False, người dùng có thể chuyển tệp sang Google Drive qua kết nối mạng di động.</translation>
+<translation id="8312129124898414409">Cho phép bạn đặt liệu các trang web có được phép sử dụng tạo khóa hay không. Bạn có thể cho phép hoặc từ chối sử dụng tạo khóa đối với tất cả các trang web.
+
+          Nếu không thiết lập chính sách này, 'BlockKeygen' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="8329984337216493753">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Khi DeviceIdleLogoutTimeout được chỉ định, chính sách này sẽ xác định thời lượng của hộp cảnh báo với bộ tính giờ đếm ngược được hiển thị cho người dùng trước khi tác vụ đăng xuất được thực thi.
@@ -2286,6 +2303,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
+<translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>
 <translation id="9098553063150791878">Chính sách xác thực HTTP</translation>
 <translation id="9104138886225968319">Gửi thông tin theo dõi nhịp tim tới máy chủ quản lý để cho phép

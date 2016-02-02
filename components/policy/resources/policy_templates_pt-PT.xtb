@@ -97,6 +97,7 @@
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede ao nível do aparelho</translation>
+<translation id="1438739959477268107">Predefinição de geração de chaves</translation>
 <translation id="1454846751303307294">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="1464848559468748897">Controle o comportamento do utilizador numa sessão multiperfil em dispositivos <ph name="PRODUCT_OS_NAME" />.
 
@@ -648,6 +649,9 @@
 Se esta definição estiver ativada ou por configurar, os utilizadores podem ativar o proxy do "cloud print" através da autenticação junto da respetiva Conta Google.
 
 Se esta definição estiver desativada, os utilizadores não podem ativar o proxy e o computador não poderá partilhar as impressoras nele instaladas com o <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Permite definir uma lista de padrões de URL que especificam os sites autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenBlockedForUrls", tal substitui estas exceções.
+
+          Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
 
@@ -695,6 +699,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se ativar esta definição, o Modo de segurança do YouTube está sempre ativo.
 
       Se desativar esta definição ou não definir um valor, o Modo de segurança do YouTube não é aplicado.</translation>
+<translation id="3750220015372671395">Bloquear a geração de chaves nestes sites</translation>
 <translation id="3756011779061588474">Bloquear modo de programador</translation>
 <translation id="3758249152301468420">Desativar Ferramentas do Programador</translation>
 <translation id="3765260570442823273">Duração da mensagem de aviso de encerramento de sessão por inatividade</translation>
@@ -824,6 +829,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Esta política destina-se unicamente à utilização interna pelo próprio <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Atrasos do bloqueio de ecrã</translation>
+<translation id="423797045246308574">Permite definir uma lista de padrões de URL que especificam os sites não autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenAllowedForUrls", essa política substitui estas exceções.
+
+          Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="4250680216510889253">Não</translation>
 <translation id="427632463972968153">Especifica os parâmetros utilizados ao efetuar uma pesquisa de imagens com POST. Consiste em pares de nome/valor separados por vírgulas. Se um valor for o parâmetro de um modelo, como {imageThumbnail} no exemplo acima, será substituído por dados de miniatura de imagem reais.
 
@@ -832,6 +840,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política só será seguida se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou posterior</translation>
 <translation id="4325690621216251241">Adicionar um botão para terminar sessão ao tabuleiro do sistema</translation>
+<translation id="4347908978527632940">Se estiver definida como verdadeira e o utilizador for um utilizador supervisionado, outras aplicações Android podem consultar as restrições Web do utilizador através de um fornecedor de conteúdos.
+
+          Se estiver definida como falsa ou não estiver definida, o fornecedor de conteúdos não devolve informações.</translation>
 <translation id="4349746760316962317">Configura o diretório utilizado pelo <ph name="PRODUCT_NAME" /> para armazenar ficheiros em cache no disco.
 
       Se definir esta política, o <ph name="PRODUCT_NAME" /> utiliza o diretório fornecido, independentemente de o utilizador ter especificado ou não o sinalizador "--disk-cache-dir".
@@ -1282,6 +1293,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Deve especificar o valor da política em milissegundos. Os valores estão afixados para serem inferiores ao período de atraso de inatividade.</translation>
 <translation id="6111936128861357925">Permitir o jogo do ovo da Páscoa do dinossauro</translation>
 <translation id="6114416803310251055">obsoleta</translation>
+<translation id="6133088669883929098">Permitir que todos os sites utilizem a geração de chaves</translation>
 <translation id="6145799962557135888">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a executar JavaScript. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultJavaScriptSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="6151775819333710697">
           Se esta definição estiver ativada, os utilizadores podem fazer com que o <ph name="PRODUCT_NAME" /> memorize palavra-passe
@@ -1520,6 +1532,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não for definida, será utilizado o valor predefinido de 32.</translation>
 <translation id="6943577887654905793">Nome de preferência do Mac/Linux</translation>
 <translation id="69525503251220566">Parâmetro que fornece a funcionalidade de pesquisa por imagem ao fornecedor de pesquisas predefinido</translation>
+<translation id="6956272732789158625">Não permitir que os sites utilizem a geração de chaves</translation>
 <translation id="6997592395211691850">Se são necessárias verificações de OCSP/CRL online para âncoras fidedignas locais</translation>
 <translation id="7003334574344702284">Se esta política estiver ativada, força a importação de palavras-passe guardadas a partir do anterior navegador predefinido e também afeta a caixa de diálogo de importação. Se estiver desativada, as palavras-passe não são importadas. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-las ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="7003746348783715221">Preferências do <ph name="PRODUCT_NAME" /></translation>
@@ -1663,6 +1676,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta opção não estiver definida ou estiver definida como "true", os dispositivos inscritos comunicarão a versão do SO e do firmware periodicamente. Se esta estiver definida como "false", as informações de versão não serão comunicadas.</translation>
 <translation id="7511361072385293666">Se esta política estiver definida como verdadeira ou não estiver definida, é permitida a utilização do protocolo QUIC no <ph name="PRODUCT_NAME" />.
       Se esta política estiver definida como falsa, não é permitida a utilização do protocolo QUIC.</translation>
+<translation id="7519251620064708155">Permitir a geração de chaves nestes sites</translation>
 <translation id="7523476810162382273">Enviar impulsos de monitorização para o servidor de gestão</translation>
 <translation id="7529100000224450960">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a abrir janelas de pop-up. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPopupsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualização automática</translation>
@@ -1866,6 +1880,8 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> ao utilizar uma rede móvel e a definição de verdadeiro. Nesse caso, os dados só são sincronizados com o Google Drive quando estiver ligado por Wi-Fi ou Ethernet.
 
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
+<translation id="8312129124898414409">Permite definir se os Websites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Websites ou negá-la para todos os Websites.
+          Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
 
       Quando a política DeviceIdleLogoutTimeout é especificada, define a duração da caixa de aviso com uma contagem decrescente que é mostrada ao utilizador antes do encerramento da sessão.
@@ -2054,6 +2070,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
+<translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>
 <translation id="9098553063150791878">Políticas para a autenticação HTTP</translation>
 <translation id="9104138886225968319">Envia impulsos de monitorização ao servidor de gestão para permitir

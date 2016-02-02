@@ -2,6 +2,10 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1185134272377778587">O pregledniku Chromium</translation>
+<translation id="1472013873724362412">Vaš račun ne funkcionira na Chromiumu. Obratite se administratoru domene ili se prijavite običnim Google računom.</translation>
+<translation id="2195025571279539885">Želite li da Chromium sljedeći put ponudi prijevod stranica s te web-lokacije za <ph name="LANGUAGE_NAME" />?</translation>
+<translation id="3805899903892079518">Chromium nema pristup fotografijama ni videozapisima. Omogućite pristup u Postavkama iOS-a &gt; Privatnost &gt; Fotografije.</translation>
+<translation id="6068866989048414399">Uvjeti pružanja Chromiuma</translation>
 <translation id="6424492062988593837">Chromium je postao još bolji! Dostupna je nova verzija.</translation>
 <translation id="6600954340915313787">Kopirano u Chrome</translation>
 <translation id="7337881442233988129">Chromium</translation>

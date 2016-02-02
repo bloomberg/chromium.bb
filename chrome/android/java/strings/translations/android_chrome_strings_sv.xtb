@@ -45,6 +45,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1553358976309200471">Uppdatera Chrome</translation>
 <translation id="1557201757634521564">Identifiera teckenkodning automatiskt</translation>
 <translation id="1568822834048182062">Bokmärken, historik, lösenord och andra inställningar synkroniseras till ditt Google-konto.</translation>
+<translation id="1592483623187843893">Bokmärket har sparats offline</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1623104350909869708">Hindra sidan från att skapa fler dialogrutor</translation>
 <translation id="1641113438599504367">Säker webbsökning</translation>
@@ -86,6 +87,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2138201775715568214">Söker efter Physical Web-sidor i närheten</translation>
 <translation id="2139186145475833000">Lägg till på startskärmen</translation>
 <translation id="2154710561487035718">Kopiera webbadress</translation>
+<translation id="21570240866965662">Långsam anslutning</translation>
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finjustera</translation>
@@ -109,6 +111,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2498359688066513246">Hjälp och feedback</translation>
 <translation id="2501278716633472235">Föregående</translation>
 <translation id="2512222046227390255">Fyll i formulär automatiskt</translation>
+<translation id="2521102375070725336">Bokmärket har sparats offline i <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">Databesparing är på. Hantera funktionen i Inställningar.</translation>
 <translation id="2532336938189706096">Webbvy</translation>
 <translation id="2536728043171574184">En offlinekopia av sidan visas</translation>
@@ -131,14 +134,12 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="2891154217021530873">Avbryt inläsningen av sidan</translation>
 <translation id="2902702728133930130">Ett oväntat fel uppstod när Chrome skulle startas.</translation>
 <translation id="2903493209154104877">Adresser</translation>
-<translation id="2904413602477443379">Välj en mapp</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2956410042958133412">Det här kontot hanteras av <ph name="PARENT_NAME_1" /> och <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
-<translation id="3039671569659952257">Radera mappen</translation>
 <translation id="3063601790762993062">Spara video</translation>
 <translation id="306566828762083630">Lagringsutrymmet på enheten är fullt. Frigör utrymme genom att ta bort andra filer.</translation>
 <translation id="307329814453917357">Erbjud att översätta sidor med Google Översätt</translation>
@@ -146,6 +147,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
 <translation id="3102119246920354026">Cacheminne</translation>
 <translation id="3137521801621304719">Inaktivera inkognitoläge</translation>
+<translation id="3177909033752230686">Sidans språk:</translation>
 <translation id="3190152372525844641">Aktivera behörigheter för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> sparad data</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
@@ -157,7 +159,6 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="3269093882174072735">Läs in bild</translation>
 <translation id="3278850099957560514">Minska datakostnaderna genom att låta Google optimera sidorna du besöker. Sidor som öppnas via privata anslutningar (HTTPS) eller i inkognitoflikar varken optimeras eller visas av Google.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
-<translation id="3287852534598822456">Bokmärket finns inte längre. Uppdatera.</translation>
 <translation id="3303414029551471755">Vill du hämta innehållet?</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
@@ -170,6 +171,7 @@ Du loggar in med ett hanterat konto, vilket innebär att administratören kontro
 <translation id="3435896845095436175">Aktivera</translation>
 <translation id="3485544713029068372">Smart Lock för lösenord</translation>
 <translation id="3492207499832628349">Ny inkognitoflik</translation>
+<translation id="3501331331116143684">Sidan har sparats offline i <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
 <translation id="3527085408025491307">Mapp</translation>
 <translation id="360480449234699036">Läs om olika ämnen på webbplatser utan att lämna sidan. När du trycker på Sök skickas ett ord och dess sammanhang till Google Sök och definitioner, bilder, sökresultat och annan information visas.
@@ -195,6 +197,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="3988213473815854515">Platsen är tillåten</translation>
 <translation id="3992315671621218278">Spara länk</translation>
 <translation id="4002066346123236978">Titel</translation>
+<translation id="4035611068038188272">För närvarande används <ph name="TOTAL_OFFLINE_STORAGE_SIZE" /> av bokmärken.</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4059119910594077751">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
@@ -206,11 +209,14 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4116939199945053760"><ph name="SITE" /> har begärt <ph name="BEGIN_LINK" />koppling till<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
+<translation id="4193864812412988973">En offlinekopia av bokmärket visas</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
+<translation id="4198229475320555619">Ett bokmärke på <ph name="PAGE_SIZE_STRING" /> har sparats offline</translation>
 <translation id="423410644998903704">Chrome behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="424696723690217687">Upptäck webbsidor som har skickats av objekt i närheten.
 
 Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas via en tjänst från Google för att förbättra kvaliteten på sidresultaten.</translation>
+<translation id="4254813446494774748">Översättningsspråk:</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
@@ -221,18 +227,17 @@ Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas v
 <translation id="4334294535648607276">Nedladdningen har slutförts.</translation>
 <translation id="4350413759959745971">Flytta sparade sidor</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
-<translation id="4357362091209756047">Visas inte din enhet? <ph name="BEGIN_LINK1" />Gör om sökningen<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />få hjälp<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="4412992751769744546">Tillåt cookies från tredje part</translation>
 <translation id="4440256989292146959">Surfa mer för mindre</translation>
 <translation id="4452548195519783679">Bokmärkt i <ph name="FOLDER_NAME" /></translation>
+<translation id="4498934959426056365">Nyckelgenerering</translation>
 <translation id="4505554159887937799">Sparad offline</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{för # dag sedan}other{för # dagar sedan}}</translation>
 <translation id="4522570452068850558">Info</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Välj mapp</translation>
-<translation id="4543087392704641517">Bokmärkets namn</translation>
 <translation id="4543661749405994812">Kopiera e-postadress</translation>
 <translation id="4581964774250883625">Du surfar inkognito.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{för # minut sedan}other{för # minuter sedan}}</translation>
@@ -256,7 +261,6 @@ Chrome söker efter sidor i närheten när enheten är olåst. Sidorna skickas v
 <translation id="4836364883164334657">Anslutningen till den här webbplatsen är inte privat. Hackare kan försöka stjäla information (till exempel bilder, lösenord, meddelanden och kreditkortsuppgifter) från <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Läs mer</translation>
 <translation id="4850886885716139402">Visa</translation>
-<translation id="4871370605780490696">Lägg till bokmärke</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
 <translation id="4927198283430892231">De sparade sidorna tar för närvarande upp <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -342,7 +346,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5771382037724542929">Vill du ersätta den befintliga filen <ph name="FILE_NAME" /> i <ph name="DIRECTORY_NAME" />?</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
-<translation id="5806294296882899667">Fel vid inläsning av standard</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5817918615728894473">Koppla</translation>
 <translation id="5832934273103296195">Gruppvyn har expanderats. Komprimera vyn genom att klicka.</translation>
@@ -369,6 +372,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="6075798973483050474">Redigera startsidan</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6112702117600201073">Uppdaterar sidan</translation>
+<translation id="6127379762771434464">Objektet har tagits bort</translation>
 <translation id="6138140242378429169">Mobilanpassa sidan</translation>
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="6159335304067198720">Sparat utrymme: <ph name="PERCENT" /></translation>
@@ -391,6 +395,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6406506848690869874">Synkronisera</translation>
 <translation id="6409731863280057959">Popup-fönster</translation>
 <translation id="641643625718530986">Skriv ut …</translation>
+<translation id="6447570251829705777">Bokmärket är inte tillgängligt offline</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sökning och webbadressförslag</translation>
 <translation id="6458785801851713928">Synkronisering är inte tillgängligt för din domän.</translation>
@@ -435,23 +440,24 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Mappar</translation>
 <translation id="6978479750597523876">Återställ översättningsinställningar</translation>
-<translation id="6979922938747275756">Fel vid inläsning av mappar</translation>
 <translation id="6981982820502123353">Tillgänglighet</translation>
 <translation id="6990079615885386641">Hämta appen från Google Play Butik: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6999892069268112724">Bekräfta Google-konto</translation>
 <translation id="7019652137705190998">Använd inkognitoläget om du vill söka privat eller om du vill logga in tillfälligt</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
+<translation id="7022756207310403729">Öppna i webbläsaren</translation>
 <translation id="7026897394897382018">Aktivera Databesparing</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7053983685419859001">Blockera</translation>
+<translation id="7056999826593229648">En långsam anslutning upptäcktes</translation>
+<translation id="7057058088140140610">Kreditkort och adresser som används med Google Payments</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
 <translation id="7095930899177687653"><ph name="OPEN_TABS" /> öppna flikar</translation>
 <translation id="7096034533295549981">Videon läses in</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
-<translation id="7201341158316793215">Bokmärket tas bort …</translation>
 <translation id="7208788139759694678">Databesparing har inaktiverats</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
@@ -486,17 +492,16 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
 <translation id="7634554953375732414">Din anslutning till webbplatsen är inte privat.</translation>
 <translation id="7638584964844754484">Felaktig lösenfras</translation>
-<translation id="764743049316168389">Mappen <ph name="FOLDER_NAME" /></translation>
 <translation id="7648422057306047504">Kryptera lösenord med användaruppgifter för Google</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7665369617277396874">Lägg till konto</translation>
+<translation id="7690588279513156836">Läs in originalet</translation>
 <translation id="7735023902678907596">Sidor som du visar i inkognitoflikar sparas inte i webbläsarhistoriken och lagras inte bland cookies eller i sökhistoriken när du har stängt alla inkognitoflikar. Däremot sparas alla nedladdade filer och sparade sidor.
 
 Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
 <translation id="7761240775244195612">Vill du radera <ph name="PAGES_NUMBER" /> offlinekopior som du inte har använt under den senaste månaden? Ett utrymme på <ph name="TOTAL_PAGE_SIZE" /> rensas.</translation>
 <translation id="7764225426217299476">Lägg till adress</translation>
 <translation id="7765158879357617694">Flytta</translation>
-<translation id="7767746238359002192">Besök sidan om du vill spara offline</translation>
 <translation id="7772032839648071052">Bekräfta lösenfras</translation>
 <translation id="7784213092572143271">Sidan har sparats</translation>
 <translation id="7788788617745289808">Chrome behöver tillgång till kameran för att kunna dela den på den här webbplatsen.</translation>
@@ -509,10 +514,10 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="7876243839304621966">Ta bort alla</translation>
 <translation id="7925108652071887026">Fyll i uppgifter automatiskt</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
+<translation id="7949961459945740081">Få de senaste funktionerna</translation>
 <translation id="7961015016161918242">Aldrig</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
 <translation id="7987073022710626672">Chromes användarvillkor</translation>
-<translation id="7989222512959629388">Sparar ...</translation>
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
@@ -525,7 +530,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>
-<translation id="8143660160623733249">Mappnamn</translation>
 <translation id="8146397137182589628">Inte sparad offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> konton</translation>
 <translation id="8168435359814927499">Innehåll</translation>
@@ -561,9 +565,11 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 
 Du hämtar nya licenser genom att ansluta till internet och spela upp det nedladdade innehållet.</translation>
 <translation id="8660471606262461360">Från Google Payments</translation>
+<translation id="8675945939500569406">Vill du aktivera den fysiska webben?</translation>
 <translation id="8676374126336081632">Radera inmatning</translation>
 <translation id="869891660844655955">Utgångsdatum</translation>
 <translation id="8699799819461268362">Google SafeSites-filter</translation>
+<translation id="8701537995684343047">Öppna bokmärket om du vill spara det offline</translation>
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8727142376512517020">Visa inte det här igen</translation>
@@ -596,16 +602,15 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9133515669113036225">Återställ användaruppgifter för enheten</translation>
 <translation id="9137013805542155359">Visa original</translation>
-<translation id="9156605176886108508">Inga bokmärkesmappar</translation>
+<translation id="9151532766011674069">Bokmärket har sparats offline. Lagringsutrymmet är nästan fullt.</translation>
 <translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>
 <translation id="9192643434065497760">Aktivera Bluetooth i <ph name="BEGIN_LINK" />enhetsinställningarna<ph name="END_LINK" /> om du vill tillåta koppling.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">Ny mapp</translation>
 <translation id="945632385593298557">Tillgång till din mikrofon</translation>
+<translation id="954352821720225055">Bokmärket är inte tillgängligt offline. Lagringsutrymmet är nästan fullt.</translation>
 <translation id="969096075394517431">Ändra språk</translation>
-<translation id="971774202801778802">Bokmärkets webbadress</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
 </translationbundle>

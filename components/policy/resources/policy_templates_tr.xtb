@@ -104,6 +104,7 @@
 <translation id="1426410128494586442">Evet</translation>
 <translation id="1427655258943162134">Proxy sunucunun adresi veya URL'si</translation>
 <translation id="1435659902881071157">Cihaz düzeyinde ağ yapılandırması</translation>
+<translation id="1438739959477268107">Varsayılan anahtar oluşturma ayarı</translation>
 <translation id="1454846751303307294">JavaScript'i çalıştırmasına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -716,6 +717,9 @@
       Bu ayar etkinleştirilirse veya yapılandırılmazsa, kullanıcılar kendi Google hesaplarından kimlik doğrulama ile bulut (cloud) yazdırma proxy'sini etkinleştirebilirler.
 
       Bu ayar devre dışı bırakılırsa, kullanıcılar proxy'yi etkinleştiremezler ve makinenin, yazıcılarını <ph name="CLOUD_PRINT_NAME" /> ile paylaşmasına izin verilmez.</translation>
+<translation id="3322771899429619102">Anahtar oluşturmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
+
+          Bu politika ayarlanmadan bırakıldığında, ayarlandıysa "DefaultKeygenSetting" politikasının değeri, değilse kullanıcının kişisel yapılandırmasındaki değer tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3417418267404583991">Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> misafir modunda giriş yapılmasına izin verir. misafir girişleri adsız kullanıcı oturumlarıdır ve şifre gerektirmez.
 
@@ -763,6 +767,7 @@
       Bu ayarı etkinleştirirseniz YouTube'da Güvenlik Modu her zaman etkin olur.
 
       Bu ayarı devre dışı bırakırsanız veya bir değer ayarlamazsanız YouTube'da Güvenlik Modu zorlanmaz.</translation>
+<translation id="3750220015372671395">Bu sitelerde anahtar oluşturmayı engelle</translation>
 <translation id="3756011779061588474">Geliştirici modunu engelle</translation>
 <translation id="3758249152301468420">Geliştirici Araçları'nı devre dışı bırak</translation>
 <translation id="3765260570442823273">Boştayken çıkış yapma uyarı mesajının süresi</translation>
@@ -918,6 +923,9 @@ politikayı geçersiz kılamaz.
 
           Bu politika <ph name="PRODUCT_NAME" /> tarafından dahili kullanım içindir.</translation>
 <translation id="4224610387358583899">Ekran kilidi bekleme süresi</translation>
+<translation id="423797045246308574">Anahtar oluşturmasına izin verilmeyen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
+
+          Bu politika ayarlanmadan bırakıldığında, ayarlandıysa "DefaultKeygenSetting" politikası değeri, ayarlanmadıysa kullanıcının kişisel yapılandırmasındaki değer tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="4250680216510889253">Hayır</translation>
 <translation id="427632463972968153">POST ile resim araması yaparken kullanılacak parametreleri belirtir. Virgülle ayrılmış ad/değer çiftlerini içeren bir listeden oluşur. Bir değer, yukarıdaki örnekteki {imageThumbnail} gibi bir şablon parametresi ise, gerçek resmin küçük resim verisiyle değiştirilir.
 
@@ -926,6 +934,9 @@ politikayı geçersiz kılamaz.
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse dikkate alınır.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 veya sonrası</translation>
 <translation id="4325690621216251241">Sistem tepsisine çıkış düğmesi ekle</translation>
+<translation id="4347908978527632940">Doğru seçeneğine ayarlanırsa ve kullanıcı denetlenen bir kullanıcıysa, diğer Android uygulamaları kullanıcının web kısıtlamalarını bir içerik sağlayıcısı aracılığıyla sorgulayabilir.
+
+          Yanlış seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa içerik sağlayıcısı herhangi bir bilgi sağlamaz.</translation>
 <translation id="4349746760316962317"><ph name="PRODUCT_NAME" /> ürününün, önbelleğe alınan dosyaları diskte saklamak için kullanacağı dizini yapılandırır.
 
       Bu politikayı ayarlarsanız <ph name="PRODUCT_NAME" />, kullanıcının "--disk-cache-dir" işaretini belirtmiş olup olmamasına bakmaksızın, sağlanan dizini kullanır.
@@ -1431,6 +1442,7 @@ politikayı geçersiz kılamaz.
           Politikanın değeri milisaniye olarak belirtilmelidir. Değerler boşta kalma bekleme süresinden az olacak şekilde ayarlanır.</translation>
 <translation id="6111936128861357925">Dinozor Paskalya Yumurtası Oyununa İzin Verme</translation>
 <translation id="6114416803310251055">onaylanmadı</translation>
+<translation id="6133088669883929098">Tüm sitelerin anahtar oluşturma işlevini kullanmasına izin ver</translation>
 <translation id="6145799962557135888">JavaScript'i çalıştırmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultJavaScriptSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -1717,6 +1729,7 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa, varsayılan değer olan 32 değeri kullanılır.</translation>
 <translation id="6943577887654905793">Mac/Linux tercih adı:</translation>
 <translation id="69525503251220566">Varsayılan arama sağlayıcısı için resme göre arama özelliği sağlayan parametre</translation>
+<translation id="6956272732789158625">Hiçbir sitenin anahtar oluşturma işlevini kullanmasına izin verme</translation>
 <translation id="6997592395211691850">Çevrimiçi OCSP/CRL kontrollerinin yerel güven bağlantıları için gerekli olup olmadığı</translation>
 <translation id="7003334574344702284">Bu politika etkinleştirildiyse, kaydedilen şifreleri önceki varsayılan tarayıcıdan içe aktarır. Etkinleştirilirse, içe aktarma iletişim kutusunu da etkiler.
 
@@ -1872,6 +1885,7 @@ politikayı geçersiz kılamaz.
       Bu ayar ayarlanmaz veya Doğru (True) değerine ayarlanırsa kayıtlı cihazlar OS ve ürün yazılımı sürümünü belirli aralıklarla bildirir. Bu ayar Yanlış (False) değerine ayarlanırsa sürüm bilgileri bildirilmez.</translation>
 <translation id="7511361072385293666">Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> ürününde QUIC protokolünün kullanımına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa QUIC protokolünün kullanımına izin verilmez.</translation>
+<translation id="7519251620064708155">Bu sitelerde anahtar oluşturmaya izin ver</translation>
 <translation id="7523476810162382273">Yönetim sunucusuna izleme sinyalleri gönder</translation>
 <translation id="7529100000224450960">Pop-up açmasına izin verilen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
@@ -2095,6 +2109,9 @@ politikayı geçersiz kılamaz.
 <translation id="8300455783946254851">Doğru değerine ayarlandığında, hücresel bağlantı kullanılırken <ph name="PRODUCT_OS_NAME" />, Files uygulamasında Google Drive senkronizasyonunu devre dışı bırakır. Bu durumda, veriler yalnızca Kablosuz veya Ethernet üzerinden bağlanıldığında Google Drive ile senkronize edilir.
 
          Hiç ayarlanmazsa veya Yanlış değerine ayarlanırsa kullanıcılar dosyaları hücresel bağlantılar üzerinden Google Drive'a aktarabilirler.</translation>
+<translation id="8312129124898414409">Web sitelerinin anahtar oluşturma işlevini kullanmasına izin verilip verilmeyeceğini ayarlamanıza olanak tanır. Anahtar oluşturma işlevini kullanma izni ya tüm web siteleri için verilebilir ya da hepsi için reddedilebilir.
+
+          Bu politika ayarlanmadan bırakılırsa, "BlockKeygen" kullanılır ve kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="8329984337216493753">Bu politika sadece perakende modunda etkindir.
 
       DeviceIdleLogoutTimeout belirtildiğinde, bu politika uyarı kutusunun süresini tanımlar ve çıkış yapılmadan önce kullanıcıya bir geri sayım saati gösterir.
@@ -2298,6 +2315,7 @@ politikayı geçersiz kılamaz.
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
+<translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>
 <translation id="9098553063150791878">HTTP kimlik doğrulaması için politikalar</translation>
 <translation id="9104138886225968319">Sunucunun cihazın çevrimdışı olup olmadığını algılayabilmesi için yönetim sunucusuna izleme sinyalleri gönderin.

@@ -105,6 +105,7 @@ Pour voir plus d'options et des exemples détaillés, accédez à l'adresse :
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
+<translation id="1438739959477268107">Paramètre de génération de clé par défaut</translation>
 <translation id="1454846751303307294">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -717,6 +718,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ce paramètre est activé ou s'il n'est pas configuré, l'utilisateur peut activer le proxy d'impression sur le cloud en se connectant à son compte Google.
 
       Si ce paramètre est désactivé, l'utilisateur ne peut pas activer le proxy et la machine n'est pas autorisée à partager ses imprimantes avec <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à utiliser la génération de clé. Si la règle "KeygenBlockedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
+
+          Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
@@ -764,6 +768,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si vous activez ce paramètre, le mode sécurisé de YouTube est toujours actif.
 
       Si vous le désactivez ou ne définissez aucune valeur, le mode sécurisé de YouTube n'est pas appliqué.</translation>
+<translation id="3750220015372671395">Bloquer la génération de clé sur ces sites</translation>
 <translation id="3756011779061588474">Bloquer le mode développeur</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
@@ -924,6 +929,10 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
 
           Il s'agit d'une règle utilisée en interne par <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4224610387358583899">Délais de verrouillage de l'écran</translation>
+<translation id="423797045246308574">Permet de définir une liste de formats d'URL qui déterminent les sites qui ne sont pas autorisés à utiliser la génération de clé. Si la règle "KeygenAllowedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
+
+
+          Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="4250680216510889253">Non</translation>
 <translation id="427632463972968153">Spécifie les paramètres utilisés pour la recherche d'image avec POST. Il s'agit de paires de noms et de valeurs séparées par une virgule. Si une valeur est équivalente à un paramètre modèle, comme "{imageThumbnail}" dans l'exemple ci-dessus, elle est remplacée par des miniatures d'images réelles.
 
@@ -932,6 +941,9 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
           Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 ou version ultérieure</translation>
 <translation id="4325690621216251241">Ajouter un bouton de déconnexion dans la barre d'état système</translation>
+<translation id="4347908978527632940">Si la valeur est définie sur "True" et si l'utilisateur est supervisé, d'autres applications Android peuvent envoyer une requête concernant les restrictions Web de ce dernier via un fournisseur de contenu.
+
+          Si la valeur est définie sur "False" ou si elle n'est pas définie, le fournisseur de contenu n'envoie aucune information.</translation>
 <translation id="4349746760316962317">Configure le répertoire que <ph name="PRODUCT_NAME" /> utilise pour stocker les fichiers mis en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le répertoire fourni, que l'utilisateur ait spécifié l'indicateur "--disk-cache-dir" ou non.
@@ -1443,6 +1455,7 @@ Si cette règle n'est pas configurée, le moteur de rendu par défaut est utilis
           La valeur de la règle doit être définie en millisecondes. Les valeurs ne peuvent pas être supérieures au délai d'inactivité.</translation>
 <translation id="6111936128861357925">Autoriser le jeu Easter Egg du dinosaure</translation>
 <translation id="6114416803310251055">obsolète</translation>
+<translation id="6133088669883929098">Autoriser tous les sites à utiliser la génération de clé</translation>
 <translation id="6145799962557135888">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter JavaScript. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultJavaScriptSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1727,6 +1740,7 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
       En cas de non-configuration de cette règle, la valeur par défaut de 32 est utilisée.</translation>
 <translation id="6943577887654905793">Nom de préférence Mac/Linux :</translation>
 <translation id="69525503251220566">Paramètre qui active la fonctionnalité de recherche par image pour le moteur de recherche par défaut</translation>
+<translation id="6956272732789158625">Interdire à tous les sites d'utiliser la génération de clé</translation>
 <translation id="6997592395211691850">Définit si les vérifications en ligne OCSP/CRL sont requises pour les ancres d'approbation locales.</translation>
 <translation id="7003334574344702284">Lorsqu'elle est activée, cette règle force l'importation des mots de passe enregistrés à partir du navigateur par défaut précédent. Si elle est activée, cette politique affecte également la boîte de dialogue d'importation. 
 
@@ -1884,6 +1898,7 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si ce paramètre n'est pas défini, ou s'il est défini sur "True", la version du système d'exploitation et celle du micrologiciel sont régulièrement communiquées par les appareils inscrits. Si ce paramètre est défini sur "False", ces informations ne sont pas transmises.</translation>
 <translation id="7511361072385293666">Si cette règle est définie sur "True" ou n'est pas paramétrée, l'utilisation du protocole QUIC est autorisée dans <ph name="PRODUCT_NAME" />.
       Si cette règle est définie sur "False", l'utilisation du protocole QUIC n'est pas autorisée.</translation>
+<translation id="7519251620064708155">Autoriser la génération de clé sur ces sites</translation>
 <translation id="7523476810162382273">Envoyer des pulsations de contrôle au serveur de gestion</translation>
 <translation id="7529100000224450960">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à ouvrir des pop-ups. 
 
@@ -2113,6 +2128,9 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8300455783946254851">Cette règle désactive la synchronisation avec Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> en cas de connexion à un réseau mobile lorsque vous la définissez sur "True". Dans ce cas, les données ne sont synchronisées avec Google Drive qu'en cas de connexion Wi-Fi ou Ethernet.
 
           Si vous ne définissez pas cette règle ou si vous la définissez sur "False", les utilisateurs peuvent transférer des fichiers vers Google Drive via des connexions mobiles.</translation>
+<translation id="8312129124898414409">Permet d'indiquer si des sites Web sont autorisés à utiliser la génération de clé. Celle-ci peut être autorisée ou interdite pour tous les sites.
+
+          Si cette règle n'est pas définie, le paramètre "BlockKeygen" est utilisé, et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="8329984337216493753">Cette règle n'est active qu'en mode Point de vente.
 
        Lorsque la valeur "DeviceIdleLogoutTimeout" est spécifiée, cette règle définit la durée de la boîte d'avertissement avec un compte à rebours qui s'affiche avant l'exécution de la déconnexion.
@@ -2324,6 +2342,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
+<translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>
 <translation id="9098553063150791878">Règles pour l'authentification HTTP</translation>
 <translation id="9104138886225968319">Transmettre des pulsations de contrôle au serveur de gestion, afin de

@@ -104,6 +104,7 @@
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
+<translation id="1438739959477268107">Default key generation setting</translation>
 <translation id="1454846751303307294">Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -713,6 +714,9 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If this setting is enabled or not configured, users can enable the cloud print proxy by authentication with their Google account.
 
       If this setting is disabled, users cannot enable the proxy, and the machine will not be allowed to share it's printers with <ph name="CLOUD_PRINT_NAME" />.</translation>
+<translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
 
@@ -760,6 +764,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If you enable this setting, Safety Mode on YouTube is always active.
 
       If you disable this setting or do not set a value, Safety Mode on YouTube is not enforced.</translation>
+<translation id="3750220015372671395">Block key generation on these sites</translation>
 <translation id="3756011779061588474">Block developer mode</translation>
 <translation id="3758249152301468420">Disable Developer Tools</translation>
 <translation id="3765260570442823273">Duration of the idle log-out warning message</translation>
@@ -921,6 +926,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           This policy is for internal use by <ph name="PRODUCT_NAME" /> itself.</translation>
 <translation id="4224610387358583899">Screen lock delays</translation>
+<translation id="423797045246308574">Allows you to set a list of URL patterns that specify sites which are not allowed to use key generation. If a URL pattern is in 'KeygenAllowedForUrls', this policy overrides these exceptions.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="427632463972968153">Specifies the parameters used when doing image search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {imageThumbnail} in above example, it will be replaced with real image thumbnail data.
 
@@ -929,6 +937,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 or later</translation>
 <translation id="4325690621216251241">Add a logout button to the system tray</translation>
+<translation id="4347908978527632940">If true and the user is a supervised user, then other Android apps can query the user's web restrictions through a content provider.
+
+          If false or unset, then the content provider returns no information.</translation>
 <translation id="4349746760316962317">Configures the directory that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified the '--disk-cache-dir' flag or not.
@@ -1441,6 +1452,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           The policy value should be specified in milliseconds. Values are clamped to be less than the idle delay.</translation>
 <translation id="6111936128861357925">Allow Dinosaur Easter Egg Game</translation>
 <translation id="6114416803310251055">deprecated</translation>
+<translation id="6133088669883929098">Allow all sites to use key generation</translation>
 <translation id="6145799962557135888">Allows you to set a list of url patterns that specify sites which are allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1723,6 +1735,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is left not set the default value will be used which is 32.</translation>
 <translation id="6943577887654905793">Mac/Linux preference name:</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
+<translation id="6956272732789158625">Do not allow any site to use key generation</translation>
 <translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
@@ -1886,6 +1899,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this setting is not set or set to True, enrolled devices will report the OS and firmware version periodically. If this setting is set to False, version info will not be reported.</translation>
 <translation id="7511361072385293666">If this policy is set to true or not set usage of QUIC protocol in <ph name="PRODUCT_NAME" /> is allowed.
       If this policy is set to false usage of QUIC protocol is disallowed.</translation>
+<translation id="7519251620064708155">Allow key generation on these sites</translation>
 <translation id="7523476810162382273">Send monitoring heartbeats to the management server</translation>
 <translation id="7529100000224450960">Allows you to set a list of url patterns that specify sites which are allowed to open pop-ups.
 
@@ -2114,6 +2128,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8300455783946254851">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when using a mobile connection when set to True. In that case, data is only synced to Google Drive when connected via Wi-Fi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via mobile connections.</translation>
+<translation id="8312129124898414409">Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.</translation>
 <translation id="8329984337216493753">This policy is active in retail mode only.
 
       When DeviceIdleLogoutTimeout is specified, this policy defines the duration of the warning box with a count down timer that is shown to the user before the logout is executed.
@@ -2319,6 +2336,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
+<translation id="9088433379343318874">Enable the supervised user content provider</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>
 <translation id="9098553063150791878">Policies for HTTP authentication</translation>
 <translation id="9104138886225968319">Send monitoring heartbeats to the management server, to allow

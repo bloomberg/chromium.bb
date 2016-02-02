@@ -89,6 +89,7 @@
 <translation id="1426410128494586442">Igen</translation>
 <translation id="1427655258943162134">Proxyszerver címe vagy URL-je</translation>
 <translation id="1435659902881071157">Eszközszintű hálózatbeállítás</translation>
+<translation id="1438739959477268107">Kulcslétrehozás alapértelmezett beállítása</translation>
 <translation id="1454846751303307294">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nem futtathatnak JavaScriptet. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultJavaScriptSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="1464848559468748897">A felhasználói viselkedés vezérlése többprofilos munkamenet során <ph name="PRODUCT_OS_NAME" />-eszközökön.
 
@@ -639,6 +640,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha ez a beállítás be van kapcsolva vagy nincs megadva, a felhasználók Google Fiókjuk érvényesítésével bekapcsolhatják a cloud print proxyt.
 
       Ha a beállítás ki van kapcsolva, a felhasználók nem kapcsolhatják be a proxyt, és a számítógép számára nem lesz engedélyezett a nyomtatók megosztása a(z) <ph name="CLOUD_PRINT_NAME" /> szolgáltatással.</translation>
+<translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
+
+          Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
 
@@ -686,6 +690,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha engedélyezi ezt a beállítást, a YouTube-on mindig aktív lesz a Biztonságos mód.
 
       Ha kikapcsolja a beállítást, illetve nem ad meg neki értéket, a rendszer nem kényszeríti a Biztonságos módot a YouTube-on.</translation>
+<translation id="3750220015372671395">Kulcslétrehozás letiltása a következő webhelyeken</translation>
 <translation id="3756011779061588474">Fejlesztői mód letiltása</translation>
 <translation id="3758249152301468420">Fejlesztőeszközök letiltása</translation>
 <translation id="3765260570442823273">A tétlenség miatti kijelentkeztetés figyelmeztető üzenetének időtartama</translation>
@@ -815,6 +820,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
             Ez a házirend belső használatra készült a <ph name="PRODUCT_NAME" /> számára.</translation>
 <translation id="4224610387358583899">Képernyő zárolásának késleltetései</translation>
+<translation id="423797045246308574">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol nem engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenAllowedForUrls” házirendben található, akkor ez a házirend felülírja ezen kivételeket.
+
+          Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
 <translation id="4250680216510889253">Nem</translation>
 <translation id="427632463972968153">Megadja a POST segítségével történő képkeresésekor használt paramétereket. Vesszővel elválasztott név–érték párokat tartalmaz. Ha az egyik érték egy sablonparaméter, ami a fenti példában az {imageThumbnail}, valódi indexképadatok kerülnek a helyére.
 
@@ -823,6 +831,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Ez a házirend csak akkor érvényesül, ha a „DefaultSearchProviderEnabled” házirend engedélyezve van.</translation>
 <translation id="4320376026953250541">Microsoft Windows XP SP2 vagy újabb</translation>
 <translation id="4325690621216251241">Kijelentkezés gomb elhelyezése a tálcán</translation>
+<translation id="4347908978527632940">Ha a felhasználó felügyelt felhasználó, akkor tartalomszolgáltatón keresztül az egyéb Android-alkalmazások lekérdezhetik a felhasználó webkorlátozásait.
+
+          Ha hamis, vagy nincs beállítva, akkor a tartalomszolgáltató nem ad vissza információkat.</translation>
 <translation id="4349746760316962317">Beállítja a könyvtárat, amelyet a(z) <ph name="PRODUCT_NAME" /> a gyorsítótárazott fájlok tárolására fog használni a lemezen.
 
       Ha beállítja ezt a házirendet, a(z) <ph name="PRODUCT_NAME" /> a megadott könyvtárat fogja használni függetlenül attól, hogy a felhasználó megadta-e a „--disk-cache-dir” jelölőt vagy sem.
@@ -1273,6 +1284,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           A házirend értékét milliszekundumban kell megadni. Az értékeknek alacsonyabbnak kell lenniük a tétlenség késleltetésénél.</translation>
 <translation id="6111936128861357925">A rejtett dinoszauruszos játék engedélyezése</translation>
 <translation id="6114416803310251055">elavult</translation>
+<translation id="6133088669883929098">Kulcsgenerálás használatának engedélyezése minden webhelyen</translation>
 <translation id="6145799962557135888">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek futtathatnak JavaScriptet. Ha ez a házirend beállítatlanul marad, akkor a globális alapértelmezett érték kerül felhasználásra valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultImagesSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="6151775819333710697">
           Ha ez a beállítás aktiválva van, a felhasználók tárolhatják jelszavaikat a(z) <ph name="PRODUCT_NAME" /> segítségével,
@@ -1511,6 +1523,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a házirend beállítatlanul marad, akkor a rendszer az alapértelmezés szerinti értéket (32) használja.</translation>
 <translation id="6943577887654905793">Mac/Linux preferencia neve:</translation>
 <translation id="69525503251220566">Paraméter az alapértelmezett keresési szolgáltatóval végezhető képalapú keresési funkció biztosításához</translation>
+<translation id="6956272732789158625">A kulcsgenerálás használatának letiltása minden webhelyen</translation>
 <translation id="6997592395211691850">Szükség van-e online OCSP- vagy CRL-ellenőrzésekre a helyi megbízhatósági kapcsolatok alapjainál</translation>
 <translation id="7003334574344702284">Ez a házirend engedélyezése esetén kikényszeríti a mentett jelszavak importálását a jelenlegi alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Letiltása esetén a mentett jelszavak importálása nem történik meg. Ha nincs beállítva, akkor előfordulhat, hogy a rendszer a felhasználótól kérdezi meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="7003746348783715221">A <ph name="PRODUCT_NAME" /> beállításai</translation>
@@ -1654,6 +1667,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha a beállítás nincs megadva, vagy értéke igaz, akkor a regisztrált készülékek rendszeresen jelentik az operációs rendszer és a firmware verziószámát. Ha hamis érték van megadva, akkor a verziószám jelentésére nem kerül sor.</translation>
 <translation id="7511361072385293666">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> termékben használható a QUIC protokoll.
       Ha a házirend értéke hamis, akkor a QUIC protokoll nem használható.</translation>
+<translation id="7519251620064708155">Kulcslétrehozás engedélyezése ezeken a webhelyeken</translation>
 <translation id="7523476810162382273">Ellenőrző szívverések küldése a kezelőszervernek</translation>
 <translation id="7529100000224450960">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nyithatnak meg felugró ablakokat. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultPopupsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7529144158022474049">Szórási tényező automatikus frissítése</translation>
@@ -1857,6 +1871,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="8300455783946254851">Ha igaz értékre van állítva, letiltja a Google Drive szinkronizálását a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában mobiladat-kapcsolat használata esetén. Ebben az esetben az adatok szinkronizálása a Google Drive szolgáltatással csak Wi-Fi vagy Ethernet kapcsolat használatakor történik meg.
 
           Ha nincs beállítva, vagy ha hamis értékre van állítva, akkor a felhasználók mobiladat-kapcsolaton keresztül is átvihetnek fájlokat a Google Drive szolgáltatásba.</translation>
+<translation id="8312129124898414409">Lehetővé teszi annak beállítását, hogy a webhelyek használhatják-e a kulcslétrehozás funkciót. A kulcslétrehozás funkció használatát egyszerre lehet engedélyezni vagy letiltani az összes webhelynél.
+
+          Ha a házirend beállítatlanul marad, a rendszer a „BlockKeygen” értéket használja, és ezt a felhasználó módosíthatja.</translation>
 <translation id="8329984337216493753">Ez a házirend csak kiállító módban aktív.
 
       Ha meg van határozva a DeviceIdleLogoutTimeout, akkor ez a házirend adja meg, hogy mennyi ideig legyen látható a figyelmeztető mező a visszaszámlálóval, mielőtt megtörténne a felhasználó kijelentkeztetése.
@@ -2046,6 +2063,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Megadja, hogy a videotevékenység hatással van-e az energiagazdálkodásra</translation>
+<translation id="9088433379343318874">Felügyelt felhasználó tartalomszolgáltatójának engedélyezése</translation>
 <translation id="9096086085182305205">Azonosítási szerverek engedélyezési listája</translation>
 <translation id="9098553063150791878">HTTP-hitelesítési szabályok</translation>
 <translation id="9104138886225968319">Ellenőrző szívverések küldése a kezelőszervernek,

@@ -45,6 +45,7 @@
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
 <translation id="1568822834048182062">Ваши закладки, история, пароли и другие настройки синхронизируются с аккаунтом Google.</translation>
+<translation id="1592483623187843893">Закладка доступна в офлайн-режиме</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
 <translation id="1641113438599504367">Безопасный просмотр</translation>
@@ -86,6 +87,7 @@
 <translation id="2138201775715568214">Поиск веб-страниц…</translation>
 <translation id="2139186145475833000">Добавить на главный экран</translation>
 <translation id="2154710561487035718">Копировать URL</translation>
+<translation id="21570240866965662">Низкая скорость подключения</translation>
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2268044343513325586">Уточнить</translation>
@@ -109,6 +111,7 @@
 <translation id="2498359688066513246">Справка/отзыв</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2512222046227390255">Автозаполнение форм</translation>
+<translation id="2521102375070725336">Закладка сохранена в папке <ph name="FOLDER_NAME" /></translation>
 <translation id="2526148617758225454">Экономия трафика включена. Управление доступно в настройках.</translation>
 <translation id="2532336938189706096">Веб-версия</translation>
 <translation id="2536728043171574184">Офлайн-копия страницы</translation>
@@ -131,14 +134,12 @@
 <translation id="2891154217021530873">Остановить загрузку страницы</translation>
 <translation id="2902702728133930130">При запуске Chrome произошла непредвиденная ошибка.</translation>
 <translation id="2903493209154104877">Адреса</translation>
-<translation id="2904413602477443379">Выберите папку</translation>
 <translation id="2913331724188855103">Разрешить сайтам сохранять и читать файлы cookie (рекомендуется)</translation>
 <translation id="2956410042958133412">Этим аккаунтом управляют <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
 <translation id="2996809686854298943">Необходимо указать URL</translation>
 <translation id="3029704984691124060">Кодовые фразы не совпадают</translation>
-<translation id="3039671569659952257">Удалить папку</translation>
 <translation id="3063601790762993062">Сохранить видео</translation>
 <translation id="306566828762083630">Память устройства переполнена. Чтобы освободить место, удалите фото, видео или музыку.</translation>
 <translation id="307329814453917357">Предлагать переводить страницы с помощью Google Переводчика</translation>
@@ -146,6 +147,7 @@
 <translation id="3090193911106258841">Доступ к аудио- и видеовходу</translation>
 <translation id="3102119246920354026">Кеш</translation>
 <translation id="3137521801621304719">Выключить режим инкогнито</translation>
+<translation id="3177909033752230686">Язык страницы:</translation>
 <translation id="3190152372525844641">Разрешения для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
 <translation id="3207960819495026254">Добавлено в закладки</translation>
@@ -157,7 +159,6 @@
 <translation id="3269093882174072735">Загрузить изображение</translation>
 <translation id="3278850099957560514">Чтобы сэкономить трафик, разрешите Google оптимизировать посещаемые страницы. Это не касается данных, полученных по протоколу HTTPS и в режиме инкогнито.</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>
-<translation id="3287852534598822456">Закладка удалена. Обновите список.</translation>
 <translation id="3303414029551471755">Скачать?</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3350687908700087792">Закрыть все вкладки инкогнито</translation>
@@ -170,6 +171,7 @@
 <translation id="3435896845095436175">Включить</translation>
 <translation id="3485544713029068372">Smart Lock для паролей</translation>
 <translation id="3492207499832628349">Новая вкладка инкогнито</translation>
+<translation id="3501331331116143684">Страница сохранена в папке <ph name="FOLDER_NAME" /></translation>
 <translation id="3518985090088779359">Продолжить</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="360480449234699036">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
@@ -195,6 +197,7 @@
 <translation id="3988213473815854515">Доступ к геоданным разрешен</translation>
 <translation id="3992315671621218278">Сохранить ссылку</translation>
 <translation id="4002066346123236978">Название</translation>
+<translation id="4035611068038188272">Сохраненные закладки занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
 <translation id="4042870126885713738">Предлагать альтернативы, если веб-адрес недоступен или с ним не удается установить соединение</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4059119910594077751">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
@@ -206,11 +209,14 @@
 <translation id="4116939199945053760">Сайт <ph name="SITE" /> запрашивает <ph name="BEGIN_LINK" />подключение к этому устройству<ph name="END_LINK" />:</translation>
 <translation id="4165986682804962316">Настройки сайта</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
+<translation id="4193864812412988973">Офлайн-копия закладки</translation>
 <translation id="4195643157523330669">Открыть в новой вкладке</translation>
+<translation id="4198229475320555619">Размер сохраненной закладки: <ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="423410644998903704">Предоставьте браузеру Chrome разрешения, чтобы продолжить работу на этом сайте.</translation>
 <translation id="424696723690217687">Просматривайте веб-страницы, связанные с объектами вокруг вас.
 
 Chrome будет искать их, когда ваше устройство разблокировано. Чтобы улучшить работу функции, страницы будут отправляться через сервис Google.</translation>
+<translation id="4254813446494774748">Перевести на:</translation>
 <translation id="4256782883801055595">Лицензии на ПО с открытым кодом</translation>
 <translation id="4259722352634471385">Навигация заблокирована: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Копировать адрес ссылки</translation>
@@ -221,18 +227,17 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="4334294535648607276">Скачивание завершено.</translation>
 <translation id="4350413759959745971">Переместить страницы</translation>
 <translation id="4351244548802238354">Закрыть</translation>
-<translation id="4357362091209756047">Устройство не обнаружено? <ph name="BEGIN_LINK1" />Повторите попытку<ph name="END_LINK1" /> или перейдите в <ph name="BEGIN_LINK2" />справочный центр<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
 <translation id="4440256989292146959">Разумная экономия</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
+<translation id="4498934959426056365">Создание ключей</translation>
 <translation id="4505554159887937799">В офлайн-доступе</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# день назад}one{# день назад}few{# дня назад}many{# дней назад}other{# дня назад}}</translation>
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Выбор папки</translation>
-<translation id="4543087392704641517">Заголовок закладки</translation>
 <translation id="4543661749405994812">Скопировать адрес эл. почты</translation>
 <translation id="4581964774250883625">Вы перешли в режим инкогнито.</translation>
 <translation id="4583164079174244168">{MINUTES,plural, =1{# минуту назад}one{# минуту назад}few{# минуты назад}many{# минут назад}other{# минуты назад}}</translation>
@@ -256,7 +261,6 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="4836364883164334657">Подключение не защищено. Злоумышленники могут похитить ваши данные (например, пароли, сообщения или номера банковских карт) в домене <ph name="DOMAIN_NAME" />.</translation>
 <translation id="4842511359652954519">Подробнее…</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
-<translation id="4871370605780490696">Добавить закладку</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
 <translation id="4927198283430892231">Сохраненные страницы занимают <ph name="TOTAL_OFFLINE_STORAGE_SIZE" />.</translation>
@@ -342,7 +346,6 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5771382037724542929">Вы хотите заменить существующий файл "<ph name="FILE_NAME" />" в папке "<ph name="DIRECTORY_NAME" />"?</translation>
 <translation id="5804241973901381774">Разрешения</translation>
-<translation id="5806294296882899667">Ошибка загрузки папки по умолчанию</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>
 <translation id="5832934273103296195">Развернуто. Нажмите, чтобы свернуть.</translation>
@@ -369,6 +372,7 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="6075798973483050474">Изменение главной страницы</translation>
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6112702117600201073">Обновление страницы</translation>
+<translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6138140242378429169">Адаптировать страницу для мобильных устройств</translation>
 <translation id="6140912465461743537">Страна/регион</translation>
 <translation id="6159335304067198720">Сжатие данных: <ph name="PERCENT" /></translation>
@@ -391,6 +395,7 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="6406506848690869874">Синхронизация...</translation>
 <translation id="6409731863280057959">Всплывающие окна</translation>
 <translation id="641643625718530986">Печать</translation>
+<translation id="6447570251829705777">Закладка не доступна в офлайн-режиме</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
 <translation id="6458785801851713928">В вашем домене синхронизация отключена</translation>
@@ -435,23 +440,24 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="6965382102122355670">ОК</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="6978479750597523876">Сбросить настройки перевода</translation>
-<translation id="6979922938747275756">Ошибка при загрузке папок</translation>
 <translation id="6981982820502123353">Специальные возможности</translation>
 <translation id="6990079615885386641">Приложение в Google Play Маркете: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">Автоматически отправлять в Google информацию о возможных проблемах безопасности</translation>
 <translation id="6999892069268112724">Подтверждение аккаунта Google</translation>
 <translation id="7019652137705190998">Используйте режим инкогнито для анонимного просмотра и временного доступа</translation>
 <translation id="7021515813996758557">Файл <ph name="FILE_NAME" /> скачан</translation>
+<translation id="7022756207310403729">Открыть в браузере</translation>
 <translation id="7026897394897382018">Экономить трафик</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7053983685419859001">Блокировать</translation>
+<translation id="7056999826593229648">Низкая скорость подключения</translation>
+<translation id="7057058088140140610">Банковские карты и адреса с помощью Google Payments</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
 <translation id="7094922512924405309">Ничего не найдено</translation>
 <translation id="7095930899177687653">Открыто вкладок: <ph name="OPEN_TABS" /></translation>
 <translation id="7096034533295549981">Загрузка видео…</translation>
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
-<translation id="7201341158316793215">Удаление…</translation>
 <translation id="7208788139759694678">Расширение "Экономия трафика" отключено</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
@@ -486,17 +492,16 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
 <translation id="7634554953375732414">Подключение к веб-сайту не защищено</translation>
 <translation id="7638584964844754484">Неверная кодовая фраза</translation>
-<translation id="764743049316168389">Папка "<ph name="FOLDER_NAME" />"</translation>
 <translation id="7648422057306047504">Шифровать пароли с помощью учетных данных аккаунта Google</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7665369617277396874">Добавить аккаунт</translation>
+<translation id="7690588279513156836">Полная версия</translation>
 <translation id="7735023902678907596">Страницы, открытые в этом окне, не сохранятся в истории браузера или поиска. Они не оставят на компьютере следов, таких как файлы cookie, после того как вы закроете все вкладки инкогнито. Скачанные вами файлы и добавленные закладки будут сохранены.
 
 В режиме инкогнито ваши действия видны системному администратору и интернет-провайдеру, а также доступны сайтам, которые вы посещаете.</translation>
 <translation id="7761240775244195612">У вас есть сохраненные страницы (<ph name="PAGES_NUMBER" />), которые вы ни разу не открывали в прошлом месяце. Они занимают <ph name="TOTAL_PAGE_SIZE" />. Удалить их?</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7765158879357617694">Переместить</translation>
-<translation id="7767746238359002192">Чтобы сохранить страницу, откройте ее</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7784213092572143271">Страница сохранена</translation>
 <translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
@@ -509,10 +514,10 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="7876243839304621966">Удалить все</translation>
 <translation id="7925108652071887026">Данные автозаполнения</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
+<translation id="7949961459945740081">C новыми функциями</translation>
 <translation id="7961015016161918242">Нет</translation>
 <translation id="7963646190083259054">Поставщик:</translation>
 <translation id="7987073022710626672">Условия использования Chrome</translation>
-<translation id="7989222512959629388">Сохранение…</translation>
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
 <translation id="7999064672810608036">Вы уверены, что хотите удалить все данные этого веб-сайта, включая файлы cookie, и сбросить заданные разрешения?</translation>
 <translation id="8007176423574883786">Отключено для этого устройства</translation>
@@ -525,7 +530,6 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
-<translation id="8143660160623733249">Название папки</translation>
 <translation id="8146397137182589628">Не сохранено в офлайн-доступе</translation>
 <translation id="8157532349231307196">Аккаунты: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Контент</translation>
@@ -561,9 +565,11 @@ Chrome будет искать их, когда ваше устройство р
 
 Чтобы получить новые лицензии, подключитесь к Интернету и воспроизведите скачанный контент.</translation>
 <translation id="8660471606262461360">Из Google Payments</translation>
+<translation id="8675945939500569406">Включить Интернет вокруг нас?</translation>
 <translation id="8676374126336081632">Очистить</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8699799819461268362">Безопасный поиск</translation>
+<translation id="8701537995684343047">Посетите сайт, чтобы сохранить закладку в офлайн-режиме</translation>
 <translation id="8719023831149562936">Не удалось передать текущую вкладку</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8727142376512517020">Больше не показывать</translation>
@@ -596,16 +602,15 @@ Chrome будет искать их, когда ваше устройство р
 <translation id="9100610230175265781">Необходима кодовая фраза</translation>
 <translation id="9133515669113036225">Сбросить учетные данные</translation>
 <translation id="9137013805542155359">Показать оригинал</translation>
-<translation id="9156605176886108508">Нет папок с закладками</translation>
+<translation id="9151532766011674069">Закладка сохранена в офлайн-режиме, но свободное место заканчивается.</translation>
 <translation id="917685106653909562">Веб-страницы из Интернета вокруг нас</translation>
 <translation id="9187199695613236444">Адаптировано для мобильных устройств</translation>
 <translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
-<translation id="939736085109172342">Новая папка</translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
+<translation id="954352821720225055">Закладка не сохранена в офлайн-режиме: недостаточно свободного места.</translation>
 <translation id="969096075394517431">Изменить языки</translation>
-<translation id="971774202801778802">URL закладки</translation>
 <translation id="983192555821071799">Закрыть все вкладки</translation>
 </translationbundle>
