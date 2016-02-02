@@ -2095,7 +2095,8 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
   stripped_pkg_dir = os.path.join(board_path, 'stripped-packages')
   tarball_paths = []
   for pattern in package_globs:
-    packages = portage_util.FindPackageNameMatches(pattern, board)
+    packages = portage_util.FindPackageNameMatches(pattern, board,
+                                                   buildroot=buildroot)
     for cpv in packages:
       pkg = '%s/%s' % (cpv.category, cpv.pv)
       cmd = ['strip_package', '--board', board, pkg]

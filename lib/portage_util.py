@@ -1443,12 +1443,14 @@ def IsPackageInstalled(package, sysroot='/'):
   return False
 
 
-def FindPackageNameMatches(pkg_str, board=None):
+def FindPackageNameMatches(pkg_str, board=None,
+                           buildroot=constants.SOURCE_ROOT):
   """Finds a list of installed packages matching |pkg_str|.
 
   Args:
     pkg_str: The package name with optional category, version, and slot.
     board: The board to insepct.
+    buildroot: Source root to find overlays.
 
   Returns:
     A list of matched CPV objects.
@@ -1459,7 +1461,8 @@ def FindPackageNameMatches(pkg_str, board=None):
 
   cmd += ['list', pkg_str]
   result = cros_build_lib.RunCommand(
-      cmd, enter_chroot=True, capture_output=True, error_code_ok=True)
+      cmd, cwd=buildroot, enter_chroot=True, capture_output=True,
+      error_code_ok=True)
 
   matches = []
   if result.returncode == 0:
