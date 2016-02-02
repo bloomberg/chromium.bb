@@ -3407,7 +3407,6 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
             mainFrameImpl()->frameView()->setNeedsLayout();
     }
 
-
     if (LocalFrame* frame = page()->deprecatedLocalMainFrame()) {
         if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
@@ -3468,6 +3467,7 @@ void WebViewImpl::disableViewport()
 {
     settings()->setViewportEnabled(false);
     pageScaleConstraintsSet().clearPageDefinedConstraints();
+    updateMainFrameLayoutSize();
 }
 
 float WebViewImpl::defaultMinimumPageScaleFactor() const
