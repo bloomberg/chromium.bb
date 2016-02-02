@@ -103,6 +103,17 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
   EXPECT_TRUE(db().is_open());
   ASSERT_EQ("", GetSchema(&db()));
 
+  // Attempting to recover a previously-recovered handle fails early.
+  {
+    scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
+    ASSERT_TRUE(recovery.get());
+    recovery.reset();
+
+    recovery = sql::Recovery::Begin(&db(), db_path());
+    ASSERT_FALSE(recovery.get());
+  }
+  ASSERT_TRUE(Reopen());
+
   // Recreate the database.
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute(kInsertSql));

@@ -108,6 +108,16 @@ bool Recovery::FullRecoverySupported() {
 scoped_ptr<Recovery> Recovery::Begin(
     Connection* connection,
     const base::FilePath& db_path) {
+  // Recovery is likely to be used in error handling.  Since recovery changes
+  // the state of the handle, protect against multiple layers attempting the
+  // same recovery.
+  if (!connection->is_open()) {
+    // Warn about API mis-use.
+    DLOG_IF(FATAL, !connection->poisoned_)
+        << "Illegal to recover with closed database";
+    return scoped_ptr<Recovery>();
+  }
+
   scoped_ptr<Recovery> r(new Recovery(connection));
   if (!r->Init(db_path)) {
     // TODO(shess): Should Init() failure result in Raze()?
