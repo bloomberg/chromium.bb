@@ -115,15 +115,20 @@ public class BluetoothChooserDialog
         String searching = mContext.getString(R.string.bluetooth_searching);
         String positiveButton = mContext.getString(R.string.bluetooth_confirm_button);
 
-        SpannableString status = SpanApplier.applySpans(
+        SpannableString statusActive = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_not_seeing_it),
-                new SpanInfo("<link1>", "</link1>",
-                        new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)),
-                new SpanInfo("<link2>", "</link2>",
+                new SpanInfo("<link>", "</link>",
                         new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
 
+        SpannableString statusIdle = SpanApplier.applySpans(
+                mContext.getString(R.string.bluetooth_not_seeing_it_idle),
+                new SpanInfo("<link1>", "</link1>",
+                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)),
+                new SpanInfo("<link2>", "</link2>",
+                        new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)));
+
         ItemChooserDialog.ItemChooserLabels labels = new ItemChooserDialog.ItemChooserLabels(
-                title, searching, noneFound, status, positiveButton);
+                title, searching, noneFound, statusActive, statusIdle, positiveButton);
         mItemChooserDialog = new ItemChooserDialog(mContext, this, labels);
     }
 
@@ -281,7 +286,7 @@ public class BluetoothChooserDialog
         List<ItemChooserDialog.ItemChooserRow> devices =
                 new ArrayList<ItemChooserDialog.ItemChooserRow>();
         devices.add(new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
-        mItemChooserDialog.showList(devices);
+        mItemChooserDialog.addItemsToList(devices);
     }
 
     @CalledByNative
@@ -319,13 +324,7 @@ public class BluetoothChooserDialog
                 break;
             }
             case DISCOVERY_IDLE: {
-                // If devices have been discovered already, sending an update to the
-                // chooser does nothing. Otherwise, if no devices have been discovered,
-                // sending and update to the chooser results in the "noneFound" label
-                // being shown.
-                List<ItemChooserDialog.ItemChooserRow> devices =
-                        new ArrayList<ItemChooserDialog.ItemChooserRow>();
-                mItemChooserDialog.showList(devices);
+                mItemChooserDialog.setIdleState();
                 break;
             }
             default: {

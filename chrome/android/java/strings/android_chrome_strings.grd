@@ -1050,8 +1050,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_BLUETOOTH_CONFIRM_BUTTON" desc="The button to confirm association of a website with a Bluetooth device. Use the same term as in 'Pair this Bluetooth headset with your phone.'">
         Pair
       </message>
-      <message name="IDS_BLUETOOTH_NOT_SEEING_IT" desc="The message to show at the bottom of the dialog when Bluetooth scanning has uncovered some items. Allows the user to restart the scan, in case their device is not listed.">
-        Not seeing your device? <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Search again<ph name="END_LINK1">&lt;/link1&gt;</ph> or <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>Get help<ph name="END_LINK2">&lt;/link2&gt;</ph>.
+      <message name="IDS_BLUETOOTH_NOT_SEEING_IT" desc="The message to show at the bottom of the dialog when Bluetooth scanning has uncovered some items but is still scanning for others.">
+        Not seeing your device? <ph name="BEGIN_LINK">&lt;link&gt;</ph>Get help<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_BLUETOOTH_NOT_SEEING_IT_IDLE" desc="The message to show at the bottom of the dialog when Bluetooth scanning has uncovered some items but is no longer discovering devices. Allows the user to restart the scan, in case their device is not listed.">
+        Not seeing your device? <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Get help<ph name="END_LINK1">&lt;/link1&gt;</ph> or <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>search again<ph name="END_LINK2">&lt;/link2&gt;</ph>.
       </message>
       <message name="IDS_BLUETOOTH_NOT_FOUND" desc="The message to show when no items were found during Bluetooth device scanning.">
         No bluetooth devices found. <ph name="BEGIN_LINK">&lt;link&gt;</ph>Search again<ph name="END_LINK">&lt;/link&gt;</ph>.

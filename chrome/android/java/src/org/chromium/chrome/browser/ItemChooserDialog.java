@@ -74,21 +74,26 @@ public class ItemChooserDialog {
     public static class ItemChooserLabels {
         // The title at the top of the dialog.
         public final SpannableString mTitle;
-        // The message to show while results are trickling in.
+        // The message to show while there are no results.
         public final String mSearching;
         // The message to show when no results were produced.
         public final SpannableString mNoneFound;
-        // A status message to show above the button row.
-        public final SpannableString mStatus;
+        // A status message to show above the button row after an item has
+        // been added and discovery is still ongoing.
+        public final SpannableString mStatusActive;
+        // A status message to show above the button row after an item has
+        // been added and discovery has stopped.
+        public final SpannableString mStatusIdle;
         // The label for the positive button (e.g. Select/Pair).
         public final String mPositiveButton;
 
         public ItemChooserLabels(SpannableString title, String searching, SpannableString noneFound,
-                SpannableString status, String positiveButton) {
+                SpannableString statusActive, SpannableString statusIdle, String positiveButton) {
             mTitle = title;
             mSearching = searching;
             mNoneFound = noneFound;
-            mStatus = status;
+            mStatusActive = statusActive;
+            mStatusIdle = statusIdle;
             mPositiveButton = positiveButton;
         }
     }
@@ -96,10 +101,7 @@ public class ItemChooserDialog {
     /**
      * The various states the dialog can represent.
      */
-    private enum State {
-        STARTING,
-        PROGRESS_UPDATE_AVAILABLE,
-    }
+    private enum State { STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
 
     /**
      * An adapter for keeping track of which items to show in the dialog.
@@ -346,18 +348,25 @@ public class ItemChooserDialog {
     /**
      * Add items to show in the dialog.
      *
-     * @param list The list of items to show. This function can be called
-     * multiple times to add more items and new items will be appended to
-     * the end of the list. An empty list should be used if there are no
-     * items to show.
+     * @param list The list of items to add to the chooser. This function can be
+     * called multiple times to add more items and new items will be appended to
+     * the end of the list.
      */
-    public void showList(List<ItemChooserRow> list) {
+    public void addItemsToList(List<ItemChooserRow> list) {
         mProgressBar.setVisibility(View.GONE);
 
         if (!list.isEmpty()) {
             mItemAdapter.addAll(list);
         }
         setState(State.PROGRESS_UPDATE_AVAILABLE);
+    }
+
+    /**
+     * Indicates the chooser that no more items will be added.
+     */
+    public void setIdleState() {
+        mProgressBar.setVisibility(View.GONE);
+        setState(State.DISCOVERY_IDLE);
     }
 
     /**
@@ -397,10 +406,12 @@ public class ItemChooserDialog {
                 mEmptyMessage.setVisibility(View.GONE);
                 break;
             case PROGRESS_UPDATE_AVAILABLE:
-                mStatus.setText(mLabels.mStatus);
+                mStatus.setText(mLabels.mStatusActive);
                 mProgressBar.setVisibility(View.GONE);
                 mListView.setVisibility(View.VISIBLE);
-
+                break;
+            case DISCOVERY_IDLE:
+                mStatus.setText(mLabels.mStatusIdle);
                 boolean showEmptyMessage = mItemAdapter.isEmpty();
                 mEmptyMessage.setText(mLabels.mNoneFound);
                 mEmptyMessage.setVisibility(showEmptyMessage ? View.VISIBLE : View.GONE);
