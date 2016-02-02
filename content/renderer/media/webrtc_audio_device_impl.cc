@@ -82,32 +82,19 @@ void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
   render_buffer_.resize(audio_bus->frames() * audio_bus->channels());
   int frames_per_10_ms = (sample_rate / 100);
   int bytes_per_sample = sizeof(render_buffer_[0]);
-  const int bytes_per_10_ms =
-      audio_bus->channels() * frames_per_10_ms * bytes_per_sample;
-  DCHECK_EQ(audio_bus->frames() % frames_per_10_ms, 0);
+  // Client should always ask for 10ms.
+  DCHECK_EQ(audio_bus->frames(), frames_per_10_ms);
 
-  // Get audio frames in blocks of 10 milliseconds from the registered
-  // webrtc::AudioTransport source. Keep reading until our internal buffer
-  // is full.
-  int accumulated_audio_frames = 0;
+  // Get 10ms audio and copy result to temporary byte buffer.
+  int64_t elapsed_time_ms = -1;
+  int64_t ntp_time_ms = -1;
+  static const int kBitsPerByte = 8;
   int16_t* audio_data = &render_buffer_[0];
-  while (accumulated_audio_frames < audio_bus->frames()) {
-    // Get 10ms and append output to temporary byte buffer.
-    int64_t elapsed_time_ms = -1;
-    int64_t ntp_time_ms = -1;
-    static const int kBitsPerByte = 8;
-    audio_transport_callback_->PullRenderData(bytes_per_sample * kBitsPerByte,
-                                              sample_rate,
-                                              audio_bus->channels(),
-                                              frames_per_10_ms,
-                                              audio_data,
-                                              &elapsed_time_ms,
-                                              &ntp_time_ms);
-    accumulated_audio_frames += frames_per_10_ms;
-    if (elapsed_time_ms >= 0) {
-      *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
-    }
-    audio_data += bytes_per_10_ms;
+  audio_transport_callback_->PullRenderData(
+      bytes_per_sample * kBitsPerByte, sample_rate, audio_bus->channels(),
+      frames_per_10_ms, audio_data, &elapsed_time_ms, &ntp_time_ms);
+  if (elapsed_time_ms >= 0) {
+    *current_time = base::TimeDelta::FromMilliseconds(elapsed_time_ms);
   }
 
   // De-interleave each channel and convert to 32-bit floating-point
