@@ -275,7 +275,7 @@ def _GetDesiredVsToolchainHashes():
     return ['5a85cf1ce842f7cc96b9d17039a445a9dc9cf0dd']
   else:
     # Default to VS2013.
-    return ['9ff97c632ae1fee0c98bcd53e71770eb3a0d8deb']
+    return ['4087e065abebdca6dbd0caca2910c6718d2ec67f']
 
 
 def ShouldUpdateToolchain():
