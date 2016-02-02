@@ -10,8 +10,18 @@ for more details about the presubmit API built into depot_tools.
 import re
 
 
+def _GetTryMasters(project, change):
+  return {
+    'tryserver.chromium.linux': {
+      'linux_site_isolation': [],
+     },
+  }
+
+
 def GetPreferredTryMasters(project, change):
-  return {'tryserver.chromium.linux': ['linux_site_isolation'],}
+  # TODO(nick, dcheng): We don't a value here because it would replace, rather
+  # than augment, the default set of try servers. Figure out how to augment it.
+  return {}
 
 
 def PostUploadHook(cl, change, output_api):
@@ -26,7 +36,7 @@ def PostUploadHook(cl, change, output_api):
   if re.search(r'^CQ_INCLUDE_TRYBOTS=.*', description, re.M | re.I):
     return []
 
-  masters = GetPreferredTryMasters(None, change)
+  masters = _GetTryMasters(None, change)
   results = []
   new_description = description
   new_description += '\nCQ_INCLUDE_TRYBOTS=%s' % ';'.join(
