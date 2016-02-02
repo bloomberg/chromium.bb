@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <alsa/asoundlib.h>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -21,21 +18,27 @@
 #include "chromecast/public/video_plane.h"
 #include "media/base/media.h"
 
+#define RETURN_ON_ALSA_ERROR(snd_func, ...)                    \
+  do {                                                         \
+    int err = snd_func(__VA_ARGS__);                           \
+    if (err < 0) {                                             \
+      LOG(ERROR) << #snd_func " error: " << snd_strerror(err); \
+      return;                                                  \
+    }                                                          \
+  } while (0)
+
 namespace chromecast {
 namespace media {
 namespace {
 
-const char kPepperoniAlsaDevName[] = "/dev/snd/hwC0D0";
+const char kDefaultPcmDevice[] = "hw:0";
+const int kSoundControlBlockingMode = 0;
+const char kRateOffsetInterfaceName[] =  "PCM Playback Rate Offset";
 
 // 1 MHz reference allows easy translation between frequency and PPM.
 const double kOneMhzReference = 1e6;
 const double kMaxAdjustmentHz = 500;
 const double kGranularityHz = 1.0;
-
-enum {
-  SNDRV_BERLIN_GET_CLOCK_PPM = 0x1003,
-  SNDRV_BERLIN_SET_CLOCK_PPM,
-};
 
 class DefaultVideoPlane : public VideoPlane {
  public:
@@ -44,6 +47,28 @@ class DefaultVideoPlane : public VideoPlane {
   void SetGeometry(const RectF& display_rect,
                    Transform transform) override {}
 };
+
+snd_hctl_t* g_hardware_controls = nullptr;
+snd_ctl_elem_id_t* g_rate_offset_id = nullptr;
+snd_ctl_elem_value_t* g_rate_offset_ppm = nullptr;
+snd_hctl_elem_t* g_rate_offset_element = nullptr;
+
+void InitializeAlsaControls() {
+  RETURN_ON_ALSA_ERROR(snd_ctl_elem_id_malloc, &g_rate_offset_id);
+  RETURN_ON_ALSA_ERROR(snd_ctl_elem_value_malloc, &g_rate_offset_ppm);
+  RETURN_ON_ALSA_ERROR(snd_hctl_open, &g_hardware_controls, kDefaultPcmDevice,
+                       kSoundControlBlockingMode);
+  RETURN_ON_ALSA_ERROR(snd_hctl_load, g_hardware_controls);
+  snd_ctl_elem_id_set_interface(g_rate_offset_id, SND_CTL_ELEM_IFACE_PCM);
+  snd_ctl_elem_id_set_name(g_rate_offset_id, kRateOffsetInterfaceName);
+  g_rate_offset_element =
+      snd_hctl_find_elem(g_hardware_controls, g_rate_offset_id);
+  if (g_rate_offset_element) {
+    snd_ctl_elem_value_set_id(g_rate_offset_ppm, g_rate_offset_id);
+  } else {
+    LOG(ERROR) << "snd_hctl_find_elem failed to find the rate offset element.";
+  }
+}
 
 DefaultVideoPlane* g_video_plane = nullptr;
 
@@ -59,11 +84,22 @@ void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
 
   g_video_plane = new DefaultVideoPlane();
 
+  InitializeAlsaControls();
   ::media::InitializeMediaLibrary();
 }
 
 void CastMediaShlib::Finalize() {
   base::CommandLine::Reset();
+
+  if (g_hardware_controls)
+    snd_hctl_close(g_hardware_controls);
+  snd_ctl_elem_value_free(g_rate_offset_ppm);
+  snd_ctl_elem_id_free(g_rate_offset_id);
+
+  g_hardware_controls = nullptr;
+  g_rate_offset_id = nullptr;
+  g_rate_offset_ppm = nullptr;
+  g_rate_offset_element = nullptr;
 
   delete g_video_plane;
   g_video_plane = nullptr;
@@ -94,13 +130,20 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
 }
 
 double CastMediaShlib::GetMediaClockRate() {
-  base::ScopedFD alsa_device(
-      TEMP_FAILURE_RETRY(open(kPepperoniAlsaDevName, O_RDONLY)));
-  DCHECK(alsa_device.is_valid()) << "Failed to open ALSA device";
-  double ppm;
-  int ret = ioctl(alsa_device.get(), SNDRV_BERLIN_GET_CLOCK_PPM, &ppm);
-  DCHECK(ret != -1) << "ioctl(SNDRV_BERLIN_GET_CLOCK_PPM) failed: "
-                    << strerror(errno);
+  int ppm = 0;
+  if (!g_rate_offset_element) {
+    VLOG(1) << "g_rate_offset_element is null, ALSA rate offset control will "
+               "not be possible.";
+    return kOneMhzReference;
+  }
+  snd_ctl_elem_value_t* rate_offset_ppm;
+  snd_ctl_elem_value_alloca(&rate_offset_ppm);
+  int err = snd_hctl_elem_read(g_rate_offset_element, rate_offset_ppm);
+  if (err < 0) {
+    LOG(ERROR) << "snd_htcl_elem_read error: " << snd_strerror(err);
+    return kOneMhzReference;
+  }
+  ppm = snd_ctl_elem_value_get_integer(rate_offset_ppm, 0);
   return kOneMhzReference + ppm;
 }
 
@@ -118,33 +161,25 @@ void CastMediaShlib::MediaClockRateRange(double* minimum_rate,
 }
 
 bool CastMediaShlib::SetMediaClockRate(double new_rate) {
-  new_rate -= kOneMhzReference;
-  base::ScopedFD alsa_device(
-      TEMP_FAILURE_RETRY(open(kPepperoniAlsaDevName, O_WRONLY)));
-  DCHECK(alsa_device.is_valid()) << "Failed to open ALSA device";
-
-  int ret = ioctl(alsa_device.get(), SNDRV_BERLIN_SET_CLOCK_PPM, &new_rate);
-  if (ret) {
-    LOG(ERROR) << "ioctl(SNDRV_BERLIN_SET_CLOCK_PPM) failed: "
-               << strerror(errno);
+  int new_ppm = new_rate - kOneMhzReference;
+  if (!g_rate_offset_element) {
+    VLOG(1) << "g_rate_offset_element is null, ALSA rate offset control will "
+               "not be possible.";
+    return false;
+  }
+  snd_ctl_elem_value_t* rate_offset_ppm;
+  snd_ctl_elem_value_alloca(&rate_offset_ppm);
+  snd_ctl_elem_value_set_integer(rate_offset_ppm, 0, new_ppm);
+  int err = snd_hctl_elem_write(g_rate_offset_element, rate_offset_ppm);
+  if (err < 0) {
+    LOG(ERROR) << "snd_htcl_elem_write error: " << snd_strerror(err);
     return false;
   }
   return true;
 }
 
 bool CastMediaShlib::SupportsMediaClockRateChange() {
-  // Simply test the 'Get PPM' IOCTL to determine support.
-  base::ScopedFD alsa_device(
-      TEMP_FAILURE_RETRY(open(kPepperoniAlsaDevName, O_RDONLY)));
-  if (!alsa_device.is_valid())
-    return false;
-
-  double ppm;
-  int ret = ioctl(alsa_device.get(), SNDRV_BERLIN_GET_CLOCK_PPM, &ppm);
-  if (ret == -1)
-    return false;
-
-  return true;
+  return g_rate_offset_element != nullptr;
 }
 
 }  // namespace media
