@@ -48,7 +48,12 @@ StatisticsRecorder::HistogramIterator::~HistogramIterator() {}
 StatisticsRecorder::HistogramIterator&
 StatisticsRecorder::HistogramIterator::operator++() {
   const HistogramMap::iterator histograms_end = histograms_->end();
-  while (iter_ != histograms_end) {
+  if (iter_ == histograms_end || lock_ == NULL)
+    return *this;
+
+  base::AutoLock auto_lock(*lock_);
+
+  for (;;) {
     ++iter_;
     if (iter_ == histograms_end)
       break;
@@ -58,6 +63,7 @@ StatisticsRecorder::HistogramIterator::operator++() {
     }
     break;
   }
+
   return *this;
 }
 
