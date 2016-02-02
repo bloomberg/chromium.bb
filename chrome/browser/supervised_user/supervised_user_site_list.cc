@@ -22,7 +22,7 @@ const int kWhitelistFormatVersion = 1;
 const char kEntryPointUrlKey[] = "entry_point_url";
 const char kHostnameHashesKey[] = "hostname_hashes";
 const char kLegacyWhitelistFormatVersionKey[] = "version";
-const char kWhitelistFormatVersionKey[] = "whitelist_version";
+const char kSitelistFormatVersionKey[] = "sitelist_version";
 const char kWhitelistKey[] = "whitelist";
 
 namespace {
@@ -152,7 +152,7 @@ void SupervisedUserSiteList::OnJsonLoaded(
   }
 
   int version = 0;
-  if (!dict->GetInteger(kWhitelistFormatVersionKey, &version)) {
+  if (!dict->GetInteger(kSitelistFormatVersionKey, &version)) {
     // TODO(bauerb): Remove this code once all whitelists have been updated to
     // the new version.
     if (!dict->GetInteger(kLegacyWhitelistFormatVersionKey, &version)) {
