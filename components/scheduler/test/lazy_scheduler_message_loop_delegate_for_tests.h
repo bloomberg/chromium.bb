@@ -36,8 +36,6 @@ class LazySchedulerMessageLoopDelegateForTests : public SchedulerTqmDelegate {
   bool RunsTasksOnCurrentThread() const override;
   bool IsNested() const override;
   base::TimeTicks NowTicks() override;
-  void OnNoMoreImmediateWork() override;
-  double CurrentTimeSeconds() const override;
 
  private:
   LazySchedulerMessageLoopDelegateForTests();

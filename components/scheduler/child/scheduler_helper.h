@@ -97,6 +97,7 @@ class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void UnregisterTimeDomain(TimeDomain* time_domain);
   const scoped_refptr<SchedulerTqmDelegate>& scheduler_tqm_delegate() const;
   bool GetAndClearSystemIsQuiescentBit();
+  TaskQueue* CurrentlyExecutingTaskQueue() const;
 
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);

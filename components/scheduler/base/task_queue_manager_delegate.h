@@ -23,16 +23,6 @@ class SCHEDULER_EXPORT TaskQueueManagerDelegate
   // a nested task).
   virtual bool IsNested() const = 0;
 
-  // Used by the TaskQueueManager to tell us there is no more non-delayed work
-  // to do.
-  // TODO(alexclarke): Try and find a better interface that avoids the need for
-  // this.
-  virtual void OnNoMoreImmediateWork() = 0;
-
-  // Returns the time as a double which is the number of seconds since epoch
-  // (Jan 1, 1970).  Blink uses this format to represent time.
-  virtual double CurrentTimeSeconds() const = 0;
-
  protected:
   ~TaskQueueManagerDelegate() override {}
 

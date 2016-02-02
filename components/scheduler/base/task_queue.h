@@ -188,6 +188,9 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // |domain|.  This is a moderately expensive operation.
   virtual void SetTimeDomain(TimeDomain* domain) = 0;
 
+  // Returns the queue's current TimeDomain.  Can be called from any thread.
+  virtual TimeDomain* GetTimeDomain() const = 0;
+
  protected:
   ~TaskQueue() override {}
 

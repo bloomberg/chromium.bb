@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebViewScheduler.h"
 
@@ -23,6 +24,7 @@ class WebView;
 
 namespace scheduler {
 
+class AutoAdvancingVirtualTimeDomain;
 class RendererSchedulerImpl;
 class WebFrameSchedulerImpl;
 
@@ -39,6 +41,11 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
   blink::WebPassOwnPtr<blink::WebFrameScheduler> createFrameScheduler()
       override;
 
+  // TODO(alexclarke): Expose in blink::WebViewScheduler.
+  void enableVirtualTime();
+  void setAllowVirtualTimeToAdvance(
+      bool allow_virtual_time_to_advance);
+
   // Virtual for testing.
   virtual void AddConsoleWarning(const std::string& message);
 
@@ -49,11 +56,20 @@ class SCHEDULER_EXPORT WebViewSchedulerImpl : public blink::WebViewScheduler {
 
   void Unregister(WebFrameSchedulerImpl* frame_scheduler);
 
+  AutoAdvancingVirtualTimeDomain* virtual_time_domain() const {
+    return virtual_time_domain_.get();
+  }
+
+  TaskQueue::PumpPolicy GetVirtualTimePumpPolicy() const;
+
   std::set<WebFrameSchedulerImpl*> frame_schedulers_;
+  scoped_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
+  TaskQueue::PumpPolicy virtual_time_pump_policy_;
   blink::WebView* web_view_;
   RendererSchedulerImpl* renderer_scheduler_;
   bool page_visible_;
   bool disable_background_timer_throttling_;
+  bool allow_virtual_time_to_advance_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

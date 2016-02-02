@@ -104,6 +104,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void SetTimeDomain(TimeDomain* time_domain) override;
+  TimeDomain* GetTimeDomain() const override;
 
   void UpdateImmediateWorkQueue(bool should_trigger_wakeup,
                                 const Task* previous_task);

@@ -1131,13 +1131,25 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
-double RendererSchedulerImpl::CurrentTimeSeconds() const {
-  return helper_.scheduler_tqm_delegate()->CurrentTimeSeconds();
+double RendererSchedulerImpl::VirtualTimeSeconds() const {
+  TaskQueue* current_tq = helper_.CurrentlyExecutingTaskQueue();
+  if (current_tq && current_tq->GetTimeDomain()) {
+    return (current_tq->GetTimeDomain()->Now() -
+            base::TimeTicks::UnixEpoch()).InSecondsF();
+  }
+  return (helper_.scheduler_tqm_delegate()->NowTicks() -
+          base::TimeTicks::UnixEpoch()).InSecondsF();
 }
 
-double RendererSchedulerImpl::MonotonicallyIncreasingTimeSeconds() const {
+double RendererSchedulerImpl::MonotonicallyIncreasingVirtualTimeSeconds()
+    const {
+  TaskQueue* current_tq = helper_.CurrentlyExecutingTaskQueue();
+  if (current_tq && current_tq->GetTimeDomain()) {
+    return current_tq->GetTimeDomain()->Now().ToInternalValue() /
+           static_cast<double>(base::Time::kMicrosecondsPerSecond);
+  }
   return helper_.scheduler_tqm_delegate()->NowTicks().ToInternalValue() /
-         static_cast<double>(base::Time::kMicrosecondsPerSecond);
+          static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {

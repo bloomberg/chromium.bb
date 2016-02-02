@@ -1740,4 +1740,81 @@ TEST_F(TaskQueueManagerTest,
   EXPECT_LT(ratio, 0.1);
 }
 
+TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NoTaskRunning) {
+  Initialize(1u);
+
+  EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
+}
+
+namespace {
+void CurrentlyExecutingTaskQueueTestTask(TaskQueueManager* task_queue_manager,
+                                      std::vector<TaskQueue*>* task_sources) {
+  task_sources->push_back(task_queue_manager->currently_executing_task_queue());
+}
+}
+
+TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_TaskRunning) {
+  Initialize(2u);
+
+  internal::TaskQueueImpl* queue0 = runners_[0].get();
+  internal::TaskQueueImpl* queue1 = runners_[1].get();
+
+  std::vector<TaskQueue*> task_sources;
+  queue0->PostTask(FROM_HERE, base::Bind(&CurrentlyExecutingTaskQueueTestTask,
+                                         manager_.get(), &task_sources));
+  queue1->PostTask(FROM_HERE, base::Bind(&CurrentlyExecutingTaskQueueTestTask,
+                                         manager_.get(), &task_sources));
+  test_task_runner_->RunUntilIdle();
+
+  EXPECT_THAT(task_sources, ElementsAre(queue0, queue1));
+  EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
+}
+
+namespace {
+void RunloopCurrentlyExecutingTaskQueueTestTask(
+    base::MessageLoop* message_loop,
+    TaskQueueManager* task_queue_manager,
+    std::vector<TaskQueue*>* task_sources,
+    std::vector<std::pair<base::Closure, TaskQueue*>>* tasks) {
+  base::MessageLoop::ScopedNestableTaskAllower allow(message_loop);
+  task_sources->push_back(task_queue_manager->currently_executing_task_queue());
+
+  for (std::pair<base::Closure, TaskQueue*>& pair : *tasks) {
+    pair.second->PostTask(FROM_HERE, pair.first);
+  }
+
+  message_loop->RunUntilIdle();
+  task_sources->push_back(task_queue_manager->currently_executing_task_queue());
+}
+}
+
+TEST_F(TaskQueueManagerTest, CurrentlyExecutingTaskQueue_NestedLoop) {
+  InitializeWithRealMessageLoop(3u);
+
+  TaskQueue* queue0 = runners_[0].get();
+  TaskQueue* queue1 = runners_[1].get();
+  TaskQueue* queue2 = runners_[2].get();
+
+  std::vector<TaskQueue*> task_sources;
+  std::vector<std::pair<base::Closure, TaskQueue*>>
+      tasks_to_post_from_nested_loop;
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(base::Bind(&CurrentlyExecutingTaskQueueTestTask,
+                                manager_.get(), &task_sources),
+                     queue1));
+  tasks_to_post_from_nested_loop.push_back(
+      std::make_pair(base::Bind(&CurrentlyExecutingTaskQueueTestTask,
+                                manager_.get(), &task_sources),
+                     queue2));
+
+  queue0->PostTask(
+      FROM_HERE, base::Bind(&RunloopCurrentlyExecutingTaskQueueTestTask,
+                            message_loop_.get(), manager_.get(), &task_sources,
+                            &tasks_to_post_from_nested_loop));
+
+  message_loop_->RunUntilIdle();
+  EXPECT_THAT(task_sources, ElementsAre(queue0, queue1, queue2, queue0));
+  EXPECT_EQ(nullptr, manager_->currently_executing_task_queue());
+}
+
 }  // namespace scheduler

@@ -617,6 +617,14 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
   any_thread().time_domain = time_domain;
 }
 
+TimeDomain* TaskQueueImpl::GetTimeDomain() const {
+  if (base::PlatformThread::CurrentId() == thread_id_)
+    return main_thread_only().time_domain;
+
+  base::AutoLock lock(any_thread_lock_);
+  return any_thread().time_domain;
+}
+
 // static
 void TaskQueueImpl::QueueAsValueInto(const std::queue<Task>& queue,
                                      base::trace_event::TracedValue* state) {

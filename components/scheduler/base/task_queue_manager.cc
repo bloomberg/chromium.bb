@@ -48,6 +48,7 @@ TaskQueueManager::TaskQueueManager(
           disabled_by_default_tracing_category),
       disabled_by_default_verbose_tracing_category_(
           disabled_by_default_verbose_tracing_category),
+      currently_executing_task_queue_(nullptr),
       observer_(nullptr),
       deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
@@ -218,12 +219,8 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   // TODO(alexclarke): Consider refactoring the above loop to terminate only
   // when there's no more work left to be done, rather than posting a
   // continuation task.
-  if (!selector_.EnabledWorkQueuesEmpty() || TryAdvanceTimeDomains()) {
+  if (!selector_.EnabledWorkQueuesEmpty() || TryAdvanceTimeDomains())
     MaybeScheduleImmediateWork(FROM_HERE);
-  } else {
-    // Tell the task runner we have no more work.
-    delegate_->OnNoMoreImmediateWork();
-  }
 }
 
 bool TaskQueueManager::TryAdvanceTimeDomains() {
@@ -280,12 +277,20 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   }
   TRACE_EVENT1(tracing_category_,
                "TaskQueueManager::RunTask", "queue", queue->GetName());
+  // NOTE when TaskQueues get unregistered a reference ends up getting retained
+  // by |queues_to_delete_| which is cleared at the top of |DoWork|. This means
+  // we are OK to use raw pointers here.
+  internal::TaskQueueImpl* prev_executing_task_queue =
+      currently_executing_task_queue_;
+  currently_executing_task_queue_ = queue;
   task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
   if (protect->HasOneRef())
     return ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED;
+
+  currently_executing_task_queue_ = prev_executing_task_queue;
 
   if (queue->GetShouldNotifyObservers()) {
     FOR_EACH_OBSERVER(base::MessageLoop::TaskObserver, task_observers_,

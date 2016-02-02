@@ -7,6 +7,7 @@
 #include "components/scheduler/base/real_time_domain.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/web_task_runner_impl.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -42,19 +43,32 @@ void WebFrameSchedulerImpl::setFrameVisible(bool frame_visible) {
 }
 
 blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
   if (!loading_web_task_runner_) {
     loading_task_queue_ =
         renderer_scheduler_->NewLoadingTaskRunner("frame_loading_tq");
+    if (parent_web_view_scheduler_->virtual_time_domain()) {
+      loading_task_queue_->SetTimeDomain(
+          parent_web_view_scheduler_->virtual_time_domain());
+      loading_task_queue_->SetPumpPolicy(
+          parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
+    }
     loading_web_task_runner_.reset(new WebTaskRunnerImpl(loading_task_queue_));
   }
   return loading_web_task_runner_.get();
 }
 
 blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
+  DCHECK(parent_web_view_scheduler_);
   if (!timer_web_task_runner_) {
     timer_task_queue_ =
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
-    if (!page_visible_) {
+    if (parent_web_view_scheduler_->virtual_time_domain()) {
+      timer_task_queue_->SetTimeDomain(
+          parent_web_view_scheduler_->virtual_time_domain());
+      timer_task_queue_->SetPumpPolicy(
+          parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
+    } else if (!page_visible_) {
       renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
@@ -70,13 +84,16 @@ void WebFrameSchedulerImpl::setFrameOrigin(
 }
 
 void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
+  DCHECK(parent_web_view_scheduler_);
   if (page_visible_ == page_visible)
     return;
 
   page_visible_ = page_visible;
 
-  if (!timer_web_task_runner_)
+  if (!timer_web_task_runner_ ||
+      parent_web_view_scheduler_->virtual_time_domain()) {
     return;
+  }
 
   if (page_visible_) {
     renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
@@ -84,6 +101,42 @@ void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   } else {
     renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
         timer_task_queue_.get());
+  }
+}
+
+void WebFrameSchedulerImpl::OnVirtualTimeDomainChanged() {
+  DCHECK(parent_web_view_scheduler_);
+  DCHECK(parent_web_view_scheduler_->virtual_time_domain());
+
+  if (timer_task_queue_) {
+    renderer_scheduler_->throttling_helper()->UnregisterTaskQueue(
+        timer_task_queue_.get());
+    timer_task_queue_->SetTimeDomain(
+        parent_web_view_scheduler_->virtual_time_domain());
+    timer_task_queue_->SetPumpPolicy(
+        parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
+  }
+
+  if (loading_task_queue_) {
+    loading_task_queue_->SetTimeDomain(
+        parent_web_view_scheduler_->virtual_time_domain());
+    loading_task_queue_->SetPumpPolicy(
+        parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
+  }
+}
+
+void WebFrameSchedulerImpl::OnVirtualTimePumpPolicyChanged() {
+  if (!parent_web_view_scheduler_->virtual_time_domain())
+    return;
+
+  if (timer_task_queue_) {
+    timer_task_queue_->SetPumpPolicy(
+        parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
+  }
+
+  if (loading_task_queue_) {
+    loading_task_queue_->SetPumpPolicy(
+        parent_web_view_scheduler_->GetVirtualTimePumpPolicy());
   }
 }
 

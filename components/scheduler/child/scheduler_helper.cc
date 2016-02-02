@@ -155,4 +155,10 @@ void SchedulerHelper::OnTriedToExecuteBlockedTask(
     observer_->OnTriedToExecuteBlockedTask(queue, task);
 }
 
+TaskQueue* SchedulerHelper::CurrentlyExecutingTaskQueue() const {
+  if (!task_queue_manager_)
+    return nullptr;
+  return task_queue_manager_->currently_executing_task_queue();
+}
+
 }  // namespace scheduler

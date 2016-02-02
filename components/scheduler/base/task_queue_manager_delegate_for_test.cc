@@ -53,10 +53,4 @@ base::TimeTicks TaskQueueManagerDelegateForTest::NowTicks() {
   return time_source_->NowTicks();
 }
 
-double TaskQueueManagerDelegateForTest::CurrentTimeSeconds() const {
-  return (time_source_->NowTicks() - base::TimeTicks::UnixEpoch()).InSecondsF();
-}
-
-void TaskQueueManagerDelegateForTest::OnNoMoreImmediateWork() {}
-
 }  // namespace scheduler

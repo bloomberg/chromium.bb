@@ -153,10 +153,16 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   virtual void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) = 0;
 
   // Returns a double which is the number of seconds since epoch (Jan 1, 1970).
-  virtual double CurrentTimeSeconds() const = 0;
+  // This may represent either the real time, or a virtual time depending on
+  // whether or not the system is currently running a task associated with a
+  // virtual time domain or real time domain.
+  virtual double VirtualTimeSeconds() const = 0;
 
   // Returns a microsecond resolution platform dependant time source.
-  virtual double MonotonicallyIncreasingTimeSeconds() const = 0;
+  // This may represent either the real time, or a virtual time depending on
+  // whether or not the system is currently running a task associated with a
+  // virtual time domain or real time domain.
+  virtual double MonotonicallyIncreasingVirtualTimeSeconds() const = 0;
 
  protected:
   RendererScheduler();

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebFrameScheduler.h"
@@ -20,11 +21,12 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
     blink::WebView* web_view,
     RendererSchedulerImpl* renderer_scheduler,
     bool disable_background_timer_throttling)
-    : web_view_(web_view),
+    : virtual_time_pump_policy_(TaskQueue::PumpPolicy::AUTO),
+      web_view_(web_view),
       renderer_scheduler_(renderer_scheduler),
       page_visible_(true),
-      disable_background_timer_throttling_(
-          disable_background_timer_throttling) {
+      disable_background_timer_throttling_(disable_background_timer_throttling),
+      allow_virtual_time_to_advance_(true) {
   renderer_scheduler->AddWebViewScheduler(this);
 }
 
@@ -35,6 +37,8 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
     frame_scheduler->DetachFromWebViewScheduler();
   }
   renderer_scheduler_->RemoveWebViewScheduler(this);
+  if (virtual_time_domain_)
+    renderer_scheduler_->UnregisterTimeDomain(virtual_time_domain_.get());
 }
 
 void WebViewSchedulerImpl::setPageVisible(bool page_visible) {
@@ -74,6 +78,46 @@ void WebViewSchedulerImpl::AddConsoleWarning(const std::string& message) {
       blink::WebConsoleMessage::LevelWarning,
       blink::WebString::fromUTF8(message));
   web_view_->mainFrame()->addMessageToConsole(console_message);
+}
+
+void WebViewSchedulerImpl::enableVirtualTime() {
+  // If we've already switched to virtual time then we don't need to do
+  // anything more.
+  if (virtual_time_domain_.get())
+    return;
+
+  virtual_time_domain_.reset(new AutoAdvancingVirtualTimeDomain(
+      renderer_scheduler_->tick_clock()->NowTicks()));
+  renderer_scheduler_->RegisterTimeDomain(virtual_time_domain_.get());
+
+  virtual_time_domain_->SetCanAdvanceVirtualTime(
+      allow_virtual_time_to_advance_);
+
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->OnVirtualTimeDomainChanged();
+  }
+}
+
+void WebViewSchedulerImpl::setAllowVirtualTimeToAdvance(
+    bool allow_virtual_time_to_advance) {
+  if (allow_virtual_time_to_advance_ == allow_virtual_time_to_advance)
+    return;
+
+  allow_virtual_time_to_advance_ = allow_virtual_time_to_advance;
+
+  if (virtual_time_domain_) {
+    virtual_time_domain_->SetCanAdvanceVirtualTime(
+        allow_virtual_time_to_advance);
+  }
+
+  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+    frame_scheduler->OnVirtualTimePumpPolicyChanged();
+  }
+}
+
+TaskQueue::PumpPolicy WebViewSchedulerImpl::GetVirtualTimePumpPolicy() const {
+  return allow_virtual_time_to_advance_ ? TaskQueue::PumpPolicy::AUTO
+                                        : TaskQueue::PumpPolicy::MANUAL;
 }
 
 }  // namespace scheduler

@@ -288,11 +288,13 @@ void RendererBlinkPlatformImpl::Shutdown() {
 //------------------------------------------------------------------------------
 
 double RendererBlinkPlatformImpl::currentTimeSeconds() {
-  return renderer_scheduler_->CurrentTimeSeconds();
+  // TODO(alexclarke): Change the way this is plumbed through to blink.
+  return renderer_scheduler_->VirtualTimeSeconds();
 }
 
 double RendererBlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
-  return renderer_scheduler_->MonotonicallyIncreasingTimeSeconds();
+  // TODO(alexclarke): Change the way this is plumbed through to blink.
+  return renderer_scheduler_->MonotonicallyIncreasingVirtualTimeSeconds();
 }
 
 //------------------------------------------------------------------------------

@@ -126,6 +126,10 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   LazyNow CreateLazyNow() const;
 
+  TaskQueue* currently_executing_task_queue() const {
+    return currently_executing_task_queue_;
+  }
+
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
@@ -235,6 +239,8 @@ class SCHEDULER_EXPORT TaskQueueManager
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;
   const char* disabled_by_default_verbose_tracing_category_;
+
+  internal::TaskQueueImpl* currently_executing_task_queue_;  // NOT OWNED
 
   Observer* observer_;  // NOT OWNED
   scoped_refptr<DeletionSentinel> deletion_sentinel_;
