@@ -291,12 +291,13 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
     // run finalizers that call into V8. To avoid the risk, we should post
     // a task to schedule the Oilpan's GC.
     // (In practice, there is no finalizer that calls into V8 and thus is safe.)
-    if (ThreadState::current())
-        ThreadState::current()->willStartV8GC();
 
     v8::HandleScope scope(isolate);
     switch (type) {
     case v8::kGCTypeScavenge:
+        if (ThreadState::current())
+            ThreadState::current()->willStartV8GC(BlinkGC::V8MinorGC);
+
         TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC", "usedHeapSizeBefore", usedHeapSize(isolate));
         if (isMainThread()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMMinorGC");
@@ -308,10 +309,16 @@ void V8GCController::gcPrologue(v8::Isolate* isolate, v8::GCType type, v8::GCCal
         }
         break;
     case v8::kGCTypeMarkSweepCompact:
+        if (ThreadState::current())
+            ThreadState::current()->willStartV8GC(BlinkGC::V8MajorGC);
+
         TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "atomic pause");
         gcPrologueForMajorGC(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
         break;
     case v8::kGCTypeIncrementalMarking:
+        if (ThreadState::current())
+            ThreadState::current()->willStartV8GC(BlinkGC::V8MajorGC);
+
         TRACE_EVENT_BEGIN2("devtools.timeline,v8", "MajorGC", "usedHeapSizeBefore", usedHeapSize(isolate), "type", "incremental marking");
         gcPrologueForMajorGC(isolate, flags & v8::kGCCallbackFlagConstructRetainedObjectInfos);
         break;

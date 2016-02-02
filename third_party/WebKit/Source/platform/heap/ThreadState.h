@@ -248,7 +248,7 @@ public:
     void schedulePageNavigationGCIfNeeded(float estimatedRemovalRatio);
     void schedulePageNavigationGC();
     void scheduleGCIfNeeded();
-    void willStartV8GC();
+    void willStartV8GC(BlinkGC::V8GCType);
     void setGCState(GCState);
     GCState gcState() const { return m_gcState; }
     bool isInGC() const { return gcState() == GCRunning; }
