@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -63,8 +62,7 @@ bool GetWritablePixels(SkCanvas* canvas, SkPixmap* result) {
 }
 
 bool SupportsPlatformPaint(const SkCanvas* canvas) {
-  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
-  return platform_device && platform_device->SupportsPlatformPaint();
+  return GetPlatformDevice(GetTopDevice(*canvas)) != nullptr;
 }
 
 PlatformSurface BeginPlatformPaint(SkCanvas* canvas) {

@@ -3,10 +3,6 @@
 // found in the LICENSE file.
 
 #include "skia/ext/platform_device.h"
-#include "skia/ext/bitmap_platform_device.h"
-
-#import <ApplicationServices/ApplicationServices.h>
-#include "skia/ext/skia_utils_mac.h"
 
 namespace skia {
 

@@ -69,9 +69,6 @@ class SK_API PlatformDevice {
   // Finish a previous call to beginPlatformPaint.
   virtual void EndPlatformPaint();
 
-  // Returns true if GDI operations can be used for drawing into the bitmap.
-  virtual bool SupportsPlatformPaint();
-
 #if defined(OS_WIN)
   // Loads a SkPath into the GDI context. The path can there after be used for
   // clipping or as a stroke. Returns false if the path failed to be loaded.

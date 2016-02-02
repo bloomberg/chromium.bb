@@ -31,8 +31,4 @@ PlatformDevice* GetPlatformDevice(SkBaseDevice* device) {
   return NULL;
 }
 
-bool PlatformDevice::SupportsPlatformPaint() {
-  return true;
-}
-
 }  // namespace skia
