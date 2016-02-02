@@ -432,6 +432,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/openmax_dl/dl' : [
         'Khronos Group',
     ],
+    'third_party/opus/src/autogen.sh' : [  # https://trac.xiph.org/ticket/2253#ticket
+        'UNKNOWN',
+    ],
     'third_party/boringssl': [
         # There are some files in BoringSSL which came from OpenSSL and have no
         # license in them. We don't wish to add the license header ourselves

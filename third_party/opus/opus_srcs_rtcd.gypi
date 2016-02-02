@@ -7,6 +7,10 @@
     'src/celt/arm/arm_celt_map.c',
     'src/celt/arm/armcpu.c',
     'src/celt/arm/armcpu.h',
+    'src/celt/arm/celt_neon_intr.c',
+    'src/celt/arm/fft_arm.h',
+    'src/celt/arm/mdct_arm.h',
+    'src/celt/arm/pitch_arm.h',
     '<(INTERMEDIATE_DIR)/celt_pitch_xcorr_arm_gnu.S',
   ],
   'actions': [

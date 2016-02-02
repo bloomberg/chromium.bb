@@ -144,18 +144,26 @@ source_set("opus") {
         "src/celt/arm/arm_celt_map.c",
         "src/celt/arm/armcpu.c",
         "src/celt/arm/armcpu.h",
+        "src/celt/arm/celt_neon_intr.c",
+        "src/celt/arm/fft_arm.h",
+        "src/celt/arm/mdct_arm.h",
+        "src/celt/arm/pitch_arm.h",
       ]
 
       defines += [
         "OPUS_ARM_MAY_HAVE_EDSP",
         "OPUS_ARM_MAY_HAVE_MEDIA",
         "OPUS_ARM_MAY_HAVE_NEON",
+        "OPUS_ARM_MAY_HAVE_NEON_INTR",
         "OPUS_HAVE_RTCD",
       ]
 
       deps = [
         ":convert_rtcd_assembler",
       ]
+
+      configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
+      cflags = [ "-mfpu=neon" ]
     }
   }
 }
