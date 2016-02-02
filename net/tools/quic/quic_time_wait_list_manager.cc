@@ -240,7 +240,7 @@ bool QuicTimeWaitListManager::WriteToWire(QueuedPacket* queued_packet) {
   WriteResult result = writer_->WritePacket(
       queued_packet->packet()->data(), queued_packet->packet()->length(),
       queued_packet->server_address().address().bytes(),
-      queued_packet->client_address());
+      queued_packet->client_address(), nullptr);
   if (result.status == WRITE_STATUS_BLOCKED) {
     // If blocked and unbuffered, return false to retry sending.
     DCHECK(writer_->IsWriteBlocked());

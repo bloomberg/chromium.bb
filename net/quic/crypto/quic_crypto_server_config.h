@@ -41,6 +41,7 @@ class QuicRandom;
 class QuicServerConfigProtobuf;
 class StrikeRegister;
 class StrikeRegisterClient;
+struct QuicCryptoProof;
 
 // ClientHelloInfo contains information about a client hello message that is
 // only kept for as long as it's being processed.
@@ -361,6 +362,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
+  friend struct QuicCryptoProof;
 
   // Config represents a server config: a collection of preferences and
   // Diffie-Hellman public values.
@@ -619,6 +621,20 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   bool enable_serving_sct_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
+};
+
+struct NET_EXPORT_PRIVATE QuicCryptoProof {
+  QuicCryptoProof();
+  ~QuicCryptoProof();
+
+  std::string signature;
+  // QuicCryptoProof does not take ownership of |certs|.
+  const std::vector<std::string>* certs;
+  std::string cert_sct;
+  // The server config that is used for this proof (and the rest of the
+  // request).
+  scoped_refptr<QuicCryptoServerConfig::Config> config;
+  std::string primary_scid;
 };
 
 }  // namespace net

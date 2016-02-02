@@ -808,7 +808,6 @@ TransmissionInfo::TransmissionInfo()
       is_fec_packet(false),
       has_crypto_handshake(false),
       needs_padding(false),
-      all_transmissions(nullptr),
       retransmission(0) {}
 
 TransmissionInfo::TransmissionInfo(EncryptionLevel level,
@@ -830,7 +829,6 @@ TransmissionInfo::TransmissionInfo(EncryptionLevel level,
       is_fec_packet(is_fec_packet),
       has_crypto_handshake(has_crypto_handshake),
       needs_padding(needs_padding),
-      all_transmissions(nullptr),
       retransmission(0) {}
 
 TransmissionInfo::~TransmissionInfo() {}

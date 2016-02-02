@@ -25,9 +25,10 @@ WriteResult QuicSimplePerConnectionPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address) {
+    const IPEndPoint& peer_address,
+    PerPacketOptions* options) {
   return shared_writer_->WritePacketWithCallback(
-      buffer, buf_len, self_address, peer_address,
+      buffer, buf_len, self_address, peer_address, options,
       base::Bind(&QuicSimplePerConnectionPacketWriter::OnWriteComplete,
                  weak_factory_.GetWeakPtr()));
 }

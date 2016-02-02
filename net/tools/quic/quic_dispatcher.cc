@@ -46,107 +46,6 @@ class DeleteSessionsAlarm : public QuicAlarm::Delegate {
 
 }  // namespace
 
-class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
- public:
-  explicit QuicFramerVisitor(QuicDispatcher* dispatcher)
-      : dispatcher_(dispatcher), connection_id_(0) {}
-
-  // QuicFramerVisitorInterface implementation
-  void OnPacket() override {}
-  bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header) override {
-    connection_id_ = header.connection_id;
-    return dispatcher_->OnUnauthenticatedPublicHeader(header);
-  }
-  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override {
-    dispatcher_->OnUnauthenticatedHeader(header);
-    return false;
-  }
-  void OnError(QuicFramer* framer) override {
-    QuicErrorCode error = framer->error();
-    dispatcher_->SetLastError(error);
-    DVLOG(1) << QuicUtils::ErrorToString(error);
-  }
-
-  bool OnProtocolVersionMismatch(QuicVersion /*received_version*/) override {
-    DVLOG(1) << "Version mismatch, connection ID " << connection_id_;
-    // Keep processing after protocol mismatch - this will be dealt with by the
-    // time wait list or connection that we will create.
-    return true;
-  }
-
-  // The following methods should never get called because
-  // OnUnauthenticatedPublicHeader() or OnUnauthenticatedHeader() (whichever was
-  // called last), will return false and prevent a subsequent invocation of
-  // these methods.  Thus, the payload of the packet is never processed in the
-  // dispatcher.
-  void OnPublicResetPacket(const QuicPublicResetPacket& /*packet*/) override {
-    DCHECK(false);
-  }
-  void OnVersionNegotiationPacket(
-      const QuicVersionNegotiationPacket& /*packet*/) override {
-    DCHECK(false);
-  }
-  void OnDecryptedPacket(EncryptionLevel level) override { DCHECK(false); }
-  bool OnPacketHeader(const QuicPacketHeader& /*header*/) override {
-    DCHECK(false);
-    return false;
-  }
-  void OnRevivedPacket() override { DCHECK(false); }
-  void OnFecProtectedPayload(StringPiece /*payload*/) override {
-    DCHECK(false);
-  }
-  bool OnStreamFrame(const QuicStreamFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnAckFrame(const QuicAckFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnStopWaitingFrame(const QuicStopWaitingFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnPingFrame(const QuicPingFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnConnectionCloseFrame(
-      const QuicConnectionCloseFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& /*frame*/) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnBlockedFrame(const QuicBlockedFrame& frame) override {
-    DCHECK(false);
-    return false;
-  }
-  bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override {
-    DCHECK(false);
-    return false;
-  }
-  void OnFecData(StringPiece /*redundancy*/) override { DCHECK(false); }
-  void OnPacketComplete() override { DCHECK(false); }
-
- private:
-  QuicDispatcher* dispatcher_;
-
-  // Latched in OnUnauthenticatedPublicHeader for use later.
-  QuicConnectionId connection_id_;
-};
-
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig* crypto_config,
                                const QuicVersionVector& supported_versions,
@@ -161,9 +60,8 @@ QuicDispatcher::QuicDispatcher(const QuicConfig& config,
       framer_(supported_versions,
               /*unused*/ QuicTime::Zero(),
               Perspective::IS_SERVER),
-      framer_visitor_(new QuicFramerVisitor(this)),
       last_error_(QUIC_NO_ERROR) {
-  framer_.set_visitor(framer_visitor_.get());
+  framer_.set_visitor(this);
 }
 
 QuicDispatcher::~QuicDispatcher() {
@@ -253,7 +151,7 @@ bool QuicDispatcher::OnUnauthenticatedPublicHeader(
   return true;
 }
 
-void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
+bool QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
   QuicConnectionId connection_id = header.public_header.connection_id;
 
   if (time_wait_list_manager_->IsConnectionIdInTimeWait(
@@ -263,7 +161,7 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
         current_server_address_, current_client_address_,
         header.public_header.connection_id, header.packet_number,
         *current_packet_);
-    return;
+    return false;
   }
 
   // Packet's connection ID is unknown.
@@ -299,6 +197,8 @@ void QuicDispatcher::OnUnauthenticatedHeader(const QuicPacketHeader& header) {
       // Do nothing with the packet.
       break;
   }
+
+  return false;
 }
 
 QuicDispatcher::QuicPacketFate QuicDispatcher::ValidityChecks(
@@ -425,6 +325,108 @@ void QuicDispatcher::OnConnectionAddedToTimeWaitList(
 void QuicDispatcher::OnConnectionRemovedFromTimeWaitList(
     QuicConnectionId connection_id) {
   DVLOG(1) << "Connection " << connection_id << " removed from time wait list.";
+}
+
+void QuicDispatcher::OnPacket() {}
+
+void QuicDispatcher::OnError(QuicFramer* framer) {
+  QuicErrorCode error = framer->error();
+  SetLastError(error);
+  DVLOG(1) << QuicUtils::ErrorToString(error);
+}
+
+bool QuicDispatcher::OnProtocolVersionMismatch(
+    QuicVersion /*received_version*/) {
+  // Keep processing after protocol mismatch - this will be dealt with by the
+  // time wait list or connection that we will create.
+  return true;
+}
+
+void QuicDispatcher::OnPublicResetPacket(
+    const QuicPublicResetPacket& /*packet*/) {
+  DCHECK(false);
+}
+
+void QuicDispatcher::OnVersionNegotiationPacket(
+    const QuicVersionNegotiationPacket& /*packet*/) {
+  DCHECK(false);
+}
+
+void QuicDispatcher::OnDecryptedPacket(EncryptionLevel level) {
+  DCHECK(false);
+}
+
+bool QuicDispatcher::OnPacketHeader(const QuicPacketHeader& /*header*/) {
+  DCHECK(false);
+  return false;
+}
+
+void QuicDispatcher::OnRevivedPacket() {
+  DCHECK(false);
+}
+
+void QuicDispatcher::OnFecProtectedPayload(StringPiece /*payload*/) {
+  DCHECK(false);
+}
+
+bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnAckFrame(const QuicAckFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnStopWaitingFrame(const QuicStopWaitingFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnPingFrame(const QuicPingFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnRstStreamFrame(const QuicRstStreamFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnConnectionCloseFrame(
+    const QuicConnectionCloseFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnGoAwayFrame(const QuicGoAwayFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnWindowUpdateFrame(
+    const QuicWindowUpdateFrame& /*frame*/) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnBlockedFrame(const QuicBlockedFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
+bool QuicDispatcher::OnPathCloseFrame(const QuicPathCloseFrame& frame) {
+  DCHECK(false);
+  return false;
+}
+
+void QuicDispatcher::OnFecData(StringPiece /*redundancy*/) {
+  DCHECK(false);
+}
+
+void QuicDispatcher::OnPacketComplete() {
+  DCHECK(false);
 }
 
 QuicServerSessionBase* QuicDispatcher::CreateQuicSession(

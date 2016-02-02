@@ -14,6 +14,21 @@ namespace net {
 
 struct WriteResult;
 
+class NET_EXPORT_PRIVATE PerPacketOptions {
+ public:
+  PerPacketOptions() = default;
+  virtual ~PerPacketOptions() {}
+
+  // Returns a heap-allocated copy of |this|.
+  virtual PerPacketOptions* Clone() const = 0;
+
+ private:
+  PerPacketOptions(PerPacketOptions&& other) = delete;
+  PerPacketOptions& operator=(PerPacketOptions&& other) = delete;
+
+  DISALLOW_COPY_AND_ASSIGN(PerPacketOptions);
+};
+
 // An interface between writers and the entity managing the
 // socket (in our case the QuicDispatcher).  This allows the Dispatcher to
 // control writes, and manage any writers who end up write blocked.
@@ -21,14 +36,17 @@ class NET_EXPORT_PRIVATE QuicPacketWriter {
  public:
   virtual ~QuicPacketWriter() {}
 
-  // Sends the packet out to the peer.  If the write succeeded, the result's
-  // status is WRITE_STATUS_OK and bytes_written is populated. If the write
-  // failed, the result's status is WRITE_STATUS_BLOCKED or WRITE_STATUS_ERROR
-  // and error_code is populated.
+  // Sends the packet out to the peer, with some optional per-packet options.
+  // If the write succeeded, the result's status is WRITE_STATUS_OK and
+  // bytes_written is populated. If the write failed, the result's status is
+  // WRITE_STATUS_BLOCKED or WRITE_STATUS_ERROR and error_code is populated.
+  // Options must be either null, or created for the particular QuicPacketWriter
+  // implementation. Options may be ignored, depending on the implementation.
   virtual WriteResult WritePacket(const char* buffer,
                                   size_t buf_len,
                                   const IPAddressNumber& self_address,
-                                  const IPEndPoint& peer_address) = 0;
+                                  const IPEndPoint& peer_address,
+                                  PerPacketOptions* options) = 0;
 
   // Returns true if the writer buffers and subsequently rewrites data
   // when an attempt to write results in the underlying socket becoming

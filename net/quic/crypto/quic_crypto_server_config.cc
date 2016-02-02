@@ -522,7 +522,11 @@ void QuicCryptoServerConfig::ValidateClientHello(
 
     requested_config = GetConfigWithScid(requested_scid);
     primary_config = primary_config_;
-    crypto_proof->primary_scid = primary_config->id;
+    if (FLAGS_quic_crypto_proof_use_ref) {
+      crypto_proof->config = primary_config_;
+    } else {
+      crypto_proof->primary_scid = primary_config->id;
+    }
   }
 
   if (result->error_code == QUIC_NO_ERROR) {
@@ -582,7 +586,11 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
 
     // Use the config that the client requested in order to do key-agreement.
     // Otherwise give it a copy of |primary_config_| to use.
-    primary_config = GetConfigWithScid(crypto_proof->primary_scid);
+    if (FLAGS_quic_crypto_proof_use_ref) {
+      primary_config = crypto_proof->config;
+    } else {
+      primary_config = GetConfigWithScid(crypto_proof->primary_scid);
+    }
     if (!primary_config) {
       *error_details = "Configuration not found";
       QUIC_BUG << "Primary config not found";
@@ -744,7 +752,7 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
         &plaintext_length, kMaxPacketSize);
     if (!success) {
       *error_details = "CETV decryption failure";
-      return QUIC_PACKET_TOO_LARGE;
+      return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
     }
     scoped_ptr<CryptoHandshakeMessage> cetv(
         CryptoFramer::ParseMessage(StringPiece(plaintext, plaintext_length)));
@@ -1803,4 +1811,6 @@ QuicCryptoServerConfig::Config::~Config() {
   STLDeleteElements(&key_exchanges);
 }
 
+QuicCryptoProof::QuicCryptoProof() : certs(nullptr) {}
+QuicCryptoProof::~QuicCryptoProof() {}
 }  // namespace net

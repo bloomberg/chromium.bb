@@ -30,84 +30,11 @@ namespace net {
 #define ENDPOINT \
   (perspective() == Perspective::IS_SERVER ? "Server: " : " Client: ")
 
-// We want to make sure we delete any closed streams in a safe manner.
-// To avoid deleting a stream in mid-operation, we have a simple shim between
-// us and the stream, so we can delete any streams when we return from
-// processing.
-//
-// We could just override the base methods, but this makes it easier to make
-// sure we don't miss any.
-class VisitorShim : public QuicConnectionVisitorInterface {
- public:
-  explicit VisitorShim(QuicSession* session) : session_(session) {}
-
-  void OnStreamFrame(const QuicStreamFrame& frame) override {
-    session_->OnStreamFrame(frame);
-    session_->PostProcessAfterData();
-  }
-  void OnRstStream(const QuicRstStreamFrame& frame) override {
-    session_->OnRstStream(frame);
-    session_->PostProcessAfterData();
-  }
-
-  void OnGoAway(const QuicGoAwayFrame& frame) override {
-    session_->OnGoAway(frame);
-    session_->PostProcessAfterData();
-  }
-
-  void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override {
-    session_->OnWindowUpdateFrame(frame);
-    session_->PostProcessAfterData();
-  }
-
-  void OnBlockedFrame(const QuicBlockedFrame& frame) override {
-    session_->OnBlockedFrame(frame);
-    session_->PostProcessAfterData();
-  }
-
-  void OnCanWrite() override {
-    session_->OnCanWrite();
-    session_->PostProcessAfterData();
-  }
-
-  void OnCongestionWindowChange(QuicTime now) override {
-    session_->OnCongestionWindowChange(now);
-  }
-
-  void OnSuccessfulVersionNegotiation(const QuicVersion& version) override {
-    session_->OnSuccessfulVersionNegotiation(version);
-  }
-
-  void OnConnectionClosed(QuicErrorCode error, bool from_peer) override {
-    session_->OnConnectionClosed(error, from_peer);
-    // The session will go away, so don't bother with cleanup.
-  }
-
-  void OnWriteBlocked() override { session_->OnWriteBlocked(); }
-
-  void OnConnectionMigration() override { session_->OnConnectionMigration(); }
-
-  bool WillingAndAbleToWrite() const override {
-    return session_->WillingAndAbleToWrite();
-  }
-
-  bool HasPendingHandshake() const override {
-    return session_->HasPendingHandshake();
-  }
-
-  bool HasOpenDynamicStreams() const override {
-    return session_->HasOpenDynamicStreams();
-  }
-
- private:
-  QuicSession* session_;
-};
-
 QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
     : connection_(connection),
-      visitor_shim_(new VisitorShim(this)),
       config_(config),
-      max_open_streams_(config_.MaxStreamsPerConnection()),
+      max_open_outgoing_streams_(config_.MaxStreamsPerConnection()),
+      max_open_incoming_streams_(config_.MaxStreamsPerConnection()),
       next_outgoing_stream_id_(perspective() == Perspective::IS_SERVER ? 2 : 3),
       largest_peer_created_stream_id_(
           perspective() == Perspective::IS_SERVER ? 1 : 0),
@@ -124,7 +51,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
       currently_writing_stream_id_(0) {}
 
 void QuicSession::Initialize() {
-  connection_->set_visitor(visitor_shim_.get());
+  connection_->set_visitor(this);
   connection_->SetFromConfig(config_);
 
   DCHECK_EQ(kCryptoStreamId, GetCryptoStream()->id());
@@ -136,12 +63,12 @@ QuicSession::~QuicSession() {
   STLDeleteValues(&dynamic_stream_map_);
 
   DLOG_IF(WARNING, num_locally_closed_incoming_streams_highest_offset() >
-                       max_open_streams_)
+                       max_open_incoming_streams_)
       << "Surprisingly high number of locally closed peer initiated streams"
          "still waiting for final byte offset: "
       << num_locally_closed_incoming_streams_highest_offset();
-  DLOG_IF(WARNING,
-          GetNumLocallyClosedOutgoingStreamsHighestOffset() > max_open_streams_)
+  DLOG_IF(WARNING, GetNumLocallyClosedOutgoingStreamsHighestOffset() >
+                       max_open_outgoing_streams_)
       << "Surprisingly high number of locally closed self initiated streams"
          "still waiting for final byte offset: "
       << GetNumLocallyClosedOutgoingStreamsHighestOffset();
@@ -445,14 +372,11 @@ void QuicSession::OnConfigNegotiated() {
 
   uint32_t max_streams = config_.MaxStreamsPerConnection();
   if (perspective() == Perspective::IS_SERVER) {
-    // A server should accept a small number of additional streams beyond the
-    // limit sent to the client. This helps avoid early connection termination
-    // when FIN/RSTs for old streams are lost or arrive out of order.
-    // Use a minimum number of additional streams, or a percentage increase,
-    // whichever is larger.
-    max_streams =
-        max(max_streams + kMaxStreamsMinimumIncrement,
-            static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
+    if (!FLAGS_quic_different_max_num_open_streams) {
+      max_streams =
+          max(max_streams + kMaxStreamsMinimumIncrement,
+              static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
+    }
 
     if (config_.HasReceivedConnectionOptions()) {
       if (ContainsQuicTag(config_.ReceivedConnectionOptions(), kAFCW)) {
@@ -471,7 +395,21 @@ void QuicSession::OnConfigNegotiated() {
       }
     }
   }
-  set_max_open_streams(max_streams);
+
+  set_max_open_outgoing_streams(max_streams);
+
+  uint32_t max_incoming_streams = max_streams;
+  if (FLAGS_quic_different_max_num_open_streams) {
+    // A small number of additional incoming streams beyond the limit should be
+    // allowed. This helps avoid early connection termination when FIN/RSTs for
+    // old streams are lost or arrive out of order.
+    // Use a minimum number of additional streams, or a percentage increase,
+    // whichever is larger.
+    max_incoming_streams =
+        max(max_streams + kMaxStreamsMinimumIncrement,
+            static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
+  }
+  set_max_open_incoming_streams(max_incoming_streams);
 
   if (config_.HasReceivedInitialStreamFlowControlWindowBytes()) {
     // Streams which were created before the SHLO was received (0-RTT
@@ -683,14 +621,14 @@ bool QuicSession::MaybeIncreaseLargestPeerStreamId(
       (stream_id - largest_peer_created_stream_id_) / 2 - 1;
   size_t new_num_available_streams =
       GetNumAvailableStreams() + additional_available_streams;
-  if (new_num_available_streams > get_max_available_streams()) {
+  if (new_num_available_streams > MaxAvailableStreams()) {
     DVLOG(1) << "Failed to create a new incoming stream with id:" << stream_id
              << ".  There are already " << GetNumAvailableStreams()
              << " streams available, which would become "
              << new_num_available_streams << ", which exceeds the limit "
-             << get_max_available_streams() << ".";
+             << MaxAvailableStreams() << ".";
     string details = IntToString(new_num_available_streams) + " above " +
-                     IntToString(get_max_available_streams());
+                     IntToString(MaxAvailableStreams());
     CloseConnectionWithDetails(QUIC_TOO_MANY_AVAILABLE_STREAMS,
                                details.c_str());
     return false;
@@ -740,12 +678,12 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   }
   // Check if the new number of open streams would cause the number of
   // open streams to exceed the limit.
-  size_t num_current_open_streams =
+  size_t num_open_incoming_streams =
       FLAGS_quic_distinguish_incoming_outgoing_streams
           ? GetNumOpenIncomingStreams()
           : dynamic_stream_map_.size() - draining_streams_.size() +
                 locally_closed_streams_highest_offset_.size();
-  if (num_current_open_streams >= get_max_open_streams()) {
+  if (num_open_incoming_streams >= max_open_incoming_streams()) {
     if (connection()->version() <= QUIC_VERSION_27) {
       CloseConnectionWithDetails(QUIC_TOO_MANY_OPEN_STREAMS,
                                  "Old style stream rejection");
@@ -764,11 +702,19 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   return stream;
 }
 
-void QuicSession::set_max_open_streams(size_t max_open_streams) {
-  DVLOG(1) << "Setting max_open_streams_ to " << max_open_streams;
-  DVLOG(1) << "Setting get_max_available_streams() to "
-           << get_max_available_streams();
-  max_open_streams_ = max_open_streams;
+void QuicSession::set_max_open_incoming_streams(
+    size_t max_open_incoming_streams) {
+  DVLOG(1) << "Setting max_open_incoming_streams_ to "
+           << max_open_incoming_streams;
+  max_open_incoming_streams_ = max_open_incoming_streams;
+  DVLOG(1) << "MaxAvailableStreams() became " << MaxAvailableStreams();
+}
+
+void QuicSession::set_max_open_outgoing_streams(
+    size_t max_open_outgoing_streams) {
+  DVLOG(1) << "Setting max_open_outgoing_streams_ to "
+           << max_open_outgoing_streams;
+  max_open_outgoing_streams_ = max_open_outgoing_streams;
 }
 
 bool QuicSession::goaway_sent() const {
@@ -880,6 +826,10 @@ bool QuicSession::IsStreamFlowControlBlocked() {
     }
   }
   return false;
+}
+
+size_t QuicSession::MaxAvailableStreams() const {
+  return max_open_incoming_streams_ * kMaxAvailableStreamsMultiplier;
 }
 
 bool QuicSession::IsIncomingStream(QuicStreamId id) const {

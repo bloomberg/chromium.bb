@@ -35,7 +35,8 @@ class QuicDispatcherPeer;
 
 class QuicDispatcher : public QuicServerSessionVisitor,
                        public ProcessPacketInterface,
-                       public QuicBlockedWriterInterface {
+                       public QuicBlockedWriterInterface,
+                       public QuicFramerVisitorInterface {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
@@ -104,14 +105,47 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                 "kMaxReasonableInitialPacketNumber is unreasonably small "
                 "relative to kInitialCongestionWindow.");
 
+  // QuicFramerVisitorInterface implementation. Not expected to be called
+  // outside of this class.
+  void OnPacket() override;
+  // Called when the public header has been parsed.
+  bool OnUnauthenticatedPublicHeader(
+      const QuicPacketPublicHeader& header) override;
+  // Called when the private header has been parsed of a data packet that is
+  // destined for the time wait manager.
+  bool OnUnauthenticatedHeader(const QuicPacketHeader& header) override;
+  void OnError(QuicFramer* framer) override;
+  bool OnProtocolVersionMismatch(QuicVersion received_version) override;
+
+  // The following methods should never get called because
+  // OnUnauthenticatedPublicHeader() or OnUnauthenticatedHeader() (whichever
+  // was called last), will return false and prevent a subsequent invocation
+  // of these methods. Thus, the payload of the packet is never processed in
+  // the dispatcher.
+  void OnPublicResetPacket(const QuicPublicResetPacket& packet) override;
+  void OnVersionNegotiationPacket(
+      const QuicVersionNegotiationPacket& packet) override;
+  void OnDecryptedPacket(EncryptionLevel level) override;
+  bool OnPacketHeader(const QuicPacketHeader& header) override;
+  void OnRevivedPacket() override;
+  void OnFecProtectedPayload(base::StringPiece payload) override;
+  bool OnStreamFrame(const QuicStreamFrame& frame) override;
+  bool OnAckFrame(const QuicAckFrame& frame) override;
+  bool OnStopWaitingFrame(const QuicStopWaitingFrame& frame) override;
+  bool OnPingFrame(const QuicPingFrame& frame) override;
+  bool OnRstStreamFrame(const QuicRstStreamFrame& frame) override;
+  bool OnConnectionCloseFrame(const QuicConnectionCloseFrame& frame) override;
+  bool OnGoAwayFrame(const QuicGoAwayFrame& frame) override;
+  bool OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) override;
+  bool OnBlockedFrame(const QuicBlockedFrame& frame) override;
+  bool OnPathCloseFrame(const QuicPathCloseFrame& frame) override;
+  void OnFecData(base::StringPiece redundancy) override;
+  void OnPacketComplete() override;
+
  protected:
   virtual QuicServerSessionBase* CreateQuicSession(
       QuicConnectionId connection_id,
       const IPEndPoint& client_address);
-
-  // Called by |framer_visitor_| when the public header has been parsed.
-  virtual bool OnUnauthenticatedPublicHeader(
-      const QuicPacketPublicHeader& header);
 
   // Values to be returned by ValidityChecks() to indicate what should be done
   // with a packet.  Fates with greater values are considered to be higher
@@ -168,12 +202,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   void SetLastError(QuicErrorCode error);
 
  private:
-  class QuicFramerVisitor;
   friend class net::test::QuicDispatcherPeer;
-
-  // Called by |framer_visitor_| when the private header has been parsed
-  // of a data packet that is destined for the time wait manager.
-  void OnUnauthenticatedHeader(const QuicPacketHeader& header);
 
   // Removes the session from the session map and write blocked list, and adds
   // the ConnectionId to the time-wait list.  If |session_closed_statelessly| is
@@ -223,7 +252,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   const QuicEncryptedPacket* current_packet_;
 
   QuicFramer framer_;
-  scoped_ptr<QuicFramerVisitor> framer_visitor_;
 
   // The last error set by SetLastError(), which is called by
   // framer_visitor_->OnError().

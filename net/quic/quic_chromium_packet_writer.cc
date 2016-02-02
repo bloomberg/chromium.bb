@@ -24,7 +24,8 @@ WriteResult QuicChromiumPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address) {
+    const IPEndPoint& peer_address,
+    PerPacketOptions* /*options*/) {
   scoped_refptr<StringIOBuffer> buf(
       new StringIOBuffer(std::string(buffer, buf_len)));
   DCHECK(!IsWriteBlocked());

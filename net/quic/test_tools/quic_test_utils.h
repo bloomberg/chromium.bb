@@ -302,6 +302,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const QuicVersion& version));
   MOCK_METHOD0(OnConfigNegotiated, void());
+  MOCK_METHOD0(PostProcessAfterData, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockConnectionVisitor);
@@ -561,11 +562,12 @@ class MockPacketWriter : public QuicPacketWriter {
   MockPacketWriter();
   ~MockPacketWriter() override;
 
-  MOCK_METHOD4(WritePacket,
+  MOCK_METHOD5(WritePacket,
                WriteResult(const char* buffer,
                            size_t buf_len,
                            const IPAddressNumber& self_address,
-                           const IPEndPoint& peer_address));
+                           const IPEndPoint& peer_address,
+                           PerPacketOptions* options));
   MOCK_CONST_METHOD0(IsWriteBlockedDataBuffered, bool());
   MOCK_CONST_METHOD0(IsWriteBlocked, bool());
   MOCK_METHOD0(SetWritable, void());

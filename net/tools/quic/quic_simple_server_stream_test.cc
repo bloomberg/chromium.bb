@@ -91,7 +91,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                                 connection,
                                 owner,
                                 crypto_config) {
-    set_max_open_streams(kMaxStreamsForTest);
+    set_max_open_incoming_streams(kMaxStreamsForTest);
+    set_max_open_outgoing_streams(kMaxStreamsForTest);
     ON_CALL(*this, WritevData(_, _, _, _, _, _))
         .WillByDefault(testing::Return(QuicConsumedData(0, false)));
   }

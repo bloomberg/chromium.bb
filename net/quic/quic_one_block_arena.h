@@ -59,9 +59,6 @@ QuicArenaScopedPtr<T> QuicOneBlockArena<ArenaSize>::New(Args&&... args) {
       << "Object is too large for the arena.";
   static_assert(QUIC_ALIGN_OF(T) > 1,
                 "Objects added to the arena must be at least 2B aligned.");
-  if (!FLAGS_quic_enable_arena_allocation) {
-    return QuicArenaScopedPtr<T>(new T(std::forward<Args>(args)...));
-  }
   if (PREDICT_FALSE(offset_ > ArenaSize - AlignedSize<T>())) {
     LOG(DFATAL) << "Ran out of space in QuicOneBlockArena at " << this
                 << ", max size was " << ArenaSize << ", failing request was "

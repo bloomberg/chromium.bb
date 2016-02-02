@@ -25,7 +25,8 @@ class LimitedMtuTestWriter : public QuicPacketWriterWrapper {
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
                           const IPAddressNumber& self_address,
-                          const IPEndPoint& peer_address) override;
+                          const IPEndPoint& peer_address,
+                          PerPacketOptions* options) override;
 
  private:
   QuicByteCount mtu_;

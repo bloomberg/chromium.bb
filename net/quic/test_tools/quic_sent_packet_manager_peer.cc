@@ -106,21 +106,15 @@ bool QuicSentPacketManagerPeer::IsRetransmission(
     QuicSentPacketManager* sent_packet_manager,
     QuicPacketNumber packet_number) {
   DCHECK(sent_packet_manager->HasRetransmittableFrames(packet_number));
-  if (FLAGS_quic_track_single_retransmission) {
-    if (!sent_packet_manager->HasRetransmittableFrames(packet_number)) {
-      return false;
-    }
-    for (auto transmission_info : sent_packet_manager->unacked_packets_) {
-      if (transmission_info.retransmission == packet_number) {
-        return true;
-      }
-    }
+  if (!sent_packet_manager->HasRetransmittableFrames(packet_number)) {
     return false;
   }
-  return sent_packet_manager->HasRetransmittableFrames(packet_number) &&
-         sent_packet_manager->unacked_packets_.GetTransmissionInfo(
-                                                  packet_number)
-                 .all_transmissions != nullptr;
+  for (auto transmission_info : sent_packet_manager->unacked_packets_) {
+    if (transmission_info.retransmission == packet_number) {
+      return true;
+    }
+  }
+  return false;
 }
 
 // static

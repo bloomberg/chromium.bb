@@ -31,7 +31,6 @@ namespace net {
 class QuicCryptoStream;
 class QuicFlowController;
 class ReliableQuicStream;
-class VisitorShim;
 
 namespace test {
 class QuicSessionPeer;
@@ -75,6 +74,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   void OnCanWrite() override;
   void OnCongestionWindowChange(QuicTime /*now*/) override {}
   void OnConnectionMigration() override {}
+  // Deletes streams that are safe to be deleted now that it's safe to do so (no
+  // other operations are being done on the streams at this time).
+  void PostProcessAfterData() override;
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;
   bool HasOpenDynamicStreams() const override;
@@ -201,11 +203,15 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Returns true if any stream is flow controller blocked.
   bool IsStreamFlowControlBlocked();
 
-  size_t get_max_open_streams() const { return max_open_streams_; }
-
-  size_t get_max_available_streams() const {
-    return max_open_streams_ * kMaxAvailableStreamsMultiplier;
+  size_t max_open_incoming_streams() const {
+    return max_open_incoming_streams_;
   }
+
+  size_t max_open_outgoing_streams() const {
+    return max_open_outgoing_streams_;
+  }
+
+  size_t MaxAvailableStreams() const;
 
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
@@ -248,12 +254,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // exists, the connection is closed.
   ReliableQuicStream* GetOrCreateDynamicStream(QuicStreamId stream_id);
 
-  // This is called after every call other than OnConnectionClose from the
-  // QuicConnectionVisitor to allow post-processing once the work has been done.
-  // In this case, it deletes streams given that it's safe to do so (no other
-  // operations are being done on the streams at this time)
-  virtual void PostProcessAfterData();
-
   // Performs the work required to close |stream_id|.  If |locally_reset|
   // then the stream has been reset by this endpoint, not by the peer.
   virtual void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
@@ -279,7 +279,8 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     return &closed_streams_;
   }
 
-  void set_max_open_streams(size_t max_open_streams);
+  void set_max_open_incoming_streams(size_t max_open_incoming_streams);
+  void set_max_open_outgoing_streams(size_t max_open_outgoing_streams);
 
   void set_largest_peer_created_stream_id(
       QuicStreamId largest_peer_created_stream_id) {
@@ -326,7 +327,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
  private:
   friend class test::QuicSessionPeer;
-  friend class VisitorShim;
 
   // Called in OnConfigNegotiated when we receive a new stream level flow
   // control window in a negotiated config. Closes the connection if invalid.
@@ -351,16 +351,15 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   scoped_ptr<QuicConnection> connection_;
 
-  // A shim to stand between the connection and the session, to handle stream
-  // deletions.
-  scoped_ptr<VisitorShim> visitor_shim_;
-
   std::vector<ReliableQuicStream*> closed_streams_;
 
   QuicConfig config_;
 
-  // Returns the maximum number of streams this connection can open.
-  size_t max_open_streams_;
+  // The maximum number of outgoing streams this connection can open.
+  size_t max_open_outgoing_streams_;
+
+  // The maximum number of incoming streams this connection will allow.
+  size_t max_open_incoming_streams_;
 
   // Static streams, such as crypto and header streams. Owned by child classes
   // that create these streams.

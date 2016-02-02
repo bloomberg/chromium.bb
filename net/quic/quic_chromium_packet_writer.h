@@ -30,7 +30,8 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter : public QuicPacketWriter {
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
                           const IPAddressNumber& self_address,
-                          const IPEndPoint& peer_address) override;
+                          const IPEndPoint& peer_address,
+                          PerPacketOptions* options) override;
   bool IsWriteBlockedDataBuffered() const override;
   bool IsWriteBlocked() const override;
   void SetWritable() override;

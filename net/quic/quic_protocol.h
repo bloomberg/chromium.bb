@@ -1367,10 +1367,6 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   bool has_crypto_handshake;
   // True if the packet needs padding if it's retransmitted.
   bool needs_padding;
-  // Stores the packet numbers of all transmissions of this packet.
-  // Must always be nullptr or have multiple elements.
-  // TODO(ianswett): Deprecate with quic_track_single_retransmission.
-  PacketNumberList* all_transmissions;
   // Stores the packet number of the next retransmission of this packet.
   // Zero if the packet has not been retransmitted.
   QuicPacketNumber retransmission;

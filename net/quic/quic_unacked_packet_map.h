@@ -85,10 +85,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns the largest packet number that has been acked.
   QuicPacketNumber largest_observed() const { return largest_observed_; }
 
-  bool track_single_retransmission() const {
-    return track_single_retransmission_;
-  }
-
   // Returns the sum of bytes from all packets in flight.
   QuicByteCount bytes_in_flight() const { return bytes_in_flight_; }
 
@@ -195,9 +191,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicByteCount bytes_in_flight_;
   // Number of retransmittable crypto handshake packets.
   size_t pending_crypto_packet_count_;
-
-  // Latched copy of gfe2_reloadable_flag_quic_track_single_retransmission.
-  const bool track_single_retransmission_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicUnackedPacketMap);
 };

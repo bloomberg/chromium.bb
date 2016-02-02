@@ -148,18 +148,6 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   bool sct_supported_by_client;
 };
 
-struct NET_EXPORT_PRIVATE QuicCryptoProof {
-  QuicCryptoProof();
-  ~QuicCryptoProof();
-
-  std::string signature;
-  // QuicCryptoProof does not take ownership of |certs|.
-  const std::vector<std::string>* certs;
-  std::string cert_sct;
-  // The SCID of the server config whose signature is |signature|.
-  std::string primary_scid;
-};
-
 // QuicCryptoConfig contains common configuration between clients and servers.
 class NET_EXPORT_PRIVATE QuicCryptoConfig {
  public:

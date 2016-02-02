@@ -246,6 +246,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
               helper->GetClock()->ApproximateNow(),
               perspective),
       helper_(helper),
+      per_packet_options_(nullptr),
       writer_(writer),
       owns_writer_(owns_writer),
       encryption_level_(ENCRYPTION_NONE),
@@ -402,8 +403,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (debug_visitor_ != nullptr) {
     debug_visitor_->OnSetFromConfig(config);
   }
-  if (FLAGS_quic_ack_decimation &&
-      config.HasClientSentConnectionOption(kACKD, perspective_)) {
+  if (config.HasClientSentConnectionOption(kACKD, perspective_)) {
     ack_decimation_enabled_ = true;
   }
 }
@@ -695,6 +695,7 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
     return false;
   }
   visitor_->OnStreamFrame(frame);
+  visitor_->PostProcessAfterData();
   stats_.stream_bytes_received += frame.frame_length;
   should_last_packet_instigate_acks_ = true;
   return connected_;
@@ -828,7 +829,9 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
   if (!sent_entropy_manager_.IsValidEntropy(incoming_ack.largest_observed,
                                             incoming_ack.missing_packets,
                                             incoming_ack.entropy_hash)) {
-    LOG(WARNING) << ENDPOINT << "Peer sent invalid entropy.";
+    LOG(WARNING) << ENDPOINT << "Peer sent invalid entropy."
+                 << " largest_observed:" << incoming_ack.largest_observed
+                 << " last_received:" << last_header_.packet_number;
     return "Invalid entropy";
   }
 
@@ -836,7 +839,8 @@ const char* QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
       !incoming_ack.missing_packets.Contains(
           incoming_ack.latest_revived_packet)) {
     LOG(WARNING) << ENDPOINT
-                 << "Peer specified revived packet which was not missing.";
+                 << "Peer specified revived packet which was not missing."
+                 << " revived_packet:" << incoming_ack.latest_revived_packet;
     return "Invalid revived packet";
   }
   return nullptr;
@@ -883,6 +887,7 @@ bool QuicConnection::OnRstStreamFrame(const QuicRstStreamFrame& frame) {
            << " with error: "
            << QuicUtils::StreamErrorToString(frame.error_code);
   visitor_->OnRstStream(frame);
+  visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -913,6 +918,7 @@ bool QuicConnection::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
 
   goaway_received_ = true;
   visitor_->OnGoAway(frame);
+  visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -926,6 +932,7 @@ bool QuicConnection::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
            << "WINDOW_UPDATE_FRAME received for stream: " << frame.stream_id
            << " with byte offset: " << frame.byte_offset;
   visitor_->OnWindowUpdateFrame(frame);
+  visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -938,6 +945,7 @@ bool QuicConnection::OnBlockedFrame(const QuicBlockedFrame& frame) {
   DVLOG(1) << ENDPOINT
            << "BLOCKED_FRAME received for stream: " << frame.stream_id;
   visitor_->OnBlockedFrame(frame);
+  visitor_->PostProcessAfterData();
   should_last_packet_instigate_acks_ = true;
   return connected_;
 }
@@ -1111,9 +1119,9 @@ void QuicConnection::SendVersionNegotiationPacket() {
   scoped_ptr<QuicEncryptedPacket> version_packet(
       packet_generator_.SerializeVersionNegotiationPacket(
           framer_.supported_versions()));
-  WriteResult result =
-      writer_->WritePacket(version_packet->data(), version_packet->length(),
-                           self_address().address().bytes(), peer_address());
+  WriteResult result = writer_->WritePacket(
+      version_packet->data(), version_packet->length(),
+      self_address().address().bytes(), peer_address(), per_packet_options_);
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
@@ -1333,6 +1341,7 @@ void QuicConnection::OnCanWrite() {
   {  // Limit the scope of the bundler. ACK inclusion happens elsewhere.
     ScopedPacketBundler bundler(this, NO_ACK);
     visitor_->OnCanWrite();
+    visitor_->PostProcessAfterData();
   }
 
   // After the visitor writes, it may have caused the socket to become write
@@ -1357,17 +1366,6 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
                                    "Self address migration is not supported.");
     return false;
-  }
-
-  PeerAddressChangeType type = NO_CHANGE;
-  if (peer_ip_changed_ || peer_port_changed_) {
-    type = DeterminePeerAddressChangeType();
-    if (FLAGS_quic_disable_non_nat_address_migration && type != PORT_CHANGE &&
-        type != IPV4_SUBNET_CHANGE) {
-      SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
-                                     "Invalid peer address migration.");
-      return false;
-    }
   }
 
   if (!Near(header.packet_number, last_header_.packet_number)) {
@@ -1424,6 +1422,7 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   DCHECK_EQ(NEGOTIATED_VERSION, version_negotiation_state_);
 
   if (peer_ip_changed_ || peer_port_changed_) {
+    PeerAddressChangeType type = DeterminePeerAddressChangeType();
     IPEndPoint old_peer_address = peer_address_;
     peer_address_ = IPEndPoint(
         peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address().bytes(),
@@ -1644,9 +1643,9 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
   // min_rtt_, especially in cases where the thread blocks or gets swapped out
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
-  WriteResult result =
-      writer_->WritePacket(encrypted->data(), encrypted->length(),
-                           self_address().address().bytes(), peer_address());
+  WriteResult result = writer_->WritePacket(
+      encrypted->data(), encrypted->length(), self_address().address().bytes(),
+      peer_address(), per_packet_options_);
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }

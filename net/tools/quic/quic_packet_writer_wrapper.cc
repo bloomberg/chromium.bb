@@ -19,8 +19,10 @@ WriteResult QuicPacketWriterWrapper::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address) {
-  return writer_->WritePacket(buffer, buf_len, self_address, peer_address);
+    const IPEndPoint& peer_address,
+    PerPacketOptions* options) {
+  return writer_->WritePacket(buffer, buf_len, self_address, peer_address,
+                              options);
 }
 
 bool QuicPacketWriterWrapper::IsWriteBlockedDataBuffered() const {

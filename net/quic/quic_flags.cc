@@ -41,10 +41,6 @@ int64_t FLAGS_quic_time_wait_list_max_connections = 600000;
 // Enables server-side support for QUIC stateless rejects.
 bool FLAGS_enable_quic_stateless_reject_support = true;
 
-// If ture, allow Ack Decimation to be used for QUIC when requested by the
-// client connection option ACKD.
-bool FLAGS_quic_ack_decimation = true;
-
 // This flag is not in use, just to keep consistency for shared code.
 bool FLAGS_quic_always_log_bugs_for_tests = false;
 
@@ -78,14 +74,6 @@ bool FLAGS_quic_disable_pacing = false;
 // TcpLossAlgorithm or TimeLossAlgorithm.
 bool FLAGS_quic_general_loss_algorithm = true;
 
-// If true, only migrate QUIC connections when client address changes are
-// considered to be caused by NATs.
-bool FLAGS_quic_disable_non_nat_address_migration = true;
-
-// If true, QuicOneBlockArenas will allocate out of their local memory.
-// Otherwise, they will always use the heap.
-bool FLAGS_quic_enable_arena_allocation = true;
-
 // If true, QUIC connections will timeout when packets are not being recieved,
 // even if they are being sent.
 bool FLAGS_quic_use_new_idle_timeout = true;
@@ -100,10 +88,6 @@ bool FLAGS_quic_respect_send_alarm2 = true;
 // If ture, sets callback pointer to nullptr after calling Cancel() in
 // QuicCryptoServerStream::CancelOutstandingCallbacks.
 bool FLAGS_quic_set_client_hello_cb_nullptr = true;
-
-// If treu, Only track a single retransmission in QUIC's TransmissionInfo
-// struct.
-bool FLAGS_quic_track_single_retransmission = true;
 
 // If true, allow each quic stream to write 16k blocks rather than doing a round
 // robin of one packet per session when ack clocked or paced.
@@ -176,3 +160,11 @@ bool FLAGS_quic_include_path_id_in_iv = true;
 // If true, make sure new incoming streams correctly cede to higher
 // priority (or batch) streams when doing QUIC writes.
 bool FLAGS_quic_cede_correctly = true;
+
+// Has QuicCryptoProof hold a ref to the primary_config instead of storing its
+// SCID.
+bool FLAGS_quic_crypto_proof_use_ref = true;
+
+// If on, max number of incoming and outgoing streams will be different.
+// Incoming will be a little higher than outgoing to tolerate race condition.
+bool FLAGS_quic_different_max_num_open_streams = true;

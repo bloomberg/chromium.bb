@@ -29,7 +29,10 @@ class QuicSessionPeer {
  public:
   static QuicStreamId GetNextOutgoingStreamId(QuicSession* session);
   static void SetNextOutgoingStreamId(QuicSession* session, QuicStreamId id);
-  static void SetMaxOpenStreams(QuicSession* session, uint32_t max_streams);
+  static void SetMaxOpenIncomingStreams(QuicSession* session,
+                                        uint32_t max_streams);
+  static void SetMaxOpenOutgoingStreams(QuicSession* session,
+                                        uint32_t max_streams);
   static QuicCryptoStream* GetCryptoStream(QuicSession* session);
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
   static ReliableQuicStream* GetOrCreateDynamicStream(QuicSession* session,

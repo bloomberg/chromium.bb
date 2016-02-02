@@ -132,6 +132,11 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection receives a packet from a migrated client.
   virtual void OnConnectionMigration() = 0;
 
+  // Called after OnStreamFrame, OnRstStream, OnGoAway, OnWindowUpdateFrame,
+  // OnBlockedFrame, and OnCanWrite to allow post-processing once the work has
+  // been done.
+  virtual void PostProcessAfterData() = 0;
+
   // Called to ask if the visitor wants to schedule write resumption as it both
   // has pending data to write, and is able to write (e.g. based on flow control
   // limits).
@@ -684,6 +689,15 @@ class NET_EXPORT_PRIVATE QuicConnection
     return migrating_peer_ip_;
   }
 
+  // Returns the current per-packet options for the connection.
+  PerPacketOptions* per_packet_options() { return per_packet_options_; }
+  // Sets the current per-packet options for the connection. The QuicConnection
+  // does not take ownership of |options|; |options| must live for as long as
+  // the QuicConnection is in use.
+  void set_per_packet_options(PerPacketOptions* options) {
+    per_packet_options_ = options;
+  }
+
  private:
   friend class test::QuicConnectionPeer;
   friend class test::PacketSavingConnection;
@@ -809,6 +823,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
+  PerPacketOptions* per_packet_options_;   // Not owned.
   QuicPacketWriter* writer_;  // Owned or not depending on |owns_writer_|.
   bool owns_writer_;
   // Encryption level for new packets. Should only be changed via

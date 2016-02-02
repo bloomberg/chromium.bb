@@ -21,21 +21,12 @@ struct TestObject {
 };
 
 TEST(QuicOneBlockArenaTest, AllocateSuccess) {
-  FLAGS_quic_enable_arena_allocation = true;
   QuicOneBlockArena<1024> arena;
   QuicArenaScopedPtr<TestObject> ptr = arena.New<TestObject>();
   EXPECT_TRUE(ptr.is_from_arena());
 }
 
-TEST(QuicOneBlockArenaTest, Disabled) {
-  FLAGS_quic_enable_arena_allocation = false;
-  QuicOneBlockArena<1024> arena;
-  QuicArenaScopedPtr<TestObject> ptr = arena.New<TestObject>();
-  EXPECT_FALSE(ptr.is_from_arena());
-}
-
 TEST(QuicOneBlockArenaTest, Exhaust) {
-  FLAGS_quic_enable_arena_allocation = true;
   QuicOneBlockArena<1024> arena;
   for (size_t i = 0; i < 1024 / kMaxAlign; ++i) {
     QuicArenaScopedPtr<TestObject> ptr = arena.New<TestObject>();
@@ -48,7 +39,6 @@ TEST(QuicOneBlockArenaTest, Exhaust) {
 }
 
 TEST(QuicOneBlockArenaTest, NoOverlaps) {
-  FLAGS_quic_enable_arena_allocation = true;
   QuicOneBlockArena<1024> arena;
   std::vector<QuicArenaScopedPtr<TestObject>> objects;
   IntervalSet<uintptr_t> used;

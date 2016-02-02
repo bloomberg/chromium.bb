@@ -17,8 +17,11 @@ WriteResult QuicDefaultPacketWriter::WritePacket(
     const char* buffer,
     size_t buf_len,
     const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address) {
+    const IPEndPoint& peer_address,
+    PerPacketOptions* options) {
   DCHECK(!IsWriteBlocked());
+  DCHECK(nullptr == options)
+      << "QuicDefaultPacketWriter does not accept any options.";
   WriteResult result = QuicSocketUtils::WritePacket(fd_, buffer, buf_len,
                                                     self_address, peer_address);
   if (result.status == WRITE_STATUS_BLOCKED) {

@@ -24,8 +24,6 @@ struct TestObject {
 
 class QuicArenaScopedPtrParamTest : public ::testing::TestWithParam<TestParam> {
  protected:
-  QuicArenaScopedPtrParamTest() { FLAGS_quic_enable_arena_allocation = true; }
-
   QuicArenaScopedPtr<TestObject> CreateObject(uintptr_t value) {
     QuicArenaScopedPtr<TestObject> ptr;
     switch (GetParam()) {
@@ -51,7 +49,6 @@ INSTANTIATE_TEST_CASE_P(QuicArenaScopedPtrParamTest,
                                         TestParam::kFromArena));
 
 TEST(QuicArenaScopedPtrTest, NullObjects) {
-  FLAGS_quic_enable_arena_allocation = true;
   QuicArenaScopedPtr<TestObject> def;
   QuicArenaScopedPtr<TestObject> null(nullptr);
   EXPECT_EQ(def, null);
@@ -60,7 +57,6 @@ TEST(QuicArenaScopedPtrTest, NullObjects) {
 }
 
 TEST(QuicArenaScopedPtrTest, FromArena) {
-  FLAGS_quic_enable_arena_allocation = true;
   QuicOneBlockArena<1024> arena_;
   EXPECT_TRUE(arena_.New<TestObject>(0).is_from_arena());
   EXPECT_FALSE(

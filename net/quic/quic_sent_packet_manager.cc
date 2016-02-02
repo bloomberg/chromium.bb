@@ -414,31 +414,11 @@ void QuicSentPacketManager::RecordOneSpuriousRetransmission(
 void QuicSentPacketManager::RecordSpuriousRetransmissions(
     const TransmissionInfo& info,
     QuicPacketNumber acked_packet_number) {
-  if (unacked_packets_.track_single_retransmission()) {
-    QuicPacketNumber retransmission = info.retransmission;
-    while (retransmission != 0) {
-      const TransmissionInfo& retransmit_info =
-          unacked_packets_.GetTransmissionInfo(retransmission);
-      retransmission = retransmit_info.retransmission;
-      RecordOneSpuriousRetransmission(retransmit_info);
-    }
-    return;
-  }
-  const PacketNumberList* all_transmissions = info.all_transmissions;
-  for (PacketNumberList::const_reverse_iterator it =
-           all_transmissions->rbegin();
-       it != all_transmissions->rend() && *it > acked_packet_number; ++it) {
-    // ianswett: Prevents crash in b/20552846.
-    if (*it < unacked_packets_.GetLeastUnacked() ||
-        *it > unacked_packets_.largest_sent_packet()) {
-      QUIC_BUG << "Retransmission out of range:" << *it
-               << " least unacked:" << unacked_packets_.GetLeastUnacked()
-               << " largest sent:" << unacked_packets_.largest_sent_packet();
-      return;
-    }
+  QuicPacketNumber retransmission = info.retransmission;
+  while (retransmission != 0) {
     const TransmissionInfo& retransmit_info =
-        unacked_packets_.GetTransmissionInfo(*it);
-
+        unacked_packets_.GetTransmissionInfo(retransmission);
+    retransmission = retransmit_info.retransmission;
     RecordOneSpuriousRetransmission(retransmit_info);
   }
 }
@@ -480,19 +460,13 @@ PendingRetransmission QuicSentPacketManager::NextPendingRetransmission() {
 QuicPacketNumber QuicSentPacketManager::GetNewestRetransmission(
     QuicPacketNumber packet_number,
     const TransmissionInfo& transmission_info) const {
-  if (unacked_packets_.track_single_retransmission()) {
-    QuicPacketNumber retransmission = transmission_info.retransmission;
-    while (retransmission != 0) {
-      packet_number = retransmission;
-      retransmission =
-          unacked_packets_.GetTransmissionInfo(retransmission).retransmission;
-    }
-    return packet_number;
-  } else {
-    return transmission_info.all_transmissions == nullptr
-               ? packet_number
-               : *transmission_info.all_transmissions->rbegin();
+  QuicPacketNumber retransmission = transmission_info.retransmission;
+  while (retransmission != 0) {
+    packet_number = retransmission;
+    retransmission =
+        unacked_packets_.GetTransmissionInfo(retransmission).retransmission;
   }
+  return packet_number;
 }
 
 void QuicSentPacketManager::MarkPacketNotRetransmittable(
@@ -707,10 +681,7 @@ void QuicSentPacketManager::RetransmitRtoPackets() {
     }
     // Abandon non-retransmittable data that's in flight to ensure it doesn't
     // fill up the congestion window.
-    const bool has_retransmissions =
-        unacked_packets_.track_single_retransmission()
-            ? it->retransmission != 0
-            : it->all_transmissions != nullptr;
+    const bool has_retransmissions = it->retransmission != 0;
     if (it->retransmittable_frames.empty() && it->in_flight &&
         !has_retransmissions) {
       // Log only for non-retransmittable data.

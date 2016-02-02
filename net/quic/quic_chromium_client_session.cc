@@ -395,7 +395,7 @@ int QuicChromiumClientSession::TryCreateStream(
     return ERR_CONNECTION_CLOSED;
   }
 
-  if (GetNumOpenOutgoingStreams() < get_max_open_streams()) {
+  if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams()) {
     *stream = CreateOutgoingReliableStreamImpl();
     return OK;
   }
@@ -420,7 +420,7 @@ QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
     return nullptr;
   }
-  if (GetNumOpenOutgoingStreams() >= get_max_open_streams()) {
+  if (GetNumOpenOutgoingStreams() >= max_open_outgoing_streams()) {
     DVLOG(1) << "Failed to create a new outgoing stream. "
              << "Already " << GetNumOpenOutgoingStreams() << " open.";
     return nullptr;
@@ -598,7 +598,7 @@ void QuicChromiumClientSession::SendRstStream(QuicStreamId id,
 }
 
 void QuicChromiumClientSession::OnClosedStream() {
-  if (GetNumOpenOutgoingStreams() < get_max_open_streams() &&
+  if (GetNumOpenOutgoingStreams() < max_open_outgoing_streams() &&
       !stream_requests_.empty() && crypto_stream_->encryption_established() &&
       !goaway_received() && !going_away_ && connection()->connected()) {
     StreamRequest* request = stream_requests_.front();

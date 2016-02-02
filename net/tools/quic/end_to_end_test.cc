@@ -1168,8 +1168,8 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
 
   // Make the client misbehave after negotiation.
   const int kServerMaxStreams = kMaxStreamsMinimumIncrement + 1;
-  QuicSessionPeer::SetMaxOpenStreams(client_->client()->session(),
-                                     kServerMaxStreams + 1);
+  QuicSessionPeer::SetMaxOpenOutgoingStreams(client_->client()->session(),
+                                             kServerMaxStreams + 1);
 
   HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
   request.AddHeader("content-length", "3");
@@ -1461,10 +1461,12 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
                           const IPAddressNumber& /*real_self_address*/,
-                          const IPEndPoint& peer_address) override {
+                          const IPEndPoint& peer_address,
+                          PerPacketOptions* options) override {
     // Use wrong address!
-    return QuicPacketWriterWrapper::WritePacket(
-        buffer, buf_len, self_address_.address().bytes(), peer_address);
+    return QuicPacketWriterWrapper::WritePacket(buffer, buf_len,
+                                                self_address_.address().bytes(),
+                                                peer_address, options);
   }
 
   bool IsWriteBlockedDataBuffered() const override { return false; }
@@ -1473,8 +1475,6 @@ class WrongAddressWriter : public QuicPacketWriterWrapper {
 };
 
 TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_disable_non_nat_address_migration,
-                              false);
   ASSERT_TRUE(Initialize());
 
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1496,8 +1496,6 @@ TEST_P(EndToEndTest, ConnectionMigrationClientIPChanged) {
 }
 
 TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_disable_non_nat_address_migration,
-                              false);
   // Tests that the client's port can change during an established QUIC
   // connection, and that doing so does not result in the connection being
   // closed by the server.
@@ -1807,9 +1805,9 @@ TEST_P(EndToEndTest, ServerSendPublicResetWithDifferentConnectionId) {
   // We must pause the server's thread in order to call WritePacket without
   // race conditions.
   server_thread_->Pause();
-  server_writer_->WritePacket(packet->data(), packet->length(),
-                              server_address_.address().bytes(),
-                              client_->client()->GetLatestClientAddress());
+  server_writer_->WritePacket(
+      packet->data(), packet->length(), server_address_.address().bytes(),
+      client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
   // The connection should be unaffected.
@@ -1838,7 +1836,7 @@ TEST_P(EndToEndTest, ClientSendPublicResetWithDifferentConnectionId) {
   client_writer_->WritePacket(
       packet->data(), packet->length(),
       client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_);
+      server_address_, nullptr);
 
   // The connection should be unaffected.
   EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
@@ -1863,9 +1861,9 @@ TEST_P(EndToEndTest, ServerSendVersionNegotiationWithDifferentConnectionId) {
   // We must pause the server's thread in order to call WritePacket without
   // race conditions.
   server_thread_->Pause();
-  server_writer_->WritePacket(packet->data(), packet->length(),
-                              server_address_.address().bytes(),
-                              client_->client()->GetLatestClientAddress());
+  server_writer_->WritePacket(
+      packet->data(), packet->length(), server_address_.address().bytes(),
+      client_->client()->GetLatestClientAddress(), nullptr);
   server_thread_->Resume();
 
   // The connection should be unaffected.
@@ -1892,7 +1890,7 @@ TEST_P(EndToEndTest, BadPacketHeaderTruncated) {
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
       client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_);
+      server_address_, nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1931,7 +1929,7 @@ TEST_P(EndToEndTest, BadPacketHeaderFlags) {
   client_writer_->WritePacket(
       &packet[0], sizeof(packet),
       client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_);
+      server_address_, nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // Pause the server so we can access the server's internals without races.
@@ -1967,7 +1965,7 @@ TEST_P(EndToEndTest, BadEncryptedData) {
   client_writer_->WritePacket(
       damaged_packet.data(), damaged_packet.length(),
       client_->client()->GetLatestClientAddress().address().bytes(),
-      server_address_);
+      server_address_, nullptr);
   // Give the server time to process the packet.
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
   // This error is sent to the connection's OnError (which ignores it), so the

@@ -50,7 +50,8 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
   WriteResult WritePacket(const char* buffer,
                           size_t buf_len,
                           const IPAddressNumber& self_address,
-                          const IPEndPoint& peer_address) override;
+                          const IPEndPoint& peer_address,
+                          PerPacketOptions* options) override;
 
   bool IsWriteBlocked() const override;
 
@@ -127,13 +128,22 @@ class PacketDroppingTestWriter : public QuicPacketWriterWrapper {
                  size_t buf_len,
                  const IPAddressNumber& self_address,
                  const IPEndPoint& peer_address,
+                 std::unique_ptr<PerPacketOptions> options,
                  QuicTime send_time);
+    // TODO(rtenneti): on windows RValue reference gives errors.
+    DelayedWrite(DelayedWrite&& other);
+    // TODO(rtenneti): on windows RValue reference gives errors.
+    //    DelayedWrite& operator=(DelayedWrite&& other);
     ~DelayedWrite();
 
     std::string buffer;
     const IPAddressNumber self_address;
     const IPEndPoint peer_address;
+    std::unique_ptr<PerPacketOptions> options;
     QuicTime send_time;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(DelayedWrite);
   };
 
   typedef std::list<DelayedWrite> DelayedPacketList;

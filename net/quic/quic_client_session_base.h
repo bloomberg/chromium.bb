@@ -88,7 +88,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
   void ResetPromised(QuicStreamId id, QuicRstStreamErrorCode error_code);
 
   size_t get_max_promises() const {
-    return get_max_open_streams() * kMaxPromisedStreamsMultiplier;
+    return max_open_incoming_streams() * kMaxPromisedStreamsMultiplier;
   }
 
  private:
