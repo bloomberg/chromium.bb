@@ -19,6 +19,8 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
+struct FrameHostMsg_DidCommitProvisionalLoad_Params;
+
 namespace content {
 
 class NavigatorDelegate;
@@ -176,8 +178,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Called when the navigation was committed in |render_frame_host|. This will
   // update the |state_|.
-  void DidCommitNavigation(bool same_page,
-                           RenderFrameHostImpl* render_frame_host);
+  void DidCommitNavigation(
+      const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool same_page,
+      RenderFrameHostImpl* render_frame_host);
 
  private:
   friend class NavigationHandleImplTest;

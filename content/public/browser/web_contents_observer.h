@@ -125,9 +125,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // Called when a navigation started in the WebContents. |navigation_handle|
   // is unique to a specific navigation. The same |navigation_handle| will be
-  // provided on subsequent calls to
-  // DidRedirect/FinishNavigation/ReadyToCommitNavigation related to this
-  // navigation.
+  // provided on subsequent calls to DidRedirectNavigation, DidFinishNavigation,
+  // and ReadyToCommitNavigation when related to this navigation. Observers
+  // should clear any references to |navigation_handle| in DidFinishNavigation,
+  // just before it is destroyed.
   //
   // Note that this is fired by navigations in any frame of the WebContents,
   // not just the main frame.

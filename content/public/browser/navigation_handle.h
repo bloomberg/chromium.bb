@@ -19,6 +19,11 @@ class RenderFrameHost;
 class WebContents;
 
 // A NavigationHandle tracks information related to a single navigation.
+// NavigationHandles are provided to several WebContentsObserver methods to
+// allow observers to track specific navigations. Observers should clear any
+// references to a NavigationHandle at the time of
+// WebContentsObserver::DidFinishNavigation, just before the handle is
+// destroyed.
 class CONTENT_EXPORT NavigationHandle {
  public:
   virtual ~NavigationHandle() {}

@@ -11,6 +11,7 @@
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
+#include "content/common/frame_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
@@ -299,11 +300,19 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 }
 
 void NavigationHandleImpl::DidCommitNavigation(
+    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
     bool same_page,
     RenderFrameHostImpl* render_frame_host) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
-  is_same_page_ = same_page;
+  DCHECK_EQ(frame_tree_node_, render_frame_host->frame_tree_node());
+  CHECK_EQ(url_, params.url);
+
+  is_post_ = params.is_post;
+  has_user_gesture_ = (params.gesture == NavigationGestureUser);
+  transition_ = params.transition;
   render_frame_host_ = render_frame_host;
+  is_same_page_ = same_page;
+
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
 }
 

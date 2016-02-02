@@ -541,7 +541,7 @@ void NavigatorImpl::DidNavigate(
                                         params.url,
                                         transition_type);
     render_frame_host->navigation_handle()->DidCommitNavigation(
-        is_navigation_within_page, render_frame_host);
+        params, is_navigation_within_page, render_frame_host);
     render_frame_host->SetNavigationHandle(nullptr);
   }
 

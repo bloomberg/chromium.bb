@@ -222,6 +222,7 @@
       'browser/frame_host/frame_tree_browsertest.cc',
       'browser/frame_host/interstitial_page_impl_browsertest.cc',
       'browser/frame_host/navigation_controller_impl_browsertest.cc',
+      'browser/frame_host/navigation_handle_impl_browsertest.cc',
       'browser/frame_host/render_frame_host_impl_browsertest.cc',
       'browser/frame_host/render_frame_host_manager_browsertest.cc',
       'browser/frame_host/render_frame_message_filter_browsertest.cc',
