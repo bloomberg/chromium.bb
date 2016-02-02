@@ -5,19 +5,6 @@
 import("//testing/test.gni")
 import("//ios/web/js_compile.gni")
 
-config("config") {
-  visibility = [ ":web" ]
-
-  # The WebKit framework is only available since iOS 8.0 but Chrome on iOS do
-  # supports iOS 7.0 so need to use weak linking.
-  # TODO(crbug.com/541549): change to regular linking once support for iOS 7 is
-  # dropped.
-  ldflags = [
-    "-weak_framework",
-    "WebKit",
-  ]
-}
-
 source_set("web") {
   deps = [
     ":core",
@@ -302,7 +289,7 @@ source_set("web") {
     "webui/web_ui_ios_impl.mm",
   ]
 
-  public_configs = [ ":config" ]
+  libs = [ "WebKit.framework" ]
 }
 
 source_set("core") {

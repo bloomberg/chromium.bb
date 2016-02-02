@@ -325,13 +325,9 @@
         'webui/web_ui_ios_impl.mm',
       ],
       'link_settings': {
-        # TODO(crbug.com/541549): change to regular linking once support for
-        # iOS 7 is dropped.
-        'xcode_settings': {
-          'OTHER_LDFLAGS': [
-            '-weak_framework WebKit',
-          ]
-        },
+        'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/WebKit.framework',
+        ],
       },
     },
     # Target shared by ios_web and CrNet.
