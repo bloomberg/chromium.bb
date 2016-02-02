@@ -116,12 +116,12 @@ AddressTrackerLinux::AddressTrackerLinux()
       link_callback_(base::Bind(&base::DoNothing)),
       tunnel_callback_(base::Bind(&base::DoNothing)),
       netlink_fd_(-1),
+      ignored_interfaces_(),
       connection_type_initialized_(false),
       connection_type_initialized_cv_(&connection_type_lock_),
       current_connection_type_(NetworkChangeNotifier::CONNECTION_NONE),
       tracking_(false),
-      threads_waiting_for_connection_type_initialization_(0) {
-}
+      threads_waiting_for_connection_type_initialization_(0) {}
 
 AddressTrackerLinux::AddressTrackerLinux(
     const base::Closure& address_callback,
