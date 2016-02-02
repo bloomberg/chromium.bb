@@ -128,7 +128,9 @@ class GPU_EXPORT Texture {
 
   void SetServiceId(GLuint service_id) {
     DCHECK(service_id);
+    DCHECK_EQ(owned_service_id_, service_id_);
     service_id_ = service_id;
+    owned_service_id_ = service_id;
   }
 
   // Causes us to report |service_id| as our service id, but does not delete
