@@ -1,7 +1,4 @@
 include_rules = [
-  "+native_client/src/public",
-  "+native_client/src/shared/platform",
-  "+native_client/src/trusted/service_runtime/nacl_error_code.h",
   "+ppapi/cpp",
   "+ppapi/utility",
 ]

@@ -16,7 +16,6 @@
 #include "base/process/process_handle.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "ipc/ipc_sync_channel.h"
-#include "native_client/src/shared/platform/nacl_sync.h"
 #include "ppapi/cpp/completion_callback.h"
 
 namespace plugin {
