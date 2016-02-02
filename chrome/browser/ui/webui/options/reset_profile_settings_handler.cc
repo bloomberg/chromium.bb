@@ -151,11 +151,6 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone(
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
       setting_snapshot_->Subtract(current_snapshot);
-      std::string report = SerializeSettingsReport(*setting_snapshot_,
-                                                   difference);
-      SendSettingsFeedback(report, profile);
-
-      // Send the same report as a protobuf to a different endpoint.
       scoped_ptr<reset_report::ChromeResetReport> report_proto =
           SerializeSettingsReportToProto(*setting_snapshot_, difference);
       if (report_proto)

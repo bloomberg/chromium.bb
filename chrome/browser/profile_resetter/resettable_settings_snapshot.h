@@ -123,21 +123,11 @@ class ResettableSettingsSnapshot {
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };
 
-// Serializes specified |snapshot| members to JSON format. |field_mask| is a bit
-// mask of ResettableSettingsSnapshot::Field values.
-std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
-                                    int field_mask);
-
 // Serializes specified |snapshot| members to a protobuf. |field_mask| is a bit
 // mask of ResettableSettingsSnapshot::Field values.
 scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
     const ResettableSettingsSnapshot& snapshot,
     int field_mask);
-
-// Sends |report| as a feedback. |report| is supposed to be result of
-// SerializeSettingsReport().
-void SendSettingsFeedback(const std::string& report,
-                          Profile* profile);
 
 // Sends |report| as a feedback. |report| is supposed to be result of
 // SerializeSettingsReportToProto().

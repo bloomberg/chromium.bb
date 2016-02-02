@@ -5,7 +5,6 @@
 #include "chrome/browser/profile_resetter/resettable_settings_snapshot.h"
 
 #include "base/guid.h"
-#include "base/json/json_writer.h"
 #include "base/md5.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,8 +21,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/feedback/feedback_data.h"
-#include "components/feedback/feedback_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/version_info/version_info.h"
@@ -32,23 +29,7 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using feedback::FeedbackData;
-
 namespace {
-
-// Feedback bucket label.
-const char kProfileResetWebUIBucket[] = "ProfileResetReport";
-
-// Dictionary keys for feedback report.
-const char kDefaultSearchEnginePath[] = "default_search_engine";
-const char kEnabledExtensions[] = "enabled_extensions";
-const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
-const char kHomepagePath[] = "homepage";
-const char kShortcuts[] = "shortcuts";
-const char kShowHomeButton[] = "show_home_button";
-const char kStartupTypePath[] = "startup_type";
-const char kStartupURLPath[] = "startup_urls";
-const char kGuid[] = "guid";
 
 template <class StringType>
 void AddPair(base::ListValue* list,
@@ -170,68 +151,6 @@ void ResettableSettingsSnapshot::SetShortcutsAndReport(
     callback.Run();
 }
 
-std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
-                                    int field_mask) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::DictionaryValue dict;
-
-  if (field_mask & ResettableSettingsSnapshot::STARTUP_MODE) {
-    base::ListValue* list = new base::ListValue;
-    const std::vector<GURL>& urls = snapshot.startup_urls();
-    for (std::vector<GURL>::const_iterator i = urls.begin();
-         i != urls.end(); ++i)
-      list->AppendString(i->spec());
-    dict.Set(kStartupURLPath, list);
-    dict.SetInteger(kStartupTypePath, snapshot.startup_type());
-  }
-
-  if (field_mask & ResettableSettingsSnapshot::HOMEPAGE) {
-    dict.SetString(kHomepagePath, snapshot.homepage());
-    dict.SetBoolean(kHomepageIsNewTabPage, snapshot.homepage_is_ntp());
-    dict.SetBoolean(kShowHomeButton, snapshot.show_home_button());
-  }
-
-  if (field_mask & ResettableSettingsSnapshot::DSE_URL)
-    dict.SetString(kDefaultSearchEnginePath, snapshot.dse_url());
-
-  if (field_mask & ResettableSettingsSnapshot::EXTENSIONS) {
-    base::ListValue* list = new base::ListValue;
-    const ResettableSettingsSnapshot::ExtensionList& extensions =
-        snapshot.enabled_extensions();
-    for (ResettableSettingsSnapshot::ExtensionList::const_iterator i =
-         extensions.begin(); i != extensions.end(); ++i) {
-      // Replace "\"" to simplify server-side analysis.
-      std::string ext_name;
-      base::ReplaceChars(i->second, "\"", "\'", &ext_name);
-      list->AppendString(i->first + ";" + ext_name);
-    }
-    dict.Set(kEnabledExtensions, list);
-  }
-
-  if (field_mask & ResettableSettingsSnapshot::SHORTCUTS) {
-    base::ListValue* list = new base::ListValue;
-    const std::vector<ShortcutCommand>& shortcuts = snapshot.shortcuts();
-    for (std::vector<ShortcutCommand>::const_iterator i = shortcuts.begin();
-         i != shortcuts.end(); ++i) {
-      base::string16 arguments;
-      // Replace "\"" to simplify server-side analysis.
-      base::ReplaceChars(i->second, base::ASCIIToUTF16("\""),
-                         base::ASCIIToUTF16("\'"), &arguments);
-      list->AppendString(arguments);
-    }
-    dict.Set(kShortcuts, list);
-  }
-
-  dict.SetString(kGuid, snapshot.guid());
-
-  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                "new field needs to be serialized here");
-
-  std::string json;
-  base::JSONWriter::Write(dict, &json);
-  return json;
-}
-
 scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
     const ResettableSettingsSnapshot& snapshot,
     int field_mask) {
@@ -286,21 +205,6 @@ scoped_ptr<reset_report::ChromeResetReport> SerializeSettingsReportToProto(
   static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
                 "new field needs to be serialized here");
   return report;
-}
-
-void SendSettingsFeedback(const std::string& report,
-                          Profile* profile) {
-  scoped_refptr<FeedbackData> feedback_data = new FeedbackData();
-  feedback_data->set_category_tag(kProfileResetWebUIBucket);
-  feedback_data->set_description(report);
-
-  feedback_data->set_image(make_scoped_ptr(new std::string));
-  feedback_data->set_context(profile);
-
-  feedback_data->set_page_url("");
-  feedback_data->set_user_email("");
-
-  feedback_util::SendReport(feedback_data);
 }
 
 void SendSettingsFeedbackProto(const reset_report::ChromeResetReport& report,

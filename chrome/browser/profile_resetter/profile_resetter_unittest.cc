@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -911,74 +910,6 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
     ASSERT_EQ(1u, shortcuts.size());
     EXPECT_EQ(command_line.first.value(), shortcuts[0].first.value());
     EXPECT_EQ(command_line.second, shortcuts[0].second);
-  }
-}
-
-TEST_F(ProfileResetterTest, FeedbackSerializationTest) {
-  // Reset to non organic defaults.
-  ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
-               ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES,
-               kDistributionConfig);
-
-  scoped_refptr<Extension> ext = CreateExtension(
-      base::ASCIIToUTF16("example"),
-      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
-      Manifest::INVALID_LOCATION,
-      extensions::Manifest::TYPE_EXTENSION,
-      false);
-  ASSERT_TRUE(ext.get());
-  service_->AddExtension(ext.get());
-
-  ShortcutHandler shortcut;
-  ShortcutCommand command_line = shortcut.CreateWithArguments(
-      base::ASCIIToUTF16("chrome.lnk"),
-      base::ASCIIToUTF16("--profile-directory=Default foo.com"));
-
-  ResettableSettingsSnapshot nonorganic_snap(profile());
-  nonorganic_snap.RequestShortcuts(base::Closure());
-  // Let it enumerate shortcuts on the FILE thread.
-  base::MessageLoop::current()->RunUntilIdle();
-
-  static_assert(ResettableSettingsSnapshot::ALL_FIELDS == 31,
-                "this test needs to be expanded");
-  for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
-       ++field_mask) {
-    std::string report = SerializeSettingsReport(nonorganic_snap, field_mask);
-    JSONStringValueDeserializer json(report);
-    std::string error;
-    scoped_ptr<base::Value> root(json.Deserialize(NULL, &error));
-    ASSERT_TRUE(root) << error;
-    ASSERT_TRUE(root->IsType(base::Value::TYPE_DICTIONARY)) << error;
-
-    base::DictionaryValue* dict =
-        static_cast<base::DictionaryValue*>(root.get());
-
-    base::ListValue* startup_urls = NULL;
-    int startup_type = 0;
-    std::string homepage;
-    bool homepage_is_ntp = true;
-    bool show_home_button = true;
-    std::string default_search_engine;
-    base::ListValue* extensions = NULL;
-    base::ListValue* shortcuts = NULL;
-
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
-              dict->GetList("startup_urls", &startup_urls));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_MODE),
-              dict->GetInteger("startup_type", &startup_type));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              dict->GetString("homepage", &homepage));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              dict->GetBoolean("homepage_is_ntp", &homepage_is_ntp));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::HOMEPAGE),
-              dict->GetBoolean("show_home_button", &show_home_button));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::DSE_URL),
-              dict->GetString("default_search_engine", &default_search_engine));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::EXTENSIONS),
-              dict->GetList("enabled_extensions", &extensions));
-    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::SHORTCUTS),
-              dict->GetList("shortcuts", &shortcuts));
   }
 }
 
