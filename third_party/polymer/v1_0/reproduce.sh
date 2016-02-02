@@ -13,7 +13,7 @@ set -e
 
 cd "$(dirname "$0")"
 
-rm -rf components components-chromium
+rm -rf components
 rm -rf ../../web-animations-js/sources
 
 bower install --no-color
@@ -58,7 +58,7 @@ sed -i 's/['"$NBSP"']/\\u00A0/g' components/polymer/polymer-mini.html
 # Remove import of external resource in font-roboto (fonts.googleapis.com)
 # and apply additional chrome specific patches. NOTE: Where possible create
 # a Polymer issue and/or pull request to minimize these patches.
-patch -p1 < chromium.patch
+patch -p1 --forward -r - < chromium.patch
 
 new=$(git status --porcelain components-chromium | grep '^??' | \
       cut -d' ' -f2 | egrep '\.(html|js|css)$' || true)
