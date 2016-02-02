@@ -50,28 +50,28 @@ scoped_ptr<MetadataChangeList> DeviceInfoService::CreateMetadataChangeList() {
 SyncError DeviceInfoService::MergeSyncData(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityDataList entity_data_list) {
-  // TODO(skym): Implementation.
+  // TODO(skym): crbug.com/543406: Implementation.
   return SyncError();
 }
 
 SyncError DeviceInfoService::ApplySyncChanges(
     scoped_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  // TODO(skym): Implementation.
+  // TODO(skym): crbug.com/543406: Implementation.
   return SyncError();
 }
 
 void DeviceInfoService::LoadMetadata(MetadataCallback callback) {
-  // TODO(skym): Implementation.
+  // TODO(skym): crbug.com/543405: Implementation.
 }
 
 void DeviceInfoService::GetData(ClientTagList client_tags,
                                 DataCallback callback) {
-  // TODO(skym): Implementation.
+  // TODO(skym): crbug.com/543405: Implementation.
 }
 
 void DeviceInfoService::GetAllData(DataCallback callback) {
-  // TODO(skym): Implementation.
+  // TODO(skym): crbug.com/543405: Implementation.
 }
 
 std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
@@ -117,22 +117,22 @@ void DeviceInfoService::NotifyObservers() {
 }
 
 void DeviceInfoService::UpdateLocalDeviceBackupTime(base::Time backup_time) {
-  // TODO(skym): Replace with is initialized check, we've already started
-  // syncing, provider is ready, make sure we have processort, etc.
+  // TODO(skym): crbug.com/582460: Replace with is initialized check, we've
+  // already started syncing, provider is ready, make sure we have processor.
 
   // Local device info must be available in advance.
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
 
-  // TODO(skym): Should this be a less than instead of not equal check?
+  // TODO(skym): crbug.com/582460: Less than instead of not equal check?
   if (GetLocalDeviceBackupTime() != backup_time) {
-    // TODO(skym): Storing this field doesn't really make sense, remove.
+    // TODO(skym): crbug.com/582460: Storing this field doesn't really make
+    // sense.
     set_local_device_backup_time(syncer::TimeToProtoTime(backup_time));
     scoped_ptr<DeviceInfoSpecifics> new_specifics = CreateLocalSpecifics();
 
-    // TODO(skym): Create correct update datastructure, such as EntityChange,
-    // EntityMetadata, or  CommitRequestData.
-    // TODO(skym): Call ProcessChanges on SMTP.
-    // TODO(skym): Persist metadata and data.
+    // TODO(skym): crbug.com/543406: Create EntityChange and pass to SMTP
+    // through ProcessChanges.
+    // TODO(skym): crbug.com/543405: Persist metadata and data.
     StoreSpecifics(std::move(new_specifics));
   }
 
@@ -146,7 +146,8 @@ base::Time DeviceInfoService::GetLocalDeviceBackupTime() const {
              : base::Time();
 }
 
-// TODO(skym): It might not make sense for this to be a scoped_ptr.
+// TODO(skym): crbug.com/543406: It might not make sense for this to be a
+// scoped_ptr.
 scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateLocalSpecifics() {
   const DeviceInfo* info = local_device_info_provider_->GetLocalDeviceInfo();
   DCHECK(info);
@@ -154,11 +155,13 @@ scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateLocalSpecifics() {
   if (has_local_device_backup_time()) {
     specifics->set_backup_timestamp(local_device_backup_time());
   }
-  // TODO(skym): Local tag and non unique name have no place to be set now.
+  // TODO(skym): crbug.com:543406: Local tag and non unique name have no place
+  // to be set now.
   return specifics;
 }
 
-// TODO(skym): It might not make sense for this to be a scoped_ptr.
+// TODO(skym): crbug.com/543406: It might not make sense for this to be a
+// scoped_ptr.
 // Static.
 scoped_ptr<DeviceInfoSpecifics> DeviceInfoService::CreateSpecifics(
     const DeviceInfo& info) {
@@ -199,7 +202,7 @@ void DeviceInfoService::DeleteSpecifics(const std::string& client_id) {
 }
 
 void DeviceInfoService::OnProviderInitialized() {
-  // TODO(skym): Do we need this?
+  // TODO(skym): crbug.com/582460: Do we need this?
 }
 
 }  // namespace sync_driver_v2

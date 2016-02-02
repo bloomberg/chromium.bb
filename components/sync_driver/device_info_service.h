@@ -100,7 +100,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   }
   void clear_local_device_backup_time() { local_device_backup_time_ = -1; }
 
-  // TODO(skym): Remove once we remove local provider.
+  // TODO(skym): crbug.com/582460: Remove once we remove local provider.
   // Local device last set backup time (in proto format).
   // -1 if the value hasn't been specified
   int64_t local_device_backup_time_;
@@ -108,7 +108,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   // |local_device_info_provider_| isn't owned.
   const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
 
-  // TODO(skym): Switch to use client tag hash instead of cache guid as key.
   // Cache of all syncable and local data, stored by device cache guid.
   using ClientIdToSpecifics =
       std::map<std::string, scoped_ptr<sync_pb::DeviceInfoSpecifics>>;
