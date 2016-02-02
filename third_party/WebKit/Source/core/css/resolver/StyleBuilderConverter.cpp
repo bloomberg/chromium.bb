@@ -769,11 +769,6 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, const
     const CSSValuePair& pair = toCSSValuePair(value);
     Length radiusWidth = toCSSPrimitiveValue(pair.first()).convertToLength(state.cssToLengthConversionData());
     Length radiusHeight = toCSSPrimitiveValue(pair.second()).convertToLength(state.cssToLengthConversionData());
-    float width = radiusWidth.value();
-    float height = radiusHeight.value();
-    ASSERT(width >= 0 && height >= 0);
-    if (width <= 0 || height <= 0)
-        return LengthSize(Length(0, Fixed), Length(0, Fixed));
     return LengthSize(radiusWidth, radiusHeight);
 }
 
