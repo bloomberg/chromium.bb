@@ -413,7 +413,7 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc,
                                     unsigned int depth) {
   pp::VarDictionary dict;
   base::string16 title;
-  unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, NULL, 0);
+  unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, nullptr, 0);
   if (buffer_size > 0) {
     PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> api_string_adapter(
         &title, buffer_size, true);
@@ -427,6 +427,18 @@ pp::VarDictionary TraverseBookmarks(FPDF_DOCUMENT doc,
   if (dest) {
     int page_index = FPDFDest_GetPageIndex(doc, dest);
     dict.Set(pp::Var("page"), pp::Var(page_index));
+  } else {
+    // Extract URI for bookmarks linking to an external page.
+    FPDF_ACTION action = FPDFBookmark_GetAction(bookmark);
+    buffer_size = FPDFAction_GetURIPath(doc, action, nullptr, 0);
+    if (buffer_size > 0) {
+      std::string uri;
+      PDFiumAPIStringBufferAdapter<std::string>
+          api_string_adapter(&uri, buffer_size, true);
+      api_string_adapter.Close(FPDFAction_GetURIPath(
+          doc, action, api_string_adapter.GetData(), buffer_size));
+      dict.Set(pp::Var("uri"), pp::Var(uri));
+    }
   }
 
   pp::VarArray children;

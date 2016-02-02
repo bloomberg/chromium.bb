@@ -65,6 +65,8 @@
     onClick: function() {
       if (this.bookmark.hasOwnProperty('page'))
         this.fire('change-page', {page: this.bookmark.page});
+      else if (this.bookmark.hasOwnProperty('uri'))
+        this.fire('navigate', {uri: this.bookmark.uri, newtab: true});
     },
 
     onEnter_: function(e) {

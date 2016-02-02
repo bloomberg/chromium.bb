@@ -237,6 +237,10 @@ function PDFViewer(browserApi) {
     this.viewport_.goToPage(e.detail.page);
   }.bind(this));
 
+  document.body.addEventListener('navigate', function(e) {
+    this.navigator_.navigate(e.detail.uri, e.detail.newtab);
+  }.bind(this));
+
   this.toolbarManager_ =
       new ToolbarManager(window, this.toolbar_, this.zoomToolbar_);
 
