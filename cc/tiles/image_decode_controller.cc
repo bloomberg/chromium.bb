@@ -205,7 +205,7 @@ void ImageDecodeController::UnrefImage(const DrawImage& image) {
   // 1. The ref did not reach 0, which means we have to keep the image locked.
   // 2. The ref reached 0, we should unlock it.
   //   2a. The image isn't in the locked cache because we didn't get to decode
-  //       it yet.
+  //       it yet (or failed to decode it).
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
   DCHECK(CanHandleImage(key, image));
@@ -274,6 +274,10 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
   // needs to be decoded again, we have to create a new task.
   pending_image_tasks_.erase(key);
 
+  // Abort if we failed to decode the image.
+  if (!decoded_image)
+    return;
+
   // We could have finished all of the raster tasks (cancelled) while this image
   // decode task was running, which means that we now have a locked image but no
   // ref counts. Unlock it immediately in this case.
@@ -322,7 +326,9 @@ ImageDecodeController::DecodeImageInternal(const ImageKey& key,
     bool result = image->readPixels(
         decoded_info, decoded_pixels.get(), decoded_info.minRowBytes(),
         key.src_rect().x(), key.src_rect().y(), SkImage::kAllow_CachingHint);
-    DCHECK(result);
+
+    if (!result)
+      return nullptr;
   }
 
   SkPixmap decoded_pixmap(decoded_info, decoded_pixels.get(),
@@ -414,6 +420,10 @@ DecodedDrawImage ImageDecodeController::GetDecodedImageForDraw(
     // the compositor thread for the duration of the decode!
     base::AutoUnlock unlock(lock_);
     decoded_image = DecodeImageInternal(key, draw_image.image());
+
+    // Skip the image if we couldn't decode it.
+    if (!decoded_image)
+      return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
     check_at_raster_cache = true;
   }
 
@@ -457,7 +467,7 @@ void ImageDecodeController::DrawWithImageFinished(
                "ImageDecodeController::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
-  if (key.target_size().IsEmpty() || !CanHandleImage(key, image))
+  if (!decoded_image.image() || !CanHandleImage(key, image))
     return;
 
   if (decoded_image.is_at_raster_decode())

@@ -214,6 +214,9 @@ class CC_EXPORT ImageDecodeController {
   // function returns true, then a ref count is increased for the image.
   bool LockDecodedImageIfPossibleAndRef(const ImageKey& key);
 
+  // Actually decode the image. Note that this function can (and should) be
+  // called with no lock acquired, since it can do a lot of work. Note that it
+  // can also return nullptr to indicate the decode failed.
   scoped_refptr<DecodedImage> DecodeImageInternal(const ImageKey& key,
                                                   const SkImage* image);
   void SanityCheckState(int line, bool lock_acquired);
