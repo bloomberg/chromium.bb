@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabContextMenuItemDelegate;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
+import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.util.UrlUtilities;
 
 /**
@@ -140,6 +141,24 @@ public class CustomTabDelegateFactory extends TabDelegateFactory {
 
     private CustomTabNavigationDelegate mNavigationDelegate;
     private ExternalNavigationHandler mNavigationHandler;
+    private boolean mShouldHideTopControls;
+
+    /**
+     * @param shouldHideTopControls Whether or not the top controls may auto-hide.
+     */
+    public CustomTabDelegateFactory(boolean shouldHideTopControls) {
+        mShouldHideTopControls = shouldHideTopControls;
+    }
+
+    @Override
+    public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
+        return new TopControlsVisibilityDelegate(tab) {
+            @Override
+            public boolean isHidingTopControlsEnabled() {
+                return mShouldHideTopControls && super.isHidingTopControlsEnabled();
+            }
+        };
+    }
 
     @Override
     public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {

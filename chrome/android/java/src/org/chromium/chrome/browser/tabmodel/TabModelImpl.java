@@ -692,10 +692,10 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
-    protected boolean createTabWithWebContents(
-            boolean incognito, WebContents webContents, int parentId) {
-        return getTabCreator(incognito).createTabWithWebContents(
-                webContents, parentId, TabLaunchType.FROM_LONGPRESS_BACKGROUND);
+    protected boolean createTabWithWebContents(Tab parent, boolean incognito,
+            WebContents webContents, int parentId) {
+        return getTabCreator(incognito).createTabWithWebContents(parent, webContents, parentId,
+                TabLaunchType.FROM_LONGPRESS_BACKGROUND);
     }
 
     @Override

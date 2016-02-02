@@ -57,8 +57,8 @@ public class TabDelegate extends TabCreator {
     }
 
     @Override
-    public boolean createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, String url) {
+    public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
+            TabLaunchType type, String url) {
         return createTabWithWebContents(
                 webContents, parentId, type, url, DocumentMetricIds.STARTED_BY_WINDOW_OPEN);
     }

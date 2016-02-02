@@ -22,7 +22,8 @@ class TestTabModel : public TabModel {
   content::WebContents* GetWebContentsAt(int index) const override {
     return nullptr;
   }
-  void CreateTab(content::WebContents* web_contents,
+  void CreateTab(TabAndroid* parent,
+                 content::WebContents* web_contents,
                  int parent_tab_id) override {}
   content::WebContents* CreateNewTabForDevTools(const GURL& url) override {
     return nullptr;

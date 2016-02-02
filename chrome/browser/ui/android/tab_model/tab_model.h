@@ -47,7 +47,8 @@ class TabModel : public content::NotificationObserver {
   virtual void CloseTabAt(int index) = 0;
 
   // Used for restoring tabs from synced foreign sessions.
-  virtual void CreateTab(content::WebContents* web_contents,
+  virtual void CreateTab(TabAndroid* parent,
+                         content::WebContents* web_contents,
                          int parent_tab_id) = 0;
 
   // Used by Developer Tools to create a new tab with a given URL.

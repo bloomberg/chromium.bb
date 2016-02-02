@@ -49,7 +49,8 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
   } else {
     DCHECK(disposition == NEW_FOREGROUND_TAB ||
         disposition == NEW_BACKGROUND_TAB);
-    tab_model->CreateTab(new_web_contents, current_tab->GetAndroidId());
+    tab_model->CreateTab(current_tab, new_web_contents,
+                         current_tab->GetAndroidId());
   }
   return new_web_contents;
 }

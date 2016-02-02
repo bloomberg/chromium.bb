@@ -364,8 +364,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    protected boolean createTabWithWebContents(
-            boolean isIncognito, WebContents webContents, int parentTabId) {
+    protected boolean createTabWithWebContents(Tab parent, boolean isIncognito,
+            WebContents webContents, int parentTabId) {
         // Tabs created along this pathway are currently only created via JNI, which includes
         // session restore tabs.  Differs from TabModelImpl because we explicitly open tabs in the
         // foreground -- opening tabs in affiliated mode is disallowed by ChromeLauncherActivity

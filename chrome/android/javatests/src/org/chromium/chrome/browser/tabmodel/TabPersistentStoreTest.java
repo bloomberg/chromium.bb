@@ -89,8 +89,8 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
 
         @Override
-        public boolean createTabWithWebContents(
-                WebContents webContents, int parentId, TabLaunchType type, String url) {
+        public boolean createTabWithWebContents(Tab parent, WebContents webContents, int parentId,
+                TabLaunchType type, String url) {
             return false;
         }
 

@@ -59,4 +59,8 @@ public class TabDelegateFactory {
     public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
         return new TopControlsVisibilityDelegate(tab);
     }
+
+    public TabDelegateFactory createNewTabDelegateFactory() {
+        return new TabDelegateFactory();
+    }
 }
