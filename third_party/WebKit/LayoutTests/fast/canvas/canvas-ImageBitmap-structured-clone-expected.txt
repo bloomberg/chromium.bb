@@ -9,40 +9,17 @@ PASS bitmapWidth is imageWidth1
 PASS bitmapHeight is imageHeight1
 PASS bitmapWidth is imageWidth1
 PASS bitmapHeight is imageHeight1
-PASS newImage.data[0] is within 5 of image1.data[0]
-PASS newImage.data[1] is within 5 of image1.data[1]
-PASS newImage.data[2] is within 5 of image1.data[2]
-PASS newImage.data[3] is image1.data[3]
-PASS newImage.data[4] is within 5 of image1.data[4]
-PASS newImage.data[5] is within 5 of image1.data[5]
-PASS newImage.data[6] is within 5 of image1.data[6]
-PASS newImage.data[7] is image1.data[7]
-PASS newImage.data[8] is within 5 of image1.data[8]
-PASS newImage.data[9] is within 5 of image1.data[9]
-PASS newImage.data[10] is within 5 of image1.data[10]
-PASS newImage.data[11] is image1.data[11]
-PASS newImage.data[12] is within 5 of image1.data[12]
-PASS newImage.data[13] is within 5 of image1.data[13]
-PASS newImage.data[14] is within 5 of image1.data[14]
-PASS newImage.data[15] is image1.data[15]
-PASS newImage.data[16] is within 5 of image1.data[16]
-PASS newImage.data[17] is within 5 of image1.data[17]
-PASS newImage.data[18] is within 5 of image1.data[18]
-PASS newImage.data[19] is image1.data[19]
-PASS newImage.data[20] is within 5 of image1.data[20]
-PASS newImage.data[21] is within 5 of image1.data[21]
-PASS newImage.data[22] is within 5 of image1.data[22]
-PASS newImage.data[23] is image1.data[23]
+PASS The ImageBitmap pixel data survives the round trip
+PASS bitmapWidth is 0
+PASS bitmapHeight is 0
+PASS bitmapWidth is imageWidth1
+PASS bitmapHeight is imageHeight1
+PASS The ImageBitmap pixel data survives the round trip
 PASS bitmapWidth is imageWidth2
 PASS bitmapHeight is imageHeight2
 PASS bitmapWidth is imageWidth2
 PASS bitmapHeight is imageHeight2
-PASS bitmapWidth is imageWidth2
-PASS bitmapHeight is imageHeight2
-PASS newImage.data[0] is within 5 of image2.data[0]
-PASS newImage.data[1] is within 5 of image2.data[1]
-PASS newImage.data[2] is within 5 of image2.data[2]
-PASS newImage.data[3] is image2.data[3]
+PASS The ImageBitmap pixel data survives the round trip
 PASS successfullyParsed is true
 
 TEST COMPLETE

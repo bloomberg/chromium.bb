@@ -9,9 +9,63 @@ var worker = new Worker('./resources/canvas-ImageBitmap-structured-clone.js');
 
 description("Tests that ImageBitmap supports structured clone and that the pixel data survives the trip between main <--> worker");
 
-function shouldNotBeCalled() {
-    testFailed("createImageBitmap promise rejected.");
-    finishJSTest();
+function shouldNotBeCalled(e) {
+  testFailed("promise rejected." + e);
+  finishJSTest();
+}
+
+function compareImageData(data1, data2)
+{
+  if (data1.length != data2.length) {
+    testFailed("The two image have different dimensions");
+    return;
+  }
+  for (var i = 0; i < data1.length; i++) {
+    if ((i % 4 != 3 && Math.abs(data1[i] - data2[i]) > 5) ||
+         (i % 4 == 3 && data1[i] != data2[i])) {
+      testFailed("The ImageBitmap pixel data did not survive the round trip");
+      return;
+    }
+  }
+  testPassed("The ImageBitmap pixel data survives the round trip");
+}
+
+function checkImageBitmap1() {
+  shouldBe("bitmapWidth", "imageWidth1");
+  shouldBe("bitmapHeight", "imageHeight1");
+
+  // newImage is not necessary the same as imageData because of
+  // multiplying and dividing by alpha during the round trip, but
+  // they should be close.
+  // The alpha channel should be exactly the same.
+  compareImageData(newImage.data, image1.data);
+}
+
+function checkImageBitmap2() {
+  shouldBe("bitmapWidth", "imageWidth2");
+  shouldBe("bitmapHeight", "imageHeight2");
+
+  compareImageData(newImage.data, image2.data);
+}
+
+function postToWorker(message, transferable) {
+  return new Promise((resolve, reject) => {
+    function onMessage(e) {
+      resolve(e.data);
+      worker.removeEventListener("message", onMessage);
+    }
+    worker.postMessage(message, transferable);
+    worker.addEventListener("message", onMessage);
+  });
+}
+
+function getNewImageDataFromWorkerReply(newImageBitmap)
+{
+  bitmapWidth = newImageBitmap.width;
+  bitmapHeight = newImageBitmap.height;
+  context.clearRect(0, 0, imageWidth1, imageHeight1);
+  context.drawImage(newImageBitmap, 0, 0, bitmapWidth, bitmapHeight);
+  newImage = context.getImageData(0, 0, bitmapWidth, bitmapHeight);
 }
 
 var imageWidth1 = 3;
@@ -20,11 +74,9 @@ var imageWidth2 = 1;
 var imageHeight2 = 1;
 var bitmapWidth;
 var bitmapHeight;
-var newImage1;
-var newImage2;
 var imageBitmap1;
 var imageBitmap2;
-var newImageBitmap;
+var newImage;
 var image1 = new ImageData(new Uint8ClampedArray(
             [255, 0, 0, 255,
             0, 255, 0, 255,
@@ -44,87 +96,45 @@ Promise.all([p1, p2]).then(function() {
   shouldBe("bitmapWidth", "imageWidth1");
   shouldBe("bitmapHeight", "imageHeight1");
 
-  worker.postMessage({label:'bitmap1', data:imageBitmap1});
+  var replyPromise = postToWorker(imageBitmap1);
 
   // Structured cloning should not neuter the source ImageBitmap
   bitmapWidth = imageBitmap1.width;
   bitmapHeight = imageBitmap1.height;
   shouldBe("bitmapWidth", "imageWidth1");
   shouldBe("bitmapHeight", "imageHeight1");
-}, shouldNotBeCalled);
 
-worker.onmessage = function(e) {
-  newImageBitmap = e.data.data;
-  bitmapWidth = newImageBitmap.width;
-  bitmapHeight = newImageBitmap.height;
-  context.clearRect(0, 0, imageWidth1, imageHeight1);
-  context.drawImage(newImageBitmap, 0, 0, bitmapWidth, bitmapHeight);
-  newImage = context.getImageData(0, 0, bitmapWidth, bitmapHeight);
+  return replyPromise.then(reply => {
+    getNewImageDataFromWorkerReply(reply);
+    checkImageBitmap1();
+  });
+}).then(function() {
+  var replyPromise = postToWorker(imageBitmap1, [imageBitmap1]);
 
-  switch (e.data.label) {
-    case 'bitmap1':
-      shouldBe("bitmapWidth", "imageWidth1");
-      shouldBe("bitmapHeight", "imageHeight1");
+  // Transfer the ImageBitmap should neuter it
+  bitmapWidth = imageBitmap1.width;
+  bitmapHeight = imageBitmap1.height;
+  shouldBe("bitmapWidth", "0");
+  shouldBe("bitmapHeight", "0");
 
-      // newImage is not necessary the same as imageData because of
-      // multiplying and dividing by alpha during the round trip, but
-      // they should be close.
-      // The alpha channel should be exactly the same.
-      shouldBeCloseTo("newImage.data[0]", "image1.data[0]", 5);
-      shouldBeCloseTo("newImage.data[1]", "image1.data[1]", 5);
-      shouldBeCloseTo("newImage.data[2]", "image1.data[2]", 5);
-      shouldBe("newImage.data[3]", "image1.data[3]");
+  return replyPromise.then(reply => {
+    getNewImageDataFromWorkerReply(reply);
+    checkImageBitmap1();
+  });
+}).then(function() {
+  var replyPromise = postToWorker(imageBitmap2);
 
-      shouldBeCloseTo("newImage.data[4]", "image1.data[4]", 5);
-      shouldBeCloseTo("newImage.data[5]", "image1.data[5]", 5);
-      shouldBeCloseTo("newImage.data[6]", "image1.data[6]", 5);
-      shouldBe("newImage.data[7]", "image1.data[7]");
+  // Structured cloning should not neuter the source ImageBitmap
+  bitmapWidth = imageBitmap2.width;
+  bitmapHeight = imageBitmap2.height;
+  shouldBe("bitmapWidth", "imageWidth2");
+  shouldBe("bitmapHeight", "imageHeight2");
 
-      shouldBeCloseTo("newImage.data[8]", "image1.data[8]", 5);
-      shouldBeCloseTo("newImage.data[9]", "image1.data[9]", 5);
-      shouldBeCloseTo("newImage.data[10]", "image1.data[10]", 5);
-      shouldBe("newImage.data[11]", "image1.data[11]");
-
-      shouldBeCloseTo("newImage.data[12]", "image1.data[12]", 5);
-      shouldBeCloseTo("newImage.data[13]", "image1.data[13]", 5);
-      shouldBeCloseTo("newImage.data[14]", "image1.data[14]", 5);
-      shouldBe("newImage.data[15]", "image1.data[15]");
-
-      shouldBeCloseTo("newImage.data[16]", "image1.data[16]", 5);
-      shouldBeCloseTo("newImage.data[17]", "image1.data[17]", 5);
-      shouldBeCloseTo("newImage.data[18]", "image1.data[18]", 5);
-      shouldBe("newImage.data[19]", "image1.data[19]");
-
-      shouldBeCloseTo("newImage.data[20]", "image1.data[20]", 5);
-      shouldBeCloseTo("newImage.data[21]", "image1.data[21]", 5);
-      shouldBeCloseTo("newImage.data[22]", "image1.data[22]", 5);
-      shouldBe("newImage.data[23]", "image1.data[23]");
-
-      bitmapWidth = imageBitmap2.width;
-      bitmapHeight = imageBitmap2.height;
-      shouldBe("bitmapWidth", "imageWidth2");
-      shouldBe("bitmapHeight", "imageHeight2");
-
-      worker.postMessage({label:'bitmap2', data:imageBitmap2});
-
-      // Structured cloning should not neuter the source ImageBitmap
-      bitmapWidth = imageBitmap2.width;
-      bitmapHeight = imageBitmap2.height;
-      shouldBe("bitmapWidth", "imageWidth2");
-      shouldBe("bitmapHeight", "imageHeight2");
-      break;
-    case 'bitmap2':
-      shouldBe("bitmapWidth", "imageWidth2");
-      shouldBe("bitmapHeight", "imageHeight2");
-
-      shouldBeCloseTo("newImage.data[0]", "image2.data[0]", 5);
-      shouldBeCloseTo("newImage.data[1]", "image2.data[1]", 5);
-      shouldBeCloseTo("newImage.data[2]", "image2.data[2]", 5);
-      shouldBe("newImage.data[3]", "image2.data[3]");
-      finishJSTest();
-      break;
-  }
-}
+  return replyPromise.then(reply => {
+    getNewImageDataFromWorkerReply(reply);
+    checkImageBitmap2();
+  });
+}).then(finishJSTest, shouldNotBeCalled);
 </script>
 </body>
 </html>
