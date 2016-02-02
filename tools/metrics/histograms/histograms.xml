@@ -31440,6 +31440,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.SharedPageWasOffline"
+    enum="OfflinePagesSharedPageWasOffline">
+  <owner>dewittj@chromium.org</owner>
+  <summary>Whether a shared page was an offline page or not.</summary>
+</histogram>
+
 <histogram name="OfflinePages.TotalPageSize" units="MB">
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>
@@ -73038,6 +73044,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Store failure"/>
   <int value="6" label="Already exists"/>
   <int value="7" label="Skipped"/>
+</enum>
+
+<enum name="OfflinePagesSharedPageWasOffline" type="int">
+  <int value="0" label="Online"/>
+  <int value="1" label="Offline"/>
 </enum>
 
 <enum name="OfflineStatus" type="int">

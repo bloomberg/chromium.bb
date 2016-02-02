@@ -887,8 +887,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         ContentBitmapCallback callback = new ContentBitmapCallback() {
                     @Override
                     public void onFinishGetBitmap(Bitmap bitmap, int response) {
-                        ShareHelper.share(shareDirectly, mainActivity, currentTab.getTitle(),
-                                currentTab.getUrl(), bitmap);
+                        // Check whether this page is an offline page, and use its online URL if so.
+                        String url = currentTab.getOfflinePageOriginalUrl();
+                        RecordHistogram.recordBooleanHistogram(
+                                "OfflinePages.SharedPageWasOffline", url != null);
+
+                        // If there is no entry in the offline pages DB for this tab, use the tab's
+                        // URL directly.
+                        if (url == null) url = currentTab.getUrl();
+
+                        ShareHelper.share(
+                                shareDirectly, mainActivity, currentTab.getTitle(), url, bitmap);
                         if (shareDirectly) {
                             RecordUserAction.record("MobileMenuDirectShare");
                         } else {
