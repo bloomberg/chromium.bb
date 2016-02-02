@@ -46,6 +46,7 @@ public:
     bool isNeutered() const { return m_isNeutered; }
     bool originClean() const { return m_image->originClean(); }
     PassRefPtr<StaticBitmapImage> transfer();
+    void close();
 
     ~ImageBitmap() override;
 

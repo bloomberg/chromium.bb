@@ -384,6 +384,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker] interface ImageBitmap
 [Worker]     getter height
 [Worker]     getter width
+[Worker]     method close
 [Worker]     method constructor
 [Worker] interface ImageData
 [Worker]     getter height

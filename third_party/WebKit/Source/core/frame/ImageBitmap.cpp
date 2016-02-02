@@ -167,6 +167,14 @@ PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapI
     return adoptRefWillBeNoop(new ImageBitmap(image));
 }
 
+void ImageBitmap::close()
+{
+    if (!m_image || m_isNeutered)
+        return;
+    m_image.clear();
+    m_isNeutered = true;
+}
+
 PassOwnPtr<uint8_t[]> ImageBitmap::copyBitmapData()
 {
     SkImageInfo info = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);

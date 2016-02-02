@@ -3131,6 +3131,7 @@ interface Image
 interface ImageBitmap
     getter height
     getter width
+    method close
     method constructor
 interface ImageData
     getter height
