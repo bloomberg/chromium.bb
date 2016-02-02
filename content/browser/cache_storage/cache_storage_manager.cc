@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -42,11 +43,16 @@ void DeleteOriginDidDeleteDir(
     bool rv) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  callback.Run(rv ? storage::kQuotaStatusOk : storage::kQuotaErrorAbort);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, rv ? storage::kQuotaStatusOk
+                                         : storage::kQuotaErrorAbort));
 }
 
-std::set<GURL> ListOriginsOnDisk(base::FilePath root_path) {
-  std::set<GURL> origins;
+// Open the various cache directories' index files and extract their origins and
+// last modified times.
+void ListOriginsAndLastModifiedOnTaskRunner(
+    std::vector<CacheStorageUsageInfo>* usages,
+    base::FilePath root_path) {
   base::FileEnumerator file_enum(root_path, false /* recursive */,
                                  base::FileEnumerator::DIRECTORIES);
 
@@ -55,33 +61,28 @@ std::set<GURL> ListOriginsOnDisk(base::FilePath root_path) {
     std::string protobuf;
     base::ReadFileToString(path.AppendASCII(CacheStorage::kIndexFileName),
                            &protobuf);
-
     CacheStorageIndex index;
     if (index.ParseFromString(protobuf)) {
-      if (index.has_origin())
-        origins.insert(GURL(index.origin()));
+      if (index.has_origin()) {
+        base::File::Info file_info;
+        if (base::GetFileInfo(path, &file_info)) {
+          usages->push_back(CacheStorageUsageInfo(
+              GURL(index.origin()), 0 /* size */, file_info.last_modified));
+        }
+      }
     }
   }
-
-  return origins;
 }
 
-std::vector<CacheStorageUsageInfo> GetAllOriginsUsageOnTaskRunner(
-    const base::FilePath root_path) {
-  std::vector<CacheStorageUsageInfo> entries;
-  const std::set<GURL> origins = ListOriginsOnDisk(root_path);
-  entries.reserve(origins.size());
-  for (const GURL& origin : origins) {
-    base::FilePath path =
-        CacheStorageManager::ConstructOriginPath(root_path, origin);
-    int64_t size = base::ComputeDirectorySize(path);
-    base::File::Info file_info;
-    base::Time last_modified;
-    if (base::GetFileInfo(path, &file_info))
-      last_modified = file_info.last_modified;
-    entries.push_back(CacheStorageUsageInfo(origin, size, last_modified));
-  }
-  return entries;
+std::set<GURL> ListOriginsOnTaskRunner(base::FilePath root_path) {
+  std::vector<CacheStorageUsageInfo> usages;
+  ListOriginsAndLastModifiedOnTaskRunner(&usages, root_path);
+
+  std::set<GURL> out_origins;
+  for (const CacheStorageUsageInfo& usage : usages)
+    out_origins.insert(usage.origin);
+
+  return out_origins;
 }
 
 void GetOriginsForHostDidListOrigins(
@@ -93,10 +94,29 @@ void GetOriginsForHostDidListOrigins(
     if (host == net::GetHostOrSpecFromURL(origin))
       out_origins.insert(origin);
   }
-  callback.Run(out_origins);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, out_origins));
 }
 
 void EmptyQuotaStatusCallback(storage::QuotaStatusCode code) {}
+
+void AllOriginSizesReported(
+    scoped_ptr<std::vector<CacheStorageUsageInfo>> usages,
+    const CacheStorageContext::GetUsageInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, *usages));
+}
+
+void OneOriginSizeReported(const base::Closure& callback,
+                           CacheStorageUsageInfo* usage,
+                           int64_t size) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  usage->total_size_bytes = size;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
 
 }  // namespace
 
@@ -206,23 +226,54 @@ void CacheStorageManager::GetAllOriginsUsage(
     const CacheStorageContext::GetUsageInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  scoped_ptr<std::vector<CacheStorageUsageInfo>> usages(
+      new std::vector<CacheStorageUsageInfo>());
+
   if (IsMemoryBacked()) {
-    std::vector<CacheStorageUsageInfo> entries;
-    entries.reserve(cache_storage_map_.size());
     for (const auto& origin_details : cache_storage_map_) {
-      entries.push_back(CacheStorageUsageInfo(
-          origin_details.first, origin_details.second->MemoryBackedSize(),
-          base::Time()));
+      usages->push_back(
+          CacheStorageUsageInfo(origin_details.first, 0 /* size */,
+                                base::Time() /* last modified */));
     }
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(callback, entries));
+    GetAllOriginsUsageGetSizes(std::move(usages), callback);
     return;
   }
 
-  PostTaskAndReplyWithResult(
-      cache_task_runner_.get(), FROM_HERE,
-      base::Bind(&GetAllOriginsUsageOnTaskRunner, root_path_),
-      base::Bind(callback));
+  std::vector<CacheStorageUsageInfo>* usages_ptr = usages.get();
+  cache_task_runner_->PostTaskAndReply(
+      FROM_HERE, base::Bind(&ListOriginsAndLastModifiedOnTaskRunner, usages_ptr,
+                            root_path_),
+      base::Bind(&CacheStorageManager::GetAllOriginsUsageGetSizes,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(std::move(usages)), callback));
+}
+
+void CacheStorageManager::GetAllOriginsUsageGetSizes(
+    scoped_ptr<std::vector<CacheStorageUsageInfo>> usages,
+    const CacheStorageContext::GetUsageInfoCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(usages);
+
+  // The origin GURL and last modified times are set in |usages| but not the
+  // size in bytes. Call each CacheStorage's Size() function to fill that out.
+  std::vector<CacheStorageUsageInfo>* usages_ptr = usages.get();
+
+  if (usages->empty()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, *usages));
+    return;
+  }
+
+  base::Closure barrier_closure = base::BarrierClosure(
+      usages_ptr->size(),
+      base::Bind(&AllOriginSizesReported, base::Passed(std::move(usages)),
+                 callback));
+
+  for (CacheStorageUsageInfo& usage : *usages_ptr) {
+    CacheStorage* cache_storage = FindOrCreateCacheStorage(usage.origin);
+    cache_storage->Size(
+        base::Bind(&OneOriginSizeReported, barrier_closure, &usage));
+  }
 }
 
 void CacheStorageManager::GetOriginUsage(
@@ -230,20 +281,9 @@ void CacheStorageManager::GetOriginUsage(
     const storage::QuotaClient::GetUsageCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (IsMemoryBacked()) {
-    int64_t usage = 0;
-    if (ContainsKey(cache_storage_map_, origin_url))
-      usage = cache_storage_map_[origin_url]->MemoryBackedSize();
-    callback.Run(usage);
-    return;
-  }
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin_url);
 
-  MigrateOrigin(origin_url);
-  PostTaskAndReplyWithResult(
-      cache_task_runner_.get(), FROM_HERE,
-      base::Bind(base::ComputeDirectorySize,
-                 ConstructOriginPath(root_path_, origin_url)),
-      base::Bind(callback));
+  cache_storage->Size(callback);
 }
 
 void CacheStorageManager::GetOrigins(
@@ -255,12 +295,13 @@ void CacheStorageManager::GetOrigins(
     for (const auto& key_value : cache_storage_map_)
       origins.insert(key_value.first);
 
-    callback.Run(origins);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, origins));
     return;
   }
 
   PostTaskAndReplyWithResult(cache_task_runner_.get(), FROM_HERE,
-                             base::Bind(&ListOriginsOnDisk, root_path_),
+                             base::Bind(&ListOriginsOnTaskRunner, root_path_),
                              base::Bind(callback));
 }
 
@@ -275,13 +316,14 @@ void CacheStorageManager::GetOriginsForHost(
       if (host == net::GetHostOrSpecFromURL(key_value.first))
         origins.insert(key_value.first);
     }
-    callback.Run(origins);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, origins));
     return;
   }
 
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(), FROM_HERE,
-      base::Bind(&ListOriginsOnDisk, root_path_),
+      base::Bind(&ListOriginsOnTaskRunner, root_path_),
       base::Bind(&GetOriginsForHostDidListOrigins, host, callback));
 }
 
@@ -292,7 +334,8 @@ void CacheStorageManager::DeleteOriginData(
 
   CacheStorageMap::iterator it = cache_storage_map_.find(origin);
   if (it == cache_storage_map_.end()) {
-    callback.Run(storage::kQuotaStatusOk);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, storage::kQuotaStatusOk));
     return;
   }
 
@@ -321,12 +364,14 @@ void CacheStorageManager::DeleteOriginDidClose(
   cache_storage.reset();
 
   if (!cache_manager) {
-    callback.Run(storage::kQuotaErrorAbort);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, storage::kQuotaErrorAbort));
     return;
   }
 
   if (cache_manager->IsMemoryBacked()) {
-    callback.Run(storage::kQuotaStatusOk);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, storage::kQuotaStatusOk));
     return;
   }
 
