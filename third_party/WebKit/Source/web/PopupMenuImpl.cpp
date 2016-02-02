@@ -501,7 +501,7 @@ void PopupMenuImpl::update()
         return;
     m_needsUpdate = false;
 
-    if (!ownerElement().document().frame()->view()->visibleContentRect().contains(ownerElement().pixelSnappedBoundingBox())) {
+    if (!ownerElement().document().frame()->view()->visibleContentRect().intersects(ownerElement().pixelSnappedBoundingBox())) {
         hide();
         return;
     }
