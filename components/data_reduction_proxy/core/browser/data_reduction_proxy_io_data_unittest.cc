@@ -24,7 +24,6 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
-#include "net/socket/next_proto.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_interceptor.h"
@@ -108,15 +107,11 @@ TEST_F(DataReductionProxyIODataTest, TestConstruction) {
       io_data->basic_url_request_context_getter_.get()->GetURLRequestContext();
   const net::HttpNetworkSession::Params* http_params =
       request_context->GetNetworkSessionParams();
+  EXPECT_FALSE(http_params->enable_spdy31);
+  EXPECT_FALSE(http_params->enable_http2);
   EXPECT_TRUE(http_params->parse_alternative_services);
   EXPECT_TRUE(http_params->enable_alternative_service_with_different_host);
   EXPECT_FALSE(http_params->enable_quic);
-  net::NextProtoVector expected_protos =
-      net::NextProtosWithSpdyAndQuic(false, false);
-  EXPECT_EQ(expected_protos.size(), http_params->next_protos.size());
-  size_t proto_index = 0;
-  for (const auto& proto : expected_protos)
-    EXPECT_EQ(proto, http_params->next_protos[proto_index++]);
 
   // Check that io_data creates an interceptor. Such an interceptor is
   // thoroughly tested by DataReductionProxyInterceptoTest.

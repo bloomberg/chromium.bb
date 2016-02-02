@@ -20,6 +20,7 @@
 #include "net/log/net_log.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/stream_socket.h"
 #include "net/ssl/ssl_config_service.h"
 #include "url/gurl.h"

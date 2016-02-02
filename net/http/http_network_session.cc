@@ -92,6 +92,8 @@ HttpNetworkSession::Params::Params()
       enable_spdy_compression(true),
       enable_spdy_ping_based_connection_checking(true),
       spdy_default_protocol(kProtoUnknown),
+      enable_spdy31(false),
+      enable_http2(false),
       spdy_session_max_recv_window_size(kSpdySessionMaxRecvWindowSize),
       spdy_stream_max_recv_window_size(kSpdyStreamMaxRecvWindowSize),
       spdy_initial_max_concurrent_streams(0),
@@ -216,30 +218,30 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
     enabled_protocols_[i - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] = false;
   }
 
-  // TODO(rtenneti): bug 116575 - consider combining the NextProto and
-  // AlternateProtocol.
-  for (std::vector<NextProto>::const_iterator it = params_.next_protos.begin();
-       it != params_.next_protos.end(); ++it) {
-    NextProto proto = *it;
-
-    // Add the protocol to the TLS next protocol list, except for QUIC
-    // since it uses UDP.
-    if (proto != kProtoQUIC1SPDY3) {
-      next_protos_.push_back(proto);
-    }
-
-    // Enable the corresponding alternate protocol, except for HTTP
-    // which has not corresponding alternative.
-    if (proto != kProtoHTTP11) {
-      AlternateProtocol alternate = AlternateProtocolFromNextProto(proto);
-      if (!IsAlternateProtocolValid(alternate)) {
-        NOTREACHED() << "Invalid next proto: " << proto;
-        continue;
-      }
-      enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
-          true;
-    }
+  // TODO(rtenneti): https://crbug.com/116575
+  // Consider combining the NextProto and AlternateProtocol.
+  if (params_.enable_http2) {
+    next_protos_.push_back(kProtoHTTP2);
+    AlternateProtocol alternate = AlternateProtocolFromNextProto(kProtoHTTP2);
+    enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
+        true;
   }
+
+  if (params_.enable_spdy31) {
+    next_protos_.push_back(kProtoSPDY31);
+    AlternateProtocol alternate = AlternateProtocolFromNextProto(kProtoSPDY31);
+    enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
+        true;
+  }
+
+  if (params_.enable_quic) {
+    AlternateProtocol alternate =
+        AlternateProtocolFromNextProto(kProtoQUIC1SPDY3);
+    enabled_protocols_[alternate - ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION] =
+        true;
+  }
+
+  next_protos_.push_back(kProtoHTTP11);
 
   http_server_properties_->SetAlternativeServiceProbabilityThreshold(
       params.alternative_service_probability_threshold);

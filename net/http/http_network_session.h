@@ -91,12 +91,8 @@ class NET_EXPORT HttpNetworkSession
     // Use SPDY ping frames to test for connection health after idle.
     bool enable_spdy_ping_based_connection_checking;
     NextProto spdy_default_protocol;
-    // The protocols supported by NPN (next protocol negotiation) during the
-    // SSL handshake as well as by HTTP Alternate-Protocol.
-    // TODO(mmenke):  This is currently empty by default, and alternate
-    //                protocols are disabled.  We should use some reasonable
-    //                defaults.
-    NextProtoVector next_protos;
+    bool enable_spdy31;
+    bool enable_http2;
     size_t spdy_session_max_recv_window_size;
     size_t spdy_stream_max_recv_window_size;
     size_t spdy_initial_max_concurrent_streams;

@@ -103,7 +103,6 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
                                    SpdySessionDependencies* session_deps) {
   session_deps->parse_alternative_services = true;
   session_deps->enable_alternative_service_with_different_host = true;
-  session_deps->next_protos = SpdyNextProtos();
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     session_deps->http_server_properties.SetAlternativeService(
@@ -4324,7 +4323,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   scoped_ptr<SpdySessionDependencies> session_deps(
       CreateSpdySessionDependencies(GetParam()));
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
-  session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
                                      GetParam(), std::move(session_deps));
 
@@ -4343,9 +4341,9 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredRetry) {
   scoped_ptr<SSLSocketDataProvider> ssl_provider0(
       new SSLSocketDataProvider(ASYNC, OK));
   // Expect HTTP/2 protocols too in SSLConfig.
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));
@@ -4416,7 +4414,6 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
           GetParam(),
           ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70")));
   // Do not force SPDY so that second socket can negotiate HTTP/1.1.
-  session_deps->next_protos = SpdyNextProtos();
   NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
                                      GetParam(), std::move(session_deps));
 
@@ -4433,9 +4430,9 @@ TEST_P(SpdyNetworkTransactionTest, HTTP11RequiredProxyRetry) {
   scoped_ptr<SSLSocketDataProvider> ssl_provider0(
       new SSLSocketDataProvider(ASYNC, OK));
   // Expect HTTP/2 protocols too in SSLConfig.
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
-  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
   ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP2);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoSPDY31);
+  ssl_provider0->next_protos_expected_in_ssl_config.push_back(kProtoHTTP11);
   // Force SPDY.
   ssl_provider0->SetNextProto(GetParam().protocol);
   helper.AddDataWithSSLSocketDataProvider(&data0, std::move(ssl_provider0));

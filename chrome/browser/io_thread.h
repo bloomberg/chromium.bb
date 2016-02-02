@@ -30,7 +30,6 @@
 #include "content/public/browser/browser_thread_delegate.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_network_session.h"
-#include "net/socket/next_proto.h"
 
 class PrefProxyConfigTracker;
 class PrefService;
@@ -208,7 +207,8 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_spdy_compression;
     Optional<bool> enable_spdy_ping_based_connection_checking;
     Optional<net::NextProto> spdy_default_protocol;
-    net::NextProtoVector next_protos;
+    Optional<bool> enable_spdy31;
+    Optional<bool> enable_http2;
     Optional<std::string> trusted_spdy_proxy;
     std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> parse_alternative_services;

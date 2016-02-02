@@ -416,7 +416,12 @@ NET_EXPORT scoped_ptr<base::DictionaryValue> GetNetInfo(
   if (info_sources & NET_INFO_SPDY_STATUS) {
     base::DictionaryValue* status_dict = new base::DictionaryValue();
 
-    status_dict->SetBoolean("spdy_enabled", HttpStreamFactory::spdy_enabled());
+    status_dict->SetBoolean("enable_spdy31",
+                            http_network_session->params().enable_spdy31 &&
+                                HttpStreamFactory::spdy_enabled());
+    status_dict->SetBoolean("enable_http2",
+                            http_network_session->params().enable_http2 &&
+                                HttpStreamFactory::spdy_enabled());
     status_dict->SetBoolean(
         "use_alternative_services",
         http_network_session->params().parse_alternative_services);

@@ -54,15 +54,6 @@ void ParseUrl(base::StringPiece url, std::string* scheme, std::string* host,
 
 }  // namespace
 
-NextProtoVector SpdyNextProtos() {
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoSPDY31);
-  next_protos.push_back(kProtoHTTP2);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  return next_protos;
-}
-
 // Chop a frame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
@@ -355,6 +346,8 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
+      enable_spdy31(true),
+      enable_http2(true),
       parse_alternative_services(false),
       enable_alternative_service_with_different_host(false),
       net_log(NULL) {
@@ -392,6 +385,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
+      enable_spdy31(true),
+      enable_http2(true),
       parse_alternative_services(true),
       enable_alternative_service_with_different_host(true),
       net_log(NULL) {
@@ -440,7 +435,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.spdy_stream_max_recv_window_size =
       session_deps->stream_max_recv_window_size;
   params.time_func = session_deps->time_func;
-  params.next_protos = session_deps->next_protos;
+  params.enable_spdy31 = session_deps->enable_spdy31;
+  params.enable_http2 = session_deps->enable_http2;
   params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
   params.parse_alternative_services = session_deps->parse_alternative_services;
   params.enable_alternative_service_with_different_host =

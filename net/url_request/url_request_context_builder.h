@@ -84,7 +84,8 @@ class NET_EXPORT URLRequestContextBuilder {
     HostMappingRules* host_mapping_rules;
     uint16_t testing_fixed_http_port;
     uint16_t testing_fixed_https_port;
-    NextProtoVector next_protos;
+    bool enable_spdy31;
+    bool enable_http2;
     std::string trusted_spdy_proxy;
     bool parse_alternative_services;
     bool enable_alternative_service_with_different_host;
@@ -189,7 +190,6 @@ class NET_EXPORT URLRequestContextBuilder {
     transport_security_persister_path_ = transport_security_persister_path;
   }
 
-  // Adjust |http_network_session_params_.next_protos| to enable SPDY and QUIC.
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
 

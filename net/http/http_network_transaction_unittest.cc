@@ -9570,7 +9570,6 @@ TEST_P(HttpNetworkTransactionTest, ChangeAuthRealms) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
@@ -9633,7 +9632,6 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
 }
 
 TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
@@ -9693,7 +9691,6 @@ TEST_P(HttpNetworkTransactionTest, ClearAlternativeServices) {
 // Alternative Service headers must be ignored when
 // |parse_alternative_services| is false.
 TEST_P(HttpNetworkTransactionTest, DoNotHonorAlternativeServiceHeader) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = false;
 
   std::string alternative_service_http_header =
@@ -9751,7 +9748,6 @@ TEST_P(HttpNetworkTransactionTest, DoNotHonorAlternativeServiceHeader) {
 }
 
 TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
@@ -9760,7 +9756,8 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
       MockRead("Alt-Svc: "),
       MockRead(GetAlternateProtocolFromParam()),
       MockRead("=\"www.example.com:443\";p=\"1.0\","),
-      MockRead("quic=\":1234\"\r\n\r\n"),
+      MockRead(GetAlternateProtocolFromParam()),
+      MockRead("=\":1234\"\r\n\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, OK),
   };
@@ -9810,7 +9807,8 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
             alternative_service_vector[0].protocol);
   EXPECT_EQ("www.example.com", alternative_service_vector[0].host);
   EXPECT_EQ(443, alternative_service_vector[0].port);
-  EXPECT_EQ(QUIC, alternative_service_vector[1].protocol);
+  EXPECT_EQ(AlternateProtocolFromNextProto(GetProtocol()),
+            alternative_service_vector[1].protocol);
   EXPECT_EQ("www.example.org", alternative_service_vector[1].host);
   EXPECT_EQ(1234, alternative_service_vector[1].port);
 }
@@ -9818,7 +9816,6 @@ TEST_P(HttpNetworkTransactionTest, HonorMultipleAlternativeServiceHeader) {
 // Alternate Protocol headers must be honored even if
 // |parse_alternative_services| is false.
 TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = false;
 
   std::string alternate_protocol_http_header =
@@ -9879,7 +9876,6 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternateProtocolHeader) {
 }
 
 TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
@@ -9943,7 +9939,6 @@ TEST_P(HttpNetworkTransactionTest, EmptyAlternateProtocolHeader) {
 // When |session_deps_.parse_alternative_services = true| and the response has
 // an Alt-Svc header, then the Alternate-Protocol header is not parsed.
 TEST_P(HttpNetworkTransactionTest, AltSvcOverwritesAlternateProtocol) {
-  session_deps_.next_protos = SpdyNextProtos();
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
@@ -10572,7 +10567,6 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolUnsafeBlocked) {
 TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -10661,7 +10655,6 @@ TEST_P(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
 TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -10783,7 +10776,6 @@ TEST_P(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
 TEST_P(HttpNetworkTransactionTest, StallAlternateProtocolForNpnSpdy) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -10913,7 +10905,6 @@ TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForTunneledNpnSpdy) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   ProxyConfig proxy_config;
   proxy_config.set_auto_detect(true);
@@ -11038,7 +11029,6 @@ TEST_P(HttpNetworkTransactionTest,
        UseAlternateProtocolForNpnSpdyWithExistingSpdySession) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11737,11 +11727,10 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
 // This tests the case that a request is issued via http instead of spdy after
 // npn is negotiated.
 TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
+  session_deps_.enable_spdy31 = false;
+  session_deps_.enable_http2 = false;
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  session_deps_.next_protos = next_protos;
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11805,7 +11794,6 @@ TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
 TEST_P(HttpNetworkTransactionTest, SpdyPostNPNServerHangup) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11867,7 +11855,6 @@ class UrlRecordingHttpAuthHandlerMock : public HttpAuthHandlerMock {
 TEST_P(HttpNetworkTransactionTest, SpdyAlternateProtocolThroughProxy) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   session_deps_.proxy_service =
       ProxyService::CreateFixedFromPacResult("PROXY myproxy:70");
@@ -12797,7 +12784,6 @@ TEST_P(HttpNetworkTransactionTest, ClientAuthCertCache_Proxy_Fail) {
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
@@ -12898,7 +12884,6 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
@@ -13027,7 +13012,6 @@ TEST_P(HttpNetworkTransactionTest,
        UseIPConnectionPoolingWithHostCacheExpiration) {
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
-  session_deps_.next_protos = SpdyNextProtos();
 
   // Set up a special HttpNetworkSession with a OneTimeCachingHostResolver.
   OneTimeCachingHostResolver host_resolver(HostPortPair("www.gmail.com", 443));
@@ -13951,7 +13935,6 @@ TEST_P(HttpNetworkTransactionTest, ErrorSocketNotConnected) {
 }
 
 TEST_P(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
-  session_deps_.next_protos = SpdyNextProtos();
   ClientSocketPoolManager::set_max_sockets_per_group(
       HttpNetworkSession::NORMAL_SOCKET_POOL, 1);
   ClientSocketPoolManager::set_max_sockets_per_pool(
@@ -15828,7 +15811,6 @@ TEST_P(HttpNetworkTransactionTest, TotalNetworkBytesChunkedPost) {
 }
 
 TEST_P(HttpNetworkTransactionTest, EnableNPN) {
-  session_deps_.next_protos = NextProtosDefaults();
   session_deps_.enable_npn = true;
 
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
@@ -15841,7 +15823,6 @@ TEST_P(HttpNetworkTransactionTest, EnableNPN) {
 }
 
 TEST_P(HttpNetworkTransactionTest, DisableNPN) {
-  session_deps_.next_protos = NextProtosDefaults();
   session_deps_.enable_npn = false;
 
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));

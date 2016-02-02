@@ -47,7 +47,6 @@
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/sdch/sdch_owner.h"
-#include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -439,8 +438,8 @@ void CrNetEnvironment::InitializeOnNetworkThread() {
   params.network_delegate = main_context_->network_delegate();
   params.http_server_properties = main_context_->http_server_properties();
   params.net_log = main_context_->net_log();
-  params.next_protos =
-      net::NextProtosWithSpdyAndQuic(spdy_enabled(), quic_enabled());
+  params.enable_spdy31 = spdy_enabled();
+  params.enable_http2 = spdy_enabled();
   params.parse_alternative_services = false;
   params.enable_quic = quic_enabled();
   params.alternative_service_probability_threshold =

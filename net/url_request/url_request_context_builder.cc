@@ -179,7 +179,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       host_mapping_rules(NULL),
       testing_fixed_http_port(0),
       testing_fixed_https_port(0),
-      next_protos(NextProtosDefaults()),
+      enable_spdy31(true),
+      enable_http2(true),
       parse_alternative_services(true),
       enable_alternative_service_with_different_host(true),
       enable_quic(false),
@@ -237,8 +238,8 @@ void URLRequestContextBuilder::DisableHttpCache() {
 
 void URLRequestContextBuilder::SetSpdyAndQuicEnabled(bool spdy_enabled,
                                                      bool quic_enabled) {
-  http_network_session_params_.next_protos =
-      NextProtosWithSpdyAndQuic(spdy_enabled, quic_enabled);
+  http_network_session_params_.enable_spdy31 = spdy_enabled;
+  http_network_session_params_.enable_http2 = spdy_enabled;
   http_network_session_params_.enable_quic = quic_enabled;
 }
 
@@ -386,14 +387,17 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.testing_fixed_http_port;
   network_session_params.testing_fixed_https_port =
       http_network_session_params_.testing_fixed_https_port;
+  network_session_params.enable_spdy31 =
+      http_network_session_params_.enable_spdy31;
+  network_session_params.enable_http2 =
+      http_network_session_params_.enable_http2;
+  network_session_params.trusted_spdy_proxy =
+      http_network_session_params_.trusted_spdy_proxy;
   network_session_params.parse_alternative_services =
       http_network_session_params_.parse_alternative_services;
   network_session_params.enable_alternative_service_with_different_host =
       http_network_session_params_
           .enable_alternative_service_with_different_host;
-  network_session_params.trusted_spdy_proxy =
-      http_network_session_params_.trusted_spdy_proxy;
-  network_session_params.next_protos = http_network_session_params_.next_protos;
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
   network_session_params.quic_max_server_configs_stored_in_properties =
       http_network_session_params_.quic_max_server_configs_stored_in_properties;

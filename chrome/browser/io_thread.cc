@@ -995,50 +995,52 @@ void IOThread::ConfigureSpdyGlobals(
     std::string spdy_mode =
         command_line.GetSwitchValueASCII(switches::kUseSpdy);
     ConfigureSpdyGlobalsFromUseSpdyArgument(spdy_mode, globals);
+    // TODO(bnc): https://crbug.com/547781
+    // This command line flag is broken.
+    globals->enable_spdy31.set(false);
+    globals->enable_http2.set(false);
     return;
-  }
-
-  globals->next_protos.clear();
-
-  bool enable_quic = false;
-  globals->enable_quic.CopyToIfSet(&enable_quic);
-  if (enable_quic) {
-    globals->next_protos.push_back(net::kProtoQUIC1SPDY3);
   }
 
   // No SPDY command-line flags have been specified. Examine trial groups.
   if (spdy_trial_group.starts_with(kSpdyFieldTrialHoldbackGroupNamePrefix)) {
     net::HttpStreamFactory::set_spdy_enabled(false);
-  } else if (spdy_trial_group.starts_with(
-                 kSpdyFieldTrialSpdy31GroupNamePrefix)) {
-    globals->next_protos.push_back(net::kProtoSPDY31);
-  } else if (spdy_trial_group.starts_with(
-                 kSpdyFieldTrialSpdy4GroupNamePrefix)) {
-    globals->next_protos.push_back(net::kProtoHTTP2);
-    globals->next_protos.push_back(net::kProtoSPDY31);
-  } else if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
+    return;
+  }
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy31GroupNamePrefix)) {
+    globals->enable_spdy31.set(true);
+    globals->enable_http2.set(false);
+    return;
+  }
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialSpdy4GroupNamePrefix)) {
+    globals->enable_spdy31.set(true);
+    globals->enable_http2.set(true);
+    return;
+  }
+  if (spdy_trial_group.starts_with(kSpdyFieldTrialParametrizedPrefix)) {
     bool spdy_enabled = false;
+    globals->enable_spdy31.set(false);
+    globals->enable_http2.set(false);
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_http2"), "true")) {
-      globals->next_protos.push_back(net::kProtoHTTP2);
       spdy_enabled = true;
+      globals->enable_http2.set(true);
     }
     if (base::LowerCaseEqualsASCII(
             GetVariationParam(spdy_trial_params, "enable_spdy31"), "true")) {
-      globals->next_protos.push_back(net::kProtoSPDY31);
       spdy_enabled = true;
+      globals->enable_spdy31.set(true);
     }
-    // TODO(bnc): HttpStreamFactory::spdy_enabled_ is redundant with
-    // globals->next_protos, can it be eliminated?
+    // TODO(bnc): https://crbug.com/521597
+    // HttpStreamFactory::spdy_enabled_ is redundant with globals->enable_http2
+    // and enable_spdy31, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
-  } else {
-    // By default, enable HTTP/2.
-    globals->next_protos.push_back(net::kProtoHTTP2);
-    globals->next_protos.push_back(net::kProtoSPDY31);
+    return;
   }
 
-  // Enable HTTP/1.1 in all cases as the last protocol.
-  globals->next_protos.push_back(net::kProtoHTTP11);
+  // By default, enable HTTP/2.
+  globals->enable_spdy31.set(true);
+  globals->enable_http2.set(true);
 }
 
 // static
@@ -1166,7 +1168,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->enable_spdy_ping_based_connection_checking);
   globals.spdy_default_protocol.CopyToIfSet(
       &params->spdy_default_protocol);
-  params->next_protos = globals.next_protos;
+  globals.enable_spdy31.CopyToIfSet(&params->enable_spdy31);
+  globals.enable_http2.CopyToIfSet(&params->enable_http2);
   globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.parse_alternative_services.CopyToIfSet(

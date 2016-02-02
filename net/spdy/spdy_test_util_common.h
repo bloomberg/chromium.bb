@@ -52,10 +52,6 @@ const char kDefaultURL[] = "http://www.example.org/";
 const char kUploadData[] = "hello!";
 const int kUploadDataSize = arraysize(kUploadData)-1;
 
-// SpdyNextProtos returns a vector of next protocols for negotiating
-// SPDY.
-NextProtoVector SpdyNextProtos();
-
 // Chop a SpdyFrame into an array of MockWrites.
 // |frame| is the frame to chop.
 // |num_chunks| is the number of chunks to create.
@@ -204,7 +200,8 @@ struct SpdySessionDependencies {
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;
   SpdySession::TimeFunc time_func;
-  NextProtoVector next_protos;
+  bool enable_spdy31;
+  bool enable_http2;
   std::string trusted_spdy_proxy;
   bool parse_alternative_services;
   bool enable_alternative_service_with_different_host;
