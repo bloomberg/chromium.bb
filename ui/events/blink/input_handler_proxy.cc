@@ -1075,6 +1075,7 @@ bool InputHandlerProxy::TouchpadFlingScroll(
     const WebFloatSize& increment) {
   WebMouseWheelEvent synthetic_wheel;
   synthetic_wheel.type = WebInputEvent::MouseWheel;
+  synthetic_wheel.timeStampSeconds = InSecondsF(base::TimeTicks::Now());
   synthetic_wheel.deltaX = increment.width;
   synthetic_wheel.deltaY = increment.height;
   synthetic_wheel.hasPreciseScrollingDeltas = true;
