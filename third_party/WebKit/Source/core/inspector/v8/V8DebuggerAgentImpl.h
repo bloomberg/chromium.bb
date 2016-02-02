@@ -112,6 +112,7 @@ public:
     void flushAsyncOperationEvents(ErrorString*);
     void setAsyncOperationBreakpoint(ErrorString*, int operationId);
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId);
+    void setBlackboxedRanges(ErrorString*, const String& scriptId, const RefPtr<JSONArray>& positions);
 
     void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
     void cancelPauseOnNextStatement() override;
@@ -248,6 +249,7 @@ private:
     bool m_startingStepIntoAsync;
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
     HashMap<String, OwnPtr<SourceMap>> m_sourceMaps;
+    HashMap<String, Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 
 } // namespace blink

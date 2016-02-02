@@ -74,6 +74,7 @@ public:
     virtual void flushAsyncOperationEvents(ErrorString*) = 0;
     virtual void setAsyncOperationBreakpoint(ErrorString*, int in_operationId) = 0;
     virtual void removeAsyncOperationBreakpoint(ErrorString*, int in_operationId) = 0;
+    virtual void setBlackboxedRanges(ErrorString*, const String& in_scriptId, const RefPtr<JSONArray>& in_positions) = 0;
 
     // State management methods.
     virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;

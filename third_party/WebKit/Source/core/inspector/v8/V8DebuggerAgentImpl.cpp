@@ -139,6 +139,13 @@ static PassOwnPtr<SourceMap> parseSourceMapFromDataUrl(const String& url)
     return SourceMap::parse(String(data->data(), data->size()), String());
 }
 
+static bool positionComparator(const std::pair<int, int>& a, const std::pair<int, int>& b)
+{
+    if (a.first != b.first)
+        return a.first < b.first;
+    return a.second < b.second;
+}
+
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
 {
     return adoptPtr(new V8DebuggerAgentImpl(injectedScriptManager, static_cast<V8DebuggerImpl*>(debugger), contextGroupId));
@@ -237,6 +244,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_pausedContext.Reset();
     m_currentCallStack.Reset();
     m_scripts.clear();
+    m_blackboxedPositions.clear();
     m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     internalSetAsyncCallStackDepth(0);
@@ -552,6 +560,16 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<Ja
     }
     if (m_skipContentScripts && it->value.isContentScript())
         return true;
+
+    auto itBlackboxedPositions = m_blackboxedPositions.find(String::number(frame->sourceID()));
+    if (itBlackboxedPositions != m_blackboxedPositions.end()) {
+        const Vector<std::pair<int, int>>& ranges = itBlackboxedPositions->value;
+        auto itRange = std::lower_bound(ranges.begin(), ranges.end(), std::make_pair(frame->line(), frame->column()), positionComparator);
+        // Ranges array contains positions in script where blackbox state is changed.
+        // [(0,0) ... ranges[0]) isn't blackboxed, [ranges[0] ... ranges[1]) is blackboxed...
+        return std::distance(ranges.begin(), itRange) % 2;
+    }
+
     bool isBlackboxed = false;
     String scriptURL = it->value.sourceURL();
     String sourceMappedScriptURL;
@@ -1098,10 +1116,12 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNu
     injectedScript->setVariableValue(errorString, currentCallStack, callFrameId, functionObjectId, scopeNumber, variableName, newValueString);
 }
 
+// TODO(kozyatinskiy): remove this method after blackboxing migration to blackboxed ranges.
 void V8DebuggerAgentImpl::skipStackFrames(ErrorString* errorString, const String* pattern, const bool* skipContentScripts)
 {
     if (!checkEnabled(errorString))
         return;
+    m_blackboxedPositions.clear();
     OwnPtr<ScriptRegexp> compiled;
     String patternValue = pattern ? *pattern : "";
     if (!patternValue.isEmpty()) {
@@ -1382,6 +1402,48 @@ void V8DebuggerAgentImpl::removeAsyncOperationBreakpoint(ErrorString* errorStrin
         return;
     }
     m_asyncOperationBreakpoints.remove(operationId);
+}
+
+void V8DebuggerAgentImpl::setBlackboxedRanges(ErrorString* error, const String& scriptId, const RefPtr<JSONArray>& inPositions)
+{
+    ScriptsMap::iterator it = m_scripts.find(scriptId);
+    if (it == m_scripts.end()) {
+        *error = "No script with passed id.";
+        return;
+    }
+
+    if (!inPositions->length()) {
+        m_blackboxedPositions.remove(scriptId);
+        return;
+    }
+
+    Vector<std::pair<int, int>> positions(inPositions->length());
+    for (size_t i = 0; i < positions.size(); ++i) {
+        RefPtr<JSONObject> positionObj;
+        int line = 0;
+        int column = 0;
+        inPositions->get(i)->asObject(&positionObj);
+        if (!positionObj->getNumber("line", &line) || line < 0) {
+            *error = "Position missing 'line' or 'line' < 0.";
+            return;
+        }
+        if (!positionObj->getNumber("column", &column) || column < 0) {
+            *error = "Position missing 'column' or 'column' < 0.";
+            return;
+        }
+        positions[i] = std::make_pair(line, column);
+    }
+
+    for (size_t i = 1; i < positions.size(); ++i) {
+        if (positions[i - 1].first < positions[i].first)
+            continue;
+        if (positions[i - 1].first == positions[i].first && positions[i - 1].second < positions[i].second)
+            continue;
+        *error = "Input positions array is not sorted or contains duplicate values.";
+        return;
+    }
+
+    m_blackboxedPositions.set(scriptId, positions);
 }
 
 void V8DebuggerAgentImpl::willExecuteScript(int scriptId)
@@ -1711,6 +1773,7 @@ void V8DebuggerAgentImpl::reset()
 {
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
+    m_blackboxedPositions.clear();
     m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();

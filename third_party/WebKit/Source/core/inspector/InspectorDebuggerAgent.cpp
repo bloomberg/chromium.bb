@@ -259,6 +259,11 @@ void InspectorDebuggerAgent::removeAsyncOperationBreakpoint(ErrorString* errorSt
     m_v8DebuggerAgent->removeAsyncOperationBreakpoint(errorString, inOperationId);
 }
 
+void InspectorDebuggerAgent::setBlackboxedRanges(ErrorString* errorString, const String& inScriptId, const RefPtr<JSONArray>& inPositions)
+{
+    m_v8DebuggerAgent->setBlackboxedRanges(errorString, inScriptId, inPositions);
+}
+
 bool InspectorDebuggerAgent::isPaused()
 {
     return m_v8DebuggerAgent->isPaused();

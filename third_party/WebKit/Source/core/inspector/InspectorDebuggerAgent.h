@@ -81,6 +81,7 @@ public:
     void flushAsyncOperationEvents(ErrorString*) override;
     void setAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
     void removeAsyncOperationBreakpoint(ErrorString*, int inOperationId) override;
+    void setBlackboxedRanges(ErrorString*, const String& inScriptId, const RefPtr<JSONArray>& inPositions) override;
 
     // Called by InspectorInstrumentation.
     bool isPaused();
