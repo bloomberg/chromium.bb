@@ -71,6 +71,7 @@ mojom("arc_bindings") {
     "common/power.mojom",
     "common/process.mojom",
     "common/settings.mojom",
+    "common/video.mojom",
   ]
 }
 

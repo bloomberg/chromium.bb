@@ -94,6 +94,7 @@
         'arc/common/power.mojom',
         'arc/common/process.mojom',
         'arc/common/settings.mojom',
+        'arc/common/video.mojom',
       ],
     },
   ],
