@@ -251,13 +251,13 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
         // See http://crbug.com/566939
         if (mModel == null) return;
 
-        mModel.getOfflinePageBridge().checkOfflinePageMetadata();
+        OfflinePageBridge offlinePageBridge = mModel.getOfflinePageBridge();
+        offlinePageBridge.checkOfflinePageMetadata();
 
         Button saveRemoveVisitButton = (Button) findViewById(R.id.offline_page_save_remove_button);
         TextView offlinePageInfoTextView = (TextView) findViewById(R.id.offline_page_info_text);
 
-        OfflinePageItem offlinePage = mModel.getOfflinePageBridge()
-                .getPageByBookmarkId(mBookmarkId);
+        OfflinePageItem offlinePage = offlinePageBridge.getPageByBookmarkId(mBookmarkId);
         if (offlinePage != null) {
             // Offline page exists. Show information and button to remove.
             offlinePageInfoTextView.setText(
@@ -265,7 +265,8 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
                                       R.string.offline_pages_as_bookmarks_offline_page_size),
                             Formatter.formatFileSize(this, offlinePage.getFileSize())));
             updateButtonToDeleteOfflinePage(saveRemoveVisitButton);
-        } else if (mWebContents != null) {
+        } else if (mWebContents != null
+                && offlinePageBridge.canSavePage(mWebContents.getLastCommittedUrl())) {
             // Offline page is not saved, but a bookmarked page is opened. Show save button.
             offlinePageInfoTextView.setText(
                     getString(OfflinePageUtils.getStringId(R.string.bookmark_offline_page_none)));
