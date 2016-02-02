@@ -764,10 +764,6 @@
       'browser/safe_browsing/threat_details_unittest.cc',
       'browser/safe_browsing/ui_manager_unittest.cc',
      ],
-    'chrome_unit_tests_mobile_safe_browsing_sources': [
-      'browser/safe_browsing/remote_database_manager_unittest.cc',
-      'browser/safe_browsing/safe_browsing_api_handler_unittest.cc',
-     ],
     'chrome_unit_tests_full_safe_browsing_sources': [
       'browser/safe_browsing/browser_feature_extractor_unittest.cc',
       'browser/safe_browsing/chunk_range_unittest.cc',
@@ -2502,9 +2498,7 @@
           ],
         }],
         ['safe_browsing==2', {
-          'sources': [ '<@(chrome_unit_tests_mobile_safe_browsing_sources)',
-                       '<@(chrome_unit_tests_shared_safe_browsing_sources)',
-                     ],
+          'sources': [ '<@(chrome_unit_tests_shared_safe_browsing_sources)' ],
         }],
         ['enable_autofill_dialog==1 and OS!="android"', {
           'sources': [ '<@(chrome_unit_tests_autofill_dialog_sources)' ],

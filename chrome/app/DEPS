@@ -20,6 +20,7 @@ include_rules = [
   "+components/nacl/renderer/plugin/ppapi_entrypoints.h",
   "+components/nacl/zygote",
   "+components/policy/core/browser/android",
+  "+components/safe_browsing_db/safe_browsing_api_handler.h",
   "+components/startup_metric_utils/browser",
   "+components/startup_metric_utils/common",
   "+components/upload_list",

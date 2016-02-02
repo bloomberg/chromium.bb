@@ -2521,12 +2521,6 @@
     'chrome_browser_safe_browsing_mobile_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
-      'browser/safe_browsing/remote_database_manager.cc',
-      'browser/safe_browsing/remote_database_manager.h',
-      'browser/safe_browsing/safe_browsing_api_handler.cc',
-      'browser/safe_browsing/safe_browsing_api_handler.h',
-      'browser/safe_browsing/safe_browsing_api_handler_util.cc',
-      'browser/safe_browsing/safe_browsing_api_handler_util.h',
     ],
     # "Safe Browsing Full" files in addition to the "basic" ones to use for
     # full safe browsing. This has some in common with "mobile."
@@ -3549,9 +3543,9 @@
           'sources': [ '<@(chrome_browser_safe_browsing_basic_sources)' ],
           'dependencies': [
             'safe_browsing_chunk_proto',
-            'safe_browsing_metadata_proto',
             'safe_browsing_proto',
             '../components/components.gyp:safe_browsing_db',
+            '../components/components.gyp:safe_browsing_metadata_proto',
           ],
           'conditions': [
             ['safe_browsing == 1', {
@@ -3571,6 +3565,7 @@
               'sources': [ '<@(chrome_browser_safe_browsing_mobile_sources)' ],
               'dependencies': [
                 'safe_browsing_proto',
+                '../components/components.gyp:safe_browsing_db_mobile',
               ],
             }],
           ],
@@ -3973,19 +3968,6 @@
       'target_name': 'safe_browsing_chunk_proto',
       'type': 'static_library',
       'sources': [ 'browser/safe_browsing/chunk.proto' ],
-      'variables': {
-        'proto_in_dir': 'browser/safe_browsing',
-        'proto_out_dir': 'chrome/browser/safe_browsing',
-      },
-      'includes': [ '../build/protoc.gypi' ]
-    },
-    {
-      # Protobuf compiler / generator for the safebrowsing full hash metadata
-      # protocol buffer.
-      # GN version: //chrome/browser/safe_browsing:metadata_proto
-      'target_name': 'safe_browsing_metadata_proto',
-      'type': 'static_library',
-      'sources': [ 'browser/safe_browsing/metadata.proto' ],
       'variables': {
         'proto_in_dir': 'browser/safe_browsing',
         'proto_out_dir': 'chrome/browser/safe_browsing',

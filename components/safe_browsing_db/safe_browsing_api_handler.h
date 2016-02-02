@@ -5,14 +5,14 @@
 // Glue to pass Safe Browsing API requests between
 // RemoteSafeBrowsingDatabaseManager and Java-based API to check URLs.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -24,7 +24,8 @@ class SafeBrowsingApiHandler {
   static SafeBrowsingApiHandler* GetInstance();
 
   typedef base::Callback<void(SBThreatType sb_threat_type,
-                              const std::string& metadata)> URLCheckCallback;
+                              const std::string& metadata)>
+      URLCheckCallback;
 
   // Makes Native->Java call and invokes callback when check is done.
   virtual void StartURLCheck(const URLCheckCallback& callback,
@@ -40,4 +41,4 @@ class SafeBrowsingApiHandler {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_API_HANDLER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_SAFE_BROWSING_API_HANDLER_H_

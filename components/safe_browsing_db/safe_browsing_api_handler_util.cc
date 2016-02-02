@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler_util.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler_util.h"
 
 #include <stddef.h>
 
@@ -13,9 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/safe_browsing/metadata.pb.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
-
+#include "components/safe_browsing_db/metadata.pb.h"
+#include "components/safe_browsing_db/util.h"
 
 namespace safe_browsing {
 namespace {
@@ -41,9 +40,8 @@ void ReportUmaThreatSubType(SBThreatType threat_type,
         "SB2.RemoteCall.ThreatSubType.PotentiallyHarmfulApp", sub_type,
         UMA_THREAT_SUB_TYPE_MAX_VALUE);
   } else {
-    UMA_HISTOGRAM_ENUMERATION(
-        "SB2.RemoteCall.ThreatSubType.SocialEngineering", sub_type,
-        UMA_THREAT_SUB_TYPE_MAX_VALUE);
+    UMA_HISTOGRAM_ENUMERATION("SB2.RemoteCall.ThreatSubType.SocialEngineering",
+                              sub_type, UMA_THREAT_SUB_TYPE_MAX_VALUE);
   }
 }
 
@@ -111,7 +109,6 @@ SBThreatType JavaToSBThreatType(int java_threat_num) {
 
 }  // namespace
 
-
 // Valid examples:
 // {"matches":[{"threat_type":"5"}]}
 //   or
@@ -128,10 +125,11 @@ UmaRemoteCallResult ParseJsonToThreatAndPB(const std::string& metadata_str,
 
   // Pick out the "matches" list.
   scoped_ptr<base::Value> value = base::JSONReader::Read(metadata_str);
-  const base::ListValue* matches;
+  const base::ListValue* matches = nullptr;
   if (!value.get() || !value->IsType(base::Value::TYPE_DICTIONARY) ||
       !(static_cast<base::DictionaryValue*>(value.get()))
-           ->GetList(kJsonKeyMatches, &matches)) {
+           ->GetList(kJsonKeyMatches, &matches) ||
+      !matches) {
     return UMA_STATUS_JSON_FAILED_TO_PARSE;
   }
 

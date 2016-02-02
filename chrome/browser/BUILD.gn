@@ -547,8 +547,8 @@ source_set("browser") {
                     "//chrome")
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
-      "//chrome/browser/safe_browsing:metadata_proto",
       "//chrome/common/safe_browsing:proto",
+      "//components/safe_browsing_db:metadata_proto",
     ]
     if (safe_browsing_mode == 1) {
       sources +=
@@ -564,6 +564,7 @@ source_set("browser") {
           rebase_path(gypi_values.chrome_browser_safe_browsing_mobile_sources,
                       ".",
                       "//chrome")
+      deps += [ "//components/safe_browsing_db:safe_browsing_db_mobile" ]
     }
   }
 

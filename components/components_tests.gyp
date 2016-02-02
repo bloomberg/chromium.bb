@@ -617,6 +617,10 @@
     'rlz_unittest_sources': [
       'rlz/rlz_tracker_unittest.cc',
     ],
+    'safe_browsing_db_mobile_unittest_sources': [
+      'safe_browsing_db/remote_database_manager_unittest.cc',
+      'safe_browsing_db/safe_browsing_api_handler_unittest.cc',
+    ],
     'safe_browsing_db_unittest_sources': [
       'safe_browsing_db/prefix_set_unittest.cc',
       'safe_browsing_db/util_unittest.cc',
@@ -1270,6 +1274,14 @@
                     '../third_party/nss/nss.gyp:nss',
                   ],
                 }],
+              ],
+            }],
+            ['safe_browsing == 2 and OS != "ios"', {
+              'dependencies': [
+                'components.gyp:safe_browsing_db_mobile',
+              ],
+              'sources': [
+                '<@(safe_browsing_db_mobile_unittest_sources)',
               ],
             }],
           ],

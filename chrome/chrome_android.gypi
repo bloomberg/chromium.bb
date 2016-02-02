@@ -18,6 +18,7 @@
         'chrome.gyp:plugin',
         'chrome.gyp:renderer',
         'chrome.gyp:utility',
+        '../components/components.gyp:safe_browsing_db_mobile',
         '../content/content.gyp:content',
         '../content/content.gyp:content_app_both',
       ],

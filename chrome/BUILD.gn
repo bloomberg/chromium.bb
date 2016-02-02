@@ -982,6 +982,7 @@ if (is_android) {
       "//chrome/plugin",
       "//chrome/renderer",
       "//chrome/utility",
+      "//components/safe_browsing_db:safe_browsing_db_mobile",
       "//content/public/app:both",
     ]
   }

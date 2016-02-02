@@ -2389,6 +2389,9 @@
         # TODO(nparker) enable tests for safe_browsing==2.
         ['safe_browsing==1', {
           'sources': [ '<@(chrome_browser_tests_full_safe_browsing_sources)' ],
+          'dependencies': [
+            '../components/components.gyp:safe_browsing_metadata_proto',
+          ],
         }],
         ['enable_captive_portal_detection==1', {
           'sources': [ 'browser/captive_portal/captive_portal_browsertest.cc' ],

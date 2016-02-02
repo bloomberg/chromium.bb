@@ -5,8 +5,8 @@
 // Implementation of the SafeBrowsingDatabaseManager that sends URLs
 // via IPC to a database that chromium doesn't manage locally.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_REMOTE_DATABASE_MANAGER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_REMOTE_DATABASE_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_REMOTE_DATABASE_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_REMOTE_DATABASE_MANAGER_H_
 
 #include <set>
 #include <string>
@@ -77,4 +77,4 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_REMOTE_DATABASE_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_REMOTE_DATABASE_MANAGER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler.h"
 
 namespace safe_browsing {
 

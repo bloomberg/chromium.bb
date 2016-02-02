@@ -56,7 +56,7 @@
 #if defined(SAFE_BROWSING_DB_LOCAL)
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #elif defined(SAFE_BROWSING_DB_REMOTE)
-#include "chrome/browser/safe_browsing/remote_database_manager.h"
+#include "components/safe_browsing_db/remote_database_manager.h"
 #endif
 
 #if defined(FULL_SAFE_BROWSING)

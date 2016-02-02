@@ -7,8 +7,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "chrome/browser/safe_browsing/remote_database_manager.h"
-#include "chrome/browser/safe_browsing/safe_browsing_api_handler.h"
+#include "components/safe_browsing_db/remote_database_manager.h"
+#include "components/safe_browsing_db/safe_browsing_api_handler.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

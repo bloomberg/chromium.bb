@@ -5,8 +5,8 @@
 {
   'targets': [
     {
-      # GN version: //components/safe_browsing_db
-      'target_name': 'safe_browsing_db',
+      # GN version: //components/safe_browsing_db:safe_browsing_db_shared
+      'target_name': 'safe_browsing_db_shared',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -32,11 +32,62 @@
       'msvs_disabled_warnings': [4267, ],
     },
     {
+      # GN version: //components/safe_browsing_db
+      'target_name': 'safe_browsing_db',
+      'type': 'static_library',
+      'dependencies': [
+        ':safe_browsing_db_shared',
+      ],
+      'sources': [
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
+    },
+    {
+      # GN version: //components/safe_browsing_db:safe_browsing_db_mobile
+      'target_name': 'safe_browsing_db_mobile',
+      'type': 'static_library',
+      'dependencies': [
+        ':safe_browsing_db_shared',
+        ':safe_browsing_metadata_proto',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'safe_browsing_db/remote_database_managerh',
+        'safe_browsing_db/remote_database_manager.cc',
+        'safe_browsing_db/safe_browsing_api_handler.h',
+        'safe_browsing_db/safe_browsing_api_handler.cc',
+        'safe_browsing_db/safe_browsing_api_handler_util.h',
+        'safe_browsing_db/safe_browsing_api_handler_util.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+      'msvs_disabled_warnings': [4267, ],
+    },
+    {
       # GN version: //components/safe_browsing_db:proto
       # Protobuf compiler / generator for the Safe Browsing protocol buffer.
       'target_name': 'safebrowsing_proto',
       'type': 'static_library',
       'sources': [ 'safe_browsing_db/safebrowsing.proto' ],
+      'variables': {
+        'proto_in_dir': 'safe_browsing_db',
+        'proto_out_dir': 'components/safe_browsing_db',
+      },
+      'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # Protobuf compiler / generator for the safebrowsing full hash metadata
+      # protocol buffer.
+      # GN version: //components/safe_browsing_db:metadata_proto
+      'target_name': 'safe_browsing_metadata_proto',
+      'type': 'static_library',
+      'sources': [ 'safe_browsing_db/metadata.proto' ],
       'variables': {
         'proto_in_dir': 'safe_browsing_db',
         'proto_out_dir': 'components/safe_browsing_db',
