@@ -1036,6 +1036,7 @@ grit("resources") {
     # file, rather than the whole mojo target which will link the C++ bindings.
     "//chrome/browser/ui/webui/engagement:mojo_bindings__generator",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
+    "//chrome/browser/ui/webui/plugins:mojo_bindings__generator",
   ]
 }
 
