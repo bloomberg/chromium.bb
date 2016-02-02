@@ -237,6 +237,14 @@ the caret inside an empty table cell.  The caret's <code>y-position</code> is
 outside the <code>table-cell</code>.</p>
 
 <h3>
+    <a name="bugfix-emptyNewlineSelection">bugfix/emptyNewlineSelection</a>
+    (Shezan Baig; upstream: <a href="https://code.google.com/p/chromium/issues/detail?id=568663">568663</a>)
+    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FemptyNewlineSelection">view changes</a>]</span>
+</h3>
+<p>Open <a href="repros/tableEditing.html">this link</a> in Chrome, and try to
+select an empty line.  The line-ending is not highlighted.</p>
+
+<h3>
     <a name="bugfix-flexboxStretchAlignment">bugfix/flexboxStretchAlignment</a>
     (Shezan Baig)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FflexboxStretchAlignment">view changes</a>]</span>
