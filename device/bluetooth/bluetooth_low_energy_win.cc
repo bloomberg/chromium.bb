@@ -405,6 +405,7 @@ bool CollectBluetoothLowEnergyDeviceServices(
     BluetoothLowEnergyServiceInfo* service_info =
         new BluetoothLowEnergyServiceInfo();
     service_info->uuid = gatt_service.ServiceUuid;
+    service_info->attribute_handle = gatt_service.AttributeHandle;
     services->push_back(service_info);
   }
 
@@ -462,7 +463,11 @@ bool CollectBluetoothLowEnergyDeviceInfo(
   }
   if (!CollectBluetoothLowEnergyDeviceFriendlyName(
           device_info_handle, &device_info_data, result, error)) {
-    return false;
+    // Only fail if not the GATT service device interface, which doesn't have a
+    // friendly name.
+    if (device_info_data.ClassGuid !=
+        GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE)
+      return false;
   }
   if (!CollectBluetoothLowEnergyDeviceAddress(
           device_info_handle, &device_info_data, result, error)) {
@@ -478,13 +483,15 @@ bool CollectBluetoothLowEnergyDeviceInfo(
 
 enum DeviceInfoResult { kOk, kError, kNoMoreDevices };
 
+// For |device_interface_guid| see the Note of below
+// EnumerateKnownBLEOrBLEGattServiceDevices interface.
 DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
+    GUID device_interface_guid,
     const ScopedDeviceInfoSetHandle& device_info_handle,
     DWORD device_index,
     scoped_ptr<device::win::BluetoothLowEnergyDeviceInfo>* device_info,
     std::string* error) {
-  // Enumerate device of BLUETOOTHLE_DEVICE interface class
-  GUID BluetoothInterfaceGUID = GUID_BLUETOOTHLE_DEVICE_INTERFACE;
+  GUID BluetoothInterfaceGUID = device_interface_guid;
   SP_DEVICE_INTERFACE_DATA device_interface_data = {0};
   device_interface_data.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
   BOOL success = ::SetupDiEnumDeviceInterfaces(device_info_handle.Get(),
@@ -510,9 +517,11 @@ DeviceInfoResult EnumerateSingleBluetoothLowEnergyDevice(
 }
 
 // Opens a Device Info Set that can be used to enumerate Bluetooth LE devices
-// present on the machine.
-HRESULT OpenBluetoothLowEnergyDevices(ScopedDeviceInfoSetHandle* handle) {
-  GUID BluetoothClassGUID = GUID_BLUETOOTHLE_DEVICE_INTERFACE;
+// present on the machine. For |device_interface_guid| see the Note of below
+// EnumerateKnownBLEOrBLEGattServiceDevices interface.
+HRESULT OpenBluetoothLowEnergyDevices(GUID device_interface_guid,
+                                      ScopedDeviceInfoSetHandle* handle) {
+  GUID BluetoothClassGUID = device_interface_guid;
   ScopedDeviceInfoSetHandle result(SetupDiGetClassDevs(
       &BluetoothClassGUID, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE));
   if (!result.IsValid()) {
@@ -521,6 +530,38 @@ HRESULT OpenBluetoothLowEnergyDevices(ScopedDeviceInfoSetHandle* handle) {
 
   (*handle) = result.Pass();
   return S_OK;
+}
+
+// Enumerate known Bluetooth low energy devices or Bluetooth low energy GATT
+// service devices according to |device_interface_guid|.
+// Note: |device_interface_guid| = GUID_BLUETOOTHLE_DEVICE_INTERFACE corresponds
+// Bluetooth low energy devices. |device_interface_guid| =
+// GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE corresponds Bluetooth low energy
+// Gatt service devices.
+bool EnumerateKnownBLEOrBLEGattServiceDevices(
+    GUID guid,
+    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::string* error) {
+  ScopedDeviceInfoSetHandle info_set_handle;
+  HRESULT hr = OpenBluetoothLowEnergyDevices(guid, &info_set_handle);
+  if (FAILED(hr)) {
+    *error = FormatBluetoothError(kDeviceEnumError, hr);
+    return false;
+  }
+
+  for (DWORD i = 0;; ++i) {
+    scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
+    DeviceInfoResult result = EnumerateSingleBluetoothLowEnergyDevice(
+        guid, info_set_handle, i, &device_info, error);
+    switch (result) {
+      case kNoMoreDevices:
+        return true;
+      case kError:
+        return false;
+      case kOk:
+        devices->push_back(std::move(device_info));
+    }
+  }
 }
 
 }  // namespace
@@ -619,26 +660,20 @@ bool EnumerateKnownBluetoothLowEnergyDevices(
     return false;
   }
 
-  ScopedDeviceInfoSetHandle info_set_handle;
-  HRESULT hr = OpenBluetoothLowEnergyDevices(&info_set_handle);
-  if (FAILED(hr)) {
-    *error = FormatBluetoothError(kDeviceEnumError, hr);
+  return EnumerateKnownBLEOrBLEGattServiceDevices(
+      GUID_BLUETOOTHLE_DEVICE_INTERFACE, devices, error);
+}
+
+bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
+    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::string* error) {
+  if (!IsBluetoothLowEnergySupported()) {
+    *error = kPlatformNotSupported;
     return false;
   }
 
-  for (DWORD i = 0;; ++i) {
-    scoped_ptr<BluetoothLowEnergyDeviceInfo> device_info;
-    DeviceInfoResult result = EnumerateSingleBluetoothLowEnergyDevice(
-        info_set_handle, i, &device_info, error);
-    switch (result) {
-      case kNoMoreDevices:
-        return true;
-      case kError:
-        return false;
-      case kOk:
-        devices->push_back(device_info.Pass());
-    }
-  }
+  return EnumerateKnownBLEOrBLEGattServiceDevices(
+      GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE, devices, error);
 }
 
 bool EnumerateKnownBluetoothLowEnergyServices(

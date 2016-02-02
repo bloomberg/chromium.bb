@@ -526,7 +526,8 @@ bool BluetoothTaskManagerWin::DiscoverServices(
     } else {
       if (!DiscoverLowEnergyDeviceServices(device->path,
                                            service_record_states)) {
-        return false;
+        return SearchForGattServiceDevicePaths(device->address,
+                                               service_record_states);
       }
     }
   }
@@ -650,8 +651,65 @@ bool BluetoothTaskManagerWin::DiscoverLowEnergyDeviceServices(
     ServiceRecordState* service_state = new ServiceRecordState();
     service_state->gatt_uuid =
         BluetoothLowEnergyUuidToBluetoothUuid((*iter2)->uuid);
+    service_state->attribute_handle = (*iter2)->attribute_handle;
     service_record_states->push_back(service_state);
   }
+  return true;
+}
+
+// Each GATT service of a BLE device will be listed on the machine as a BLE
+// device interface with a matching service attribute handle. This interface
+// lists all GATT service devices and matches them back to correspond GATT
+// service of the BLE device according to their address and included service
+// attribute handles, as we did not find a more neat way to bond them.
+bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
+    const std::string device_address,
+    ScopedVector<ServiceRecordState>* service_record_states) {
+  std::string error;
+
+  // List all known GATT service devices on the machine.
+  ScopedVector<win::BluetoothLowEnergyDeviceInfo> gatt_service_devices;
+  bool success = win::EnumerateKnownBluetoothLowEnergyGattServiceDevices(
+      &gatt_service_devices, &error);
+  if (!success) {
+    LogPollingError(error.c_str(), 0);
+    return false;
+  }
+
+  for (auto gatt_service_device : gatt_service_devices) {
+    // Only care about the service devices with |device_address|.
+    if (BluetoothAddressToCanonicalString(gatt_service_device->address) !=
+        device_address) {
+      continue;
+    }
+
+    // Discover this service device's contained services.
+    ScopedVector<win::BluetoothLowEnergyServiceInfo> gatt_services;
+    if (!win::EnumerateKnownBluetoothLowEnergyServices(
+            gatt_service_device->path, &gatt_services, &error)) {
+      LogPollingError(error.c_str(), 0);
+      continue;
+    }
+
+    // Usually each service device correspond to one Gatt service.
+    if (gatt_services.size() > 1) {
+      LOG(WARNING) << "This GATT service device contains more than one ("
+                   << gatt_services.size() << ") services";
+    }
+
+    // Associate service device to corresponding service record. Attribute
+    // handle is unique on one device.
+    for (auto gatt_service : gatt_services) {
+      for (auto service_record_state : *service_record_states) {
+        if (service_record_state->attribute_handle ==
+            gatt_service->attribute_handle) {
+          service_record_state->path = gatt_service_device->path;
+          break;
+        }
+      }
+    }
+  }
+
   return true;
 }
 

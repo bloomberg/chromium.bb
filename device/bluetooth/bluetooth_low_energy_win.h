@@ -83,6 +83,8 @@ struct BluetoothLowEnergyServiceInfo {
   ~BluetoothLowEnergyServiceInfo();
 
   BTH_LE_UUID uuid;
+  // Attribute handle uniquely identifies this service on the device.
+  USHORT attribute_handle = 0;
 };
 
 struct BluetoothLowEnergyDeviceInfo {
@@ -104,6 +106,17 @@ struct BluetoothLowEnergyDeviceInfo {
 // Note: This function returns an error if Bluetooth Low Energy is not supported
 // on this Windows platform.
 bool EnumerateKnownBluetoothLowEnergyDevices(
+    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+    std::string* error);
+
+// Enumerates the list of known Bluetooth LE GATT service devices on this
+// machine (a Bluetooth LE device usually has more than one GATT
+// services that each of them has a device interface on the machine). In case
+// of error, returns false and sets |error| with an error message describing the
+// problem.
+// Note: This function returns an error if Bluetooth Low Energy is not supported
+// on this Windows platform.
+bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
     ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
     std::string* error);
 

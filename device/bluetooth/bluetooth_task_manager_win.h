@@ -56,6 +56,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
     std::vector<uint8_t> sdp_bytes;
     // Properties specific to Bluetooth LE devices.
     BluetoothUUID gatt_uuid;
+    uint16_t attribute_handle;
+    // GATT service device path.
+    // Note: Operation of the included characteristics and descriptors of this
+    // service must use service device path instead of resident device device
+    // path.
+    base::FilePath path;
   };
 
   struct DEVICE_BLUETOOTH_EXPORT DeviceState {
@@ -194,6 +200,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothTaskManagerWin
   // Discover Bluetooth Low Energy services for the given |device_path|.
   bool DiscoverLowEnergyDeviceServices(
       const base::FilePath& device_path,
+      ScopedVector<ServiceRecordState>* service_record_states);
+
+  // Search for device paths of the GATT services in |*service_record_states|
+  // from |device_address|.
+  bool SearchForGattServiceDevicePaths(
+      const std::string device_address,
       ScopedVector<ServiceRecordState>* service_record_states);
 
   // UI task runner reference.
