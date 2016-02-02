@@ -22,9 +22,7 @@ class Shell;
 
 namespace mus {
 class Window;
-namespace mojom {
-class WindowTreeHost;
-}
+class WindowManagerClient;
 }
 
 namespace mash {
@@ -37,7 +35,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // NonClientFrameController deletes itself when |window| is destroyed.
   NonClientFrameController(mojo::Shell* shell,
                            mus::Window* window,
-                           mus::mojom::WindowTreeHost* window_tree_host);
+                           mus::WindowManagerClient* window_manager_client);
 
   // Returns the preferred client area insets.
   static gfx::Insets GetPreferredClientAreaInsets();
@@ -72,8 +70,6 @@ class NonClientFrameController : public views::WidgetDelegateView,
   // WARNING: as widget delays destruction there is a portion of time when this
   // is null.
   mus::Window* window_;
-
-  mus::mojom::WindowTreeHost* mus_window_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameController);
 };

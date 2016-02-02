@@ -37,10 +37,9 @@ void AssertTrue(bool success) {
 RootWindowController* RootWindowController::CreateUsingWindowTreeHost(
     WindowManagerApplication* app) {
   RootWindowController* controller = new RootWindowController(app);
-  mus::CreateSingleWindowTreeHost(
-      app->app(), controller->host_client_binding_.CreateInterfacePtrAndBind(),
-      controller, &controller->window_tree_host_,
-      controller->window_manager_.get());
+  mus::CreateWindowTreeHost(app->app(), controller,
+                            &controller->window_tree_host_,
+                            controller->window_manager_.get());
   return controller;
 }
 
@@ -87,11 +86,15 @@ bool RootWindowController::WindowIsContainer(const mus::Window* window) const {
   return window && window->parent() == root_;
 }
 
+mus::WindowManagerClient* RootWindowController::window_manager_client() {
+  return window_manager_->window_manager_client();
+}
+
 void RootWindowController::OnAccelerator(uint32_t id,
                                          mus::mojom::EventPtr event) {
   switch (id) {
     case kWindowSwitchAccelerator:
-      window_tree_host_->ActivateNextWindow();
+      window_manager_client()->ActivateNextWindow();
       break;
     default:
       app_->OnAccelerator(id, std::move(event));
@@ -100,14 +103,14 @@ void RootWindowController::OnAccelerator(uint32_t id,
 }
 
 RootWindowController::RootWindowController(WindowManagerApplication* app)
-    : app_(app), root_(nullptr), window_count_(0), host_client_binding_(this) {
+    : app_(app), root_(nullptr), window_count_(0) {
   window_manager_.reset(new WindowManager);
 }
 
 RootWindowController::~RootWindowController() {}
 
 void RootWindowController::AddAccelerators() {
-  window_manager_->window_manager_client()->AddAccelerator(
+  window_manager_client()->AddAccelerator(
       kWindowSwitchAccelerator,
       mus::CreateKeyMatcher(mus::mojom::KeyboardCode::TAB,
                             mus::mojom::kEventFlagControlDown),
@@ -131,7 +134,7 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
   window_layout_.reset(
       new WindowLayout(GetWindowForContainer(mojom::Container::USER_WINDOWS)));
-  window_tree_host_->AddActivationParent(window->id());
+  window_manager_client()->AddActivationParent(window);
   window_tree_host_->SetTitle("Mash");
 
   AddAccelerators();

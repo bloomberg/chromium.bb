@@ -110,7 +110,7 @@ mus::Window* WindowManager::NewTopLevelWindow(
   if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |window| is destroyed.
     new NonClientFrameController(root_controller_->GetShell(), window,
-                                 root_controller_->window_tree_host());
+                                 root_controller_->window_manager_client());
   }
 
   root_controller_->IncrementWindowCount();

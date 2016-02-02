@@ -76,11 +76,18 @@ UserWindowControllerImpl::UserWindowControllerImpl()
     : root_controller_(nullptr) {}
 
 UserWindowControllerImpl::~UserWindowControllerImpl() {
-  if (root_controller_) {
-    GetUserWindowContainer()->RemoveObserver(this);
-    for (auto iter : GetUserWindowContainer()->children())
-      iter->RemoveObserver(window_title_observer_.get());
-  }
+  if (!root_controller_)
+    return;
+
+  // TODO(msw): should really listen for user window container being destroyed
+  // and cleanup there.
+  mus::Window* user_container = GetUserWindowContainer();
+  if (!user_container)
+    return;
+
+  user_container->RemoveObserver(this);
+  for (auto iter : user_container->children())
+    iter->RemoveObserver(window_title_observer_.get());
 }
 
 void UserWindowControllerImpl::Initialize(

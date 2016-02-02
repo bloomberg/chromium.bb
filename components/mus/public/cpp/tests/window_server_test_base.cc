@@ -30,6 +30,7 @@ WindowServerTestBase::WindowServerTestBase()
     : most_recent_connection_(nullptr),
       window_manager_(nullptr),
       window_manager_delegate_(nullptr),
+      window_manager_client_(nullptr),
       window_tree_connection_destroyed_(false) {}
 
 WindowServerTestBase::~WindowServerTestBase() {}
@@ -64,15 +65,10 @@ bool WindowServerTestBase::QuitRunLoop() {
 void WindowServerTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  CreateSingleWindowTreeHost(
-      application_impl(), mojom::WindowTreeHostClientPtr(), this, &host_, this);
+  CreateWindowTreeHost(application_impl(), this, &host_, this);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);
-}
-
-void WindowServerTestBase::TearDown() {
-  ApplicationTestBase::TearDown();
 }
 
 mojo::ApplicationDelegate* WindowServerTestBase::GetApplicationDelegate() {
@@ -88,7 +84,8 @@ bool WindowServerTestBase::ConfigureIncomingConnection(
 void WindowServerTestBase::OnEmbed(Window* root) {
   most_recent_connection_ = root->connection();
   EXPECT_TRUE(QuitRunLoop());
-  host_->AddActivationParent(root->id());
+  ASSERT_TRUE(window_manager_client_);
+  window_manager_client_->AddActivationParent(root);
 }
 
 void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
@@ -96,6 +93,7 @@ void WindowServerTestBase::OnConnectionLost(WindowTreeConnection* connection) {
 }
 
 void WindowServerTestBase::SetWindowManagerClient(WindowManagerClient* client) {
+  window_manager_client_ = client;
 }
 
 bool WindowServerTestBase::OnWmSetBounds(Window* window, gfx::Rect* bounds) {

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -22,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
 
@@ -168,10 +170,8 @@ class ClientViewMus : public views::ClientView {
 NonClientFrameController::NonClientFrameController(
     mojo::Shell* shell,
     mus::Window* window,
-    mus::mojom::WindowTreeHost* window_tree_host)
-    : widget_(new views::Widget),
-      window_(window),
-      mus_window_tree_host_(window_tree_host) {
+    mus::WindowManagerClient* window_manager_client)
+    : widget_(new views::Widget), window_(window) {
   window_->AddObserver(this);
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -184,10 +184,9 @@ NonClientFrameController::NonClientFrameController(
 
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
-  mus_window_tree_host_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      window->id(), shadow_inset, shadow_inset,
-      mojo::Insets::From(
-          FrameBorderHitTestController::GetResizeOutsideBoundsSize()));
+  window_manager_client->SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      window, gfx::Vector2d(shadow_inset, shadow_inset),
+      FrameBorderHitTestController::GetResizeOutsideBoundsSize());
 }
 
 // static

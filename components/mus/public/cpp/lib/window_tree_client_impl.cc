@@ -913,4 +913,24 @@ void WindowTreeClientImpl::RemoveAccelerator(uint32_t id) {
   window_manager_internal_client_->RemoveAccelerator(id);
 }
 
+void WindowTreeClientImpl::AddActivationParent(Window* window) {
+  window_manager_internal_client_->AddActivationParent(window->id());
+}
+
+void WindowTreeClientImpl::RemoveActivationParent(Window* window) {
+  window_manager_internal_client_->RemoveActivationParent(window->id());
+}
+
+void WindowTreeClientImpl::ActivateNextWindow() {
+  window_manager_internal_client_->ActivateNextWindow();
+}
+
+void WindowTreeClientImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
+    Window* window,
+    const gfx::Vector2d& offset,
+    const gfx::Insets& hit_area) {
+  window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      window->id(), offset.x(), offset.y(), mojo::Insets::From(hit_area));
+}
+
 }  // namespace mus

@@ -16,6 +16,10 @@ namespace mojo {
 class Shell;
 }
 
+namespace mus {
+class WindowManagerClient;
+}
+
 namespace mash {
 namespace wm {
 
@@ -32,7 +36,6 @@ class WindowManagerApplication;
 // RootWindowController deletes itself when the root mus::Window is destroyed.
 // You can trigger deletion explicitly by way of Destroy().
 class RootWindowController : public mus::WindowObserver,
-                             public mus::mojom::WindowTreeHostClient,
                              public mus::WindowTreeDelegate {
  public:
   static RootWindowController* CreateUsingWindowTreeHost(
@@ -58,10 +61,7 @@ class RootWindowController : public mus::WindowObserver,
 
   WindowManager* window_manager() { return window_manager_.get(); }
 
-  // TODO(sky): don't expose this, it may be null.
-  mus::mojom::WindowTreeHost* window_tree_host() {
-    return window_tree_host_.get();
-  }
+  mus::WindowManagerClient* window_manager_client();
 
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event);
 
@@ -95,7 +95,6 @@ class RootWindowController : public mus::WindowObserver,
   scoped_ptr<ShadowController> shadow_controller_;
 
   mus::mojom::WindowTreeHostPtr window_tree_host_;
-  mojo::Binding<mus::mojom::WindowTreeHostClient> host_client_binding_;
 
   mus::mojom::DisplayPtr display_;
 

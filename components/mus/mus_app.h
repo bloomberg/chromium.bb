@@ -100,7 +100,6 @@ class MandolineUIServicesApp
 
   // mojom::WindowTreeHostFactory implementation.
   void CreateWindowTreeHost(mojo::InterfaceRequest<mojom::WindowTreeHost> host,
-                            mojom::WindowTreeHostClientPtr host_client,
                             mojom::WindowTreeClientPtr tree_client) override;
 
   mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;

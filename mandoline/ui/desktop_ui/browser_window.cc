@@ -119,7 +119,7 @@ BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
       find_active_(0),
       find_count_(0),
       web_view_(this) {
-  mus::CreateWindowTreeHost(host_factory, nullptr, this, &host_, this);
+  mus::CreateWindowTreeHost(host_factory, this, &host_, this);
 }
 
 void BrowserWindow::LoadURL(const GURL& url) {
@@ -209,7 +209,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   host_->SetSize(mojo::Size::From(gfx::Size(1280, 800)));
 
   root_->AddChild(content_);
-  host_->AddActivationParent(root_->id());
+  window_manager_client_->AddActivationParent(root_);
   content_->SetVisible(true);
 
   web_view_.Init(app_, content_);

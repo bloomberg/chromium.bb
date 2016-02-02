@@ -338,6 +338,14 @@ class WindowTreeImpl : public mojom::WindowTree,
                       mojom::EventMatcherPtr event_matcher,
                       const AddAcceleratorCallback& callback) override;
   void RemoveAccelerator(uint32_t id) override;
+  void AddActivationParent(Id transport_window_id) override;
+  void RemoveActivationParent(Id transport_window_id) override;
+  void ActivateNextWindow() override;
+  void SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      Id window_id,
+      int32_t x_offset,
+      int32_t y_offset,
+      mojo::InsetsPtr hit_area) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(

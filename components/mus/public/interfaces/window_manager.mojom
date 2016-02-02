@@ -54,6 +54,21 @@ interface WindowManager {
 // This interface is only used as an associated interface and is associated
 // with WindowTree.
 interface WindowManagerClient {
+  // Enables (or disables) child windows of |window_id| to be activated.
+  AddActivationParent(uint32 window_id);
+  RemoveActivationParent(uint32 window_id);
+
+  ActivateNextWindow();
+
+  // Sets the underlay surface offset for the specified window and additional
+  // hit area. The underlay surface is drawn at the bounds of the window minus
+  // the offset. The hit area is extended from the bounds of the window by
+  // |hit_area|.
+  SetUnderlaySurfaceOffsetAndExtendedHitArea(uint32 window_id,
+                                             int32 x_offset,
+                                             int32 y_offset,
+                                             mojo.Insets hit_area);
+
   // Add and remove accelerators. When accelerators are registered the
   // WindowManager receives the event via OnAccelerator() rather than the
   // target window. The id is defined by the client and can be used to more

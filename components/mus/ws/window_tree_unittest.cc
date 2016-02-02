@@ -472,8 +472,7 @@ class WindowTreeTest : public testing::Test {
     connection_manager_.reset(
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     WindowTreeHostImpl* host = new WindowTreeHostImpl(
-        mus::mojom::WindowTreeHostClientPtr(), connection_manager_.get(),
-        nullptr, scoped_refptr<GpuState>(),
+        connection_manager_.get(), nullptr, scoped_refptr<GpuState>(),
         scoped_refptr<mus::SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.
@@ -535,7 +534,7 @@ void WindowTreeTest::SetupEventTargeting(
   ASSERT_TRUE(child1);
   EXPECT_TRUE(connection1->AddWindow(
       ClientWindowIdForWindow(connection1, embed_window), child1_id));
-  connection1->GetHost(embed_window)->AddActivationParent(embed_window_id.id);
+  connection1->GetHost(embed_window)->AddActivationParent(embed_window);
 
   child1->SetVisible(true);
   child1->SetBounds(gfx::Rect(20, 20, 20, 20));
@@ -603,7 +602,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   connection1_client->tracker()->changes()->clear();
   wm_client()->tracker()->changes()->clear();
 
-  host1->AddActivationParent(embed_window_id.id);
+  host1->AddActivationParent(embed_window);
 
   // Focus should go to child1. This result in notifying both the window
   // manager and client connection being notified.

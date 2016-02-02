@@ -789,6 +789,12 @@ TEST_F(WindowServerTest, FocusNonFocusableWindow) {
 
 TEST_F(WindowServerTest, Activation) {
   Window* parent = NewVisibleWindow(GetFirstWMRoot(), window_manager());
+
+  // Allow the child windows to be activated. Do this before we wait, that way
+  // we're guaranteed that when we request focus from a separate client the
+  // requests are processed in order.
+  window_manager_client()->AddActivationParent(parent);
+
   Window* child1 = NewVisibleWindow(parent, window_manager());
   Window* child2 = NewVisibleWindow(parent, window_manager());
   Window* child3 = NewVisibleWindow(parent, window_manager());
@@ -804,9 +810,6 @@ TEST_F(WindowServerTest, Activation) {
   Window* child21 = NewVisibleWindow(GetFirstRoot(embedded2), embedded2);
 
   WaitForTreeSizeToMatch(parent, 6);
-
-  // Allow the child windows to be activated.
-  host()->AddActivationParent(parent->id());
 
   // |child2| and |child3| are stacked about |child1|.
   EXPECT_GT(ValidIndexOf(parent->children(), child2),
@@ -866,7 +869,7 @@ TEST_F(WindowServerTest, ActivationNext) {
   Window* expecteds[] = { child3, child2, child1, child3, nullptr };
   Window* focused[] = { child31, child21, child11, child31, nullptr };
   for (size_t index = 0; expecteds[index]; ++index) {
-    host()->ActivateNextWindow();
+    window_manager_client()->ActivateNextWindow();
     WaitForWindowToHaveFocus(focused[index]);
     EXPECT_TRUE(focused[index]->HasFocus());
     EXPECT_EQ(parent->children().back(), expecteds[index]);

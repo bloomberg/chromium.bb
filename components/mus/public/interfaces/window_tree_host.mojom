@@ -4,8 +4,6 @@
 
 module mus.mojom;
 
-import "components/mus/public/interfaces/input_event_constants.mojom";
-import "components/mus/public/interfaces/input_key_codes.mojom";
 import "components/mus/public/interfaces/window_tree.mojom";
 import "ui/mojo/geometry/geometry.mojom";
 
@@ -17,33 +15,11 @@ interface WindowTreeHost {
 
   // Sets a title string to be displayed on the platform window.
   SetTitle(string title);
-
-  // Enables (or disables) child windows of |window_id| to be activated.
-  AddActivationParent(uint32 window_id);
-  RemoveActivationParent(uint32 window_id);
-
-  ActivateNextWindow();
-
-  // Sets the underlay surface offset for the specified window and additional
-  // hit area. The underlay surface is drawn at the bounds of the window minus
-  // the offset. The hit area is extended from the bounds of the window by
-  // |hit_area|.
-  // TODO(sky): pull this into the WindowTree API exposed for the
-  // windowmanager.
-  SetUnderlaySurfaceOffsetAndExtendedHitArea(uint32 window_id,
-                                             int32 x_offset,
-                                             int32 y_offset,
-                                             mojo.Insets hit_area);
-};
-
-// TODO(sky): get rid of this.
-interface WindowTreeHostClient {
 };
 
 interface WindowTreeHostFactory {
   // Creates a new WindowTreeHost. |tree_client| is queried for the
   // WindowManager.
   CreateWindowTreeHost(WindowTreeHost& window_tree_host,
-                       WindowTreeHostClient? host_client,
                        WindowTreeClient tree_client);
 };

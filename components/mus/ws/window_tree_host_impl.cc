@@ -86,7 +86,6 @@ WindowTreeHostImpl::QueuedEvent::QueuedEvent() {}
 WindowTreeHostImpl::QueuedEvent::~QueuedEvent() {}
 
 WindowTreeHostImpl::WindowTreeHostImpl(
-    mojom::WindowTreeHostClientPtr client,
     ConnectionManager* connection_manager,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
@@ -94,7 +93,6 @@ WindowTreeHostImpl::WindowTreeHostImpl(
     : id_(next_id++),
       delegate_(nullptr),
       connection_manager_(connection_manager),
-      client_(std::move(client)),
       event_dispatcher_(this),
       display_manager_(
           DisplayManager::Create(app_impl, gpu_state, surfaces_state)),
@@ -106,10 +104,6 @@ WindowTreeHostImpl::WindowTreeHostImpl(
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
   display_manager_->Init(this);
-  if (client_) {
-    client_.set_connection_error_handler(base::Bind(
-        &WindowTreeHostImpl::OnClientClosed, base::Unretained(this)));
-  }
 }
 
 WindowTreeHostImpl::~WindowTreeHostImpl() {
@@ -191,6 +185,14 @@ void WindowTreeHostImpl::DestroyFocusController() {
   focus_controller_.reset();
 }
 
+void WindowTreeHostImpl::AddActivationParent(ServerWindow* window) {
+  activation_parents_.Add(window);
+}
+
+void WindowTreeHostImpl::RemoveActivationParent(ServerWindow* window) {
+  activation_parents_.Remove(window);
+}
+
 void WindowTreeHostImpl::UpdateTextInputState(ServerWindow* window,
                                               const ui::TextInputState& state) {
   // Do not need to update text input for unfocused windows.
@@ -232,52 +234,6 @@ void WindowTreeHostImpl::SetSize(mojo::SizePtr size) {
 
 void WindowTreeHostImpl::SetTitle(const mojo::String& title) {
   display_manager_->SetTitle(title.To<base::string16>());
-}
-
-void WindowTreeHostImpl::AddActivationParent(Id transport_window_id) {
-  ServerWindow* window = GetWindowFromWindowTreeHost(transport_window_id);
-  if (window)
-    activation_parents_.insert(window->id());
-}
-
-void WindowTreeHostImpl::RemoveActivationParent(Id transport_window_id) {
-  ServerWindow* window = GetWindowFromWindowTreeHost(transport_window_id);
-  if (window)
-    activation_parents_.erase(window->id());
-}
-
-void WindowTreeHostImpl::ActivateNextWindow() {
-  focus_controller_->ActivateNextWindow();
-}
-
-void WindowTreeHostImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
-    Id window_id,
-    int32_t x_offset,
-    int32_t y_offset,
-    mojo::InsetsPtr hit_area) {
-  ServerWindow* window = GetWindowFromWindowTreeHost(window_id);
-  if (!window)
-    return;
-
-  window->SetUnderlayOffset(gfx::Vector2d(x_offset, y_offset));
-  window->set_extended_hit_test_region(hit_area.To<gfx::Insets>());
-}
-
-ServerWindow* WindowTreeHostImpl::GetWindowFromWindowTreeHost(
-    Id transport_window_id) {
-  WindowTreeImpl* connection = GetWindowTree();
-  if (!connection)
-    return nullptr;
-  return connection->GetWindowByClientId(ClientWindowId(transport_window_id));
-}
-
-void WindowTreeHostImpl::OnClientClosed() {
-  // |display_manager_.reset()| destroys the display-manager first, and then
-  // sets |display_manager_| to nullptr. However, destroying |display_manager_|
-  // can destroy the corresponding WindowTreeHostConnection, and |this|. So
-  // setting it to nullptr afterwards in reset() ends up writing on free'd
-  // memory. So transfer over to a local scoped_ptr<> before destroying it.
-  scoped_ptr<DisplayManager> temp = std::move(display_manager_);
 }
 
 void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
@@ -427,7 +383,7 @@ void WindowTreeHostImpl::OnCompositorFrameDrawn() {
 }
 
 bool WindowTreeHostImpl::CanHaveActiveChildren(ServerWindow* window) const {
-  return window && activation_parents_.count(window->id()) > 0;
+  return window && activation_parents_.Contains(window);
 }
 
 void WindowTreeHostImpl::OnActivationChanged(ServerWindow* old_active_window,

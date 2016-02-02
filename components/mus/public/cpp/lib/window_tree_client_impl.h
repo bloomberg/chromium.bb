@@ -236,6 +236,13 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                       mojom::EventMatcherPtr event_matcher,
                       const base::Callback<void(bool)>& callback) override;
   void RemoveAccelerator(uint32_t id) override;
+  void AddActivationParent(Window* window) override;
+  void RemoveActivationParent(Window* window) override;
+  void ActivateNextWindow() override;
+  void SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      Window* window,
+      const gfx::Vector2d& offset,
+      const gfx::Insets& hit_area) override;
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this connection.

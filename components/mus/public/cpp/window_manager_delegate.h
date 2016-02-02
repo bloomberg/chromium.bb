@@ -17,7 +17,9 @@
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 
 namespace gfx {
+class Insets;
 class Rect;
+class Vector2d;
 }
 
 namespace mus {
@@ -35,6 +37,13 @@ class WindowManagerClient {
                               mojom::EventMatcherPtr event_matcher,
                               const base::Callback<void(bool)>& callback) = 0;
   virtual void RemoveAccelerator(uint32_t id) = 0;
+  virtual void AddActivationParent(Window* window) = 0;
+  virtual void RemoveActivationParent(Window* window) = 0;
+  virtual void ActivateNextWindow() = 0;
+  virtual void SetUnderlaySurfaceOffsetAndExtendedHitArea(
+      Window* window,
+      const gfx::Vector2d& offset,
+      const gfx::Insets& hit_area) = 0;
 
  protected:
   virtual ~WindowManagerClient() {}
