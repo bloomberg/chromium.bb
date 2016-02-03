@@ -30,8 +30,6 @@ class NET_EXPORT ServerSocket {
 
   // Binds the socket with address and port, and starts listening. It expects
   // a valid IPv4 or IPv6 address. Otherwise, it returns ERR_ADDRESS_INVALID.
-  // Subclasses may override this function if |address_string| is in a different
-  // format, for example, unix domain socket path.
   virtual int ListenWithAddressAndPort(const std::string& address_string,
                                        uint16_t port,
                                        int backlog);
