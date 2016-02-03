@@ -11,7 +11,9 @@
  */
 function $(id) {
   var el = document.getElementById(id);
-  return el ? assertInstanceof(el, HTMLElement) : null;
+  var message =
+      'Element ' + el + ' with id "' + id + '" is not an HTMLElement.';
+  return el ? assertInstanceof(el, HTMLElement, message) : null;
 }
 
 /**
