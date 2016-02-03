@@ -406,6 +406,10 @@ void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
   int width = icon.Width();
   int height = icon.Height();
 
+  // Don't try to scale too small icons.
+  if (width < 16 || height < 16)
+    return;
+
   // Profile avatars are supposed to be displayed with a circular mask, so apply
   // one.
   gfx::Path circular_mask;
