@@ -115,7 +115,7 @@ const unsigned kMaxTransformArguments = 6;
 using TransformArguments = Vector<float, kMaxTransformArguments>;
 
 template<typename CharType>
-int parseTransformArgumentsForType(
+SVGParseStatus parseTransformArgumentsForType(
     SVGTransformType type,
     const CharType*& ptr, const CharType* end,
     TransformArguments& arguments)
@@ -145,10 +145,12 @@ int parseTransformArgumentsForType(
         }
     }
 
-    if (trailingDelimiter || !(arguments.size() == required || arguments.size() == maxPossibleParams))
-        return -1;
+    if (!(arguments.size() == required || arguments.size() == maxPossibleParams))
+        return SVGParseStatus::ExpectedNumber;
+    if (trailingDelimiter)
+        return SVGParseStatus::TrailingGarbage;
 
-    return safeCast<int>(arguments.size());
+    return SVGParseStatus::NoError;
 }
 
 PassRefPtrWillBeRawPtr<SVGTransform> createTransformFromValues(SVGTransformType type, const TransformArguments& arguments)
@@ -194,30 +196,31 @@ PassRefPtrWillBeRawPtr<SVGTransform> createTransformFromValues(SVGTransformType 
 } // namespace
 
 template<typename CharType>
-bool SVGTransformList::parseInternal(const CharType*& ptr, const CharType* end)
+SVGParsingError SVGTransformList::parseInternal(const CharType*& ptr, const CharType* end)
 {
     clear();
 
+    const CharType* start = ptr;
     bool delimParsed = false;
     while (skipOptionalSVGSpaces(ptr, end)) {
         delimParsed = false;
 
         SVGTransformType transformType = parseAndSkipTransformType(ptr, end);
         if (transformType == SVG_TRANSFORM_UNKNOWN)
-            return false;
+            return SVGParsingError(SVGParseStatus::ParsingFailed, ptr - start);
 
         if (!skipOptionalSVGSpaces(ptr, end) || *ptr != '(')
-            return false;
+            return SVGParsingError(SVGParseStatus::ParsingFailed, ptr - start);
         ptr++;
 
         TransformArguments arguments;
-        int valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
-        if (valueCount < 0)
-            return false;
-        ASSERT(static_cast<unsigned>(valueCount) >= requiredValuesForType[transformType]);
+        SVGParseStatus status = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        if (status != SVGParseStatus::NoError)
+            return SVGParsingError(status, ptr - start);
+        ASSERT(arguments.size() >= requiredValuesForType[transformType]);
 
         if (!skipOptionalSVGSpaces(ptr, end) || *ptr != ')')
-            return false;
+            return SVGParsingError(SVGParseStatus::ExpectedEndOfArguments, ptr - start);
         ptr++;
 
         append(createTransformFromValues(transformType, arguments));
@@ -227,17 +230,19 @@ bool SVGTransformList::parseInternal(const CharType*& ptr, const CharType* end)
             delimParsed = true;
         }
     }
-    return !delimParsed;
+    if (delimParsed)
+        return SVGParsingError(SVGParseStatus::TrailingGarbage, ptr - start);
+    return SVGParseStatus::NoError;
 }
 
 bool SVGTransformList::parse(const UChar*& ptr, const UChar* end)
 {
-    return parseInternal(ptr, end);
+    return parseInternal(ptr, end) == SVGParseStatus::NoError;
 }
 
 bool SVGTransformList::parse(const LChar*& ptr, const LChar* end)
 {
-    return parseInternal(ptr, end);
+    return parseInternal(ptr, end) == SVGParseStatus::NoError;
 }
 
 SVGTransformType parseTransformType(const String& string)
@@ -277,23 +282,21 @@ SVGParsingError SVGTransformList::setValueAsString(const String& value)
         return SVGParseStatus::NoError;
     }
 
-    bool valid = false;
+    SVGParsingError parseError;
     if (value.is8Bit()) {
         const LChar* ptr = value.characters8();
         const LChar* end = ptr + value.length();
-        valid = parse(ptr, end);
+        parseError = parseInternal(ptr, end);
     } else {
         const UChar* ptr = value.characters16();
         const UChar* end = ptr + value.length();
-        valid = parse(ptr, end);
+        parseError = parseInternal(ptr, end);
     }
 
-    if (!valid) {
+    if (parseError != SVGParseStatus::NoError)
         clear();
-        return SVGParseStatus::ParsingFailed;
-    }
 
-    return SVGParseStatus::NoError;
+    return parseError;
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
@@ -306,22 +309,22 @@ PassRefPtrWillBeRawPtr<SVGTransformList> SVGTransformList::create(SVGTransformTy
 {
     TransformArguments arguments;
     bool atEndOfValue = false;
-    int valueCount = -1;
+    SVGParseStatus status = SVGParseStatus::ParsingFailed;
     if (value.isEmpty()) {
     } else if (value.is8Bit()) {
         const LChar* ptr = value.characters8();
         const LChar* end = ptr + value.length();
-        valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        status = parseTransformArgumentsForType(transformType, ptr, end, arguments);
         atEndOfValue = !skipOptionalSVGSpaces(ptr, end);
     } else {
         const UChar* ptr = value.characters16();
         const UChar* end = ptr + value.length();
-        valueCount = parseTransformArgumentsForType(transformType, ptr, end, arguments);
+        status = parseTransformArgumentsForType(transformType, ptr, end, arguments);
         atEndOfValue = !skipOptionalSVGSpaces(ptr, end);
     }
 
     RefPtrWillBeRawPtr<SVGTransformList> svgTransformList = SVGTransformList::create();
-    if (atEndOfValue && valueCount > 0)
+    if (atEndOfValue && status == SVGParseStatus::NoError)
         svgTransformList->append(createTransformFromValues(transformType, arguments));
     return svgTransformList.release();
 }

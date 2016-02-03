@@ -68,6 +68,12 @@ crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 
+crbug.com/231612 svg/custom/invalid-transforms.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/transform-ignore-after-invalid.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/custom/transform-invalid.svg [ NeedsRebaseline ]
+crbug.com/231612 svg/dom/transform-parser.html [ NeedsRebaseline ]
+crbug.com/231612 svg/hixie/transform/001.xml [ NeedsRebaseline ]
+
 # TODO(wangxianzhu): Triage the failures
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 crbug.com/539546 virtual/spv2/paint/selection/text-selection-drag.html [ Pass Failure ]

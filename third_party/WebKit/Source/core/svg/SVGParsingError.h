@@ -41,6 +41,7 @@ enum class SVGParseStatus {
     TrailingGarbage,
     ExpectedArcFlag,
     ExpectedBoolean,
+    ExpectedEndOfArguments,
     ExpectedEnumeration,
     ExpectedInteger,
     ExpectedLength,

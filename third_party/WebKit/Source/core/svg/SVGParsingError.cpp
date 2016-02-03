@@ -32,6 +32,8 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
         return std::make_pair("Expected arc flag ('0' or '1'), ", ".");
     case SVGParseStatus::ExpectedBoolean:
         return std::make_pair("Expected 'true' or 'false', ", ".");
+    case SVGParseStatus::ExpectedEndOfArguments:
+        return std::make_pair("Expected ')', ", ".");
     case SVGParseStatus::ExpectedEnumeration:
         return std::make_pair("Unrecognized enumerated value, ", ".");
     case SVGParseStatus::ExpectedInteger:

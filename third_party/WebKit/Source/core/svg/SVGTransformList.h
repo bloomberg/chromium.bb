@@ -73,7 +73,7 @@ private:
     SVGTransformList();
 
     template <typename CharType>
-    bool parseInternal(const CharType*& ptr, const CharType* end);
+    SVGParsingError parseInternal(const CharType*& ptr, const CharType* end);
 };
 
 DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGTransformList);
