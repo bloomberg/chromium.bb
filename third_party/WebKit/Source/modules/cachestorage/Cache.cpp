@@ -213,6 +213,13 @@ public:
         NonThrowableExceptionState exceptionState;
         HeapVector<Member<Response>> responses = toMemberNativeArray<Response, V8Response>(value.v8Value(), m_requests.size(), scriptState()->isolate(), exceptionState);
 
+        for (const auto& response : responses) {
+            if (!response->ok()) {
+                ScriptPromise rejection = ScriptPromise::reject(scriptState(), V8ThrowException::createTypeError(scriptState()->isolate(), "Request failed"));
+                return ScriptValue(scriptState(), rejection.v8Value());
+            }
+        }
+
         for (const auto& response : responses)
             RecordResponseTypeForAdd(response);
 
