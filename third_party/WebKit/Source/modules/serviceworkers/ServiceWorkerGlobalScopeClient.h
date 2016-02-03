@@ -68,6 +68,7 @@ public:
     virtual WebURL scope() const = 0;
 
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) = 0;
+    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult) = 0;
     // Calling didHandleFetchEvent without response means no response was
     // provided by the service worker in the fetch events, so fallback to native.
     virtual void didHandleFetchEvent(int fetchEventID) = 0;

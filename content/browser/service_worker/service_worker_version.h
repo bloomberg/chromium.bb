@@ -236,7 +236,18 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchSimpleEvent(int request_id, const IPC::Message& message);
 
   // Sends a message event to the associated embedded worker.
+  // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
+  // default (crbug.com/543198).
   void DispatchMessageEvent(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const StatusCallback& callback);
+
+  // Sends an extendable message event to the associated embedded worker.
+  // TODO(nhiroki): This should be moved to ServiceWorkerDispatcherHost in favor
+  // of crbug.com/570820 after ExtendableMessageEvent is implemented
+  // (crbug.com/543198).
+  void DispatchExtendableMessageEvent(
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
@@ -513,6 +524,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool OnMessageReceived(const IPC::Message& message) override;
 
   void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
+
+  void DispatchExtendableMessageEventAfterStartWorker(
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const StatusCallback& callback);
 
   void DispatchMessageEventInternal(
       const base::string16& message,

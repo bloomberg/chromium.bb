@@ -54,6 +54,7 @@
 #include "modules/push_messaging/PushEvent.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
+#include "modules/serviceworkers/ExtendableMessageEvent.h"
 #include "modules/serviceworkers/FetchEvent.h"
 #include "modules/serviceworkers/InstallEvent.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
@@ -99,6 +100,17 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Activate, eventID);
     RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer));
+    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebMessagePortChannelArray& webChannels)
+{
+    ASSERT(RuntimeEnabledFeatures::serviceWorkerExtendableMessageEventEnabled());
+
+    ExtendableMessageEventInit initializer;
+    WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::Message, eventID);
+
+    RefPtrWillBeRawPtr<Event> event(ExtendableMessageEvent::create(EventTypeNames::message, initializer, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 

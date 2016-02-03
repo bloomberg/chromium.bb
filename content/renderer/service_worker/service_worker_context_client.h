@@ -128,6 +128,9 @@ class ServiceWorkerContextClient
                            const blink::WebString& state) override;
   void didHandleActivateEvent(int request_id,
                               blink::WebServiceWorkerEventResult) override;
+  void didHandleExtendableMessageEvent(
+      int request_id,
+      blink::WebServiceWorkerEventResult result) override;
   void didHandleInstallEvent(
       int request_id,
       blink::WebServiceWorkerEventResult result) override;
@@ -186,6 +189,11 @@ class ServiceWorkerContextClient
       const ServiceWorkerVersionAttributes& attrs);
 
   void OnActivateEvent(int request_id);
+  void OnExtendableMessageEvent(
+      int request_id,
+      const base::string16& message,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const std::vector<int>& new_routing_ids);
   void OnInstallEvent(int request_id);
   void OnFetchEvent(int request_id, const ServiceWorkerFetchRequest& request);
   void OnNotificationClickEvent(
@@ -198,10 +206,14 @@ class ServiceWorkerContextClient
                          blink::WebGeofencingEventType event_type,
                          const std::string& region_id,
                          const blink::WebCircularGeofencingRegion& region);
+
+  // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
+  // default (crbug.com/543198).
   void OnPostMessage(
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const std::vector<int>& new_routing_ids);
+
   void OnCrossOriginMessageToWorker(
       const NavigatorConnectClient& client,
       const base::string16& message,

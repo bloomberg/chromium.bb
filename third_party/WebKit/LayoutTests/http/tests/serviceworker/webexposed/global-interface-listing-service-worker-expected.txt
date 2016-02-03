@@ -185,6 +185,8 @@ interface EventTarget
 interface ExtendableEvent : Event
     method constructor
     method waitUntil
+interface ExtendableMessageEvent : ExtendableEvent
+    method constructor
 interface FetchEvent : ExtendableEvent
     getter clientId
     getter isReload

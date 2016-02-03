@@ -55,19 +55,18 @@ public:
     virtual void setRegistration(WebPassOwnPtr<WebServiceWorkerRegistration::Handle>) = 0;
 
     virtual void dispatchActivateEvent(int eventID) = 0;
-    // FIXME: This needs to pass the active service worker info.
-    virtual void dispatchInstallEvent(int installEventID) = 0;
-    virtual void dispatchFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
-    virtual void dispatchForeignFetchEvent(int fetchEventID, const WebServiceWorkerRequest& webRequest) = 0;
-
+    virtual void dispatchExtendableMessageEvent(int eventID, const WebString& message, const WebMessagePortChannelArray&) = 0;
+    virtual void dispatchInstallEvent(int eventID) = 0;
+    virtual void dispatchFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
+    virtual void dispatchForeignFetchEvent(int eventID, const WebServiceWorkerRequest& webRequest) = 0;
     virtual void dispatchGeofencingEvent(int eventID, WebGeofencingEventType, const WebString& regionID, const WebCircularGeofencingRegion&) = 0;
 
-    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
+    // TODO(nhiroki): Remove this after ExtendableMessageEvent is enabled by
+    // default (crbug.com/543198).
+    virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
 
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
-
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
-
     virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
 
     // Passes ownership of the callbacks.

@@ -43,9 +43,12 @@ void SendPostMessageToWorkerOnMainThread(
     int handle_id,
     const base::string16& message,
     scoped_ptr<WebMessagePortChannelArray> channels) {
-  thread_safe_sender->Send(new ServiceWorkerHostMsg_PostMessageToWorker(
-      handle_id, message,
-      WebMessagePortChannelImpl::ExtractMessagePortIDs(std::move(channels))));
+  // TODO(nhiroki): Switch to PostMessageToClient message after
+  // ExtendableMessageEvent is implemented (crbug.com/543198).
+  thread_safe_sender->Send(
+      new ServiceWorkerHostMsg_DeprecatedPostMessageToWorker(
+          handle_id, message, WebMessagePortChannelImpl::ExtractMessagePortIDs(
+                                  std::move(channels))));
 }
 
 }  // namespace

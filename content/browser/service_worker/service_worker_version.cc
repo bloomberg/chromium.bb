@@ -541,6 +541,19 @@ void ServiceWorkerVersion::RunAfterStartWorker(
                          error_callback, task));
 }
 
+void ServiceWorkerVersion::DispatchExtendableMessageEvent(
+    const base::string16& message,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const StatusCallback& callback) {
+  for (const TransferredMessagePort& port : sent_message_ports)
+    MessagePortService::GetInstance()->HoldMessages(port.id);
+  RunAfterStartWorker(
+      base::Bind(
+          &ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker,
+          weak_factory_.GetWeakPtr(), message, sent_message_ports, callback),
+      base::Bind(&RunErrorMessageCallback, sent_message_ports, callback));
+}
+
 void ServiceWorkerVersion::DispatchMessageEvent(
     const base::string16& message,
     const std::vector<TransferredMessagePort>& sent_message_ports,
@@ -951,6 +964,24 @@ void ServiceWorkerVersion::OnStartSentAndScriptEvaluated(
     RunCallbacks(this, &start_callbacks_,
                  DeduceStartWorkerFailureReason(status));
   }
+}
+
+void ServiceWorkerVersion::DispatchExtendableMessageEventAfterStartWorker(
+    const base::string16& message,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const StatusCallback& callback) {
+  int request_id =
+      StartRequest(ServiceWorkerMetrics::EventType::MESSAGE, callback);
+
+  MessagePortMessageFilter* filter =
+      embedded_worker_->message_port_message_filter();
+  std::vector<int> new_routing_ids;
+  filter->UpdateMessagePortsWithNewRoutes(sent_message_ports, &new_routing_ids);
+
+  DispatchSimpleEvent<ServiceWorkerHostMsg_ExtendableMessageEventFinished>(
+      request_id,
+      ServiceWorkerMsg_ExtendableMessageEvent(
+          request_id, message, sent_message_ports, new_routing_ids));
 }
 
 void ServiceWorkerVersion::OnGetClients(

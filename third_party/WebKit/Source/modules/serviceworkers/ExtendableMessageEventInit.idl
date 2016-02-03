@@ -1,0 +1,16 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#extendablemessage-event-section
+
+[
+    RuntimeEnabled=ServiceWorkerExtendableMessageEvent,
+] dictionary ExtendableMessageEventInit : ExtendableEventInit {
+    // TODO(nhiroki): Implement these attributes (crbug.com/543198).
+    // any data;
+    // DOMString origin;
+    // DOMString lastEventId;
+    // (Client or ServiceWorker or MessagePort)? source;
+    // sequence<MessagePort>? ports;
+};

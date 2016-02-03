@@ -27,6 +27,7 @@ public:
     enum EventType {
         Activate,
         Install,
+        Message,
         NotificationClick,
         Push,
         Sync

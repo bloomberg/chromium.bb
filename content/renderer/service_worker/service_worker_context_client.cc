@@ -252,6 +252,8 @@ void ServiceWorkerContextClient::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerContextClient, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ExtendableMessageEvent,
+                        OnExtendableMessageEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
@@ -488,6 +490,13 @@ void ServiceWorkerContextClient::didHandleActivateEvent(
       GetRoutingID(), request_id, result));
 }
 
+void ServiceWorkerContextClient::didHandleExtendableMessageEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  Send(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
+      GetRoutingID(), request_id, result));
+}
+
 void ServiceWorkerContextClient::didHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
@@ -704,6 +713,19 @@ void ServiceWorkerContextClient::OnActivateEvent(int request_id) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::OnActivateEvent");
   proxy_->dispatchActivateEvent(request_id);
+}
+
+void ServiceWorkerContextClient::OnExtendableMessageEvent(
+    int request_id,
+    const base::string16& message,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    const std::vector<int>& new_routing_ids) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::OnExtendableMessageEvent");
+  blink::WebMessagePortChannelArray ports =
+      WebMessagePortChannelImpl::CreatePorts(
+          sent_message_ports, new_routing_ids, main_thread_task_runner_);
+  proxy_->dispatchExtendableMessageEvent(request_id, message, ports);
 }
 
 void ServiceWorkerContextClient::OnInstallEvent(int request_id) {

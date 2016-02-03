@@ -229,13 +229,16 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::PUSH:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.PushEvent.Time", time);
       break;
+    case EventType::MESSAGE:
+      // TODO(nhiroki): Record event duration for Message event after
+      // ExtendableMessageEvent is enabled by default (crbug.com/543198).
+      break;
 
     // Event duration for fetch is recorded separately.
     case EventType::FETCH:
     // For now event duration for these events is not recorded.
     case EventType::GEOFENCING:
     case EventType::SERVICE_PORT_CONNECT:
-    case EventType::MESSAGE:
       break;
 
     case EventType::NUM_TYPES:

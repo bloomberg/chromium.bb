@@ -108,6 +108,10 @@ public:
     // ServiceWorker specific method.
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }
 
+    // Called after ExtendableMessageEvent is handled by the ServiceWorker's
+    // script context.
+    virtual void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult result) { }
+
     // ServiceWorker specific methods. Called after FetchEvent is handled by the
     // ServiceWorker's script context. When no response is provided, the browser
     // should fallback to native fetch.

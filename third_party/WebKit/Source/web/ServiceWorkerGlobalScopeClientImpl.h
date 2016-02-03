@@ -57,6 +57,7 @@ public:
     WebURL scope() const override;
 
     void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult) override;
+    void didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult) override;
     void didHandleFetchEvent(int fetchEventID) override;
     void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) override;
     void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult) override;

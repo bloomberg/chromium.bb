@@ -77,6 +77,11 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(int eventID, Web
     m_client.didHandleActivateEvent(eventID, result);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::didHandleExtendableMessageEvent(int eventID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandleExtendableMessageEvent(eventID, result);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID)
 {
     m_client.didHandleFetchEvent(fetchEventID);

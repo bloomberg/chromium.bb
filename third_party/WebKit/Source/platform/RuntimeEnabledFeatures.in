@@ -167,6 +167,7 @@ ScriptedSpeech status=stable
 ScrollTopLeftInterop status=experimental
 SelectionForComposedTree status=stable
 ServiceWorkerClientAttributes status=stable
+ServiceWorkerExtendableMessageEvent status=experimental
 ServiceWorkerPerformanceTimeline status=stable
 ServiceWorkerWindowClientNavigate status=stable
 ShadowDOMV1 status=experimental
