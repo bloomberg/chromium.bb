@@ -20,7 +20,7 @@ public class ChromePassConfig extends PassConfig.PassConfigDelegate {
 
     final static PassFactory chromePass = new PassFactory("chromePass", true) {
         @Override
-        CompilerPass create(AbstractCompiler compiler) {
+        protected CompilerPass create(AbstractCompiler compiler) {
             return new ChromePass(compiler);
         }
     };
