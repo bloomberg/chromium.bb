@@ -522,7 +522,7 @@ Browser::~Browser() {
     tab_restore_service->BrowserClosed(live_tab_context());
 
 #if !defined(OS_MACOSX)
-  if (!chrome::GetTotalBrowserCountForProfile(profile_)) {
+  if (!chrome::GetBrowserCount(profile_)) {
     // We're the last browser window with this profile. We need to nuke the
     // TabRestoreService, which will start the shutdown of the
     // NavigationControllers and allow for proper shutdown. If we don't do this

@@ -422,10 +422,8 @@ void ExternalInstallError::OnDialogReady(
     global_error_.reset(new ExternalInstallBubbleAlert(this, prompt_.get()));
     error_service_->AddGlobalError(global_error_.get());
 
-    Browser* browser =
-        chrome::FindTabbedBrowser(Profile::FromBrowserContext(browser_context_),
-                                  true,
-                                  chrome::GetActiveDesktop());
+    Browser* browser = chrome::FindTabbedBrowser(
+        Profile::FromBrowserContext(browser_context_), true);
     if (browser)
       global_error_->ShowBubbleView(browser);
   } else {

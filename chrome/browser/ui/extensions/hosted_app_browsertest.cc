@@ -224,8 +224,7 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
 
   // The launch should have created a new app browser and a dev tools browser.
-  ASSERT_EQ(4u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  ASSERT_EQ(4u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browsers.
   Browser* bookmark_app_browser = nullptr;

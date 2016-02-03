@@ -51,8 +51,7 @@ Browser* ChromeUIThreadExtensionFunction::GetCurrentBrowser() {
   if (web_contents) {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    Browser* browser = chrome::FindAnyBrowser(
-        profile, include_incognito_, chrome::GetActiveDesktop());
+    Browser* browser = chrome::FindAnyBrowser(profile, include_incognito_);
     if (browser)
       return browser;
   }

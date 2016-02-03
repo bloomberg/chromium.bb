@@ -156,7 +156,7 @@ void OpenBrowserWindowForProfile(
   // case, as you could manually activate an incorrect browser and trigger
   // a false positive.
   if (!always_create) {
-    Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    Browser* browser = chrome::FindTabbedBrowser(profile, false);
     if (browser) {
       browser->window()->Activate();
       if (!callback.is_null())
@@ -275,7 +275,7 @@ void FindOrCreateNewWindowForProfile(
   DCHECK(profile);
 
   if (!always_create) {
-    Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    Browser* browser = chrome::FindTabbedBrowser(profile, false);
     if (browser) {
       browser->window()->Activate();
       return;

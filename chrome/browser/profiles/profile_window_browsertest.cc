@@ -121,8 +121,7 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
 
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
       ProfileManager::GetGuestProfilePath());
-  Browser* browser = chrome::FindAnyBrowser(
-      guest, true, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindAnyBrowser(guest, true);
   EXPECT_TRUE(browser);
 
   // When |browser| closes a BrowsingDataRemover will be created and executed.

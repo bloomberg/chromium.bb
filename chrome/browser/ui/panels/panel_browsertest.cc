@@ -1623,9 +1623,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
 
   // Open devtools.
   size_t num_browsers = 1;
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
-                              browser()->profile(),
-                              browser()->host_desktop_type()));
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser()->profile()));
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
@@ -1634,9 +1632,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevTools) {
 
   // Check that the new browser window that opened is dev tools window.
   ++num_browsers;
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
-                              browser()->profile(),
-                              browser()->host_desktop_type()));
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser()->profile()));
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser())
       continue;
@@ -1657,9 +1653,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
 
   // Open devtools console.
   size_t num_browsers = 1;
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
-                              browser()->profile(),
-                              browser()->host_desktop_type()));
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser()->profile()));
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
       content::NotificationService::AllSources());
@@ -1668,9 +1662,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, DevToolsConsole) {
 
   // Check that the new browser window that opened is dev tools window.
   ++num_browsers;
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(
-                              browser()->profile(),
-                              browser()->host_desktop_type()));
+  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(browser()->profile()));
   for (auto* b : *BrowserList::GetInstance()) {
     if (b == browser())
       continue;

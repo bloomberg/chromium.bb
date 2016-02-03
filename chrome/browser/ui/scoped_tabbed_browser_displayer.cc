@@ -13,7 +13,7 @@ namespace chrome {
 ScopedTabbedBrowserDisplayer::ScopedTabbedBrowserDisplayer(
     Profile* profile,
     HostDesktopType type) {
-  browser_ = FindTabbedBrowser(profile, false, type);
+  browser_ = FindTabbedBrowser(profile, false);
   if (!browser_)
     browser_ = new Browser(Browser::CreateParams(profile, type));
 }

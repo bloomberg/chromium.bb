@@ -58,8 +58,7 @@ void ShowWarningOnOpenOperationResult(Profile* profile,
       break;
   }
 
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile, false, chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
   chrome::ShowMessageBox(
       browser ? browser->window()->GetNativeWindow() : nullptr,
       l10n_util::GetStringFUTF16(IDS_FILE_BROWSER_ERROR_VIEWING_FILE_TITLE,

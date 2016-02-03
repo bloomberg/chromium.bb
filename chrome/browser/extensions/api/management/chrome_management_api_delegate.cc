@@ -243,8 +243,7 @@ bool ChromeManagementAPIDelegate::CreateAppShortcutFunctionDelegate(
     extensions::ManagementCreateAppShortcutFunction* function,
     const extensions::Extension* extension) const {
   Browser* browser = chrome::FindBrowserWithProfile(
-      Profile::FromBrowserContext(function->browser_context()),
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
+      Profile::FromBrowserContext(function->browser_context()));
   if (!browser) {
     // Shouldn't happen if we have user gesture.
     function->SetError(

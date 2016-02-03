@@ -106,7 +106,7 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   // Make sure we have a tabbed browser since we need to anchor the bubble to
   // the toolbar's wrench menu. Create one if none exist already.
   if (browser->type() != Browser::TYPE_TABBED) {
-    browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser)
       browser = new Browser(Browser::CreateParams(profile, desktop_type));
   }

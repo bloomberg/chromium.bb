@@ -2234,7 +2234,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabbedHostedAndBookmarkApps) {
   controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
 
   // There should be no new browsers or tabs as both apps were already open.
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCountForProfile(browser()->profile()));
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -2285,7 +2285,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   controller_->ActivateApp(bookmark_app->id(), ash::LAUNCH_FROM_APP_LIST, 0);
 
   // There should be two new browsers.
-  EXPECT_EQ(3u, chrome::GetTotalBrowserCountForProfile(browser()->profile()));
+  EXPECT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
 
   // The apps should now be running, with the last opened app active.
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(hosted_app_shelf_id)->status);

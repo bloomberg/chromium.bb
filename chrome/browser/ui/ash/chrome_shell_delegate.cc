@@ -167,8 +167,7 @@ base::string16 ChromeShellDelegate::GetProductName() const {
 
 void ChromeShellDelegate::OpenKeyboardShortcutHelpPage() const {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile, false, chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
 
   if (!browser) {
     browser = new Browser(

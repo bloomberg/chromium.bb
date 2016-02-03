@@ -32,8 +32,7 @@ namespace {
 // Check that there are two browsers. Find the one that is not |browser|.
 Browser* FindOneOtherBrowser(Browser* browser) {
   // There should only be one other browser.
-  EXPECT_EQ(2u, chrome::GetBrowserCount(browser->profile(),
-                                        browser->host_desktop_type()));
+  EXPECT_EQ(2u, chrome::GetBrowserCount(browser->profile()));
 
   // Find the new browser.
   for (auto* b : *BrowserList::GetInstance()) {
@@ -246,8 +245,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   }
 
   Browser* other_profile_browser =
-      chrome::FindBrowserWithProfile(other_profile,
-                                     new_browser->host_desktop_type());
+      chrome::FindBrowserWithProfile(other_profile);
   ASSERT_NE(nullptr, other_profile_browser);
 
   // Check for the expected reset dialog in the second browser too.

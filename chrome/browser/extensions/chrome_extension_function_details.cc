@@ -59,8 +59,8 @@ Browser* ChromeExtensionFunctionDetails::GetCurrentBrowser() const {
   if (function_->render_frame_host()) {
     Profile* profile = Profile::FromBrowserContext(
         function_->render_frame_host()->GetProcess()->GetBrowserContext());
-    Browser* browser = chrome::FindAnyBrowser(
-        profile, function_->include_incognito(), chrome::GetActiveDesktop());
+    Browser* browser =
+        chrome::FindAnyBrowser(profile, function_->include_incognito());
     if (browser)
       return browser;
   }
@@ -155,7 +155,6 @@ gfx::NativeWindow ChromeExtensionFunctionDetails::GetNativeWindowForUI() {
   if (contents)
     return contents->GetTopLevelNativeWindow();
 
-  Browser* browser =
-      chrome::FindBrowserWithProfile(GetProfile(), chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindBrowserWithProfile(GetProfile());
   return browser->window()->GetNativeWindow();
 }

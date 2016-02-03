@@ -535,10 +535,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 }
 
 - (void)didEndMainMessageLoop {
-  DCHECK_EQ(0u, chrome::GetBrowserCount([self lastProfile],
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE));
-  if (!chrome::GetBrowserCount([self lastProfile],
-                               chrome::HOST_DESKTOP_TYPE_NATIVE)) {
+  DCHECK_EQ(0u, chrome::GetBrowserCount([self lastProfile]));
+  if (!chrome::GetBrowserCount([self lastProfile])) {
     // As we're shutting down, we need to nuke the TabRestoreService, which
     // will start the shutdown of the NavigationControllers and allow for
     // proper shutdown. If we don't do this, Chrome won't shut down cleanly,
@@ -851,8 +849,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = chrome::FindBrowserWithProfile(
-            profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE);
+        Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
         if (!browser) {
           browser = new Browser(Browser::CreateParams(
               profiles[i], chrome::HOST_DESKTOP_TYPE_NATIVE));

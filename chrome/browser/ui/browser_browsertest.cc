@@ -1394,8 +1394,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   WebContents* app_tab = chrome::AddSelectedTabWithURL(
       browser(), http_url, ui::PAGE_TRANSITION_TYPED);
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
-  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
 
   // Normal tabs should accept load drops.
   EXPECT_TRUE(initial_tab->GetMutableRendererPrefs()->can_accept_load_drops);
@@ -1405,8 +1404,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ConvertTabToAppShortcut) {
   chrome::ConvertTabToAppWindow(browser(), app_tab);
 
   // The launch should have created a new browser.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browser.
   Browser* app_browser = NULL;
@@ -1557,9 +1555,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
   int expected_tabs = 1;
   new_bookmark_apps_enabled ? expected_tabs++ : expected_browsers++;
 
-  EXPECT_EQ(expected_browsers,
-            chrome::GetBrowserCount(browser()->profile(),
-                                    browser()->host_desktop_type()));
+  EXPECT_EQ(expected_browsers, chrome::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
@@ -1583,9 +1579,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
       DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
 
   // The launch should have created a new app browser and a dev tools browser.
-  ASSERT_EQ(3u,
-            chrome::GetBrowserCount(browser()->profile(),
-                                    browser()->host_desktop_type()));
+  ASSERT_EQ(3u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browsers.
   Browser* app_browser = NULL;
@@ -1650,8 +1644,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RestorePinnedTabs) {
                             browser()->host_desktop_type());
 
   // The launch should have created a new browser.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browser.
   Browser* new_browser = NULL;
@@ -1712,8 +1705,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
             app_window->GetURL());
 
   // The launch should have created a new browser.
-  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browser.
   Browser* new_browser = NULL;
@@ -2551,8 +2543,7 @@ class ClickModifierTest : public InProcessBrowserTest {
                blink::WebMouseEvent::Button button,
                WindowOpenDisposition disposition) {
     ui_test_utils::NavigateToURL(browser, url);
-    EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
-                                          browser->host_desktop_type()));
+    EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
     EXPECT_EQ(1, browser->tab_strip_model()->count());
     content::WebContents* web_contents =
         browser->tab_strip_model()->GetActiveWebContents();
@@ -2564,8 +2555,7 @@ class ClickModifierTest : public InProcessBrowserTest {
       content::TestNavigationObserver same_tab_observer(web_contents);
       SimulateMouseClick(web_contents, modifiers, button);
       same_tab_observer.Wait();
-      EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
-                                            browser->host_desktop_type()));
+      EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
       EXPECT_EQ(1, browser->tab_strip_model()->count());
       EXPECT_EQ(getSecondPageTitle(), web_contents->GetTitle());
       return;
@@ -2578,13 +2568,11 @@ class ClickModifierTest : public InProcessBrowserTest {
     observer.Wait();
 
     if (disposition == NEW_WINDOW) {
-      EXPECT_EQ(2u, chrome::GetBrowserCount(browser->profile(),
-                                            browser->host_desktop_type()));
+      EXPECT_EQ(2u, chrome::GetBrowserCount(browser->profile()));
       return;
     }
 
-    EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
-                                          browser->host_desktop_type()));
+    EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile()));
     EXPECT_EQ(2, browser->tab_strip_model()->count());
     web_contents = browser->tab_strip_model()->GetActiveWebContents();
     WaitForLoadStop(web_contents);

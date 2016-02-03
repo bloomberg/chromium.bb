@@ -54,9 +54,8 @@ IN_PROC_BROWSER_TEST_F(BrowserLoginTest, BrowserActive) {
             ash::Shell::GetInstance()->session_state_delegate()->
                 GetSessionState());
 
-  Browser* browser = FindAnyBrowser(ProfileManager::GetActiveUserProfile(),
-                                    false,
-                                    chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* browser =
+      chrome::FindAnyBrowser(ProfileManager::GetActiveUserProfile(), false);
   EXPECT_TRUE(browser != NULL);
   EXPECT_TRUE(browser->window()->IsActive());
 

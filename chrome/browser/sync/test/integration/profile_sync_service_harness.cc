@@ -161,8 +161,7 @@ bool ProfileSyncServiceHarness::SetupSync(
 
   DCHECK(!username_.empty());
   if (signin_type_ == SigninType::UI_SIGNIN) {
-    Browser* browser =
-        FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
+    Browser* browser = chrome::FindBrowserWithProfile(profile_);
     DCHECK(browser);
     if (!login_ui_test_utils::SignInWithUI(browser, username_, password_)) {
       LOG(ERROR) << "Could not sign in to GAIA servers.";

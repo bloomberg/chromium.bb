@@ -76,32 +76,24 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
   Browser* new_browser = NULL;
 
   // The last used profile (the profile_2 in this case) must be active.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_2,
-                                        browser()->host_desktop_type()));
-  new_browser = FindBrowserWithProfile(profile_2,
-                                       browser()->host_desktop_type());
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_2));
+  new_browser = chrome::FindBrowserWithProfile(profile_2);
   ASSERT_TRUE(new_browser);
   EXPECT_TRUE(new_browser->window()->IsActive());
 
   // All other profiles browser should not be active.
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_1,
-                                        browser()->host_desktop_type()));
-  new_browser = FindBrowserWithProfile(profile_1,
-                                       browser()->host_desktop_type());
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_1));
+  new_browser = chrome::FindBrowserWithProfile(profile_1);
   ASSERT_TRUE(new_browser);
   EXPECT_FALSE(new_browser->window()->IsActive());
 
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_3,
-                                        browser()->host_desktop_type()));
-  new_browser = FindBrowserWithProfile(profile_3,
-                                       browser()->host_desktop_type());
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_3));
+  new_browser = chrome::FindBrowserWithProfile(profile_3);
   ASSERT_TRUE(new_browser);
   EXPECT_FALSE(new_browser->window()->IsActive());
 
-  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_4,
-                                        browser()->host_desktop_type()));
-  new_browser = FindBrowserWithProfile(profile_4,
-                                       browser()->host_desktop_type());
+  ASSERT_EQ(1u, chrome::GetBrowserCount(profile_4));
+  new_browser = chrome::FindBrowserWithProfile(profile_4);
   ASSERT_TRUE(new_browser);
   EXPECT_FALSE(new_browser->window()->IsActive());
 }

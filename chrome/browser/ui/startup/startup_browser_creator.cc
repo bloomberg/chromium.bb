@@ -166,10 +166,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
 
   void AddLaunched(Profile* profile) {
     launched_profiles_.insert(profile);
-    // Since the startup code only executes for browsers launched in
-    // desktop mode, i.e., HOST_DESKTOP_TYPE_NATIVE. Ash should never get here.
-    if (chrome::FindBrowserWithProfile(profile,
-                                       chrome::HOST_DESKTOP_TYPE_NATIVE)) {
+    if (chrome::FindBrowserWithProfile(profile)) {
       // A browser may get opened before we get initialized (e.g., in tests),
       // so we never see the NOTIFICATION_BROWSER_WINDOW_READY for it.
       opened_profiles_.insert(profile);
@@ -216,8 +213,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
   void ActivateProfile() {
     // We need to test again, in case the profile got deleted in the mean time.
     if (profile_to_activate_) {
-      Browser* browser = chrome::FindBrowserWithProfile(
-          profile_to_activate_, chrome::HOST_DESKTOP_TYPE_NATIVE);
+      Browser* browser = chrome::FindBrowserWithProfile(profile_to_activate_);
       // |profile| may never get launched, e.g., if it only had
       // incognito Windows and one of them was used to exit Chrome.
       // So it won't have a browser in that case.
@@ -286,8 +282,8 @@ bool ShowUserManagerOnStartupIfNeeded(
     // after clicking on a downloaded file in Guest mode).
     if ((!last_used_profile->IsGuestSession() &&
          !last_used_profile->IsSystemProfile()) ||
-        (chrome::GetTotalBrowserCountForProfile(
-           last_used_profile->GetOffTheRecordProfile()) > 0)) {
+        (chrome::GetBrowserCount(last_used_profile->GetOffTheRecordProfile()) >
+         0)) {
       return false;
     }
   }
@@ -726,7 +722,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // chrome to shut down.
     // TODO(jackhou): Do this properly once keep-alive is handled by the
     // background page of apps. Tracked at http://crbug.com/175381
-    if (chrome::GetTotalBrowserCountForProfile(last_used_profile) != 0)
+    if (chrome::GetBrowserCount(last_used_profile) != 0)
       return true;
   }
 
@@ -747,7 +743,7 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     // chrome to shut down.
     // TODO(jackhou): Do this properly once keep-alive is handled by the
     // background page of apps. Tracked at http://crbug.com/175381
-    if (chrome::GetTotalBrowserCountForProfile(last_used_profile) != 0)
+    if (chrome::GetBrowserCount(last_used_profile) != 0)
       return true;
   }
 

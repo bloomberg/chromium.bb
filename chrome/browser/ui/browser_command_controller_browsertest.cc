@@ -100,8 +100,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest,
   // Access the browser that was created for the new Guest Profile.
   Profile* guest = g_browser_process->profile_manager()->GetProfileByPath(
       ProfileManager::GetGuestProfilePath());
-  Browser* browser = chrome::FindAnyBrowser(
-      guest, true, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindAnyBrowser(guest, true);
   EXPECT_TRUE(browser);
 
   // The BrowsingDataRemover needs a loaded TemplateUrlService or else it hangs

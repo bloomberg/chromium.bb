@@ -45,7 +45,7 @@ WebContents* ChromeWebContentsHandler::OpenURLFromTab(
       desktop_type = source_browser->host_desktop_type();
   }
 
-  Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(
@@ -95,7 +95,7 @@ void ChromeWebContentsHandler::AddNewContents(
       desktop_type = source_browser->host_desktop_type();
   }
 
-  Browser* browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(

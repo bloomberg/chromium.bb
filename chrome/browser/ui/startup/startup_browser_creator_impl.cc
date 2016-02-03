@@ -565,8 +565,7 @@ void StartupBrowserCreatorImpl::ProcessLaunchURLs(
     AddStartupURLs(&adjusted_urls);
   } else if (!command_line_.HasSwitch(switches::kOpenInNewWindow)) {
     // Always open a list of urls in a window on the native desktop.
-    browser = chrome::FindTabbedBrowser(profile_, false,
-                                        chrome::HOST_DESKTOP_TYPE_NATIVE);
+    browser = chrome::FindTabbedBrowser(profile_, false);
   }
   // This will launch a browser; prevent session restore.
   StartupBrowserCreator::in_synchronous_profile_launch_ = true;

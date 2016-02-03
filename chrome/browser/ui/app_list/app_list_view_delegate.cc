@@ -597,9 +597,7 @@ void AppListViewDelegate::OpenHelp() {
 }
 
 void AppListViewDelegate::OpenFeedback() {
-  chrome::HostDesktopType desktop = chrome::GetHostDesktopTypeForNativeWindow(
-      controller_->GetAppListWindow());
-  Browser* browser = chrome::FindTabbedBrowser(profile_, false, desktop);
+  Browser* browser = chrome::FindTabbedBrowser(profile_, false);
   chrome::ShowFeedbackPage(browser, std::string(),
                            chrome::kAppLauncherCategoryTag);
 }

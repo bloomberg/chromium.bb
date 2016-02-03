@@ -40,21 +40,20 @@ typedef InProcessBrowserTest AppListControllerBrowserTest;
 
 // Test the CreateNewWindow function of the controller delegate.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
-  const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
   AppListService* service = test::GetAppListService();
   AppListControllerDelegate* controller(service->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
-  EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile(), desktop));
+  EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile()));
   EXPECT_EQ(0U, chrome::GetBrowserCount(
-      browser()->profile()->GetOffTheRecordProfile(), desktop));
+                    browser()->profile()->GetOffTheRecordProfile()));
 
   controller->CreateNewWindow(browser()->profile(), false);
-  EXPECT_EQ(2U, chrome::GetBrowserCount(browser()->profile(), desktop));
+  EXPECT_EQ(2U, chrome::GetBrowserCount(browser()->profile()));
 
   controller->CreateNewWindow(browser()->profile(), true);
   EXPECT_EQ(1U, chrome::GetBrowserCount(
-      browser()->profile()->GetOffTheRecordProfile(), desktop));
+                    browser()->profile()->GetOffTheRecordProfile()));
 }
 
 // Browser Test for AppListController that observes search result changes.

@@ -50,7 +50,7 @@ ProfileOpenState GetProfileOpenState(
   if (!profile_switched_to)
     return PROFILE_UNOPENED;
 
-  if (chrome::GetTotalBrowserCountForProfile(profile_switched_to) > 0)
+  if (chrome::GetBrowserCount(profile_switched_to) > 0)
     return PROFILE_OPENED;
 
   return PROFILE_OPENED_NO_BROWSER;

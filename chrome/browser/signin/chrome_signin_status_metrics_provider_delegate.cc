@@ -57,7 +57,7 @@ ChromeSigninStatusMetricsProviderDelegate::GetStatusOfAllAccounts() {
   accounts_status.num_accounts = profile_list.size();
   for (Profile* profile : profile_list) {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-    if (chrome::GetTotalBrowserCountForProfile(profile) == 0) {
+    if (chrome::GetBrowserCount(profile) == 0) {
       // The profile is loaded, but there's no opened browser for this profile.
       continue;
     }

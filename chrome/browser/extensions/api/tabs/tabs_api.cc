@@ -912,8 +912,8 @@ bool TabsQueryFunction::RunSync() {
     window_type = tabs::ToString(params->query_info.window_type);
 
   base::ListValue* result = new base::ListValue();
-  Browser* last_active_browser = chrome::FindAnyBrowser(
-      GetProfile(), include_incognito(), chrome::GetActiveDesktop());
+  Browser* last_active_browser =
+      chrome::FindAnyBrowser(GetProfile(), include_incognito());
   Browser* current_browser = GetCurrentBrowser();
   for (auto* browser : *BrowserList::GetInstance()) {
     if (!GetProfile()->IsSameProfile(browser->profile()))

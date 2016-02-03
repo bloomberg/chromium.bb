@@ -256,9 +256,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
 
   // Check that the new browser has an app name.
   // The launch should have created a new browser.
-  ASSERT_EQ(2u,
-            chrome::GetBrowserCount(browser()->profile(),
-                                    browser()->host_desktop_type()));
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
 
   // Find the new browser.
   Browser* app_browser = nullptr;

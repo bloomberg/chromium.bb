@@ -581,8 +581,7 @@ bool SessionsRestoreFunction::RunSync() {
   scoped_ptr<Restore::Params> params(Restore::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  Browser* browser = chrome::FindBrowserWithProfile(
-      GetProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser* browser = chrome::FindBrowserWithProfile(GetProfile());
   if (!browser) {
     SetError(kNoBrowserToRestoreSession);
     return false;

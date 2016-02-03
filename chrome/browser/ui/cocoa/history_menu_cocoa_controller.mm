@@ -45,8 +45,7 @@ using content::Referrer;
   sessions::TabRestoreService* service =
       TabRestoreServiceFactory::GetForProfile(bridge_->profile());
   if (node->session_id && service) {
-    Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false,
-        chrome::HOST_DESKTOP_TYPE_NATIVE);
+    Browser* browser = chrome::FindTabbedBrowser(bridge_->profile(), false);
     BrowserLiveTabContext* context =
         browser ? browser->live_tab_context() : NULL;
     service->RestoreEntryById(context, node->session_id,

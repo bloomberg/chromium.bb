@@ -285,8 +285,7 @@ void ShowSettingsSubPageForProfile(Profile* profile,
         profile, GetSettingsUrl(sub_page));
     return;
   }
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile, false, HOST_DESKTOP_TYPE_NATIVE);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
   if (!browser) {
     browser = new Browser(
         Browser::CreateParams(profile, chrome::HOST_DESKTOP_TYPE_NATIVE));

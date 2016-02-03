@@ -151,9 +151,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
   // Ensure the selected browser is tabbed.
   if (!browser->is_type_tabbed() && browser->IsAttemptingToCloseBrowser())
     browser = chrome::FindTabbedBrowser(function->GetProfile(),
-                                        function->include_incognito(),
-                                        browser->host_desktop_type());
-
+                                        function->include_incognito());
   if (!browser || !browser->window()) {
     if (error)
       *error = keys::kNoCurrentWindowError;
@@ -225,7 +223,7 @@ base::DictionaryValue* ExtensionTabUtil::OpenTab(
     Profile* profile = browser->profile()->GetOriginalProfile();
     chrome::HostDesktopType desktop_type = browser->host_desktop_type();
 
-    browser = chrome::FindTabbedBrowser(profile, false, desktop_type);
+    browser = chrome::FindTabbedBrowser(profile, false);
     if (!browser) {
       browser = new Browser(
           Browser::CreateParams(Browser::TYPE_TABBED, profile, desktop_type));
@@ -595,7 +593,7 @@ void ExtensionTabUtil::CreateTab(WebContents* web_contents,
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
-  Browser* browser = chrome::FindTabbedBrowser(profile, false, active_desktop);
+  Browser* browser = chrome::FindTabbedBrowser(profile, false);
   const bool browser_created = !browser;
   if (!browser)
     browser = new Browser(Browser::CreateParams(profile, active_desktop));

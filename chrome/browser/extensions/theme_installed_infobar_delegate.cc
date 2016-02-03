@@ -41,8 +41,7 @@ void ThemeInstalledInfoBarDelegate::Create(
   // FindTabbedBrowser() is called with |match_original_profiles| true because a
   // theme install in either a normal or incognito window for a profile affects
   // all normal and incognito windows for that profile.
-  Browser* browser =
-      chrome::FindTabbedBrowser(profile, true, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindTabbedBrowser(profile, true);
   if (!browser)
     return;
   content::WebContents* web_contents =

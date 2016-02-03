@@ -32,8 +32,8 @@ Browser* InProcessBrowserTest::OpenURLOffTheRecord(Profile* profile,
 
   chrome::HostDesktopType active_desktop = chrome::GetActiveDesktop();
   chrome::OpenURLOffTheRecord(profile, url, active_desktop);
-  Browser* browser = chrome::FindTabbedBrowser(
-      profile->GetOffTheRecordProfile(), false, active_desktop);
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile->GetOffTheRecordProfile(), false);
   content::TestNavigationObserver observer(
       browser->tab_strip_model()->GetActiveWebContents());
   observer.Wait();

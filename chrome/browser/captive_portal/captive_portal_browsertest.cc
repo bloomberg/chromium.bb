@@ -2680,8 +2680,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   // when running multiple tests at once, the original browser window may
   // remain the profile's active window.
   Browser* active_browser =
-      chrome::FindTabbedBrowser(browser()->profile(), true,
-                                browser()->host_desktop_type());
+      chrome::FindTabbedBrowser(browser()->profile(), true);
   Browser* inactive_browser;
   if (active_browser == browser2) {
     // When only one test is running at a time, the new browser will probably be
@@ -2710,8 +2709,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, DISABLED_TwoWindows) {
   // Make sure the active window hasn't changed, and its new tab is
   // active.
   ASSERT_EQ(active_browser,
-            chrome::FindTabbedBrowser(browser()->profile(), true,
-                                      browser()->host_desktop_type()));
+            chrome::FindTabbedBrowser(browser()->profile(), true));
   ASSERT_EQ(1, active_browser->tab_strip_model()->active_index());
 
   // Check that the only two navigated tabs were the new error tab in the

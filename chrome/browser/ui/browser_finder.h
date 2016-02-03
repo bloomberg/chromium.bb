@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/gfx/native_widget_types.h"
 
 class Profile;
@@ -30,22 +29,16 @@ namespace chrome {
 // browser->profile()->GetOriginalProfile(). This has the effect of matching
 // against both non-incognito and incognito profiles. If
 // |match_original_profiles| is false, only an exact match may be returned.
-// |type| refers to the host desktop the returned browser should belong to.
-Browser* FindTabbedBrowser(Profile* profile,
-                           bool match_original_profiles,
-                           HostDesktopType type);
+Browser* FindTabbedBrowser(Profile* profile, bool match_original_profiles);
 
 // Finds an existing browser window of any kind.
-// |type| refers to the host desktop the returned browser should belong to.
 Browser* FindAnyBrowser(Profile* profile,
-                        bool match_original_profiles,
-                        HostDesktopType type);
+                        bool match_original_profiles);
 
-// Find an existing browser window with the provided profile and hosted in the
-// given desktop. Searches in the order of last activation. Only browsers that
-// have been active can be returned. Returns NULL if no such browser currently
-// exists.
-Browser* FindBrowserWithProfile(Profile* profile, HostDesktopType type);
+// Find an existing browser window with the provided profile. Searches in the
+// order of last activation. Only browsers that have been active can be
+// returned. Returns NULL if no such browser currently exists.
+Browser* FindBrowserWithProfile(Profile* profile);
 
 // Find an existing browser with the provided ID. Returns NULL if no such
 // browser currently exists.
@@ -58,9 +51,8 @@ Browser* FindBrowserWithWindow(gfx::NativeWindow window);
 // |web_contents| must not be NULL.
 Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 
-// Returns the Browser object owned by |profile| on the given desktop type
-// whose window was most recently active. If no such Browsers exist, returns
-// NULL.
+// Returns the Browser object owned by |profile| whose window was most recently
+// active. If no such Browsers exist, returns NULL.
 //
 // WARNING: this is NULL until a browser becomes active. If during startup
 // a browser does not become active (perhaps the user launches Chrome, then
@@ -69,8 +61,8 @@ Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 // WARNING #2: this will always be NULL in unit tests run on the bots.
 Browser* FindLastActiveWithProfile(Profile* profile);
 
-// Returns the Browser object on the given desktop type whose window was most
-// recently active. If no such Browsers exist, returns NULL.
+// Returns the Browser object whose window was most recently active. If no such
+// Browsers exist, returns NULL.
 //
 // WARNING: this is NULL until a browser becomes active. If during startup
 // a browser does not become active (perhaps the user launches Chrome, then
@@ -79,20 +71,14 @@ Browser* FindLastActiveWithProfile(Profile* profile);
 // WARNING #2: this will always be NULL in unit tests run on the bots.
 Browser* FindLastActive();
 
-// Returns the number of browsers across all profiles and desktops.
+// Returns the number of browsers across all profiles.
 size_t GetTotalBrowserCount();
 
-// Returns the number of browsers with the Profile |profile| accross all
-// desktops.
-size_t GetTotalBrowserCountForProfile(Profile* profile);
+// Returns the number of browsers with the Profile |profile|.
+size_t GetBrowserCount(Profile* profile);
 
-// Returns the number of browsers with the Profile |profile| on the desktop
-// defined by |type|.
-size_t GetBrowserCount(Profile* profile, HostDesktopType type);
-
-// Returns the number of tabbed browsers with the Profile |profile| on the
-// desktop defined by |type|.
-size_t GetTabbedBrowserCount(Profile* profile, HostDesktopType type);
+// Returns the number of tabbed browsers with the Profile |profile|.
+size_t GetTabbedBrowserCount(Profile* profile);
 
 }  // namespace chrome
 

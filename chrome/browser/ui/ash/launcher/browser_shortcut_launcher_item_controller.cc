@@ -146,10 +146,8 @@ bool BrowserShortcutLauncherItemController::IsOpen() const {
 }
 
 bool BrowserShortcutLauncherItemController::IsVisible() const {
-  Browser* last_browser = chrome::FindTabbedBrowser(
-      launcher_controller()->profile(),
-      true,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* last_browser =
+      chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
     return false;
@@ -165,10 +163,8 @@ void BrowserShortcutLauncherItemController::Launch(ash::LaunchSource source,
 
 ash::ShelfItemDelegate::PerformedAction
 BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
-  Browser* last_browser = chrome::FindTabbedBrowser(
-      launcher_controller()->profile(),
-      true,
-      chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* last_browser =
+      chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
 
   if (!last_browser) {
     launcher_controller()->CreateNewWindow();
@@ -341,9 +337,8 @@ BrowserShortcutLauncherItemController::ActivateOrAdvanceToNextBrowser() {
     if (i != items.end()) {
       browser = (++i == items.end()) ? items[0] : *i;
     } else {
-      browser = chrome::FindTabbedBrowser(launcher_controller()->profile(),
-                                          true,
-                                          chrome::HOST_DESKTOP_TYPE_ASH);
+      browser =
+          chrome::FindTabbedBrowser(launcher_controller()->profile(), true);
       if (!browser ||
           !IsBrowserRepresentedInBrowserList(browser))
         browser = items[0];

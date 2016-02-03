@@ -589,7 +589,7 @@ void UserManagerScreenHandler::HandleRemoveUserWarningLoadStats(
   if (!profile)
     return;
 
-  if (!chrome::FindAnyBrowser(profile, true, desktop_type_)) {
+  if (!chrome::FindAnyBrowser(profile, true)) {
     // If no windows are open for that profile, the statistics in
     // ProfileInfoCache are up to date. The statistics in ProfileInfoCache are
     // returned because the copy in user_pod_row.js may be outdated. However, if
@@ -1014,7 +1014,7 @@ void UserManagerScreenHandler::Observe(
 // cause Chrome to close.
 void UserManagerScreenHandler::OnSwitchToProfileComplete(
     Profile* profile, Profile::CreateStatus profile_create_status) {
-  Browser* browser = chrome::FindAnyBrowser(profile, false, desktop_type_);
+  Browser* browser = chrome::FindAnyBrowser(profile, false);
   if (browser && browser->window()) {
     OnBrowserWindowReady(browser);
   } else {
