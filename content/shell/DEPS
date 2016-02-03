@@ -34,6 +34,9 @@ include_rules = [
 
   # For media::RemoveProprietaryMediaTypesAndCodecsForTests.
   "+media/base/mime_util.h",
+
+  # For enabling mojo media services.
+  "+media/mojo/services",
 ]
 
 specific_include_rules = {

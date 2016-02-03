@@ -957,11 +957,7 @@ source_set("browser") {
   }
 
   if (enable_mojo_media != "none") {
-    configs += [ "//media/mojo/services:enable_mojo_media_config" ]
-  }
-
-  if (enable_mojo_media == "utility") {
-    deps += [ "//media/mojo/services:application" ]
+    deps += [ "//media/mojo/services:default_application" ]
   }
 
   if (enable_wayland_server) {

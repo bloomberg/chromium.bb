@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
-import("//media/media_options.gni")
 import("//testing/test.gni")
 import("//build/config/ui.gni")
 
@@ -130,14 +129,6 @@ source_set("browser") {
       ":jni_headers",
       "//components/external_video_surface",
     ]
-  }
-
-  if (enable_mojo_media != "none") {
-    configs += [ "//media/mojo/services:enable_mojo_media_config" ]
-  }
-
-  if (enable_mojo_media == "utility") {
-    deps += [ "//media/mojo/services:application" ]
   }
 
   if (use_ozone) {

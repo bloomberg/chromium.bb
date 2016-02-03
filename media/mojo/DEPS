@@ -2,5 +2,6 @@ include_rules = [
   "+mojo/shell",
   "+mojo/common",
   "+mojo/converters",
+  "+mojo/logging",
   "+mojo/public",
 ]

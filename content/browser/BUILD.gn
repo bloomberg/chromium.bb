@@ -531,10 +531,6 @@ source_set("browser") {
     configs += [ "//media/mojo/services:enable_mojo_media_config" ]
   }
 
-  if (enable_mojo_media == "browser") {
-    deps += [ "//media/mojo/services:application" ]
-  }
-
   if (enable_webvr) {
     sources += [
       "vr/vr_device.cc",

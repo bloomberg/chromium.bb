@@ -62,6 +62,10 @@
 #include "sandbox/win/src/sandbox.h"
 #endif
 
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+#include "media/mojo/services/mojo_media_application.h"
+#endif
+
 namespace content {
 
 namespace {

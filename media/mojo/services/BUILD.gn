@@ -80,26 +80,6 @@ source_set("proxy") {
   ]
 }
 
-source_set("media_client") {
-  sources = [
-    "mojo_media_client.cc",
-    "mojo_media_client.h",
-  ]
-  if (is_android) {
-    sources += [ "android_mojo_media_client.cc" ]
-  } else {
-    sources += [ "default_mojo_media_client.cc" ]
-  }
-
-  public_configs = [ ":enable_mojo_media_config" ]
-
-  deps = [
-    "//base",
-    "//media",
-    "//media:shared_memory_support",
-  ]
-}
-
 source_set("cdm_service") {
   deps = [
     ":converters",
@@ -131,6 +111,12 @@ source_set("cdm_service") {
     ]
   }
 
+  # TODO(xhwang): Needed because targets can depend on cdm_service directly,
+  # which is a bit hacky since we need to access CdmService directly
+  # from C++ code (AVDA). In the future we'll make those decoders part of
+  # MojoMediaApplication, then we won't need this.
+  public_configs = [ ":enable_mojo_media_config" ]
+
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
@@ -158,6 +144,8 @@ source_set("application") {
   sources = [
     "mojo_media_application.cc",
     "mojo_media_application.h",
+    "mojo_media_client.cc",
+    "mojo_media_client.h",
     "service_factory_impl.cc",
     "service_factory_impl.h",
   ]
@@ -166,11 +154,26 @@ source_set("application") {
 
   deps = [
     ":cdm_service",
-    ":media_client",
     ":renderer_service",
-    "//base",
-    "//mojo/public/c/system:for_component",
     "//mojo/shell/public/cpp",
+  ]
+}
+
+source_set("default_application") {
+  if (is_android) {
+    sources = [
+      "android_mojo_media_client.cc",
+    ]
+  } else {
+    sources = [
+      "default_mojo_media_client.cc",
+    ]
+  }
+
+  public_configs = [ ":enable_mojo_media_config" ]
+
+  deps = [
+    ":application",
   ]
 }
 
@@ -200,7 +203,8 @@ mojo_native_application("media") {
   ]
 
   deps = [
-    ":application",
+    ":default_application",
+    "//mojo/logging",
     "//mojo/public/c/system:for_shared_library",
   ]
 }

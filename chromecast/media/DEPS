@@ -3,5 +3,6 @@ include_rules = [
   "+media/audio",
   "+media/base",
   "+media/cdm",
+  "+media/mojo",
   "+media/renderers",
 ]

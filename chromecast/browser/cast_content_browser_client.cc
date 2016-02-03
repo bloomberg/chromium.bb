@@ -51,6 +51,11 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+// nogncheck because of conditional dependency.
+#include "media/mojo/services/mojo_media_application.h"  // nogncheck
+#endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
+
 #if defined(OS_ANDROID)
 #include "components/crash/content/browser/crash_dump_manager_android.h"
 #include "components/external_video_surface/browser/android/external_video_surface_container_impl.h"
@@ -349,11 +354,12 @@ bool CastContentBrowserClient::CanCreateWindow(
   return false;
 }
 
-void CastContentBrowserClient::RegisterUnsandboxedOutOfProcessMojoApplications(
-    std::map<GURL, base::string16>* apps) {
-#if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  apps->insert(std::make_pair(GURL("mojo:media"),
-                              base::ASCIIToUTF16("Media App")));
+void CastContentBrowserClient::RegisterInProcessMojoApplications(
+    StaticMojoApplicationMap* apps) {
+#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
+  apps->insert(
+      std::make_pair(GURL("mojo:media"),
+                     base::Bind(::media::MojoMediaApplication::CreateApp)));
 #endif
 }
 

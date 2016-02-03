@@ -1,0 +1,18 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//media/media_options.gni")
+
+# We support mojo media service hosted in the browser process only.
+assert(enable_mojo_media == "browser")
+
+source_set("mojo") {
+  sources = [
+    "cast_mojo_media_client.cc",
+  ]
+
+  public_deps = [
+    "//media/mojo/services:application",
+  ]
+}

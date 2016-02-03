@@ -19,8 +19,7 @@ class MojoMediaApplication
  public:
   static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
 
-  MojoMediaApplication(bool enable_logging,
-                       scoped_ptr<MojoMediaClient> mojo_media_client);
+  explicit MojoMediaApplication(scoped_ptr<MojoMediaClient> mojo_media_client);
   ~MojoMediaApplication() final;
 
  private:
@@ -33,7 +32,6 @@ class MojoMediaApplication
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
 
-  bool enable_logging_;
   scoped_ptr<MojoMediaClient> mojo_media_client_;
   mojo::ApplicationImpl* app_impl_;
   scoped_refptr<MediaLog> media_log_;
