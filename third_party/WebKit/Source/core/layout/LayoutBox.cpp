@@ -4390,6 +4390,17 @@ static void markBoxForRelayoutAfterSplit(LayoutBox* box)
     box->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::AnonymousBlockChange);
 }
 
+static void collapseLoneAnonymousBlockChild(LayoutObject* child)
+{
+    ASSERT(child);
+    if (!child->isAnonymousBlock())
+        return;
+    LayoutObject* parent = child->parent();
+    if (!parent->isLayoutBlock())
+        return;
+    LayoutBlock::collapseAnonymousBlockChild(toLayoutBlock(parent), toLayoutBlock(child));
+}
+
 LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChild)
 {
     LayoutBox* boxAtTopOfNewBranch = nullptr;
@@ -4409,6 +4420,15 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
             markBoxForRelayoutAfterSplit(parentBox);
             parentBox->virtualChildren()->insertChildNode(parentBox, postBox, boxToSplit->nextSibling());
             boxToSplit->moveChildrenTo(postBox, beforeChild, 0, true);
+
+            LayoutObject* child = postBox->slowFirstChild();
+            ASSERT(child);
+            if (child && !child->nextSibling())
+                collapseLoneAnonymousBlockChild(child);
+            child = boxToSplit->slowFirstChild();
+            ASSERT(child);
+            if (child && !child->previousSibling())
+                collapseLoneAnonymousBlockChild(child);
 
             markBoxForRelayoutAfterSplit(boxToSplit);
             markBoxForRelayoutAfterSplit(postBox);

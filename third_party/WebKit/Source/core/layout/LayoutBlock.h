@@ -387,7 +387,6 @@ private:
 
     virtual void removeLeftoverAnonymousBlock(LayoutBlock* child);
 
-    static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
     void makeChildrenInlineIfPossible();
 
     void dirtyLinesFromChangedChild(LayoutObject* child) final { m_lineBoxes.dirtyLinesFromChangedChild(LineLayoutItem(this), LineLayoutItem(child)); }
@@ -455,6 +454,7 @@ public:
     // return the distance to the next fragmentainer that can fit this piece of content.
     LayoutUnit calculatePaginationStrutToFitContent(LayoutUnit offset, LayoutUnit strutToNextPage, LayoutUnit contentLogicalHeight) const;
 
+    static void collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* child);
 protected:
     bool isPageLogicalHeightKnown(LayoutUnit logicalOffset) const { return pageLogicalHeightForOffset(logicalOffset); }
 
