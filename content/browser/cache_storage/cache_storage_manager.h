@@ -104,6 +104,10 @@ class CONTENT_EXPORT CacheStorageManager {
   // QuotaClient and Browsing Data Deletion support
   void GetAllOriginsUsage(
       const CacheStorageContext::GetUsageInfoCallback& callback);
+  void GetAllOriginsUsageGetSizes(
+      scoped_ptr<std::vector<CacheStorageUsageInfo>> usage_info,
+      const CacheStorageContext::GetUsageInfoCallback& callback);
+
   void GetOriginUsage(const GURL& origin_url,
                       const storage::QuotaClient::GetUsageCallback& callback);
   void GetOrigins(const storage::QuotaClient::GetOriginsCallback& callback);

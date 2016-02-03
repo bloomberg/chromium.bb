@@ -63,10 +63,6 @@ enum EntryIndex { INDEX_HEADERS = 0, INDEX_RESPONSE_BODY };
 // is controlled per-origin by the QuotaManager.
 const int kMaxCacheBytes = std::numeric_limits<int>::max();
 
-void NotReachedCompletionCallback(int rv) {
-  NOTREACHED();
-}
-
 blink::WebServiceWorkerResponseType ProtoResponseTypeToWebResponseType(
     CacheResponse::ResponseType response_type) {
   switch (response_type) {
@@ -182,6 +178,12 @@ void ReadMetadataDidReadMetadata(
   }
 
   callback.Run(std::move(metadata));
+}
+
+void SizeDidGetCacheSize(const CacheStorageCache::SizeCallback& callback,
+                         int size) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, size));
 }
 
 }  // namespace
@@ -429,32 +431,29 @@ void CacheStorageCache::Close(const base::Closure& callback) {
                                            pending_callback));
 }
 
-int64_t CacheStorageCache::MemoryBackedSize() const {
-  if (backend_state_ != BACKEND_OPEN || !memory_only_)
-    return 0;
-
-  scoped_ptr<disk_cache::Backend::Iterator> backend_iter =
-      backend_->CreateIterator();
-  disk_cache::Entry* entry = nullptr;
-
-  int64_t sum = 0;
-
-  std::vector<disk_cache::Entry*> entries;
-  int rv = net::OK;
-  while ((rv = backend_iter->OpenNextEntry(
-              &entry, base::Bind(NotReachedCompletionCallback))) == net::OK) {
-    entries.push_back(entry);  // Open the entries without mutating them.
-  }
-  DCHECK_NE(net::ERR_IO_PENDING, rv)
-      << "Memory cache operations should be synchronous.";
-
-  for (disk_cache::Entry* entry : entries) {
-    sum += entry->GetDataSize(INDEX_HEADERS) +
-           entry->GetDataSize(INDEX_RESPONSE_BODY);
-    entry->Close();
+void CacheStorageCache::Size(const SizeCallback& callback) {
+  if (!LazyInitialize()) {
+    // TODO(jkarlin): Delete caches that can't be initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, 0));
+    return;
   }
 
-  return sum;
+  // If the cache isn't already initialized, wait for it.
+  if (initializing_) {
+    SizeCallback pending_callback =
+        base::Bind(&CacheStorageCache::PendingSizeCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback);
+    scheduler_->ScheduleOperation(base::Bind(&CacheStorageCache::SizeImpl,
+                                             weak_ptr_factory_.GetWeakPtr(),
+                                             pending_callback));
+    return;
+  }
+
+  // Run immediately so that we don't deadlock on
+  // CacheStorageCache::PutDidDelete's call to
+  // quota_manager_proxy_->GetUsageAndQuota.
+  SizeImpl(callback);
 }
 
 CacheStorageCache::CacheStorageCache(
@@ -1140,6 +1139,22 @@ void CacheStorageCache::CloseImpl(const base::Closure& callback) {
   callback.Run();
 }
 
+void CacheStorageCache::SizeImpl(const SizeCallback& callback) {
+  DCHECK_NE(BACKEND_UNINITIALIZED, backend_state_);
+
+  if (backend_state_ != BACKEND_OPEN) {
+    // Backend is closed for deletion, don't count its size.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback, 0));
+    return;
+  }
+
+  int rv = backend_->CalculateSizeOfAllEntries(
+      base::Bind(&SizeDidGetCacheSize, callback));
+  if (rv != net::ERR_IO_PENDING)
+    SizeDidGetCacheSize(callback, rv);
+}
+
 void CacheStorageCache::CreateBackend(const ErrorCallback& callback) {
   DCHECK(!backend_);
 
@@ -1256,6 +1271,15 @@ void CacheStorageCache::PendingRequestsCallback(
   base::WeakPtr<CacheStorageCache> cache = weak_ptr_factory_.GetWeakPtr();
 
   callback.Run(error, std::move(requests));
+  if (cache)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void CacheStorageCache::PendingSizeCallback(const SizeCallback& callback,
+                                            int64_t size) {
+  base::WeakPtr<CacheStorageCache> cache = weak_ptr_factory_.GetWeakPtr();
+
+  callback.Run(size);
   if (cache)
     scheduler_->CompleteOperationAndRunNext();
 }

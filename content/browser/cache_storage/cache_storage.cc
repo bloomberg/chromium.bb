@@ -51,6 +51,19 @@ void CloseAllCachesDidCloseCache(const scoped_refptr<CacheStorageCache>& cache,
   barrier_closure.Run();
 }
 
+void SizeRetrievedFromCache(const scoped_refptr<CacheStorageCache>& cache,
+                            const base::Closure& closure,
+                            int64_t* accumulator,
+                            int64_t size) {
+  *accumulator += size;
+  closure.Run();
+}
+
+void SizeRetrievedFromAllCaches(scoped_ptr<int64_t> accumulator,
+                                const CacheStorage::SizeCallback& callback) {
+  callback.Run(*accumulator);
+}
+
 }  // namespace
 
 const char CacheStorage::kIndexFileName[] = "index.txt";
@@ -573,18 +586,17 @@ void CacheStorage::CloseAllCaches(const base::Closure& callback) {
                                            pending_callback));
 }
 
-int64_t CacheStorage::MemoryBackedSize() const {
+void CacheStorage::Size(const CacheStorage::SizeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_ || !memory_only_)
-    return 0;
+  if (!initialized_)
+    LazyInit();
 
-  int64_t sum = 0;
-  for (auto& key_value : cache_map_) {
-    if (key_value.second)
-      sum += key_value.second->MemoryBackedSize();
-  }
-  return sum;
+  CacheStorageCache::SizeCallback pending_callback = base::Bind(
+      &CacheStorage::PendingSizeCallback, weak_factory_.GetWeakPtr(), callback);
+
+  scheduler_->ScheduleOperation(base::Bind(
+      &CacheStorage::SizeImpl, weak_factory_.GetWeakPtr(), pending_callback));
 }
 
 void CacheStorage::StartAsyncOperationForTesting() {
@@ -922,6 +934,25 @@ void CacheStorage::CloseAllCachesImpl(const base::Closure& callback) {
   barrier_closure.Run();
 }
 
+void CacheStorage::SizeImpl(const SizeCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(initialized_);
+
+  scoped_ptr<int64_t> accumulator(new int64_t(0));
+  int64_t* accumulator_ptr = accumulator.get();
+
+  base::Closure barrier_closure = base::BarrierClosure(
+      ordered_cache_names_.size(),
+      base::Bind(&SizeRetrievedFromAllCaches,
+                 base::Passed(std::move(accumulator)), callback));
+
+  for (const std::string& cache_name : ordered_cache_names_) {
+    scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
+    cache->Size(base::Bind(&SizeRetrievedFromCache, cache, barrier_closure,
+                           accumulator_ptr));
+  }
+}
+
 void CacheStorage::PendingClosure(const base::Closure& callback) {
   base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();
 
@@ -971,6 +1002,15 @@ void CacheStorage::PendingResponseCallback(
   base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();
 
   callback.Run(error, std::move(response), std::move(blob_data_handle));
+  if (cache_storage)
+    scheduler_->CompleteOperationAndRunNext();
+}
+
+void CacheStorage::PendingSizeCallback(const SizeCallback& callback,
+                                       int64_t size) {
+  base::WeakPtr<CacheStorage> cache_storage = weak_factory_.GetWeakPtr();
+
+  callback.Run(size);
   if (cache_storage)
     scheduler_->CompleteOperationAndRunNext();
 }
