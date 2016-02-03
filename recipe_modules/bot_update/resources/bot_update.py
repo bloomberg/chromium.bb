@@ -352,15 +352,7 @@ DEPS2GIT_DIR_PATH = path.join(SCRIPTS_DIR, 'tools', 'deps2git')
 DEPS2GIT_PATH = path.join(DEPS2GIT_DIR_PATH, 'deps2git.py')
 S2G_INTERNAL_PATH = path.join(SCRIPTS_DIR, 'tools', 'deps2git_internal',
                               'svn_to_git_internal.py')
-
-# ../../cache_dir aka /b/build/slave/cache_dir
 GIT_CACHE_PATH = path.join(DEPOT_TOOLS_DIR, 'git_cache.py')
-CACHE_DIR = path.join(SLAVE_DIR, 'cache_dir')
-# Because we print CACHE_DIR out into a .gclient file, and then later run
-# eval() on it, backslashes need to be escaped, otherwise "E:\b\build" gets
-# parsed as "E:[\x08][\x08]uild".
-if sys.platform.startswith('win'):
-  CACHE_DIR = CACHE_DIR.replace('\\', '\\\\')
 
 # Find the patch tool.
 if sys.platform.startswith('win'):
@@ -525,10 +517,10 @@ def git(*args, **kwargs):  # pragma: no cover
   return call(*cmd, **kwargs)
 
 
-def get_gclient_spec(solutions, target_os, target_os_only):
+def get_gclient_spec(solutions, target_os, target_os_only, git_cache_dir):
   return GCLIENT_TEMPLATE % {
       'solutions': pprint.pformat(solutions, indent=4),
-      'cache_dir': '"%s"' % CACHE_DIR,
+      'cache_dir': '"%s"' % git_cache_dir,
       'target_os': ('\ntarget_os=%s' % target_os) if target_os else '',
       'target_os_only': '\ntarget_os_only=%s' % target_os_only
   }
@@ -700,10 +692,11 @@ def ensure_no_checkout(dir_names, scm_dirname):
       print 'done'
 
 
-def gclient_configure(solutions, target_os, target_os_only):
+def gclient_configure(solutions, target_os, target_os_only, git_cache_dir):
   """Should do the same thing as gclient --spec='...'."""
   with codecs.open('.gclient', mode='w', encoding='utf-8') as f:
-    f.write(get_gclient_spec(solutions, target_os, target_os_only))
+    f.write(get_gclient_spec(
+        solutions, target_os, target_os_only, git_cache_dir))
 
 
 def gclient_sync(with_branch_heads, shallow):
@@ -842,7 +835,7 @@ def need_to_run_deps2git(repo_base, deps_file, deps_git_file):
   return last_known_deps_ref != merge_base_ref
 
 
-def ensure_deps2git(solution, shallow):
+def ensure_deps2git(solution, shallow, git_cache_dir):
   repo_base = path.join(os.getcwd(), solution['name'])
   deps_file = path.join(repo_base, 'DEPS')
   deps_git_file = path.join(repo_base, '.DEPS.git')
@@ -857,7 +850,7 @@ def ensure_deps2git(solution, shallow):
   print '===DEPS file modified, need to run deps2git==='
   cmd = [sys.executable, DEPS2GIT_PATH,
          '--workspace', os.getcwd(),
-         '--cache_dir', CACHE_DIR,
+         '--cache_dir', git_cache_dir,
          '--deps', deps_file,
          '--out', deps_git_file]
   if 'chrome-internal.googlesource' in solution['url']:
@@ -932,13 +925,14 @@ def force_revision(folder_name, revision):
     ref = branch if branch.startswith('refs/') else 'origin/%s' % branch
     git('checkout', '--force', ref, cwd=folder_name)
 
-def git_checkout(solutions, revisions, shallow, refs):
+def git_checkout(solutions, revisions, shallow, refs, git_cache_dir):
   build_dir = os.getcwd()
   # Before we do anything, break all git_cache locks.
-  if path.isdir(CACHE_DIR):
-    git('cache', 'unlock', '-vv', '--force', '--all', '--cache-dir', CACHE_DIR)
-    for item in os.listdir(CACHE_DIR):
-      filename = os.path.join(CACHE_DIR, item)
+  if path.isdir(git_cache_dir):
+    git('cache', 'unlock', '-vv', '--force', '--all',
+        '--cache-dir', git_cache_dir)
+    for item in os.listdir(git_cache_dir):
+      filename = os.path.join(git_cache_dir, item)
       if item.endswith('.lock'):
         raise Exception('%s exists after cache unlock' % filename)
   first_solution = True
@@ -957,12 +951,13 @@ def git_checkout(solutions, revisions, shallow, refs):
       sln_dir = path.join(build_dir, name)
       s = ['--shallow'] if shallow else []
       populate_cmd = (['cache', 'populate', '--ignore_locks', '-v',
-                       '--cache-dir', CACHE_DIR] + s + [url])
+                       '--cache-dir', git_cache_dir] + s + [url])
       for ref in refs:
         populate_cmd.extend(['--ref', ref])
       git(*populate_cmd)
       mirror_dir = git(
-          'cache', 'exists', '--quiet', '--cache-dir', CACHE_DIR, url).strip()
+          'cache', 'exists', '--quiet',
+          '--cache-dir', git_cache_dir, url).strip()
       clone_cmd = (
           'clone', '--no-checkout', '--local', '--shared', mirror_dir, sln_dir)
 
@@ -1300,13 +1295,13 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     patch_root, issue, patchset, patch_url, rietveld_server,
                     gerrit_repo, gerrit_ref, revision_mapping,
                     apply_issue_email_file, apply_issue_key_file, buildspec,
-                    gyp_env, shallow, runhooks, refs):
+                    gyp_env, shallow, runhooks, refs, git_cache_dir):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
   print 'Fetching Git checkout'
 
-  git_ref = git_checkout(solutions, revisions, shallow, refs)
+  git_ref = git_checkout(solutions, revisions, shallow, refs, git_cache_dir)
 
   patches = None
   if patch_url:
@@ -1331,10 +1326,10 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   if not buildspec:
     # Run deps2git if there is a DEPS change after the last .DEPS.git commit.
     for solution in solutions:
-      ensure_deps2git(solution, shallow)
+      ensure_deps2git(solution, shallow, git_cache_dir)
 
   # Ensure our build/ directory is set up with the correct .gclient file.
-  gclient_configure(solutions, target_os, target_os_only)
+  gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
 
   # Let gclient do the DEPS syncing.
   # The branch-head refspec is a special case because its possible Chrome
@@ -1371,7 +1366,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   # Reset the deps_file point in the solutions so that hooks get run properly.
   for sln in solutions:
     sln['deps_file'] = sln.get('deps_file', 'DEPS').replace('.DEPS.git', 'DEPS')
-  gclient_configure(solutions, target_os, target_os_only)
+  gclient_configure(solutions, target_os, target_os_only, git_cache_dir)
 
   return gclient_output
 
@@ -1494,6 +1489,8 @@ def parse_args():
   parse.add_option('--with_branch_heads', action='store_true',
                     help='Always pass --with_branch_heads to gclient.  This '
                           'does the same thing as --refs +refs/branch-heads/*')
+  parse.add_option('--git-cache-dir', default=path.join(SLAVE_DIR, 'cache_dir'),
+                   help='Path to git cache directory.')
 
 
   options, args = parse.parse_args()
@@ -1519,6 +1516,12 @@ def parse_args():
         'WARNING: Caught execption while parsing revision_mapping*: %s'
         % (str(e),)
     )
+
+  # Because we print CACHE_DIR out into a .gclient file, and then later run
+  # eval() on it, backslashes need to be escaped, otherwise "E:\b\build" gets
+  # parsed as "E:[\x08][\x08]uild".
+  if sys.platform.startswith('win'):
+    options.git_cache_dir = options.git_cache_dir.replace('\\', '\\\\')
 
   return options, args
 
@@ -1605,7 +1608,8 @@ def checkout(options, git_slns, specs, buildspec, master,
 
           # Finally, extra configurations such as shallowness of the clone.
           shallow=options.shallow,
-          refs=options.refs)
+          refs=options.refs,
+          git_cache_dir=options.git_cache_dir)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'

@@ -141,6 +141,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
         ['--spec', spec_string],
         ['--root', root],
         ['--revision_mapping_file', self.m.json.input(rev_map)],
+        ['--git-cache-dir', self.m.path['git_cache']],
 
         # 3. How to find the patch, if any (issue/patchset/patch_url).
         ['--issue', issue],

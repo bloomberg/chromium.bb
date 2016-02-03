@@ -16,6 +16,8 @@
       "src",
       "--revision_mapping_file",
       "{\"src\": \"got_cr_revision\"}",
+      "--git-cache-dir",
+      "[GIT_CACHE]",
       "--apply_issue_email_file",
       "[BUILD]/site_config/.rietveld_client_email",
       "--apply_issue_key_file",

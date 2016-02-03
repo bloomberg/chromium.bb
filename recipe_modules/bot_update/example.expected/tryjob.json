@@ -16,6 +16,8 @@
       "src",
       "--revision_mapping_file",
       "{\"src\": \"got_cr_revision\"}",
+      "--git-cache-dir",
+      "[GIT_CACHE]",
       "--patch_url",
       "http://src.chromium.org/foo/bar",
       "--output_json",

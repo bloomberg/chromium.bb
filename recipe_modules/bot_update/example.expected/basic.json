@@ -16,6 +16,8 @@
       "src",
       "--revision_mapping_file",
       "{\"src\": \"got_cr_revision\"}",
+      "--git-cache-dir",
+      "[GIT_CACHE]",
       "--output_json",
       "/path/to/tmp/json",
       "--revision",
