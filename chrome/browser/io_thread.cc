@@ -861,9 +861,8 @@ void IOThread::Init() {
   }
   globals_->enable_brotli.set(
       base::FeatureList::IsEnabled(features::kBrotliEncoding));
-  if (command_line.HasSwitch(switches::kEnableTokenBinding)) {
-    globals_->enable_token_binding = true;
-  }
+  globals_->enable_token_binding =
+      base::FeatureList::IsEnabled(features::kTokenBinding);
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile13(

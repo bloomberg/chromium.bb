@@ -23,6 +23,11 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables token binding
+// (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
+const base::Feature kTokenBinding{"token-binding",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Control whether the priority of a renderer is set when the process is
 // launched. This is in response to a bug seen on Windows. See
 // https://crbug.com/560446

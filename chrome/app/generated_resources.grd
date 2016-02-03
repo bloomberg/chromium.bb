@@ -5571,6 +5571,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_QUIC_DESCRIPTION" desc="Description for the flag to enable QUIC.">
         Enable experimental QUIC protocol support.
       </message>
+      <message name="IDS_FLAGS_ENABLE_TOKEN_BINDING_NAME" desc="Title for the flag to enable Token Binding. Please do not translate 'Token Binding'.">
+        Token Binding.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_TOKEN_BINDING_DESCRIPTION" desc="Description for the flag to enable Token Binding. Please do not translate 'Token Binding'.">
+        Enable Token Binding support.
+      </message>
       <message name="IDS_FLAGS_ALTSVC_NAME" desc="Title for the flag for Alternative Services.  Please do not translate &quot;Alternative Services&quot;.">
         Alternative services
       </message>

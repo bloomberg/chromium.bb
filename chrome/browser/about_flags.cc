@@ -2155,6 +2155,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_GROUPED_HISTORY_DESCRIPTION,
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kHistoryEnableGroupByDomain)},
+    {"enable-token-binding",
+      IDS_FLAGS_ENABLE_TOKEN_BINDING_NAME,
+      IDS_FLAGS_ENABLE_TOKEN_BINDING_DESCRIPTION,
+      kOsAll,
+      FEATURE_VALUE_TYPE(features::kTokenBinding)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
