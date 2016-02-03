@@ -12,6 +12,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
+#include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mash/wm/background_layout.h"
 #include "mash/wm/screenlock_layout.h"
 #include "mash/wm/shadow_controller.h"
@@ -126,8 +127,8 @@ void RootWindowController::OnEmbed(mus::Window* root) {
   CreateContainers();
   background_layout_.reset(new BackgroundLayout(
       GetWindowForContainer(mojom::Container::USER_BACKGROUND)));
-  screenlock_layout_.reset(new ScreenlockLayout(
-      GetWindowForContainer(mojom::Container::LOGIN_WINDOWS)));
+  screenlock_layout_.reset(
+      new ScreenlockLayout(GetWindowForContainer(mojom::Container::LOGIN_APP)));
   shelf_layout_.reset(
       new ShelfLayout(GetWindowForContainer(mojom::Container::USER_SHELF)));
 
@@ -139,7 +140,9 @@ void RootWindowController::OnEmbed(mus::Window* root) {
 
   AddAccelerators();
 
-  window_manager_->Initialize(this);
+  mash::shell::mojom::ShellPtr shell;
+  app_->app()->ConnectToService("mojo:mash_shell", &shell);
+  window_manager_->Initialize(this, std::move(shell));
 
   shadow_controller_.reset(new ShadowController(root->connection()));
 
@@ -162,18 +165,48 @@ void RootWindowController::OnWindowDestroyed(mus::Window* window) {
   root_ = nullptr;
 }
 
+void RootWindowController::CreateContainer(
+    mash::wm::mojom::Container container,
+    mash::wm::mojom::Container parent_container) {
+  mus::Window* window = root_->connection()->NewWindow();
+  DCHECK_EQ(mus::LoWord(window->id()), static_cast<uint16_t>(container))
+      << "Containers must be created before other windows!";
+  window->SetBounds(root_->bounds());
+  // User private windows are hidden by default until the window manager learns
+  // the lock state, so their contents are never accidentally revealed.
+  window->SetVisible(container != mojom::Container::USER_PRIVATE);
+  mus::Id parent_id = (mus::HiWord(window->id()) << 16) |
+                      static_cast<uint16_t>(parent_container);
+  mus::Window* parent = parent_container == mojom::Container::ROOT
+                            ? root_
+                            : root_->GetChildById(parent_id);
+  parent->AddChild(window);
+}
+
 void RootWindowController::CreateContainers() {
-  for (uint16_t container =
-           static_cast<uint16_t>(mojom::Container::ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(mojom::Container::COUNT);
-       ++container) {
-    mus::Window* window = root_->connection()->NewWindow();
-    DCHECK_EQ(mus::LoWord(window->id()), container)
-        << "Containers must be created before other windows!";
-    window->SetBounds(root_->bounds());
-    window->SetVisible(true);
-    root_->AddChild(window);
-  }
+  CreateContainer(mojom::Container::ALL_USER_BACKGROUND,
+                  mojom::Container::ROOT);
+  CreateContainer(mojom::Container::USER_WORKSPACE, mojom::Container::ROOT);
+  CreateContainer(mojom::Container::USER_BACKGROUND,
+                  mojom::Container::USER_WORKSPACE);
+  CreateContainer(mojom::Container::USER_PRIVATE,
+                  mojom::Container::USER_WORKSPACE);
+  CreateContainer(mojom::Container::USER_WINDOWS,
+                  mojom::Container::USER_PRIVATE);
+  CreateContainer(mojom::Container::USER_STICKY_WINDOWS,
+                  mojom::Container::USER_PRIVATE);
+  CreateContainer(mojom::Container::USER_PRESENTATION_WINDOWS,
+                  mojom::Container::USER_PRIVATE);
+  CreateContainer(mojom::Container::USER_SHELF, mojom::Container::USER_PRIVATE);
+  CreateContainer(mojom::Container::LOGIN_WINDOWS, mojom::Container::ROOT);
+  CreateContainer(mojom::Container::LOGIN_APP, mojom::Container::LOGIN_WINDOWS);
+  CreateContainer(mojom::Container::LOGIN_SHELF,
+                  mojom::Container::LOGIN_WINDOWS);
+  CreateContainer(mojom::Container::SYSTEM_MODAL_WINDOWS,
+                  mojom::Container::ROOT);
+  CreateContainer(mojom::Container::KEYBOARD, mojom::Container::ROOT);
+  CreateContainer(mojom::Container::MENUS, mojom::Container::ROOT);
+  CreateContainer(mojom::Container::TOOLTIPS, mojom::Container::ROOT);
 }
 
 }  // namespace wm

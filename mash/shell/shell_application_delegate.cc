@@ -5,14 +5,14 @@
 #include "mash/shell/shell_application_delegate.h"
 
 #include "base/bind.h"
-#include "mash/screenlock/public/interfaces/screenlock.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mash {
 namespace shell {
 
-ShellApplicationDelegate::ShellApplicationDelegate() : app_(nullptr) {}
+ShellApplicationDelegate::ShellApplicationDelegate()
+    : app_(nullptr), screen_locked_(false) {}
 
 ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
@@ -31,10 +31,30 @@ bool ShellApplicationDelegate::ConfigureIncomingConnection(
   return true;
 }
 
+void ShellApplicationDelegate::AddScreenlockStateListener(
+    mojom::ScreenlockStateListenerPtr listener) {
+  listener->ScreenlockStateChanged(screen_locked_);
+  screenlock_listeners_.AddInterfacePtr(std::move(listener));
+}
+
 void ShellApplicationDelegate::LockScreen() {
+  if (screen_locked_)
+    return;
+  screen_locked_ = true;
+  screenlock_listeners_.ForAllPtrs(
+      [](mojom::ScreenlockStateListener* listener) {
+        listener->ScreenlockStateChanged(true);
+      });
   StartScreenlock();
 }
 void ShellApplicationDelegate::UnlockScreen() {
+  if (!screen_locked_)
+    return;
+  screen_locked_ = false;
+  screenlock_listeners_.ForAllPtrs(
+      [](mojom::ScreenlockStateListener* listener) {
+        listener->ScreenlockStateChanged(false);
+      });
   StopScreenlock();
 }
 
@@ -87,9 +107,6 @@ void ShellApplicationDelegate::StartScreenlock() {
 void ShellApplicationDelegate::StopScreenlock() {
   auto connection = connections_.find("mojo:screenlock");
   DCHECK(connections_.end() != connection);
-  mash::screenlock::mojom::ScreenlockPtr screenlock;
-  connection->second->ConnectToService(&screenlock);
-  screenlock->Quit();
   connections_.erase(connection);
 }
 

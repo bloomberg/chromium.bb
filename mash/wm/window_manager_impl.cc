@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/wm/window_manager.h"
+#include "mash/wm/window_manager_impl.h"
 
 #include <stdint.h>
 #include <utility>
@@ -17,35 +17,33 @@
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
-#include "mash/wm/root_window_controller.h"
+#include "mash/wm/window_manager_application.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mash {
 namespace wm {
 
-WindowManager::WindowManager()
-    : root_controller_(nullptr),
-      window_manager_client_(nullptr),
-      binding_(this) {}
+WindowManagerImpl::WindowManagerImpl()
+    : state_(nullptr), window_manager_client_(nullptr), binding_(this) {}
 
-WindowManager::~WindowManager() {
-  if (!root_controller_)
+WindowManagerImpl::~WindowManagerImpl() {
+  if (!state_)
     return;
-  for (auto container : root_controller_->root()->children()) {
+  for (auto container : state_->root()->children()) {
     container->RemoveObserver(this);
     for (auto child : container->children())
       child->RemoveObserver(this);
   }
 }
 
-void WindowManager::Initialize(RootWindowController* root_controller,
-                               mash::shell::mojom::ShellPtr shell) {
-  DCHECK(root_controller);
-  DCHECK(!root_controller_);
-  root_controller_ = root_controller;
+void WindowManagerImpl::Initialize(WindowManagerApplication* state,
+                                   mash::shell::mojom::ShellPtr shell) {
+  DCHECK(state);
+  DCHECK(!state_);
+  state_ = state;
   // The children of the root are considered containers.
-  for (auto container : root_controller_->root()->children()) {
+  for (auto container : state_->root()->children()) {
     container->AddObserver(this);
     for (auto child : container->children())
       child->AddObserver(this);
@@ -70,11 +68,11 @@ void WindowManager::Initialize(RootWindowController* root_controller,
   shell->AddScreenlockStateListener(binding_.CreateInterfacePtrAndBind());
 }
 
-gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {
-  DCHECK(root_controller_);
+gfx::Rect WindowManagerImpl::CalculateDefaultBounds(mus::Window* window) const {
+  DCHECK(state_);
   int width, height;
   const gfx::Size pref = GetWindowPreferredSize(window);
-  const mus::Window* root = root_controller_->root();
+  const mus::Window* root = state_->root();
   if (pref.IsEmpty()) {
     width = root->bounds().width() - 240;
     height = root->bounds().height() - 240;
@@ -84,20 +82,20 @@ gfx::Rect WindowManager::CalculateDefaultBounds(mus::Window* window) const {
     width = std::max(0, std::min(max_size.width(), pref.width()));
     height = std::max(0, std::min(max_size.height(), pref.height()));
   }
-  return gfx::Rect(40 + (root_controller_->window_count() % 4) * 40,
-                   40 + (root_controller_->window_count() % 4) * 40, width,
-                   height);
+  return gfx::Rect(40 + (state_->window_count() % 4) * 40,
+                   40 + (state_->window_count() % 4) * 40, width, height);
 }
 
-gfx::Rect WindowManager::GetMaximizedWindowBounds() const {
-  DCHECK(root_controller_);
-  return gfx::Rect(root_controller_->root()->bounds().size());
+gfx::Rect WindowManagerImpl::GetMaximizedWindowBounds() const {
+  DCHECK(state_);
+  return gfx::Rect(state_->root()->bounds().size());
 }
 
-mus::Window* WindowManager::NewTopLevelWindow(
-    std::map<std::string, std::vector<uint8_t>>* properties) {
-  DCHECK(root_controller_);
-  mus::Window* root = root_controller_->root();
+mus::Window* WindowManagerImpl::NewTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties,
+    mus::mojom::WindowTreeClientPtr client) {
+  DCHECK(state_);
+  mus::Window* root = state_->root();
   DCHECK(root);
 
   const bool provide_non_client_frame =
@@ -110,41 +108,53 @@ mus::Window* WindowManager::NewTopLevelWindow(
   window->SetBounds(CalculateDefaultBounds(window));
 
   mojom::Container container = GetRequestedContainer(window);
-  root_controller_->GetWindowForContainer(container)->AddChild(window);
+  state_->GetWindowForContainer(container)->AddChild(window);
+
+  if (client)
+    window->Embed(std::move(client));
 
   if (provide_non_client_frame) {
     // NonClientFrameController deletes itself when |window| is destroyed.
-    new NonClientFrameController(root_controller_->GetShell(), window,
-                                 root_controller_->window_manager_client());
+    new NonClientFrameController(state_->app()->shell(), window,
+                                 state_->window_tree_host());
   }
 
-  root_controller_->IncrementWindowCount();
+  state_->IncrementWindowCount();
 
   return window;
 }
 
-void WindowManager::OnTreeChanging(const TreeChangeParams& params) {
-  DCHECK(root_controller_);
-  if (root_controller_->WindowIsContainer(params.old_parent))
+void WindowManagerImpl::OnTreeChanging(const TreeChangeParams& params) {
+  DCHECK(state_);
+  if (state_->WindowIsContainer(params.old_parent))
     params.target->RemoveObserver(this);
-  else if (root_controller_->WindowIsContainer(params.new_parent))
+  else if (state_->WindowIsContainer(params.new_parent))
     params.target->AddObserver(this);
 }
 
-void WindowManager::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
+void WindowManagerImpl::OnWindowEmbeddedAppDisconnected(mus::Window* window) {
   window->Destroy();
 }
 
-void WindowManager::SetWindowManagerClient(mus::WindowManagerClient* client) {
+void WindowManagerImpl::OpenWindow(
+    mus::mojom::WindowTreeClientPtr client,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
+  mus::Window::SharedProperties properties =
+      transport_properties.To<mus::Window::SharedProperties>();
+  NewTopLevelWindow(&properties, std::move(client));
+}
+
+void WindowManagerImpl::SetWindowManagerClient(
+    mus::WindowManagerClient* client) {
   window_manager_client_ = client;
 }
 
-bool WindowManager::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
+bool WindowManagerImpl::OnWmSetBounds(mus::Window* window, gfx::Rect* bounds) {
   // By returning true the bounds of |window| is updated.
   return true;
 }
 
-bool WindowManager::OnWmSetProperty(
+bool WindowManagerImpl::OnWmSetProperty(
     mus::Window* window,
     const std::string& name,
     scoped_ptr<std::vector<uint8_t>>* new_data) {
@@ -156,19 +166,15 @@ bool WindowManager::OnWmSetProperty(
          name == mus::mojom::WindowManager::kWindowTitle_Property;
 }
 
-mus::Window* WindowManager::OnWmCreateTopLevelWindow(
+mus::Window* WindowManagerImpl::OnWmCreateTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  return NewTopLevelWindow(properties);
+  return NewTopLevelWindow(properties, nullptr);
 }
 
-void WindowManager::OnAccelerator(uint32_t id, mus::mojom::EventPtr event) {
-  root_controller_->OnAccelerator(id, std::move(event));
-}
-
-void WindowManager::ScreenlockStateChanged(bool locked) {
+void WindowManagerImpl::ScreenlockStateChanged(bool locked) {
   // Hide USER_PRIVATE windows when the screen is locked.
-  mus::Window* window = root_controller_->GetWindowForContainer(
-      mash::wm::mojom::Container::USER_PRIVATE);
+  mus::Window* window =
+      state_->GetWindowForContainer(mash::wm::mojom::Container::USER_PRIVATE);
   window->SetVisible(!locked);
 }
 

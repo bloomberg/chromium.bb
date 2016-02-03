@@ -302,7 +302,7 @@ void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
 void FocusController::OnDrawnStateChanged(ServerWindow* ancestor,
                                           ServerWindow* window,
                                           bool is_drawn) {
-  DCHECK(false);
+  // DCHECK(false);  TODO(sadrul):
 }
 
 }  // namespace ws

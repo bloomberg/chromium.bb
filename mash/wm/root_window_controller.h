@@ -71,15 +71,17 @@ class RootWindowController : public mus::WindowObserver,
 
   void AddAccelerators();
 
-  // Sets up the window containers used for z-space management.
-  void CreateContainers();
-
   // WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // mus::WindowObserver:
   void OnWindowDestroyed(mus::Window* window) override;
+
+  // Sets up the window containers used for z-space management.
+  void CreateContainer(mash::wm::mojom::Container container,
+                       mash::wm::mojom::Container parent_container);
+  void CreateContainers();
 
   WindowManagerApplication* app_;
   mus::Window* root_;

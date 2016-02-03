@@ -79,6 +79,10 @@ void Screenlock::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
   tracing_.Initialize(app);
 
+  mash::shell::mojom::ShellPtr shell;
+  app_->ConnectToService("mojo:mash_shell", &shell);
+  shell->AddScreenlockStateListener(bindings_.CreateInterfacePtrAndBind(this));
+
   aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(app);
 
@@ -99,20 +103,9 @@ void Screenlock::Initialize(mojo::ApplicationImpl* app) {
   widget->Show();
 }
 
-bool Screenlock::ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) {
-  connection->AddService<mash::screenlock::mojom::Screenlock>(this);
-  return true;
-}
-
-void Screenlock::Quit() {
-  app_->Quit();
-}
-
-void Screenlock::Create(
-    mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mash::screenlock::mojom::Screenlock> r) {
-  bindings_.AddBinding(this, std::move(r));
+void Screenlock::ScreenlockStateChanged(bool screen_locked) {
+  if (!screen_locked)
+    app_->Quit();
 }
 
 }  // namespace screenlock
