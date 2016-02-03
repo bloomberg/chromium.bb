@@ -10,8 +10,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
 namespace {
 

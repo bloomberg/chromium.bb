@@ -20,7 +20,7 @@
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 

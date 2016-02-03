@@ -6,9 +6,9 @@
 
 #include "components/sync_driver/about_sync_util.h"
 #include "grit/components_resources.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/webui/sync_internals/sync_internals_message_handler.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/web/web_ui_ios.h"
 #include "ios/web/public/web_ui_ios_data_source.h"
 

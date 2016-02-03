@@ -13,8 +13,6 @@
       'sources': [
         '../public/provider/chrome/browser/browser_constants.cc',
         '../public/provider/chrome/browser/browser_constants.h',
-        '../public/provider/chrome/browser/browser_state/chrome_browser_state.cc',
-        '../public/provider/chrome/browser/browser_state/chrome_browser_state.h',
         '../public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h',
         '../public/provider/chrome/browser/chrome_browser_provider.cc',
         '../public/provider/chrome/browser/chrome_browser_provider.h',

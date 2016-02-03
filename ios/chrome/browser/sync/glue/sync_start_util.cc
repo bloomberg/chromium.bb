@@ -10,8 +10,8 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/web/public/web_thread.h"
 

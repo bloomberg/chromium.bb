@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"

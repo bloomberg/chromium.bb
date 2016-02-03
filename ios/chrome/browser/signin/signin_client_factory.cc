@@ -7,9 +7,9 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/signin_client_impl.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
 // static
 SigninClient* SigninClientFactory::GetForBrowserState(

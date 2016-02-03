@@ -4,8 +4,8 @@
 
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_client.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/sessions/live_tab_context_provider.h"
 #include "ios/web/public/web_thread.h"

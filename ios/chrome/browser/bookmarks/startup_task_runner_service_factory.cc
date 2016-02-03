@@ -8,7 +8,7 @@
 #include "base/sequenced_task_runner.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 namespace ios {
 

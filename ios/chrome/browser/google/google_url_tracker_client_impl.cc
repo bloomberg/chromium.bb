@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/google/google_url_tracker_client_impl.h"
 
 #include "base/logging.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 GoogleURLTrackerClientImpl::GoogleURLTrackerClientImpl(
     ios::ChromeBrowserState* browser_state)

@@ -13,12 +13,12 @@
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_client_impl.h"
 #include "ios/chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "ios/chrome/browser/web_data_service_factory.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
 #if defined(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"

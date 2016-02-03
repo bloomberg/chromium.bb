@@ -7,8 +7,8 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 
 // static
 IOSChromeDataReductionProxySettings*

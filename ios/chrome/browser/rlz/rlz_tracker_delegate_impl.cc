@@ -11,9 +11,9 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/web_thread.h"
 
 RLZTrackerDelegateImpl::RLZTrackerDelegateImpl() {}

@@ -203,6 +203,8 @@
         'browser/browser_state/browser_state_keyed_service_factories.mm',
         'browser/browser_state/browser_state_otr_helper.cc',
         'browser/browser_state/browser_state_otr_helper.h',
+        'browser/browser_state/chrome_browser_state.cc',
+        'browser/browser_state/chrome_browser_state.h',
         'browser/browser_state/chrome_browser_state_impl_io_data.cc',
         'browser/browser_state/chrome_browser_state_impl_io_data.h',
         'browser/browser_state/chrome_browser_state_io_data.cc',

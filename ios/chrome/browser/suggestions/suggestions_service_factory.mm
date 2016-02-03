@@ -19,10 +19,10 @@
 #include "components/suggestions/image_manager.h"
 #include "components/suggestions/suggestions_service.h"
 #include "components/suggestions/suggestions_store.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/suggestions/image_fetcher_impl.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 

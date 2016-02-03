@@ -9,7 +9,7 @@
 #include "components/password_manager/sync/browser/password_manager_setting_migrator_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 // static
 password_manager::PasswordManagerSettingMigratorService*

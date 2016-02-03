@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 
 web::BrowserState* GetBrowserStateRedirectedInIncognito(
     web::BrowserState* browser_state) {
