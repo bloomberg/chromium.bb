@@ -41,7 +41,7 @@ public:
     const Length& bottomMargin() const { return m_bottomMargin; }
     const Length& leftMargin() const { return m_leftMargin; }
     bool isDescendantOfRoot(const Element*) const;
-    void computeIntersectionObservations(double timestamp);
+    void computeIntersectionObservations();
     void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
     void applyRootMargin(LayoutRect&) const;
     unsigned firstThresholdGreaterThan(float ratio) const;

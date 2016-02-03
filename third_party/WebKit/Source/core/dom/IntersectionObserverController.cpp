@@ -61,10 +61,8 @@ void IntersectionObserverController::deliverIntersectionObservations(Timer<Inter
 
 void IntersectionObserverController::computeTrackedIntersectionObservations()
 {
-    // TODO(szager): Need to define timestamp.
-    double timestamp = currentTime();
     for (auto& observer : m_trackedIntersectionObservers) {
-        observer->computeIntersectionObservations(timestamp);
+        observer->computeIntersectionObservations();
         if (observer->hasEntries())
             scheduleIntersectionObserverForDelivery(*observer);
     }

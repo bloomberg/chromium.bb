@@ -1,0 +1,17 @@
+Test that intersection observer time is relative to time in the callback context.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS topWindowTime - iframeWindowTime is > 2 * timestampTolerance
+PASS topWindowEntries.length is 0
+PASS iframeWindowEntries.length is 0
+PASS topWindowEntries.length is 1
+PASS topWindowEntries[0].time is within 24 of topWindowTime
+PASS iframeWindowEntries.length is 1
+PASS iframeWindowEntries[0].time is within 24 of iframeWindowTime
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

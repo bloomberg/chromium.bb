@@ -124,7 +124,7 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
     return true;
 }
 
-void IntersectionObservation::computeIntersectionObservations(double timestamp)
+void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStamp timestamp)
 {
     // Pre-oilpan, there will be a delay between the time when the target Element gets deleted
     // (because its ref count dropped to zero) and when this IntersectionObservation gets
@@ -153,7 +153,7 @@ void IntersectionObservation::computeIntersectionObservations(double timestamp)
     IntRect* rootBoundsPointer = m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
     if (m_lastThresholdIndex != newThresholdIndex) {
         IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
-            timestamp / 1000.0,
+            timestamp,
             pixelSnappedIntRect(geometry.targetRect),
             rootBoundsPointer,
             pixelSnappedIntRect(geometry.intersectionRect),

@@ -16,6 +16,8 @@
 #include "core/dom/NodeIntersectionObserverData.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "platform/Timer.h"
 #include "wtf/MainThread.h"
 #include <algorithm>
@@ -237,10 +239,17 @@ void IntersectionObserver::unobserve(Element* target, ExceptionState&)
         observation->disconnect();
 }
 
-void IntersectionObserver::computeIntersectionObservations(double timestamp)
+void IntersectionObserver::computeIntersectionObservations()
 {
     if (!m_root)
         return;
+    Document* callbackDocument = toDocument(m_callback->executionContext());
+    if (!callbackDocument)
+        return;
+    LocalDOMWindow* callbackDOMWindow = callbackDocument->domWindow();
+    if (!callbackDOMWindow)
+        return;
+    DOMHighResTimeStamp timestamp = DOMWindowPerformance::performance(*callbackDOMWindow)->now();
     for (auto& observation : m_observations)
         observation->computeIntersectionObservations(timestamp);
 }

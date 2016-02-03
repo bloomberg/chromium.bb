@@ -5,6 +5,7 @@
 #ifndef IntersectionObservation_h
 #define IntersectionObservation_h
 
+#include "core/dom/DOMHighResTimeStamp.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 
@@ -32,7 +33,7 @@ public:
     unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
     void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
     bool shouldReportRootBounds() const { return m_shouldReportRootBounds; }
-    void computeIntersectionObservations(double timestamp);
+    void computeIntersectionObservations(DOMHighResTimeStamp);
     void disconnect();
     void clearRootAndRemoveFromTarget();
 

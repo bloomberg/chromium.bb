@@ -8,7 +8,7 @@
 
 namespace blink {
 
-IntersectionObserverEntry::IntersectionObserverEntry(double time, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element* target)
+IntersectionObserverEntry::IntersectionObserverEntry(DOMHighResTimeStamp time, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element* target)
     : m_time(time)
     , m_boundingClientRect(ClientRect::create(boundingClientRect))
     , m_rootBounds(rootBounds ? ClientRect::create(*rootBounds) : nullptr)
