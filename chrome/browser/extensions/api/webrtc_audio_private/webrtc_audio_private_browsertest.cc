@@ -132,8 +132,8 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
       AudioDeviceNames* device_names) {
     AudioManager* audio_manager = AudioManager::Get();
 
-    if (!audio_manager->GetWorkerTaskRunner()->BelongsToCurrentThread()) {
-      audio_manager->GetWorkerTaskRunner()->PostTask(
+    if (!audio_manager->GetTaskRunner()->BelongsToCurrentThread()) {
+      audio_manager->GetTaskRunner()->PostTask(
           FROM_HERE,
           base::Bind(&WebrtcAudioPrivateTest::GetAudioDeviceNames, this,
                      EnumerationFunc, device_names));
