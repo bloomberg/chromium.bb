@@ -79,6 +79,7 @@
         '../../components/components.gyp:metrics',
         '../../components/components.gyp:metrics_net',
         '../../components/components.gyp:metrics_profiler',
+        '../../components/components.gyp:metrics_profiler_ios',
         '../../components/components.gyp:metrics_services_manager',
         '../../components/components.gyp:metrics_ui',
         '../../components/components.gyp:net_log',
