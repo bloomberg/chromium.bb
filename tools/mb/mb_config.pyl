@@ -92,10 +92,10 @@
     'swarming_asan_lsan_gyp_release_trybot': ['swarming', 'asan', 'lsan', 'release_trybot'],
     'swarming_msan_gyp_release_trybot': ['swarming', 'chromeos', 'msan', 'gyp', 'release_trybot'],
     'swarming_deterministic_gyp_release_bot': ['swarming', 'deterministic', 'gyp', 'release_bot'],
-    'swarming_gpu_fyi_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_bot', 'angle_deqp_tests'],
-    'swarming_gpu_fyi_tests_gn_debug_trybot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_trybot', 'angle_deqp_tests'],
-    'swarming_gpu_fyi_tests_gn_release_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_bot', 'angle_deqp_tests'],
-    'swarming_gpu_fyi_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_trybot', 'angle_deqp_tests'],
+    'swarming_gpu_fyi_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_bot'],
+    'swarming_gpu_fyi_tests_gn_debug_trybot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'debug_trybot'],
+    'swarming_gpu_fyi_tests_gn_release_bot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_bot'],
+    'swarming_gpu_fyi_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn', 'release_trybot'],
     'swarming_gpu_tests_gn_debug_bot': ['swarming', 'gpu_tests', 'gn', 'debug_bot'],
     'swarming_gpu_tests_gn_release_bot': ['swarming', 'gpu_tests', 'gn', 'release_bot'],
     'swarming_gpu_tests_gn_release_trybot': ['swarming', 'gpu_tests', 'gn', 'release_trybot'],
@@ -176,10 +176,6 @@
     'android': {
       'gn_args': 'target_os="android"',
       'gyp_defines': 'OS=android',
-    },
-
-    'angle_deqp_tests': {
-      'gn_args': 'build_angle_deqp_tests=true',
     },
 
     'arm': {
