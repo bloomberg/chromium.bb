@@ -526,9 +526,11 @@ void DeleteExtractedFiles(const wchar_t* base_path,
 bool IsAclSupportedForPath(const wchar_t* path) {
   PathString volume;
   DWORD flags = 0;
-  return ::GetVolumePathName(path, volume.get(), volume.capacity()) &&
-             ::GetVolumeInformation(volume.get(), NULL, 0, NULL, NULL, &flags,
-                                    NULL, 0) && (flags & FILE_PERSISTENT_ACLS);
+  return ::GetVolumePathName(path, volume.get(),
+                             static_cast<DWORD>(volume.capacity())) &&
+         ::GetVolumeInformation(volume.get(), NULL, 0, NULL, NULL, &flags, NULL,
+                                0) &&
+         (flags & FILE_PERSISTENT_ACLS);
 }
 
 // Retrieves the SID of the default owner for objects created by this user
