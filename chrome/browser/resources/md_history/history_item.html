@@ -15,6 +15,14 @@
         min-height: 40px;
       }
 
+      #titleAndDomain {
+        @apply(--layout-center);
+        @apply(--layout-flex);
+        @apply(--layout-horizontal);
+        min-height: 40px;
+        overflow: hidden;
+      }
+
       paper-checkbox {
         --paper-checkbox-checked-color: rgb(68, 136, 255);
         --paper-checkbox-size: 16px;
@@ -43,10 +51,9 @@
       }
 
       #domain {
-        @apply(--layout-flex);
         -webkit-margin-start: 16px;
         color: #969696;
-        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       iron-icon {
@@ -87,8 +94,10 @@
       </paper-checkbox>
       <span id="time">{{timeAccessed_}}</span>
       <div id="website-icon"></div>
-      <a href="{{websiteUrl_}}" id="title">{{websiteTitle_}}</a>
-      <span id="domain">{{websiteDomain_}}</span>
+      <div id="titleAndDomain">
+        <a href="{{websiteUrl_}}" id="title">{{websiteTitle_}}</a>
+        <span id="domain">{{websiteDomain_}}</span>
+      </div>
       <iron-icon icon="star" id="bookmark"></iron-icon>
       <paper-icon-button icon="more-vert" id="menu-button"
           on-tap="onMenuButtonTap_">
