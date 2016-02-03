@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.physicalweb;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import org.chromium.chrome.browser.ChromeApplication;
@@ -20,6 +21,7 @@ public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
     private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
     private static final String FEATURE_NAME = "PhysicalWeb";
+    private static final int MIN_ANDROID_VERSION = 18;
 
     /**
      * Evaluate whether the environment is one in which the Physical Web should
@@ -27,7 +29,8 @@ public class PhysicalWeb {
      * @return true if the PhysicalWeb should be enabled
      */
     public static boolean featureIsEnabled() {
-        return ChromeFeatureList.isEnabled(FEATURE_NAME);
+        return ChromeFeatureList.isEnabled(FEATURE_NAME)
+                && Build.VERSION.SDK_INT >= MIN_ANDROID_VERSION;
     }
 
     /**
