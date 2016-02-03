@@ -16,12 +16,15 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_window.h"
+#include "chrome/browser/extensions/extension_commands_global_registry.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
@@ -65,6 +68,8 @@ class JumpList;
 #endif
 
 namespace extensions {
+class ActiveTabPermissionGranter;
+class Command;
 class Extension;
 }
 
@@ -90,7 +95,8 @@ class BrowserView : public BrowserWindow,
                     public LoadCompleteListener::Delegate,
                     public OmniboxPopupModelObserver,
                     public ExclusiveAccessContext,
-                    public ExclusiveAccessBubbleViewsContext {
+                    public ExclusiveAccessBubbleViewsContext,
+                    public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -462,6 +468,10 @@ class BrowserView : public BrowserWindow,
   views::Widget* GetBubbleAssociatedWidget() override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
 
+  // extension::ExtensionKeybindingRegistry::Delegate overrides
+  extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
+      override;
+
   // Testing interface:
   views::View* GetContentsContainerForTest() { return contents_container_; }
   views::WebView* GetContentsWebViewForTest() { return contents_web_view_; }
@@ -716,6 +726,9 @@ class BrowserView : public BrowserWindow,
   scoped_ptr<WebContentsCloseHandler> web_contents_close_handler_;
 
   SigninViewController signin_view_controller_;
+
+  // The class that registers for keyboard shortcuts for extension commands.
+  scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
 
