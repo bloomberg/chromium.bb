@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.AccessibilityPreferences;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.LocationSettings;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -103,6 +104,7 @@ import org.chromium.sync.signin.SystemAccountManagerDelegate;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.util.Locale;
@@ -124,6 +126,7 @@ public class ChromeApplication extends ContentApplication {
     private static final String DEV_TOOLS_SERVER_SOCKET_PREFIX = "chrome";
     private static final String SESSIONS_UUID_PREF_KEY = "chromium.sync.sessions.id";
 
+    private static boolean sIsFinishedCachingNativeFlags;
     private static DocumentTabModelSelector sDocumentTabModelSelector;
 
     /**
@@ -248,6 +251,7 @@ public class ChromeApplication extends ContentApplication {
         assert mIsProcessInitialized;
 
         onForegroundSessionStart();
+        cacheNativeFlags();
     }
 
     /**
@@ -845,5 +849,22 @@ public class ChromeApplication extends ContentApplication {
         if (PrefServiceBridge.getInstance().getPasswordEchoEnabled() == systemEnabled) return;
 
         PrefServiceBridge.getInstance().setPasswordEchoEnabled(systemEnabled);
+    }
+
+    /**
+     * Caches flags that are needed by Activities that launch before the native library is loaded
+     * and stores them in SharedPreferences. Because this function is called during launch after the
+     * library has loaded, they won't affect the next launch until Chrome is restarted.
+     */
+    private void cacheNativeFlags() {
+        if (sIsFinishedCachingNativeFlags) return;
+
+        boolean isToastNeeded = ChromePreferenceManager.getInstance(this).cacheHerbFlavor();
+        if (isToastNeeded) {
+            Toast.makeText(this,
+                    R.string.cache_native_flags_requires_restart, Toast.LENGTH_SHORT).show();
+        }
+
+        sIsFinishedCachingNativeFlags = true;
     }
 }

@@ -14631,6 +14631,24 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     </if>
 
     <if expr="is_android">
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME" desc="Name for the flag to enable the new UI prototypes for tab management." translateable="false">
+        Switch preferred flavor of Herb
+      </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION" desc="Description for the flag to enable the new UI prototypes for tab management." translateable="false">
+        Switching this option changes which tab management prototype is being tested.
+      </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ANISE" desc="CCT for View Intents, regular CTA" translateable="false">
+        ANISE: CCT for View Intents, regular CTA
+      </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_BASIL" desc="CCT for View Intents, CTA with X" translateable="false">
+        BASIL: CCT for View Intents, CTA with X
+      </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_CHIVE" desc="No CCT, CTA with X" translateable="false">
+        CHIVE: All View Intents go to CTA with X
+      </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_DILL" desc="CCT everywhere" translateable="false">
+        DILL: All View Intents in CCT
+      </message>
       <message name="IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME" desc="Name for the flag to enable tab switcher in document mode.">
         Enable tab switcher in document mode.
       </message>

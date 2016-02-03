@@ -21,6 +21,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
@@ -32,7 +33,9 @@ import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -276,10 +279,52 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
+     * @return Whether or not a Custom Tab will be used for the incoming Intent.
+     */
+    private boolean isIntentHandledByHerb() {
+        if (ChromeVersionInfo.isStableBuild() || ChromeVersionInfo.isBetaBuild()) return false;
+
+        // Allowing disk access for preferences while prototyping.
+        String flavor = null;
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            flavor = ChromePreferenceManager.getInstance(this).getHerbFlavor();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
+        Log.d(TAG, "Herb flavor: " + flavor);
+        if (TextUtils.isEmpty(flavor)) return false;
+
+        // Only VIEW Intents are rerouted to Custom Tabs.
+        if (!TextUtils.equals(getIntent().getAction(), Intent.ACTION_VIEW)) return false;
+
+        if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
+                || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)) {
+            // Only Intents without NEW_TASK and NEW_DOCUMENT will trigger a Custom Tab.
+            boolean isSameTask = (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) == 0;
+            boolean isSameDocument =
+                    (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) == 0;
+            Log.d(TAG, "Herb Intent proprties -- SAME TASK: "
+                    + isSameTask + ", SAME DOCUMENT: " + isSameDocument);
+            return isSameTask && isSameDocument;
+        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_CHIVE)) {
+            // Chive sends all View Intents to the main browser.
+            return false;
+        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_DILL)) {
+            // Dill always opens View Intents in Custom Tabs -- even home screen shortcuts.
+            return true;
+        } else {
+            assert false;
+            return false;
+        }
+    }
+
+    /**
      * @return Whether the intent sent is for launching a Custom Tab.
      */
     private boolean isCustomTabIntent() {
-        if (getIntent() == null || !getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
+        if (getIntent() == null || (!getIntent().hasExtra(CustomTabsIntent.EXTRA_SESSION)
+                && !isIntentHandledByHerb())) {
             return false;
         }
 

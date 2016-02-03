@@ -229,6 +229,16 @@ public abstract class ChromeSwitches {
             "disable-web-notification-custom-layouts";
 
     /**
+     * Determines which of the Herb prototypes is being tested.
+     * See about:flags for descriptions.
+     */
+    public static final String HERB_FLAVOR = "tab-management-experiment-type";
+    public static final String HERB_FLAVOR_ANISE = "anise";
+    public static final String HERB_FLAVOR_BASIL = "basil";
+    public static final String HERB_FLAVOR_CHIVE = "chive";
+    public static final String HERB_FLAVOR_DILL = "dill";
+
+    /**
      * Enable tab switcher in document mode (merged tabs and apps option).
      */
     public static final String ENABLE_TAB_SWITCHER_IN_DOCUMENT_MODE =

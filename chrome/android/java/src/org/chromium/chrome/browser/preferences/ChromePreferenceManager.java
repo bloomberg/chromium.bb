@@ -7,8 +7,11 @@ package org.chromium.chrome.browser.preferences;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.crash.MinidumpUploadService.ProcessType;
 import org.chromium.chrome.browser.signin.SigninPromoUma;
 
@@ -40,6 +43,7 @@ public class ChromePreferenceManager {
     private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
     private static final String ENABLE_CUSTOM_TABS = "enable_custom_tabs";
+    private static final String HERB_FLAVOR_KEY = "herb_flavor";
 
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
@@ -320,6 +324,28 @@ public class ChromePreferenceManager {
     }
 
     /**
+     * @return What flavor of Herb is enabled.
+     */
+    public String getHerbFlavor() {
+        return mSharedPreferences.getString(HERB_FLAVOR_KEY, null);
+    }
+
+    /**
+     * Caches which flavor of Herb the user prefers from native.
+     */
+    public boolean cacheHerbFlavor() {
+        String oldFlavor = getHerbFlavor();
+        String newFlavor =
+                CommandLine.getInstance().getSwitchValue(ChromeSwitches.HERB_FLAVOR, null);
+
+        if (!TextUtils.equals(oldFlavor, newFlavor)) {
+            writeString(HERB_FLAVOR_KEY, newFlavor);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Writes the given int value to the named shared preference.
      *
      * @param key The name of the preference to modify.
@@ -328,6 +354,18 @@ public class ChromePreferenceManager {
     private void writeInt(String key, int value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putInt(key, value);
+        ed.apply();
+    }
+
+    /**
+     * Writes the given String to the named shared preference.
+     *
+     * @param key The name of the preference to modify.
+     * @param value The new value for the preference.
+     */
+    private void writeString(String key, String value) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putString(key, value);
         ed.apply();
     }
 }

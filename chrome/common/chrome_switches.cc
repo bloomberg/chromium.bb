@@ -1338,6 +1338,9 @@ const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
+
+// Specifies a particular tab management experiment to enable.
+const char kTabManagementExperimentType[] = "tab-management-experiment-type";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)

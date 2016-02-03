@@ -521,6 +521,18 @@ const FeatureEntry::Choice kEnableOfflinePagesChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kDisableOfflinePages,
      ""},
 };
+
+const FeatureEntry::Choice kHerbPrototypeChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", ""},
+    {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ANISE,
+     switches::kTabManagementExperimentType, "anise"},
+    {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_BASIL,
+     switches::kTabManagementExperimentType, "basil"},
+    {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_CHIVE,
+     switches::kTabManagementExperimentType, "chive"},
+    {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_DILL,
+     switches::kTabManagementExperimentType, "dill"},
+};
 #endif  // defined(OS_ANDROID)
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -2043,6 +2055,10 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::switches::kDisableOfferUploadCreditCards)},
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 #if defined(OS_ANDROID)
+    {"tab-management-experiment-type",
+     IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME,
+     IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION, kOsAndroid,
+     MULTI_VALUE_TYPE(kHerbPrototypeChoices)},
     {"enable-tab-switcher-in-document-mode",
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME,
      IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_DESCRIPTION, kOsAndroid,
@@ -2182,6 +2198,14 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
   // builds and the Canary/Dev channel.
   if (!strcmp("enable-data-reduction-proxy-carrier-test",
               entry.internal_name) &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::UNKNOWN) {
+    return true;
+  }
+  // Tab management prototypes are only available for local, Canary, and Dev
+  // channel builds.
+  if (!strcmp("tab-management-experiment-type", entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {

@@ -70540,6 +70540,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="939554480" label="enable-credit-card-scan"/>
   <int value="952558794" label="enable-remote-assistance"/>
   <int value="980396200" label="enable-new-korean-ime"/>
+  <int value="983311394" label="tab-management-experiment-type"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>
   <int value="1007444341" label="enable-prefixed-encrypted-media"/>
   <int value="1019857902"
