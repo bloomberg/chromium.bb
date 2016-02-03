@@ -79,6 +79,20 @@ source_set("prefix_set") {
   ]
 }
 
+source_set("v4_protocol_manager") {
+  sources = [
+    "v4_protocol_manager.cc",
+    "v4_protocol_manager.h",
+  ]
+  deps = [
+    ":proto",
+    ":util",
+    "//base",
+    "//net",
+    "//url:url",
+  ]
+}
+
 source_set("remote_database_manager") {
   sources = [
     "remote_database_manager.cc",
@@ -150,11 +164,16 @@ source_set("unit_tests") {
   sources = [
     "prefix_set_unittest.cc",
     "util_unittest.cc",
+    "v4_protocol_manager_unittest.cc",
   ]
   deps = [
     ":prefix_set",
+    ":proto",
     ":util",
+    ":v4_protocol_manager",
     "//base",
+    "//net",
+    "//net:test_support",
     "//testing/gtest",
     "//url",
   ]

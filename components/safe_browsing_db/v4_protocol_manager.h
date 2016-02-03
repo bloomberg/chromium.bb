@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_V4_PROTOCOL_MANAGER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_V4_PROTOCOL_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_
 
 // A class that implements Chrome's interface with the SafeBrowsing V4 protocol.
 //
@@ -272,4 +272,4 @@ class V4ProtocolManagerFactory {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_V4_PROTOCOL_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_H_

@@ -2629,8 +2629,6 @@
       'browser/safe_browsing/unverified_download_field_trial.h',
       'browser/safe_browsing/unverified_download_policy.cc',
       'browser/safe_browsing/unverified_download_policy.h',
-      'browser/safe_browsing/v4_protocol_manager.cc',
-      'browser/safe_browsing/v4_protocol_manager.h',
     ],
     'chrome_browser_search_engines_sources': [
       'browser/search_engines/chrome_template_url_service_client.cc',
