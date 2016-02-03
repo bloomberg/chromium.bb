@@ -48,6 +48,8 @@ class PushMessagingNotificationManager {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest, IsTabVisible);
+  FRIEND_TEST_ALL_PREFIXES(PushMessagingNotificationManagerTest,
+                           IsTabVisibleViewSource);
 
   static void DidGetNotificationsFromDatabaseIOProxy(
       const base::WeakPtr<PushMessagingNotificationManager>& ui_weak_ptr,

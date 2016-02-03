@@ -6,6 +6,7 @@
 
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -16,7 +17,8 @@ class PushMessagingNotificationManagerTest
 TEST_F(PushMessagingNotificationManagerTest, IsTabVisible) {
   PushMessagingNotificationManager manager(profile());
   GURL origin("https://google.com/");
-  NavigateAndCommit(origin);
+  GURL origin_with_path = origin.Resolve("/path/");
+  NavigateAndCommit(origin_with_path);
 
   EXPECT_FALSE(manager.IsTabVisible(profile(), nullptr, origin));
   EXPECT_FALSE(manager.IsTabVisible(profile(), web_contents(),
@@ -28,4 +30,19 @@ TEST_F(PushMessagingNotificationManagerTest, IsTabVisible) {
 
   content::RenderViewHostTester::For(rvh())->SimulateWasShown();
   EXPECT_TRUE(manager.IsTabVisible(profile(), web_contents(), origin));
+}
+
+TEST_F(PushMessagingNotificationManagerTest, IsTabVisibleViewSource) {
+  PushMessagingNotificationManager manager(profile());
+
+  GURL origin("https://google.com/");
+  GURL view_source_page("view-source:https://google.com/path/");
+
+  NavigateAndCommit(view_source_page);
+
+  ASSERT_EQ(view_source_page, web_contents()->GetVisibleURL());
+  EXPECT_TRUE(manager.IsTabVisible(profile(), web_contents(), origin));
+
+  content::RenderViewHostTester::For(rvh())->SimulateWasHidden();
+  EXPECT_FALSE(manager.IsTabVisible(profile(), web_contents(), origin));
 }
