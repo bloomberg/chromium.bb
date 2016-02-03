@@ -6,6 +6,7 @@
 description("Tests that an exception is thrown when the value returned in the beforeunload callback cannot be converted to a String");
 window.jsTestIsAsync = true;
 
+var testMessage;
 var alreadyTested = false;
 function test(frame) {
     if (alreadyTested)
@@ -16,18 +17,16 @@ function test(frame) {
         return {toString: function() { throw "Exception in toString()"; }};
     };
 
+    frame.contentWindow.onerror = function(msg) {
+        testMessage = msg;
+        testPassed("Exception was thrown");
+        shouldBeEqualToString("testMessage", "Uncaught Exception in toString()");
+        return true;
+    };
+
     frame.contentWindow.location.href = "resources/does-not-exist.html";
     setTimeout(finishJSTest, 0);
 }
-
-var testMessage;
-window.onerror = function(msg) {
-    testMessage = msg;
-    // FIXME: This test fails. See crbug.com/446147.
-    testPassed("Exception was thrown");
-    shouldBeEqualToString("testMessage", "Uncaught Exception in toString()");
-    return true;
-};
 </script>
 </head>
 <body>
