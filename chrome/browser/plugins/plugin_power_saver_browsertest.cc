@@ -283,11 +283,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     // Allows us to use the same reference image on HiDPI/Retina displays.
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
 
-#if !defined(OS_CHROMEOS)
-    // These pixel tests are flaky on MSan bots with hardware rendering.
-    // However, ChromeOS does not support software compositing.
-    command_line->AppendSwitch(switches::kDisableGpu);
-#endif
+    // The pixel tests run more reliably in software mode.
+    if (PixelTestsEnabled())
+      command_line->AppendSwitch(switches::kDisableGpu);
   }
 
  protected:
@@ -373,10 +371,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 #if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
     // Flaky on Windows and Asan bots. See crbug.com/549285.
     return false;
-#elif defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-    // Because we cannot use hardware OpenGL under MSan, but also cannot use
-    // software rendering under ChromeOS, we skip this portion of the test.
-    // See crbug.com/512140
+#elif defined(OS_CHROMEOS)
+    // Because ChromeOS cannot use software rendering and the pixel tests
+    // continue to flake with hardware acceleration, disable these on ChromeOS.
     return false;
 #else
     return true;
