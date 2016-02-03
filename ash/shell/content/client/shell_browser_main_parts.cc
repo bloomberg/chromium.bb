@@ -43,6 +43,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
 
 namespace ash {
@@ -120,6 +121,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // Create CrasAudioHandler for testing since g_browser_process
   // is absent.
   chromeos::CrasAudioHandler::InitializeForTesting();
+
+  bluez::BluezDBusManager::Initialize(nullptr, true /* use stub */);
 #endif
 
   ShellContentState::SetInstance(
