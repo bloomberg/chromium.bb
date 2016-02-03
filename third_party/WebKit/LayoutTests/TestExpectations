@@ -702,7 +702,6 @@ crbug.com/571531 imported/csswg-test/css-flexbox-1/css-flexbox-height-animation-
 
 # Either "combo" or split should run: http://testthewebforward.org/docs/css-naming.html
 crbug.com/410320 imported/csswg-test/css-writing-modes-3/orthogonal-parent-shrink-to-fit-001.html [ Skip ]
-crbug.com/550963 fast/table/border-collapsing/border-collapsing-head-foot-vertical.html [ NeedsRebaseline ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001.html [ Skip ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Failure ]
 
