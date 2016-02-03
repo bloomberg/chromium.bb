@@ -401,11 +401,10 @@ void SharedWorkerServiceImpl::AllowDatabase(
     const GURL& url,
     const base::string16& name,
     const base::string16& display_name,
-    unsigned long estimated_size,
     bool* result,
     SharedWorkerMessageFilter* filter) {
   if (SharedWorkerHost* host = FindSharedWorkerHost(filter, worker_route_id))
-    host->AllowDatabase(url, name, display_name, estimated_size, result);
+    host->AllowDatabase(url, name, display_name, result);
   else
     *result = false;
 }

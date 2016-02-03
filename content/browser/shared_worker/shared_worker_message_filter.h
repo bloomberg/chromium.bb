@@ -59,7 +59,6 @@ class CONTENT_EXPORT SharedWorkerMessageFilter : public BrowserMessageFilter {
                        const GURL& url,
                        const base::string16& name,
                        const base::string16& display_name,
-                       unsigned long estimated_size,
                        bool* result);
   void OnRequestFileSystemAccess(int worker_route_id,
                                  const GURL& url,

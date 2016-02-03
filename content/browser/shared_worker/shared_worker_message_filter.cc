@@ -148,13 +148,11 @@ void SharedWorkerMessageFilter::OnAllowDatabase(
     const GURL& url,
     const base::string16& name,
     const base::string16& display_name,
-    unsigned long estimated_size,
     bool* result) {
   SharedWorkerServiceImpl::GetInstance()->AllowDatabase(worker_route_id,
                                                         url,
                                                         name,
                                                         display_name,
-                                                        estimated_size,
                                                         result,
                                                         this);
 }

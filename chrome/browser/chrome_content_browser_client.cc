@@ -1809,7 +1809,6 @@ bool ChromeContentBrowserClient::AllowWorkerDatabase(
     const GURL& url,
     const base::string16& name,
     const base::string16& display_name,
-    unsigned long estimated_size,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

@@ -65,7 +65,6 @@ class SharedWorkerHost {
   void AllowDatabase(const GURL& url,
                      const base::string16& name,
                      const base::string16& display_name,
-                     unsigned long estimated_size,
                      bool* result);
   void AllowFileSystem(const GURL& url, scoped_ptr<IPC::Message> reply_msg);
   void AllowIndexedDB(const GURL& url,

@@ -35,7 +35,7 @@ bool EmbeddedSharedWorkerContentSettingsClientProxy::allowDatabase(
     return false;
   bool result = false;
   thread_safe_sender_->Send(new WorkerProcessHostMsg_AllowDatabase(
-      routing_id_, origin_url_, name, display_name, estimated_size, &result));
+      routing_id_, origin_url_, name, display_name, &result));
   return result;
 }
 

@@ -74,7 +74,6 @@ class CONTENT_EXPORT SharedWorkerServiceImpl
                      const GURL& url,
                      const base::string16& name,
                      const base::string16& display_name,
-                     unsigned long estimated_size,
                      bool* result,
                      SharedWorkerMessageFilter* filter);
   void AllowFileSystem(int worker_route_id,

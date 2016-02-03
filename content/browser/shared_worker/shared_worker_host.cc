@@ -184,7 +184,6 @@ void SharedWorkerHost::WorkerConnected(int message_port_id) {
 void SharedWorkerHost::AllowDatabase(const GURL& url,
                                      const base::string16& name,
                                      const base::string16& display_name,
-                                     unsigned long estimated_size,
                                      bool* result) {
   if (!instance_)
     return;
@@ -192,7 +191,6 @@ void SharedWorkerHost::AllowDatabase(const GURL& url,
       url,
       name,
       display_name,
-      estimated_size,
       instance_->resource_context(),
       GetRenderFrameIDsForWorker());
 }
