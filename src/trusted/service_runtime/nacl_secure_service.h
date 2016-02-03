@@ -44,8 +44,6 @@ void NaClSecureServiceDtor(struct NaClRefCount *vself);
 
 extern struct NaClSimpleServiceVtbl const kNaClSecureServiceVtbl;
 
-void NaClSecureCommandChannel(struct NaClApp *nap);
-
 EXTERN_C_END
 
 #endif /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_NACL_SECURE_SERVICE_H_ */

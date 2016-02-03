@@ -116,23 +116,6 @@ TEST_F(SelLdrTest, DescTable) {
   ASSERT_TRUE(NULL == ret_desc);
 }
 
-// create service socket
-TEST_F(SelLdrTest, CreateServiceSocket) {
-  struct NaClApp app;
-  int ret_code;
-
-  ret_code = NaClAppCtor(&app);
-  ASSERT_EQ(1, ret_code);
-
-  // CreateServiceSocket sets the app service_port to a service port
-  // desc and service_address to a service
-  ASSERT_TRUE(NULL == app.service_port);
-  ASSERT_TRUE(NULL == app.service_address);
-  NaClCreateServiceSocket(&app);
-  ASSERT_TRUE(NULL != app.service_port);
-  ASSERT_TRUE(NULL != app.service_address);
-}
-
 // add and remove operations on the threads table
 // Remove thread from an empty table is tested in a death test.
 // TODO(tuduce): specify the death test name when checking in.
