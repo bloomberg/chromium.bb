@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
@@ -20,12 +19,10 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
-import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.profiles.Profile;
 
 /**
@@ -33,14 +30,6 @@ import org.chromium.chrome.browser.profiles.Profile;
  */
 public class PrivacyPreferences extends PreferenceFragment
         implements OnPreferenceChangeListener {
-
-    /**
-     * Set to true in the {@link Preferences#EXTRA_SHOW_FRAGMENT_ARGUMENTS} bundle to
-     * trigger the clear browsing data dialog when showing the privacy preferences.
-     */
-    public static final String SHOW_CLEAR_BROWSING_DATA_EXTRA =
-            "ShowClearBrowsingData";
-
     private static final String PREF_NAVIGATION_ERROR = "navigation_error";
     private static final String PREF_SEARCH_SUGGESTIONS = "search_suggestions";
     private static final String PREF_SAFE_BROWSING_EXTENDED_REPORTING =
@@ -54,11 +43,9 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
             "crash_dump_upload_no_cellular";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
-    private static final String PREF_CLEAR_BROWSING_DATA = "clear_browsing_data";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
 
-    private ClearBrowsingDataDialogFragment mClearBrowsingDataDialogFragment;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
     @Override
@@ -144,22 +131,6 @@ public class PrivacyPreferences extends PreferenceFragment
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-
-        ButtonPreference clearBrowsingData =
-                (ButtonPreference) findPreference(PREF_CLEAR_BROWSING_DATA);
-        clearBrowsingData.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                showClearBrowsingDialog();
-                return true;
-            }
-        });
-
-        if (getArguments() != null) {
-            boolean showClearBrowsingData =
-                    getArguments().getBoolean(SHOW_CLEAR_BROWSING_DATA_EXTRA, false);
-            if (showClearBrowsingData) showClearBrowsingDialog();
-        }
 
         if (!PhysicalWeb.featureIsEnabled()) {
             preferenceScreen.removePreference(findPreference(PREF_PHYSICAL_WEB));
@@ -299,23 +270,6 @@ public class PrivacyPreferences extends PreferenceFragment
                 return false;
             }
         };
-    }
-
-    private void showClearBrowsingDialog() {
-        mClearBrowsingDataDialogFragment = new ClearBrowsingDataDialogFragment();
-        mClearBrowsingDataDialogFragment.show(
-                getFragmentManager(), ClearBrowsingDataDialogFragment.FRAGMENT_TAG);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mClearBrowsingDataDialogFragment != null) {
-            // In case the progress dialog is still showing and waiting for a callback, dismiss it.
-            // See bug http://b/13396757.
-            mClearBrowsingDataDialogFragment.dismissProgressDialog();
-        }
-        mClearBrowsingDataDialogFragment = null;
     }
 
     @Override

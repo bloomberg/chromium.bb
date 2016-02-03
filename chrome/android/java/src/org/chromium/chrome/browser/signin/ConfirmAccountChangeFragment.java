@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
@@ -20,7 +21,9 @@ import android.widget.TextView;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.sync.ui.ClearSyncDataDialogFragment;
+import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.sync.ui.ClearSyncDataPreferences;
 import org.chromium.signin.InvestigatedScenario;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -82,7 +85,7 @@ class ConfirmAccountChangeFragment
                 message, new SpanInfo("<link>", "</link>", new ClickableSpan() {
                     @Override
                     public void onClick(View widget) {
-                        showClearSyncDataDialogFragment();
+                        showClearSyncDataPreferences();
                     }
                 }));
 
@@ -108,9 +111,11 @@ class ConfirmAccountChangeFragment
         }
     }
 
-    private void showClearSyncDataDialogFragment() {
-        ClearSyncDataDialogFragment dialogFragment = new ClearSyncDataDialogFragment();
-        dialogFragment.show(getFragmentManager(), null);
+    private void showClearSyncDataPreferences() {
+        Preferences prefActivity = (Preferences) getActivity();
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(prefActivity,
+                ClearSyncDataPreferences.class.getName());
+        prefActivity.startActivity(intent);
 
         // Cancel out of current sign in.
         SigninManager.get(getActivity()).cancelSignIn();

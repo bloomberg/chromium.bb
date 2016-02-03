@@ -9,15 +9,21 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import org.chromium.chrome.browser.ChromeBrowserProviderClient;
-import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
 import org.chromium.chrome.browser.signin.SigninManager;
 
 /**
  * Modal dialog for clearing sync data. This allows the user to clear browsing data as well as
  * other synced data types like bookmarks.
  */
-public class ClearSyncDataDialogFragment extends ClearBrowsingDataDialogFragment {
+public class ClearSyncDataPreferences extends ClearBrowsingDataPreferences {
     private Context mApplicationContext;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mApplicationContext = context.getApplicationContext();
+    }
 
     @Override
     public void onAttach(Activity activity) {

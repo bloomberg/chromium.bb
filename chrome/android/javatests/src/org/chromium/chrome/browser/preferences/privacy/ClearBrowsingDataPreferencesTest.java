@@ -4,14 +4,13 @@
 
 package org.chromium.chrome.browser.preferences.privacy;
 
-import android.app.Dialog;
-import android.support.v7.app.AlertDialog;
+import android.preference.PreferenceScreen;
 import android.test.suitebuilder.annotation.MediumTest;
-import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment.DialogOption;
+import org.chromium.chrome.browser.preferences.ButtonPreference;
+import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -23,15 +22,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Peforms integration tests with ClearBrowsingDataDialogFragment.
+ * Peforms integration tests with ClearBrowsingDataPreferences.
  */
-public class ClearBrowsingDataDialogFragmentTest
+public class ClearBrowsingDataPreferencesTest
         extends ChromeActivityTestCaseBase<ChromeActivity> {
 
-    private TestClearDataDialogFragment mFragment;
     private boolean mCallbackCalled;
 
-    public ClearBrowsingDataDialogFragmentTest() {
+    public ClearBrowsingDataPreferencesTest() {
         super(ChromeActivity.class);
     }
 
@@ -42,9 +40,6 @@ public class ClearBrowsingDataDialogFragmentTest
 
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
-        mFragment = new TestClearDataDialogFragment(EnumSet.of(
-                ClearBrowsingDataDialogFragment.DialogOption.CLEAR_COOKIES_AND_SITE_DATA));
-
         WebappRegistry.registerWebapp(getActivity(), "first");
         WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
             @Override
@@ -61,32 +56,26 @@ public class ClearBrowsingDataDialogFragmentTest
         });
         mCallbackCalled = false;
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mFragment.show(getActivity().getFragmentManager(),
-                        ClearBrowsingDataDialogFragment.FRAGMENT_TAG);
-            }
-        });
-        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mFragment.getDialog() != null;
-            }
-        });
+        final Preferences preferences =
+                startPreferences(TestClearBrowsingDataPreferences.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Dialog dialog = mFragment.getDialog();
-                Button clearButton = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
-                clearButton.performClick();
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                PreferenceScreen screen = fragment.getPreferenceScreen();
+                ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
+                        ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
+                clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
             }
         });
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mFragment.getProgressDialog() == null;
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                return fragment.getProgressDialog() == null;
             }
         });
 
@@ -105,16 +94,17 @@ public class ClearBrowsingDataDialogFragmentTest
         });
     }
 
-    private static class TestClearDataDialogFragment extends ClearBrowsingDataDialogFragment {
-        private final EnumSet<DialogOption> mDefaultOptions;
-
-        public TestClearDataDialogFragment(EnumSet<DialogOption> defaultOptions) {
-            mDefaultOptions = defaultOptions;
-        }
+    /**
+     * A testing version of ClearBrowsingDataPreferences that preselects the cookies option.
+     * Must be public, as ChromeActivityTestCaseBase.startPreferences references it by name.
+     */
+    public static class TestClearBrowsingDataPreferences extends ClearBrowsingDataPreferences {
+        private static final EnumSet<DialogOption> DEFAULT_OPTIONS = EnumSet.of(
+                ClearBrowsingDataPreferences.DialogOption.CLEAR_COOKIES_AND_SITE_DATA);
 
         @Override
         protected boolean isOptionSelectedByDefault(DialogOption option) {
-            return mDefaultOptions.contains(option);
+            return DEFAULT_OPTIONS.contains(option);
         }
     }
 }
