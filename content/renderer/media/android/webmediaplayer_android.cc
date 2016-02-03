@@ -33,6 +33,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_common_android.h"
@@ -1218,6 +1219,13 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     gpu::SyncToken texture_mailbox_sync_token;
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
                                        texture_mailbox_sync_token.GetData());
+    if (texture_mailbox_sync_token.namespace_id() ==
+        gpu::CommandBufferNamespace::IN_PROCESS) {
+      // TODO(boliu): Remove this once Android WebView switches to IPC-based
+      // command buffer for video.
+      GLbyte* sync_tokens[] = {texture_mailbox_sync_token.GetData()};
+      gl->VerifySyncTokensCHROMIUM(sync_tokens, arraysize(sync_tokens));
+    }
 
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,

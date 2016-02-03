@@ -958,7 +958,7 @@ void InProcessCommandBuffer::SignalSyncToken(const SyncToken& sync_token,
 
 bool InProcessCommandBuffer::CanWaitUnverifiedSyncToken(
     const SyncToken* sync_token) {
-  return false;
+  return sync_token->namespace_id() == GetNamespaceID();
 }
 
 uint32_t InProcessCommandBuffer::CreateStreamTextureOnGpuThread(
