@@ -9,7 +9,6 @@
     '../cc/cc.gyp:cc',
     '../cc/cc.gyp:cc_proto',
     '../cc/blink/cc_blink.gyp:cc_blink',
-    '../components/components.gyp:startup_metric_utils_common',
     '../components/components.gyp:webusb',
     '../components/scheduler/scheduler.gyp:scheduler',
     '../components/url_formatter/url_formatter.gyp:url_formatter',

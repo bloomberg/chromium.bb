@@ -6,7 +6,6 @@ include_rules = [
   "+components/url_formatter",
 
   "+cc/blink",
-  "+components/startup_metric_utils/common",
   "+content/public/child",
   "+content/public/renderer",
   "+content/child",

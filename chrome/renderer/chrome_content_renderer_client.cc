@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
@@ -74,6 +75,7 @@
 #include "components/pdf/renderer/pepper_pdf_host.h"
 #include "components/plugins/renderer/mobile_youtube_plugin.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/startup_metric_utils/common/startup_metric_messages.h"
 #include "components/version_info/version_info.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
@@ -297,7 +299,8 @@ class MediaLoadDeferrer : public content::RenderFrameObserver {
 
 }  // namespace
 
-ChromeContentRendererClient::ChromeContentRendererClient() {
+ChromeContentRendererClient::ChromeContentRendererClient()
+    : main_entry_time_(base::TimeTicks::Now()) {
 #if defined(ENABLE_EXTENSIONS)
   extensions::ExtensionsClient::Set(
       extensions::ChromeExtensionsClient::GetInstance());
@@ -321,6 +324,9 @@ ChromeContentRendererClient::~ChromeContentRendererClient() {
 
 void ChromeContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
+
+  thread->Send(new StartupMetricHostMsg_RecordRendererMainEntryTime(
+      main_entry_time_));
 
   chrome_observer_.reset(new ChromeRenderProcessObserver());
   web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());

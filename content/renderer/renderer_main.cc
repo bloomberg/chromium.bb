@@ -19,12 +19,10 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "base/time/time.h"
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
-#include "components/startup_metric_utils/common/startup_metric_messages.h"
 #include "content/child/child_process.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/common/content_switches.h"
@@ -91,8 +89,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   // Don't use the TRACE_EVENT0 macro because the tracing infrastructure doesn't
   // expect synchronous events around the main loop of a thread.
   TRACE_EVENT_ASYNC_BEGIN0("startup", "RendererMain", 0);
-
-  const base::TimeTicks renderer_main_entry_time = base::TimeTicks::Now();
 
   base::trace_event::TraceLog::GetInstance()->SetProcessName("Renderer");
   base::trace_event::TraceLog::GetInstance()->SetProcessSortIndex(
@@ -218,9 +214,6 @@ int RendererMain(const MainFunctionParams& parameters) {
     RenderThreadImpl::Create(std::move(main_message_loop),
                              std::move(renderer_scheduler));
 #endif
-    RenderThreadImpl::current()->Send(
-        new StartupMetricHostMsg_RecordRendererMainEntryTime(
-            renderer_main_entry_time));
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 

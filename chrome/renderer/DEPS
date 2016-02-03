@@ -24,6 +24,7 @@ include_rules = [
   "+components/printing/renderer",
   "+components/network_hints/renderer",
   "+components/signin/core/common",
+  "+components/startup_metric_utils/common",
   "+components/translate/content/common",
   "+components/translate/content/renderer",
   "+components/translate/core/common",

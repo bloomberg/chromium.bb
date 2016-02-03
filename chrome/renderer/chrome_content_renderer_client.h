@@ -185,6 +185,10 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   static GURL GetNaClContentHandlerURL(const std::string& actual_mime_type,
                                        const content::WebPluginInfo& plugin);
 
+  // Time at which this object was created. This is very close to the time at
+  // which the RendererMain function was entered.
+  base::TimeTicks main_entry_time_;
+
 #if !defined(DISABLE_NACL)
   // Determines if a NaCl app is allowed, and modifies params to pass the app's
   // permissions to the trusted NaCl plugin.
