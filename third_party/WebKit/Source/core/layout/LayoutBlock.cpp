@@ -606,8 +606,8 @@ static bool canMergeContiguousAnonymousBlocks(LayoutObject* oldChild, LayoutObje
 void LayoutBlock::makeChildrenInlineIfPossible()
 {
     ASSERT(isLayoutBlockFlow());
-    // Collapsing away anonymous wrappers isn't relevant for the children of anonymous blocks.
-    if (isAnonymousBlock())
+    // Collapsing away anonymous wrappers isn't relevant for the children of anonymous blocks, unless they are ruby bases.
+    if (isAnonymousBlock() && !isRubyBase())
         return;
 
     Vector<LayoutBlock*, 3> blocksToRemove;
