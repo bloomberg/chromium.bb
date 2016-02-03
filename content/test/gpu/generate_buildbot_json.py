@@ -369,15 +369,13 @@ FYI_WATERFALL = {
 }
 
 COMMON_GTESTS = {
-  # TODO(kbr): re-enable angle_deqp_gles2_tests on Linux. Currently
-  # the target is disabled in the ANGLE workspace for the GN builds.
   'angle_deqp_gles2_tests': {
     'tester_configs': [
       {
         'fyi_only': True,
-        'os_types': ['win'],
-        # Run only on the Win7 Release NVIDIA 32- and 64-bit bots (and
-        # trybots) for the time being, at least until more capacity is
+        'os_types': ['win', 'linux'],
+        # Run only on the Win7 and Linux Release NVIDIA 32- and 64-bit bots
+        # (and trybots) for the time being, at least until more capacity is
         # added.
         'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
@@ -385,6 +383,10 @@ COMMON_GTESTS = {
             'gpu': '10de:104a',
             'os': 'Windows-2008ServerR2-SP1'
           },
+          {
+            'gpu': '10de:104a',
+            'os': 'Linux'
+          }
         ],
       }
     ],
@@ -496,7 +498,7 @@ DEQP_GTESTS = {
   'angle_deqp_gles3_tests': {
     'tester_configs': [
       {
-        'os_types': ['win']
+        'os_types': ['win', 'linux']
       }
     ],
     'swarming_shards': 12

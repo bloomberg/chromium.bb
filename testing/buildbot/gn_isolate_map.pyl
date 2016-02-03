@@ -38,6 +38,16 @@
     "type": "raw",
     "args": [],
   },
+  "angle_deqp_gles2_tests": {
+    "label": "//third_party/angle/src/tests:angle_deqp_gles2_tests",
+    "type": "raw",
+    "args": [],
+  },
+  "angle_deqp_gles3_tests": {
+    "label": "//third_party/angle/src/tests:angle_deqp_gles3_tests",
+    "type": "raw",
+    "args": [],
+  },
   "angle_end2end_tests": {
     "label": "//third_party/angle/src/tests:angle_end2end_tests",
     "type": "raw",

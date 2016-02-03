@@ -1558,6 +1558,19 @@
   "Linux Release (NVIDIA)": {
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests"
+      },
+      {
         "args": [
           "--use-gpu-in-tests"
         ],
@@ -1950,7 +1963,23 @@
       }
     ]
   },
-  "Linux Release dEQP (NVIDIA)": {},
+  "Linux Release dEQP (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ],
+          "shards": 12
+        },
+        "test": "angle_deqp_gles3_tests"
+      }
+    ]
+  },
   "Mac 10.10 Debug (ATI)": {
     "gtest_tests": [
       {
