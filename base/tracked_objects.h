@@ -22,7 +22,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#include "base/profiler/alternate_timer.h"
 #include "base/profiler/tracked_time.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
@@ -537,12 +536,6 @@ class BASE_EXPORT ThreadData {
   // the code).
   static TrackedTime Now();
 
-  // Use the function |now| to provide current times, instead of calling the
-  // TrackedTime::Now() function.  Since this alternate function is being used,
-  // the other time arguments (used for calculating queueing delay) will be
-  // ignored.
-  static void SetAlternateTimeSource(NowFunction* now);
-
   // This function can be called at process termination to validate that thread
   // cleanup routines have been called for at least some number of named
   // threads.
@@ -559,8 +552,10 @@ class BASE_EXPORT ThreadData {
   FRIEND_TEST_ALL_PREFIXES(TrackedObjectsTest, MinimalStartupShutdown);
   FRIEND_TEST_ALL_PREFIXES(TrackedObjectsTest, TinyStartupShutdown);
 
-  typedef std::map<const BirthOnThread*, int> BirthCountMap;
+  // Type for an alternate timer function (testing only).
+  typedef unsigned int NowFunction();
 
+  typedef std::map<const BirthOnThread*, int> BirthCountMap;
   typedef std::vector<std::pair<const Births*, DeathDataPhaseSnapshot>>
       DeathsSnapshot;
 
@@ -635,11 +630,7 @@ class BASE_EXPORT ThreadData {
 
   // When non-null, this specifies an external function that supplies monotone
   // increasing time functcion.
-  static NowFunction* now_function_;
-
-  // If true, now_function_ returns values that can be used to calculate queue
-  // time.
-  static bool now_function_is_time_;
+  static NowFunction* now_function_for_testing_;
 
   // We use thread local store to identify which ThreadData to interact with.
   static base::ThreadLocalStorage::StaticSlot tls_index_;

@@ -31,8 +31,7 @@ class TrackedObjectsTest : public testing::Test {
     ThreadData::ShutdownSingleThreadedCleanup(true);
 
     test_time_ = 0;
-    ThreadData::SetAlternateTimeSource(&TrackedObjectsTest::GetTestTime);
-    ThreadData::now_function_is_time_ = true;
+    ThreadData::now_function_for_testing_ = &TrackedObjectsTest::GetTestTime;
   }
 
   ~TrackedObjectsTest() override {

@@ -14,7 +14,6 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/process/process_handle.h"
-#include "base/profiler/alternate_timer.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"
 #include "base/tracking_info.h"
@@ -36,15 +35,6 @@ namespace {
 // period of time up until that flag is parsed.  If there is no flag seen, then
 // this state may prevail for much or all of the process lifetime.
 const ThreadData::Status kInitialStartupState = ThreadData::PROFILING_ACTIVE;
-
-// Control whether an alternate time source (Now() function) is supported by
-// the ThreadData class.  This compile time flag should be set to true if we
-// want other modules (such as a memory allocator, or a thread-specific CPU time
-// clock) to be able to provide a thread-specific Now() function.  Without this
-// compile-time flag, the code will only support the wall-clock time.  This flag
-// can be flipped to efficiently disable this path (if there is a performance
-// problem with its presence).
-static const bool kAllowAlternateTimeSourceHandling = true;
 
 // Possible states of the profiler timing enabledness.
 enum {
@@ -285,10 +275,7 @@ void Births::RecordBirth() { ++birth_count_; }
 // to them.
 
 // static
-NowFunction* ThreadData::now_function_ = NULL;
-
-// static
-bool ThreadData::now_function_is_time_ = false;
+ThreadData::NowFunction* ThreadData::now_function_for_testing_ = NULL;
 
 // A TLS slot which points to the ThreadData instance for the current thread.
 // We do a fake initialization here (zeroing out data), and then the real
@@ -516,16 +503,6 @@ void ThreadData::TallyADeath(const Births& births,
   random_number_ ^=
       static_cast<uint32_t>(&births - reinterpret_cast<Births*>(0));
 
-  // We don't have queue durations without OS timer.  OS timer is automatically
-  // used for task-post-timing, so the use of an alternate timer implies all
-  // queue times are invalid, unless it was explicitly said that we can trust
-  // the alternate timer.
-  if (kAllowAlternateTimeSourceHandling &&
-      now_function_ &&
-      !now_function_is_time_) {
-    queue_duration = 0;
-  }
-
   DeathMap::iterator it = death_map_.find(&births);
   DeathData* death_data;
   if (it != death_map_.end()) {
@@ -692,12 +669,6 @@ void ThreadData::OnProfilingPhaseCompletedOnThread(int profiling_phase) {
   }
 }
 
-static void OptionallyInitializeAlternateTimer() {
-  NowFunction* alternate_time_source = GetAlternateTimeSource();
-  if (alternate_time_source)
-    ThreadData::SetAlternateTimeSource(alternate_time_source);
-}
-
 void ThreadData::Initialize() {
   if (base::subtle::Acquire_Load(&status_) >= DEACTIVATED)
     return;  // Someone else did the initialization.
@@ -710,13 +681,6 @@ void ThreadData::Initialize() {
   base::AutoLock lock(*list_lock_.Pointer());
   if (base::subtle::Acquire_Load(&status_) >= DEACTIVATED)
     return;  // Someone raced in here and beat us.
-
-  // Put an alternate timer in place if the environment calls for it, such as
-  // for tracking TCMalloc allocations.  This insertion is idempotent, so we
-  // don't mind if there is a race, and we'd prefer not to be in a lock while
-  // doing this work.
-  if (kAllowAlternateTimeSourceHandling)
-    OptionallyInitializeAlternateTimer();
 
   // Perform the "real" TLS initialization now, and leave it intact through
   // process termination.
@@ -763,21 +727,14 @@ bool ThreadData::TrackingStatus() {
 }
 
 // static
-void ThreadData::SetAlternateTimeSource(NowFunction* now_function) {
-  DCHECK(now_function);
-  if (kAllowAlternateTimeSourceHandling)
-    now_function_ = now_function;
-}
-
-// static
 void ThreadData::EnableProfilerTiming() {
   base::subtle::NoBarrier_Store(&g_profiler_timing_enabled, ENABLED_TIMING);
 }
 
 // static
 TrackedTime ThreadData::Now() {
-  if (kAllowAlternateTimeSourceHandling && now_function_)
-    return TrackedTime::FromMilliseconds((*now_function_)());
+  if (now_function_for_testing_)
+    return TrackedTime::FromMilliseconds((*now_function_for_testing_)());
   if (IsProfilerTimingEnabled() && TrackingStatus())
     return TrackedTime::Now();
   return TrackedTime();  // Super fast when disabled, or not compiled.

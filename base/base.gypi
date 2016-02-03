@@ -522,8 +522,6 @@
           'process/process_metrics_win.cc',
           'process/process_posix.cc',
           'process/process_win.cc',
-          'profiler/alternate_timer.cc',
-          'profiler/alternate_timer.h',
           'profiler/native_stack_sampler.cc',
           'profiler/native_stack_sampler.h',
           'profiler/native_stack_sampler_posix.cc',

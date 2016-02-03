@@ -214,7 +214,6 @@ def write_ninja(path, options):
       'base/process/kill.cc',
       'base/process/process_iterator.cc',
       'base/process/process_metrics.cc',
-      'base/profiler/alternate_timer.cc',
       'base/profiler/tracked_time.cc',
       'base/run_loop.cc',
       'base/sequence_checker_impl.cc',
