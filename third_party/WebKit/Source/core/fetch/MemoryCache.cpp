@@ -298,13 +298,10 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
 
         // First flush all the decoded data in this queue.
         while (current) {
-            // Protect 'previous' so it can't get deleted during destroyDecodedData().
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             if (previous) {
-                // These release assertions are for investigating crashes and
-                // should be removed shortly.
-                RELEASE_ASSERT(previous->m_resource);
-                RELEASE_ASSERT(contains(previous->m_resource.get()));
+                ASSERT(previous->m_resource);
+                ASSERT(contains(previous->m_resource.get()));
             }
             if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
                 // Destroy our decoded data. This will remove us from
@@ -327,10 +324,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
         while (current) {
             MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
             if (previous) {
-                // These release assertions are for investigating crashes and
-                // should be removed shortly.
-                RELEASE_ASSERT(previous->m_resource);
-                RELEASE_ASSERT(contains(previous->m_resource.get()));
+                ASSERT(previous->m_resource);
+                ASSERT(contains(previous->m_resource.get()));
             }
             if (!current->m_resource->hasClients() && !current->m_resource->isPreloaded()) {
                 evict(current);
