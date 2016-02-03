@@ -80,19 +80,26 @@ def GetFileList(root):
   return sorted(file_list, key=lambda s: s.replace('/', '\\'))
 
 
-def MakeTimestampsFileName(root):
-  return os.path.join(root, '..', '.timestamps')
+def MakeTimestampsFileName(root, sha1):
+  return os.path.join(root, os.pardir, '%s.timestamps' % sha1)
 
 
-def CalculateHash(root):
+def CalculateHash(root, expected_hash):
   """Calculates the sha1 of the paths to all files in the given |root| and the
-  contents of those files, and returns as a hex string."""
-  file_list = GetFileList(root)
+  contents of those files, and returns as a hex string.
 
-  # Check whether we previously saved timestamps in $root/../.timestamps. If
-  # we didn't, or they don't match, then do the full calculation, otherwise
+  |expected_hash| is the expected hash value for this toolchain if it has
+  already been installed.
+  """
+  if expected_hash:
+    full_root_path = os.path.join(root, expected_hash)
+  else:
+    full_root_path = root
+  file_list = GetFileList(full_root_path)
+  # Check whether we previously saved timestamps in $root/../{sha1}.timestamps.
+  # If we didn't, or they don't match, then do the full calculation, otherwise
   # return the saved value.
-  timestamps_file = MakeTimestampsFileName(root)
+  timestamps_file = MakeTimestampsFileName(root, expected_hash)
   timestamps_data = {'files': [], 'sha1': ''}
   if os.path.exists(timestamps_file):
     with open(timestamps_file, 'rb') as f:
@@ -103,9 +110,13 @@ def CalculateHash(root):
         pass
 
   matches = len(file_list) == len(timestamps_data['files'])
+  # Don't check the timestamp of the version file as we touch this file to
+  # indicates which versions of the toolchain are still being used.
+  vc_dir = os.path.join(full_root_path, 'VC').lower()
   if matches:
     for disk, cached in zip(file_list, timestamps_data['files']):
-      if disk != cached[0] or os.stat(disk).st_mtime != cached[1]:
+      if disk != cached[0] or (
+          disk != vc_dir and os.path.getmtime(disk) != cached[1]):
         matches = False
         break
   if matches:
@@ -116,21 +127,36 @@ def CalculateHash(root):
   sys.stdout.flush()
   digest = hashlib.sha1()
   for path in file_list:
-    digest.update(str(path).replace('/', '\\'))
+    path_without_hash = str(path).replace('/', '\\')
+    if expected_hash:
+      path_without_hash = path_without_hash.replace(
+          os.path.join(root, expected_hash), root)
+    digest.update(path_without_hash)
     with open(path, 'rb') as f:
       digest.update(f.read())
   return digest.hexdigest()
 
 
+def CalculateToolchainHashes(root):
+  """Calculate the hash of the different toolchains installed in the |root|
+  directory."""
+  hashes = []
+  dir_list = [
+      d for d in os.listdir(root) if os.path.isdir(os.path.join(root, d))]
+  for d in dir_list:
+    hashes.append(CalculateHash(root, d))
+  return hashes
+
+
 def SaveTimestampsAndHash(root, sha1):
   """Saves timestamps and the final hash to be able to early-out more quickly
   next time."""
-  file_list = GetFileList(root)
+  file_list = GetFileList(os.path.join(root, sha1))
   timestamps_data = {
-    'files': [[f, os.stat(f).st_mtime] for f in file_list],
+    'files': [[f, os.path.getmtime(f)] for f in file_list],
     'sha1': sha1,
   }
-  with open(MakeTimestampsFileName(root), 'wb') as f:
+  with open(MakeTimestampsFileName(root, sha1), 'wb') as f:
     json.dump(timestamps_data, f)
 
 
@@ -240,6 +266,64 @@ def DoTreeMirror(target_dir, tree_sha1):
     RmDir(temp_dir)
 
 
+def RemoveToolchain(root, sha1, delay_before_removing):
+  """Remove the |sha1| version of the toolchain from |root|."""
+  toolchain_target_dir = os.path.join(root, sha1)
+  if delay_before_removing:
+    DelayBeforeRemoving(toolchain_target_dir)
+  if sys.platform == 'win32':
+    # These stay resident and will make the rmdir below fail.
+    kill_list = [
+      'mspdbsrv.exe',
+      'vctip.exe', # Compiler and tools experience improvement data uploader.
+    ]
+    for process_name in kill_list:
+      with open(os.devnull, 'wb') as nul:
+        subprocess.call(['taskkill', '/f', '/im', process_name],
+                        stdin=nul, stdout=nul, stderr=nul)
+  if os.path.isdir(toolchain_target_dir):
+    RmDir(toolchain_target_dir)
+
+  timestamp_file = MakeTimestampsFileName(root, sha1)
+  if os.path.exists(timestamp_file):
+    os.remove(timestamp_file)
+
+
+def RemoveUnusedToolchains(root):
+  """Remove the versions of the toolchain that haven't been used recently."""
+  valid_toolchains = []
+  dirs_to_remove = []
+
+  for d in os.listdir(root):
+    full_path = os.path.join(root, d)
+    if os.path.isdir(full_path):
+      if not os.path.exists(MakeTimestampsFileName(root, d)):
+        dirs_to_remove.append(d)
+      else:
+        vc_dir = os.path.join(full_path, 'VC')
+        valid_toolchains.append((os.path.getmtime(vc_dir), d))
+    elif os.path.isfile(full_path):
+      os.remove(full_path)
+
+  for d in dirs_to_remove:
+    print ('Removing %s as it doesn\'t correspond to any known toolchain.' %
+           os.path.join(root, d))
+    # Use the RemoveToolchain function to remove these directories as they might
+    # contain an older version of the toolchain.
+    RemoveToolchain(root, d, False)
+
+  # Remove the versions of the toolchains that haven't been used in the past 30
+  # days.
+  toolchain_expiration_time = 60 * 60 * 24 * 30
+  for toolchain in valid_toolchains:
+    toolchain_age_in_sec = time.time() - toolchain[0]
+    if toolchain_age_in_sec > toolchain_expiration_time:
+      print ('Removing version %s of the Win toolchain has it hasn\'t been used'
+             ' in the past %d days.' % (toolchain[1],
+                                        toolchain_age_in_sec / 60 / 60 / 24))
+      RemoveToolchain(root, toolchain[1], True)
+
+
 def GetInstallerName():
   """Return the name of the Windows 10 Universal C Runtime installer for the
   current platform, or None if installer is not needed or not applicable.
@@ -325,10 +409,9 @@ def main():
     sys.exit(subprocess.call(cmd))
   assert sys.platform != 'cygwin'
 
-  # We assume that the Pro hash is the first one.
-  desired_hashes = args
-  if len(desired_hashes) == 0:
-    sys.exit('Desired hashes are required.')
+  if len(args) == 0:
+    sys.exit('Desired hash is required.')
+  desired_hash = args[0]
 
   # Move to depot_tools\win_toolchain where we'll store our files, and where
   # the downloader script is.
@@ -338,7 +421,11 @@ def main():
     target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs_files'))
   else:
     target_dir = os.path.normpath(os.path.join(toolchain_dir, 'vs2013_files'))
-  abs_target_dir = os.path.abspath(target_dir)
+  if not os.path.isdir(target_dir):
+    os.mkdir(target_dir)
+  toolchain_target_dir = os.path.join(target_dir, desired_hash)
+
+  abs_toolchain_target_dir = os.path.abspath(toolchain_target_dir)
 
   got_new_toolchain = False
 
@@ -346,8 +433,8 @@ def main():
   # Typically this script is only run when the .sha1 one file is updated, but
   # directly calling "gclient runhooks" will also run it, so we cache
   # based on timestamps to make that case fast.
-  current_hash = CalculateHash(target_dir)
-  if current_hash not in desired_hashes:
+  current_hashes = CalculateToolchainHashes(target_dir)
+  if desired_hash not in current_hashes:
     should_use_gs = False
     if (HaveSrcInternalAccess() or
         LooksLikeGoogler() or
@@ -361,68 +448,62 @@ def main():
             'build-instructions-windows\n\n')
       return 1
     print('Windows toolchain out of date or doesn\'t exist, updating (Pro)...')
-    print('  current_hash: %s' % current_hash)
-    print('  desired_hashes: %s' % ', '.join(desired_hashes))
+    print('  current_hashes: %s' % ', '.join(current_hashes))
+    print('  desired_hash: %s' % desired_hash)
     sys.stdout.flush()
-    DelayBeforeRemoving(target_dir)
-    if sys.platform == 'win32':
-      # These stay resident and will make the rmdir below fail.
-      kill_list = [
-        'mspdbsrv.exe',
-        'vctip.exe', # Compiler and tools experience improvement data uploader.
-      ]
-      for process_name in kill_list:
-        with open(os.devnull, 'wb') as nul:
-          subprocess.call(['taskkill', '/f', '/im', process_name],
-                          stdin=nul, stdout=nul, stderr=nul)
-    if os.path.isdir(target_dir):
-      RmDir(target_dir)
 
-    DoTreeMirror(target_dir, desired_hashes[0])
+    DoTreeMirror(toolchain_target_dir, desired_hash)
 
     got_new_toolchain = True
 
-  win_sdk = os.path.join(abs_target_dir, 'win_sdk')
+  win_sdk = os.path.join(abs_toolchain_target_dir, 'win_sdk')
   try:
-    with open(os.path.join(target_dir, 'VS_VERSION'), 'rb') as f:
+    version_file = os.path.join(toolchain_target_dir, 'VS_VERSION')
+    vc_dir = os.path.join(toolchain_target_dir, 'VC')
+    with open(version_file, 'rb') as f:
       vs_version = f.read().strip()
+      # Touch the VC directory so we can use its timestamp to know when this
+      # version of the toolchain has been used for the last time.
+    os.utime(vc_dir, None)
   except IOError:
     # Older toolchains didn't have the VS_VERSION file, and used 'win8sdk'
     # instead of just 'win_sdk'.
     vs_version = '2013'
-    win_sdk = os.path.join(abs_target_dir, 'win8sdk')
+    win_sdk = os.path.join(abs_toolchain_target_dir, 'win8sdk')
 
   data = {
-      'path': abs_target_dir,
+      'path': abs_toolchain_target_dir,
       'version': vs_version,
       'win_sdk': win_sdk,
       # Added for backwards compatibility with old toolchain packages.
       'win8sdk': win_sdk,
-      'wdk': os.path.join(abs_target_dir, 'wdk'),
+      'wdk': os.path.join(abs_toolchain_target_dir, 'wdk'),
       'runtime_dirs': [
-        os.path.join(abs_target_dir, 'sys64'),
-        os.path.join(abs_target_dir, 'sys32'),
+        os.path.join(abs_toolchain_target_dir, 'sys64'),
+        os.path.join(abs_toolchain_target_dir, 'sys32'),
       ],
   }
   with open(os.path.join(target_dir, '..', 'data.json'), 'w') as f:
     json.dump(data, f)
 
   if got_new_toolchain:
-    current_hash = CalculateHash(target_dir)
-    if current_hash not in desired_hashes:
+    current_hashes = CalculateToolchainHashes(target_dir)
+    if desired_hash not in current_hashes:
       print >> sys.stderr, (
           'Got wrong hash after pulling a new toolchain. '
-          'Wanted one of \'%s\', got \'%s\'.' % (
-              ', '.join(desired_hashes), current_hash))
+          'Wanted \'%s\', got one of \'%s\'.' % (
+              desired_hash, ', '.join(current_hashes)))
       return 1
-    SaveTimestampsAndHash(target_dir, current_hash)
+    SaveTimestampsAndHash(target_dir, desired_hash)
 
   if options.output_json:
     shutil.copyfile(os.path.join(target_dir, '..', 'data.json'),
                     options.output_json)
 
   if os.environ.get('GYP_MSVS_VERSION') == '2015':
-    InstallUniversalCRTIfNeeded(abs_target_dir)
+    InstallUniversalCRTIfNeeded(abs_toolchain_target_dir)
+
+  RemoveUnusedToolchains(target_dir)
 
   return 0
 

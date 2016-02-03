@@ -270,7 +270,7 @@ def RenameToSha1(output):
       os.path.join(old_dir, output), 'r', zipfile.ZIP_DEFLATED, True) as zf:
     zf.extractall(rel_dir)
   print 'Hashing...'
-  sha1 = get_toolchain_if_necessary.CalculateHash(rel_dir)
+  sha1 = get_toolchain_if_necessary.CalculateHash(rel_dir, None)
   os.chdir(old_dir)
   shutil.rmtree(tempdir)
   final_name = sha1 + '.zip'
