@@ -73,7 +73,7 @@ irt_support_objs += [
 env.ComponentLibrary('libirt_support_private', irt_support_objs)
 
 irt_core_raw = blob_env.ComponentProgram(
-    'irt_core_raw', irt_support_objs, EXTRA_LIBS=['srpc'])
+    'irt_core_raw', irt_support_objs, EXTRA_LIBS=['platform'])
 
 irt_core_nexe = blob_env.ApplyTLSEdit(
     'irt_core.nexe',
