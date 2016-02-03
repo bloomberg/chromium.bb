@@ -668,7 +668,7 @@ bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
                         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
                         OnDestroyCommandBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuMsg_CreateJpegDecoder,
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(GpuChannelMsg_CreateJpegDecoder,
                                     OnCreateJpegDecoder)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()

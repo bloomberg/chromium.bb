@@ -168,7 +168,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     DCHECK(client_map_.count(route_id) == 0);
 
     client_map_[route_id] = client;
-    GpuMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, true);
+    GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, true);
     SendOnIOThread(reply_msg);
   }
 
@@ -350,7 +350,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
 
   if (!accelerator) {
     DLOG(ERROR) << "JPEG accelerator Initialize failed";
-    GpuMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, false);
+    GpuChannelMsg_CreateJpegDecoder::WriteReplyParams(reply_msg, false);
     Send(reply_msg);
     return;
   }

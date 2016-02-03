@@ -131,10 +131,10 @@ bool GpuJpegDecodeAcceleratorHost::Initialize(
 
   bool succeeded = false;
   // This cannot be on IO thread because the msg is synchronous.
-  Send(new GpuMsg_CreateJpegDecoder(decoder_route_id_, &succeeded));
+  Send(new GpuChannelMsg_CreateJpegDecoder(decoder_route_id_, &succeeded));
 
   if (!succeeded) {
-    DLOG(ERROR) << "Send(GpuMsg_CreateJpegDecoder()) failed";
+    DLOG(ERROR) << "Send(GpuChannelMsg_CreateJpegDecoder()) failed";
     return false;
   }
 

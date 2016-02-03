@@ -358,13 +358,6 @@ IPC_MESSAGE_CONTROL3(GpuMsg_DestroyGpuMemoryBuffer,
                      int32_t,                /* client_id */
                      gpu::SyncToken /* sync_token */)
 
-// Create and initialize a hardware jpeg decoder using the specified route_id.
-// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
-// no longer needed.
-IPC_SYNC_MESSAGE_CONTROL1_1(GpuMsg_CreateJpegDecoder,
-                            int32_t /* route_id */,
-                            bool /* succeeded */)
-
 // Tells the GPU process to create a context for collecting graphics card
 // information.
 IPC_MESSAGE_CONTROL0(GpuMsg_CollectGraphicsInfo)
@@ -523,6 +516,13 @@ IPC_SYNC_MESSAGE_CONTROL3_1(GpuChannelMsg_CreateOffscreenCommandBuffer,
 // object that it's hosting.
 IPC_SYNC_MESSAGE_CONTROL1_0(GpuChannelMsg_DestroyCommandBuffer,
                             int32_t /* instance_id */)
+
+// Create and initialize a hardware jpeg decoder using the specified route_id.
+// Created decoders should be freed with AcceleratedJpegDecoderMsg_Destroy when
+// no longer needed.
+IPC_SYNC_MESSAGE_CONTROL1_1(GpuChannelMsg_CreateJpegDecoder,
+                            int32_t /* route_id */,
+                            bool /* succeeded */)
 
 // Simple NOP message which can be used as fence to ensure all previous sent
 // messages have been received.
