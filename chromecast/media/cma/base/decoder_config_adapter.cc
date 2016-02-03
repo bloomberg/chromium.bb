@@ -30,6 +30,10 @@ AudioCodec ToAudioCodec(const ::media::AudioCodec audio_codec) {
       return kCodecOpus;
     case ::media::kCodecFLAC:
       return kCodecFLAC;
+    case ::media::kCodecEAC3:
+      return kCodecEAC3;
+    case ::media::kCodecAC3:
+      return kCodecAC3;
     default:
       LOG(ERROR) << "Unsupported audio codec " << audio_codec;
   }
