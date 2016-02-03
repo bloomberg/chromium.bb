@@ -413,12 +413,13 @@ final class JavaUrlRequest implements UrlRequest {
         }
     }
 
-    /** Ends the reqeust with an error, caused by an exception thrown from user code. */
+    /** Ends the request with an error, caused by an exception thrown from user code. */
     private void enterUserErrorState(State previousState, final Throwable error) {
-        enterErrorState(previousState, new UrlRequestException("User Error", error));
+        enterErrorState(previousState,
+                new UrlRequestException("Exception received from UrlRequest.Callback", error));
     }
 
-    /** Ends the requst with an error, caused by an exception thrown from user code. */
+    /** Ends the request with an error, caused by an exception thrown from user code. */
     private void enterUploadErrorState(final Throwable error) {
         enterErrorState(State.STARTED,
                 new UrlRequestException("Exception received from UploadDataProvider", error));

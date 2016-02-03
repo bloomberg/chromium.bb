@@ -235,7 +235,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         if (mFailureType == FailureType.THROW_SYNC) {
             assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, error.getErrorCode());
             assertEquals(0, error.getCronetInternalErrorCode());
-            assertEquals("UrlRequestListener method has thrown an exception", error.getMessage());
+            assertEquals("Exception received from UrlRequest.Callback", error.getMessage());
             assertNotNull(error.getCause());
             assertTrue(error.getCause() instanceof IllegalStateException);
             assertEquals("Listener Exception.", error.getCause().getMessage());

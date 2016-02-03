@@ -454,7 +454,7 @@ final class CronetUrlRequest implements UrlRequest {
      */
     private void onListenerException(Exception e) {
         UrlRequestException requestError =
-                new UrlRequestException("UrlRequestListener method has thrown an exception", e);
+                new UrlRequestException("Exception received from UrlRequest.Callback", e);
         Log.e(CronetUrlRequestContext.LOG_TAG,
                 "Exception in CalledByNative method", e);
         // Do not call into listener if request is finished.
