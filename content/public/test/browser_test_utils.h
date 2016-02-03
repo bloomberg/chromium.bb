@@ -56,6 +56,7 @@ namespace content {
 class BrowserContext;
 class MessageLoopRunner;
 class RenderViewHost;
+class RenderWidgetHost;
 class WebContents;
 
 // Navigate a frame with ID |iframe_id| to |url|, blocking until the navigation
@@ -436,6 +437,30 @@ class FrameWatcher : public BrowserMessageFilter {
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameWatcher);
+};
+
+// This class is intended to synchronize the renderer main thread, renderer impl
+// thread and the browser main thread.
+class MainThreadFrameObserver : public IPC::Listener {
+ public:
+  explicit MainThreadFrameObserver(RenderWidgetHost* render_widget_host);
+  ~MainThreadFrameObserver() override;
+
+  // Synchronizes the browser main thread with the renderer main thread and impl
+  // thread.
+  void Wait();
+
+  // Overridden IPC::Listener methods.
+  bool OnMessageReceived(const IPC::Message& msg) override;
+
+ private:
+  void Quit();
+
+  RenderWidgetHost* render_widget_host_;
+  scoped_ptr<base::RunLoop> run_loop_;
+  int routing_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(MainThreadFrameObserver);
 };
 
 }  // namespace content

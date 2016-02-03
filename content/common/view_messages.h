@@ -831,6 +831,10 @@ IPC_MESSAGE_CONTROL2(ViewMsg_NetworkConnectionChanged,
                      net::NetworkChangeNotifier::ConnectionType /* type */,
                      double /* max bandwidth mbps */)
 
+// Sent by the browser to synchronize with the next compositor frame. Used only
+// for tests.
+IPC_MESSAGE_ROUTED1(ViewMsg_WaitForNextFrameForTests, int /* routing_id */)
+
 #if defined(ENABLE_PLUGINS)
 // Reply to ViewHostMsg_OpenChannelToPpapiBroker
 // Tells the renderer that the channel to the broker has been created.
@@ -1300,6 +1304,9 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_DidFirstPaintAfterLoad)
 // Sent by the renderer to deliver a compositor proto to the browser.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardCompositorProto,
                     std::vector<uint8_t> /* proto */)
+
+// Sent in reply to ViewMsg_WaitForNextFrameForTests.
+IPC_MESSAGE_ROUTED0(ViewHostMsg_WaitForNextFrameForTests_ACK)
 
 #if defined(OS_ANDROID)
 // Start an android intent with the given URI.

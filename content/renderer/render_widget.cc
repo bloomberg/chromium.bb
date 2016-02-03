@@ -712,6 +712,8 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
     IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceIdNamespace, OnSetSurfaceIdNamespace)
+    IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
+                        OnWaitNextFrameForTests)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ImeEventAck, OnImeEventAck)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowImeIfNeeded, OnShowImeIfNeeded)
@@ -2289,5 +2291,10 @@ void RenderWidget::UnregisterVideoHoleFrame(RenderFrameImpl* frame) {
   video_hole_frames_.RemoveObserver(frame);
 }
 #endif  // defined(VIDEO_HOLE)
+
+void RenderWidget::OnWaitNextFrameForTests(int routing_id) {
+  QueueMessage(new ViewHostMsg_WaitForNextFrameForTests_ACK(routing_id),
+               MESSAGE_DELIVERY_POLICY_WITH_VISUAL_STATE);
+}
 
 }  // namespace content

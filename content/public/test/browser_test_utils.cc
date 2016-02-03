@@ -1103,4 +1103,41 @@ void FrameWatcher::WaitFrames(int frames_to_wait) {
   run_loop.Run();
 }
 
+MainThreadFrameObserver::MainThreadFrameObserver(
+    RenderWidgetHost* render_widget_host)
+    : render_widget_host_(render_widget_host),
+      routing_id_(render_widget_host_->GetProcess()->GetNextRoutingID()) {
+  // TODO(lfg): We should look into adding a way to observe RenderWidgetHost
+  // messages similarly to what WebContentsObserver can do with RFH and RVW.
+  render_widget_host_->GetProcess()->AddRoute(routing_id_, this);
+}
+
+MainThreadFrameObserver::~MainThreadFrameObserver() {
+  render_widget_host_->GetProcess()->RemoveRoute(routing_id_);
+}
+
+void MainThreadFrameObserver::Wait() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  render_widget_host_->Send(new ViewMsg_WaitForNextFrameForTests(
+      render_widget_host_->GetRoutingID(), routing_id_));
+  run_loop_.reset(new base::RunLoop());
+  run_loop_->Run();
+  run_loop_.reset(nullptr);
+}
+
+void MainThreadFrameObserver::Quit() {
+  if (run_loop_)
+    run_loop_->Quit();
+}
+
+bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
+  if (msg.type() == ViewHostMsg_WaitForNextFrameForTests_ACK::ID &&
+      msg.routing_id() == routing_id_) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&MainThreadFrameObserver::Quit, base::Unretained(this)));
+  }
+  return true;
+}
+
 }  // namespace content

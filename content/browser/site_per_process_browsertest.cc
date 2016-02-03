@@ -5226,4 +5226,34 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
   EXPECT_FALSE(mixed_child->has_committed_real_load());
 }
 
+// Test setting a cross-origin iframe to display: none.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderWidgetHost* root_render_widget_host =
+      root->current_frame_host()->GetRenderWidgetHost();
+
+  // Set the iframe to display: none.
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(),
+                    "document.querySelector('iframe').style.display = 'none'"));
+
+  // Waits until pending frames are done.
+  scoped_ptr<MainThreadFrameObserver> observer(
+      new MainThreadFrameObserver(root_render_widget_host));
+  observer->Wait();
+
+  // Force the renderer to generate a new frame.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "document.body.style.background = 'black'"));
+
+  // Waits for the next frame.
+  observer->Wait();
+}
+
 }  // namespace content

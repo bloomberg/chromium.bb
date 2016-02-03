@@ -553,6 +553,9 @@ class CONTENT_EXPORT RenderWidget
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
       GpuChannelHost* gpu_channel_host);
 
+  // Sends an ACK to the browser process during the next compositor frame.
+  void OnWaitNextFrameForTests(int routing_id);
+
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32_t routing_id_;
