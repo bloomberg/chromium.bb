@@ -24,6 +24,7 @@ const char kCookieKey[] = "cookie";
 HpackDecoder::HpackDecoder()
     : max_string_literal_size_(kDefaultMaxStringLiteralSize),
       handler_(nullptr),
+      total_header_bytes_(0),
       regular_header_seen_(false),
       header_block_started_(false) {}
 
@@ -61,7 +62,7 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
     }
   }
   if (handler_ != nullptr) {
-    handler_->OnHeaderBlockEnd(headers_block_buffer_.size());
+    handler_->OnHeaderBlockEnd(total_header_bytes_);
   }
   headers_block_buffer_.clear();
   header_block_started_ = false;
@@ -71,6 +72,8 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
 
 bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
                                               StringPiece value) {
+  total_header_bytes_ += name.size() + value.size();
+
   // Fail if pseudo-header follows regular header.
   if (name.size() > 0) {
     if (name[0] == kPseudoHeaderPrefix) {

@@ -45,6 +45,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
   // headers to it rather than accumulating them in a SpdyHeaderBlock.
   void HandleControlFrameHeadersStart(SpdyHeadersHandlerInterface* handler) {
     handler_ = handler;
+    total_header_bytes_ = 0;
   }
 
   // Called as headers data arrives. Returns false if an error occurred.
@@ -103,6 +104,7 @@ class NET_EXPORT_PRIVATE HpackDecoder {
 
   // If non-NULL, handles decoded headers.
   SpdyHeadersHandlerInterface* handler_;
+  size_t total_header_bytes_;
 
   // Flag to keep track of having seen a regular header field.
   bool regular_header_seen_;
