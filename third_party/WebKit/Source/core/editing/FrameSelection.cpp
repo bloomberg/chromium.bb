@@ -305,6 +305,8 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
 
     m_granularity = granularity;
 
+    // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
+    // |Editor| class.
     if (closeTyping)
         TypingCommand::closeTyping(m_frame);
 
@@ -463,6 +465,11 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
 
     if (clearDOMTreeSelection)
         setSelection(VisibleSelection(), DoNotSetFocus);
+
+    // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
+    // |Editor| class.
+    if (!m_frame->document()->isRunningExecCommand())
+        TypingCommand::closeTyping(m_frame);
 }
 
 static Position updatePositionAfterAdoptingTextReplacement(const Position& position, CharacterData* node, unsigned offset, unsigned oldLength, unsigned newLength)
@@ -563,6 +570,10 @@ void FrameSelection::updateSelectionIfNeeded(const Position& base, const Positio
 {
     if (base == selection().base() && extent == selection().extent() && start == selection().start() && end == selection().end())
         return;
+    // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
+    // |Editor| class.
+    if (!m_frame->document()->isRunningExecCommand())
+        TypingCommand::closeTyping(m_frame);
     VisibleSelection newSelection;
     if (selection().isBaseFirst())
         newSelection.setWithoutValidation(start, end);
