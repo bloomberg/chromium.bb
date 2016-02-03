@@ -79,6 +79,11 @@
     ]
   },
   "Android Tests (trial)(dbg)": {
+    "gtest_tests": [
+      {
+        "test": "blimp_unittests"
+      }
+    ],
     "scripts": [
       {
         "name": "telemetry_unittests",

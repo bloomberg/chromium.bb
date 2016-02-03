@@ -141,6 +141,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
@@ -254,6 +257,9 @@
           "--isolate_file_path=src/base/base_unittests.isolate"
         ],
         "test": "base_unittests"
+      },
+      {
+        "test": "blimp_unittests"
       },
       {
         "args": [
@@ -489,6 +495,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
@@ -602,6 +611,9 @@
           "--isolate_file_path=src/base/base_unittests.isolate"
         ],
         "test": "base_unittests"
+      },
+      {
+        "test": "blimp_unittests"
       },
       {
         "args": [
@@ -719,6 +731,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
@@ -834,6 +849,9 @@
         "test": "base_unittests"
       },
       {
+        "test": "blimp_unittests"
+      },
+      {
         "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
@@ -947,6 +965,9 @@
           "--isolate_file_path=src/base/base_unittests.isolate"
         ],
         "test": "base_unittests"
+      },
+      {
+        "test": "blimp_unittests"
       },
       {
         "args": [
