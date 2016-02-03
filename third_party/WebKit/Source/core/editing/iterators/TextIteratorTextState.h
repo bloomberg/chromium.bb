@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/Range.h"
+#include "core/editing/iterators/ForwardsTextBuffer.h"
 #include "core/layout/LayoutText.h"
 #include "wtf/text/WTFString.h"
 
@@ -62,25 +63,7 @@ public:
         m_textLength = 0;
     }
 
-    template<typename BufferType>
-    void appendTextTo(BufferType& output, unsigned position, unsigned lengthToAppend) const
-    {
-        ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend <= static_cast<unsigned>(length()));
-        // Make sure there's no integer overflow.
-        ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend >= position);
-        if (!lengthToAppend)
-            return;
-        if (m_singleCharacterBuffer) {
-            ASSERT(!position);
-            ASSERT(length() == 1);
-            output.append(&m_singleCharacterBuffer, 1);
-        } else if (positionNode()) {
-            flushPositionOffsets();
-            string().appendTo(output, positionStartOffset() + position, lengthToAppend);
-        } else {
-            ASSERT_NOT_REACHED(); // "We shouldn't be attempting to append text that doesn't exist.";
-        }
-    }
+    void appendTextTo(ForwardsTextBuffer* output, unsigned position, unsigned lengthToAppend) const;
 
 private:
     int m_textLength;

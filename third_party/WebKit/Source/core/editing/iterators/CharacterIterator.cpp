@@ -174,6 +174,12 @@ void CharacterIteratorAlgorithm<Strategy>::advance(int count)
 }
 
 template <typename Strategy>
+void CharacterIteratorAlgorithm<Strategy>::copyTextTo(ForwardsTextBuffer* output)
+{
+    m_textIterator.copyTextTo(output, m_runOffset);
+}
+
+template <typename Strategy>
 EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::calculateCharacterSubrange(int offset, int length)
 {
     advance(offset);

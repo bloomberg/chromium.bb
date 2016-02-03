@@ -389,7 +389,10 @@ static size_t findPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it, co
     }
 
     while (!it.atEnd()) {
-        it.appendTextTo(buffer);
+        // TODO(xiaochengh): Should allow copying text to SearchBuffer directly
+        ForwardsTextBuffer characters;
+        it.copyTextTo(&characters);
+        buffer.append(characters.data(), characters.size());
         it.advance(buffer.numberOfCharactersJustAppended());
 tryAgain:
         size_t matchStartOffset;

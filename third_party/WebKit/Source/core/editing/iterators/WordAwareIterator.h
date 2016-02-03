@@ -48,7 +48,7 @@ public:
     int length() const;
 
 private:
-    Vector<UChar> m_buffer;
+    ForwardsTextBuffer m_buffer;
     // Did we have to look ahead in the textIterator to confirm the current chunk?
     bool m_didLookAhead;
     TextIterator m_textIterator;

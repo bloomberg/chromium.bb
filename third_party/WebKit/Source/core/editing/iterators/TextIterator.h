@@ -82,16 +82,9 @@ public:
     // Calculate the minimum |actualLength >= minLength| such that code units
     // with offset range [position, position + actualLength) are whole code
     // points. Append these code points to |output| and return |actualLength|.
-    template<typename BufferType>
-    int copyTextTo(BufferType& output, int position, int minLength) const
-    {
-        int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
-        copyCodeUnitsTo(output, position, copiedLength);
-        return copiedLength;
-    }
-
-    template<typename BufferType>
-    int copyTextTo(BufferType& output, int position = 0) const { return copyTextTo(output, position, length() - position); }
+    int copyTextTo(ForwardsTextBuffer* output, int position, int minLength) const;
+    // TODO(xiaochengh): Avoid default parameters.
+    int copyTextTo(ForwardsTextBuffer* output, int position = 0) const;
 
     // Computes the length of the given range using a text iterator. The default
     // iteration behavior is to always emit object replacement characters for
@@ -159,8 +152,7 @@ private:
 
     // Append code units with offset range [position, position + copyLength)
     // to the output buffer.
-    template<typename BufferType>
-    void copyCodeUnitsTo(BufferType& output, int position, int copyLength) const { m_textState.appendTextTo(output, position, copyLength); }
+    void copyCodeUnitsTo(ForwardsTextBuffer* output, int position, int copyLength) const;
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.

@@ -66,7 +66,7 @@ void WordAwareIterator::advance()
 
         // If this is the first chunk that failed, save it in m_buffer before look ahead.
         if (m_buffer.isEmpty())
-            m_textIterator.copyTextTo(m_buffer);
+            m_textIterator.copyTextTo(&m_buffer);
 
         // Look ahead to next chunk. If it is whitespace or a break, we can use the previous stuff
         m_textIterator.advance();
@@ -76,7 +76,7 @@ void WordAwareIterator::advance()
         }
 
         // Start gobbling chunks until we get to a suitable stopping point
-        m_textIterator.copyTextTo(m_buffer);
+        m_textIterator.copyTextTo(&m_buffer);
     }
 }
 

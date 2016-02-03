@@ -1112,6 +1112,26 @@ bool TextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(int position) const
     return position > 0 && position < length() && U16_IS_LEAD(characterAt(position - 1)) && U16_IS_TRAIL(characterAt(position));
 }
 
+template <typename Strategy>
+int TextIteratorAlgorithm<Strategy>::copyTextTo(ForwardsTextBuffer* output, int position, int minLength) const
+{
+    int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
+    copyCodeUnitsTo(output, position, copiedLength);
+    return copiedLength;
+}
+
+template <typename Strategy>
+int TextIteratorAlgorithm<Strategy>::copyTextTo(ForwardsTextBuffer* output, int position) const
+{
+    return copyTextTo(output, position, length() - position);
+}
+
+template <typename Strategy>
+void TextIteratorAlgorithm<Strategy>::copyCodeUnitsTo(ForwardsTextBuffer* output, int position, int copyLength) const
+{
+    m_textState.appendTextTo(output, position, copyLength);
+}
+
 // --------
 
 template <typename Strategy>

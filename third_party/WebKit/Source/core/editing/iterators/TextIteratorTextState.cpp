@@ -152,4 +152,30 @@ void TextIteratorTextState::emitText(Node* textNode, LayoutText* layoutObject, i
     m_hasEmitted = true;
 }
 
+void TextIteratorTextState::appendTextTo(ForwardsTextBuffer* output, unsigned position, unsigned lengthToAppend) const
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend <= static_cast<unsigned>(length()));
+    // Make sure there's no integer overflow.
+    ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend >= position);
+    if (!lengthToAppend)
+        return;
+    ASSERT(output);
+    if (m_singleCharacterBuffer) {
+        ASSERT(!position);
+        ASSERT(length() == 1);
+        output->pushCharacters(m_singleCharacterBuffer, 1);
+        return;
+    }
+    if (positionNode()) {
+        flushPositionOffsets();
+        unsigned offset = positionStartOffset() + position;
+        if (string().is8Bit())
+            output->pushRange(string().characters8() + offset, lengthToAppend);
+        else
+            output->pushRange(string().characters16() + offset, lengthToAppend);
+        return;
+    }
+    ASSERT_NOT_REACHED(); // "We shouldn't be attempting to append text that doesn't exist.";
+}
+
 } // namespace blink
