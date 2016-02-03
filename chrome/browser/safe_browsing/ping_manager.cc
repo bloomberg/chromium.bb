@@ -191,6 +191,9 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
     case safe_browsing::ThreatSource::LOCAL_PVER4:
       threat_source = "l4";
       break;
+    case safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION:
+      threat_source = "csd";
+      break;
     case safe_browsing::ThreatSource::UNKNOWN:
       NOTREACHED();
   }

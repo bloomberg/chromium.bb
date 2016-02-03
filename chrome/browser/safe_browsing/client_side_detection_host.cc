@@ -555,6 +555,8 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.original_url = phishing_url;
       resource.is_subresource = false;
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
+      resource.threat_source =
+          safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
       resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();
@@ -585,6 +587,8 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
       resource.original_url = original_url;
       resource.is_subresource = (malware_url.host() != original_url.host());
       resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+      resource.threat_source =
+          safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.render_process_host_id =
           web_contents()->GetRenderProcessHost()->GetID();
       resource.render_frame_id = web_contents()->GetMainFrame()->GetRoutingID();

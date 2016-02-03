@@ -555,6 +555,8 @@ std::string SafeBrowsingBlockingPage::GetExtraMetricsSuffix() const {
       return "from_device";
     case safe_browsing::ThreatSource::LOCAL_PVER4:
       return "from_device_v4";
+    case safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION:
+      return "from_client_side_detection";
     case safe_browsing::ThreatSource::UNKNOWN:
       break;
   }
