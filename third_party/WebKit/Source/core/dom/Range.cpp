@@ -839,9 +839,9 @@ void Range::insertNode(PassRefPtrWillBeRawPtr<Node> prpNewNode, ExceptionState& 
             return;
 
         if (collapsed) {
-            // The load event would be fired regardless of EventQueueScope;
-            // e.g. by ContainerNode::updateTreeAfterInsertion
-            // Given circumstance may mutate the tree so newText->parentNode() may become null
+            // Some types of events don't support EventQueueScope.  Given
+            // circumstance may mutate the tree so newText->parentNode() may
+            // become null.
             if (!newText->parentNode()) {
                 exceptionState.throwDOMException(HierarchyRequestError, "This operation would set range's end to parent with new offset, but there's no parent into which to continue.");
                 return;

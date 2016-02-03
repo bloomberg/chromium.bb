@@ -1,5 +1,0 @@
-PASS range.surroundContents(testFrame) threw exception HierarchyRequestError: Failed to execute 'surroundContents' on 'Range': This operation would set range's end to parent with new offset, but there's no parent into which to continue..
-PASS successfullyParsed is true
-
-TEST COMPLETE
-

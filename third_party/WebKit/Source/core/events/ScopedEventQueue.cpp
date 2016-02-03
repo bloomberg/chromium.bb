@@ -60,7 +60,7 @@ void ScopedEventQueue::initialize()
 
 void ScopedEventQueue::enqueueEventDispatchMediator(PassRefPtrWillBeRawPtr<EventDispatchMediator> mediator)
 {
-    if (m_scopingLevel)
+    if (shouldQueueEvents())
         m_queuedEventDispatchMediators.append(mediator);
     else
         dispatchEvent(mediator);

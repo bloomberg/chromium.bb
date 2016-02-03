@@ -178,8 +178,6 @@ public:
     using EventTarget::dispatchEvent;
     bool dispatchEvent(PassRefPtrWillBeRawPtr<Event> prpEvent, PassRefPtrWillBeRawPtr<EventTarget> prpTarget);
 
-    void dispatchLoadEvent();
-
     void finishedLoading();
 
     // Dispatch the (deprecated) orientationchange event to this DOMWindow and
@@ -238,6 +236,7 @@ private:
     explicit LocalDOMWindow(LocalFrame&);
     void dispose();
 
+    void dispatchLoadEvent();
     void clearDocument();
     void willDestroyDocumentInFrame();
 

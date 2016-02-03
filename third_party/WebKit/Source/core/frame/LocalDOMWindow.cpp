@@ -35,6 +35,7 @@
 #include "core/css/StyleMedia.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/FrameRequestCallback.h"
 #include "core/dom/SandboxFlags.h"
 #include "core/editing/Editor.h"
@@ -43,6 +44,7 @@
 #include "core/events/MessageEvent.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/PopStateEvent.h"
+#include "core/events/ScopedEventQueue.h"
 #include "core/frame/BarProp.h"
 #include "core/frame/Console.h"
 #include "core/frame/EventHandlerRegistry.h"
@@ -391,6 +393,13 @@ void LocalDOMWindow::enqueueDocumentEvent(PassRefPtrWillBeRawPtr<Event> event)
 void LocalDOMWindow::dispatchWindowLoadEvent()
 {
     ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+    // Delay 'load' event if we are in EventQueueScope.  This is a short-term
+    // workaround to avoid Editing code crashes.  We should always dispatch
+    // 'load' event asynchronously.  crbug.com/569511.
+    if (ScopedEventQueue::instance()->shouldQueueEvents() && m_document) {
+        m_document->postTask(BLINK_FROM_HERE, createSameThreadTask(&LocalDOMWindow::dispatchLoadEvent, PassRefPtrWillBeRawPtr<LocalDOMWindow>(this)));
+        return;
+    }
     dispatchLoadEvent();
 }
 

@@ -53,6 +53,7 @@ public:
 
     void incrementScopingLevel();
     void decrementScopingLevel();
+    bool shouldQueueEvents() const { return m_scopingLevel > 0; }
 
 private:
     ScopedEventQueue();

@@ -215,7 +215,7 @@ bool HTMLFrameOwnerElement::isKeyboardFocusable() const
 
 void HTMLFrameOwnerElement::dispatchLoad()
 {
-    dispatchEvent(Event::create(EventTypeNames::load));
+    dispatchScopedEvent(Event::create(EventTypeNames::load));
 }
 
 Document* HTMLFrameOwnerElement::getSVGDocument(ExceptionState& exceptionState) const
