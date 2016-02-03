@@ -67,6 +67,7 @@ LayerAnimator::~LayerAnimator() {
   }
   ClearAnimationsInternal();
   delegate_ = NULL;
+  DCHECK(!animation_player_ || !animation_player_->animation_timeline());
 }
 
 // static
