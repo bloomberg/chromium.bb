@@ -45,7 +45,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../breakpad/breakpad.gyp:breakpad_client',
-        '../../components/components.gyp:language_usage_metrics',
         '../../components/components.gyp:about_handler',
         '../../components/components.gyp:autofill_core_browser',
         '../../components/components.gyp:autofill_core_common',
@@ -75,6 +74,7 @@
         '../../components/components.gyp:invalidation_public',
         '../../components/components.gyp:keyed_service_core',
         '../../components/components.gyp:keyed_service_ios',
+        '../../components/components.gyp:language_usage_metrics',
         '../../components/components.gyp:leveldb_proto',
         '../../components/components.gyp:metrics',
         '../../components/components.gyp:metrics_net',
@@ -89,6 +89,7 @@
         '../../components/components.gyp:password_manager_core_browser',
         '../../components/components.gyp:password_manager_sync_browser',
         '../../components/components.gyp:pref_registry',
+        '../../components/components.gyp:profile_metrics',
         '../../components/components.gyp:proxy_config',
         '../../components/components.gyp:rappor',
         '../../components/components.gyp:search',
