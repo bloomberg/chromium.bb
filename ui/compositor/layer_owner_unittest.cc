@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/test/null_task_runner.h"
 #include "cc/animation/animation_player.h"
+#include "cc/layers/layer_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -227,6 +228,10 @@ TEST_F(LayerOwnerTestWithCompositor, RecreateNonRootLayerDuringAnimation) {
 // Tests that if LayerOwner-derived class destroys layer, then
 // LayerAnimator's player becomes detached from compositor timeline.
 TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
+  // This test is meaningless if CC timelines disabled.
+  if (!Layer::UILayerSettings().use_compositor_animation_timelines)
+    return;
+
   scoped_ptr<Layer> root_layer(new Layer);
   compositor()->SetRootLayer(root_layer.get());
 
@@ -250,6 +255,10 @@ TEST_F(LayerOwnerTestWithCompositor, DetachTimelineOnAnimatorDeletion) {
 // then LayerAnimator's player becomes attached to timeline.
 TEST_F(LayerOwnerTestWithCompositor,
        AttachTimelineIfAnimatorCreatedAfterSetCompositor) {
+  // This test is meaningless if CC timelines disabled.
+  if (!Layer::UILayerSettings().use_compositor_animation_timelines)
+    return;
+
   scoped_ptr<Layer> root_layer(new Layer);
   compositor()->SetRootLayer(root_layer.get());
 
