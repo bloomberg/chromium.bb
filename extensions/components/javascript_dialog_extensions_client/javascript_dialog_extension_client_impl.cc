@@ -11,6 +11,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/native_widget_types.h"
+#include "url/origin.h"
 
 namespace javascript_dialog_extensions_client {
 namespace {
@@ -62,8 +63,8 @@ class JavaScriptDialogExtensionsClientImpl
                         const GURL& origin_url,
                         std::string* name_out) override {
     const Extension* extension = GetExtensionForWebContents(web_contents);
-    if (extension &&
-        web_contents->GetLastCommittedURL().GetOrigin() == origin_url) {
+    if (extension && url::IsSameOriginWith(
+                         origin_url, web_contents->GetLastCommittedURL())) {
       *name_out = extension->name();
       return true;
     }

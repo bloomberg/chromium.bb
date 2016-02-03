@@ -130,8 +130,9 @@ class URL_EXPORT Origin {
   bool unique_;
 };
 
-URL_EXPORT std::ostream& operator<<(std::ostream& out,
-                                    const Origin& origin);
+URL_EXPORT std::ostream& operator<<(std::ostream& out, const Origin& origin);
+
+URL_EXPORT bool IsSameOriginWith(const GURL& a, const GURL& b);
 
 }  // namespace url
 

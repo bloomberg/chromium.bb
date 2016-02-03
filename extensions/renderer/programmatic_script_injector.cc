@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -132,7 +133,7 @@ void ProgrammaticScriptInjector::OnWillNotInject(
       if (url_.SchemeIs(url::kAboutScheme)) {
         error = ErrorUtils::FormatErrorMessage(
             manifest_errors::kCannotAccessAboutUrl, url_.spec(),
-            effective_url_.GetOrigin().spec());
+            url::Origin(effective_url_).Serialize());
       } else {
         // TODO(?) It would be nice to show kCannotAccessPageWithUrl here if
         // this is triggered by an extension with tabs permission. See

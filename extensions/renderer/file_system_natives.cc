@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "url/origin.h"
 
 namespace extensions {
 
@@ -42,8 +43,8 @@ void FileSystemNatives::GetIsolatedFileSystem(
       extensions::ScriptContext::GetDataSourceURLForFrame(webframe);
   CHECK(context_url.SchemeIs(extensions::kExtensionScheme));
 
-  std::string name(storage::GetIsolatedFileSystemName(context_url.GetOrigin(),
-                                                      file_system_id));
+  const GURL origin(url::Origin(context_url).Serialize());
+  std::string name(storage::GetIsolatedFileSystemName(origin, file_system_id));
 
   // The optional second argument is the subfolder within the isolated file
   // system at which to root the DOMFileSystem we're returning to the caller.
@@ -54,7 +55,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
   }
 
   GURL root_url(storage::GetIsolatedFileSystemRootURIString(
-      context_url.GetOrigin(), file_system_id, optional_root_name));
+      origin, file_system_id, optional_root_name));
 
   args.GetReturnValue().Set(
       blink::WebDOMFileSystem::create(webframe,

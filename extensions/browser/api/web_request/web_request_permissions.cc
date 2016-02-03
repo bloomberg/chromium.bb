@@ -15,6 +15,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using content::ResourceRequestInfo;
 
@@ -128,9 +129,9 @@ bool WebRequestPermissions::CanExtensionAccessURL(
     case REQUIRE_HOST_PERMISSION:
       // about: URLs are not covered in host permissions, but are allowed
       // anyway.
-      if (!((url.SchemeIs(url::kAboutScheme) ||
-             extension->permissions_data()->HasHostPermission(url) ||
-             url.GetOrigin() == extension->url()))) {
+      if (!url.SchemeIs(url::kAboutScheme) &&
+          !extension->permissions_data()->HasHostPermission(url) &&
+          !url::IsSameOriginWith(url, extension->url())) {
         return false;
       }
       break;

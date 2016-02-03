@@ -17,6 +17,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/strings/grit/extensions_strings.h"
+#include "url/origin.h"
 
 using content::WebContents;
 using guest_view::GuestViewBase;
@@ -45,8 +46,8 @@ bool ExtensionViewGuest::NavigateGuest(const std::string& src,
 
   // If the URL is not valid, about:blank, or the same origin as the extension,
   // then navigate to about:blank.
-  bool url_not_allowed = (url != GURL(url::kAboutBlankURL)) &&
-      (url.GetOrigin() != extension_url_.GetOrigin());
+  bool url_not_allowed = url != GURL(url::kAboutBlankURL) &&
+                         !url::IsSameOriginWith(url, extension_url_);
   if (!url.is_valid() || url_not_allowed)
     return NavigateGuest(url::kAboutBlankURL, true /* force_navigation */);
 
@@ -135,7 +136,7 @@ void ExtensionViewGuest::DidCommitProvisionalLoadForFrame(
 void ExtensionViewGuest::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (attached() && (params.url.GetOrigin() != url_.GetOrigin())) {
+  if (attached() && !url::IsSameOriginWith(params.url, url_)) {
     bad_message::ReceivedBadMessage(web_contents()->GetRenderProcessHost(),
                                     bad_message::EVG_BAD_ORIGIN);
   }

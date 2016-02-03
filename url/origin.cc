@@ -80,4 +80,8 @@ std::ostream& operator<<(std::ostream& out, const url::Origin& origin) {
   return out << origin.Serialize();
 }
 
+bool IsSameOriginWith(const GURL& a, const GURL& b) {
+  return Origin(a).IsSameOriginWith(Origin(b));
+}
+
 }  // namespace url

@@ -14,6 +14,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/url_pattern.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace extensions {
@@ -152,11 +153,13 @@ void URLPatternSet::ClearPatterns() {
 }
 
 bool URLPatternSet::AddOrigin(int valid_schemes, const GURL& origin) {
-  DCHECK_EQ(origin.GetOrigin(), origin);
+  if (origin.is_empty())
+    return false;
+  const url::Origin real_origin(origin);
+  DCHECK(real_origin.IsSameOriginWith(url::Origin(origin.GetOrigin())));
   URLPattern origin_pattern(valid_schemes);
   // Origin adding could fail if |origin| does not match |valid_schemes|.
-  if (origin_pattern.Parse(origin.GetOrigin().spec()) !=
-      URLPattern::PARSE_SUCCESS) {
+  if (origin_pattern.Parse(origin.spec()) != URLPattern::PARSE_SUCCESS) {
     return false;
   }
   origin_pattern.SetPath("/*");
