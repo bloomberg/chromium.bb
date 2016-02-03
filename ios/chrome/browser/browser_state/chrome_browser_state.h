@@ -21,6 +21,7 @@ class ChromeBrowserStateIOData;
 class PrefProxyConfigTracker;
 class PrefService;
 class TestChromeBrowserState;
+class TestChromeBrowserStateManager;
 
 namespace base {
 class SequencedTaskRunner;
@@ -50,7 +51,7 @@ enum class ChromeBrowserStateType {
 // This class is a Chrome-specific extension of the BrowserState interface.
 class ChromeBrowserState : public web::BrowserState {
  public:
-  ~ChromeBrowserState() override {}
+  ~ChromeBrowserState() override;
 
   // Returns the ChromeBrowserState corresponding to the given BrowserState.
   static ChromeBrowserState* FromBrowserState(BrowserState* browser_state);
@@ -60,7 +61,7 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Returns sequenced task runner where browser state dependent I/O
   // operations should be performed.
-  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() = 0;
+  virtual scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner();
 
   // Returns the original "recording" ChromeBrowserState. This method returns
   // |this| if the ChromeBrowserState is not incognito.
@@ -96,7 +97,7 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Retrieves a pointer to the PrefService that manages the preferences as
   // a syncable_prefs::PrefServiceSyncable.
-  virtual syncable_prefs::PrefServiceSyncable* GetSyncablePrefs() = 0;
+  virtual syncable_prefs::PrefServiceSyncable* GetSyncablePrefs();
 
   // Deletes all network related data since |time|. It deletes transport
   // security state since |time| and it also deletes HttpServerProperties data.
@@ -132,12 +133,23 @@ class ChromeBrowserState : public web::BrowserState {
 
   // Returns the current ChromeBrowserState casted as a TestChromeBrowserState
   // or null if it is not a TestChromeBrowserState.
-  virtual TestChromeBrowserState* AsTestChromeBrowserState() = 0;
+  // TODO(crbug.com/583682): This method should not be used. It is there for
+  // supporting a legacy test, and will be removed as soon as the deprecated
+  // test is removed.
+  virtual TestChromeBrowserState* AsTestChromeBrowserState();
+
+  // web::BrowserState
+  net::URLRequestContextGetter* GetRequestContext() override;
 
  protected:
-  ChromeBrowserState() {}
+  ChromeBrowserState();
 
  private:
+  friend class ::TestChromeBrowserState;
+  friend class ::TestChromeBrowserStateManager;
+
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserState);
 };
 
