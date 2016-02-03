@@ -381,6 +381,12 @@ gfx::Rect BrowserWindowCocoa::GetBounds() const {
   return GetRestoredBounds();
 }
 
+gfx::Size BrowserWindowCocoa::GetContentsSize() const {
+  NSView* view = [[controller_ overlayableContentsController] view];
+  const NSSize size = [view bounds].size;
+  return gfx::Size(NSSizeToCGSize(size));
+}
+
 bool BrowserWindowCocoa::IsMaximized() const {
   // -isZoomed returns YES if the window's frame equals the rect returned by
   // -windowWillUseStandardFrame:defaultFrame:, even if the window is in the

@@ -152,6 +152,10 @@ class BrowserWindow : public ui::BaseWindow {
   virtual bool IsInMetroSnapMode() const = 0;
 #endif
 
+  // Returns the size of WebContents in the browser. This may be called before
+  // the TabStripModel has an active tab.
+  virtual gfx::Size GetContentsSize() const = 0;
+
   // Returns the location bar.
   virtual LocationBar* GetLocationBar() const = 0;
 

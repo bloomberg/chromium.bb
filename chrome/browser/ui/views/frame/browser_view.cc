@@ -965,6 +965,11 @@ gfx::Rect BrowserView::GetBounds() const {
   return frame_->GetWindowBoundsInScreen();
 }
 
+gfx::Size BrowserView::GetContentsSize() const {
+  DCHECK(initialized_);
+  return GetTabContentsContainerView()->size();
+}
+
 bool BrowserView::IsMaximized() const {
   return frame_->IsMaximized();
 }

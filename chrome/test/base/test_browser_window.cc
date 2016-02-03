@@ -94,6 +94,10 @@ gfx::Rect TestBrowserWindow::GetBounds() const {
   return gfx::Rect();
 }
 
+gfx::Size TestBrowserWindow::GetContentsSize() const {
+  return gfx::Size();
+}
+
 bool TestBrowserWindow::IsMaximized() const {
   return false;
 }

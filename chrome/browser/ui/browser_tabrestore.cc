@@ -123,7 +123,7 @@ content::WebContents* AddRestoredTab(
     // location calculations to be incorrect even after a new layout with
     // proper view dimensions. TabStripModel::AddWebContents() contains similar
     // logic.
-    gfx::Size size = browser->window()->GetBounds().size();
+    gfx::Size size = browser->window()->GetContentsSize();
     // Fallback to the restore bounds if it's empty as the window is not shown
     // yet and the bounds may not be available on all platforms.
     if (size.IsEmpty())

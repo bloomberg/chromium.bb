@@ -273,6 +273,7 @@ class BrowserView : public BrowserWindow,
   gfx::Rect GetRestoredBounds() const override;
   ui::WindowShowState GetRestoredState() const override;
   gfx::Rect GetBounds() const override;
+  gfx::Size GetContentsSize() const override;
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Maximize() override;

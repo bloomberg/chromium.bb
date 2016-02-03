@@ -345,6 +345,52 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoredTabsHaveCorrectInitialSize) {
+  // Create tabs.
+  GURL test_page(ui_test_utils::GetTestUrl(
+      base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL("tab-restore-visibility.html"))));
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_page, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), test_page, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Restart and session restore the tabs.
+  content::DOMMessageQueue message_queue;
+  Browser* restored = QuitBrowserAndRestore(browser(), 3);
+  for (int i = 0; i < 2; ++i) {
+    std::string message;
+    EXPECT_TRUE(message_queue.WaitForMessage(&message));
+    EXPECT_EQ("\"READY\"", message);
+  }
+
+  // There should be 3 restored tabs in the new browser.
+  TabStripModel* tab_strip_model = restored->tab_strip_model();
+  const int tabs = tab_strip_model->count();
+  ASSERT_EQ(3, tabs);
+
+  const gfx::Size contents_size = restored->window()->GetContentsSize();
+  for (int i = 0; i < tabs; ++i) {
+    content::WebContents* contents = tab_strip_model->GetWebContentsAt(i);
+    int width = 0;
+    const char kGetWidthJS[] =
+        "window.domAutomationController.send("
+        "window.innerWidth);";
+    EXPECT_TRUE(
+        content::ExecuteScriptAndExtractInt(contents, kGetWidthJS, &width));
+    int height = 0;
+    const char kGetHeigthJS[] =
+        "window.domAutomationController.send("
+        "window.innerHeight);";
+    EXPECT_TRUE(
+        content::ExecuteScriptAndExtractInt(contents, kGetHeigthJS, &height));
+    const gfx::Size tab_size(width, height);
+    EXPECT_EQ(contents_size, tab_size);
+  }
+}
+
 #if defined(OS_CHROMEOS)
 // Verify that session restore does not occur when a user opens a browser window
 // when no other browser windows are open on ChromeOS.
