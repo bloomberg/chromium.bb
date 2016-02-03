@@ -4173,6 +4173,7 @@
             '../components/components.gyp:rlz',
             '../components/components.gyp:search_engines',
             '../rlz/rlz.gyp:rlz_lib',
+            'common',
           ],
         },
       ],

@@ -1582,6 +1582,7 @@
         '../components/components.gyp:password_manager_core_browser_test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
+        'common',
       ],
       'include_dirs': [
         '..',
