@@ -208,6 +208,10 @@ bool PickleIterator::ReadBytes(const char** data, int length) {
   return true;
 }
 
+Pickle::Attachment::Attachment() {}
+
+Pickle::Attachment::~Attachment() {}
+
 // Payload is uint32_t aligned.
 
 Pickle::Pickle()
@@ -320,6 +324,19 @@ void Pickle::Reserve(size_t length) {
   size_t new_size = write_offset_ + data_len;
   if (new_size > capacity_after_header_)
     Resize(capacity_after_header_ * 2 + new_size);
+}
+
+bool Pickle::WriteAttachment(scoped_refptr<Attachment> attachment) {
+  return false;
+}
+
+bool Pickle::ReadAttachment(base::PickleIterator* iter,
+                            scoped_refptr<Attachment>* attachment) const {
+  return false;
+}
+
+bool Pickle::HasAttachments() const {
+  return false;
 }
 
 void Pickle::Resize(size_t new_capacity) {

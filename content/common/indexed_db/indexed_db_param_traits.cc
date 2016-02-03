@@ -30,7 +30,7 @@ using blink::WebIDBKeyTypeString;
 
 namespace IPC {
 
-void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
+void ParamTraits<IndexedDBKey>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
     case WebIDBKeyTypeArray:
@@ -58,7 +58,7 @@ void ParamTraits<IndexedDBKey>::Write(Message* m, const param_type& p) {
   }
 }
 
-bool ParamTraits<IndexedDBKey>::Read(const Message* m,
+bool ParamTraits<IndexedDBKey>::Read(const base::Pickle* m,
                                      base::PickleIterator* iter,
                                      param_type* r) {
   int type;
@@ -153,7 +153,8 @@ void ParamTraits<IndexedDBKey>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
+void ParamTraits<IndexedDBKeyPath>::Write(base::Pickle* m,
+                                          const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
     case WebIDBKeyPathTypeArray:
@@ -170,7 +171,7 @@ void ParamTraits<IndexedDBKeyPath>::Write(Message* m, const param_type& p) {
   }
 }
 
-bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
+bool ParamTraits<IndexedDBKeyPath>::Read(const base::Pickle* m,
                                          base::PickleIterator* iter,
                                          param_type* r) {
   int type;
@@ -230,14 +231,15 @@ void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-void ParamTraits<IndexedDBKeyRange>::Write(Message* m, const param_type& p) {
+void ParamTraits<IndexedDBKeyRange>::Write(base::Pickle* m,
+                                           const param_type& p) {
   WriteParam(m, p.lower());
   WriteParam(m, p.upper());
   WriteParam(m, p.lower_open());
   WriteParam(m, p.upper_open());
 }
 
-bool ParamTraits<IndexedDBKeyRange>::Read(const Message* m,
+bool ParamTraits<IndexedDBKeyRange>::Read(const base::Pickle* m,
                                           base::PickleIterator* iter,
                                           param_type* r) {
   IndexedDBKey lower;

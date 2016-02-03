@@ -55,7 +55,7 @@ struct ScanningResults {
 
 void WriteHandle(int handle_index,
                  const SerializedHandle& handle,
-                 IPC::Message* msg) {
+                 base::Pickle* msg) {
   SerializedHandle::WriteHeader(handle.header(), msg);
 
   if (handle.type() != SerializedHandle::INVALID) {
@@ -78,7 +78,7 @@ void ScanParam(const SerializedHandle& handle, ScanningResults* results) {
 }
 
 void HandleWriter(int* handle_index,
-                  IPC::Message* m,
+                  base::Pickle* m,
                   const SerializedHandle& handle) {
   WriteHandle((*handle_index)++, handle, m);
 }

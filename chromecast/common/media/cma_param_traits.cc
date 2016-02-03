@@ -30,7 +30,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 namespace IPC {
 
 void ParamTraits<media::AudioDecoderConfig>::Write(
-    Message* m, const media::AudioDecoderConfig& p) {
+    base::Pickle* m,
+    const media::AudioDecoderConfig& p) {
   WriteParam(m, p.codec());
   WriteParam(m, p.sample_format());
   WriteParam(m, p.channel_layout());
@@ -40,7 +41,7 @@ void ParamTraits<media::AudioDecoderConfig>::Write(
 }
 
 bool ParamTraits<media::AudioDecoderConfig>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     media::AudioDecoderConfig* r) {
   media::AudioCodec codec;
@@ -65,7 +66,8 @@ void ParamTraits<media::AudioDecoderConfig>::Log(
 }
 
 void ParamTraits<media::VideoDecoderConfig>::Write(
-    Message* m, const media::VideoDecoderConfig& p) {
+    base::Pickle* m,
+    const media::VideoDecoderConfig& p) {
   WriteParam(m, p.codec());
   WriteParam(m, p.profile());
   WriteParam(m, p.format());
@@ -78,7 +80,7 @@ void ParamTraits<media::VideoDecoderConfig>::Write(
 }
 
 bool ParamTraits<media::VideoDecoderConfig>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     media::VideoDecoderConfig* r) {
   media::VideoCodec codec;

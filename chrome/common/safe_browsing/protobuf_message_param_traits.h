@@ -20,13 +20,13 @@ template <class Element>
 struct ParamTraits<google::protobuf::RepeatedPtrField<Element>> {
   typedef google::protobuf::RepeatedPtrField<Element> param_type;
 
-  static void Write(Message* m, const param_type& p) {
+  static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.size());
     for (const auto& element : p)
       WriteParam(m, element);
   }
 
-  static bool Read(const Message* m,
+  static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* p) {
     int size;

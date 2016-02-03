@@ -21,6 +21,11 @@ class NSAttributedString;
 class NSDictionary;
 #endif
 
+namespace base {
+class Pickle;
+class PickleIterator;
+}
+
 namespace mac {
 
 // This class will serialize the font information of an NSAttributedString so
@@ -100,16 +105,20 @@ namespace IPC {
 template <>
 struct ParamTraits<mac::AttributedStringCoder::EncodedString> {
   typedef mac::AttributedStringCoder::EncodedString param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 
 template <>
 struct ParamTraits<mac::AttributedStringCoder::FontAttribute> {
   typedef mac::AttributedStringCoder::FontAttribute param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
+  static void Write(base::Pickle* m, const param_type& p);
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
 

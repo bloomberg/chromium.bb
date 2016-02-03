@@ -75,16 +75,16 @@ class PPAPI_PROXY_EXPORT ResourceMessageParams {
   ResourceMessageParams();
   ResourceMessageParams(PP_Resource resource, int32_t sequence);
 
-  virtual void Serialize(IPC::Message* msg) const;
-  virtual bool Deserialize(const IPC::Message* msg, base::PickleIterator* iter);
+  virtual void Serialize(base::Pickle* msg) const;
+  virtual bool Deserialize(const base::Pickle* msg, base::PickleIterator* iter);
 
   // Writes everything except the handles to |msg|.
-  void WriteHeader(IPC::Message* msg) const;
+  void WriteHeader(base::Pickle* msg) const;
   // Writes the handles to |msg|.
-  void WriteHandles(IPC::Message* msg) const;
+  void WriteHandles(base::Pickle* msg) const;
   // Matching deserialize helpers.
-  bool ReadHeader(const IPC::Message* msg, base::PickleIterator* iter);
-  bool ReadHandles(const IPC::Message* msg, base::PickleIterator* iter);
+  bool ReadHeader(const base::Pickle* msg, base::PickleIterator* iter);
+  bool ReadHandles(const base::Pickle* msg, base::PickleIterator* iter);
 
  private:
   class PPAPI_PROXY_EXPORT SerializedHandles
@@ -147,8 +147,8 @@ class PPAPI_PROXY_EXPORT ResourceMessageCallParams
   void set_has_callback() { has_callback_ = true; }
   bool has_callback() const { return has_callback_; }
 
-  void Serialize(IPC::Message* msg) const override;
-  bool Deserialize(const IPC::Message* msg,
+  void Serialize(base::Pickle* msg) const override;
+  bool Deserialize(const base::Pickle* msg,
                    base::PickleIterator* iter) override;
 
  private:
@@ -166,12 +166,12 @@ class PPAPI_PROXY_EXPORT ResourceMessageReplyParams
   void set_result(int32_t r) { result_ = r; }
   int32_t result() const { return result_; }
 
-  void Serialize(IPC::Message* msg) const override;
-  bool Deserialize(const IPC::Message* msg,
+  void Serialize(base::Pickle* msg) const override;
+  bool Deserialize(const base::Pickle* msg,
                    base::PickleIterator* iter) override;
 
   // Writes everything except the handles to |msg|.
-  void WriteReplyHeader(IPC::Message* msg) const;
+  void WriteReplyHeader(base::Pickle* msg) const;
 
  private:
   // Pepper "result code" for the callback.
@@ -186,10 +186,9 @@ namespace IPC {
 template <> struct PPAPI_PROXY_EXPORT
 ParamTraits<ppapi::proxy::ResourceMessageCallParams> {
   typedef ppapi::proxy::ResourceMessageCallParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    p.Serialize(m);
-  }
-  static bool Read(const Message* m, base::PickleIterator* iter,
+  static void Write(base::Pickle* m, const param_type& p) { p.Serialize(m); }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
                    param_type* r) {
     return r->Deserialize(m, iter);
   }
@@ -200,10 +199,9 @@ ParamTraits<ppapi::proxy::ResourceMessageCallParams> {
 template <> struct PPAPI_PROXY_EXPORT
 ParamTraits<ppapi::proxy::ResourceMessageReplyParams> {
   typedef ppapi::proxy::ResourceMessageReplyParams param_type;
-  static void Write(Message* m, const param_type& p) {
-    p.Serialize(m);
-  }
-  static bool Read(const Message* m, base::PickleIterator* iter,
+  static void Write(base::Pickle* m, const param_type& p) { p.Serialize(m); }
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
                    param_type* r) {
     return r->Deserialize(m, iter);
   }

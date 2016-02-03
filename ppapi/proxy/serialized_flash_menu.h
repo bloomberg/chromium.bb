@@ -12,6 +12,7 @@
 #include "ppapi/proxy/ppapi_proxy_export.h"
 
 namespace base {
+class Pickle;
 class PickleIterator;
 }
 
@@ -33,8 +34,8 @@ class PPAPI_PROXY_EXPORT SerializedFlashMenu {
 
   const PP_Flash_Menu* pp_menu() const { return pp_menu_; }
 
-  void WriteToMessage(IPC::Message* m) const;
-  bool ReadFromMessage(const IPC::Message* m, base::PickleIterator* iter);
+  void WriteToMessage(base::Pickle* m) const;
+  bool ReadFromMessage(const base::Pickle* m, base::PickleIterator* iter);
 
  private:
   const PP_Flash_Menu* pp_menu_;

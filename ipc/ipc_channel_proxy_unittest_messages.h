@@ -17,8 +17,10 @@ namespace IPC {
 
 template <>
 struct ParamTraits<BadType> {
-  static void Write(Message* m, const BadType& p) {}
-  static bool Read(const Message* m, base::PickleIterator* iter, BadType* r) {
+  static void Write(base::Pickle* m, const BadType& p) {}
+  static bool Read(const base::Pickle* m,
+                   base::PickleIterator* iter,
+                   BadType* r) {
     return false;
   }
   static void Log(const BadType& p, std::string* l) {}

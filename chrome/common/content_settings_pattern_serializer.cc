@@ -10,14 +10,14 @@
 // static
 void ContentSettingsPatternSerializer::WriteToMessage(
     const ContentSettingsPattern& pattern,
-    IPC::Message* m) {
+    base::Pickle* m) {
   IPC::WriteParam(m, pattern.is_valid_);
   IPC::WriteParam(m, pattern.parts_);
 }
 
 // static
 bool ContentSettingsPatternSerializer::ReadFromMessage(
-    const IPC::Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     ContentSettingsPattern* pattern) {
   DCHECK(pattern);

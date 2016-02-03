@@ -21,9 +21,9 @@ const uint32_t kMaxMenuEntries = 1000;
 
 bool CheckMenu(int depth, const PP_Flash_Menu* menu);
 void FreeMenu(const PP_Flash_Menu* menu);
-void WriteMenu(IPC::Message* m, const PP_Flash_Menu* menu);
+void WriteMenu(base::Pickle* m, const PP_Flash_Menu* menu);
 PP_Flash_Menu* ReadMenu(int depth,
-                        const IPC::Message* m,
+                        const base::Pickle* m,
                         base::PickleIterator* iter);
 
 bool CheckMenuItem(int depth, const PP_Flash_MenuItem* item) {
@@ -47,7 +47,7 @@ bool CheckMenu(int depth, const PP_Flash_Menu* menu) {
   return true;
 }
 
-void WriteMenuItem(IPC::Message* m, const PP_Flash_MenuItem* menu_item) {
+void WriteMenuItem(base::Pickle* m, const PP_Flash_MenuItem* menu_item) {
   PP_Flash_MenuItem_Type type = menu_item->type;
   m->WriteUInt32(type);
   m->WriteString(menu_item->name ? menu_item->name : "");
@@ -58,7 +58,7 @@ void WriteMenuItem(IPC::Message* m, const PP_Flash_MenuItem* menu_item) {
     WriteMenu(m, menu_item->submenu);
 }
 
-void WriteMenu(IPC::Message* m, const PP_Flash_Menu* menu) {
+void WriteMenu(base::Pickle* m, const PP_Flash_Menu* menu) {
   m->WriteUInt32(menu->count);
   for (uint32_t i = 0; i < menu->count; ++i)
     WriteMenuItem(m, menu->items + i);
@@ -81,7 +81,7 @@ void FreeMenu(const PP_Flash_Menu* menu) {
 }
 
 bool ReadMenuItem(int depth,
-                  const IPC::Message* m,
+                  const base::Pickle* m,
                   base::PickleIterator* iter,
                   PP_Flash_MenuItem* menu_item) {
   uint32_t type;
@@ -111,7 +111,7 @@ bool ReadMenuItem(int depth,
 }
 
 PP_Flash_Menu* ReadMenu(int depth,
-                        const IPC::Message* m,
+                        const base::Pickle* m,
                         base::PickleIterator* iter) {
   if (depth > kMaxMenuDepth)
     return NULL;
@@ -165,12 +165,11 @@ bool SerializedFlashMenu::SetPPMenu(const PP_Flash_Menu* menu) {
   return true;
 }
 
-
-void SerializedFlashMenu::WriteToMessage(IPC::Message* m) const {
+void SerializedFlashMenu::WriteToMessage(base::Pickle* m) const {
   WriteMenu(m, pp_menu_);
 }
 
-bool SerializedFlashMenu::ReadFromMessage(const IPC::Message* m,
+bool SerializedFlashMenu::ReadFromMessage(const base::Pickle* m,
                                           base::PickleIterator* iter) {
   DCHECK(!pp_menu_);
   pp_menu_ = ReadMenu(0, m, iter);

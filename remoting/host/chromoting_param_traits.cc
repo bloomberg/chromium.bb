@@ -12,14 +12,14 @@
 namespace IPC {
 
 // static
-void ParamTraits<webrtc::DesktopVector>::Write(Message* m,
+void ParamTraits<webrtc::DesktopVector>::Write(base::Pickle* m,
                                                const webrtc::DesktopVector& p) {
   m->WriteInt(p.x());
   m->WriteInt(p.y());
 }
 
 // static
-bool ParamTraits<webrtc::DesktopVector>::Read(const Message* m,
+bool ParamTraits<webrtc::DesktopVector>::Read(const base::Pickle* m,
                                               base::PickleIterator* iter,
                                               webrtc::DesktopVector* r) {
   int x, y;
@@ -37,14 +37,14 @@ void ParamTraits<webrtc::DesktopVector>::Log(const webrtc::DesktopVector& p,
 }
 
 // static
-void ParamTraits<webrtc::DesktopSize>::Write(Message* m,
+void ParamTraits<webrtc::DesktopSize>::Write(base::Pickle* m,
                                              const webrtc::DesktopSize& p) {
   m->WriteInt(p.width());
   m->WriteInt(p.height());
 }
 
 // static
-bool ParamTraits<webrtc::DesktopSize>::Read(const Message* m,
+bool ParamTraits<webrtc::DesktopSize>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             webrtc::DesktopSize* r) {
   int width, height;
@@ -62,7 +62,7 @@ void ParamTraits<webrtc::DesktopSize>::Log(const webrtc::DesktopSize& p,
 }
 
 // static
-void ParamTraits<webrtc::DesktopRect>::Write(Message* m,
+void ParamTraits<webrtc::DesktopRect>::Write(base::Pickle* m,
                                              const webrtc::DesktopRect& p) {
   m->WriteInt(p.left());
   m->WriteInt(p.top());
@@ -71,7 +71,7 @@ void ParamTraits<webrtc::DesktopRect>::Write(Message* m,
 }
 
 // static
-bool ParamTraits<webrtc::DesktopRect>::Read(const Message* m,
+bool ParamTraits<webrtc::DesktopRect>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             webrtc::DesktopRect* r) {
   int left, right, top, bottom;
@@ -91,9 +91,8 @@ void ParamTraits<webrtc::DesktopRect>::Log(const webrtc::DesktopRect& p,
 }
 
 // static
-void ParamTraits<webrtc::MouseCursor>::Write(
-    Message* m,
-    const webrtc::MouseCursor& p) {
+void ParamTraits<webrtc::MouseCursor>::Write(base::Pickle* m,
+                                             const webrtc::MouseCursor& p) {
   ParamTraits<webrtc::DesktopSize>::Write(m, p.image()->size());
 
   // Data is serialized in such a way that size is exactly width * height *
@@ -112,7 +111,7 @@ void ParamTraits<webrtc::MouseCursor>::Write(
 }
 
 // static
-bool ParamTraits<webrtc::MouseCursor>::Read(const Message* m,
+bool ParamTraits<webrtc::MouseCursor>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             webrtc::MouseCursor* r) {
   webrtc::DesktopSize size;
@@ -155,7 +154,7 @@ void ParamTraits<webrtc::MouseCursor>::Log(
 
 // static
 void ParamTraits<remoting::ScreenResolution>::Write(
-    Message* m,
+    base::Pickle* m,
     const remoting::ScreenResolution& p) {
   ParamTraits<webrtc::DesktopSize>::Write(m, p.dimensions());
   ParamTraits<webrtc::DesktopVector>::Write(m, p.dpi());
@@ -163,7 +162,7 @@ void ParamTraits<remoting::ScreenResolution>::Write(
 
 // static
 bool ParamTraits<remoting::ScreenResolution>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     remoting::ScreenResolution* r) {
   webrtc::DesktopSize size;

@@ -84,9 +84,9 @@ APIPermission* SettingsOverrideAPIPermission::Intersect(
   return new SettingsOverrideAPIPermission(info(), setting_value_);
 }
 
-void SettingsOverrideAPIPermission::Write(IPC::Message* m) const {}
+void SettingsOverrideAPIPermission::Write(base::Pickle* m) const {}
 
-bool SettingsOverrideAPIPermission::Read(const IPC::Message* m,
+bool SettingsOverrideAPIPermission::Read(const base::Pickle* m,
                                          base::PickleIterator* iter) {
   return true;
 }

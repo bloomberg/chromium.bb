@@ -15,21 +15,19 @@
 #undef IPC_PROTOBUF_MESSAGE_TRAITS_REPEATED_COMPLEX_MEMBER
 #undef IPC_PROTOBUF_MESSAGE_TRAITS_END
 
-#define IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(message_name)             \
-  template <class P>                                                \
-  bool ParamTraits<message_name>::ReadParamF(                       \
-      const Message* m, base::PickleIterator* iter, param_type* p,  \
-      void (param_type::*setter_function)(P)) {                     \
-    P value;                                                        \
-    if (!ReadParam(m, iter, &value))                                \
-      return false;                                                 \
-    (p->*setter_function)(value);                                   \
-    return true;                                                    \
-  }                                                                 \
-  bool ParamTraits<message_name>::Read(const Message* m,            \
-                                       base::PickleIterator* iter,  \
-                                       param_type* p) {
-
+#define IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(message_name)                 \
+  template <class P>                                                    \
+  bool ParamTraits<message_name>::ReadParamF(                           \
+      const base::Pickle* m, base::PickleIterator* iter, param_type* p, \
+      void (param_type::*setter_function)(P)) {                         \
+    P value;                                                            \
+    if (!ReadParam(m, iter, &value))                                    \
+      return false;                                                     \
+    (p->*setter_function)(value);                                       \
+    return true;                                                        \
+  }                                                                     \
+  bool ParamTraits<message_name>::Read(                                 \
+      const base::Pickle* m, base::PickleIterator* iter, param_type* p) {
 #define IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_FUNDAMENTAL_MEMBER(name) \
     {                                                                 \
       bool is_present;                                                \

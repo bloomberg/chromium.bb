@@ -14,9 +14,9 @@ namespace IPC {
 // Reads and writes |mojo::MessagePipe| from/to |Message|.
 class IPC_MOJO_EXPORT MojoMessageHelper {
  public:
-  static bool WriteMessagePipeTo(Message* message,
+  static bool WriteMessagePipeTo(base::Pickle* message,
                                  mojo::ScopedMessagePipeHandle handle);
-  static bool ReadMessagePipeFrom(const Message* message,
+  static bool ReadMessagePipeFrom(const base::Pickle* message,
                                   base::PickleIterator* iter,
                                   mojo::ScopedMessagePipeHandle* handle);
 

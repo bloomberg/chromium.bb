@@ -122,13 +122,14 @@ namespace IPC {
 using mac::AttributedStringCoder;
 
 void ParamTraits<AttributedStringCoder::EncodedString>::Write(
-    Message* m, const param_type& p) {
+    base::Pickle* m,
+    const param_type& p) {
   WriteParam(m, p.string());
   WriteParam(m, p.attributes());
 }
 
 bool ParamTraits<AttributedStringCoder::EncodedString>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* p) {
   bool success = true;
@@ -147,13 +148,14 @@ void ParamTraits<AttributedStringCoder::EncodedString>::Log(
 }
 
 void ParamTraits<AttributedStringCoder::FontAttribute>::Write(
-    Message* m, const param_type& p) {
+    base::Pickle* m,
+    const param_type& p) {
   WriteParam(m, p.font_descriptor());
   WriteParam(m, p.effective_range());
 }
 
 bool ParamTraits<AttributedStringCoder::FontAttribute>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* p) {
   bool success = true;

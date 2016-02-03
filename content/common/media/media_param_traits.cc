@@ -19,7 +19,7 @@ using media::VideoCaptureFormat;
 
 namespace IPC {
 
-void ParamTraits<AudioParameters>::Write(Message* m,
+void ParamTraits<AudioParameters>::Write(base::Pickle* m,
                                          const AudioParameters& p) {
   WriteParam(m, p.format());
   WriteParam(m, p.channel_layout());
@@ -31,7 +31,7 @@ void ParamTraits<AudioParameters>::Write(Message* m,
   WriteParam(m, p.mic_positions());
 }
 
-bool ParamTraits<AudioParameters>::Read(const Message* m,
+bool ParamTraits<AudioParameters>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         AudioParameters* r) {
   AudioParameters::Format format;
@@ -63,7 +63,7 @@ void ParamTraits<AudioParameters>::Log(const AudioParameters& p,
   l->append(base::StringPrintf("<AudioParameters>"));
 }
 
-void ParamTraits<VideoCaptureFormat>::Write(Message* m,
+void ParamTraits<VideoCaptureFormat>::Write(base::Pickle* m,
                                             const VideoCaptureFormat& p) {
   WriteParam(m, p.frame_size);
   WriteParam(m, p.frame_rate);
@@ -71,7 +71,7 @@ void ParamTraits<VideoCaptureFormat>::Write(Message* m,
   WriteParam(m, p.pixel_storage);
 }
 
-bool ParamTraits<VideoCaptureFormat>::Read(const Message* m,
+bool ParamTraits<VideoCaptureFormat>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
                                            VideoCaptureFormat* r) {
   if (!ReadParam(m, iter, &r->frame_size) ||

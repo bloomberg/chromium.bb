@@ -69,9 +69,9 @@ class SimpleAPIPermission : public APIPermission {
     return new SimpleAPIPermission(info());
   }
 
-  void Write(IPC::Message* m) const override {}
+  void Write(base::Pickle* m) const override {}
 
-  bool Read(const IPC::Message* m, base::PickleIterator* iter) override {
+  bool Read(const base::Pickle* m, base::PickleIterator* iter) override {
     return true;
   }
 

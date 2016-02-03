@@ -9,12 +9,13 @@
 namespace IPC {
 
 void ParamTraits<ContentSettingsPattern>::Write(
-    Message* m, const ContentSettingsPattern& pattern) {
+    base::Pickle* m,
+    const ContentSettingsPattern& pattern) {
   ContentSettingsPatternSerializer::WriteToMessage(pattern, m);
 }
 
 bool ParamTraits<ContentSettingsPattern>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     ContentSettingsPattern* pattern) {
   return ContentSettingsPatternSerializer::ReadFromMessage(m, iter, pattern);

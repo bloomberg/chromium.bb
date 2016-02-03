@@ -61,12 +61,12 @@ struct SkBitmap_Data {
 
 namespace IPC {
 
-void ParamTraits<gfx::Point>::Write(Message* m, const gfx::Point& p) {
+void ParamTraits<gfx::Point>::Write(base::Pickle* m, const gfx::Point& p) {
   WriteParam(m, p.x());
   WriteParam(m, p.y());
 }
 
-bool ParamTraits<gfx::Point>::Read(const Message* m,
+bool ParamTraits<gfx::Point>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    gfx::Point* r) {
   int x, y;
@@ -81,12 +81,12 @@ void ParamTraits<gfx::Point>::Log(const gfx::Point& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", p.x(), p.y()));
 }
 
-void ParamTraits<gfx::PointF>::Write(Message* m, const gfx::PointF& p) {
+void ParamTraits<gfx::PointF>::Write(base::Pickle* m, const gfx::PointF& p) {
   WriteParam(m, p.x());
   WriteParam(m, p.y());
 }
 
-bool ParamTraits<gfx::PointF>::Read(const Message* m,
+bool ParamTraits<gfx::PointF>::Read(const base::Pickle* m,
                                     base::PickleIterator* iter,
                                     gfx::PointF* r) {
   float x, y;
@@ -101,13 +101,13 @@ void ParamTraits<gfx::PointF>::Log(const gfx::PointF& p, std::string* l) {
   l->append(base::StringPrintf("(%f, %f)", p.x(), p.y()));
 }
 
-void ParamTraits<gfx::Point3F>::Write(Message* m, const gfx::Point3F& p) {
+void ParamTraits<gfx::Point3F>::Write(base::Pickle* m, const gfx::Point3F& p) {
   WriteParam(m, p.x());
   WriteParam(m, p.y());
   WriteParam(m, p.z());
 }
 
-bool ParamTraits<gfx::Point3F>::Read(const Message* m,
+bool ParamTraits<gfx::Point3F>::Read(const base::Pickle* m,
                                      base::PickleIterator* iter,
                                      gfx::Point3F* r) {
   float x, y, z;
@@ -124,14 +124,14 @@ void ParamTraits<gfx::Point3F>::Log(const gfx::Point3F& p, std::string* l) {
   l->append(base::StringPrintf("(%f, %f, %f)", p.x(), p.y(), p.z()));
 }
 
-void ParamTraits<gfx::Size>::Write(Message* m, const gfx::Size& p) {
+void ParamTraits<gfx::Size>::Write(base::Pickle* m, const gfx::Size& p) {
   DCHECK_GE(p.width(), 0);
   DCHECK_GE(p.height(), 0);
   int values[2] = { p.width(), p.height() };
   m->WriteBytes(&values, sizeof(int) * 2);
 }
 
-bool ParamTraits<gfx::Size>::Read(const Message* m,
+bool ParamTraits<gfx::Size>::Read(const base::Pickle* m,
                                   base::PickleIterator* iter,
                                   gfx::Size* r) {
   const char* char_values;
@@ -149,12 +149,12 @@ void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", p.width(), p.height()));
 }
 
-void ParamTraits<gfx::SizeF>::Write(Message* m, const gfx::SizeF& p) {
+void ParamTraits<gfx::SizeF>::Write(base::Pickle* m, const gfx::SizeF& p) {
   float values[2] = { p.width(), p.height() };
   m->WriteBytes(&values, sizeof(float) * 2);
 }
 
-bool ParamTraits<gfx::SizeF>::Read(const Message* m,
+bool ParamTraits<gfx::SizeF>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    gfx::SizeF* r) {
   const char* char_values;
@@ -170,12 +170,13 @@ void ParamTraits<gfx::SizeF>::Log(const gfx::SizeF& p, std::string* l) {
   l->append(base::StringPrintf("(%f, %f)", p.width(), p.height()));
 }
 
-void ParamTraits<gfx::Vector2d>::Write(Message* m, const gfx::Vector2d& p) {
+void ParamTraits<gfx::Vector2d>::Write(base::Pickle* m,
+                                       const gfx::Vector2d& p) {
   int values[2] = { p.x(), p.y() };
   m->WriteBytes(&values, sizeof(int) * 2);
 }
 
-bool ParamTraits<gfx::Vector2d>::Read(const Message* m,
+bool ParamTraits<gfx::Vector2d>::Read(const base::Pickle* m,
                                       base::PickleIterator* iter,
                                       gfx::Vector2d* r) {
   const char* char_values;
@@ -191,12 +192,13 @@ void ParamTraits<gfx::Vector2d>::Log(const gfx::Vector2d& v, std::string* l) {
   l->append(base::StringPrintf("(%d, %d)", v.x(), v.y()));
 }
 
-void ParamTraits<gfx::Vector2dF>::Write(Message* m, const gfx::Vector2dF& p) {
+void ParamTraits<gfx::Vector2dF>::Write(base::Pickle* m,
+                                        const gfx::Vector2dF& p) {
   float values[2] = { p.x(), p.y() };
   m->WriteBytes(&values, sizeof(float) * 2);
 }
 
-bool ParamTraits<gfx::Vector2dF>::Read(const Message* m,
+bool ParamTraits<gfx::Vector2dF>::Read(const base::Pickle* m,
                                        base::PickleIterator* iter,
                                        gfx::Vector2dF* r) {
   const char* char_values;
@@ -212,12 +214,12 @@ void ParamTraits<gfx::Vector2dF>::Log(const gfx::Vector2dF& v, std::string* l) {
   l->append(base::StringPrintf("(%f, %f)", v.x(), v.y()));
 }
 
-void ParamTraits<gfx::Rect>::Write(Message* m, const gfx::Rect& p) {
+void ParamTraits<gfx::Rect>::Write(base::Pickle* m, const gfx::Rect& p) {
   int values[4] = { p.x(), p.y(), p.width(), p.height() };
   m->WriteBytes(&values, sizeof(int) * 4);
 }
 
-bool ParamTraits<gfx::Rect>::Read(const Message* m,
+bool ParamTraits<gfx::Rect>::Read(const base::Pickle* m,
                                   base::PickleIterator* iter,
                                   gfx::Rect* r) {
   const char* char_values;
@@ -235,12 +237,12 @@ void ParamTraits<gfx::Rect>::Log(const gfx::Rect& p, std::string* l) {
                                p.width(), p.height()));
 }
 
-void ParamTraits<gfx::RectF>::Write(Message* m, const gfx::RectF& p) {
+void ParamTraits<gfx::RectF>::Write(base::Pickle* m, const gfx::RectF& p) {
   float values[4] = { p.x(), p.y(), p.width(), p.height() };
   m->WriteBytes(&values, sizeof(float) * 4);
 }
 
-bool ParamTraits<gfx::RectF>::Read(const Message* m,
+bool ParamTraits<gfx::RectF>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    gfx::RectF* r) {
   const char* char_values;
@@ -256,7 +258,7 @@ void ParamTraits<gfx::RectF>::Log(const gfx::RectF& p, std::string* l) {
                                p.width(), p.height()));
 }
 
-void ParamTraits<SkBitmap>::Write(Message* m, const SkBitmap& p) {
+void ParamTraits<SkBitmap>::Write(base::Pickle* m, const SkBitmap& p) {
   size_t fixed_size = sizeof(SkBitmap_Data);
   SkBitmap_Data bmp_data;
   bmp_data.InitSkBitmapDataForTransfer(p);
@@ -268,7 +270,7 @@ void ParamTraits<SkBitmap>::Write(Message* m, const SkBitmap& p) {
                static_cast<int>(pixel_size));
 }
 
-bool ParamTraits<SkBitmap>::Read(const Message* m,
+bool ParamTraits<SkBitmap>::Read(const base::Pickle* m,
                                  base::PickleIterator* iter,
                                  SkBitmap* r) {
   const char* fixed_data;
@@ -297,12 +299,12 @@ void ParamTraits<SkBitmap>::Log(const SkBitmap& p, std::string* l) {
   l->append("<SkBitmap>");
 }
 
-void ParamTraits<gfx::Range>::Write(Message* m, const gfx::Range& r) {
+void ParamTraits<gfx::Range>::Write(base::Pickle* m, const gfx::Range& r) {
   m->WriteSizeT(r.start());
   m->WriteSizeT(r.end());
 }
 
-bool ParamTraits<gfx::Range>::Read(const Message* m,
+bool ParamTraits<gfx::Range>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    gfx::Range* r) {
   size_t start, end;
@@ -317,12 +319,13 @@ void ParamTraits<gfx::Range>::Log(const gfx::Range& r, std::string* l) {
   l->append(base::StringPrintf("(%" PRIuS ", %" PRIuS ")", r.start(), r.end()));
 }
 
-void ParamTraits<gfx::ScrollOffset>::Write(Message* m, const param_type& p) {
+void ParamTraits<gfx::ScrollOffset>::Write(base::Pickle* m,
+                                           const param_type& p) {
   m->WriteDouble(p.x());
   m->WriteDouble(p.y());
 }
 
-bool ParamTraits<gfx::ScrollOffset>::Read(const Message* m,
+bool ParamTraits<gfx::ScrollOffset>::Read(const base::Pickle* m,
                                           base::PickleIterator* iter,
                                           param_type* r) {
   double x = 0.f;
@@ -346,14 +349,14 @@ void ParamTraits<gfx::ScrollOffset>::Log(const param_type& p, std::string* l) {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Write(
-    Message* m,
+    base::Pickle* m,
     const param_type p) {
   MachPortMac mach_port_mac(p.get());
   ParamTraits<MachPortMac>::Write(m, mach_port_mac);
 }
 
 bool ParamTraits<gfx::ScopedRefCountedIOSurfaceMachPort>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
   MachPortMac mach_port_mac;

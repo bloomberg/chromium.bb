@@ -81,17 +81,15 @@ class PPAPI_PROXY_EXPORT SerializedVar {
   ~SerializedVar();
 
   // Backend implementation for IPC::ParamTraits<SerializedVar>.
-  void WriteToMessage(IPC::Message* m) const {
-    inner_->WriteToMessage(m);
-  }
+  void WriteToMessage(base::Pickle* m) const { inner_->WriteToMessage(m); }
   // If ReadFromMessage has been called, WriteDataToMessage will write the var
   // that has been read from ReadFromMessage back to a message. This is used
   // when converting handles for use in NaCl.
-  void WriteDataToMessage(IPC::Message* m,
+  void WriteDataToMessage(base::Pickle* m,
                           const HandleWriter& handle_writer) const {
     inner_->WriteDataToMessage(m, handle_writer);
   }
-  bool ReadFromMessage(const IPC::Message* m, base::PickleIterator* iter) {
+  bool ReadFromMessage(const base::Pickle* m, base::PickleIterator* iter) {
     return inner_->ReadFromMessage(m, iter);
   }
 
@@ -144,10 +142,10 @@ class PPAPI_PROXY_EXPORT SerializedVar {
     // it was just received off the wire, without any serialization rules.
     void ForceSetVarValueForTest(PP_Var value);
 
-    void WriteToMessage(IPC::Message* m) const;
-    void WriteDataToMessage(IPC::Message* m,
+    void WriteToMessage(base::Pickle* m) const;
+    void WriteDataToMessage(base::Pickle* m,
                             const HandleWriter& handle_writer) const;
-    bool ReadFromMessage(const IPC::Message* m, base::PickleIterator* iter);
+    bool ReadFromMessage(const base::Pickle* m, base::PickleIterator* iter);
 
     // Sets the cleanup mode. See the CleanupMode enum below.
     void SetCleanupModeToEndSendPassRef();

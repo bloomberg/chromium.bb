@@ -31,7 +31,7 @@ namespace proxy {
 
 namespace {
 
-void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
+void DefaultHandleWriter(base::Pickle* m, const SerializedHandle& handle) {
   IPC::ParamTraits<SerializedHandle>::Write(m, handle);
 }
 

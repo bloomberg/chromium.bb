@@ -324,10 +324,10 @@ class APIPermission {
 
   // IPC functions
   // Writes this into the given IPC message |m|.
-  virtual void Write(IPC::Message* m) const = 0;
+  virtual void Write(base::Pickle* m) const = 0;
 
   // Reads from the given IPC message |m|.
-  virtual bool Read(const IPC::Message* m, base::PickleIterator* iter) = 0;
+  virtual bool Read(const base::Pickle* m, base::PickleIterator* iter) = 0;
 
   // Logs this permission.
   virtual void Log(std::string* log) const = 0;

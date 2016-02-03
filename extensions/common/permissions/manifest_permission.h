@@ -69,10 +69,10 @@ class ManifestPermission {
 
   // IPC functions
   // Writes this into the given IPC message |m|.
-  void Write(IPC::Message* m) const;
+  void Write(base::Pickle* m) const;
 
   // Reads from the given IPC message |m|.
-  bool Read(const IPC::Message* m, base::PickleIterator* iter);
+  bool Read(const base::Pickle* m, base::PickleIterator* iter);
 
   // Logs this permission.
   void Log(std::string* log) const;

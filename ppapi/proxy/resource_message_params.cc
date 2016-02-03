@@ -40,26 +40,26 @@ ResourceMessageParams::ResourceMessageParams(PP_Resource resource,
 ResourceMessageParams::~ResourceMessageParams() {
 }
 
-void ResourceMessageParams::Serialize(IPC::Message* msg) const {
+void ResourceMessageParams::Serialize(base::Pickle* msg) const {
   WriteHeader(msg);
   WriteHandles(msg);
 }
 
-bool ResourceMessageParams::Deserialize(const IPC::Message* msg,
+bool ResourceMessageParams::Deserialize(const base::Pickle* msg,
                                         base::PickleIterator* iter) {
   return ReadHeader(msg, iter) && ReadHandles(msg, iter);
 }
 
-void ResourceMessageParams::WriteHeader(IPC::Message* msg) const {
+void ResourceMessageParams::WriteHeader(base::Pickle* msg) const {
   IPC::WriteParam(msg, pp_resource_);
   IPC::WriteParam(msg, sequence_);
 }
 
-void ResourceMessageParams::WriteHandles(IPC::Message* msg) const {
+void ResourceMessageParams::WriteHandles(base::Pickle* msg) const {
   IPC::WriteParam(msg, handles_->data());
 }
 
-bool ResourceMessageParams::ReadHeader(const IPC::Message* msg,
+bool ResourceMessageParams::ReadHeader(const base::Pickle* msg,
                                        base::PickleIterator* iter) {
   DCHECK(handles_->data().empty());
   handles_->set_should_close(true);
@@ -67,7 +67,7 @@ bool ResourceMessageParams::ReadHeader(const IPC::Message* msg,
          IPC::ReadParam(msg, iter, &sequence_);
 }
 
-bool ResourceMessageParams::ReadHandles(const IPC::Message* msg,
+bool ResourceMessageParams::ReadHandles(const base::Pickle* msg,
                                         base::PickleIterator* iter) {
   return IPC::ReadParam(msg, iter, &handles_->data());
 }
@@ -151,12 +151,12 @@ ResourceMessageCallParams::ResourceMessageCallParams(PP_Resource resource,
 ResourceMessageCallParams::~ResourceMessageCallParams() {
 }
 
-void ResourceMessageCallParams::Serialize(IPC::Message* msg) const {
+void ResourceMessageCallParams::Serialize(base::Pickle* msg) const {
   ResourceMessageParams::Serialize(msg);
   IPC::WriteParam(msg, has_callback_);
 }
 
-bool ResourceMessageCallParams::Deserialize(const IPC::Message* msg,
+bool ResourceMessageCallParams::Deserialize(const base::Pickle* msg,
                                             base::PickleIterator* iter) {
   if (!ResourceMessageParams::Deserialize(msg, iter))
     return false;
@@ -177,7 +177,7 @@ ResourceMessageReplyParams::ResourceMessageReplyParams(PP_Resource resource,
 ResourceMessageReplyParams::~ResourceMessageReplyParams() {
 }
 
-void ResourceMessageReplyParams::Serialize(IPC::Message* msg) const {
+void ResourceMessageReplyParams::Serialize(base::Pickle* msg) const {
   // Rather than serialize all of ResourceMessageParams first, we serialize all
   // non-handle data first, then the handles. When transferring to NaCl on
   // Windows, we need to be able to translate Windows-style handles to POSIX-
@@ -186,13 +186,13 @@ void ResourceMessageReplyParams::Serialize(IPC::Message* msg) const {
   WriteHandles(msg);
 }
 
-bool ResourceMessageReplyParams::Deserialize(const IPC::Message* msg,
+bool ResourceMessageReplyParams::Deserialize(const base::Pickle* msg,
                                              base::PickleIterator* iter) {
   return (ReadHeader(msg, iter) && IPC::ReadParam(msg, iter, &result_) &&
           ReadHandles(msg, iter));
 }
 
-void ResourceMessageReplyParams::WriteReplyHeader(IPC::Message* msg) const {
+void ResourceMessageReplyParams::WriteReplyHeader(base::Pickle* msg) const {
   WriteHeader(msg);
   IPC::WriteParam(msg, result_);
 }

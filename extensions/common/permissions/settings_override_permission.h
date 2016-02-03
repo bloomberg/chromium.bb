@@ -33,8 +33,8 @@ class SettingsOverrideAPIPermission : public APIPermission {
   APIPermission* Diff(const APIPermission* rhs) const override;
   APIPermission* Union(const APIPermission* rhs) const override;
   APIPermission* Intersect(const APIPermission* rhs) const override;
-  void Write(IPC::Message* m) const override;
-  bool Read(const IPC::Message* m, base::PickleIterator* iter) override;
+  void Write(base::Pickle* m) const override;
+  bool Read(const base::Pickle* m, base::PickleIterator* iter) override;
   void Log(std::string* log) const override;
 
  private:

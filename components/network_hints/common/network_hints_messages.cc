@@ -10,12 +10,13 @@
 namespace IPC {
 
 void ParamTraits<network_hints::LookupRequest>::Write(
-    Message* m, const network_hints::LookupRequest& request) {
+    base::Pickle* m,
+    const network_hints::LookupRequest& request) {
   IPC::WriteParam(m, request.hostname_list);
 }
 
 bool ParamTraits<network_hints::LookupRequest>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     network_hints::LookupRequest* request) {
   // Verify the hostname limits after deserialization success.

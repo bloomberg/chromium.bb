@@ -36,7 +36,7 @@ using content::NPVariant_Param;
 
 namespace IPC {
 
-void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
+void ParamTraits<NPVariant_Param>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, static_cast<int>(p.type));
   if (p.type == content::NPVARIANT_PARAM_BOOL) {
     WriteParam(m, p.bool_value);
@@ -61,7 +61,7 @@ void ParamTraits<NPVariant_Param>::Write(Message* m, const param_type& p) {
   }
 }
 
-bool ParamTraits<NPVariant_Param>::Read(const Message* m,
+bool ParamTraits<NPVariant_Param>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         param_type* r) {
   int type;
@@ -112,11 +112,12 @@ void ParamTraits<NPVariant_Param>::Log(const param_type& p, std::string* l) {
   l->append(")");
 }
 
-void ParamTraits<NPIdentifier_Param>::Write(Message* m, const param_type& p) {
+void ParamTraits<NPIdentifier_Param>::Write(base::Pickle* m,
+                                            const param_type& p) {
   content::SerializeNPIdentifier(p.identifier, m);
 }
 
-bool ParamTraits<NPIdentifier_Param>::Read(const Message* m,
+bool ParamTraits<NPIdentifier_Param>::Read(const base::Pickle* m,
                                            base::PickleIterator* iter,
                                            param_type* r) {
   return content::DeserializeNPIdentifier(iter, &r->identifier);

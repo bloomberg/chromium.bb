@@ -378,9 +378,10 @@ class HandleSendingHelper {
   static void ReadReceivedFile(const IPC::Message& message,
                                base::PickleIterator* iter) {
     base::ScopedFD fd;
-    scoped_refptr<IPC::MessageAttachment> attachment;
+    scoped_refptr<base::Pickle::Attachment> attachment;
     EXPECT_TRUE(message.ReadAttachment(iter, &attachment));
-    base::File file(attachment->TakePlatformFile());
+    base::File file(static_cast<IPC::MessageAttachment*>(attachment.get())
+                        ->TakePlatformFile());
     std::string content(GetSendingFileContent().size(), ' ');
     file.Read(0, &content[0], content.size());
     EXPECT_EQ(content, GetSendingFileContent());

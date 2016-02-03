@@ -33,13 +33,11 @@ void LogWebUCharString(
 
 namespace IPC {
 
-void ParamTraits<WebGamepad>::Write(
-    Message* m,
-    const WebGamepad& p) {
+void ParamTraits<WebGamepad>::Write(base::Pickle* m, const WebGamepad& p) {
   m->WriteData(reinterpret_cast<const char*>(&p), sizeof(WebGamepad));
 }
 
-bool ParamTraits<WebGamepad>::Read(const Message* m,
+bool ParamTraits<WebGamepad>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    WebGamepad* p) {
   int length;

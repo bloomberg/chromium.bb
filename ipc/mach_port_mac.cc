@@ -12,7 +12,7 @@
 namespace IPC {
 
 // static
-void ParamTraits<MachPortMac>::Write(Message* m, const param_type& p) {
+void ParamTraits<MachPortMac>::Write(base::Pickle* m, const param_type& p) {
   if (!m->WriteAttachment(
           new IPC::internal::MachPortAttachmentMac(p.get_mach_port()))) {
     NOTREACHED();
@@ -20,16 +20,18 @@ void ParamTraits<MachPortMac>::Write(Message* m, const param_type& p) {
 }
 
 // static
-bool ParamTraits<MachPortMac>::Read(const Message* m,
+bool ParamTraits<MachPortMac>::Read(const base::Pickle* m,
                                     base::PickleIterator* iter,
                                     param_type* r) {
-  scoped_refptr<MessageAttachment> attachment;
-  if (!m->ReadAttachment(iter, &attachment))
+  scoped_refptr<base::Pickle::Attachment> base_attachment;
+  if (!m->ReadAttachment(iter, &base_attachment))
     return false;
+  MessageAttachment* attachment =
+      static_cast<MessageAttachment*>(base_attachment.get());
   if (attachment->GetType() != MessageAttachment::TYPE_BROKERABLE_ATTACHMENT)
     return false;
   BrokerableAttachment* brokerable_attachment =
-      static_cast<BrokerableAttachment*>(attachment.get());
+      static_cast<BrokerableAttachment*>(attachment);
   if (brokerable_attachment->GetBrokerableType() !=
       BrokerableAttachment::MACH_PORT) {
     return false;

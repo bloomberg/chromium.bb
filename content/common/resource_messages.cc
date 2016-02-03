@@ -9,8 +9,9 @@
 
 namespace IPC {
 
-void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
   WriteParam(m, p.get() != NULL);
   if (p.get()) {
     // Do not disclose Set-Cookie headers over IPC.
@@ -19,7 +20,7 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Write(
 }
 
 bool ParamTraits<scoped_refptr<net::HttpResponseHeaders>>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
   bool has_object;
@@ -35,7 +36,8 @@ void ParamTraits<scoped_refptr<net::HttpResponseHeaders> >::Log(
   l->append("<HttpResponseHeaders>");
 }
 
-void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
+void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
+                                              const param_type& p) {
   WriteParam(m, static_cast<int>(p.type()));
   switch (p.type()) {
     case storage::DataElement::TYPE_BYTES: {
@@ -77,7 +79,7 @@ void ParamTraits<storage::DataElement>::Write(Message* m, const param_type& p) {
   }
 }
 
-bool ParamTraits<storage::DataElement>::Read(const Message* m,
+bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
                                              base::PickleIterator* iter,
                                              param_type* r) {
   int type;
@@ -160,8 +162,9 @@ void ParamTraits<storage::DataElement>::Log(const param_type& p,
   l->append("<storage::DataElement>");
 }
 
-void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Write(
+    base::Pickle* m,
+    const param_type& p) {
   WriteParam(m, p.get() != NULL);
   if (p.get()) {
     WriteParam(m, p->http_status_code);
@@ -174,7 +177,7 @@ void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Write(
 }
 
 bool ParamTraits<scoped_refptr<content::ResourceDevToolsInfo>>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
   bool has_object;
@@ -203,8 +206,8 @@ void ParamTraits<scoped_refptr<content::ResourceDevToolsInfo> >::Log(
   l->append(")");
 }
 
-void ParamTraits<net::LoadTimingInfo>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<net::LoadTimingInfo>::Write(base::Pickle* m,
+                                             const param_type& p) {
   WriteParam(m, p.socket_log_id);
   WriteParam(m, p.socket_reused);
   WriteParam(m, p.request_start_time.is_null());
@@ -225,7 +228,7 @@ void ParamTraits<net::LoadTimingInfo>::Write(
   WriteParam(m, p.receive_headers_end);
 }
 
-bool ParamTraits<net::LoadTimingInfo>::Read(const Message* m,
+bool ParamTraits<net::LoadTimingInfo>::Read(const base::Pickle* m,
                                             base::PickleIterator* iter,
                                             param_type* r) {
   bool has_no_times;
@@ -288,8 +291,8 @@ void ParamTraits<net::LoadTimingInfo>::Log(const param_type& p,
   l->append(")");
 }
 
-void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Write(
-    Message* m,
+void ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Write(
+    base::Pickle* m,
     const param_type& p) {
   WriteParam(m, p.get() != NULL);
   if (p.get()) {
@@ -299,7 +302,7 @@ void ParamTraits<scoped_refptr<content::ResourceRequestBody> >::Write(
 }
 
 bool ParamTraits<scoped_refptr<content::ResourceRequestBody>>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* r) {
   bool has_object;

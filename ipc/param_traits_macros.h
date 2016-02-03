@@ -8,16 +8,17 @@
 #include <string>
 
 // Traits generation for structs.
-#define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
-  namespace IPC { \
-    template <> \
-    struct IPC_MESSAGE_EXPORT ParamTraits<struct_name> { \
-      typedef struct_name param_type; \
-      static void Write(Message* m, const param_type& p); \
-      static bool Read(const Message* m, base::PickleIterator* iter, \
-                       param_type* p); \
-      static void Log(const param_type& p, std::string* l); \
-    }; \
+#define IPC_STRUCT_TRAITS_BEGIN(struct_name)                 \
+  namespace IPC {                                            \
+  template <>                                                \
+  struct IPC_MESSAGE_EXPORT ParamTraits<struct_name> {       \
+    typedef struct_name param_type;                          \
+    static void Write(base::Pickle* m, const param_type& p); \
+    static bool Read(const base::Pickle* m,                  \
+                     base::PickleIterator* iter,             \
+                     param_type* p);                         \
+    static void Log(const param_type& p, std::string* l);    \
+  };                                                         \
   }
 
 #define IPC_STRUCT_TRAITS_MEMBER(name)
@@ -48,15 +49,16 @@
 
 // Traits generation for enums. This macro may be redefined later.
 #define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression) \
-  namespace IPC { \
-    template <> \
-    struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> { \
-      typedef enum_name param_type; \
-      static void Write(Message* m, const param_type& p); \
-      static bool Read(const Message* m, base::PickleIterator* iter, \
-                       param_type* p); \
-      static void Log(const param_type& p, std::string* l); \
-    }; \
+  namespace IPC {                                                  \
+  template <>                                                      \
+  struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> {               \
+    typedef enum_name param_type;                                  \
+    static void Write(base::Pickle* m, const param_type& p);       \
+    static bool Read(const base::Pickle* m,                        \
+                     base::PickleIterator* iter,                   \
+                     param_type* p);                               \
+    static void Log(const param_type& p, std::string* l);          \
+  };                                                               \
   }
 
 #endif  // IPC_PARAM_TRAITS_MACROS_H_

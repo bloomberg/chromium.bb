@@ -19,7 +19,7 @@ namespace ppapi {
 namespace proxy {
 
 namespace {
-void DefaultHandleWriter(IPC::Message* m, const SerializedHandle& handle) {
+void DefaultHandleWriter(base::Pickle* m, const SerializedHandle& handle) {
   IPC::ParamTraits<SerializedHandle>::Write(m, handle);
 }
 }  // namespace
@@ -95,7 +95,7 @@ void SerializedVar::Inner::ForceSetVarValueForTest(PP_Var value) {
   raw_var_data_.reset(NULL);
 }
 
-void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
+void SerializedVar::Inner::WriteToMessage(base::Pickle* m) const {
   // When writing to the IPC messages, a serialization rules handler should
   // always have been set.
   //
@@ -124,7 +124,7 @@ void SerializedVar::Inner::WriteToMessage(IPC::Message* m) const {
 }
 
 void SerializedVar::Inner::WriteDataToMessage(
-    IPC::Message* m,
+    base::Pickle* m,
     const HandleWriter& handle_writer) const {
   if (raw_var_data_) {
     m->WriteBool(true);  // Success.
@@ -134,7 +134,7 @@ void SerializedVar::Inner::WriteDataToMessage(
   }
 }
 
-bool SerializedVar::Inner::ReadFromMessage(const IPC::Message* m,
+bool SerializedVar::Inner::ReadFromMessage(const base::Pickle* m,
                                            base::PickleIterator* iter) {
 #ifndef NDEBUG
   // We should only deserialize something once or will end up with leaked

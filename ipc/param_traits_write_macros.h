@@ -23,16 +23,17 @@
 #undef IPC_STRUCT_TRAITS_PARENT
 #undef IPC_STRUCT_TRAITS_END
 #define IPC_STRUCT_TRAITS_BEGIN(struct_name) \
-  void ParamTraits<struct_name>::Write(Message* m, const param_type& p) {
+  void ParamTraits<struct_name>::Write(base::Pickle* m, const param_type& p) {
 #define IPC_STRUCT_TRAITS_MEMBER(name) WriteParam(m, p.name);
 #define IPC_STRUCT_TRAITS_PARENT(type) ParamTraits<type>::Write(m, p);
 #define IPC_STRUCT_TRAITS_END() }
 
 #undef IPC_ENUM_TRAITS_VALIDATE
 #define IPC_ENUM_TRAITS_VALIDATE(enum_name, validation_expression) \
-  void ParamTraits<enum_name>::Write(Message* m, const param_type& value) { \
-    DCHECK(validation_expression); \
-    m->WriteInt(static_cast<int>(value)); \
+  void ParamTraits<enum_name>::Write(base::Pickle* m,              \
+                                     const param_type& value) {    \
+    DCHECK(validation_expression);                                 \
+    m->WriteInt(static_cast<int>(value));                          \
   }
 
 #endif  // IPC_PARAM_TRAITS_WRITE_MACROS_H_

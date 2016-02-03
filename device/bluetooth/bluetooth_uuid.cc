@@ -96,12 +96,12 @@ void PrintTo(const BluetoothUUID& uuid, std::ostream* out) {
 
 }  // namespace device
 
-void IPC::ParamTraits<device::BluetoothUUID>::Write(Message* m,
+void IPC::ParamTraits<device::BluetoothUUID>::Write(base::Pickle* m,
                                                     const param_type& p) {
   m->WriteString(p.canonical_value());
 }
 
-bool IPC::ParamTraits<device::BluetoothUUID>::Read(const Message* m,
+bool IPC::ParamTraits<device::BluetoothUUID>::Read(const base::Pickle* m,
                                                    base::PickleIterator* iter,
                                                    param_type* r) {
   std::string value;

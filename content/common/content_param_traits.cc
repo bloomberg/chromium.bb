@@ -12,11 +12,12 @@
 
 namespace IPC {
 
-void ParamTraits<WebInputEventPointer>::Write(Message* m, const param_type& p) {
+void ParamTraits<WebInputEventPointer>::Write(base::Pickle* m,
+                                              const param_type& p) {
   m->WriteData(reinterpret_cast<const char*>(p), p->size);
 }
 
-bool ParamTraits<WebInputEventPointer>::Read(const Message* m,
+bool ParamTraits<WebInputEventPointer>::Read(const base::Pickle* m,
                                              base::PickleIterator* iter,
                                              param_type* r) {
   const char* data;

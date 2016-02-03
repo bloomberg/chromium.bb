@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/pickle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_export.h"
 
@@ -15,8 +16,7 @@ namespace IPC {
 
 // Auxiliary data sent with |Message|. This can be a platform file descriptor
 // or a mojo |MessagePipe|. |GetType()| returns the type of the subclass.
-class IPC_EXPORT MessageAttachment
-    : public base::RefCountedThreadSafe<MessageAttachment> {
+class IPC_EXPORT MessageAttachment : public base::Pickle::Attachment {
  public:
   enum Type {
     TYPE_PLATFORM_FILE,          // The instance is |PlatformFileAttachment|.
@@ -33,7 +33,7 @@ class IPC_EXPORT MessageAttachment
  protected:
   friend class base::RefCountedThreadSafe<MessageAttachment>;
   MessageAttachment();
-  virtual ~MessageAttachment();
+  ~MessageAttachment() override;
 
   DISALLOW_COPY_AND_ASSIGN(MessageAttachment);
 };

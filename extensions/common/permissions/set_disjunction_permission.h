@@ -147,11 +147,9 @@ class SetDisjunctionPermission : public APIPermission {
     return scoped_ptr<base::Value>(list);
   }
 
-  void Write(IPC::Message* m) const override {
-    IPC::WriteParam(m, data_set_);
-  }
+  void Write(base::Pickle* m) const override { IPC::WriteParam(m, data_set_); }
 
-  bool Read(const IPC::Message* m, base::PickleIterator* iter) override {
+  bool Read(const base::Pickle* m, base::PickleIterator* iter) override {
     return IPC::ReadParam(m, iter, &data_set_);
   }
 

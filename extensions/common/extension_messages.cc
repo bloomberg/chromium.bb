@@ -92,11 +92,11 @@ namespace IPC {
 template <>
 struct ParamTraits<Manifest::Location> {
   typedef Manifest::Location param_type;
-  static void Write(Message* m, const param_type& p) {
+  static void Write(base::Pickle* m, const param_type& p) {
     int val = static_cast<int>(p);
     WriteParam(m, val);
   }
-  static bool Read(const Message* m,
+  static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* p) {
     int val = 0;
@@ -112,12 +112,12 @@ struct ParamTraits<Manifest::Location> {
   }
 };
 
-void ParamTraits<URLPattern>::Write(Message* m, const param_type& p) {
+void ParamTraits<URLPattern>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.valid_schemes());
   WriteParam(m, p.GetAsString());
 }
 
-bool ParamTraits<URLPattern>::Read(const Message* m,
+bool ParamTraits<URLPattern>::Read(const base::Pickle* m,
                                    base::PickleIterator* iter,
                                    param_type* p) {
   int valid_schemes;
@@ -141,11 +141,11 @@ void ParamTraits<URLPattern>::Log(const param_type& p, std::string* l) {
   LogParam(p.GetAsString(), l);
 }
 
-void ParamTraits<URLPatternSet>::Write(Message* m, const param_type& p) {
+void ParamTraits<URLPatternSet>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.patterns());
 }
 
-bool ParamTraits<URLPatternSet>::Read(const Message* m,
+bool ParamTraits<URLPatternSet>::Read(const base::Pickle* m,
                                       base::PickleIterator* iter,
                                       param_type* p) {
   std::set<URLPattern> patterns;
@@ -162,12 +162,12 @@ void ParamTraits<URLPatternSet>::Log(const param_type& p, std::string* l) {
   LogParam(p.patterns(), l);
 }
 
-void ParamTraits<APIPermission::ID>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<APIPermission::ID>::Write(base::Pickle* m,
+                                           const param_type& p) {
   WriteParam(m, static_cast<int>(p));
 }
 
-bool ParamTraits<APIPermission::ID>::Read(const Message* m,
+bool ParamTraits<APIPermission::ID>::Read(const base::Pickle* m,
                                           base::PickleIterator* iter,
                                           param_type* p) {
   int api_id = -2;
@@ -183,8 +183,8 @@ void ParamTraits<APIPermission::ID>::Log(
   LogParam(static_cast<int>(p), l);
 }
 
-void ParamTraits<APIPermissionSet>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<APIPermissionSet>::Write(base::Pickle* m,
+                                          const param_type& p) {
   APIPermissionSet::const_iterator it = p.begin();
   const APIPermissionSet::const_iterator end = p.end();
   WriteParam(m, p.size());
@@ -194,7 +194,7 @@ void ParamTraits<APIPermissionSet>::Write(
   }
 }
 
-bool ParamTraits<APIPermissionSet>::Read(const Message* m,
+bool ParamTraits<APIPermissionSet>::Read(const base::Pickle* m,
                                          base::PickleIterator* iter,
                                          param_type* r) {
   size_t size;
@@ -221,8 +221,8 @@ void ParamTraits<APIPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
-void ParamTraits<ManifestPermissionSet>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<ManifestPermissionSet>::Write(base::Pickle* m,
+                                               const param_type& p) {
   ManifestPermissionSet::const_iterator it = p.begin();
   const ManifestPermissionSet::const_iterator end = p.end();
   WriteParam(m, p.size());
@@ -232,7 +232,7 @@ void ParamTraits<ManifestPermissionSet>::Write(
   }
 }
 
-bool ParamTraits<ManifestPermissionSet>::Read(const Message* m,
+bool ParamTraits<ManifestPermissionSet>::Read(const base::Pickle* m,
                                               base::PickleIterator* iter,
                                               param_type* r) {
   size_t size;
@@ -257,13 +257,12 @@ void ParamTraits<ManifestPermissionSet>::Log(
   LogParam(p.map(), l);
 }
 
-void ParamTraits<HostID>::Write(
-    Message* m, const param_type& p) {
+void ParamTraits<HostID>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.type());
   WriteParam(m, p.id());
 }
 
-bool ParamTraits<HostID>::Read(const Message* m,
+bool ParamTraits<HostID>::Read(const base::Pickle* m,
                                base::PickleIterator* iter,
                                param_type* r) {
   HostID::HostType type;
@@ -282,7 +281,7 @@ void ParamTraits<HostID>::Log(
   LogParam(p.id(), l);
 }
 
-void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(Message* m,
+void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(base::Pickle* m,
                                                           const param_type& p) {
   WriteParam(m, p.apis);
   WriteParam(m, p.manifest_permissions);
@@ -291,7 +290,7 @@ void ParamTraits<ExtensionMsg_PermissionSetStruct>::Write(Message* m,
 }
 
 bool ParamTraits<ExtensionMsg_PermissionSetStruct>::Read(
-    const Message* m,
+    const base::Pickle* m,
     base::PickleIterator* iter,
     param_type* p) {
   return ReadParam(m, iter, &p->apis) &&
@@ -308,7 +307,7 @@ void ParamTraits<ExtensionMsg_PermissionSetStruct>::Log(const param_type& p,
   LogParam(p.scriptable_hosts, l);
 }
 
-void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
+void ParamTraits<ExtensionMsg_Loaded_Params>::Write(base::Pickle* m,
                                                     const param_type& p) {
   WriteParam(m, p.location);
   WriteParam(m, p.path);
@@ -318,7 +317,7 @@ void ParamTraits<ExtensionMsg_Loaded_Params>::Write(Message* m,
   WriteParam(m, p.withheld_permissions);
 }
 
-bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const Message* m,
+bool ParamTraits<ExtensionMsg_Loaded_Params>::Read(const base::Pickle* m,
                                                    base::PickleIterator* iter,
                                                    param_type* p) {
   p->manifest.reset(new base::DictionaryValue());

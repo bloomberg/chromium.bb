@@ -27,14 +27,14 @@ bool ManifestPermission::Equal(const ManifestPermission* rhs) const {
   return ToValue()->Equals(rhs->ToValue().get());
 }
 
-void ManifestPermission::Write(IPC::Message* m) const {
+void ManifestPermission::Write(base::Pickle* m) const {
   base::ListValue singleton;
   base::Value* value = ToValue().release();
   singleton.Append(value);
   IPC::WriteParam(m, singleton);
 }
 
-bool ManifestPermission::Read(const IPC::Message* m,
+bool ManifestPermission::Read(const base::Pickle* m,
                               base::PickleIterator* iter) {
   base::ListValue singleton;
   if (!IPC::ReadParam(m, iter, &singleton))

@@ -16,7 +16,7 @@
 #undef IPC_PROTOBUF_MESSAGE_TRAITS_END
 
 #define IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(message_name) \
-  void ParamTraits<message_name>::Write(Message* m, const param_type& p) {
+  void ParamTraits<message_name>::Write(base::Pickle* m, const param_type& p) {
 #define IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_COMPLEX_MEMBER \
   IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_FUNDAMENTAL_MEMBER
 #define IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_FUNDAMENTAL_MEMBER(name) \

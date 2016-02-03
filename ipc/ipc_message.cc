@@ -240,11 +240,13 @@ bool Message::AddPlaceholderBrokerableAttachmentWithId(
   return attachment_set()->AddAttachment(attachment);
 }
 
-bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
+bool Message::WriteAttachment(
+    scoped_refptr<base::Pickle::Attachment> attachment) {
   bool brokerable;
   size_t index;
-  bool success =
-      attachment_set()->AddAttachment(attachment, &index, &brokerable);
+  bool success = attachment_set()->AddAttachment(
+      make_scoped_refptr(static_cast<MessageAttachment*>(attachment.get())),
+      &index, &brokerable);
   DCHECK(success);
 
   // Write the type of descriptor.
@@ -264,7 +266,7 @@ bool Message::WriteAttachment(scoped_refptr<MessageAttachment> attachment) {
 
 bool Message::ReadAttachment(
     base::PickleIterator* iter,
-    scoped_refptr<MessageAttachment>* attachment) const {
+    scoped_refptr<base::Pickle::Attachment>* attachment) const {
   bool brokerable;
   if (!iter->ReadBool(&brokerable))
     return false;

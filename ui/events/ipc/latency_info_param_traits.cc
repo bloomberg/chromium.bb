@@ -29,8 +29,7 @@ namespace IPC {
 #include "ui/events/ipc/latency_info_param_traits.h"
 
 namespace IPC {
-void ParamTraits<ui::LatencyInfo>::Write(Message* m,
-                                         const param_type& p) {
+void ParamTraits<ui::LatencyInfo>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.trace_name_);
   WriteParam(m, p.latency_components_);
   WriteParam(m, p.input_coordinates_size_);
@@ -45,7 +44,7 @@ void ParamTraits<ui::LatencyInfo>::Write(Message* m,
   WriteParam(m, p.terminated_);
 }
 
-bool ParamTraits<ui::LatencyInfo>::Read(const Message* m,
+bool ParamTraits<ui::LatencyInfo>::Read(const base::Pickle* m,
                                         base::PickleIterator* iter,
                                         param_type* p) {
   if (!ReadParam(m, iter, &p->trace_name_))

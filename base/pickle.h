@@ -14,8 +14,13 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+
+#if defined(OS_POSIX)
+#include "base/files/file.h"
+#endif
 
 namespace base {
 
@@ -123,6 +128,21 @@ class BASE_EXPORT PickleIterator {
 //
 class BASE_EXPORT Pickle {
  public:
+  // Auxiliary data attached to a Pickle. Pickle must be subclassed along with
+  // this interface in order to provide a concrete implementation of support
+  // for attachments. The base Pickle implementation does not accept
+  // attachments.
+  class BASE_EXPORT Attachment : public RefCountedThreadSafe<Attachment> {
+   public:
+    Attachment();
+
+   protected:
+    friend class RefCountedThreadSafe<Attachment>;
+    virtual ~Attachment();
+
+    DISALLOW_COPY_AND_ASSIGN(Attachment);
+  };
+
   // Initialize a Pickle object using the default header size.
   Pickle();
 
@@ -205,6 +225,19 @@ class BASE_EXPORT Pickle {
   // when reading and writing. It is normally used to serialize PoD types of a
   // known size. See also WriteData.
   bool WriteBytes(const void* data, int length);
+
+  // WriteAttachment appends |attachment| to the pickle. It returns
+  // false iff the set is full or if the Pickle implementation does not support
+  // attachments.
+  virtual bool WriteAttachment(scoped_refptr<Attachment> attachment);
+
+  // ReadAttachment parses an attachment given the parsing state |iter| and
+  // writes it to |*attachment|. It returns true on success.
+  virtual bool ReadAttachment(base::PickleIterator* iter,
+                              scoped_refptr<Attachment>* attachment) const;
+
+  // Indicates whether the pickle has any attachments.
+  virtual bool HasAttachments() const;
 
   // Reserves space for upcoming writes when multiple writes will be made and
   // their sizes are computed in advance. It can be significantly faster to call
