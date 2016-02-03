@@ -243,7 +243,7 @@ private:
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
-    V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
+    HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
     HashMap<String, Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

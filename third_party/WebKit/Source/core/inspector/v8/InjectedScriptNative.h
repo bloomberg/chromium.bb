@@ -5,10 +5,12 @@
 #ifndef InjectedScriptNative_h
 #define InjectedScriptNative_h
 
-#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 #include <v8.h>
 
 namespace blink {
@@ -33,7 +35,7 @@ private:
 
     int m_lastBoundObjectId;
     v8::Isolate* m_isolate;
-    V8GlobalValueMap<int, v8::Value, v8::kNotWeak> m_idToWrappedObject;
+    HashMap<int, OwnPtr<v8::Global<v8::Value>>> m_idToWrappedObject;
     typedef HashMap<int, String> IdToObjectGroupName;
     IdToObjectGroupName m_idToObjectGroupName;
     typedef HashMap<String, Vector<int>> NameToObjectGroup;

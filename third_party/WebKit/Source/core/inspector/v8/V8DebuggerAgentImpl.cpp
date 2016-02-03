@@ -159,7 +159,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
     , m_currentAsyncOperationId(unknownAsyncOperationId)
     , m_pendingTraceAsyncOperationCompleted(false)
     , m_startingStepIntoAsync(false)
-    , m_compiledScripts(debugger->isolate())
 {
     ASSERT(contextGroupId);
     m_injectedScriptManager->injectedScriptHost()->setDebugger(this, m_debugger);
@@ -236,7 +235,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     m_asyncOperationNotifications.clear();
-    m_compiledScripts.Clear();
+    m_compiledScripts.clear();
     clearStepIntoAsync();
     m_skipAllPauses = false;
     m_enabled = false;
@@ -956,7 +955,8 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
         return;
 
     String scriptValueId = String::number(script->GetUnboundScript()->GetId());
-    m_compiledScripts.Set(scriptValueId, script);
+    OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(m_isolate, script));
+    m_compiledScripts.set(scriptValueId, global.release());
     *scriptId = scriptValueId;
 }
 
@@ -974,7 +974,7 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
     if (asBool(doNotPauseOnExceptionsAndMuteConsole))
         ignoreExceptionsScope.emplace(m_debugger);
 
-    if (!m_compiledScripts.Contains(scriptId)) {
+    if (!m_compiledScripts.contains(scriptId)) {
         *errorString = "Script execution failed";
         return;
     }
@@ -982,7 +982,8 @@ void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& sc
     v8::HandleScope handles(m_isolate);
     v8::Local<v8::Context> context = injectedScript->context();
     v8::Context::Scope scope(context);
-    v8::Local<v8::Script> script = v8::Local<v8::Script>::New(m_isolate, m_compiledScripts.Remove(scriptId));
+    OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
+    v8::Local<v8::Script> script = scriptWrapper->Get(m_isolate);
 
     if (script.IsEmpty()) {
         *errorString = "Script execution failed";

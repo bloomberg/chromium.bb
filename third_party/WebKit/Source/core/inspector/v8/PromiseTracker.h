@@ -5,7 +5,6 @@
 #ifndef PromiseTracker_h
 #define PromiseTracker_h
 
-#include "bindings/core/v8/V8GlobalValueMap.h"
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
@@ -43,10 +42,14 @@ public:
     v8::Local<v8::Object> promiseById(int promiseId);
 
 private:
+    class PromiseWrapper;
+    static void weakCallback(const v8::WeakCallbackInfo<PromiseWrapper>& data);
+
     PromiseTracker(Listener*, v8::Isolate*);
 
     int circularSequentialId();
     int promiseId(v8::Local<v8::Object> promise, bool* isNewPromise);
+    void promiseCollected(int id);
 
     int m_circularSequentialId;
     bool m_isEnabled;
@@ -56,27 +59,7 @@ private:
     v8::Isolate* m_isolate;
     v8::Persistent<v8::NativeWeakMap> m_promiseToId;
 
-    WeakPtrFactory<PromiseTracker> m_weakPtrFactory;
-
-    class PromiseWeakCallbackData;
-    class IdToPromiseMapTraits : public V8GlobalValueMapTraits<int, v8::Object, v8::kWeakWithParameter> {
-    public:
-        // Weak traits:
-        typedef PromiseWeakCallbackData WeakCallbackDataType;
-        typedef v8::GlobalValueMap<int, v8::Object, IdToPromiseMapTraits> MapType;
-
-        static WeakCallbackDataType* WeakCallbackParameter(MapType*, int key, v8::Local<v8::Object>& value);
-        static void OnWeakCallback(const v8::WeakCallbackInfo<WeakCallbackDataType>&) { }
-        // This method will be called if the value is removed from the map.
-        static void DisposeCallbackData(WeakCallbackDataType*);
-        // This method is called if weakly referenced value is collected.
-        static void DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
-
-        static MapType* MapFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
-        static int KeyFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>&);
-    };
-
-    IdToPromiseMapTraits::MapType m_idToPromise;
+    HashMap<int, OwnPtr<PromiseWrapper>> m_idToPromise;
 };
 
 } // namespace blink

@@ -8,7 +8,6 @@
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/WeakPtr.h"
 
 using blink::TypeBuilder::Array;
 using blink::TypeBuilder::Console::CallFrame;
@@ -16,53 +15,26 @@ using blink::TypeBuilder::Debugger::PromiseDetails;
 
 namespace blink {
 
-class PromiseTracker::PromiseWeakCallbackData final {
-    WTF_MAKE_NONCOPYABLE(PromiseWeakCallbackData);
+class PromiseTracker::PromiseWrapper {
 public:
-    PromiseWeakCallbackData(PromiseTracker* tracker, int id)
-        : m_tracker(tracker->m_weakPtrFactory.createWeakPtr())
+    PromiseWrapper(PromiseTracker* tracker, int id, v8::Local<v8::Object> promise)
+        : m_tracker(tracker)
         , m_id(id)
-    {
-    }
+        , m_promise(tracker->m_isolate, promise) { }
 
-    ~PromiseWeakCallbackData()
+    ~PromiseWrapper()
     {
-        if (!m_tracker)
-            return;
         RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(m_id);
         m_tracker->m_listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
-    WeakPtr<PromiseTracker> m_tracker;
+private:
+    friend class PromiseTracker;
+
+    PromiseTracker* m_tracker;
     int m_id;
+    v8::Global<v8::Object> m_promise;
 };
-
-PromiseTracker::IdToPromiseMapTraits::WeakCallbackDataType* PromiseTracker::IdToPromiseMapTraits::WeakCallbackParameter(MapType* map, int key, v8::Local<v8::Object>& value)
-{
-    // This method is called when promise is added into the map, hence the map must be alive at this point. The tracker in turn must be alive too.
-    PromiseTracker* tracker = reinterpret_cast<PromiseTracker*>(reinterpret_cast<intptr_t>(map) - offsetof(PromiseTracker, m_idToPromise));
-    return new PromiseWeakCallbackData(tracker, key);
-}
-
-void PromiseTracker::IdToPromiseMapTraits::DisposeCallbackData(WeakCallbackDataType* callbackData)
-{
-    delete callbackData;
-}
-
-void PromiseTracker::IdToPromiseMapTraits::DisposeWeak(const v8::WeakCallbackInfo<WeakCallbackDataType>& data)
-{
-    delete data.GetParameter();
-}
-
-PromiseTracker::IdToPromiseMapTraits::MapType* PromiseTracker::IdToPromiseMapTraits::MapFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>& info)
-{
-    return &info.GetParameter()->m_tracker->m_idToPromise;
-}
-
-int PromiseTracker::IdToPromiseMapTraits::KeyFromWeakCallbackInfo(const v8::WeakCallbackInfo<WeakCallbackDataType>& info)
-{
-    return info.GetParameter()->m_id;
-}
 
 PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
     : m_circularSequentialId(0)
@@ -70,8 +42,6 @@ PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
     , m_captureStacks(false)
     , m_listener(listener)
     , m_isolate(isolate)
-    , m_weakPtrFactory(this)
-    , m_idToPromise(isolate)
 {
     clear();
 }
@@ -92,7 +62,7 @@ void PromiseTracker::clear()
 {
     v8::HandleScope scope(m_isolate);
     m_promiseToId.Reset(m_isolate, v8::NativeWeakMap::New(m_isolate));
-    m_idToPromise.Clear();
+    m_idToPromise.clear();
 }
 
 int PromiseTracker::circularSequentialId()
@@ -101,6 +71,16 @@ int PromiseTracker::circularSequentialId()
     if (m_circularSequentialId <= 0)
         m_circularSequentialId = 1;
     return m_circularSequentialId;
+}
+
+void PromiseTracker::weakCallback(const v8::WeakCallbackInfo<PromiseWrapper>& data)
+{
+    PromiseWrapper* wrapper = data.GetParameter();
+    wrapper->m_tracker->m_idToPromise.remove(wrapper->m_id);
+}
+
+void PromiseTracker::promiseCollected(int id)
+{
 }
 
 int PromiseTracker::promiseId(v8::Local<v8::Object> promise, bool* isNewPromise)
@@ -115,7 +95,10 @@ int PromiseTracker::promiseId(v8::Local<v8::Object> promise, bool* isNewPromise)
     *isNewPromise = true;
     int id = circularSequentialId();
     map->Set(promise, v8::Int32::New(m_isolate, id));
-    m_idToPromise.Set(id, promise);
+
+    OwnPtr<PromiseWrapper> wrapper = adoptPtr(new PromiseWrapper(this, id, promise));
+    wrapper->m_promise.SetWeak(wrapper.get(), weakCallback, v8::WeakCallbackType::kParameter);
+    m_idToPromise.set(id, wrapper.release());
     return id;
 }
 
@@ -184,7 +167,8 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
 v8::Local<v8::Object> PromiseTracker::promiseById(int promiseId)
 {
     ASSERT(isEnabled());
-    return m_idToPromise.Get(promiseId);
+    PromiseWrapper* wrapper = m_idToPromise.get(promiseId);
+    return wrapper ? wrapper->m_promise.Get(m_isolate) : v8::Local<v8::Object>();
 }
 
 } // namespace blink
