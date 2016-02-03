@@ -114,9 +114,8 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     @Override
     public void onHidden(Tab hiddenTab) {
         mWasHidden = true;
-        // TODO(petewil): In case any snackbars are showing, dismiss them before we switch tabs.
-        // We will need a handle on the snackbar manager (likely via ChromeActivity) and the
-        // snackbar controller (likely via showReload/EditSnackbar).
+        // In case any snackbars are showing, dismiss them before we switch tabs.
+        mActivity.getSnackbarManager().dismissSnackbars(mSnackbarController);
     }
 
     @Override

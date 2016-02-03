@@ -34,6 +34,8 @@ public class OfflinePageUtils {
     public static final int RELOAD_BUTTON = 0;
     public static final int EDIT_BUTTON = 1;
 
+    private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
+
     private static final long STORAGE_ALMOST_FULL_THRESHOLD_BYTES = 10L * (1 << 20); // 10M
 
     /**
@@ -288,6 +290,7 @@ public class OfflinePageUtils {
                 .make(context.getString(snackbarTextId), snackbarController, Snackbar.TYPE_ACTION)
                 .setAction(context.getString(actionTextId), buttonType);
         Log.d(TAG, "made snackbar with controller " + snackbarController);
+        snackbar.setDuration(SNACKBAR_DURATION);
         activity.getSnackbarManager().showSnackbar(snackbar);
     }
 
