@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -40,6 +41,9 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+template <class R> class ResourcePtr;
+class ScriptResource;
 
 class CORE_EXPORT ScriptSourceCode final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -74,7 +78,7 @@ private:
     void treatNullSourceAsEmpty();
 
     CompressibleString m_source;
-    RefPtrWillBeMember<ScriptResource> m_resource;
+    ResourcePtr<ScriptResource> m_resource;
     RefPtrWillBeMember<ScriptStreamer> m_streamer;
     mutable KURL m_url;
     TextPosition m_startPosition;

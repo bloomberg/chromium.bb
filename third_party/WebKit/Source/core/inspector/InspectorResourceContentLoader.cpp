@@ -12,6 +12,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
@@ -113,7 +114,7 @@ void InspectorResourceContentLoader::start()
         if (!resourceRequest.url().string().isEmpty()) {
             urlsToFetch.add(resourceRequest.url().string());
             FetchRequest request(resourceRequest, FetchInitiatorTypeNames::internal);
-            RefPtrWillBeRawPtr<Resource> resource = RawResource::fetch(request, document->fetcher());
+            ResourcePtr<Resource> resource = RawResource::fetch(request, document->fetcher());
             if (resource) {
                 // Prevent garbage collection by holding a reference to this resource.
                 m_resources.append(resource.get());
@@ -134,7 +135,7 @@ void InspectorResourceContentLoader::start()
             urlsToFetch.add(url);
             FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::internal);
             request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextInternal);
-            RefPtrWillBeRawPtr<Resource> resource = CSSStyleSheetResource::fetch(request, document->fetcher());
+            ResourcePtr<Resource> resource = CSSStyleSheetResource::fetch(request, document->fetcher());
             if (!resource)
                 continue;
             // Prevent garbage collection by holding a reference to this resource.
@@ -167,7 +168,6 @@ DEFINE_TRACE(InspectorResourceContentLoader)
 #if ENABLE(OILPAN)
     visitor->trace(m_inspectedFrame);
     visitor->trace(m_pendingResourceClients);
-    visitor->trace(m_resources);
 #endif
 }
 

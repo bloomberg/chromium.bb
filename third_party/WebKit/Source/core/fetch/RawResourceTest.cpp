@@ -34,6 +34,7 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourcePtr.h"
 #include "platform/SharedBuffer.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -49,7 +50,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ResourceRequest jpegRequest;
     jpegRequest.setHTTPAccept("image/jpeg");
 
-    RefPtrWillBeRawPtr<RawResource> jpegResource(RawResource::create(jpegRequest, Resource::Raw));
+    ResourcePtr<RawResource> jpegResource(new RawResource(jpegRequest, Resource::Raw));
 
     ResourceRequest pngRequest;
     pngRequest.setHTTPAccept("image/png");
@@ -107,13 +108,13 @@ public:
     }
 private:
     DummyClient* m_dummyClient;
-    RefPtrWillBePersistent<Resource> m_resource;
+    ResourcePtr<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
 
 TEST(RawResourceTest, RevalidationSucceeded)
 {
-    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
@@ -145,7 +146,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
 
 TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 {
-    RefPtrWillBeRawPtr<Resource> resource = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourcePtr<Resource> resource = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
     ResourceResponse response;
     response.setHTTPStatusCode(200);
     resource->responseReceived(response, nullptr);
@@ -175,7 +176,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 
 TEST(RawResourceTest, AddClientDuringCallback)
 {
-    RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourcePtr<Resource> raw = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
     raw->setLoading(false);
 
     // Create a non-null response.
@@ -214,7 +215,7 @@ private:
 
 TEST(RawResourceTest, RemoveClientDuringCallback)
 {
-    RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+    ResourcePtr<Resource> raw = new RawResource(ResourceRequest("data:text/html,"), Resource::Raw);
     raw->setLoading(false);
 
     // Create a non-null response.

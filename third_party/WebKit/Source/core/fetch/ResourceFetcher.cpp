@@ -275,7 +275,7 @@ static PassRefPtr<TracedValue> urlForTraceEvent(const KURL& url)
     return value.release();
 }
 
-void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+ResourcePtr<Resource> ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     const KURL& url = request.resourceRequest().url();
     ASSERT(url.protocolIsData() || substituteData.isValid());
@@ -285,13 +285,13 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     // layer where it isn't easy to mock out a network load. It uses data: urls to emulate the
     // behavior it wants to test, which would otherwise be reserved for network loads.
     if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw)
-        return;
+        return nullptr;
 
     const String cacheIdentifier = getCacheIdentifier();
     if (Resource* oldResource = memoryCache()->resourceForURL(url, cacheIdentifier)) {
         // There's no reason to re-parse if we saved the data from the previous parse.
         if (request.options().dataBufferingPolicy != DoNotBufferData)
-            return;
+            return oldResource;
         memoryCache()->remove(oldResource);
     }
 
@@ -305,13 +305,13 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     } else {
         data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
         if (!data)
-            return;
+            return nullptr;
     }
     ResourceResponse response(url, mimetype, data->size(), charset, String());
     response.setHTTPStatusCode(200);
     response.setHTTPStatusText("OK");
 
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.charset());
+    ResourcePtr<Resource> resource = factory.create(request.resourceRequest(), request.charset());
     resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
     resource->setOptions(request.options());
     // FIXME: We should provide a body stream here.
@@ -323,6 +323,7 @@ void ResourceFetcher::preCacheData(const FetchRequest& request, const ResourceFa
     resource->setCacheIdentifier(cacheIdentifier);
     resource->finish();
     memoryCache()->add(resource.get());
+    return resource;
 }
 
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource, const FetchRequest& request)
@@ -337,7 +338,7 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource
     }
 }
 
-PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
+ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     ASSERT(request.options().synchronousPolicy == RequestAsynchronously || factory.type() == Resource::Raw || factory.type() == Resource::XSLStyleSheet);
 
@@ -375,9 +376,11 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
     }
 
     bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid();
+    ResourcePtr<Resource> resource;
     if (isStaticData)
-        preCacheData(request, factory, substituteData);
-    RefPtrWillBeRawPtr<Resource> resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
+        resource = preCacheData(request, factory, substituteData);
+    if (!resource)
+        resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
 
     // See if we can use an existing resource from the cache. If so, we need to move it to be load blocking.
     moveCachedNonBlockingResourceToBlocking(resource.get(), request);
@@ -535,7 +538,7 @@ void ResourceFetcher::initializeRevalidation(const FetchRequest& request, Resour
     resource->setRevalidatingRequest(revalidatingRequest);
 }
 
-PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
+ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& request, const String& charset, const ResourceFactory& factory)
 {
     const String cacheIdentifier = getCacheIdentifier();
     ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url(), cacheIdentifier));
@@ -543,7 +546,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(Fetch
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
     initializeResourceRequest(request.mutableResourceRequest(), factory.type());
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), charset);
+    ResourcePtr<Resource> resource = factory.create(request.resourceRequest(), charset);
     resource->setAvoidBlockingOnLoad(request.avoidBlockingOnLoad());
     resource->setCacheIdentifier(cacheIdentifier);
 
@@ -813,7 +816,7 @@ void ResourceFetcher::preloadStarted(Resource* resource)
     resource->increasePreloadCount();
 
     if (!m_preloads)
-        m_preloads = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RefPtrWillBeMember<Resource>>);
+        m_preloads = adoptPtrWillBeNoop(new WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>);
     m_preloads->add(resource);
 
 #if PRELOAD_DEBUG
@@ -843,8 +846,9 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
 
     for (auto resource : *m_preloads) {
         resource->decreasePreloadCount();
+        bool deleted = resource->deleteIfPossible();
         // avoidBlockingOnLoad is only set on non speculative preloads (i.e. <link rel=preload> triggered preloads)
-        if (resource->preloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->avoidBlockingOnLoad()))
+        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->avoidBlockingOnLoad()))
             memoryCache()->remove(resource.get());
     }
     m_preloads.clear();

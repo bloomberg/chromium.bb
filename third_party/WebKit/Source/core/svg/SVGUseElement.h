@@ -39,7 +39,6 @@ class SVGUseElement final : public SVGGraphicsElement,
 
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGUseElement);
-    WILL_BE_USING_PRE_FINALIZER(SVGUseElement, dispose);
 public:
     static PassRefPtrWillBeRawPtr<SVGUseElement> create(Document&);
     ~SVGUseElement() override;
@@ -64,8 +63,6 @@ public:
 
 private:
     explicit SVGUseElement(Document&);
-
-    void dispose();
 
     FloatRect getBBox() override;
 
@@ -107,7 +104,7 @@ private:
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGUseElement"; }
     TreeScope* referencedScope() const;
-    void setDocumentResource(PassRefPtrWillBeRawPtr<DocumentResource>);
+    void setDocumentResource(ResourcePtr<DocumentResource>);
 
     RefPtrWillBeMember<SVGAnimatedLength> m_x;
     RefPtrWillBeMember<SVGAnimatedLength> m_y;
@@ -117,7 +114,7 @@ private:
     bool m_haveFiredLoadEvent;
     bool m_needsShadowTreeRecreation;
     RefPtrWillBeMember<SVGElement> m_targetElementInstance;
-    RefPtrWillBeMember<DocumentResource> m_resource;
+    ResourcePtr<DocumentResource> m_resource;
 };
 
 } // namespace blink

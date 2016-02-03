@@ -327,7 +327,7 @@ interface InspectorInstrumentation {
     void didRunJavaScriptDialog(const InspectorInstrumentationCookie&, bool result);
 
     [Inline=Forward]
-    void removedResourceFromMemoryCache(Resource* cachedResource);
+    void willDestroyResource(Resource* cachedResource);
 
     [AsyncCallTracker, DOMDebugger]
     void didRequestAnimationFrame([Keep] ExecutionContext*, int callbackId);

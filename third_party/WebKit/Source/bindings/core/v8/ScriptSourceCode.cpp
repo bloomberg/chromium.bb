@@ -7,7 +7,8 @@
 namespace blink {
 
 ScriptSourceCode::ScriptSourceCode()
-    : m_startPosition(TextPosition::minimumPosition())
+    : m_resource(0)
+    , m_startPosition(TextPosition::minimumPosition())
 {
 }
 
@@ -18,6 +19,7 @@ ScriptSourceCode::ScriptSourceCode(const String& source, const KURL& url, const 
 
 ScriptSourceCode::ScriptSourceCode(const CompressibleString& source, const KURL& url, const TextPosition& startPosition)
     : m_source(source)
+    , m_resource(0)
     , m_url(url)
     , m_startPosition(startPosition)
 {
@@ -49,7 +51,6 @@ ScriptSourceCode::~ScriptSourceCode()
 
 DEFINE_TRACE(ScriptSourceCode)
 {
-    visitor->trace(m_resource);
     visitor->trace(m_streamer);
 }
 

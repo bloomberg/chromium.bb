@@ -28,6 +28,7 @@
 #include "core/CoreExport.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
 #include "core/fetch/ImageResource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/heap/Handle.h"
@@ -130,7 +131,7 @@ private:
     Member<DataObject> m_dataObject;
 
     IntPoint m_dragLoc;
-    RefPtrWillBeMember<ImageResource> m_dragImage;
+    ResourcePtr<ImageResource> m_dragImage;
     RefPtrWillBeMember<Node> m_dragImageElement;
 };
 

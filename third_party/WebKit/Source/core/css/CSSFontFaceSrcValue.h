@@ -27,14 +27,14 @@
 #define CSSFontFaceSrcValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/fetch/FontResource.h"
-#include "core/fetch/ResourceOwner.h"
+#include "core/fetch/ResourcePtr.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class FontResource;
 class Document;
 
 class CSSFontFaceSrcValue : public CSSValue {
@@ -65,11 +65,7 @@ public:
 
     bool equals(const CSSFontFaceSrcValue&) const;
 
-    DEFINE_INLINE_TRACE_AFTER_DISPATCH()
-    {
-        visitor->trace(m_fetched);
-        CSSValue::traceAfterDispatch(visitor);
-    }
+    DEFINE_INLINE_TRACE_AFTER_DISPATCH() { CSSValue::traceAfterDispatch(visitor); }
 
 private:
     CSSFontFaceSrcValue(const String& resource, bool local, ContentSecurityPolicyDisposition shouldCheckContentSecurityPolicy)
@@ -88,26 +84,7 @@ private:
     bool m_isLocal;
     ContentSecurityPolicyDisposition m_shouldCheckContentSecurityPolicy;
 
-
-    class FontResourceHelper : public NoBaseWillBeGarbageCollectedFinalized<FontResourceHelper>, public ResourceOwner<FontResource> {
-        WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(FontResourceHelper);
-    public:
-        static PassOwnPtrWillBeRawPtr<FontResourceHelper> create(PassRefPtrWillBeRawPtr<FontResource> resource)
-        {
-            return adoptPtrWillBeNoop(new FontResourceHelper(resource));
-        }
-
-        DEFINE_INLINE_VIRTUAL_TRACE() { ResourceOwner<FontResource>::trace(visitor); }
-
-    private:
-        FontResourceHelper(PassRefPtrWillBeRawPtr<FontResource> resource)
-        {
-            setResource(resource);
-        }
-
-        String debugName() const override { return "CSSFontFaceSrcValue::FontResourceHelper"; }
-    };
-    OwnPtrWillBeMember<FontResourceHelper> m_fetched;
+    ResourcePtr<FontResource> m_fetched;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSFontFaceSrcValue, isFontFaceSrcValue());

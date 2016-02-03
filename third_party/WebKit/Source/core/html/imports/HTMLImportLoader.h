@@ -86,7 +86,7 @@ public:
     bool hasError() const { return m_state == StateError; }
     bool shouldBlockScriptExecution() const;
 
-    void startLoading(const PassRefPtrWillBeRawPtr<RawResource>&);
+    void startLoading(const ResourcePtr<RawResource>&);
 
     // Tells the loader that all of the import's stylesheets finished
     // loading.

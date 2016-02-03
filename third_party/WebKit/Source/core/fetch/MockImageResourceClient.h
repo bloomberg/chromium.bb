@@ -32,14 +32,17 @@
 #define MockImageResourceClient_h
 
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/Resource.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+template<typename T> class ResourcePtr;
+
+class Resource;
+
 class MockImageResourceClient final : public ImageResourceClient {
 public:
-    explicit MockImageResourceClient(const PassRefPtrWillBeRawPtr<Resource>);
+    explicit MockImageResourceClient(const ResourcePtr<Resource>&);
     ~MockImageResourceClient() override;
 
     void imageChanged(ImageResource*, const IntRect*) override

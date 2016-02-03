@@ -24,8 +24,8 @@
 #define RawResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -39,19 +39,16 @@ class CORE_EXPORT RawResource final : public Resource {
 public:
     using ClientType = RawResourceClient;
 
-    static PassRefPtrWillBeRawPtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<Resource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetchMainResource(FetchRequest&, ResourceFetcher*, const SubstituteData&);
+    static ResourcePtr<RawResource> fetchImport(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetchMedia(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetchTextTrack(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<RawResource> fetchManifest(FetchRequest&, ResourceFetcher*);
 
     // Exposed for testing
-    static RefPtrWillBeRawPtr<RawResource> create(const ResourceRequest& request, Type type)
-    {
-        return adoptRefWillBeNoop(new RawResource(request, type));
-    }
+    RawResource(const ResourceRequest&, Type);
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
     // use RawResource. However, it is, and it needs to be able to defer loading.
@@ -66,13 +63,11 @@ private:
         RawResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new RawResource(request, m_type));
+            return new RawResource(request, m_type);
         }
     };
-
-    RawResource(const ResourceRequest&, Type);
 
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, size_t) override;
@@ -95,7 +90,7 @@ inline bool isRawResource(const Resource& resource)
     return type == Resource::MainResource || type == Resource::Raw || type == Resource::TextTrack || type == Resource::Media || type == Resource::Manifest || type == Resource::ImportResource;
 }
 #endif
-inline PassRefPtrWillBeRawPtr<RawResource> toRawResource(const PassRefPtrWillBeRawPtr<Resource>& resource)
+inline RawResource* toRawResource(const ResourcePtr<Resource>& resource)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!resource || isRawResource(*resource.get()));
     return static_cast<RawResource*>(resource.get());

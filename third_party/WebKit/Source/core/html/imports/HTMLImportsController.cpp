@@ -125,7 +125,7 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent, HTMLImportChild
     }
 
     request.setCrossOriginAccessControl(master()->securityOrigin(), CrossOriginAttributeAnonymous);
-    RefPtrWillBeRawPtr<RawResource> resource = RawResource::fetchImport(request, parent->document()->fetcher());
+    ResourcePtr<RawResource> resource = RawResource::fetchImport(request, parent->document()->fetcher());
     if (!resource)
         return nullptr;
 

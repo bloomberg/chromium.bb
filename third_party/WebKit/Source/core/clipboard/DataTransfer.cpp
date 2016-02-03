@@ -230,7 +230,7 @@ void DataTransfer::clearDragImage()
     if (!canSetDragImage())
         return;
 
-    m_dragImage = nullptr;
+    m_dragImage = 0;
     m_dragLoc = IntPoint();
     m_dragImageElement = nullptr;
 }
@@ -513,7 +513,6 @@ String convertDragOperationToDropZoneOperation(DragOperation operation)
 DEFINE_TRACE(DataTransfer)
 {
     visitor->trace(m_dataObject);
-    visitor->trace(m_dragImage);
 #if ENABLE(OILPAN)
     visitor->trace(m_dragImageElement);
 #endif

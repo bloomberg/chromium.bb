@@ -30,7 +30,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<DocumentResource> DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
+ResourcePtr<DocumentResource> DocumentResource::fetchSVGDocument(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);

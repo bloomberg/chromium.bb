@@ -187,35 +187,35 @@ Resource::Type LinkLoader::getTypeFromAsAttribute(const String& as, Document* do
     return Resource::LinkPreload;
 }
 
-void LinkLoader::createLinkPreloadResourceClient(Resource* resource)
+void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
 {
     if (!resource)
         return;
     switch (resource->type()) {
     case Resource::Image:
-        m_linkPreloadResourceClient = LinkPreloadImageResourceClient::create(this, toImageResource(resource));
+        m_linkPreloadResourceClient = LinkPreloadImageResourceClient::create(this, toImageResource(resource.get()));
         break;
     case Resource::Script:
-        m_linkPreloadResourceClient = LinkPreloadScriptResourceClient::create(this, toScriptResource(resource));
+        m_linkPreloadResourceClient = LinkPreloadScriptResourceClient::create(this, toScriptResource(resource.get()));
         break;
     case Resource::CSSStyleSheet:
-        m_linkPreloadResourceClient = LinkPreloadStyleResourceClient::create(this, toCSSStyleSheetResource(resource));
+        m_linkPreloadResourceClient = LinkPreloadStyleResourceClient::create(this, toCSSStyleSheetResource(resource.get()));
         break;
     case Resource::Font:
-        m_linkPreloadResourceClient = LinkPreloadFontResourceClient::create(this, toFontResource(resource));
+        m_linkPreloadResourceClient = LinkPreloadFontResourceClient::create(this, toFontResource(resource.get()));
         break;
     case Resource::Media:
     case Resource::TextTrack:
     case Resource::Raw:
     case Resource::LinkPreload:
-        m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource));
+        m_linkPreloadResourceClient = LinkPreloadRawResourceClient::create(this, toRawResource(resource.get()));
         break;
     default:
         ASSERT_NOT_REACHED();
     }
 }
 
-static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, LinkCaller caller)
+static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, LinkCaller caller)
 {
     if (!document.loader() || !relAttribute.isLinkPreload())
         return nullptr;

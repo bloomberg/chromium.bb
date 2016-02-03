@@ -7,6 +7,7 @@
 
 #include "core/css/CSSFontFaceSource.h"
 #include "core/fetch/FontResource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -27,7 +28,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResource
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 
-    explicit RemoteFontFaceSource(PassRefPtrWillBeRawPtr<FontResource>, PassRefPtrWillBeRawPtr<FontLoader>, FontDisplay);
+    explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>, FontDisplay);
     ~RemoteFontFaceSource() override;
     void dispose();
 
@@ -79,7 +80,7 @@ private:
     void switchToSwapPeriod();
     void switchToFailurePeriod();
 
-    RefPtrWillBeMember<FontResource> m_font;
+    ResourcePtr<FontResource> m_font;
     RefPtrWillBeMember<FontLoader> m_fontLoader;
     const FontDisplay m_display;
     DisplayPeriod m_period;

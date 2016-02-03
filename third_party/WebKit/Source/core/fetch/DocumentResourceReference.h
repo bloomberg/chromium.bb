@@ -27,6 +27,7 @@
 #define DocumentResourceReference_h
 
 #include "core/fetch/DocumentResource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ public:
     DocumentResource* document() { return m_document.get(); }
 private:
     String debugName() const override { return "DocumentResourceReference"; }
-    RefPtrWillBePersistent<DocumentResource> m_document;
+    ResourcePtr<DocumentResource> m_document;
 };
 
 } // namespace blink

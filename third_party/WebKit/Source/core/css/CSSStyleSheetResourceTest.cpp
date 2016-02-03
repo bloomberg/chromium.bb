@@ -71,7 +71,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         // the image resource.
         document()->fetcher()->setAutoLoadImages(false);
 
-        RefPtrWillBeRawPtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
+        ResourcePtr<CSSStyleSheetResource> cssResource = CSSStyleSheetResource::createForTest(ResourceRequest(cssURL), "utf-8");
         memoryCache()->add(cssResource.get());
         cssResource->responseReceived(ResourceResponse(cssURL, "style/css", 0, nullAtom, String()), nullptr);
         cssResource->finish();
@@ -92,7 +92,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 
         crossfade->loadSubimages(document());
-        RefPtrWillBeRawPtr<Resource> imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
+        ResourcePtr<Resource> imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
         ASSERT_TRUE(imageResource);
         ResourceResponse imageResponse;
         imageResponse.setURL(imageURL);

@@ -26,6 +26,7 @@
 #ifndef XSLStyleSheetResource_h
 #define XSLStyleSheetResource_h
 
+#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResource.h"
 
 namespace blink {
@@ -35,8 +36,8 @@ class ResourceFetcher;
 
 class XSLStyleSheetResource final : public StyleSheetResource {
 public:
-    static PassRefPtrWillBeRawPtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<XSLStyleSheetResource> fetchSynchronously(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<XSLStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
 
     const String& sheet() const { return m_sheet; }
 
@@ -48,9 +49,9 @@ protected:
         XSLStyleSheetResourceFactory()
             : ResourceFactory(Resource::XSLStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new XSLStyleSheetResource(request, charset));
+            return new XSLStyleSheetResource(request, charset);
         }
     };
     XSLStyleSheetResource(const ResourceRequest&, const String& charset);

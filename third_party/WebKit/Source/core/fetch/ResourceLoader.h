@@ -61,7 +61,7 @@ public:
     void cancel(const ResourceError&);
     void cancelIfNotFinishing();
 
-    Resource* cachedResource() { return m_resource.get(); }
+    Resource* cachedResource() { return m_resource; }
     const ResourceRequest& originalRequest() const { return m_originalRequest; }
 
     void setDefersLoading(bool);
@@ -134,7 +134,7 @@ private:
         ConnectionStateFailed,
     };
 
-    RefPtrWillBeMember<Resource> m_resource;
+    RawPtrWillBeMember<Resource> m_resource;
     ResourceLoaderState m_state;
 
     // Used for sanity checking to make sure we don't experience illegal state

@@ -4,6 +4,7 @@
 
 #include "core/fetch/Resource.h"
 
+#include "core/fetch/ResourcePtr.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -47,7 +48,7 @@ ResourceResponse createTestResourceResponse()
 void createTestResourceAndSetCachedMetadata(const ResourceResponse& response)
 {
     const char testData[] = "test data";
-    RefPtrWillBeRawPtr<Resource> resource = Resource::create(ResourceRequest(response.url()), Resource::Raw);
+    ResourcePtr<Resource> resource = new Resource(ResourceRequest(response.url()), Resource::Raw);
     resource->setResponse(response);
     resource->cacheHandler()->setCachedMetadata(100, testData, sizeof(testData), CachedMetadataHandler::SendToPlatform);
     return;

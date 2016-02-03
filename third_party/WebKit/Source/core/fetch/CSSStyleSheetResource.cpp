@@ -37,16 +37,16 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+ResourcePtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextStyle);
     return toCSSStyleSheetResource(fetcher->requestResource(request, CSSStyleSheetResourceFactory()));
 }
 
-PassRefPtrWillBeRawPtr<CSSStyleSheetResource> CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
+ResourcePtr<CSSStyleSheetResource> CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
 {
-    return adoptRefWillBeNoop(new CSSStyleSheetResource(request, charset));
+    return new CSSStyleSheetResource(request, charset);
 }
 
 CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
@@ -65,12 +65,11 @@ CSSStyleSheetResource::~CSSStyleSheetResource()
     ASSERT(!m_parsedStyleSheetCache);
 }
 
-void CSSStyleSheetResource::removedFromMemoryCache()
+void CSSStyleSheetResource::dispose()
 {
     if (m_parsedStyleSheetCache)
         m_parsedStyleSheetCache->removedFromMemoryCache();
     m_parsedStyleSheetCache.clear();
-    Resource::removedFromMemoryCache();
 }
 
 DEFINE_TRACE(CSSStyleSheetResource)

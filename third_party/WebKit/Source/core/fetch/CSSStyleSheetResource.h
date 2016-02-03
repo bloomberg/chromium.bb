@@ -27,6 +27,7 @@
 #define CSSStyleSheetResource_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResource.h"
 #include "platform/heap/Handle.h"
 
@@ -42,8 +43,8 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
 public:
     enum class MIMETypeCheck { Strict, Lax };
 
-    static PassRefPtrWillBeRawPtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
-    static PassRefPtrWillBeRawPtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
+    static ResourcePtr<CSSStyleSheetResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<CSSStyleSheetResource> createForTest(const ResourceRequest&, const String& charset);
 
     ~CSSStyleSheetResource() override;
     DECLARE_VIRTUAL_TRACE();
@@ -68,15 +69,15 @@ private:
         CSSStyleSheetResourceFactory()
             : ResourceFactory(Resource::CSSStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        Resource* create(const ResourceRequest& request, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new CSSStyleSheetResource(request, charset));
+            return new CSSStyleSheetResource(request, charset);
         }
     };
     CSSStyleSheetResource(const ResourceRequest&, const String& charset);
 
     bool canUseSheet(MIMETypeCheck) const;
-    void removedFromMemoryCache() override;
+    void dispose() override;
     void checkNotify() override;
 
     String m_decodedSheetText;

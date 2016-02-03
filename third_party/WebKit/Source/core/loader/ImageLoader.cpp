@@ -142,6 +142,7 @@ private:
 
 ImageLoader::ImageLoader(Element* element)
     : m_element(element)
+    , m_image(0)
     , m_derefElementTimer(this, &ImageLoader::timerFired)
     , m_hasPendingLoadEvent(false)
     , m_hasPendingErrorEvent(false)
@@ -179,10 +180,8 @@ void ImageLoader::dispose()
         willRemoveClient(*client);
 #endif
 
-    if (m_image) {
+    if (m_image)
         m_image->removeClient(this);
-        m_image = nullptr;
-    }
 
 #if !ENABLE(OILPAN)
     ASSERT(m_hasPendingLoadEvent || !loadEventSender().hasPendingEvents(this));
@@ -212,7 +211,6 @@ void ImageLoader::clearWeakMembers(Visitor* visitor)
 
 DEFINE_TRACE(ImageLoader)
 {
-    visitor->trace(m_image);
     visitor->trace(m_element);
 #if ENABLE(OILPAN)
     visitor->template registerWeakMembers<ImageLoader, &ImageLoader::clearWeakMembers>(this);
@@ -312,7 +310,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
 
     AtomicString imageSourceURL = m_element->imageSourceURL();
     KURL url = imageSourceToKURL(imageSourceURL);
-    RefPtrWillBeRawPtr<ImageResource> newImage = nullptr;
+    ResourcePtr<ImageResource> newImage = 0;
     RefPtrWillBeRawPtr<Element> protectElement(m_element.get());
     if (!url.isNull()) {
         // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
@@ -362,7 +360,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         noImageResourceToLoad();
     }
 
-    RefPtrWillBeRawPtr<ImageResource> oldImage = m_image.get();
+    ImageResource* oldImage = m_image.get();
     if (updateBehavior == UpdateSizeChanged && m_element->layoutObject() && m_element->layoutObject()->isImage() && newImage == oldImage) {
         toLayoutImage(m_element->layoutObject())->intrinsicSizeChanged();
     } else {

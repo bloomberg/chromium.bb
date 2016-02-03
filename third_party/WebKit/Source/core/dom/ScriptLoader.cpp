@@ -59,6 +59,7 @@ namespace blink {
 
 ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
     : m_element(element)
+    , m_resource(0)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
     , m_parserInserted(parserInserted)
     , m_isExternalScript(false)
@@ -88,7 +89,6 @@ ScriptLoader::~ScriptLoader()
 DEFINE_TRACE(ScriptLoader)
 {
     visitor->trace(m_element);
-    visitor->trace(m_resource);
     visitor->trace(m_pendingScript);
 }
 
@@ -454,7 +454,7 @@ void ScriptLoader::execute()
         else
             dispatchErrorEvent();
     }
-    m_resource = nullptr;
+    m_resource = 0;
 }
 
 void ScriptLoader::notifyFinished(Resource* resource)

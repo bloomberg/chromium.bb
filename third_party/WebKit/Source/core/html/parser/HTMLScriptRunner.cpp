@@ -387,7 +387,7 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript* pendingScript, Elemen
     ASSERT(!pendingScript->element());
     pendingScript->setElement(script);
     // This should correctly return 0 for empty or invalid srcValues.
-    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource();
+    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource().get();
     if (!resource) {
         notImplemented(); // Dispatch error event.
         return false;

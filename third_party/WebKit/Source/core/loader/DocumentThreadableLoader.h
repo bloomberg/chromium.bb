@@ -153,20 +153,22 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // this re-implementation of ResourceOwner.
         RawResource* resource() const { return m_resource.get(); }
         void clearResource() { setResource(nullptr); }
-        void setResource(const PassRefPtrWillBeRawPtr<RawResource>& newResource)
+        void setResource(const ResourcePtr<RawResource>& newResource)
         {
             if (newResource == m_resource)
                 return;
 
-            if (PassRefPtrWillBeRawPtr<RawResource> oldResource = m_resource.release())
+            if (ResourcePtr<RawResource> oldResource = m_resource) {
+                m_resource.clear();
                 oldResource->removeClient(this);
+            }
 
             if (newResource) {
                 m_resource = newResource;
                 m_resource->addClient(this);
             }
         }
-        RefPtrWillBePersistent<RawResource> m_resource;
+        ResourcePtr<RawResource> m_resource;
         // End of ResourceOwner re-implementation, see above.
 
         SecurityOrigin* securityOrigin() const;

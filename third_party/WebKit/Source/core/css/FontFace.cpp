@@ -588,10 +588,10 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
             const Settings* settings = document ? document->settings() : nullptr;
             bool allowDownloading = settings && settings->downloadableBinaryFontsEnabled();
             if (allowDownloading && item->isSupportedFormat() && document) {
-                RefPtrWillBeRawPtr<FontResource> fetched = item->fetch(document);
+                FontResource* fetched = item->fetch(document);
                 if (fetched) {
                     FontLoader* fontLoader = document->styleEngine().fontSelector()->fontLoader();
-                    source = adoptPtrWillBeNoop(new RemoteFontFaceSource(fetched.release(), fontLoader, CSSValueToFontDisplay(m_display.get())));
+                    source = adoptPtrWillBeNoop(new RemoteFontFaceSource(fetched, fontLoader, CSSValueToFontDisplay(m_display.get())));
                 }
             }
         } else {

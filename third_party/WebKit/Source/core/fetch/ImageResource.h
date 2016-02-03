@@ -24,7 +24,7 @@
 #define ImageResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
 #include "platform/geometry/LayoutSize.h"
@@ -48,20 +48,11 @@ class CORE_EXPORT ImageResource final : public Resource, public ImageObserver {
 public:
     using ClientType = ImageResourceClient;
 
-    static PassRefPtrWillBeRawPtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
+    static ResourcePtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
 
-    static PassRefPtrWillBeRawPtr<ImageResource> create(blink::Image* image)
-    {
-        return adoptRefWillBeNoop(new ImageResource(image));
-    }
-
+    ImageResource(blink::Image*);
     // Exposed for testing
-    static PassRefPtrWillBeRawPtr<ImageResource> create(const ResourceRequest& request, blink::Image* image)
-    {
-        return adoptRefWillBeNoop(new ImageResource(request, image));
-    }
-
-
+    ImageResource(const ResourceRequest&, blink::Image*);
     ~ImageResource() override;
 
     void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
@@ -125,17 +116,14 @@ protected:
 private:
     friend class PaintLayerTest;
 
-    explicit ImageResource(blink::Image*);
-    ImageResource(const ResourceRequest&, blink::Image*);
-
     class ImageResourceFactory : public ResourceFactory {
     public:
         ImageResourceFactory()
             : ResourceFactory(Resource::Image) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String&) const override
+        Resource* create(const ResourceRequest& request, const String&) const override
         {
-            return adoptRefWillBeNoop(new ImageResource(request));
+            return new ImageResource(request);
         }
     };
     ImageResource(const ResourceRequest&);

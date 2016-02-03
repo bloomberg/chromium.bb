@@ -36,6 +36,7 @@
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockImageResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -81,8 +82,7 @@ protected:
 TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
     RefPtrWillBeRawPtr<HTMLImageElement> imageElement = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> image = ImageResource::create(StaticBitmapImage::create(m_image).get());
-    imageElement->setImageResource(image.get());
+    imageElement->setImageResource(new ImageResource(StaticBitmapImage::create(m_image).get()));
 
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(),
         IntRect(0, 0, m_image->width(), m_image->height()),
@@ -110,22 +110,22 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
 TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 {
     RefPtrWillBePersistent<HTMLImageElement> imageNoCrop = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> cachedImageNoCrop = ImageResource::create(ResourceRequest("http://foo.com/1"),
+    ResourcePtr<ImageResource> cachedImageNoCrop = new ImageResource(ResourceRequest("http://foo.com/1"),
         StaticBitmapImage::create(m_image).get());
     imageNoCrop->setImageResource(cachedImageNoCrop.get());
 
     RefPtrWillBePersistent<HTMLImageElement> imageInteriorCrop = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> cachedImageInteriorCrop = ImageResource::create(ResourceRequest("http://foo.com/2"),
+    ResourcePtr<ImageResource> cachedImageInteriorCrop = new ImageResource(ResourceRequest("http://foo.com/2"),
         StaticBitmapImage::create(m_image).get());
     imageInteriorCrop->setImageResource(cachedImageInteriorCrop.get());
 
     RefPtrWillBePersistent<HTMLImageElement> imageExteriorCrop = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> cachedImageExteriorCrop = ImageResource::create(ResourceRequest("http://foo.com/3"),
+    ResourcePtr<ImageResource> cachedImageExteriorCrop = new ImageResource(ResourceRequest("http://foo.com/3"),
         StaticBitmapImage::create(m_image).get());
     imageExteriorCrop->setImageResource(cachedImageExteriorCrop.get());
 
     RefPtrWillBePersistent<HTMLImageElement> imageOutsideCrop = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> cachedImageOutsideCrop = ImageResource::create(ResourceRequest("http://foo.com/4"),
+    ResourcePtr<ImageResource> cachedImageOutsideCrop = new ImageResource(ResourceRequest("http://foo.com/4"),
         StaticBitmapImage::create(m_image).get());
     imageOutsideCrop->setImageResource(cachedImageOutsideCrop.get());
 
@@ -191,7 +191,7 @@ TEST_F(ImageBitmapTest, ImageBitmapLiveResourcePriority)
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
 {
     RefPtrWillBeRawPtr<HTMLImageElement> image = HTMLImageElement::create(*Document::create().get());
-    RefPtrWillBeRawPtr<ImageResource> originalImageResource = ImageResource::create(
+    ResourcePtr<ImageResource> originalImageResource = new ImageResource(
         StaticBitmapImage::create(m_image).get());
     image->setImageResource(originalImageResource.get());
 
@@ -200,7 +200,7 @@ TEST_F(ImageBitmapTest, ImageBitmapSourceChanged)
         &(image->document()));
     ASSERT_EQ(imageBitmap->bitmapImage()->imageForCurrentFrame(), originalImageResource->image()->imageForCurrentFrame());
 
-    RefPtrWillBeRawPtr<ImageResource> newImageResource = ImageResource::create(
+    ResourcePtr<ImageResource> newImageResource = new ImageResource(
         StaticBitmapImage::create(m_image2).get());
     image->setImageResource(newImageResource.get());
 

@@ -41,7 +41,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+ResourcePtr<ImageResource> ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     if (request.resourceRequest().requestContext() == WebURLRequest::RequestContextUnspecified)
         request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImage);
@@ -49,7 +49,7 @@ PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request
         KURL requestURL = request.resourceRequest().url();
         if (requestURL.isValid() && fetcher->context().canRequest(Resource::Image, request.resourceRequest(), requestURL, request.options(), request.forPreload(), request.originRestriction()))
             fetcher->context().sendImagePing(requestURL);
-        return nullptr;
+        return 0;
     }
 
     if (fetcher->clientDefersImage(request.resourceRequest().url()))

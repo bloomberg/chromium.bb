@@ -165,7 +165,7 @@ void ProcessingInstruction::process(const String& href, const String& charset)
 
     String url = document().completeURL(href).string();
 
-    RefPtrWillBeRawPtr<StyleSheetResource> resource = nullptr;
+    ResourcePtr<StyleSheetResource> resource;
     FetchRequest request(ResourceRequest(document().completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
     if (m_isXSL) {
         if (RuntimeEnabledFeatures::xsltEnabled())

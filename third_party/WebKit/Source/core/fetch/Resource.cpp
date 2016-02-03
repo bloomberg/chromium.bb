@@ -31,6 +31,7 @@
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
@@ -154,13 +155,17 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_identifier(0)
     , m_encodedSize(0)
     , m_decodedSize(0)
+    , m_handleCount(0)
     , m_preloadCount(0)
+    , m_protectorCount(0)
     , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
     , m_requestedFromNetworkingLayer(false)
     , m_loading(false)
+    , m_switchingClientsToRevalidatedResource(false)
     , m_type(type)
     , m_status(Pending)
+    , m_wasPurged(false)
     , m_needsSynchronousCacheHit(false)
     , m_avoidBlockingOnLoad(false)
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
@@ -169,6 +174,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
 {
     ASSERT(m_type == unsigned(type)); // m_type is a bitfield, so this tests careless updates of the enum.
     InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
+    memoryCache()->registerLiveResource(*this);
 
     // Currently we support the metadata caching only for HTTP family.
     if (m_resourceRequest.url().protocolIsInHTTPFamily())
@@ -185,18 +191,19 @@ Resource::Resource(const ResourceRequest& request, Type type)
 
 Resource::~Resource()
 {
+    ASSERT(canDelete());
+    RELEASE_ASSERT(!memoryCache()->contains(this));
+    RELEASE_ASSERT(!ResourceCallback::callbackHandler()->isScheduled(this));
     assertAlive();
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     m_deleted = true;
 #endif
-
     InstanceCounters::decrementCounter(InstanceCounters::ResourceCounter);
 }
 
-void Resource::removedFromMemoryCache()
+void Resource::dispose()
 {
-    InspectorInstrumentation::removedResourceFromMemoryCache(this);
 }
 
 DEFINE_TRACE(Resource)
@@ -439,11 +446,16 @@ bool Resource::unlock()
     if (!m_data->isLocked())
         return true;
 
-    if (!memoryCache()->contains(this) || hasClients() || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
+    if (!memoryCache()->contains(this) || hasClients() || m_handleCount > 1 || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
         return false;
 
     m_data->unlock();
     return true;
+}
+
+bool Resource::hasRightHandleCountApartFromCache(unsigned targetCount) const
+{
+    return m_handleCount == targetCount + (memoryCache()->contains(this) ? 1 : 0);
 }
 
 void Resource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle>)
@@ -517,6 +529,12 @@ WeakPtrWillBeRawPtr<Resource> Resource::asWeakPtr()
 #endif
 }
 
+bool Resource::canDelete() const
+{
+    return !hasClients() && !m_loader && !m_preloadCount && hasRightHandleCountApartFromCache(0)
+        && !m_protectorCount;
+}
+
 String Resource::reasonNotDeletable() const
 {
     StringBuilder builder;
@@ -545,12 +563,31 @@ String Resource::reasonNotDeletable() const
         builder.appendNumber(m_preloadCount);
         builder.append(")");
     }
+    if (!hasRightHandleCountApartFromCache(0)) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_handleCount(");
+        builder.appendNumber(m_handleCount);
+        builder.append(")");
+    }
+    if (m_protectorCount) {
+        if (!builder.isEmpty())
+            builder.append(' ');
+        builder.append("m_protectorCount(");
+        builder.appendNumber(m_protectorCount);
+        builder.append(")");
+    }
     if (memoryCache()->contains(this)) {
         if (!builder.isEmpty())
             builder.append(' ');
         builder.append("in_memory_cache");
     }
     return builder.toString();
+}
+
+bool Resource::hasOneHandle() const
+{
+    return hasRightHandleCountApartFromCache(1);
 }
 
 CachedMetadata* Resource::cachedMetadata(unsigned dataTypeID) const
@@ -642,10 +679,11 @@ void Resource::removeClient(ResourceClient* client)
     if (m_clientsAwaitingCallback.isEmpty())
         ResourceCallback::callbackHandler()->cancel(this);
 
-    if (!hasClients()) {
-        RefPtrWillBeRawPtr<Resource> protect(this);
+    bool deleted = deleteIfPossible();
+    if (!deleted && !hasClients()) {
         memoryCache()->makeDead(this);
-        allClientsRemoved();
+        if (!m_switchingClientsToRevalidatedResource)
+            allClientsRemoved();
 
         // RFC2616 14.9.2:
         // "no-store: ... MUST make a best-effort attempt to remove the information from volatile storage as promptly as possible"
@@ -665,7 +703,7 @@ void Resource::allClientsRemoved()
 {
     if (!m_loader)
         return;
-    if (m_type == MainResource || m_type == Raw || !memoryCache()->contains(this))
+    if (m_type == MainResource || m_type == Raw)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
         m_cancelTimer.startOneShot(0, BLINK_FROM_HERE);
@@ -678,10 +716,24 @@ void Resource::cancelTimerFired(Timer<Resource>* timer)
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
     if (hasClients() || !m_loader)
         return;
-    RefPtrWillBeRawPtr<Resource> protect(this);
+    ResourcePtr<Resource> protect(this);
     m_loader->cancelIfNotFinishing();
     if (m_status != Cached)
         memoryCache()->remove(this);
+}
+
+bool Resource::deleteIfPossible()
+{
+    if (canDelete() && !memoryCache()->contains(this)) {
+        InspectorInstrumentation::willDestroyResource(this);
+        dispose();
+        memoryCache()->unregisterLiveResource(*this);
+#if !ENABLE(OILPAN)
+        delete this;
+#endif
+        return true;
+    }
+    return false;
 }
 
 void Resource::setDecodedSize(size_t decodedSize)
@@ -755,13 +807,14 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
     const String dumpName = getMemoryDumpName();
     WebMemoryAllocatorDump* dump = memoryDump->createMemoryAllocatorDump(dumpName);
     dump->addScalar("encoded_size", "bytes", m_encodedSize);
-    if (m_data && m_data->isLocked())
-        dump->addScalar("live_size", "bytes", m_encodedSize);
-    else
+    if (canDelete()) {
         dump->addScalar("dead_size", "bytes", m_encodedSize);
+    } else {
+        dump->addScalar("live_size", "bytes", m_encodedSize);
+    }
 
     if (m_data) {
-        dump->addScalar("purgeable_size", "bytes", isPurgeable() ? encodedSize() + overheadSize() : 0);
+        dump->addScalar("purgeable_size", "bytes", isPurgeable() && !wasPurged() ? encodedSize() + overheadSize() : 0);
         m_data->onMemoryDump(dumpName, memoryDump);
     }
 
@@ -843,6 +896,29 @@ void Resource::revalidationFailed()
     destroyDecodedDataForFailedRevalidation();
 }
 
+void Resource::registerHandle(ResourcePtrBase* h)
+{
+    assertAlive();
+    ++m_handleCount;
+}
+
+void Resource::unregisterHandle(ResourcePtrBase* h)
+{
+    assertAlive();
+    ASSERT(m_handleCount > 0);
+    --m_handleCount;
+
+    if (!m_handleCount) {
+        if (deleteIfPossible())
+            return;
+        unlock();
+    } else if (m_handleCount == 1 && memoryCache()->contains(this)) {
+        unlock();
+        if (!hasClients())
+            memoryCache()->prune(this);
+    }
+}
+
 bool Resource::canReuseRedirectChain()
 {
     for (auto& redirect : m_redirectChain) {
@@ -884,6 +960,11 @@ bool Resource::isPurgeable() const
     return m_data && !m_data->isLocked();
 }
 
+bool Resource::wasPurged() const
+{
+    return m_wasPurged;
+}
+
 bool Resource::lock()
 {
     if (!m_data)
@@ -893,10 +974,8 @@ bool Resource::lock()
 
     ASSERT(!hasClients());
 
-    // If locking fails, our buffer has been purged. There's no point
-    // in leaving a purged resource in MemoryCache.
     if (!m_data->lock()) {
-        memoryCache()->remove(this);
+        m_wasPurged = true;
         return false;
     }
     return true;
@@ -976,8 +1055,8 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const
 
 void Resource::ResourceCallback::runTask()
 {
-    WillBeHeapVector<RefPtrWillBeMember<Resource>> resources;
-    for (const RefPtrWillBeMember<Resource>& resource : m_resourcesWithPendingClients)
+    Vector<ResourcePtr<Resource>> resources;
+    for (const RawPtrWillBeMember<Resource>& resource : m_resourcesWithPendingClients)
         resources.append(resource.get());
     m_resourcesWithPendingClients.clear();
 

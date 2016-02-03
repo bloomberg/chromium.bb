@@ -575,7 +575,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest, MemoryCacheCertificateEr
     response.setURL(url);
     response.setSecurityInfo(securityInfo);
     response.setHasMajorCertificateErrors(true);
-    RefPtrWillBeRawPtr<Resource> resource = Resource::create(resourceRequest, Resource::Image);
+    ResourcePtr<Resource> resource = new Resource(resourceRequest, Resource::Image);
     resource->setResponse(response);
     fetchContext->dispatchDidLoadResourceFromMemoryCache(resource.get(), WebURLRequest::FrameTypeNone, WebURLRequest::RequestContextImage);
 }

@@ -31,57 +31,54 @@
 #ifndef ResourceOwner_h
 #define ResourceOwner_h
 
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace blink {
 
+
 template<class R, class C = typename R::ClientType>
 class ResourceOwner : public WillBeGarbageCollectedMixin, public C {
-    WILL_BE_USING_PRE_FINALIZER(ResourceOwner, clearResource);
 public:
     using ResourceType = R;
 
     virtual ~ResourceOwner();
     ResourceType* resource() const { return m_resource.get(); }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_resource); }
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
 
 protected:
     ResourceOwner();
 
-    void setResource(const PassRefPtrWillBeRawPtr<ResourceType>&);
+    void setResource(const ResourcePtr<ResourceType>&);
     void clearResource() { setResource(nullptr); }
 
 private:
-    RefPtrWillBeMember<ResourceType> m_resource;
+    ResourcePtr<ResourceType> m_resource;
 };
 
 template<class R, class C>
 inline ResourceOwner<R, C>::ResourceOwner()
 {
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 template<class R, class C>
 inline ResourceOwner<R, C>::~ResourceOwner()
 {
-#if !ENABLE(OILPAN)
     clearResource();
-#endif
 }
 
 template<class R, class C>
-inline void ResourceOwner<R, C>::setResource(const PassRefPtrWillBeRawPtr<R>& newResource)
+inline void ResourceOwner<R, C>::setResource(const ResourcePtr<R>& newResource)
 {
     if (newResource == m_resource)
         return;
 
     // Some ResourceClient implementations reenter this so
     // we need to prevent double removal.
-    if (RefPtrWillBeRawPtr<ResourceType> oldResource = m_resource.release())
+    if (ResourcePtr<ResourceType> oldResource = m_resource) {
+        m_resource.clear();
         oldResource->removeClient(this);
+    }
 
     if (newResource) {
         m_resource = newResource;

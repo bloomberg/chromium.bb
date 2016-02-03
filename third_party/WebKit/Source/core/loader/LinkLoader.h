@@ -85,7 +85,7 @@ private:
 
     void linkLoadTimerFired(Timer<LinkLoader>*);
     void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
-    void createLinkPreloadResourceClient(Resource*);
+    void createLinkPreloadResourceClient(ResourcePtr<Resource>);
 
     RawPtrWillBeMember<LinkLoaderClient> m_client;
 

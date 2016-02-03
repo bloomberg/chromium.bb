@@ -6,7 +6,7 @@
 #define InspectorResourceContentLoader_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/Resource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "wtf/Functional.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
@@ -47,7 +47,7 @@ private:
     bool m_started;
     RawPtrWillBeMember<LocalFrame> m_inspectedFrame;
     WillBeHeapHashSet<RawPtrWillBeMember<ResourceClient>> m_pendingResourceClients;
-    WillBeHeapVector<RefPtrWillBeMember<Resource>> m_resources;
+    Vector<ResourcePtr<Resource>> m_resources;
 
     friend class ResourceClient;
 };
