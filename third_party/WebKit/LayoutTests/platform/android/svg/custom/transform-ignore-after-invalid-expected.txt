@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 7: Error: <rect> attribute transform: Expected ')', "…e(2,2) scale(1,2,3) translate(50…".
+CONSOLE ERROR: line 7: Error: Invalid value for <rect> attribute transform="scale(2,2) scale(1,2,3) translate(50,50)"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 100x100

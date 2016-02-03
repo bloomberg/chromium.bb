@@ -1,33 +1,33 @@
 CONSOLE ERROR: line 5: Error: Invalid value for <rect> attribute transform="foo(20,20)"
-CONSOLE ERROR: line 6: Error: <rect> attribute transform: Expected number, "scale()".
-CONSOLE ERROR: line 7: Error: <rect> attribute transform: Expected ')', "scale(20,20,20)".
-CONSOLE ERROR: line 8: Error: <rect> attribute transform: Trailing garbage, "scale(20,)".
-CONSOLE ERROR: line 9: Error: <rect> attribute transform: Trailing garbage, "scale(20,,)".
-CONSOLE ERROR: line 10: Error: <rect> attribute transform: Unexpected end of attribute. Expected ')', "scale(20".
+CONSOLE ERROR: line 6: Error: Invalid value for <rect> attribute transform="scale()"
+CONSOLE ERROR: line 7: Error: Invalid value for <rect> attribute transform="scale(20,20,20)"
+CONSOLE ERROR: line 8: Error: Invalid value for <rect> attribute transform="scale(20,)"
+CONSOLE ERROR: line 9: Error: Invalid value for <rect> attribute transform="scale(20,,)"
+CONSOLE ERROR: line 10: Error: Invalid value for <rect> attribute transform="scale(20"
 CONSOLE ERROR: line 11: Error: Invalid value for <rect> attribute transform="scale 20)"
-CONSOLE ERROR: line 12: Error: <rect> attribute transform: Expected number, "scale(r)".
-CONSOLE ERROR: line 13: Error: <rect> attribute transform: Expected number, "translate()".
-CONSOLE ERROR: line 14: Error: <rect> attribute transform: Expected ')', "translate(20,20,20)".
-CONSOLE ERROR: line 15: Error: <rect> attribute transform: Trailing garbage, "translate(20,)".
-CONSOLE ERROR: line 16: Error: <rect> attribute transform: Trailing garbage, "translate(20,,)".
-CONSOLE ERROR: line 17: Error: <rect> attribute transform: Unexpected end of attribute. Expected ')', "translate(20".
+CONSOLE ERROR: line 12: Error: Invalid value for <rect> attribute transform="scale(r)"
+CONSOLE ERROR: line 13: Error: Invalid value for <rect> attribute transform="translate()"
+CONSOLE ERROR: line 14: Error: Invalid value for <rect> attribute transform="translate(20,20,20)"
+CONSOLE ERROR: line 15: Error: Invalid value for <rect> attribute transform="translate(20,)"
+CONSOLE ERROR: line 16: Error: Invalid value for <rect> attribute transform="translate(20,,)"
+CONSOLE ERROR: line 17: Error: Invalid value for <rect> attribute transform="translate(20"
 CONSOLE ERROR: line 18: Error: Invalid value for <rect> attribute transform="translate 20)"
-CONSOLE ERROR: line 19: Error: <rect> attribute transform: Expected number, "translate(r)".
-CONSOLE ERROR: line 20: Error: <rect> attribute transform: Expected number, "skewX()".
-CONSOLE ERROR: line 21: Error: <rect> attribute transform: Expected ')', "skewX(20,20,20)".
-CONSOLE ERROR: line 22: Error: <rect> attribute transform: Expected ')', "skewX(20,)".
-CONSOLE ERROR: line 23: Error: <rect> attribute transform: Expected ')', "skewX(20,,)".
-CONSOLE ERROR: line 24: Error: <rect> attribute transform: Unexpected end of attribute. Expected ')', "skewX(20".
+CONSOLE ERROR: line 19: Error: Invalid value for <rect> attribute transform="translate(r)"
+CONSOLE ERROR: line 20: Error: Invalid value for <rect> attribute transform="skewX()"
+CONSOLE ERROR: line 21: Error: Invalid value for <rect> attribute transform="skewX(20,20,20)"
+CONSOLE ERROR: line 22: Error: Invalid value for <rect> attribute transform="skewX(20,)"
+CONSOLE ERROR: line 23: Error: Invalid value for <rect> attribute transform="skewX(20,,)"
+CONSOLE ERROR: line 24: Error: Invalid value for <rect> attribute transform="skewX(20"
 CONSOLE ERROR: line 25: Error: Invalid value for <rect> attribute transform="skewX 20)"
-CONSOLE ERROR: line 26: Error: <rect> attribute transform: Expected number, "skewX(r)".
-CONSOLE ERROR: line 27: Error: <rect> attribute transform: Expected number, "skewY()".
-CONSOLE ERROR: line 28: Error: <rect> attribute transform: Expected ')', "skewY(20,20,20)".
-CONSOLE ERROR: line 29: Error: <rect> attribute transform: Expected ')', "skewY(20,)".
-CONSOLE ERROR: line 30: Error: <rect> attribute transform: Expected ')', "skewY(20,,)".
-CONSOLE ERROR: line 31: Error: <rect> attribute transform: Unexpected end of attribute. Expected ')', "skewY(20".
+CONSOLE ERROR: line 26: Error: Invalid value for <rect> attribute transform="skewX(r)"
+CONSOLE ERROR: line 27: Error: Invalid value for <rect> attribute transform="skewY()"
+CONSOLE ERROR: line 28: Error: Invalid value for <rect> attribute transform="skewY(20,20,20)"
+CONSOLE ERROR: line 29: Error: Invalid value for <rect> attribute transform="skewY(20,)"
+CONSOLE ERROR: line 30: Error: Invalid value for <rect> attribute transform="skewY(20,,)"
+CONSOLE ERROR: line 31: Error: Invalid value for <rect> attribute transform="skewY(20"
 CONSOLE ERROR: line 32: Error: Invalid value for <rect> attribute transform="skewY 20)"
-CONSOLE ERROR: line 33: Error: <rect> attribute transform: Expected number, "skewY(r)".
-CONSOLE ERROR: line 34: Error: <rect> attribute transform: Unexpected end of attribute. Trailing garbage, "…20), scale(1)  ,".
+CONSOLE ERROR: line 33: Error: Invalid value for <rect> attribute transform="skewY(r)"
+CONSOLE ERROR: line 34: Error: Invalid value for <rect> attribute transform="scale(20), scale(1)  ,"
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 200x200
