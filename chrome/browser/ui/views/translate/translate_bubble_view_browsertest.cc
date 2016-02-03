@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 #include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -102,8 +101,15 @@ IN_PROC_BROWSER_TEST_F(TranslateBubbleViewBrowserTest,
   EXPECT_EQ(active_index, browser()->tab_strip_model()->active_index());
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 
+  // Wait until the language is detected.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(french_index);
+  content::Source<content::WebContents> source(web_contents);
+  ui_test_utils::WindowedNotificationObserverWithDetails<
+      translate::LanguageDetectionDetails>
+      fr_language_detected_signal(chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED,
+                                  source);
+  fr_language_detected_signal.Wait();
 
   // The bubble is not shown because the tab is not activated.
   EXPECT_FALSE(TranslateBubbleView::GetCurrentBubble());

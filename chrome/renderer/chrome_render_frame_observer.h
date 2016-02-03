@@ -40,7 +40,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
   void DidFinishLoad() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_page_navigation) override;
-  void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
 
   // IPC handlers
   void OnSetIsPrerendering(bool is_prerendering);
@@ -63,6 +62,9 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver {
 
   void CapturePageTextLater(TextCaptureType capture_type,
                             base::TimeDelta delay);
+
+  // Used to delay calling CapturePageInfo.
+  base::Timer capture_timer_;
 
   // Have the same lifetime as us.
   translate::TranslateHelper* translate_helper_;

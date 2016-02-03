@@ -53,6 +53,15 @@ using blink::WebString;
 using content::SSLStatus;
 using content::RenderFrame;
 
+// Delay in milliseconds that we'll wait before capturing the page contents.
+static const int kDelayForCaptureMs = 500;
+
+// Typically, we capture the page data once the page is loaded.
+// Sometimes, the page never finishes to load, preventing the page capture
+// To workaround this problem, we always perform a capture after the following
+// delay.
+static const int kDelayForForcedCaptureMs = 6000;
+
 // Maximum number of characters in the document to index.
 // Any text beyond this point will be clipped.
 static const size_t kMaxIndexChars = 65535;
@@ -103,6 +112,7 @@ SkBitmap Downscale(const blink::WebImage& image,
 ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
+      capture_timer_(false, false),
       translate_helper_(nullptr),
       phishing_classifier_(nullptr) {
   // Don't do anything for subframes.
@@ -297,12 +307,16 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
         search_provider::AUTODETECTED_PROVIDER));
   }
 
-  // TODO(dglazkov): This is only necessary for ChromeRenderViewTests,
-  // since they don't actually pump frames. These tests will need
-  // to be rewritten eventually (there is no ChromeRenderView anymore).
-  if (render_frame()->GetRenderView()->GetContentStateImmediately()) {
-    CapturePageText(PRELIMINARY_CAPTURE);
-  }
+  // Don't capture pages that have pending redirect or location change.
+  if (frame->isNavigationScheduled())
+    return;
+
+  CapturePageTextLater(
+      FINAL_CAPTURE,
+      base::TimeDelta::FromMilliseconds(
+          render_frame()->GetRenderView()->GetContentStateImmediately()
+              ? 0
+              : kDelayForCaptureMs));
 }
 
 void ChromeRenderFrameObserver::DidStartProvisionalLoad() {
@@ -323,18 +337,22 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   if (frame->parent())
     return;
 
+  // Don't capture pages being not new, with pending redirect, or location
+  // change.
+  if (!is_new_navigation || frame->isNavigationScheduled())
+    return;
+
   base::debug::SetCrashKeyValue(
       crash_keys::kViewCount,
       base::SizeTToString(content::RenderView::GetRenderViewCount()));
+
+  CapturePageTextLater(PRELIMINARY_CAPTURE, base::TimeDelta::FromMilliseconds(
+                                                kDelayForForcedCaptureMs));
 }
 
 void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame)
-    return;
-
-  // Don't capture pages that have pending redirect or location change.
-  if (frame->isNavigationScheduled())
     return;
 
   // Don't index/capture pages that are in view source mode.
@@ -359,9 +377,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);
 
-  // We should run language detection only once. Parsing finishes before
-  // the page loads, so let's pick that timing.
-  if (translate_helper_ && capture_type == PRELIMINARY_CAPTURE)
+  if (translate_helper_)
     translate_helper_->PageCaptured(contents);
 
   TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
@@ -374,16 +390,10 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 #endif
 }
 
-void ChromeRenderFrameObserver::DidMeaningfulLayout(
-    blink::WebMeaningfulLayout layout_type) {
-  switch (layout_type) {
-    case blink::WebMeaningfulLayout::FinishedParsing:
-      CapturePageText(PRELIMINARY_CAPTURE);
-      break;
-    case blink::WebMeaningfulLayout::FinishedLoading:
-      CapturePageText(FINAL_CAPTURE);
-      break;
-    default:
-      break;
-  }
+void ChromeRenderFrameObserver::CapturePageTextLater(
+    TextCaptureType capture_type,
+    base::TimeDelta delay) {
+  capture_timer_.Start(FROM_HERE, delay,
+                       base::Bind(&ChromeRenderFrameObserver::CapturePageText,
+                                  base::Unretained(this), capture_type));
 }
