@@ -644,13 +644,6 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
   // Start with the quality that was requested.
   SkFilterQuality quality = image.filter_quality();
 
-  // Drop down immediately to low quality if this is a negative scale (Skia
-  // doesn't handle this right now).
-  // TODO(vmpstr): We should be able to handle this in the same way that we
-  // handle positive scale, except just flipped around. crbug.com/576389.
-  if (scale.width() < 0.f || scale.height() < 0.f)
-    quality = std::min(quality, kLow_SkFilterQuality);
-
   // If we're not going to do a scale, we can use low filter quality. Note that
   // checking if the sizes are the same is better than checking if scale is 1.f,
   // because even non-1 scale can result in the same (rounded) width/height.

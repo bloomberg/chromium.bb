@@ -1394,3 +1394,10 @@ crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
 crbug.com/581203 [ Linux ] web-animations-api/player-finish-sample-only.html [ Failure Pass ]
+
+crbug.com/576389 fast/reflections/reflection-masks.html [ NeedsRebaseline ]
+crbug.com/576389 fast/reflections/reflection-masks-opacity.html [ NeedsRebaseline ]
+crbug.com/576389 fast/reflections/reflection-masks-outset.html [ NeedsRebaseline ]
+crbug.com/576389 fast/reflections/reflection-with-zoom.html [ NeedsRebaseline ]
+crbug.com/576389 media/audio-repaint.html [ NeedsRebaseline ]
+crbug.com/576389 svg/custom/clip-mask-negative-scale.svg [ NeedsRebaseline ]
