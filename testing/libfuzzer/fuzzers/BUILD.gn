@@ -314,10 +314,25 @@ fuzzer_test("icu_uregex_open_fuzzer") {
   ]
 }
 
-fuzzer_test("v8_parser") {
+fuzzer_test("v8_script_parser_fuzzer") {
   sources = []
   deps = [
     "//v8:parser_fuzzer",
   ]
   dict = "dicts/js.dict"
+}
+
+fuzzer_test("v8_json_parser_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:json_fuzzer",
+  ]
+}
+
+fuzzer_test("v8_regexp_parser_fuzzer") {
+  sources = []
+  deps = [
+    "//v8:regexp_fuzzer",
+  ]
+  dict = "dicts/regexp.dict"
 }
