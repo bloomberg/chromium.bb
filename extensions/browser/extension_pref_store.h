@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/prefs/value_map_pref_store.h"
+#include "components/prefs/value_map_pref_store.h"
 #include "extensions/browser/extension_pref_value_map.h"
 
 // A (non-persistent) PrefStore implementation that holds effective preferences

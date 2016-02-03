@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/prefs/pref_observer_bridge.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_change_registrar.h"
 
 PrefObserverBridge::PrefObserverBridge(id<PrefObserverDelegate> delegate)
     : delegate_(delegate) {

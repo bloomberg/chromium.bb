@@ -9,6 +9,7 @@ include_rules = [
   "+components/devtools_http_handler",
   "+components/external_video_surface",
   "+components/network_hints/browser",
+  "+components/prefs",
   "+content/public/browser",
   "+gin/v8_initializer.h",
   "+gpu/command_buffer/service/gpu_switches.h",

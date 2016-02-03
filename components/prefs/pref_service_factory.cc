@@ -13,8 +13,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_value_store.h"
 
-namespace base {
-
 namespace {
 
 // Do-nothing default implementation.
@@ -61,5 +59,3 @@ scoped_ptr<PrefService> PrefServiceFactory::Create(
                       async_));
   return pref_service;
 }
-
-}  // namespace base

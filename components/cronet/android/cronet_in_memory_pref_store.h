@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/persistent_pref_store.h"
-#include "base/prefs/pref_value_map.h"
+#include "components/prefs/persistent_pref_store.h"
+#include "components/prefs/pref_value_map.h"
 
 namespace base {
 class Value;

@@ -2,6 +2,7 @@ include_rules = [
   "-content",
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/user_prefs",
   "+components/variations",
   "+content/public/browser",

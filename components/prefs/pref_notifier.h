@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PREF_NOTIFIER_H_
-#define BASE_PREFS_PREF_NOTIFIER_H_
+#ifndef COMPONENTS_PREFS_PREF_NOTIFIER_H_
+#define COMPONENTS_PREFS_PREF_NOTIFIER_H_
 
 #include <string>
 
@@ -23,4 +23,4 @@ class PrefNotifier {
   virtual void OnInitializationCompleted(bool succeeded) = 0;
 };
 
-#endif  // BASE_PREFS_PREF_NOTIFIER_H_
+#endif  // COMPONENTS_PREFS_PREF_NOTIFIER_H_

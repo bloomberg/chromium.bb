@@ -100,7 +100,7 @@ class AppListServiceUnitTest : public testing::Test {
     AppListService::RegisterPrefs(pref_registry);
     profiles::RegisterPrefs(pref_registry);
 
-    base::PrefServiceFactory factory;
+    PrefServiceFactory factory;
     factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore));
     local_state_ = factory.Create(pref_registry);
 

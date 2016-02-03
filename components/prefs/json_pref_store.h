@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_JSON_PREF_STORE_H_
-#define BASE_PREFS_JSON_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_JSON_PREF_STORE_H_
+#define COMPONENTS_PREFS_JSON_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -41,7 +41,7 @@ FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestPeriodWithGaps);
 }
 
 // A writable PrefStore implementation that is used for user preferences.
-class BASE_PREFS_EXPORT JsonPrefStore
+class COMPONENTS_PREFS_EXPORT JsonPrefStore
     : public PersistentPrefStore,
       public base::ImportantFileWriter::DataSerializer,
       public base::SupportsWeakPtr<JsonPrefStore>,
@@ -114,7 +114,7 @@ class BASE_PREFS_EXPORT JsonPrefStore
  private:
   // Represents a histogram for recording the number of writes to the pref file
   // that occur every kHistogramWriteReportIntervalInMins minutes.
-  class BASE_PREFS_EXPORT WriteCountHistogram {
+  class COMPONENTS_PREFS_EXPORT WriteCountHistogram {
    public:
     static const int32_t kHistogramWriteReportIntervalMins;
 
@@ -226,4 +226,4 @@ class BASE_PREFS_EXPORT JsonPrefStore
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStore);
 };
 
-#endif  // BASE_PREFS_JSON_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_JSON_PREF_STORE_H_

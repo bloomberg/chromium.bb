@@ -5,13 +5,13 @@
 #include "components/filesystem/public/cpp/prefs/pref_service_factory.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_notifier_impl.h"
-#include "base/prefs/pref_registry.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_value_store.h"
-#include "base/prefs/value_map_pref_store.h"
-#include "base/prefs/writeable_pref_store.h"
 #include "components/filesystem/public/cpp/prefs/filesystem_json_pref_store.h"
+#include "components/prefs/pref_notifier_impl.h"
+#include "components/prefs/pref_registry.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_value_store.h"
+#include "components/prefs/value_map_pref_store.h"
+#include "components/prefs/writeable_pref_store.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 
 namespace filesystem {

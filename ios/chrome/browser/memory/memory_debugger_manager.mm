@@ -7,9 +7,9 @@
 #include "base/ios/weak_nsobject.h"
 #import "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/prefs/pref_member.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_member.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #import "ios/chrome/browser/memory/memory_debugger.h"
 #import "ios/chrome/browser/pref_names.h"
 

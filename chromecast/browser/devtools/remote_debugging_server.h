@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_member.h"
+#include "components/prefs/pref_member.h"
 
 namespace devtools_http_handler {
 class DevToolsHttpHandler;

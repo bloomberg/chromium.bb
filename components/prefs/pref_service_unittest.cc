@@ -284,7 +284,7 @@ class WriteFlagChecker : public TestingPrefStore {
 TEST(PrefServiceTest, WriteablePrefStoreFlags) {
   scoped_refptr<WriteFlagChecker> flag_checker(new WriteFlagChecker);
   scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple);
-  base::PrefServiceFactory factory;
+  PrefServiceFactory factory;
   factory.set_user_prefs(flag_checker);
   scoped_ptr<PrefService> prefs(factory.Create(registry.get()));
 

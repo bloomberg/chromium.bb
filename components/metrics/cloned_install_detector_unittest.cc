@@ -4,10 +4,10 @@
 
 #include "components/metrics/cloned_install_detector.h"
 
-#include "base/prefs/testing_pref_service.h"
 #include "components/metrics/machine_id_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace metrics {

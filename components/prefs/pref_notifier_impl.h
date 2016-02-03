@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PREF_NOTIFIER_IMPL_H_
-#define BASE_PREFS_PREF_NOTIFIER_IMPL_H_
+#ifndef COMPONENTS_PREFS_PREF_NOTIFIER_IMPL_H_
+#define COMPONENTS_PREFS_PREF_NOTIFIER_IMPL_H_
 
 #include <list>
 #include <string>
@@ -21,7 +21,7 @@
 class PrefService;
 
 // The PrefNotifier implementation used by the PrefService.
-class BASE_PREFS_EXPORT PrefNotifierImpl
+class COMPONENTS_PREFS_EXPORT PrefNotifierImpl
     : public NON_EXPORTED_BASE(PrefNotifier) {
  public:
   PrefNotifierImpl();
@@ -71,4 +71,4 @@ class BASE_PREFS_EXPORT PrefNotifierImpl
   DISALLOW_COPY_AND_ASSIGN(PrefNotifierImpl);
 };
 
-#endif  // BASE_PREFS_PREF_NOTIFIER_IMPL_H_
+#endif  // COMPONENTS_PREFS_PREF_NOTIFIER_IMPL_H_

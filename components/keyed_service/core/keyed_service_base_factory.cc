@@ -4,11 +4,11 @@
 
 #include "components/keyed_service/core/keyed_service_base_factory.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/supports_user_data.h"
 #include "base/trace_event/trace_event.h"
 #include "components/keyed_service/core/dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
 
 void KeyedServiceBaseFactory::RegisterUserPrefsOnContextForTest(

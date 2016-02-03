@@ -21,8 +21,8 @@
 // notify MyClass of changes. Note that if you use SetValue(), the observer
 // will not be notified.
 
-#ifndef BASE_PREFS_PREF_MEMBER_H_
-#define BASE_PREFS_PREF_MEMBER_H_
+#ifndef COMPONENTS_PREFS_PREF_MEMBER_H_
+#define COMPONENTS_PREFS_PREF_MEMBER_H_
 
 #include <string>
 #include <vector>
@@ -42,7 +42,7 @@ class PrefService;
 
 namespace subtle {
 
-class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
+class COMPONENTS_PREFS_EXPORT PrefMemberBase : public PrefObserver {
  public:
   // Type of callback you can register if you need to know the name of
   // the pref that is changing.
@@ -52,7 +52,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
   const PrefService* prefs() const { return prefs_; }
 
  protected:
-  class BASE_PREFS_EXPORT Internal
+  class COMPONENTS_PREFS_EXPORT Internal
       : public base::RefCountedThreadSafe<Internal> {
    public:
     Internal();
@@ -151,7 +151,7 @@ class BASE_PREFS_EXPORT PrefMemberBase : public PrefObserver {
 
 // This function implements StringListPrefMember::UpdateValue().
 // It is exposed here for testing purposes.
-bool BASE_PREFS_EXPORT PrefMemberVectorStringUpdate(
+bool COMPONENTS_PREFS_EXPORT PrefMemberVectorStringUpdate(
     const base::Value& value,
     std::vector<std::string>* string_vector);
 
@@ -263,7 +263,7 @@ class PrefMember : public subtle::PrefMemberBase {
    protected:
     ~Internal() override {}
 
-    BASE_PREFS_EXPORT bool UpdateValueInternal(
+    COMPONENTS_PREFS_EXPORT bool UpdateValueInternal(
         const base::Value& value) const override;
 
     // We cache the value of the pref so we don't have to keep walking the pref
@@ -278,7 +278,7 @@ class PrefMember : public subtle::PrefMemberBase {
   void CreateInternal() const override { internal_ = new Internal(); }
 
   // This method is used to do the actual sync with pref of the specified type.
-  void BASE_PREFS_EXPORT UpdatePref(const ValueType& value);
+  void COMPONENTS_PREFS_EXPORT UpdatePref(const ValueType& value);
 
   mutable scoped_refptr<Internal> internal_;
 
@@ -298,50 +298,52 @@ class PrefMember : public subtle::PrefMemberBase {
 // --install --runhooks
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<bool>::UpdatePref(const bool& value);
+COMPONENTS_PREFS_EXPORT void PrefMember<bool>::UpdatePref(const bool& value);
 
 template <>
-BASE_PREFS_EXPORT bool PrefMember<bool>::Internal::UpdateValueInternal(
+COMPONENTS_PREFS_EXPORT bool PrefMember<bool>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<int>::UpdatePref(const int& value);
+COMPONENTS_PREFS_EXPORT void PrefMember<int>::UpdatePref(const int& value);
 
 template <>
-BASE_PREFS_EXPORT bool PrefMember<int>::Internal::UpdateValueInternal(
+COMPONENTS_PREFS_EXPORT bool PrefMember<int>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<double>::UpdatePref(const double& value);
+COMPONENTS_PREFS_EXPORT void
+PrefMember<double>::UpdatePref(const double& value);
 
 template <>
-BASE_PREFS_EXPORT bool PrefMember<double>::Internal::UpdateValueInternal(
+COMPONENTS_PREFS_EXPORT bool PrefMember<double>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<std::string>::UpdatePref(
+COMPONENTS_PREFS_EXPORT void PrefMember<std::string>::UpdatePref(
     const std::string& value);
 
 template <>
-BASE_PREFS_EXPORT bool PrefMember<std::string>::Internal::UpdateValueInternal(
+COMPONENTS_PREFS_EXPORT bool
+PrefMember<std::string>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<base::FilePath>::UpdatePref(
+COMPONENTS_PREFS_EXPORT void PrefMember<base::FilePath>::UpdatePref(
     const base::FilePath& value);
 
 template <>
-BASE_PREFS_EXPORT bool
+COMPONENTS_PREFS_EXPORT bool
 PrefMember<base::FilePath>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 template <>
-BASE_PREFS_EXPORT void PrefMember<std::vector<std::string> >::UpdatePref(
+COMPONENTS_PREFS_EXPORT void PrefMember<std::vector<std::string>>::UpdatePref(
     const std::vector<std::string>& value);
 
 template <>
-BASE_PREFS_EXPORT bool
-PrefMember<std::vector<std::string> >::Internal::UpdateValueInternal(
+COMPONENTS_PREFS_EXPORT bool
+PrefMember<std::vector<std::string>>::Internal::UpdateValueInternal(
     const base::Value& value) const;
 
 typedef PrefMember<bool> BooleanPrefMember;
@@ -350,6 +352,6 @@ typedef PrefMember<double> DoublePrefMember;
 typedef PrefMember<std::string> StringPrefMember;
 typedef PrefMember<base::FilePath> FilePathPrefMember;
 // This preference member is expensive for large string arrays.
-typedef PrefMember<std::vector<std::string> > StringListPrefMember;
+typedef PrefMember<std::vector<std::string>> StringListPrefMember;
 
-#endif  // BASE_PREFS_PREF_MEMBER_H_
+#endif  // COMPONENTS_PREFS_PREF_MEMBER_H_

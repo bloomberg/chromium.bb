@@ -10,6 +10,7 @@ include_rules = [
   "+components/data_reduction_proxy",
   "+components/devtools_discovery",
   "+components/metrics",
+  "+components/prefs",
   "+content/public/common",
   "+crypto",
   "+gpu",

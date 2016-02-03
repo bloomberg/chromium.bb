@@ -2,6 +2,7 @@ include_rules = [
   "+components/favicon_base",
   "+components/keyed_service",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/query_parser",
   "+components/url_formatter",
   "+grit/components_strings.h",

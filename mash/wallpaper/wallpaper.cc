@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "base/prefs/pref_registry_simple.h"
 #include "components/filesystem/public/cpp/prefs/pref_service_factory.h"
 #include "components/mus/public/cpp/property_type_converters.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"

@@ -6,8 +6,8 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/service/variations_service.h"
 #include "ios/chrome/browser/application_context.h"

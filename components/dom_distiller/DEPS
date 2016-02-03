@@ -1,6 +1,7 @@
 include_rules = [
   "+components/leveldb_proto",
   "+components/pref_registry",
+  "+components/prefs",
   "+components/variations",
   "+google", # For third_party/protobuf.
   "+grit",  # For generated headers.
