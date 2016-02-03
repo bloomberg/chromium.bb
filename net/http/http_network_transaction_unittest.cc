@@ -7885,6 +7885,87 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
   session->CloseAllConnections();
 }
 
+// Test that an explicitly trusted SPDY proxy can push same-origin HTTPS
+// resources.
+TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
+  HttpRequestInfo request;
+
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+
+  // Configure against https proxy server "myproxy:70".
+  session_deps_.proxy_service = ProxyService::CreateFixed("https://myproxy:70");
+  BoundTestNetLog log;
+  session_deps_.net_log = log.bound().net_log();
+
+  // Enable cross-origin push.
+  session_deps_.trusted_spdy_proxy = "myproxy:70";
+
+  scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  scoped_ptr<SpdyFrame> stream1_syn(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, LOWEST, false));
+
+  scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, "https://myproxy:70/foo.dat"));
+
+  MockWrite spdy_writes[] = {
+      CreateMockWrite(*stream1_syn, 0, ASYNC),
+  };
+
+  scoped_ptr<SpdyFrame> stream1_reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+
+  scoped_ptr<SpdyFrame> stream1_body(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+
+  scoped_ptr<SpdyFrame> stream2_reply(
+      spdy_util_.ConstructSpdyGetSynReply(nullptr, 0, 1));
+
+  scoped_ptr<SpdyFrame> stream2_body(
+      spdy_util_.ConstructSpdyBodyFrame(1, true));
+
+  MockRead spdy_reads[] = {
+      CreateMockRead(*stream1_reply, 1, ASYNC),
+      CreateMockRead(*stream2_syn, 2, ASYNC),
+      CreateMockRead(*stream1_body, 3, ASYNC),
+      CreateMockRead(*stream2_body, 4, ASYNC),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5),  // Force a hang
+  };
+
+  SequencedSocketData spdy_data(spdy_reads, arraysize(spdy_reads), spdy_writes,
+                                arraysize(spdy_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
+  // Negotiate SPDY to the proxy
+  SSLSocketDataProvider proxy(ASYNC, OK);
+  proxy.SetNextProto(GetProtocol());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&proxy);
+
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request, callback.callback(), log.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+
+  rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+
+  ASSERT_TRUE(response != nullptr);
+  EXPECT_TRUE(response->headers->IsKeepAlive());
+
+  EXPECT_EQ(200, response->headers->response_code());
+  EXPECT_TRUE(HttpVersion(1, 1) == response->headers->GetHttpVersion());
+
+  std::string response_data;
+  rv = ReadTransaction(trans.get(), &response_data);
+  EXPECT_EQ(OK, rv);
+  EXPECT_EQ("hello!", response_data);
+
+  trans.reset();
+  session->CloseAllConnections();
+}
+
 // Test HTTPS connections to a site with a bad certificate, going through an
 // HTTPS proxy
 TEST_P(HttpNetworkTransactionTest, HTTPSBadCertificateViaHttpsProxy) {
