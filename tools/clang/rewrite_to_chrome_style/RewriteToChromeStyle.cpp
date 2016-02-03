@@ -67,6 +67,13 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
 
+AST_MATCHER_P(clang::FunctionTemplateDecl,
+              templatedDecl,
+              clang::ast_matchers::internal::Matcher<clang::FunctionDecl>,
+              InnerMatcher) {
+  return InnerMatcher.matches(*Node.getTemplatedDecl(), Finder, Builder);
+}
+
 // A method is from Blink if it is from the Blink namespace or overrides a
 // method from the Blink namespace.
 bool IsBlinkMethod(const clang::CXXMethodDecl& decl) {
@@ -243,6 +250,15 @@ bool GetNameForDecl(const clang::VarDecl& decl,
   return true;
 }
 
+bool GetNameForDecl(const clang::FunctionTemplateDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
+  clang::FunctionDecl* templated_function = decl.getTemplatedDecl();
+  if (auto* method = clang::dyn_cast<clang::CXXMethodDecl>(templated_function))
+    return GetNameForDecl(*method, context, name);
+  return GetNameForDecl(*templated_function, context, name);
+}
+
 bool GetNameForDecl(const clang::UsingDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
@@ -263,6 +279,9 @@ bool GetNameForDecl(const clang::UsingDecl& decl,
     return GetNameForDecl(*var, context, name);
   if (auto* field = clang::dyn_cast<clang::FieldDecl>(shadowed_name))
     return GetNameForDecl(*field, context, name);
+  if (auto* function_template =
+          clang::dyn_cast<clang::FunctionTemplateDecl>(shadowed_name))
+    return GetNameForDecl(*function_template, context, name);
 
   return false;
 }
@@ -531,11 +550,17 @@ int main(int argc, const char* argv[]) {
   // Given
   //   using blink::X;
   // matches |using blink::X|.
+  auto function_template_decl_matcher =
+      id("decl",
+         functionTemplateDecl(
+             templatedDecl(anyOf(function_decl_matcher, method_decl_matcher)),
+             in_blink_namespace, unless(is_generated)));
   UsingDeclRewriter using_decl_rewriter(&replacements);
   match_finder.addMatcher(
-      id("decl", usingDecl(hasAnyUsingShadowDecl(hasTargetDecl(
-                     anyOf(var_decl_matcher, field_decl_matcher,
-                           function_decl_matcher, method_decl_matcher))))),
+      id("decl",
+         usingDecl(hasAnyUsingShadowDecl(hasTargetDecl(
+             anyOf(var_decl_matcher, field_decl_matcher, function_decl_matcher,
+                   method_decl_matcher, function_template_decl_matcher))))),
       &using_decl_rewriter);
 
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
