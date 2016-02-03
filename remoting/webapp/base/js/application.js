@@ -111,18 +111,25 @@ remoting.Application.prototype.getExtensionInfo = function() {
  * These functions must be overridden in the subclass.
  */
 
-/** @return {string} */
+/**
+ * @return {string}
+ * @suppress {missingReturn}
+ */
 remoting.Application.prototype.getApplicationId = function() {
   console.assert(false, 'Subclass must override');
 };
 
-/** @return {string} */
+/**
+ * @return {string}
+ * @suppress {missingReturn}
+ */
 remoting.Application.prototype.getApplicationName = function() {
   console.assert(false, 'Subclass must override getApplicationName().');
 };
 
 /**
  * @return {remoting.Activity}  The Current activity.
+ * @suppress {missingReturn}
  */
 remoting.Application.prototype.getActivity = function() {
   console.assert(false, 'Subclass must override getActivity().');

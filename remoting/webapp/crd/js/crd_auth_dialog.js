@@ -67,7 +67,7 @@ remoting.AuthDialog.prototype.isVisible = function() {
  */
 remoting.AuthDialog.getInstance = function() {
   if (!instance_) {
-    var rootElement = document.getElementById('auth-dialog');
+    var rootElement = base.getHtmlElement('auth-dialog');
     instance_ = new remoting.AuthDialog(rootElement);
   }
   return instance_;

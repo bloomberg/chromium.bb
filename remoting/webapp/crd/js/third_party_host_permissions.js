@@ -66,9 +66,9 @@ remoting.ThirdPartyHostPermissions.prototype.getPermission = function(
 remoting.ThirdPartyHostPermissions.prototype.showPermissionConfirmation_ =
     function(onOk, onError) {
   /** @type {HTMLElement} */
-  var button = document.getElementById('third-party-auth-button');
+  var button = base.getHtmlElement('third-party-auth-button');
   /** @type {HTMLElement} */
-  var url = document.getElementById('third-party-auth-url');
+  var url = base.getHtmlElement('third-party-auth-url');
   url.innerText = this.url_;
 
   /** @type {remoting.ThirdPartyHostPermissions} */

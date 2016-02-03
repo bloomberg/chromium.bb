@@ -96,7 +96,7 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
 
   if (base.isAppsV2()) {
     remoting.windowFrame = new remoting.WindowFrame(
-        document.getElementById('title-bar'), this.disconnect_.bind(this));
+        base.getHtmlElement('title-bar'), this.disconnect_.bind(this));
     remoting.optionsMenu = remoting.windowFrame.createOptionsMenu();
 
     var START_FULLSCREEN = 'start-fullscreen';
@@ -120,7 +120,7 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   } else {
     remoting.fullscreen = new remoting.FullscreenAppsV1();
     remoting.toolbar = new remoting.Toolbar(
-        document.getElementById('session-toolbar'),
+        base.getHtmlElement('session-toolbar'),
         this.disconnect_.bind(this));
     remoting.optionsMenu = remoting.toolbar.createOptionsMenu();
 
@@ -133,8 +133,7 @@ remoting.DesktopRemoting.prototype.initApplication_ = function() {
   document.getElementById('access-mode-button').addEventListener(
       'click', this.connectIt2Me_.bind(this), false);
 
-  remoting.manageHelpAndFeedback(
-      document.getElementById('title-bar'));
+  remoting.manageHelpAndFeedback(base.getHtmlElement('title-bar'));
 
   remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();

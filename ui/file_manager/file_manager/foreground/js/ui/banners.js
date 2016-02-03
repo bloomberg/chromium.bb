@@ -213,7 +213,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
     more.href = str('GOOGLE_DRIVE_REDEEM_URL');
     var moreInnerButton = util.createChild(
         more, 'imitate-paper-button primary', 'button');
-    moreInnerButton.tabIndex = '-1';
+    moreInnerButton.tabIndex = -1;
     moreInnerButton.textContent = str('DRIVE_WELCOME_CHECK_ELIGIBILITY');
   } else {
     title.textContent = str('DRIVE_WELCOME_TITLE');
@@ -221,7 +221,7 @@ Banners.prototype.prepareAndShowWelcomeBanner_ = function(type, messageId) {
     more.textContent = str('DRIVE_LEARN_MORE');
     more.href = str('GOOGLE_DRIVE_OVERVIEW_URL');
   }
-  more.tabIndex = '21';  // See: go/filesapp-tabindex.
+  more.tabIndex = 21;  // See: go/filesapp-tabindex.
   more.id = 'drive-welcome-link';
   more.target = '_blank';
 
