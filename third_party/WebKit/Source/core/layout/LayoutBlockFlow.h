@@ -332,6 +332,7 @@ private:
     bool hasOverhangingFloat(LayoutBox*);
     void addIntrudingFloats(LayoutBlockFlow* prev, LayoutUnit xoffset, LayoutUnit yoffset);
     void addOverhangingFloats(LayoutBlockFlow* child, bool makeChildPaintOtherFloats);
+    bool isOverhangingFloat(const FloatingObject& floatObject) const { return logicalBottomForFloat(floatObject) > logicalHeight(); }
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type = FloatingObject::FloatLeftRight) const;
 
@@ -476,6 +477,7 @@ public:
 
     const FloatingObjects* floatingObjects() const { return m_floatingObjects.get(); }
 
+    static void setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox, bool shouldPaint);
 
 protected:
     LayoutUnit maxPositiveMarginBefore() const { return m_rareData ? m_rareData->m_margins.positiveMarginBefore() : LayoutBlockFlowRareData::positiveMarginBeforeDefault(this); }

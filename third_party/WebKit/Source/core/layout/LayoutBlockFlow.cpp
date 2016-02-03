@@ -2035,7 +2035,7 @@ void LayoutBlockFlow::invalidatePaintForOverhangingFloats(bool paintAllDescendan
         // Only issue paint invaldiations for the object if it is overhanging, is not in its own layer, and
         // is our responsibility to paint (m_shouldPaint is set). When paintAllDescendants is true, the latter
         // condition is replaced with being a descendant of us.
-        if (logicalBottomForFloat(floatingObject) > logicalHeight()
+        if (isOverhangingFloat(floatingObject)
             && !floatingObject.layoutObject()->hasSelfPaintingLayer()
             && (floatingObject.shouldPaint() || (paintAllDescendants && floatingObject.layoutObject()->isDescendantOf(this)))) {
 
@@ -2451,7 +2451,7 @@ bool LayoutBlockFlow::hasOverhangingFloat(LayoutBox* layoutBox)
     if (it == floatingObjectSet.end())
         return false;
 
-    return logicalBottomForFloat(*it->get()) > logicalHeight();
+    return isOverhangingFloat(**it);
 }
 
 void LayoutBlockFlow::addIntrudingFloats(LayoutBlockFlow* prev, LayoutUnit logicalLeftOffset, LayoutUnit logicalTopOffset)
@@ -2616,6 +2616,39 @@ LayoutUnit LayoutBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
         return m_floatingObjects->logicalRightOffset(fixedOffset, logicalTop, logicalHeight);
 
     return fixedOffset;
+}
+
+void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floatBox, bool shouldPaint)
+{
+    ASSERT(floatBox.isFloating());
+    ASSERT(!floatBox.hasSelfPaintingLayer());
+    for (LayoutObject* ancestor = floatBox.parent(); ancestor && ancestor->isLayoutBlockFlow(); ancestor = ancestor->parent()) {
+        LayoutBlockFlow* ancestorBlock = toLayoutBlockFlow(ancestor);
+        FloatingObjects* ancestorFloatingObjects = ancestorBlock->m_floatingObjects.get();
+        if (!ancestorFloatingObjects)
+            break;
+        FloatingObjectSet::iterator it = ancestorFloatingObjects->mutableSet().find<FloatingObjectHashTranslator>(const_cast<LayoutBox*>(&floatBox));
+        if (it == ancestorFloatingObjects->mutableSet().end())
+            break;
+
+        FloatingObject& floatingObject = **it;
+        if (shouldPaint) {
+            ASSERT(!floatingObject.shouldPaint());
+            // This repeats the logic in addOverhangingFloats() about shouldPaint flag:
+            // - The nearest enclosing block in which the float doesn't overhang paints the float;
+            // - Or even if the float overhangs, if the ancestor block has self-painting layer, it
+            //   paints the float.
+            if (ancestorBlock->hasSelfPaintingLayer() || !ancestorBlock->isOverhangingFloat(floatingObject)) {
+                floatingObject.setShouldPaint(true);
+                return;
+            }
+        } else if (floatingObject.shouldPaint()) {
+            floatingObject.setShouldPaint(false);
+            return;
+        }
+    }
+    // We should have found the ancestor to update shouldPaint flag.
+    ASSERT_NOT_REACHED();
 }
 
 IntRect alignSelectionRectToDevicePixels(LayoutRect& rect)

@@ -151,6 +151,7 @@ public:
     bool hasLeftObjects() const { return m_leftObjectsCount > 0; }
     bool hasRightObjects() const { return m_rightObjectsCount > 0; }
     const FloatingObjectSet& set() const { return m_set; }
+    FloatingObjectSet& mutableSet() { return m_set; }
     void clearLineBoxTreePointers();
 
     LayoutUnit logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight);
