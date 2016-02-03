@@ -1386,10 +1386,6 @@ crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.
 
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 
-crbug.com/573166 fast/forms/placeholder-position.html [ NeedsRebaseline ]
-crbug.com/573166 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
-crbug.com/579816 svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
-
 # No baselines, but this js test is also showing FAIL
 crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 
