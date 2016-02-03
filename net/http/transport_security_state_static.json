@@ -90,7 +90,8 @@
         "DigiCertEVRoot",
         "DigiCertAssuredIDRoot",
         "Twitter1"
-      ]
+      ],
+      "report_uri": "http://l.twimg.com/i/hpkp_report"
     },
     {
       "name": "twitterCDN",
@@ -138,7 +139,8 @@
         "GlobalSignRootCA",
         "GlobalSignRootCA_R2",
         "GlobalSignRootCA_R3"
-      ]
+      ],
+      "report_uri": "http://l.twimg.com/i/hpkp_report"
     },
     {
       "name": "dropbox",

@@ -613,6 +613,7 @@ static const char* const kTwitterComAcceptableCerts[] = {
   kSPKIHash_Twitter1,
   NULL,
 };
+static const char kTwitterComReportURI[] = "http://l.twimg.com/i/hpkp_report";
 static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_VeriSignClass1,
   kSPKIHash_VeriSignClass3_G4,
@@ -658,6 +659,7 @@ static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_GlobalSignRootCA_R3,
   NULL,
 };
+static const char kTwitterCDNReportURI[] = "http://l.twimg.com/i/hpkp_report";
 static const char* const kDropboxAcceptableCerts[] = {
   kSPKIHash_DigiCertAssuredIDRoot,
   kSPKIHash_DigiCertGlobalRoot,
@@ -723,8 +725,8 @@ static const struct Pinset kPinsets[] = {
   {kTestAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
   {kGoogleAcceptableCerts, kNoRejectedPublicKeys, kGoogleReportURI},
   {kTorAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
-  {kTwitterComAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
-  {kTwitterCDNAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
+  {kTwitterComAcceptableCerts, kNoRejectedPublicKeys, kTwitterComReportURI},
+  {kTwitterCDNAcceptableCerts, kNoRejectedPublicKeys, kTwitterCDNReportURI},
   {kDropboxAcceptableCerts, kNoRejectedPublicKeys, kDropboxReportURI},
   {kFacebookAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
   {kSpideroakAcceptableCerts, kNoRejectedPublicKeys, kNoReportURI},
