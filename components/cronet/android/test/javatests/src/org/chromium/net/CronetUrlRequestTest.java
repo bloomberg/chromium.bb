@@ -330,6 +330,19 @@ public class CronetUrlRequestTest extends CronetTestBase {
 
     @SmallTest
     @Feature({"Cronet"})
+    public void testAcceptEncodingIgnored() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        UrlRequest.Builder builder = new UrlRequest.Builder(NativeTestServer.getEchoAllHeadersURL(),
+                callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        // This line should eventually throw an exception, once callers have migrated
+        builder.addHeader("accept-encoding", "foozip");
+        builder.build().start();
+        callback.blockForDone();
+        assertFalse(callback.mResponseAsString.contains("foozip"));
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
     public void testBadHeaderValue() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = new UrlRequest.Builder(

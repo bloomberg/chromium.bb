@@ -5,6 +5,7 @@
 package org.chromium.net;
 
 import android.support.annotation.IntDef;
+import android.util.Log;
 import android.util.Pair;
 
 import java.lang.annotation.Retention;
@@ -26,6 +27,7 @@ public interface UrlRequest {
      * with {@link Builder#build}.
      */
     public static final class Builder {
+        private static final String ACCEPT_ENCODING = "Accept-Encoding";
         // All fields are temporary storage of UrlRequest configuration to be
         // copied to built UrlRequests.
 
@@ -115,6 +117,14 @@ public interface UrlRequest {
             }
             if (value == null) {
                 throw new NullPointerException("Invalid header value.");
+            }
+            if (ACCEPT_ENCODING.equalsIgnoreCase(header)) {
+                Log.w("cronet",
+                        "It's not necessary to set Accept-Encoding on requests - cronet will do"
+                                + " this automatically for you, and setting it yourself has no "
+                                + "effect. See https://crbug.com/581399 for details.",
+                        new Exception());
+                return this;
             }
             mRequestHeaders.add(Pair.create(header, value));
             return this;
