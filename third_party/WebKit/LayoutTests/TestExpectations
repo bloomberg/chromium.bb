@@ -980,10 +980,6 @@ crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
 
 crbug.com/463798 [ Mac ] svg/as-image/svg-invalid-image-1.html [ Failure ]
 
-crbug.com/568387 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsRebaseline ]
-crbug.com/568387 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-3.html [ NeedsRebaseline ]
-crbug.com/568387 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsRebaseline ]
-
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
