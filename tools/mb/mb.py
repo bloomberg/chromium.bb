@@ -512,12 +512,11 @@ class MetaBuildWrapper(object):
           self.chromium_src_dir, 'testing', 'buildbot', 'gn_isolate_map.pyl')))
       gn_labels = []
       for target in swarming_targets:
-        if target.endswith('_apk'):
-          target = target[:-len('_apk')]
-        if not target in gn_isolate_map:
+        target_name = self.GNTargetName(target)
+        if not target_name in gn_isolate_map:
           raise MBErr('test target "%s"  not found in %s' %
                       (target, '//testing/buildbot/gn_isolate_map.pyl'))
-        gn_labels.append(gn_isolate_map[target]['label'])
+        gn_labels.append(gn_isolate_map[target_name]['label'])
 
       gn_runtime_deps_path = self.ToAbsPath(build_dir, 'runtime_deps')
 
@@ -539,10 +538,10 @@ class MetaBuildWrapper(object):
         # "_apk" targets may be either android_apk or executable. The former
         # will result in runtime_deps associated with the stamp file, while the
         # latter will result in runtime_deps associated with the executable.
-        target = target[:-len('_apk')]
-        label = gn_isolate_map[target]['label']
+        target_name = self.GNTargetName(target)
+        label = gn_isolate_map[target_name]['label']
         runtime_deps_targets = [
-            target,
+            target_name,
             'obj/%s.stamp' % label.replace(':', '/')]
       elif gn_isolate_map[target]['type'] == 'gpu_browser_test':
         runtime_deps_targets = ['browser_tests']
@@ -587,9 +586,10 @@ class MetaBuildWrapper(object):
 
     build_dir = self.args.path[0]
     target = self.args.target[0]
+    target_name = self.GNTargetName(target)
     command, extra_files = self.GetIsolateCommand(target, vals, gn_isolate_map)
 
-    label = gn_isolate_map[target]['label']
+    label = gn_isolate_map[target_name]['label']
     ret, out, _ = self.Call(['gn', 'desc', build_dir, label, 'runtime_deps'])
     if ret:
       return ret
@@ -701,14 +701,15 @@ class MetaBuildWrapper(object):
 
     executable_suffix = '.exe' if self.platform == 'win32' else ''
 
-    test_type = gn_isolate_map[target]['type']
+    target_name = self.GNTargetName(target)
+    test_type = gn_isolate_map[target_name]['type']
     cmdline = []
     extra_files = []
 
     if android:
       # TODO(jbudorick): This won't work with instrumentation test targets.
       # Revisit this logic when those are added to gn_isolate_map.pyl.
-      cmdline = [self.PathJoin('bin', 'run_%s' % target)]
+      cmdline = [self.PathJoin('bin', 'run_%s' % target_name)]
     elif use_x11 and test_type == 'windowed_test_launcher':
       extra_files = [
           'xdisplaycheck',
@@ -1032,6 +1033,9 @@ class MetaBuildWrapper(object):
   def Exists(self, path):
     # This function largely exists so it can be overridden for testing.
     return os.path.exists(path)
+
+  def GNTargetName(self, target):
+    return target[:-len('_apk')] if target.endswith('_apk') else target
 
   def MaybeMakeDirectory(self, path):
     try:
