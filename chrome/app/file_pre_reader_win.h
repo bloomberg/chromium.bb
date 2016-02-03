@@ -14,9 +14,6 @@ class MemoryMappedFile;
 }
 
 // Reads |file_path| to avoid touching the disk when the file is actually used.
-// The function checks the Windows version to determine which pre-reading
-// mechanism to use. On Vista+, chunks of 1 MB are read into a buffer. On XP,
-// pre-reading non-PE files is not supported.
 void PreReadFile(const base::FilePath& file_path);
 
 // Reads |memory_mapped_file| to avoid touching the disk when the mapped file is
