@@ -4,6 +4,7 @@
 
 #include "cc/trees/property_tree.h"
 
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/draw_property_utils.h"
@@ -229,7 +230,8 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
 TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
   ScrollNodeData original;
   original.scrollable = true;
-  original.should_scroll_on_main_thread = false;
+  original.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kScrollbarScrolling;
   original.contains_non_fast_scrollable_region = false;
   original.transform_id = 2;
 

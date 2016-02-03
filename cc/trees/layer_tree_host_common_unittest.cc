@@ -16,6 +16,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/base/math_util.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_client.h"
@@ -9896,9 +9897,10 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   // Test the behavior of scroll tree builder
   // Topology:
   // +root1(1)
-  // +--parent2(2)[should_scroll_on_main_thread & scrollable]
-  // +----child6(6)[should_scroll_on_main_thread]
-  // +------grand_child10(10)[should_scroll_on_main_thread]
+  // +--parent2(2)[kHasBackgroundAttachmentFixedObjects|kScrollbarScrolling &
+  // scrollable]
+  // +----child6(6)[kScrollbarScrolling]
+  // +------grand_child10(10)[kScrollbarScrolling]
   // +--parent3(3)
   // +----child7(7)[scrollable]
   // +----child8(8)[scroll_parent=7]
@@ -9953,11 +9955,13 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
 
   parent2->AddMainThreadScrollingReasons(
       MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+  parent2->AddMainThreadScrollingReasons(
+      MainThreadScrollingReason::kScrollbarScrolling);
   parent2->SetScrollClipLayerId(root1->id());
   child6->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+      MainThreadScrollingReason::kScrollbarScrolling);
   grand_child10->AddMainThreadScrollingReasons(
-      MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+      MainThreadScrollingReason::kScrollbarScrolling);
 
   child7->SetScrollClipLayerId(root1->id());
   child8->SetScrollParent(child7.get());
@@ -9978,7 +9982,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   property_tree_root->parent_id = kInvalidPropertyTreeNodeId;
   property_tree_root->owner_id = kInvalidPropertyTreeNodeId;
   property_tree_root->data.scrollable = false;
-  property_tree_root->data.should_scroll_on_main_thread = false;
+  property_tree_root->data.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   property_tree_root->data.contains_non_fast_scrollable_region = false;
   property_tree_root->data.transform_id = kRootPropertyTreeNodeId;
 
@@ -9994,7 +9999,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.id = 2;
   scroll_parent2.owner_id = parent2->id();
   scroll_parent2.data.scrollable = true;
-  scroll_parent2.data.should_scroll_on_main_thread = true;
+  scroll_parent2.data.main_thread_scrolling_reasons =
+      parent2->main_thread_scrolling_reasons();
   scroll_parent2.data.transform_id = parent2->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent2, 1);
 
@@ -10002,7 +10008,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   ScrollNode scroll_child6;
   scroll_child6.id = 3;
   scroll_child6.owner_id = child6->id();
-  scroll_child6.data.should_scroll_on_main_thread = true;
+  scroll_child6.data.main_thread_scrolling_reasons =
+      child6->main_thread_scrolling_reasons();
   scroll_child6.data.transform_id = child6->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child6, 2);
 

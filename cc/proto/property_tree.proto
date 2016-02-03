@@ -93,7 +93,7 @@ message EffectNodeData {
 
 message ScrollNodeData {
   optional bool scrollable = 1;
-  optional bool should_scroll_on_main_thread = 2;
+  optional int32 main_thread_scrolling_reasons = 2;
   optional bool contains_non_fast_scrollable_region = 3;
   optional int64 transform_id = 4;
 }

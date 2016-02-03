@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "cc/base/math_util.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/proto/scroll_offset.pb.h"
@@ -472,13 +473,14 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
 
 ScrollNodeData::ScrollNodeData()
     : scrollable(false),
-      should_scroll_on_main_thread(false),
+      main_thread_scrolling_reasons(
+          MainThreadScrollingReason::kNotScrollingOnMain),
       contains_non_fast_scrollable_region(false),
       transform_id(0) {}
 
 bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
   return scrollable == other.scrollable &&
-         should_scroll_on_main_thread == other.should_scroll_on_main_thread &&
+         main_thread_scrolling_reasons == other.main_thread_scrolling_reasons &&
          contains_non_fast_scrollable_region ==
              other.contains_non_fast_scrollable_region &&
          transform_id == other.transform_id;
@@ -488,7 +490,7 @@ void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
   DCHECK(!proto->has_scroll_node_data());
   proto::ScrollNodeData* data = proto->mutable_scroll_node_data();
   data->set_scrollable(scrollable);
-  data->set_should_scroll_on_main_thread(should_scroll_on_main_thread);
+  data->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons);
   data->set_contains_non_fast_scrollable_region(
       contains_non_fast_scrollable_region);
   data->set_transform_id(transform_id);
@@ -499,7 +501,7 @@ void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
   const proto::ScrollNodeData& data = proto.scroll_node_data();
 
   scrollable = data.scrollable();
-  should_scroll_on_main_thread = data.should_scroll_on_main_thread();
+  main_thread_scrolling_reasons = data.main_thread_scrolling_reasons();
   contains_non_fast_scrollable_region =
       data.contains_non_fast_scrollable_region();
   transform_id = data.transform_id();

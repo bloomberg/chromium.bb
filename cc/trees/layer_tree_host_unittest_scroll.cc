@@ -1112,6 +1112,45 @@ class LayerTreeHostScrollTestScrollNonDrawnLayer
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostScrollTestScrollNonDrawnLayer);
 
+class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
+    : public LayerTreeHostScrollTest {
+ public:
+  LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent() {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+    layer_tree_host()
+        ->inner_viewport_scroll_layer()
+        ->AddMainThreadScrollingReasons(
+            MainThreadScrollingReason::kEventHandlers);
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    LayerImpl* inner_scroll_layer = impl->InnerViewportScrollLayer();
+    LayerImpl* outer_scroll_layer = impl->OuterViewportScrollLayer();
+
+    InputHandler::ScrollStatus status = inner_scroll_layer->TryScroll(
+        gfx::PointF(1.f, 1.f), InputHandler::GESTURE);
+    EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kEventHandlers,
+              status.main_thread_scrolling_reasons);
+
+    status = outer_scroll_layer->TryScroll(gfx::PointF(1.f, 1.f),
+                                           InputHandler::GESTURE);
+    EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+    EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
+              status.main_thread_scrolling_reasons);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+
 class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:
   ThreadCheckingInputHandlerClient(base::SingleThreadTaskRunner* runner,

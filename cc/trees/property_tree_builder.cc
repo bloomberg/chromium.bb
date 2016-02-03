@@ -50,6 +50,7 @@ struct DataForRecursion {
   bool should_flatten;
   bool target_is_clipped;
   bool is_hidden;
+  uint32_t main_thread_scrolling_reasons;
   bool scroll_tree_parent_created_by_uninheritable_criteria;
   const gfx::Transform* device_transform;
   gfx::Vector2dF scroll_compensation_adjustment;
@@ -647,14 +648,21 @@ void AddScrollNodeIfNeeded(
   bool scrollable = layer->scrollable();
   bool contains_non_fast_scrollable_region =
       !layer->non_fast_scrollable_region().IsEmpty();
-  bool should_scroll_on_main_thread = layer->should_scroll_on_main_thread();
+  uint32_t main_thread_scrolling_reasons =
+      layer->main_thread_scrolling_reasons();
 
   bool scroll_node_uninheritable_criteria =
       is_root || scrollable || contains_non_fast_scrollable_region;
+  bool has_different_main_thread_scrolling_reasons =
+      main_thread_scrolling_reasons !=
+      data_from_ancestor.main_thread_scrolling_reasons;
   bool requires_node =
       scroll_node_uninheritable_criteria ||
-      (should_scroll_on_main_thread &&
-       data_from_ancestor.scroll_tree_parent_created_by_uninheritable_criteria);
+      (main_thread_scrolling_reasons !=
+           MainThreadScrollingReason::kNotScrollingOnMain &&
+       (has_different_main_thread_scrolling_reasons ||
+        data_from_ancestor
+            .scroll_tree_parent_created_by_uninheritable_criteria));
 
   if (!requires_node) {
     data_for_children->scroll_tree_parent = parent_id;
@@ -662,13 +670,15 @@ void AddScrollNodeIfNeeded(
     ScrollNode node;
     node.owner_id = layer->id();
     node.data.scrollable = scrollable;
-    node.data.should_scroll_on_main_thread = should_scroll_on_main_thread;
+    node.data.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.data.contains_non_fast_scrollable_region =
         contains_non_fast_scrollable_region;
     node.data.transform_id =
         data_for_children->transform_tree_parent->transform_tree_index();
     data_for_children->scroll_tree_parent =
         data_for_children->scroll_tree->Insert(node, parent_id);
+    data_for_children->main_thread_scrolling_reasons =
+        node.data.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
   }
@@ -801,6 +811,8 @@ void BuildPropertyTreesTopLevelInternal(
   data_for_recursion.should_flatten = false;
   data_for_recursion.target_is_clipped = false;
   data_for_recursion.is_hidden = false;
+  data_for_recursion.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   data_for_recursion.scroll_tree_parent_created_by_uninheritable_criteria =
       true;
   data_for_recursion.device_transform = &device_transform;

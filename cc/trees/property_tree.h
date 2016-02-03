@@ -268,7 +268,7 @@ struct CC_EXPORT ScrollNodeData {
   ScrollNodeData();
 
   bool scrollable;
-  bool should_scroll_on_main_thread;
+  uint32_t main_thread_scrolling_reasons;
   bool contains_non_fast_scrollable_region;
 
   int transform_id;

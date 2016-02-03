@@ -280,6 +280,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
   void ClearMainThreadScrollingReasons();
+  uint32_t main_thread_scrolling_reasons() const {
+    return main_thread_scrolling_reasons_;
+  }
   bool should_scroll_on_main_thread() const {
     return !!main_thread_scrolling_reasons_;
   }
