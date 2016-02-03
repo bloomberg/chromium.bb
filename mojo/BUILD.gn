@@ -27,46 +27,6 @@ group("mojo") {
   deps += [ "//mojo/shell:all" ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("mojo_public_bindings_unittests_run") {
-  testonly = true
-  deps = [
-    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_bindings_unittests"
-    "//third_party/mojo/src/mojo/edk/test:mojo_public_bindings_unittests",
-  ]
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("mojo_public_environment_unittests_run") {
-  testonly = true
-  deps = [
-    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_environment_unittests"
-    "//third_party/mojo/src/mojo/edk/test:mojo_public_environment_unittests",
-  ]
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("mojo_public_system_unittests_run") {
-  testonly = true
-  deps = [
-    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_system_unittests"
-    "//third_party/mojo/src/mojo/edk/test:mojo_public_system_unittests",
-  ]
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("mojo_public_utility_unittests_run") {
-  testonly = true
-  deps = [
-    # TODO(use_chrome_edk): "//mojo/edk/test:mojo_public_utility_unittests"
-    "//third_party/mojo/src/mojo/edk/test:mojo_public_utility_unittests",
-  ]
-}
-
 group("tests") {
   testonly = true
   deps = [

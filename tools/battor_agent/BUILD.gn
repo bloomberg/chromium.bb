@@ -59,12 +59,3 @@ test("battor_agent_unittests") {
     "//testing/gtest",
   ]
 }
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("battor_agent_unittests_run") {
-  testonly = true
-  deps = [
-    ":battor_agent_unittests",
-  ]
-}

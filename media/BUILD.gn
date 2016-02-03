@@ -610,15 +610,6 @@ if (is_ios) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("media_unittests_run") {
-  testonly = true
-  deps = [
-    ":media_unittests",
-  ]
-}
-
 test("media_unittests") {
   sources = [
     "capture/content/animated_content_sampler_unittest.cc",
@@ -837,15 +828,6 @@ test("media_perftests") {
   if (media_use_ffmpeg) {
     deps += [ "//third_party/ffmpeg" ]  # Direct dependency required to inherit config.
   }
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("audio_unittests_run") {
-  testonly = true
-  deps = [
-    ":audio_unittests",
-  ]
 }
 
 # For running the subset of media_unittests that might require audio hardware

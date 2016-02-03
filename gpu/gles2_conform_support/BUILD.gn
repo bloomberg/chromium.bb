@@ -174,15 +174,6 @@ if (internal_gles2_conform_tests) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("gles2_conform_test_run") {
-  testonly = true
-  deps = [
-    ":gles2_conform_test",
-  ]
-}
-
 test("gles2_conform_test") {
   sources = [
     "gles2_conform_test.cc",

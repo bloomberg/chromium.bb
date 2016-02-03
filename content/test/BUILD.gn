@@ -339,15 +339,6 @@ if (is_android) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("content_browsertests_run") {
-  testonly = true
-  deps = [
-    ":content_browsertests",
-  ]
-}
-
 test("content_browsertests") {
   sources = rebase_path(content_tests_gypi_values.content_browsertests_sources,
                         ".",
@@ -558,15 +549,6 @@ test("content_browsertests") {
       "../browser/web_contents/web_contents_view_aura_browsertest.cc",
     ]
   }
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("content_unittests_run") {
-  testonly = true
-  deps = [
-    ":content_unittests",
-  ]
 }
 
 test("content_unittests") {
@@ -833,15 +815,6 @@ test("content_perftests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
   }
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("content_gl_tests_run") {
-  testonly = true
-  deps = [
-    ":content_gl_tests",
-  ]
 }
 
 test("content_gl_tests") {

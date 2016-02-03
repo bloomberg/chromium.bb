@@ -328,15 +328,6 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("gl_unittests_run") {
-  testonly = true
-  deps = [
-    ":gl_unittests",
-  ]
-}
-
 test("gl_unittests") {
   sources = [
     "gl_api_unittest.cc",

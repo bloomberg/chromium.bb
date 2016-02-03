@@ -226,15 +226,6 @@ if (false && is_win) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("crypto_unittests_run") {
-  testonly = true
-  deps = [
-    ":crypto_unittests",
-  ]
-}
-
 test("crypto_unittests") {
   sources = [
     "aead_openssl_unittest.cc",

@@ -1522,15 +1522,6 @@ if (is_win) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("base_unittests_run") {
-  testonly = true
-  deps = [
-    ":base_unittests",
-  ]
-}
-
 test("base_unittests") {
   sources = [
     "allocator/tcmalloc_unittest.cc",

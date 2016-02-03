@@ -90,15 +90,6 @@ static_library("cacheinvalidation") {
   ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("cacheinvalidation_unittests_run") {
-  testonly = true
-  deps = [
-    ":cacheinvalidation_unittests",
-  ]
-}
-
 test("cacheinvalidation_unittests") {
   sources = [
     "src/google/cacheinvalidation/impl/invalidation-client-impl_test.cc",

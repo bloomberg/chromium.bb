@@ -141,15 +141,6 @@ repack("shell_and_test_pak") {
   ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("extensions_unittests_run") {
-  testonly = true
-  deps = [
-    ":extensions_unittests",
-  ]
-}
-
 test("extensions_unittests") {
   sources =
       rebase_path(extensions_tests_gypi_values.extensions_unittests_sources,
@@ -216,15 +207,6 @@ test("extensions_unittests") {
 
     deps += [ "//chromeos:test_support" ]
   }
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("extensions_browsertests_run") {
-  testonly = true
-  deps = [
-    ":extensions_browsertests",
-  ]
 }
 
 test("extensions_browsertests") {

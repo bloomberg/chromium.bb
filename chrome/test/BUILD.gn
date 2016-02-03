@@ -285,15 +285,6 @@ if (!is_android) {
     ]
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("interactive_ui_tests_run") {
-    testonly = true
-    deps = [
-      ":interactive_ui_tests",
-    ]
-  }
-
   test("interactive_ui_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.chrome_interactive_ui_test_sources,
@@ -775,15 +766,6 @@ if (!is_android) {
   group("tab_capture_end2end_tests_run") {
     testonly = true
     deps = [
-      ":browser_tests",
-    ]
-  }
-
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("browser_tests_run") {
-    testonly = true
-    data_deps = [
       ":browser_tests",
     ]
   }
@@ -1275,15 +1257,6 @@ if (!is_android) {
     }
   }
 
-  # TODO(GYP): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
-  group("sync_integration_tests_run") {
-    testonly = true
-    deps = [
-      ":sync_integration_tests",
-    ]
-  }
-
   test("sync_integration_tests") {
     sources =
         rebase_path(chrome_tests_gypi_values.sync_integration_tests_sources,
@@ -1480,15 +1453,6 @@ js2gtest("unit_tests_js") {
             ".",
             "//chrome")
   }
-}
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("unit_tests_run") {
-  testonly = true
-  deps = [
-    ":unit_tests",
-  ]
 }
 
 test("unit_tests") {

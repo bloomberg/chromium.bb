@@ -657,15 +657,6 @@ source_set("skia_opts") {
   visibility = [ ":skia" ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("skia_unittests_run") {
-  testonly = true
-  deps = [
-    ":skia_unittests",
-  ]
-}
-
 test("skia_unittests") {
   sources = [
     "ext/analysis_canvas_unittest.cc",

@@ -16,15 +16,6 @@ if (is_mac) {
 is_linux_without_udev = is_linux && !use_udev
 is_linux_without_dbus = is_linux && !use_dbus
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("device_unittests_run") {
-  testonly = true
-  deps = [
-    ":device_unittests",
-  ]
-}
-
 test("device_unittests") {
   sources = [
     "battery/battery_status_manager_win_unittest.cc",
