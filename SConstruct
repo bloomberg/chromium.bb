@@ -3446,19 +3446,12 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
-nacl_irt_env.ClearBits('nacl_clang')
 nacl_irt_env.ClearBits('pnacl_generate_pexe')
 nacl_irt_env.ClearBits('use_sandboxed_translator')
-
+nacl_irt_env.ClearBits('bitcode')
 # The choice of toolchain used to build the IRT does not depend on the toolchain
-# used to build user/test code. PNaCl is used on mips because that was until
-# recently the only compiler for mips. nacl-clang is used everywhere else.
-# TODO(dschuff): Use nacl-clang for Mips as well.
-if nacl_irt_env.Bit('build_mips32'):
-  nacl_irt_env.SetBits('bitcode')
-else:
-  nacl_irt_env.ClearBits('bitcode')
-  nacl_irt_env.SetBits('nacl_clang')
+# used to build user/test code. nacl-clang is used everywhere for the IRT.
+nacl_irt_env.SetBits('nacl_clang')
 
 nacl_irt_env.Tool('naclsdk')
 # These are unfortunately clobbered by running Tool, which
@@ -3482,19 +3475,9 @@ if nacl_irt_env.Bit('build_x86_32'):
   # See  https://code.google.com/p/nativeclient/issues/detail?id=3935
   nacl_irt_env.Append(CCFLAGS=['-mstackrealign', '-mno-sse'])
 
-
-if nacl_irt_env.Bit('bitcode'):
-  nacl_irt_env.Append(LINKFLAGS=['--pnacl-allow-native'])
-  if nacl_irt_env.Bit('build_mips32'):
-    # Disable the PNaCl IRT verifier since it will complain about
-    # __executable_start symbol not being a valid external symbol.
-    nacl_irt_env.Append(LINKFLAGS=['--pnacl-disable-abi-check'])
-
 # The IRT is C only, don't link with the C++ linker so that it doesn't
 # start depending on the C++ standard library and (in the case of
 # libc++) pthread.
-nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
-                           replace('pnacl-clang++', 'pnacl-clang')))
 nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
                            replace('nacl-clang++', 'nacl-clang')))
 

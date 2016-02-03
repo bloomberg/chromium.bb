@@ -102,15 +102,6 @@
         'build_irt': 1,
       },
       'sources': ['<@(irt_sources)','<@(stub_sources)'],
-      'conditions': [
-        # Disable stub sources on ARM
-        # TODO(dschuff): remove this when we switch to arm-nacl-clang
-        ['target_arch=="mipsel"', {
-          'variables': {
-            'stub_sources': []
-          }
-        }],
-      ],
       'dependencies': [
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
       ],

@@ -23,13 +23,6 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
       ],
-      'conditions': [
-        ['target_arch=="mipsel"', {
-          'compile_flags': [
-            '--pnacl-bias=mips32',
-          ],
-        }],
-      ],
     },
   ],
 }

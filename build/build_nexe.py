@@ -163,7 +163,8 @@ class Builder(CommandRunner):
       self.tool_prefix = 'arm-nacl-'
       mainarch = 'arm'
     elif arch == 'mips':
-      self.is_pnacl_toolchain = True
+      self.tool_prefix = 'mipsel-nacl-'
+      mainarch = 'mipsel'
     elif arch == 'pnacl':
       self.is_pnacl_toolchain = True
     else:
