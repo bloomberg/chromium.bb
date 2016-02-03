@@ -699,7 +699,10 @@ base::Process StartSandboxedProcess(
       sandbox::MITIGATION_BOTTOM_UP_ASLR |
       sandbox::MITIGATION_DEP |
       sandbox::MITIGATION_DEP_NO_ATL_THUNK |
-      sandbox::MITIGATION_SEHOP;
+      sandbox::MITIGATION_SEHOP |
+      sandbox::MITIGATION_NONSYSTEM_FONT_DISABLE |
+      sandbox::MITIGATION_IMAGE_LOAD_NO_REMOTE |
+      sandbox::MITIGATION_IMAGE_LOAD_NO_LOW_LABEL;
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return base::Process();
