@@ -33,7 +33,7 @@ const int kNoToastMarginBorderAndShadowOffset = 2;
 }
 
 AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(ShelfLayoutManager* shelf)
-    : screen_(NULL), root_window_(NULL), shelf_(shelf), system_tray_height_(0) {
+    : screen_(NULL), shelf_(shelf), system_tray_height_(0) {
   shelf_->AddObserver(this);
 }
 
@@ -48,9 +48,6 @@ void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
                                                const gfx::Display& display) {
   screen_ = screen;
   work_area_ = display.work_area();
-  root_window_ = ash::Shell::GetInstance()
-                     ->window_tree_host_manager()
-                     ->GetRootWindowForDisplayId(display.id());
   screen->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   if (system_tray_height_ > 0)

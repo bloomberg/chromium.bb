@@ -272,12 +272,7 @@ void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
 }
 
 void TrayUser::UpdateLayoutOfItem() {
-  RootWindowController* controller = GetRootWindowController(
-      system_tray()->GetWidget()->GetNativeWindow()->GetRootWindow());
-  if (controller && controller->shelf()) {
-    UpdateAfterShelfAlignmentChange(
-        controller->GetShelfLayoutManager()->GetAlignment());
-  }
+  UpdateAfterShelfAlignmentChange(system_tray()->shelf_alignment());
 }
 
 }  // namespace ash
