@@ -43,10 +43,8 @@ const int64_t CloudPolicyRefreshScheduler::kUnmanagedRefreshDelayMs =
     24 * 60 * 60 * 1000;  // 1 day.
 // Delay for periodic refreshes when the invalidations service is available,
 // in milliseconds.
-// TODO(joaodasilva): increase this value once we're confident that the
-// invalidations channel works as expected.
 const int64_t CloudPolicyRefreshScheduler::kWithInvalidationsRefreshDelayMs =
-    3 * 60 * 60 * 1000;  // 3 hours.
+    24 * 60 * 60 * 1000;  // 1 day.
 const int64_t CloudPolicyRefreshScheduler::kInitialErrorRetryDelayMs =
     5 * 60 * 1000;  // 5 minutes.
 const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
