@@ -179,7 +179,7 @@ TokenLevel PolicyBase::GetInitialTokenLevel() const {
   return initial_level_;
 }
 
-TokenLevel PolicyBase::GetLockdownTokenLevel() const{
+TokenLevel PolicyBase::GetLockdownTokenLevel() const {
   return lockdown_level_;
 }
 
@@ -190,6 +190,10 @@ ResultCode PolicyBase::SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) {
   job_level_ = job_level;
   ui_exceptions_ = ui_exceptions;
   return SBOX_ALL_OK;
+}
+
+JobLevel PolicyBase::GetJobLevel() const {
+  return job_level_;
 }
 
 ResultCode PolicyBase::SetJobMemoryLimit(size_t memory_limit) {

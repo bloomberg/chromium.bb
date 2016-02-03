@@ -24,13 +24,14 @@ namespace win {
 enum Version {
   VERSION_PRE_XP = 0,  // Not supported.
   VERSION_XP,
-  VERSION_SERVER_2003, // Also includes XP Pro x64 and Server 2003 R2.
-  VERSION_VISTA,       // Also includes Windows Server 2008.
-  VERSION_WIN7,        // Also includes Windows Server 2008 R2.
-  VERSION_WIN8,        // Also includes Windows Server 2012.
-  VERSION_WIN8_1,      // Also includes Windows Server 2012 R2.
-  VERSION_WIN10,       // Also includes Windows 10 Server.
-  VERSION_WIN_LAST,    // Indicates error condition.
+  VERSION_SERVER_2003,  // Also includes XP Pro x64 and Server 2003 R2.
+  VERSION_VISTA,        // Also includes Windows Server 2008.
+  VERSION_WIN7,         // Also includes Windows Server 2008 R2.
+  VERSION_WIN8,         // Also includes Windows Server 2012.
+  VERSION_WIN8_1,       // Also includes Windows Server 2012 R2.
+  VERSION_WIN10,        // Also includes Windows 10 Server.
+  VERSION_WIN10_TH2,    // Threshold 2: Version 1511, Build 10586.
+  VERSION_WIN_LAST,     // Indicates error condition.
 };
 
 // A rough bucketing of the available types of versions of Windows. This is used

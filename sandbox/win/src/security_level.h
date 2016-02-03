@@ -183,8 +183,7 @@ const MitigationFlags MITIGATION_HIGH_ENTROPY_ASLR                = 0x00000080;
 // PROCESS_CREATION_MITIGATION_POLICY_STRICT_HANDLE_CHECKS_ALWAYS_ON.
 const MitigationFlags MITIGATION_STRICT_HANDLE_CHECKS             = 0x00000100;
 
-// Prevents the process from making Win32k calls. Must be enabled after
-// startup. Corresponds to
+// Prevents the process from making Win32k calls. Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON.
 const MitigationFlags MITIGATION_WIN32K_DISABLE                   = 0x00000200;
 
@@ -192,6 +191,11 @@ const MitigationFlags MITIGATION_WIN32K_DISABLE                   = 0x00000200;
 // App_InitDLLs). Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON.
 const MitigationFlags MITIGATION_EXTENSION_DLL_DISABLE            = 0x00000400;
+
+// Prevents the process from loading non-system fonts into GDI.
+// Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_FONT_DISABLE_ALWAYS_ON
+const MitigationFlags MITIGATION_NONSYSTEM_FONT_DISABLE = 0x00000800;
 
 // Sets the DLL search order to LOAD_LIBRARY_SEARCH_DEFAULT_DIRS. Additional
 // directories can be added via the Windows AddDllDirectory() function.
@@ -203,6 +207,14 @@ const MitigationFlags MITIGATION_DLL_SEARCH_ORDER        = 0x00000001ULL << 32;
 // to enable no-read and no-execute up. This prevents a lower IL process from
 // opening the process token for impersonate/duplicate/assignment.
 const MitigationFlags MITIGATION_HARDEN_TOKEN_IL_POLICY  = 0x00000001ULL << 33;
+
+// Blocks mapping of images from remote devices. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_REMOTE_ALWAYS_ON.
+const MitigationFlags MITIGATION_IMAGE_LOAD_NO_REMOTE = 0x00000001ULL << 52;
+
+// Blocks mapping of images that have the low manditory label. Corresponds to
+// PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_LOW_LABEL_ALWAYS_ON.
+const MitigationFlags MITIGATION_IMAGE_LOAD_NO_LOW_LABEL = 0x00000001ULL << 56;
 
 }  // namespace sandbox
 

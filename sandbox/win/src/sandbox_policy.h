@@ -135,6 +135,9 @@ class TargetPolicy {
   virtual ResultCode SetJobLevel(JobLevel job_level,
                                  uint32_t ui_exceptions) = 0;
 
+  // Returns the job level.
+  virtual JobLevel GetJobLevel() const = 0;
+
   // Sets a hard limit on the size of the commit set for the sandboxed process.
   // If the limit is reached, the process will be terminated with
   // SBOX_FATAL_MEMORY_EXCEEDED (7012).

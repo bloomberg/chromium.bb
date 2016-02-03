@@ -105,6 +105,10 @@ class TestRunner {
   // Sets TestRunner to return without waiting for the process to exit.
   void SetUnsandboxed(bool is_no_sandbox) { no_sandbox_ = is_no_sandbox; }
 
+  // Sets whether TestRunner should disable CSRSS or not (default true).
+  // Any test that needs to spawn a child process needs to set this to false.
+  void SetDisableCsrss(bool disable_csrss) { disable_csrss_ = disable_csrss; }
+
   // Sets the desired state for the test to run.
   void SetTestState(SboxTestsState desired_state);
 
@@ -127,7 +131,8 @@ class TestRunner {
  private:
   // Initializes the data in the object. Sets is_init_ to tree if the
   // function succeeds. This is meant to be called from the constructor.
-  void Init(JobLevel job_level, TokenLevel startup_token,
+  void Init(JobLevel job_level,
+            TokenLevel startup_token,
             TokenLevel main_token);
 
   // The actual runner.
@@ -140,6 +145,7 @@ class TestRunner {
   bool is_init_;
   bool is_async_;
   bool no_sandbox_;
+  bool disable_csrss_;
   bool kill_on_destruction_;
   base::win::ScopedHandle target_process_;
   DWORD target_process_id_;

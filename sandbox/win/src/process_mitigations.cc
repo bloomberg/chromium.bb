@@ -162,7 +162,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
-  // Enable system call policies.
+  // Enable dll extension policies.
   if (flags & MITIGATION_EXTENSION_DLL_DISABLE) {
     PROCESS_MITIGATION_EXTENSION_POINT_DISABLE_POLICY policy = {};
     policy.DisableExtensionPoints = true;
@@ -174,11 +174,46 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
     }
   }
 
+  if (version < base::win::VERSION_WIN10)
+    return true;
+
+  // Enable font policies.
+  if (flags & MITIGATION_NONSYSTEM_FONT_DISABLE) {
+    PROCESS_MITIGATION_FONT_DISABLE_POLICY policy = {0};
+    policy.DisableNonSystemFonts = true;
+
+    if (!set_process_mitigation_policy(ProcessFontDisablePolicy, &policy,
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
+    }
+  }
+
+  if (version < base::win::VERSION_WIN10_TH2)
+    return true;
+
+  // Enable image load policies.
+  if (flags & MITIGATION_IMAGE_LOAD_NO_REMOTE ||
+      flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL) {
+    PROCESS_MITIGATION_IMAGE_LOAD_POLICY policy = {0};
+    if (flags & MITIGATION_IMAGE_LOAD_NO_REMOTE)
+      policy.NoRemoteImages = true;
+    if (flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL)
+      policy.NoLowMandatoryLabelImages = true;
+
+    if (!set_process_mitigation_policy(ProcessImageLoadPolicy, &policy,
+                                       sizeof(policy)) &&
+        ERROR_ACCESS_DENIED != ::GetLastError()) {
+      return false;
+    }
+  }
+
   return true;
 }
 
 void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
-                                       DWORD64* policy_flags, size_t* size) {
+                                       DWORD64* policy_flags,
+                                       size_t* size) {
   base::win::Version version = base::win::GetVersion();
 
   *policy_flags = 0;
@@ -252,6 +287,26 @@ void ConvertProcessMitigationsToPolicy(MitigationFlags flags,
     *policy_flags |=
         PROCESS_CREATION_MITIGATION_POLICY_EXTENSION_POINT_DISABLE_ALWAYS_ON;
   }
+
+  if (version < base::win::VERSION_WIN10)
+    return;
+
+  if (flags & MITIGATION_NONSYSTEM_FONT_DISABLE) {
+    *policy_flags |= PROCESS_CREATION_MITIGATION_POLICY_FONT_DISABLE_ALWAYS_ON;
+  }
+
+  if (version < base::win::VERSION_WIN10_TH2)
+    return;
+
+  if (flags & MITIGATION_IMAGE_LOAD_NO_REMOTE) {
+    *policy_flags |=
+        PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_REMOTE_ALWAYS_ON;
+  }
+
+  if (flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL) {
+    *policy_flags |=
+        PROCESS_CREATION_MITIGATION_POLICY_IMAGE_LOAD_NO_LOW_LABEL_ALWAYS_ON;
+  }
 }
 
 MitigationFlags FilterPostStartupProcessMitigations(MitigationFlags flags) {
@@ -311,16 +366,22 @@ bool ApplyProcessMitigationsToSuspendedProcess(HANDLE process,
 
 bool CanSetProcessMitigationsPostStartup(MitigationFlags flags) {
   // All of these mitigations can be enabled after startup.
-  return !(flags & ~(MITIGATION_HEAP_TERMINATE |
-                     MITIGATION_DEP |
-                     MITIGATION_DEP_NO_ATL_THUNK |
-                     MITIGATION_RELOCATE_IMAGE |
-                     MITIGATION_RELOCATE_IMAGE_REQUIRED |
-                     MITIGATION_BOTTOM_UP_ASLR |
-                     MITIGATION_STRICT_HANDLE_CHECKS |
-                     MITIGATION_EXTENSION_DLL_DISABLE |
-                     MITIGATION_DLL_SEARCH_ORDER |
-                     MITIGATION_HARDEN_TOKEN_IL_POLICY));
+  return !(
+      flags &
+      ~(MITIGATION_HEAP_TERMINATE |
+        MITIGATION_DEP |
+        MITIGATION_DEP_NO_ATL_THUNK |
+        MITIGATION_RELOCATE_IMAGE |
+        MITIGATION_RELOCATE_IMAGE_REQUIRED |
+        MITIGATION_BOTTOM_UP_ASLR |
+        MITIGATION_STRICT_HANDLE_CHECKS |
+        MITIGATION_EXTENSION_DLL_DISABLE |
+        MITIGATION_DLL_SEARCH_ORDER |
+        MITIGATION_HARDEN_TOKEN_IL_POLICY |
+        MITIGATION_WIN32K_DISABLE |
+        MITIGATION_NONSYSTEM_FONT_DISABLE |
+        MITIGATION_IMAGE_LOAD_NO_REMOTE |
+        MITIGATION_IMAGE_LOAD_NO_LOW_LABEL));
 }
 
 bool CanSetProcessMitigationsPreStartup(MitigationFlags flags) {

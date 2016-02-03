@@ -90,20 +90,28 @@ BrokerServices* GetBroker() {
   return broker;
 }
 
-TestRunner::TestRunner(JobLevel job_level, TokenLevel startup_token,
+TestRunner::TestRunner(JobLevel job_level,
+                       TokenLevel startup_token,
                        TokenLevel main_token)
-    : is_init_(false), is_async_(false), no_sandbox_(false),
+    : is_init_(false),
+      is_async_(false),
+      no_sandbox_(false),
+      disable_csrss_(true),
       target_process_id_(0) {
   Init(job_level, startup_token, main_token);
 }
 
 TestRunner::TestRunner()
-    : is_init_(false), is_async_(false), no_sandbox_(false),
+    : is_init_(false),
+      is_async_(false),
+      no_sandbox_(false),
+      disable_csrss_(true),
       target_process_id_(0) {
   Init(JOB_LOCKDOWN, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
 }
 
-void TestRunner::Init(JobLevel job_level, TokenLevel startup_token,
+void TestRunner::Init(JobLevel job_level,
+                      TokenLevel startup_token,
                       TokenLevel main_token) {
   broker_ = NULL;
   policy_ = NULL;
@@ -123,11 +131,6 @@ void TestRunner::Init(JobLevel job_level, TokenLevel startup_token,
 
   policy_->SetJobLevel(job_level, 0);
   policy_->SetTokenLevel(startup_token, main_token);
-
-  // Close all ALPC ports.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-    policy_->AddKernelObjectToClose(L"ALPC Port", NULL);
-  }
 
   is_init_ = true;
 }
@@ -208,6 +211,13 @@ int TestRunner::InternalRunTest(const wchar_t* command) {
       return SBOX_TEST_FAILED_TO_RUN_TEST;
     target_process_.Close();
     target_process_id_ = 0;
+  }
+
+  if (disable_csrss_) {
+    // Close all ALPC ports to disable CSRSS.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+      policy_->AddKernelObjectToClose(L"ALPC Port", NULL);
+    }
   }
 
   // Get the path to the sandboxed process.

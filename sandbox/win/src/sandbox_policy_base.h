@@ -45,6 +45,7 @@ class PolicyBase final : public TargetPolicy {
   TokenLevel GetInitialTokenLevel() const override;
   TokenLevel GetLockdownTokenLevel() const override;
   ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
+  JobLevel GetJobLevel() const override;
   ResultCode SetJobMemoryLimit(size_t memory_limit) override;
   ResultCode SetAlternateDesktop(bool alternate_winstation) override;
   base::string16 GetAlternateDesktop() const override;

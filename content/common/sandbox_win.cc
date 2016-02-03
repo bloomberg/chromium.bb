@@ -693,11 +693,13 @@ base::Process StartSandboxedProcess(
 
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
-  sandbox::MitigationFlags mitigations = sandbox::MITIGATION_HEAP_TERMINATE |
-                                         sandbox::MITIGATION_BOTTOM_UP_ASLR |
-                                         sandbox::MITIGATION_DEP |
-                                         sandbox::MITIGATION_DEP_NO_ATL_THUNK |
-                                         sandbox::MITIGATION_SEHOP;
+  // Pre-startup mitigations.
+  sandbox::MitigationFlags mitigations =
+      sandbox::MITIGATION_HEAP_TERMINATE |
+      sandbox::MITIGATION_BOTTOM_UP_ASLR |
+      sandbox::MITIGATION_DEP |
+      sandbox::MITIGATION_DEP_NO_ATL_THUNK |
+      sandbox::MITIGATION_SEHOP;
 
   if (policy->SetProcessMitigations(mitigations) != sandbox::SBOX_ALL_OK)
     return base::Process();
@@ -710,6 +712,7 @@ base::Process StartSandboxedProcess(
   }
 #endif
 
+  // Post-startup mitigations.
   mitigations = sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
 

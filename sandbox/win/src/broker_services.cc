@@ -330,13 +330,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
 
   // Initialize the startup information from the policy.
   base::win::StartupInformation startup_info;
-  // The liftime of |mitigations| and |inherit_handle_list| have to be at least
-  // as long as |startup_info| because |UpdateProcThreadAttribute| requires that
+  // The liftime of |mitigations|, |inherit_handle_list| and
+  // |child_process_creation| have to be at least as long as
+  // |startup_info| because |UpdateProcThreadAttribute| requires that
   // its |lpValue| parameter persist until |DeleteProcThreadAttributeList| is
   // called; StartupInformation's destructor makes such a call.
   DWORD64 mitigations;
-
   std::vector<HANDLE> inherited_handle_list;
+  DWORD child_process_creation = PROCESS_CREATION_CHILD_PROCESS_RESTRICTED;
 
   base::string16 desktop = policy_base->GetAlternateDesktop();
   if (!desktop.empty()) {
@@ -354,10 +355,17 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       ++attribute_count;
 
     size_t mitigations_size;
-    ConvertProcessMitigationsToPolicy(policy->GetProcessMitigations(),
+    ConvertProcessMitigationsToPolicy(policy_base->GetProcessMitigations(),
                                       &mitigations, &mitigations_size);
     if (mitigations)
       ++attribute_count;
+
+    bool restrict_child_process_creation = false;
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10_TH2 &&
+        policy_base->GetJobLevel() <= JOB_LIMITED_USER) {
+      restrict_child_process_creation = true;
+      ++attribute_count;
+    }
 
     HANDLE stdout_handle = policy_base->GetStdoutHandle();
     HANDLE stderr_handle = policy_base->GetStderrHandle();
@@ -394,6 +402,14 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
       }
     }
 
+    if (restrict_child_process_creation) {
+      if (!startup_info.UpdateProcThreadAttribute(
+              PROC_THREAD_ATTRIBUTE_CHILD_PROCESS_POLICY,
+              &child_process_creation, sizeof(child_process_creation))) {
+        return SBOX_ERROR_PROC_THREAD_ATTRIBUTES;
+      }
+    }
+
     if (inherited_handle_list.size()) {
       if (!startup_info.UpdateProcThreadAttribute(
               PROC_THREAD_ATTRIBUTE_HANDLE_LIST,
@@ -416,7 +432,7 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (NULL == thread_pool_)
     thread_pool_ = new Win2kThreadPool();
 
-  // Create the TargetProces object and spawn the target suspended. Note that
+  // Create the TargetProcess object and spawn the target suspended. Note that
   // Brokerservices does not own the target object. It is owned by the Policy.
   base::win::ScopedProcessInformation process_info;
   TargetProcess* target =

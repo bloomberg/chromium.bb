@@ -65,7 +65,11 @@ OSInfo::OSInfo()
         break;
     }
   } else if (version_number_.major == 10) {
-    version_ = VERSION_WIN10;
+    if (version_number_.build < 10586) {
+      version_ = VERSION_WIN10;
+    } else {
+      version_ = VERSION_WIN10_TH2;
+    }
   } else if (version_number_.major > 6) {
     NOTREACHED();
     version_ = VERSION_WIN_LAST;
