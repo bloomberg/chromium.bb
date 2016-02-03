@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace extensions {
@@ -19,6 +20,10 @@ class InputImeEventRouterBase {
  public:
   explicit InputImeEventRouterBase(Profile* profile);
   virtual ~InputImeEventRouterBase();
+
+  // Gets the input method engine if the extension is active.
+  virtual input_method::InputMethodEngineBase* GetActiveEngine(
+      const std::string& extension_id) = 0;
 
   // Called when a key event was handled.
   void OnKeyEventHandled(const std::string& extension_id,

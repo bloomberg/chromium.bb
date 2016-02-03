@@ -117,7 +117,7 @@ InputImeEventRouter::~InputImeEventRouter() {
     DeleteInputMethodEngine(active_engine_->GetExtensionId());
 }
 
-InputMethodEngine* InputImeEventRouter::GetActiveEngine(
+InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
     const std::string& extension_id) {
   return (ui::IMEBridge::Get()->GetCurrentEngineHandler() &&
           active_engine_ &&

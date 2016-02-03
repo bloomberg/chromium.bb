@@ -162,7 +162,8 @@ class InputImeEventRouter : public InputImeEventRouterBase {
 
   chromeos::InputMethodEngine* GetEngine(const std::string& extension_id,
                                          const std::string& component_id);
-  chromeos::InputMethodEngine* GetActiveEngine(const std::string& extension_id);
+  input_method::InputMethodEngineBase* GetActiveEngine(
+      const std::string& extension_id) override;
 
  private:
   // The engine map from extension_id to an engine.
