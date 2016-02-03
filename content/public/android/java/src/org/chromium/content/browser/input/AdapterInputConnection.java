@@ -30,6 +30,7 @@ import java.util.Locale;
  */
 public class AdapterInputConnection extends BaseInputConnection {
     private static final String TAG = "cr_Ime";
+    private static final boolean DEBUG_LOGS = false;
     /**
      * Selection value should be -1 if not known. See EditorInfo.java for details.
      */
@@ -132,7 +133,9 @@ public class AdapterInputConnection extends BaseInputConnection {
         outAttrs.initialSelEnd = initialSelEnd;
         mLastUpdateSelectionStart = outAttrs.initialSelStart;
         mLastUpdateSelectionEnd = outAttrs.initialSelEnd;
-        Log.d(TAG, "Constructor called with outAttrs: %s", dumpEditorInfo(outAttrs));
+        if (DEBUG_LOGS) {
+            Log.w(TAG, "Constructor called with outAttrs: %s", dumpEditorInfo(outAttrs));
+        }
     }
 
     private static String dumpEditorInfo(EditorInfo editorInfo) {
@@ -171,7 +174,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     @VisibleForTesting
     public void updateState(String text, int selectionStart, int selectionEnd, int compositionStart,
             int compositionEnd, boolean isNonImeChange) {
-        Log.d(TAG, "updateState [%s] [%s %s] [%s %s] [%b]", text, selectionStart,
+        if (DEBUG_LOGS) Log.w(TAG, "updateState [%s] [%s %s] [%s %s] [%b]", text, selectionStart,
                 selectionEnd, compositionStart, compositionEnd, isNonImeChange);
         // If this update is from the IME, no further state modification is necessary because the
         // state should have been updated already by the IM framework directly.
@@ -210,7 +213,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     @Override
     public Editable getEditable() {
         Editable editable = getEditableInternal();
-        Log.d(TAG, "getEditable: %s", dumpEditable(editable));
+        if (DEBUG_LOGS) Log.w(TAG, "getEditable: %s", dumpEditable(editable));
         return editable;
     }
 
@@ -236,8 +239,8 @@ public class AdapterInputConnection extends BaseInputConnection {
                 && mLastUpdateCompositionEnd == compositionEnd) {
             return;
         }
-        Log.d(TAG, "updateSelectionIfRequired [%d %d] [%d %d]", selectionStart, selectionEnd,
-                compositionStart, compositionEnd);
+        if (DEBUG_LOGS) Log.w(TAG, "updateSelectionIfRequired [%d %d] [%d %d]", selectionStart,
+            selectionEnd, compositionStart, compositionEnd);
         // updateSelection should be called every time the selection or composition changes
         // if it happens not within a batch edit, or at the end of each top level batch edit.
         mImeAdapter.updateSelection(selectionStart, selectionEnd, compositionStart, compositionEnd);
@@ -252,7 +255,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
-        Log.d(TAG, "setComposingText [%s] [%d]", text, newCursorPosition);
+        if (DEBUG_LOGS) Log.w(TAG, "setComposingText [%s] [%d]", text, newCursorPosition);
         mPendingAccent = 0;
         super.setComposingText(text, newCursorPosition);
         updateSelectionIfRequired();
@@ -264,7 +267,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        Log.d(TAG, "commitText [%s] [%d]", text, newCursorPosition);
+        if (DEBUG_LOGS) Log.w(TAG, "commitText [%s] [%d]", text, newCursorPosition);
         mPendingAccent = 0;
         super.commitText(text, newCursorPosition);
         updateSelectionIfRequired();
@@ -276,7 +279,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean performEditorAction(int actionCode) {
-        Log.d(TAG, "performEditorAction [%d]", actionCode);
+        if (DEBUG_LOGS) Log.w(TAG, "performEditorAction [%d]", actionCode);
         return mImeAdapter.performEditorAction(actionCode);
     }
 
@@ -285,7 +288,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean performContextMenuAction(int id) {
-        Log.d(TAG, "performContextMenuAction [%d]", id);
+        if (DEBUG_LOGS) Log.w(TAG, "performContextMenuAction [%d]", id);
         return mImeAdapter.performContextMenuAction(id);
     }
 
@@ -295,7 +298,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public ExtractedText getExtractedText(ExtractedTextRequest request, int flags) {
-        Log.d(TAG, "getExtractedText");
+        if (DEBUG_LOGS) Log.w(TAG, "getExtractedText");
         Editable editable = getEditableInternal();
         ExtractedText et = new ExtractedText();
         et.text = editable.toString();
@@ -311,7 +314,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean beginBatchEdit() {
-        Log.d(TAG, "beginBatchEdit [%b]", (mNumNestedBatchEdits == 0));
+        if (DEBUG_LOGS) Log.w(TAG, "beginBatchEdit [%b]", (mNumNestedBatchEdits == 0));
         mNumNestedBatchEdits++;
         return true;
     }
@@ -323,7 +326,7 @@ public class AdapterInputConnection extends BaseInputConnection {
     public boolean endBatchEdit() {
         if (mNumNestedBatchEdits == 0) return false;
         --mNumNestedBatchEdits;
-        Log.d(TAG, "endBatchEdit [%b]", (mNumNestedBatchEdits == 0));
+        if (DEBUG_LOGS) Log.w(TAG, "endBatchEdit [%b]", (mNumNestedBatchEdits == 0));
         if (mNumNestedBatchEdits == 0) updateSelectionIfRequired();
         return mNumNestedBatchEdits != 0;
     }
@@ -350,7 +353,10 @@ public class AdapterInputConnection extends BaseInputConnection {
 
     private boolean deleteSurroundingTextImpl(
             int beforeLength, int afterLength, boolean fromPhysicalKey) {
-        Log.d(TAG, "deleteSurroundingText [%d %d %b]", beforeLength, afterLength, fromPhysicalKey);
+        if (DEBUG_LOGS) {
+            Log.w(TAG, "deleteSurroundingText [%d %d %b]", beforeLength, afterLength,
+                    fromPhysicalKey);
+        }
 
         if (mPendingAccent != 0) {
             finishComposingText();
@@ -390,8 +396,10 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
-        Log.d(TAG, "sendKeyEvent [%d] [%d] [%d]", event.getAction(), event.getKeyCode(),
-                event.getUnicodeChar());
+        if (DEBUG_LOGS) {
+            Log.w(TAG, "sendKeyEvent [%d] [%d] [%d]", event.getAction(), event.getKeyCode(),
+                    event.getUnicodeChar());
+        }
 
         int action = event.getAction();
         int keycode = event.getKeyCode();
@@ -466,7 +474,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean finishComposingText() {
-        Log.d(TAG, "finishComposingText");
+        if (DEBUG_LOGS) Log.w(TAG, "finishComposingText");
         mPendingAccent = 0;
 
         if (getComposingSpanStart(getEditableInternal())
@@ -486,7 +494,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean setSelection(int start, int end) {
-        Log.d(TAG, "setSelection [%d %d]", start, end);
+        if (DEBUG_LOGS) Log.w(TAG, "setSelection [%d %d]", start, end);
         int textLength = getEditableInternal().length();
         if (start < 0 || end < 0 || start > textLength || end > textLength) return true;
         super.setSelection(start, end);
@@ -498,7 +506,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      * Call this when restartInput() is called.
      */
     void onRestartInput() {
-        Log.d(TAG, "onRestartInput");
+        if (DEBUG_LOGS) Log.w(TAG, "onRestartInput");
         mNumNestedBatchEdits = 0;
         mPendingAccent = 0;
     }
@@ -508,7 +516,7 @@ public class AdapterInputConnection extends BaseInputConnection {
      */
     @Override
     public boolean setComposingRegion(int start, int end) {
-        Log.d(TAG, "setComposingRegion [%d %d]", start, end);
+        if (DEBUG_LOGS) Log.w(TAG, "setComposingRegion [%d %d]", start, end);
         Editable editable = getEditableInternal();
         int textLength = editable.length();
         int a = Math.min(start, end);
