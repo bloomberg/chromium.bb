@@ -31,7 +31,6 @@ const char kPreReadSyntheticFieldTrialName[] = "SyntheticPreRead";
 // name.
 const base::char16 kNoPreReadVariationName[] = L"NoPreRead";
 const base::char16 kHighPriorityVariationName[] = L"HighPriority";
-const base::char16 kOnlyIfColdVariationName[] = L"OnlyIfCold";
 const base::char16 kPrefetchVirtualMemoryVariationName[] =
     L"PrefetchVirtualMemory";
 const base::char16 kNoPrefetchArgumentVariationName[] = L"NoPrefetchArgument";
@@ -69,7 +68,6 @@ void InitializePreReadOptions(const base::string16& product_registry_path) {
   // Set the PreRead field trial's options.
   g_pre_read_options.pre_read = !ReadBool(key, kNoPreReadVariationName);
   g_pre_read_options.high_priority = ReadBool(key, kHighPriorityVariationName);
-  g_pre_read_options.only_if_cold = ReadBool(key, kOnlyIfColdVariationName);
   g_pre_read_options.prefetch_virtual_memory =
       ReadBool(key, kPrefetchVirtualMemoryVariationName);
   g_pre_read_options.use_prefetch_argument =

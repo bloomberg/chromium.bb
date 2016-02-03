@@ -27,9 +27,6 @@ struct PreReadOptions {
   // Pre-read DLLs with a high thread priority.
   bool high_priority;
 
-  // Pre-read DLLs only when they are cold.
-  bool only_if_cold;
-
   // Pre-read DLLs using the ::PrefetchVirtualMemory function, if available.
   bool prefetch_virtual_memory;
 

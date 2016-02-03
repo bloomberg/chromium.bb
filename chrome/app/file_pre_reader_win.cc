@@ -7,7 +7,6 @@
 #include <windows.h>
 #include <stdint.h>
 
-#include "base/debug/alias.h"
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
@@ -15,7 +14,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/pe_image.h"
 #include "base/win/windows_version.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 
 namespace {
 
@@ -102,30 +100,6 @@ void PreReadFile(const base::FilePath& file_path) {
     // Page in the module.
     TouchPagesInRange(dll_module.get(), dll_module_length);
   }
-}
-
-bool IsMemoryMappedFileWarm(const base::MemoryMappedFile& memory_mapped_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  if (!memory_mapped_file.IsValid())
-    return false;
-
-  uint32_t initial_hard_fault_count = 0;
-  if (!startup_metric_utils::GetHardFaultCountForCurrentProcess(
-          &initial_hard_fault_count))
-    return false;
-
-  // Read a byte from the first page of the memory map.
-  const uint8_t dummy = *(memory_mapped_file.data());
-  base::debug::Alias(&dummy);
-
-  uint32_t final_hard_fault_count = 0;
-  if (!startup_metric_utils::GetHardFaultCountForCurrentProcess(
-          &final_hard_fault_count))
-    return false;
-
-  // Return true if reading a byte from the first page of the memory map
-  // generated a hard fault.
-  return initial_hard_fault_count == final_hard_fault_count;
 }
 
 void PreReadMemoryMappedFile(const base::MemoryMappedFile& memory_mapped_file,

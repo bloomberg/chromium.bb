@@ -75,17 +75,7 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
           base::ThreadPriority::DISPLAY);
     }
 
-    if (pre_read_options.only_if_cold) {
-      base::MemoryMappedFile module_memory_map;
-      const bool map_initialize_success = module_memory_map.Initialize(module);
-      DCHECK(map_initialize_success);
-      if (!IsMemoryMappedFileWarm(module_memory_map)) {
-        if (pre_read_options.prefetch_virtual_memory)
-          PreReadMemoryMappedFile(module_memory_map, module);
-        else
-          PreReadFile(module);
-      }
-    } else if (pre_read_options.prefetch_virtual_memory) {
+    if (pre_read_options.prefetch_virtual_memory) {
       base::MemoryMappedFile module_memory_map;
       const bool map_initialize_success = module_memory_map.Initialize(module);
       DCHECK(map_initialize_success);
