@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/android/build_info.h"
+#include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -265,8 +266,12 @@ CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
 CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   gpu_info->can_lose_context = false;
 
-  gpu_info->machine_model_name =
-      base::android::BuildInfo::GetInstance()->model();
+  // When command buffer is compiled as a standalone library, the process might
+  // not have a Java environment.
+  if (base::android::IsVMInitialized()) {
+    gpu_info->machine_model_name =
+        base::android::BuildInfo::GetInstance()->model();
+  }
 
   // Create a short-lived context on the UI thread to collect the GL strings.
   // Make sure we restore the existing context if there is one.
