@@ -807,6 +807,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         // checkIfPlayableRemotely will have rejected null URLs.
         assert url != null;
 
+        RecordCastAction.castDomainAndRegistry(listener.getFrameUrl().toString());
+
         mLocalVideoUri = Uri.parse(url);
         mStartPositionMillis = listener.getStartPositionMillis();
         playUri(listener.getTitle(), mStartPositionMillis);

@@ -142,6 +142,15 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Cast.Sender.MediaFrameUrl" type="ETLD_PLUS_ONE">
+  <owner>avayvod@chromium.org</owner>
+  <owner>aberent@chromium.org</owner>
+  <summary>
+    The domain and registry of the frame URL that the user is trying to cast
+    the media from. Recorded every time the user casts the media.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.MixedScript.DisplayedShield"
     type="ETLD_PLUS_ONE">
   <owner>lgarron@chromium.org</owner>

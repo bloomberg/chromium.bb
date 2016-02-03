@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.remote;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 
 /**
  * Record statistics on interesting cast events and actions.
@@ -119,6 +120,18 @@ public class RecordCastAction {
             RecordHistogram.recordEnumeratedHistogram(
                     "Cast.Sender.FullscreenControlsActionWithoutMediaElement",
                     action, FULLSCREEN_CONTROLS_COUNT);
+        }
+    }
+
+    /**
+     * Record the domain and registry of the URL of the frame where the user is casting the video
+     * from using Rappor.
+     *
+     * @param url The frame URL to record the domain and registry of.
+     */
+    public static void castDomainAndRegistry(String url) {
+        if (LibraryLoader.isInitialized()) {
+            RapporServiceBridge.sampleDomainAndRegistryFromURL("Cast.Sender.MediaFrameUrl", url);
         }
     }
 
