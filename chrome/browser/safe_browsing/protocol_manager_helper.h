@@ -51,15 +51,6 @@ class SafeBrowsingProtocolManagerHelper {
                                 const std::string& additional_query,
                                 bool is_extended_reporting);
 
-  // Composes a URL using |prefix|, |method| (e.g.: encodedFullHashes).
-  // |request_base64|, |client_id| and |version|. |prefix| should contain
-  // the entire url prefix including scheme, host and path.
-  static std::string ComposePver4Url(const std::string& prefix,
-                                     const std::string& method,
-                                     const std::string& request_base64,
-                                     const std::string& client_id,
-                                     const std::string& version);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SafeBrowsingProtocolManagerHelper);
 };

@@ -14,8 +14,9 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
-#include "google_apis/google_api_keys.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -80,7 +81,7 @@ class V4ProtocolManagerFactoryImpl : public V4ProtocolManagerFactory {
   ~V4ProtocolManagerFactoryImpl() override {}
   V4ProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& config) override {
+      const V4ProtocolConfig& config) override {
     return new V4ProtocolManager(request_context_getter, config);
   }
 
@@ -96,7 +97,7 @@ V4ProtocolManagerFactory* V4ProtocolManager::factory_ = NULL;
 // static
 V4ProtocolManager* V4ProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const SafeBrowsingProtocolConfig& config) {
+    const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4ProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(request_context_getter, config);
@@ -132,16 +133,16 @@ void V4ProtocolManager::ResetGetHashErrors() {
 
 V4ProtocolManager::V4ProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const SafeBrowsingProtocolConfig& config)
+    const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
       next_gethash_time_(Time::FromDoubleT(0)),
       version_(config.version),
       client_name_(config.client_name),
+      key_param_(config.key_param),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0) {
-  if (version_.empty())
-    version_ = SafeBrowsingProtocolManagerHelper::Version();
+  DCHECK(!version_.empty());
 }
 
 // static
@@ -383,10 +384,29 @@ void V4ProtocolManager::HandleGetHashError(const Time& now) {
 
 // The API hash call uses the pver4 Safe Browsing server.
 GURL V4ProtocolManager::GetHashUrl(const std::string& request_base64) const {
-  std::string url = SafeBrowsingProtocolManagerHelper::ComposePver4Url(
-      kSbV4UrlPrefix, "encodedFullHashes", request_base64, client_name_,
-      version_);
+  std::string url = ComposePver4Url(kSbV4UrlPrefix, "encodedFullHashes",
+      request_base64, client_name_, version_, key_param_);
   return GURL(url);
+}
+
+// static
+std::string V4ProtocolManager::ComposePver4Url(const std::string& prefix,
+    const std::string& method,
+    const std::string& request_base64,
+    const std::string& client_id,
+    const std::string& version,
+    const std::string& key_param) {
+  DCHECK(!prefix.empty() && !method.empty() &&
+         !client_id.empty() && !version.empty());
+  std::string url = base::StringPrintf(
+      "%s/%s/%s?alt=proto&client_id=%s&client_version=%s",
+      prefix.c_str(), method.c_str(), request_base64.c_str(),
+      client_id.c_str(), version.c_str());
+  if (!key_param.empty()) {
+    base::StringAppendF(&url, "&key=%s",
+                        net::EscapeQueryParamValue(key_param, true).c_str());
+  }
+  return url;
 }
 
 }  // namespace safe_browsing

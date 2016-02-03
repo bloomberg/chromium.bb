@@ -20,7 +20,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/safe_browsing/protocol_manager_helper.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -33,6 +32,13 @@ class URLRequestContextGetter;
 }  // namespace net
 
 namespace safe_browsing {
+
+// Config passed to the constructor of a V4ProtocolManager.
+struct V4ProtocolConfig {
+  std::string client_name;
+  std::string version;
+  std::string key_param;
+};
 
 class V4ProtocolManagerFactory;
 
@@ -59,7 +65,7 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   // Create an instance of the safe browsing v4 protocol manager.
   static V4ProtocolManager* Create(
       net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& config);
+      const V4ProtocolConfig& config);
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -137,7 +143,7 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   // Constructs a V4ProtocolManager that issues
   // network requests using |request_context_getter|.
   V4ProtocolManager(net::URLRequestContextGetter* request_context_getter,
-                    const SafeBrowsingProtocolConfig& config);
+                    const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingV4ProtocolManagerTest, TestGetHashUrl);
@@ -173,6 +179,16 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   std::string GetHashRequest(const std::vector<SBPrefix>& prefixes,
                              const std::vector<PlatformType>& platforms,
                              ThreatType threat_type);
+
+  // Composes a URL using |prefix|, |method| (e.g.: encodedFullHashes).
+  // |request_base64|, |client_id|, |version| and |key_param|. |prefix|
+  // should contain the entire url prefix including scheme, host and path.
+  static std::string ComposePver4Url(const std::string& prefix,
+                                     const std::string& method,
+                                     const std::string& request_base64,
+                                     const std::string& client_id,
+                                     const std::string& version,
+                                     const std::string& key_param);
 
   // Parses a FindFullHashesResponse protocol buffer and fills the results in
   // |full_hashes| and |negative_cache_duration|. |data| is a serialized
@@ -229,6 +245,9 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
   // The safe browsing client name sent in each request.
   std::string client_name_;
 
+  // The Google API key.
+  std::string key_param_;
+
   // The context we use to issue network requests.
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
@@ -245,7 +264,7 @@ class V4ProtocolManagerFactory {
   virtual ~V4ProtocolManagerFactory() {}
   virtual V4ProtocolManager* CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const SafeBrowsingProtocolConfig& config) = 0;
+      const V4ProtocolConfig& config) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerFactory);

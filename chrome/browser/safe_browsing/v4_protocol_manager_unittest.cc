@@ -11,7 +11,6 @@
 #include "chrome/browser/safe_browsing/v4_protocol_manager.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "components/safe_browsing_db/util.h"
-#include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -25,6 +24,7 @@ namespace {
 
 const char kClient[] = "unittest";
 const char kAppVer[] = "1.0";
+const char kKeyParam[] = "test_key_param";
 
 }  // namespace
 
@@ -32,20 +32,12 @@ namespace safe_browsing {
 
 class SafeBrowsingV4ProtocolManagerTest : public testing::Test {
  protected:
-  std::string key_param_;
-
-  void SetUp() override {
-    std::string key = google_apis::GetAPIKey();
-    if (!key.empty()) {
-      key_param_ = base::StringPrintf(
-          "&key=%s", net::EscapeQueryParamValue(key, true).c_str());
-    }
-  }
 
   scoped_ptr<V4ProtocolManager> CreateProtocolManager() {
-    SafeBrowsingProtocolConfig config;
+    V4ProtocolConfig config;
     config.client_name = kClient;
     config.version = kAppVer;
+    config.key_param = kKeyParam;
     return scoped_ptr<V4ProtocolManager>(
         V4ProtocolManager::Create(NULL, config));
   }
@@ -247,8 +239,7 @@ TEST_F(SafeBrowsingV4ProtocolManagerTest, TestGetHashUrl) {
 
   EXPECT_EQ(
       "https://safebrowsing.googleapis.com/v4/encodedFullHashes/request_base64?"
-      "alt=proto&client_id=unittest&client_version=1.0" +
-          key_param_,
+      "alt=proto&client_id=unittest&client_version=1.0&key=test_key_param",
       pm->GetHashUrl("request_base64").spec());
 }
 
