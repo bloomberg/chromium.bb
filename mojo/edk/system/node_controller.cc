@@ -5,12 +5,14 @@
 #include "mojo/edk/system/node_controller.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "crypto/random.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
@@ -30,6 +32,28 @@ ports::NodeName GetRandomNodeName() {
   ports::NodeName name;
   GenerateRandomName(&name);
   return name;
+}
+
+void RecordPeerCount(size_t count) {
+  DCHECK_LE(count, static_cast<size_t>(std::numeric_limits<int32_t>::max()));
+
+  // 8k is the maximum number of file descriptors allowed in Chrome.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.ConnectedPeers",
+                              static_cast<int32_t>(count),
+                              0 /* min */,
+                              8000 /* max */,
+                              50 /* bucket count */);
+}
+
+void RecordPendingChildCount(size_t count) {
+  DCHECK_LE(count, static_cast<size_t>(std::numeric_limits<int32_t>::max()));
+
+  // 8k is the maximum number of file descriptors allowed in Chrome.
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Mojo.System.Node.PendingChildren",
+                              static_cast<int32_t>(count),
+                              0 /* min */,
+                              8000 /* max */,
+                              50 /* bucket count */);
 }
 
 // Used by NodeController to watch for shutdown. Since no IO can happen once
@@ -222,6 +246,8 @@ void NodeController::ConnectToChildOnIOThread(
   channel->AcceptChild(name_, token);
 
   pending_children_.insert(std::make_pair(token, channel));
+
+  RecordPendingChildCount(pending_children_.size());
 }
 
 void NodeController::ConnectToParentOnIOThread(
@@ -301,6 +327,8 @@ void NodeController::AddPeer(const ports::NodeName& name,
 
   DVLOG(2) << "Accepting new peer " << name << " on node " << name_;
 
+  RecordPeerCount(peers_.size());
+
   if (start_channel)
     channel->Start();
 
@@ -334,6 +362,9 @@ void NodeController::DropPeer(const ports::NodeName& name) {
 
     pending_peer_messages_.erase(name);
     pending_children_.erase(name);
+
+    RecordPeerCount(peers_.size());
+    RecordPendingChildCount(pending_children_.size());
   }
 
   node_->LostConnectionToNode(name);

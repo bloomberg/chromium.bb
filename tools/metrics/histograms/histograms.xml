@@ -21213,6 +21213,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Mojo.System.Node.ConnectedPeers">
+  <owner>rockot@chromium.org</owner>
+  <summary>
+    Number of connected peer nodes tracked by a node. This is emitted any time a
+    peer is added to or dropped from a node.
+  </summary>
+</histogram>
+
+<histogram name="Mojo.System.Node.PendingChildren">
+  <owner>rockot@chromium.org</owner>
+  <summary>
+    Number of connected pending child node connections tracked by a node. This
+    is emitted any time a parent-child node connection is initiated or dropped.
+  </summary>
+</histogram>
+
 <histogram name="Mouse.PointerSensitivity.Changed" enum="PointerSensitivity">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
