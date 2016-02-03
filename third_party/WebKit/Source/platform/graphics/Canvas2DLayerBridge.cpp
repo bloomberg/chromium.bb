@@ -520,6 +520,8 @@ bool Canvas2DLayerBridge::checkSurfaceValid()
     ASSERT(!m_destructionInProgress);
     if (m_destructionInProgress)
         return false;
+    if (isHibernating())
+        return true;
     if (!m_layer)
         return true;
     if (!m_surface)
@@ -582,11 +584,11 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         // 4. Here.
         return false;
     }
-    ASSERT(isAccelerated() || isHibernating());
+    ASSERT(isAccelerated() || isHibernating() || m_softwareRenderingWhileHidden);
 
     // if hibernating but not hidden, we want to wake up from
     // hibernation
-    if (isHibernating() && isHidden())
+    if ((isHibernating() || m_softwareRenderingWhileHidden) && isHidden())
         return false;
 
     if (bitmap) {
