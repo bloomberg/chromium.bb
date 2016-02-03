@@ -542,11 +542,12 @@ static void amdgpu_command_submission_compute(void)
  * pm4_src, resources, ib_info, and ibs_request
  * submit command stream described in ibs_request and wait for this IB accomplished
  */
-static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
-				 int instance, int pm4_dw, uint32_t *pm4_src,
-				 int res_cnt, amdgpu_bo_handle *resources,
-				 struct amdgpu_cs_ib_info *ib_info,
-				 struct amdgpu_cs_request *ibs_request)
+static void amdgpu_test_exec_cs_helper(amdgpu_context_handle context_handle,
+				       unsigned ip_type,
+				       int instance, int pm4_dw, uint32_t *pm4_src,
+				       int res_cnt, amdgpu_bo_handle *resources,
+				       struct amdgpu_cs_ib_info *ib_info,
+				       struct amdgpu_cs_request *ibs_request)
 {
 	int r;
 	uint32_t expired;
@@ -579,7 +580,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	ib_info->ib_mc_address = ib_result_mc_address;
 	ib_info->size = pm4_dw;
 
-	ibs_request->ip_type = AMDGPU_HW_IP_DMA;
+	ibs_request->ip_type = ip_type;
 	ibs_request->ring = instance;
 	ibs_request->number_of_ibs = 1;
 	ibs_request->ibs = ib_info;
@@ -601,7 +602,7 @@ static void amdgpu_sdma_test_exec_cs(amdgpu_context_handle context_handle,
 	r = amdgpu_bo_list_destroy(ibs_request->resources);
 	CU_ASSERT_EQUAL(r, 0);
 
-	fence_status.ip_type = AMDGPU_HW_IP_DMA;
+	fence_status.ip_type = ip_type;
 	fence_status.ring = ibs_request->ring;
 	fence_status.context = context_handle;
 	fence_status.fence = ibs_request->seq_no;
@@ -676,10 +677,11 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 		while(j++ < sdma_write_length)
 			pm4[i++] = 0xdeadbeaf;
 
-		amdgpu_sdma_test_exec_cs(context_handle, 0,
-					i, pm4,
-					1, resources,
-					ib_info, ibs_request);
+		amdgpu_test_exec_cs_helper(context_handle,
+					   AMDGPU_HW_IP_DMA, 0,
+					   i, pm4,
+					   1, resources,
+					   ib_info, ibs_request);
 
 		/* verify if SDMA test result meets with expected */
 		i = 0;
@@ -759,10 +761,11 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 		pm4[i++] = 0xdeadbeaf;
 		pm4[i++] = sdma_write_length;
 
-		amdgpu_sdma_test_exec_cs(context_handle, 0,
-					i, pm4,
-					1, resources,
-					ib_info, ibs_request);
+		amdgpu_test_exec_cs_helper(context_handle,
+					   AMDGPU_HW_IP_DMA, 0,
+					   i, pm4,
+					   1, resources,
+					   ib_info, ibs_request);
 
 		/* verify if SDMA test result meets with expected */
 		i = 0;
@@ -860,10 +863,11 @@ static void amdgpu_command_submission_sdma_copy_linear(void)
 			pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
 
 
-			amdgpu_sdma_test_exec_cs(context_handle, 0,
-						i, pm4,
-						2, resources,
-						ib_info, ibs_request);
+			amdgpu_test_exec_cs_helper(context_handle,
+						   AMDGPU_HW_IP_DMA, 0,
+						   i, pm4,
+						   2, resources,
+						   ib_info, ibs_request);
 
 			/* verify if SDMA test result meets with expected */
 			i = 0;
@@ -954,10 +958,11 @@ static void amdgpu_userptr_test(void)
 	while (j++ < sdma_write_length)
 		pm4[i++] = 0xdeadbeaf;
 
-	amdgpu_sdma_test_exec_cs(context_handle, 0,
-				 i, pm4,
-				 1, &handle,
-				 ib_info, ibs_request);
+	amdgpu_test_exec_cs_helper(context_handle,
+				   AMDGPU_HW_IP_DMA, 0,
+				   i, pm4,
+				   1, &handle,
+				   ib_info, ibs_request);
 	i = 0;
 	while (i < sdma_write_length) {
 		CU_ASSERT_EQUAL(((int*)ptr)[i++], 0xdeadbeaf);
