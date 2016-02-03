@@ -1095,10 +1095,9 @@ public:
     virtual LayoutRect absoluteClippedOverflowRect() const;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
-    // Given a rect in the object's coordinate space, compute a rect suitable for invalidating paints of that
-    // rect in the coordinate space of paintInvalidationContainer.  If intermediate containers have clipping or
-    // scrolling of any kind, it is applied; but overflow clipping is *not* applied for paintInvalidationContainer
-    // itself.
+    // Given a rect in the object's coordinate space, compute a rect in the coordinate space of |ancestor|.  If
+    // intermediate containers have clipping or scrolling of any kind, it is applied; but overflow clipping is *not*
+    // applied for |ancestor| itself. The output rect is suitable for purposes such as paint invalidation.
     virtual void mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
