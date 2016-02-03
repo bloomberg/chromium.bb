@@ -455,12 +455,19 @@ static void amdgpu_command_submission_cp_const_fill(void)
 	amdgpu_command_submission_const_fill_helper(AMDGPU_HW_IP_GFX);
 }
 
+static void amdgpu_command_submission_cp_copy_data(void)
+{
+	amdgpu_command_submission_copy_linear_helper(AMDGPU_HW_IP_GFX);
+}
+
 static void amdgpu_command_submission_gfx(void)
 {
 	/* write data using the CP */
 	amdgpu_command_submission_cp_write_data();
 	/* const fill using the CP */
 	amdgpu_command_submission_cp_const_fill();
+	/* copy data using the CP */
+	amdgpu_command_submission_cp_copy_data();
 	/* separate IB buffers for multi-IB submission */
 	amdgpu_command_submission_gfx_separate_ibs();
 	/* shared IB buffer for multi-IB submission */
@@ -1023,6 +1030,17 @@ static void amdgpu_command_submission_copy_linear_helper(unsigned ip_type)
 				pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
 				pm4[i++] = 0xffffffff & bo2_mc;
 				pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+			} else if (ip_type == AMDGPU_HW_IP_GFX) {
+				pm4[i++] = PACKET3(PACKET3_DMA_DATA, 5);
+				pm4[i++] = PACKET3_DMA_DATA_ENGINE(0) |
+					PACKET3_DMA_DATA_DST_SEL(0) |
+					PACKET3_DMA_DATA_SRC_SEL(0) |
+					PACKET3_DMA_DATA_CP_SYNC;
+				pm4[i++] = 0xfffffffc & bo1_mc;
+				pm4[i++] = (0xffffffff00000000 & bo1_mc) >> 32;
+				pm4[i++] = 0xfffffffc & bo2_mc;
+				pm4[i++] = (0xffffffff00000000 & bo2_mc) >> 32;
+				pm4[i++] = sdma_write_length;
 			}
 
 			amdgpu_test_exec_cs_helper(context_handle,
