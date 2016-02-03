@@ -485,7 +485,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(_BaseTestCase):
         options = MockOptions(optimize=False, verbose=True, results_directory=None)
 
         self._write(self.lion_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
-        self._write("NeverFixTests", "Bug(y) [ Android ] userscripts [ Skip ]\n")
+        self._write("NeverFixTests", "Bug(y) [ Android ] userscripts [ WontFix ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_builder_data()
 

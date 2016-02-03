@@ -374,6 +374,12 @@ class TestExpectationParser(object):
         if 'WONTFIX' in expectations and ('NeverFixTests' not in filename and 'StaleTestExpectations' not in filename):
             warnings.append('WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.')
 
+        if 'NeverFixTests' in filename and expectations != ['WONTFIX', 'SKIP']:
+            warnings.append('Only WONTFIX expectations are allowed in NeverFixTests')
+
+        if 'SlowTests' in filename and expectations != ['SLOW']:
+            warnings.append('Only SLOW expectations are allowed in SlowTests')
+
         if not expectations and not has_unrecognized_expectation:
             warnings.append('Missing expectations.')
 

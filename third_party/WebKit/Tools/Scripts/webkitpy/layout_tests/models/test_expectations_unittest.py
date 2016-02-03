@@ -385,12 +385,11 @@ class ExpectationSyntaxTests(Base):
         self.parse_exp(exp_str)
         self.assert_exp('failures/expected/text.html', FAIL)
 
-    def assert_tokenize_exp(self, line, bugs=None, specifiers=None, expectations=None, warnings=None, comment=None, name='foo.html'):
+    def assert_tokenize_exp(self, line, bugs=None, specifiers=None, expectations=None, warnings=None, comment=None, name='foo.html', filename='TestExpectations'):
         bugs = bugs or []
         specifiers = specifiers or []
         expectations = expectations or []
         warnings = warnings or []
-        filename = 'TestExpectations'
         line_number = '1'
         expectation_line = TestExpectationParser._tokenize_line(filename, line, line_number)
         self.assertEqual(expectation_line.warnings, warnings)
@@ -419,10 +418,14 @@ class ExpectationSyntaxTests(Base):
 
     def test_slow(self):
         self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'], warnings=['SLOW tests should ony be added to SlowTests and not to TestExpectations.'])
+        self.assert_tokenize_exp('foo.html [ Slow ]', specifiers=[], expectations=['SLOW'], filename='SlowTests')
+        self.assert_tokenize_exp('foo.html [ Timeout Slow ]', specifiers=[], expectations=['SKIP', 'TIMEOUT'], warnings=['Only SLOW expectations are allowed in SlowTests'], filename='SlowTests')
 
     def test_wontfix(self):
         self.assert_tokenize_exp('foo.html [ WontFix ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=['WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
         self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=['A test marked Skip or WontFix must not have other expectations.', 'WONTFIX tests should ony be added to NeverFixTests or StaleTestExpectations and not to TestExpectations.'])
+        self.assert_tokenize_exp('foo.html [ WontFix Failure ]', specifiers=[], expectations=['WONTFIX', 'SKIP'], warnings=['A test marked Skip or WontFix must not have other expectations.', 'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
+        self.assert_tokenize_exp('foo.html [ WontFix Timeout ]', specifiers=[], expectations=['WONTFIX', 'TIMEOUT'], warnings=['A test marked Skip or WontFix must not have other expectations.', 'Only WONTFIX expectations are allowed in NeverFixTests'], filename='NeverFixTests')
 
     def test_blank_line(self):
         self.assert_tokenize_exp('', name=None)

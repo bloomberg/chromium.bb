@@ -229,7 +229,7 @@ crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-tran
 crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
-crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass Slow ]
+crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Slow ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Slow ]
 crbug.com/440452 virtual/display_list_2d_canvas/fast/canvas/canvas-partial-invalidation-zoomed.html [ Slow ]
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Slow ]
