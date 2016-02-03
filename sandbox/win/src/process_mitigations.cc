@@ -179,7 +179,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
 
   // Enable font policies.
   if (flags & MITIGATION_NONSYSTEM_FONT_DISABLE) {
-    PROCESS_MITIGATION_FONT_DISABLE_POLICY policy = {0};
+    PROCESS_MITIGATION_FONT_DISABLE_POLICY policy = {};
     policy.DisableNonSystemFonts = true;
 
     if (!set_process_mitigation_policy(ProcessFontDisablePolicy, &policy,
@@ -195,7 +195,7 @@ bool ApplyProcessMitigationsToCurrentProcess(MitigationFlags flags) {
   // Enable image load policies.
   if (flags & MITIGATION_IMAGE_LOAD_NO_REMOTE ||
       flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL) {
-    PROCESS_MITIGATION_IMAGE_LOAD_POLICY policy = {0};
+    PROCESS_MITIGATION_IMAGE_LOAD_POLICY policy = {};
     if (flags & MITIGATION_IMAGE_LOAD_NO_REMOTE)
       policy.NoRemoteImages = true;
     if (flags & MITIGATION_IMAGE_LOAD_NO_LOW_LABEL)
