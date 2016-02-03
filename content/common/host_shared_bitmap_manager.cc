@@ -202,13 +202,8 @@ bool HostSharedBitmapManager::ChildAllocatedSharedBitmap(
       new BitmapData(process_handle, buffer_size));
 
   handle_map_[id] = data;
-#if defined(OS_WIN)
-  data->memory = make_scoped_ptr(
-      new base::SharedMemory(handle, false, data->process_handle));
-#else
   data->memory =
       make_scoped_ptr(new base::SharedMemory(handle, false));
-#endif
   data->memory->Map(data->buffer_size);
   data->memory->Close();
   return true;

@@ -100,21 +100,6 @@ SharedMemory::SharedMemory(const SharedMemoryHandle& handle, bool read_only)
   DCHECK(!handle.IsValid() || handle.BelongsToCurrentProcess());
 }
 
-SharedMemory::SharedMemory(const SharedMemoryHandle& handle,
-                           bool read_only,
-                           ProcessHandle process)
-    : external_section_(true),
-      mapped_file_(NULL),
-      mapped_size_(0),
-      memory_(NULL),
-      read_only_(read_only),
-      requested_size_(0) {
-  DWORD access = FILE_MAP_READ | SECTION_QUERY;
-  ::DuplicateHandle(process, handle.GetHandle(), GetCurrentProcess(),
-                    &mapped_file_,
-                    read_only_ ? access : access | FILE_MAP_WRITE, FALSE, 0);
-}
-
 SharedMemory::~SharedMemory() {
   Unmap();
   Close();

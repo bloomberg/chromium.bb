@@ -604,8 +604,7 @@ TEST(SharedMemoryTest, UnsafeImageSection) {
   EXPECT_EQ(nullptr, shared_memory_open.memory());
 
   SharedMemory shared_memory_handle_dup(
-      SharedMemoryHandle(section_handle.Get(), ::GetCurrentProcessId()), true,
-      GetCurrentProcess());
+      SharedMemoryHandle(section_handle.Get(), ::GetCurrentProcessId()), true);
   EXPECT_FALSE(shared_memory_handle_dup.Map(1));
   EXPECT_EQ(nullptr, shared_memory_handle_dup.memory());
 

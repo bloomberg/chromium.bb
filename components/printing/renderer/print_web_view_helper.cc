@@ -1817,13 +1817,7 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
   if (!metafile.GetData(shared_buf.memory(), buf_size))
     return false;
 
-  if (!shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
-                                shared_mem_handle)) {
-    return false;
-  }
-
-  Send(new PrintHostMsg_DuplicateSection(routing_id(), *shared_mem_handle,
-                                         shared_mem_handle));
+  *shared_mem_handle = base::SharedMemory::DuplicateHandle(shared_buf.handle());
   return true;
 #else
   scoped_ptr<base::SharedMemory> shared_buf(

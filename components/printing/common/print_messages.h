@@ -359,14 +359,6 @@ IPC_MESSAGE_ROUTED1(PrintMsg_PrintPreview,
 
 // Messages sent from the renderer to the browser.
 
-#if defined(OS_WIN)
-// Duplicates a shared memory handle from the renderer to the browser. Then
-// the renderer can flush the handle.
-IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DuplicateSection,
-                           base::SharedMemoryHandle /* renderer handle */,
-                           base::SharedMemoryHandle /* browser handle */)
-#endif
-
 // Check if printing is enabled.
 IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_IsPrintingEnabled,
                            bool /* is_enabled */)
