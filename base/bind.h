@@ -6,7 +6,6 @@
 #define BASE_BIND_H_
 
 #include "base/bind_internal.h"
-#include "base/callback_internal.h"
 
 // -----------------------------------------------------------------------------
 // Usage documentation
@@ -52,9 +51,8 @@ base::Callback<
     typename internal::BindState<
         typename internal::FunctorTraits<Functor>::RunnableType,
         typename internal::FunctorTraits<Functor>::RunType,
-        typename internal::CallbackParamTraits<Args>::StorageType...>
-            ::UnboundRunType>
-Bind(Functor functor, const Args&... args) {
+        typename std::decay<Args>::type...>::UnboundRunType>
+Bind(Functor functor, Args&&... args) {
   // Type aliases for how to store and run the functor.
   using RunnableType = typename internal::FunctorTraits<Functor>::RunnableType;
   using RunType = typename internal::FunctorTraits<Functor>::RunType;
@@ -89,11 +87,11 @@ Bind(Functor functor, const Args&... args) {
       "a parameter is a refcounted type and needs scoped_refptr");
 
   using BindState = internal::BindState<
-      RunnableType, RunType,
-      typename internal::CallbackParamTraits<Args>::StorageType...>;
+      RunnableType, RunType, typename std::decay<Args>::type...>;
 
   return Callback<typename BindState::UnboundRunType>(
-      new BindState(internal::MakeRunnable(functor), args...));
+      new BindState(internal::MakeRunnable(functor),
+                    std::forward<Args>(args)...));
 }
 
 }  // namespace base
