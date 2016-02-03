@@ -769,8 +769,11 @@ void RenderWidgetHostViewAura::SetKeyboardFocus() {
 #if defined(OS_WIN)
   if (CanFocus()) {
     aura::WindowTreeHost* host = window_->GetHost();
-    if (host)
-      ::SetFocus(host->GetAcceleratedWidget());
+    if (host) {
+      gfx::AcceleratedWidget hwnd = host->GetAcceleratedWidget();
+      if (!(::GetWindowLong(hwnd, GWL_EXSTYLE) & WS_EX_NOACTIVATE))
+        ::SetFocus(hwnd);
+    }
   }
 #endif
   if (host_ && set_focus_on_mouse_down_or_key_event_) {
