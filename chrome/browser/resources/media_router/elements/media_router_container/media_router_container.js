@@ -53,6 +53,7 @@ Polymer({
     currentView_: {
       type: String,
       value: null,
+      observer: 'updateElementPositioning_',
     },
 
     /**
@@ -303,6 +304,7 @@ Polymer({
     showFirstRunFlow: {
       type: Boolean,
       value: false,
+      observer: 'updateElementPositioning_',
     },
 
     /**
@@ -387,7 +389,6 @@ Polymer({
 
   observers: [
     'maybeUpdateStartSinkDisplayStartTime_(currentView_, sinksToShow_)',
-    'shownComponentsChanged_(showFirstRunFlow, currentView_)'
   ],
 
   ready: function() {
@@ -830,13 +831,10 @@ Polymer({
    * @private
    */
   maybeShowIssueView_: function(issue) {
-    if (!!issue && issue.isBlocking) {
+    if (!!issue && issue.isBlocking)
       this.currentView_ = media_router.MediaRouterView.ISSUE;
-    } else {
-      this.async(function() {
-        this.updateElementPositioning_();
-      });
-    }
+    else
+      this.updateElementPositioning_();
   },
 
   /**
@@ -1113,32 +1111,6 @@ Polymer({
   },
 
   /**
-   * Updates the top margins of the header and sink list view depending on
-   * whether the first run flow is being shown.
-   *
-   * @param {boolean} showFirstRunFlow Whether or not to show the first run
-   *     flow.
-   * @param {!media_router.MediaRouterView} currentView The current view.
-   * @private
-   */
-  shownComponentsChanged_: function(showFirstRunFlow, currentView) {
-    var headerHeight = this.$$('#container-header').offsetHeight;
-    if (this.computeShowFirstRunFlow_(showFirstRunFlow, currentView)) {
-      // Ensures that first run flow elements have finished stamping.
-      this.async(function() {
-        var firstRunFlowHeight = this.$$('#first-run-flow') ?
-            this.$$('#first-run-flow').offsetHeight : 0;
-        this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
-        this.$['sink-list-view'].style.marginTop =
-            firstRunFlowHeight + headerHeight + 'px';
-      });
-    } else {
-      this.$['container-header'].style.marginTop = '0px';
-      this.$['sink-list-view'].style.marginTop = headerHeight + 'px';
-    }
-  },
-
-  /**
    * Creates a new route if there is no route to the |sink| . Otherwise,
    * shows the route details.
    *
@@ -1228,18 +1200,23 @@ Polymer({
    * @private
    */
   updateElementPositioning_: function() {
-    var headerHeight = this.$$('#container-header').offsetHeight;
-    var firstRunFlowHeight = this.$$('#first-run-flow') ?
-        this.$$('#first-run-flow').offsetHeight : 0;
-    var issueHeight = this.$$('#issue-banner') ?
-        this.$$('#issue-banner').offsetHeight : 0;
+    // Ensures that conditionally templated elements have finished stamping.
+    this.async(function() {
+      var headerHeight = this.$$('#container-header').offsetHeight;
+      var firstRunFlowHeight = this.$$('#first-run-flow') &&
+          this.$$('#first-run-flow').style.display != 'none' ?
+              this.$$('#first-run-flow').offsetHeight : 0;
+      var issueHeight = this.$$('#issue-banner') &&
+          this.$$('#issue-banner').style.display != 'none' ?
+              this.$$('#issue-banner').offsetHeight : 0;
 
-    this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
-    this.$['sink-list-view'].style.marginTop =
-        firstRunFlowHeight + headerHeight + 'px';
-    this.$['sink-list'].style.maxHeight =
-        this.dialogHeight_ - headerHeight - firstRunFlowHeight -
-            issueHeight + 'px';
+      this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
+      this.$['sink-list-view'].style.marginTop =
+          firstRunFlowHeight + headerHeight + 'px';
+      this.$['sink-list'].style.maxHeight =
+          this.dialogHeight_ - headerHeight - firstRunFlowHeight -
+              issueHeight + 'px';
+    });
   },
 
   /**
