@@ -29,8 +29,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #endif
 
-struct PluginMsg_FetchURL_Params;
-
 namespace content {
 class PluginChannel;
 class WebPluginDelegateImpl;
@@ -58,7 +56,6 @@ class WebPluginProxy : public WebPlugin,
   void SetWindow(gfx::PluginWindowHandle window) override;
   void SetAcceptsInputEvents(bool accepts) override;
   void WillDestroyWindow(gfx::PluginWindowHandle window) override;
-  void CancelResource(unsigned long id) override;
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
   NPObject* GetWindowScriptNPObject() override;
@@ -77,10 +74,7 @@ class WebPluginProxy : public WebPlugin,
   void CancelDocumentLoad() override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void SetDeferResourceLoading(unsigned long resource_id, bool defer) override;
   bool IsOffTheRecord() override;
-  void ResourceClientDeleted(WebPluginResourceClient* resource_client) override;
-  void URLRedirectResponse(bool allow, int resource_id) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window) override;
@@ -102,10 +96,6 @@ class WebPluginProxy : public WebPlugin,
 
   // class-specific methods
 
-  // Returns a WebPluginResourceClient object given its id, or NULL if no
-  // object with that id exists.
-  WebPluginResourceClient* GetResourceClient(int id);
-
   // Returns the id of the renderer that contains this plugin.
   int GetRendererId();
 
@@ -119,9 +109,6 @@ class WebPluginProxy : public WebPlugin,
 
   // Callback from the renderer to let us know that a paint occurred.
   void DidPaint();
-
-  // Notification received on a plugin issued resource request creation.
-  void OnResourceCreated(int resource_id, WebPluginResourceClient* client);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Retrieves the IME status from a windowless plugin and sends it to a
@@ -172,9 +159,6 @@ class WebPluginProxy : public WebPlugin,
     return windowless_canvases_[windowless_buffer_index_];
   }
 #endif
-
-  typedef base::hash_map<int, WebPluginResourceClient*> ResourceClientMap;
-  ResourceClientMap resource_clients_;
 
   scoped_refptr<PluginChannel> channel_;
   int route_id_;

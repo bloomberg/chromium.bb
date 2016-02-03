@@ -22,7 +22,6 @@
 #include "content/common/webplugin_geometry.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
@@ -100,7 +99,6 @@ class WebPluginImpl : public WebPlugin,
   void SetWindow(gfx::PluginWindowHandle window) override;
   void SetAcceptsInputEvents(bool accepts) override;
   void WillDestroyWindow(gfx::PluginWindowHandle window) override;
-  void CancelResource(unsigned long id) override;
   void Invalidate() override;
   void InvalidateRect(const gfx::Rect& rect) override;
   NPObject* GetWindowScriptNPObject() override;
@@ -115,8 +113,6 @@ class WebPluginImpl : public WebPlugin,
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsOffTheRecord() override;
-  void SetDeferResourceLoading(unsigned long resource_id, bool defer) override;
-  void URLRedirectResponse(bool allow, int resource_id) override;
 #if defined(OS_WIN)
   void SetWindowlessData(HANDLE pump_messages_event,
                          gfx::NativeViewId dummy_activation_window) override {}
@@ -178,57 +174,16 @@ class WebPluginImpl : public WebPlugin,
   // resource handle to be left valid during plugin shutdown.
   void TearDownPluginInstance(blink::WebURLLoader* loader_to_ignore);
 
-  // WebURLLoaderClient implementation.  We implement this interface in the
-  // renderer process, and then use the simple WebPluginResourceClient interface
-  // to relay the callbacks to the plugin.
-  void willFollowRedirect(blink::WebURLLoader* loader,
-                          blink::WebURLRequest& new_request,
-                          const blink::WebURLResponse& response);
-  void didSendData(blink::WebURLLoader* loader,
-                   unsigned long long bytes_sent,
-                   unsigned long long total_bytes_to_be_sent);
-  void didReceiveResponse(blink::WebURLLoader* loader,
-                                  const blink::WebURLResponse& response);
-
-  void didReceiveData(blink::WebURLLoader* loader, const char *buffer,
-                      int data_length, int encoded_data_length);
-  void didFinishLoading(blink::WebURLLoader* loader,
-                        double finishTime);
-  void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error);
-
-  // Helper function to remove the stored information about a resource
-  // request given its index in m_clients.
-  void RemoveClient(size_t i);
-
-  // Helper function to remove the stored information about a resource
-  // request given a handle.
-  void RemoveClient(blink::WebURLLoader* loader);
-
-  // Handles HTTP multipart responses, i.e. responses received with a HTTP
-  // status code of 206.
-  // Returns false if response is not multipart (may be if we requested
-  // single range).
-  bool HandleHttpMultipartResponse(const blink::WebURLResponse& response,
-                                   WebPluginResourceClient* client);
-
   // Tears down the existing plugin instance and creates a new plugin instance
   // to handle the response identified by the loader parameter.
   bool ReinitializePluginForResponse(blink::WebURLLoader* loader);
 
-  struct ClientInfo;
-
-  // Helper functions
-  WebPluginResourceClient* GetClientFromLoader(blink::WebURLLoader* loader);
-  ClientInfo* GetClientInfoFromLoader(blink::WebURLLoader* loader);
 
   // Helper function to set the referrer on the request passed in.
   void SetReferrer(blink::WebURLRequest* request, ReferrerValue referrer_flag);
 
   // Check for invalid chars like @, ;, \ before the first / (in path).
   bool IsValidUrl(const GURL& url, ReferrerValue referrer_flag);
-
-  std::vector<ClientInfo> clients_;
 
   bool windowless_;
   gfx::PluginWindowHandle window_;
@@ -252,12 +207,6 @@ class WebPluginImpl : public WebPlugin,
 
   // Unique identifier for this plugin, used to track script objects.
   struct _NPP* npp_;
-
-  typedef std::map<WebPluginResourceClient*, MultipartResponseDelegate*>
-      MultiPartResponseHandlerMap;
-  // Tracks HTTP multipart response handlers instantiated for
-  // a WebPluginResourceClient instance.
-  MultiPartResponseHandlerMap multi_part_response_map_;
 
   // The plugin source URL.
   GURL plugin_url_;
@@ -284,39 +233,6 @@ class WebPluginImpl : public WebPlugin,
   // these so that we can re-initialize the plugin if we need to.
   std::vector<std::string> arg_names_;
   std::vector<std::string> arg_values_;
-
-  class LoaderClient : public blink::WebURLLoaderClient {
-   public:
-    LoaderClient(WebPluginImpl*);
-
-    void willFollowRedirect(blink::WebURLLoader*,
-                            blink::WebURLRequest&,
-                            const blink::WebURLResponse&) override;
-    void didSendData(blink::WebURLLoader*,
-                     unsigned long long bytesSent,
-                     unsigned long long totalBytesToBeSent) override;
-    void didReceiveResponse(blink::WebURLLoader*,
-                            const blink::WebURLResponse&) override;
-    void didDownloadData(blink::WebURLLoader*,
-                         int dataLength,
-                         int encodedDataLength) override;
-    void didReceiveData(blink::WebURLLoader*,
-                        const char* data,
-                        int dataLength,
-                        int encodedDataLength) override;
-    void didReceiveCachedMetadata(blink::WebURLLoader*,
-                                  const char* data,
-                                  int dataLength) override;
-    void didFinishLoading(blink::WebURLLoader*,
-                          double finishTime,
-                          int64_t total_encoded_data_length) override;
-    void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
-
-   private:
-    WebPluginImpl* parent_;
-  };
-
-  LoaderClient loader_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginImpl);
 };

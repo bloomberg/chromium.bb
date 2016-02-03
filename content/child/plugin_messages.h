@@ -36,28 +36,6 @@ IPC_STRUCT_BEGIN(PluginMsg_Init_Params)
   IPC_STRUCT_MEMBER(int, host_render_view_routing_id)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(PluginMsg_DidReceiveResponseParams)
-  IPC_STRUCT_MEMBER(unsigned long, id)
-  IPC_STRUCT_MEMBER(std::string, mime_type)
-  IPC_STRUCT_MEMBER(std::string, headers)
-  IPC_STRUCT_MEMBER(uint32_t, expected_length)
-  IPC_STRUCT_MEMBER(uint32_t, last_modified)
-  IPC_STRUCT_MEMBER(bool, request_is_seekable)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(PluginMsg_FetchURL_Params)
-  IPC_STRUCT_MEMBER(unsigned long, resource_id)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
-  IPC_STRUCT_MEMBER(std::string, method)
-  IPC_STRUCT_MEMBER(std::vector<char>, post_data)
-  IPC_STRUCT_MEMBER(GURL, referrer)
-  IPC_STRUCT_MEMBER(blink::WebReferrerPolicy, referrer_policy)
-  IPC_STRUCT_MEMBER(bool, notify_redirect)
-  IPC_STRUCT_MEMBER(bool, is_plugin_src_load)
-  IPC_STRUCT_MEMBER(int, render_frame_id)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(PluginMsg_UpdateGeometry_Param)
   IPC_STRUCT_MEMBER(gfx::Rect, window_rect)
   IPC_STRUCT_MEMBER(gfx::Rect, clip_rect)
@@ -126,25 +104,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(PluginMsg_HandleInputEvent,
 IPC_MESSAGE_ROUTED1(PluginMsg_SetContentAreaFocus,
                     bool /* has_focus */)
 
-IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_WillSendRequest,
-                           unsigned long /* id */,
-                           GURL /* url */,
-                           int  /* http_status_code */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_DidReceiveResponse,
-                    PluginMsg_DidReceiveResponseParams)
-
-IPC_MESSAGE_ROUTED3(PluginMsg_DidReceiveData,
-                    unsigned long /* id */,
-                    std::vector<char> /* buffer */,
-                    int /* data_offset */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_DidFinishLoading,
-                    unsigned long /* id */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_DidFail,
-                    unsigned long /* id */)
-
 IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
                      int /* render_view_id */)
 
@@ -191,9 +150,6 @@ IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
 IPC_SYNC_MESSAGE_ROUTED1_0(PluginHostMsg_SetWindow,
                            gfx::PluginWindowHandle /* window */)
 
-IPC_MESSAGE_ROUTED1(PluginHostMsg_CancelResource,
-                    int /* id */)
-
 IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
                     gfx::Rect /* rect */)
 
@@ -225,18 +181,10 @@ IPC_MESSAGE_ROUTED0(PluginHostMsg_CancelDocumentLoad)
 IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStartLoading)
 IPC_MESSAGE_ROUTED0(PluginHostMsg_DidStopLoading)
 
-IPC_MESSAGE_ROUTED2(PluginHostMsg_DeferResourceLoading,
-                    unsigned long /* resource_id */,
-                    bool /* defer */)
-
 IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
                             std::string /* message */)
 
 IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
-
-IPC_MESSAGE_ROUTED2(PluginHostMsg_URLRedirectResponse,
-                    bool /* allow */,
-                    int  /* resource_id */)
 
 #if defined(OS_WIN)
 // The modal_loop_pump_messages_event parameter is an event handle which is

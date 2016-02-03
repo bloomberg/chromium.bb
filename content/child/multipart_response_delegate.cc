@@ -286,34 +286,6 @@ size_t MultipartResponseDelegate::FindBoundary() {
   return boundary_pos;
 }
 
-bool MultipartResponseDelegate::ReadMultipartBoundary(
-    const WebURLResponse& response,
-    std::string* multipart_boundary) {
-  std::string content_type =
-      response.httpHeaderField(WebString::fromUTF8("Content-Type")).utf8();
-
-  size_t boundary_start_offset = content_type.find("boundary=");
-  if (boundary_start_offset == std::string::npos)
-    return false;
-
-  boundary_start_offset += strlen("boundary=");
-
-  size_t boundary_end_offset = content_type.find(';', boundary_start_offset);
-
-  if (boundary_end_offset == std::string::npos)
-    boundary_end_offset = content_type.length();
-
-  size_t boundary_length = boundary_end_offset - boundary_start_offset;
-
-  *multipart_boundary =
-      content_type.substr(boundary_start_offset, boundary_length);
-  // The byte range response can have quoted boundary strings. This is legal
-  // as per MIME specifications. Individual data fragements however don't
-  // contain quoted boundary strings.
-  base::TrimString(*multipart_boundary, "\"", multipart_boundary);
-  return true;
-}
-
 bool MultipartResponseDelegate::ReadContentRanges(
     const WebURLResponse& response,
     int64_t* content_range_lower_bound,

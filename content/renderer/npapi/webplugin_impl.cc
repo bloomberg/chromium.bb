@@ -47,7 +47,6 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
-#include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -83,7 +82,6 @@ using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
-using blink::WebURLLoaderClient;
 using blink::WebURLLoaderOptions;
 using blink::WebURLRequest;
 using blink::WebURLResponse;
@@ -92,147 +90,7 @@ using blink::WebView;
 
 namespace content {
 
-namespace {
-
-// This class handles individual multipart responses. It is instantiated when
-// we receive HTTP status code 206 in the HTTP response. This indicates
-// that the response could have multiple parts each separated by a boundary
-// specified in the response header.
-class MultiPartResponseClient : public WebURLLoaderClient {
- public:
-  explicit MultiPartResponseClient(WebPluginResourceClient* resource_client)
-      : byte_range_lower_bound_(0), resource_client_(resource_client) {}
-
-  void willFollowRedirect(WebURLLoader*,
-                          WebURLRequest&,
-                          const WebURLResponse&) override {}
-  void didSendData(WebURLLoader*,
-                   unsigned long long,
-                   unsigned long long) override {}
-
-  // Called when the multipart parser encounters an embedded multipart
-  // response.
-  void didReceiveResponse(WebURLLoader*,
-                          const WebURLResponse& response) override {
-    int64_t byte_range_upper_bound, instance_size;
-    if (!MultipartResponseDelegate::ReadContentRanges(
-            response,
-            &byte_range_lower_bound_,
-            &byte_range_upper_bound,
-            &instance_size)) {
-      NOTREACHED();
-    }
-  }
-
-  // Receives individual part data from a multipart response.
-  void didReceiveData(WebURLLoader*,
-                      const char* data,
-                      int data_length,
-                      int encoded_data_length) override {
-    // TODO(ananta)
-    // We should defer further loads on multipart resources on the same lines
-    // as regular resources requested by plugins to prevent reentrancy.
-    resource_client_->DidReceiveData(
-        data, data_length, byte_range_lower_bound_);
-    byte_range_lower_bound_ += data_length;
-  }
-
-  void didFinishLoading(WebURLLoader*,
-                        double finishTime,
-                        int64_t total_encoded_data_length) override {}
-  void didFail(WebURLLoader*, const WebURLError&) override {}
-
- private:
-  // The lower bound of the byte range.
-  int64_t byte_range_lower_bound_;
-  // The handler for the data.
-  WebPluginResourceClient* resource_client_;
-};
-
-class HeaderFlattener : public WebHTTPHeaderVisitor {
- public:
-  explicit HeaderFlattener(std::string* buf) : buf_(buf) {
-  }
-
-  void visitHeader(const WebString& name, const WebString& value) override {
-    // TODO(darin): Should we really exclude headers with an empty value?
-    if (!name.isEmpty() && !value.isEmpty()) {
-      buf_->append(name.utf8());
-      buf_->append(": ");
-      buf_->append(value.utf8());
-      buf_->append("\n");
-    }
-  }
-
- private:
-  std::string* buf_;
-};
-
-std::string GetAllHeaders(const WebURLResponse& response) {
-  // TODO(darin): It is possible for httpStatusText to be empty and still have
-  // an interesting response, so this check seems wrong.
-  std::string result;
-  const WebString& status = response.httpStatusText();
-  if (status.isEmpty())
-    return result;
-
-  // TODO(darin): Shouldn't we also report HTTP version numbers?
-  result = base::StringPrintf("HTTP %d ", response.httpStatusCode());
-  result.append(status.utf8());
-  result.append("\n");
-
-  HeaderFlattener flattener(&result);
-  response.visitHTTPHeaderFields(&flattener);
-
-  return result;
-}
-
-struct ResponseInfo {
-  GURL url;
-  std::string mime_type;
-  uint32_t last_modified;
-  uint32_t expected_length;
-};
-
-void GetResponseInfo(const WebURLResponse& response,
-                     ResponseInfo* response_info) {
-  response_info->url = response.url();
-  response_info->mime_type = response.mimeType().utf8();
-
-  // Measured in seconds since 12:00 midnight GMT, January 1, 1970.
-  response_info->last_modified =
-      static_cast<uint32_t>(response.lastModifiedDate());
-
-  // If the length comes in as -1, then it indicates that it was not
-  // read off the HTTP headers. We replicate Safari webkit behavior here,
-  // which is to set it to 0.
-  response_info->expected_length =
-      static_cast<uint32_t>(std::max(response.expectedContentLength(), 0LL));
-
-  WebString content_encoding =
-      response.httpHeaderField(WebString::fromUTF8("Content-Encoding"));
-  if (!content_encoding.isNull() &&
-      !base::EqualsASCII(base::StringPiece16(content_encoding), "identity")) {
-    // Don't send the compressed content length to the plugin, which only
-    // cares about the decoded length.
-    response_info->expected_length = 0;
-  }
-}
-
-}  // namespace
-
 // blink::WebPlugin ----------------------------------------------------------
-
-struct WebPluginImpl::ClientInfo {
-  unsigned long id;
-  WebPluginResourceClient* client;
-  blink::WebURLRequest request;
-  bool pending_failure_notification;
-  linked_ptr<blink::WebURLLoader> loader;
-  bool notify_redirects;
-  bool is_plugin_src_load;
-  int64_t data_offset;
-};
 
 bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!render_view_.get()) {
@@ -427,51 +285,6 @@ bool WebPluginImpl::isPlaceholder() {
   return false;
 }
 
-WebPluginImpl::LoaderClient::LoaderClient(WebPluginImpl* parent)
-    : parent_(parent) {}
-
-void WebPluginImpl::LoaderClient::willFollowRedirect(
-    blink::WebURLLoader* loader, blink::WebURLRequest& new_request,
-    const blink::WebURLResponse& redirect_response) {
-  parent_->willFollowRedirect(loader, new_request, redirect_response);
-}
-
-void WebPluginImpl::LoaderClient::didSendData(
-    blink::WebURLLoader* loader, unsigned long long bytesSent,
-    unsigned long long totalBytesToBeSent) {
-  parent_->didSendData(loader, bytesSent, totalBytesToBeSent);
-}
-
-void WebPluginImpl::LoaderClient::didReceiveResponse(
-    blink::WebURLLoader* loader, const blink::WebURLResponse& response) {
-  parent_->didReceiveResponse(loader, response);
-}
-
-void WebPluginImpl::LoaderClient::didDownloadData(
-    blink::WebURLLoader* loader, int dataLength, int encodedDataLength) {
-}
-
-void WebPluginImpl::LoaderClient::didReceiveData(
-    blink::WebURLLoader* loader, const char* data,
-    int dataLength, int encodedDataLength) {
-  parent_->didReceiveData(loader, data, dataLength, encodedDataLength);
-}
-
-void WebPluginImpl::LoaderClient::didReceiveCachedMetadata(
-    blink::WebURLLoader* loader, const char* data, int dataLength) {
-}
-
-void WebPluginImpl::LoaderClient::didFinishLoading(
-    blink::WebURLLoader* loader, double finishTime,
-    int64_t total_encoded_data_length) {
-  parent_->didFinishLoading(loader, finishTime);
-}
-
-void WebPluginImpl::LoaderClient::didFail(
-    blink::WebURLLoader* loader, const blink::WebURLError& error) {
-  parent_->didFail(loader, error);
-}
-
 // -----------------------------------------------------------------------------
 
 WebPluginImpl::WebPluginImpl(
@@ -495,8 +308,7 @@ WebPluginImpl::WebPluginImpl(
       ignore_response_error_(false),
       file_path_(file_path),
       mime_type_(base::ToLowerASCII(base::UTF16ToASCII(
-          base::StringPiece16(params.mimeType)))),
-      loader_client_(this) {
+          base::StringPiece16(params.mimeType)))) {
   DCHECK_EQ(params.attributeNames.size(), params.attributeValues.size());
 
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
@@ -553,19 +365,6 @@ GURL WebPluginImpl::CompleteURL(const char* url) {
   }
   // TODO(darin): Is conversion from UTF8 correct here?
   return webframe_->document().completeURL(WebString::fromUTF8(url));
-}
-
-void WebPluginImpl::CancelResource(unsigned long id) {
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    if (clients_[i].id == id) {
-      if (clients_[i].loader.get()) {
-        clients_[i].loader->setDefersLoading(false);
-        clients_[i].loader->cancel();
-        RemoveClient(i);
-      }
-      return;
-    }
-  }
 }
 
 bool WebPluginImpl::SetPostData(WebURLRequest* request,
@@ -746,23 +545,6 @@ std::string WebPluginImpl::GetCookies(const GURL& url,
       cookie_jar->cookies(url, first_party_for_cookies)));
 }
 
-void WebPluginImpl::URLRedirectResponse(bool allow, int resource_id) {
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    if (clients_[i].id == static_cast<unsigned long>(resource_id)) {
-      if (clients_[i].loader.get()) {
-        if (allow) {
-          clients_[i].loader->setDefersLoading(false);
-        } else {
-          clients_[i].loader->cancel();
-          if (clients_[i].client)
-            clients_[i].client->DidFail(clients_[i].id);
-        }
-      }
-      break;
-    }
-  }
-}
-
 #if defined(OS_MACOSX)
 WebPluginAcceleratedSurface* WebPluginImpl::GetAcceleratedSurface(
     gfx::GpuPreference gpu_preference) {
@@ -825,179 +607,6 @@ void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
     container_->invalidateRect(rect);
 }
 
-WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
-    WebURLLoader* loader) {
-  ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (client_info)
-    return client_info->client;
-  return NULL;
-}
-
-WebPluginImpl::ClientInfo* WebPluginImpl::GetClientInfoFromLoader(
-    WebURLLoader* loader) {
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    if (clients_[i].loader.get() == loader)
-      return &clients_[i];
-  }
-
-  NOTREACHED();
-  return 0;
-}
-
-void WebPluginImpl::willFollowRedirect(WebURLLoader* loader,
-                                       WebURLRequest& new_request,
-                                       const WebURLResponse& response) {
-  // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedRedirect
-  // until kDirectNPAPIRequests is the default and we can remove this old path.
-  WebPluginImpl::ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (client_info) {
-    if (net::HttpResponseHeaders::IsRedirectResponseCode(
-            response.httpStatusCode())) {
-      // If the plugin does not participate in url redirect notifications then
-      // just block cross origin 307 POST redirects.
-      if (!client_info->notify_redirects) {
-        if (response.httpStatusCode() == 307 &&
-            base::LowerCaseEqualsASCII(
-                new_request.httpMethod().utf8(), "post")) {
-          GURL original_request_url(response.url());
-          GURL response_url(new_request.url());
-          if (original_request_url.GetOrigin() != response_url.GetOrigin()) {
-            loader->setDefersLoading(true);
-            loader->cancel();
-            client_info->client->DidFail(client_info->id);
-            return;
-          }
-        }
-      } else {
-        loader->setDefersLoading(true);
-      }
-    }
-    client_info->client->WillSendRequest(new_request.url(),
-                                         response.httpStatusCode());
-  }
-}
-
-void WebPluginImpl::didSendData(WebURLLoader* loader,
-                                unsigned long long bytes_sent,
-                                unsigned long long total_bytes_to_be_sent) {
-}
-
-void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
-                                       const WebURLResponse& response) {
-  // TODO(jam): THIS LOGIC IS COPIED IN PluginURLFetcher::OnReceivedResponse
-  // until kDirectNPAPIRequests is the default and we can remove this old path.
-
-  WebPluginResourceClient* client = GetClientFromLoader(loader);
-  if (!client)
-    return;
-
-  ResponseInfo response_info;
-  GetResponseInfo(response, &response_info);
-  ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (!client_info)
-    return;
-
-  // Calling into a plugin could result in reentrancy if the plugin yields
-  // control to the OS like entering a modal loop etc. Prevent this by
-  // stopping further loading until the plugin notifies us that it is ready to
-  // accept data
-  loader->setDefersLoading(true);
-
-  client->DidReceiveResponse(
-      response_info.mime_type,
-      GetAllHeaders(response),
-      response_info.expected_length,
-      response_info.last_modified,
-      true);
-
-  // Bug http://b/issue?id=925559. The flash plugin would not handle the HTTP
-  // error codes in the stream header and as a result, was unaware of the
-  // fate of the HTTP requests issued via NPN_GetURLNotify. Webkit and FF
-  // destroy the stream and invoke the NPP_DestroyStream function on the
-  // plugin if the HTTP request fails.
-  const GURL& url = response.url();
-  if (url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme)) {
-    if (response.httpStatusCode() < 100 || response.httpStatusCode() >= 400) {
-      // The plugin instance could be in the process of deletion here.
-      // Verify if the WebPluginResourceClient instance still exists before
-      // use.
-      ClientInfo* client_info = GetClientInfoFromLoader(loader);
-      if (client_info) {
-        client_info->pending_failure_notification = true;
-      }
-    }
-  }
-}
-
-void WebPluginImpl::didReceiveData(WebURLLoader* loader,
-                                   const char *buffer,
-                                   int data_length,
-                                   int encoded_data_length) {
-  WebPluginResourceClient* client = GetClientFromLoader(loader);
-  if (!client)
-    return;
-
-  MultiPartResponseHandlerMap::iterator index =
-      multi_part_response_map_.find(client);
-  if (index != multi_part_response_map_.end()) {
-    MultipartResponseDelegate* multi_part_handler = (*index).second;
-    DCHECK(multi_part_handler != NULL);
-    multi_part_handler->OnReceivedData(buffer,
-                                       data_length,
-                                       encoded_data_length);
-  } else {
-    loader->setDefersLoading(true);
-    ClientInfo* client_info = GetClientInfoFromLoader(loader);
-    client->DidReceiveData(buffer, data_length, client_info->data_offset);
-    client_info->data_offset += data_length;
-  }
-}
-
-void WebPluginImpl::didFinishLoading(WebURLLoader* loader, double finishTime) {
-  ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (client_info && client_info->client) {
-    MultiPartResponseHandlerMap::iterator index =
-      multi_part_response_map_.find(client_info->client);
-    if (index != multi_part_response_map_.end()) {
-      delete (*index).second;
-      multi_part_response_map_.erase(index);
-      DidStopLoading();
-    }
-    loader->setDefersLoading(true);
-    WebPluginResourceClient* resource_client = client_info->client;
-    // The ClientInfo can get deleted in the call to DidFinishLoading below.
-    // It is not safe to access this structure after that.
-    client_info->client = NULL;
-    resource_client->DidFinishLoading(client_info->id);
-  }
-}
-
-void WebPluginImpl::didFail(WebURLLoader* loader,
-                            const WebURLError& error) {
-  ClientInfo* client_info = GetClientInfoFromLoader(loader);
-  if (client_info && client_info->client) {
-    loader->setDefersLoading(true);
-    WebPluginResourceClient* resource_client = client_info->client;
-    // The ClientInfo can get deleted in the call to DidFail below.
-    // It is not safe to access this structure after that.
-    client_info->client = NULL;
-    resource_client->DidFail(client_info->id);
-  }
-}
-
-void WebPluginImpl::RemoveClient(size_t i) {
-  clients_.erase(clients_.begin() + i);
-}
-
-void WebPluginImpl::RemoveClient(WebURLLoader* loader) {
-  for (size_t i = 0; i < clients_.size(); ++i) {
-    if (clients_[i].loader.get() == loader) {
-      RemoveClient(i);
-      return;
-    }
-  }
-}
-
 void WebPluginImpl::SetContainer(WebPluginContainer* container) {
   if (!container)
     TearDownPluginInstance(NULL);
@@ -1036,57 +645,8 @@ void WebPluginImpl::DidStopLoading() {
   }
 }
 
-void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
-                                            bool defer) {
-  std::vector<ClientInfo>::iterator client_index = clients_.begin();
-  while (client_index != clients_.end()) {
-    ClientInfo& client_info = *client_index;
-
-    if (client_info.id == resource_id) {
-      client_info.loader->setDefersLoading(defer);
-
-      // If we determined that the request had failed via the HTTP headers
-      // in the response then we send out a failure notification to the
-      // plugin process, as certain plugins don't handle HTTP failure codes
-      // correctly.
-      if (!defer && client_info.client &&
-          client_info.pending_failure_notification) {
-        // The ClientInfo and the iterator can become invalid due to the call
-        // to DidFail below.
-        WebPluginResourceClient* resource_client = client_info.client;
-        client_info.loader->cancel();
-        clients_.erase(client_index++);
-        resource_client->DidFail(resource_id);
-      }
-      break;
-    }
-    client_index++;
-  }
-}
-
 bool WebPluginImpl::IsOffTheRecord() {
   return false;
-}
-
-bool WebPluginImpl::HandleHttpMultipartResponse(
-    const WebURLResponse& response, WebPluginResourceClient* client) {
-  std::string multipart_boundary;
-  if (!MultipartResponseDelegate::ReadMultipartBoundary(
-          response, &multipart_boundary)) {
-    return false;
-  }
-
-  DidStartLoading();
-
-  MultiPartResponseClient* multi_part_response_client =
-      new MultiPartResponseClient(client);
-
-  MultipartResponseDelegate* multi_part_response_handler =
-      new MultipartResponseDelegate(multi_part_response_client, NULL,
-                                    response,
-                                    multipart_boundary);
-  multi_part_response_map_[client] = multi_part_response_handler;
-  return true;
 }
 
 bool WebPluginImpl::ReinitializePluginForResponse(
@@ -1167,23 +727,6 @@ void WebPluginImpl::TearDownPluginInstance(
     // Invalidate any script objects created during teardown here, before the
     // plugin might actually be unloaded.
     container_->clearScriptObjects();
-  }
-
-  // Cancel any pending requests because otherwise this deleted object will
-  // be called by the ResourceDispatcher.
-  std::vector<ClientInfo>::iterator client_index = clients_.begin();
-  while (client_index != clients_.end()) {
-    ClientInfo& client_info = *client_index;
-
-    if (loader_to_ignore == client_info.loader) {
-      client_index++;
-      continue;
-    }
-
-    if (client_info.loader.get())
-      client_info.loader->cancel();
-
-    client_index = clients_.erase(client_index);
   }
 
   // This needs to be called now and not in the destructor since the

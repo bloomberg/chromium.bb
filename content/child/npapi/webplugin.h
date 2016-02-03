@@ -49,8 +49,6 @@ class WebPlugin {
   // destroyed.
   virtual void WillDestroyWindow(gfx::PluginWindowHandle window) = 0;
 
-  // Cancels a pending request.
-  virtual void CancelResource(unsigned long id) = 0;
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& rect) = 0;
 
@@ -80,19 +78,6 @@ class WebPlugin {
 
   // Returns true iff in incognito mode.
   virtual bool IsOffTheRecord() = 0;
-
-  // Called when the WebPluginResourceClient instance is deleted.
-  virtual void ResourceClientDeleted(
-      WebPluginResourceClient* resource_client) {}
-
-  // Defers the loading of the resource identified by resource_id. This is
-  // controlled by the defer parameter.
-  virtual void SetDeferResourceLoading(unsigned long resource_id,
-                                       bool defer) = 0;
-
-  // Handles NPN_URLRedirectResponse calls issued by plugins in response to
-  // HTTP URL redirect notifications.
-  virtual void URLRedirectResponse(bool allow, int resource_id) = 0;
 
 #if defined(OS_WIN)
   // |pump_messages_event| is a event handle which is used in NPP_HandleEvent

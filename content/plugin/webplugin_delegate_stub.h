@@ -20,8 +20,6 @@
 #include "url/gurl.h"
 
 struct PluginMsg_Init_Params;
-struct PluginMsg_DidReceiveResponseParams;
-struct PluginMsg_FetchURL_Params;
 struct PluginMsg_UpdateGeometry_Param;
 
 namespace blink {
@@ -63,12 +61,6 @@ class WebPluginDelegateStub : public IPC::Listener,
   void OnInit(const PluginMsg_Init_Params& params,
               bool* transparent,
               bool* result);
-  void OnWillSendRequest(int id, const GURL& url, int http_status_code);
-  void OnDidReceiveResponse(const PluginMsg_DidReceiveResponseParams& params);
-  void OnDidReceiveData(int id, const std::vector<char>& buffer,
-                        int data_offset);
-  void OnDidFinishLoading(int id);
-  void OnDidFail(int id);
   void OnSetFocus(bool focused);
   void OnHandleInputEvent(const blink::WebInputEvent* event,
                           bool* handled, WebCursor* cursor);

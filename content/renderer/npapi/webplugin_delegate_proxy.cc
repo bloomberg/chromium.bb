@@ -94,81 +94,6 @@ ScopedLogLevel::~ScopedLogLevel() {
   logging::SetMinLogLevel(old_level_);
 }
 
-// Proxy for WebPluginResourceClient.  The object owns itself after creation,
-// deleting itself after its callback has been called.
-class ResourceClientProxy : public WebPluginResourceClient {
- public:
-  ResourceClientProxy(PluginChannelHost* channel, int instance_id)
-    : channel_(channel), instance_id_(instance_id), resource_id_(0) {
-  }
-
-  ~ResourceClientProxy() override {}
-
-  // PluginResourceClient implementation:
-  void WillSendRequest(const GURL& url, int http_status_code) override {
-    DCHECK(channel_.get() != NULL);
-    channel_->Send(new PluginMsg_WillSendRequest(
-        instance_id_, resource_id_, url, http_status_code));
-  }
-
-  void DidReceiveResponse(const std::string& mime_type,
-                          const std::string& headers,
-                          uint32_t expected_length,
-                          uint32_t last_modified,
-                          bool request_is_seekable) override {
-    DCHECK(channel_.get() != NULL);
-    PluginMsg_DidReceiveResponseParams params;
-    params.id = resource_id_;
-    params.mime_type = mime_type;
-    params.headers = headers;
-    params.expected_length = expected_length;
-    params.last_modified = last_modified;
-    params.request_is_seekable = request_is_seekable;
-    // Grab a reference on the underlying channel so it does not get
-    // deleted from under us.
-    scoped_refptr<PluginChannelHost> channel_ref(channel_);
-    channel_->Send(new PluginMsg_DidReceiveResponse(instance_id_, params));
-  }
-
-  void DidReceiveData(const char* buffer,
-                      int length,
-                      int data_offset) override {
-    DCHECK(channel_.get() != NULL);
-    DCHECK_GT(length, 0);
-    std::vector<char> data;
-    data.resize(static_cast<size_t>(length));
-    memcpy(&data.front(), buffer, length);
-    // Grab a reference on the underlying channel so it does not get
-    // deleted from under us.
-    scoped_refptr<PluginChannelHost> channel_ref(channel_);
-    channel_->Send(new PluginMsg_DidReceiveData(instance_id_, resource_id_,
-                                                data, data_offset));
-  }
-
-  void DidFinishLoading(unsigned long resource_id) override {
-    DCHECK(channel_.get() != NULL);
-    DCHECK_EQ(resource_id, resource_id_);
-    channel_->Send(new PluginMsg_DidFinishLoading(instance_id_, resource_id_));
-    channel_ = NULL;
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  }
-
-  void DidFail(unsigned long resource_id) override {
-    DCHECK(channel_.get() != NULL);
-    DCHECK_EQ(resource_id, resource_id_);
-    channel_->Send(new PluginMsg_DidFail(instance_id_, resource_id_));
-    channel_ = NULL;
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  }
-
-  int ResourceId() override { return resource_id_; }
-
- private:
-  scoped_refptr<PluginChannelHost> channel_;
-  int instance_id_;
-  unsigned long resource_id_;
-};
-
 }  // namespace
 
 WebPluginDelegateProxy::WebPluginDelegateProxy(
@@ -373,7 +298,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateProxy, msg)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindow, OnSetWindow)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_CancelResource, OnCancelResource)
     IPC_MESSAGE_HANDLER(PluginHostMsg_InvalidateRect, OnInvalidateRect)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GetWindowScriptNPObject,
                         OnGetWindowScriptNPObject)
@@ -384,10 +308,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStopLoading, OnDidStopLoading)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_DeferResourceLoading,
-                        OnDeferResourceLoading)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_URLRedirectResponse,
-                        OnURLRedirectResponse)
 #if defined(OS_WIN)
     IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessData, OnSetWindowlessData)
     IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus, OnNotifyIMEStatus)
@@ -860,11 +780,6 @@ void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
 }
 #endif
 
-void WebPluginDelegateProxy::OnCancelResource(int id) {
-  if (plugin_)
-    plugin_->CancelResource(id);
-}
-
 void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   if (!plugin_)
     return;
@@ -1020,11 +935,6 @@ void WebPluginDelegateProxy::OnDidStopLoading() {
   plugin_->DidStopLoading();
 }
 
-void WebPluginDelegateProxy::OnDeferResourceLoading(unsigned long resource_id,
-                                                    bool defer) {
-  plugin_->SetDeferResourceLoading(resource_id, defer);
-}
-
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::OnAcceleratedPluginEnabledRendering() {
   uses_compositor_ = true;
@@ -1069,13 +979,5 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   return false;
 }
 #endif
-
-void WebPluginDelegateProxy::OnURLRedirectResponse(bool allow,
-                                                   int resource_id) {
-  if (!plugin_)
-    return;
-
-  plugin_->URLRedirectResponse(allow, resource_id);
-}
 
 }  // namespace content

@@ -134,7 +134,6 @@ class WebPluginDelegateProxy
   void OnCompleteURL(const std::string& url_in, std::string* url_out,
                      bool* result);
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
-  void OnCancelResource(int id);
   void OnInvalidateRect(const gfx::Rect& rect);
   void OnGetWindowScriptNPObject(int route_id, bool* success);
   void OnResolveProxy(const GURL& url, bool* result, std::string* proxy_list);
@@ -150,8 +149,6 @@ class WebPluginDelegateProxy
                                   int range_request_id);
   void OnDidStartLoading();
   void OnDidStopLoading();
-  void OnDeferResourceLoading(unsigned long resource_id, bool defer);
-  void OnURLRedirectResponse(bool allow, int resource_id);
 #if defined(OS_MACOSX)
   void OnFocusChanged(bool focused);
   void OnStartIme();

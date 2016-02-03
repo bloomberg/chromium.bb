@@ -83,12 +83,6 @@ class CONTENT_EXPORT MultipartResponseDelegate {
     loader_ = NULL;
   }
 
-  // Returns the multi part boundary string from the Content-type header
-  // in the response.
-  // Returns true on success.
-  static bool ReadMultipartBoundary(const blink::WebURLResponse& response,
-                                    std::string* multipart_boundary);
-
   // Returns the lower and higher content ranges from an individual multipart
   // in a multipart response.
   // Returns true on success.

@@ -93,11 +93,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebPluginDelegateStub, msg)
     IPC_MESSAGE_HANDLER(PluginMsg_Init, OnInit)
-    IPC_MESSAGE_HANDLER(PluginMsg_WillSendRequest, OnWillSendRequest)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveResponse, OnDidReceiveResponse)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveData, OnDidReceiveData)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidFinishLoading, OnDidFinishLoading)
-    IPC_MESSAGE_HANDLER(PluginMsg_DidFail, OnDidFail)
     IPC_MESSAGE_HANDLER(PluginMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleInputEvent, OnHandleInputEvent)
     IPC_MESSAGE_HANDLER(PluginMsg_Paint, OnPaint)
@@ -180,55 +175,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     params.load_manually);
     *transparent = delegate_->instance()->transparent();
   }
-}
-
-void WebPluginDelegateStub::OnWillSendRequest(int id, const GURL& url,
-                                              int http_status_code) {
-  WebPluginResourceClient* client = webplugin_->GetResourceClient(id);
-  if (!client)
-    return;
-
-  client->WillSendRequest(url, http_status_code);
-}
-
-void WebPluginDelegateStub::OnDidReceiveResponse(
-    const PluginMsg_DidReceiveResponseParams& params) {
-  WebPluginResourceClient* client = webplugin_->GetResourceClient(params.id);
-  if (!client)
-    return;
-
-  client->DidReceiveResponse(params.mime_type,
-                             params.headers,
-                             params.expected_length,
-                             params.last_modified,
-                             params.request_is_seekable);
-}
-
-void WebPluginDelegateStub::OnDidReceiveData(int id,
-                                             const std::vector<char>& buffer,
-                                             int data_offset) {
-  WebPluginResourceClient* client = webplugin_->GetResourceClient(id);
-  if (!client)
-    return;
-
-  client->DidReceiveData(&buffer.front(), static_cast<int>(buffer.size()),
-                         data_offset);
-}
-
-void WebPluginDelegateStub::OnDidFinishLoading(int id) {
-  WebPluginResourceClient* client = webplugin_->GetResourceClient(id);
-  if (!client)
-    return;
-
-  client->DidFinishLoading(id);
-}
-
-void WebPluginDelegateStub::OnDidFail(int id) {
-  WebPluginResourceClient* client = webplugin_->GetResourceClient(id);
-  if (!client)
-    return;
-
-  client->DidFail(id);
 }
 
 void WebPluginDelegateStub::OnSetFocus(bool focused) {
