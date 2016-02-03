@@ -244,11 +244,17 @@ void FocusController::OnDrawnStateWillChange(ServerWindow* ancestor,
                                              ServerWindow* window,
                                              bool is_drawn) {
   DCHECK(!is_drawn);
+  DCHECK_NE(ancestor, window);
   DCHECK(root_->Contains(window));
   drawn_tracker_.reset();
 
-  auto will_be_hidden = [ancestor, window](ServerWindow* w) {
-    return w != ancestor && ancestor->Contains(w) && w->Contains(window);
+  // Find the window that triggered this state-change notification.
+  ServerWindow* trigger = window;
+  while (trigger->parent() != ancestor)
+    trigger = trigger->parent();
+  DCHECK(trigger);
+  auto will_be_hidden = [trigger](ServerWindow* w) {
+    return trigger->Contains(w);
   };
 
   // If |window| is |active_window_|, then activate the next activatable window

@@ -232,6 +232,50 @@ TEST(FocusControllerTest, ActivationSkipsOverHiddenWindow) {
   EXPECT_EQ(&child_second, focus_observer.new_active_window());
 }
 
+TEST(FocusControllerTest, ActivationSkipsOverHiddenContainers) {
+  TestServerWindowDelegate server_window_delegate;
+  ServerWindow parent(&server_window_delegate, WindowId());
+  server_window_delegate.set_root_window(&parent);
+  parent.SetVisible(true);
+
+  ServerWindow child1(&server_window_delegate, WindowId());
+  ServerWindow child2(&server_window_delegate, WindowId());
+
+  parent.Add(&child1);
+  parent.Add(&child2);
+
+  child1.SetVisible(true);
+  child2.SetVisible(true);
+
+  ServerWindow child11(&server_window_delegate, WindowId());
+  ServerWindow child12(&server_window_delegate, WindowId());
+  ServerWindow child21(&server_window_delegate, WindowId());
+  ServerWindow child22(&server_window_delegate, WindowId());
+
+  child1.Add(&child11);
+  child1.Add(&child12);
+  child2.Add(&child21);
+  child2.Add(&child22);
+
+  child11.SetVisible(true);
+  child12.SetVisible(true);
+  child21.SetVisible(true);
+  child22.SetVisible(true);
+
+  TestFocusControllerObserver focus_observer;
+  FocusController focus_controller(&focus_observer, &parent);
+  focus_controller.AddObserver(&focus_observer);
+
+  focus_controller.ActivateNextWindow();
+  EXPECT_EQ(nullptr, focus_observer.old_active_window());
+  EXPECT_EQ(&child22, focus_observer.new_active_window());
+  focus_observer.ClearAll();
+
+  child2.SetVisible(false);
+  EXPECT_EQ(&child22, focus_observer.old_active_window());
+  EXPECT_EQ(&child12, focus_observer.new_active_window());
+}
+
 TEST(FocusControllerTest, NonFocusableWindowNotActivated) {
   TestServerWindowDelegate server_window_delegate;
   ServerWindow parent(&server_window_delegate, WindowId());
