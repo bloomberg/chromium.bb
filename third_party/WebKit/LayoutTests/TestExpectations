@@ -275,18 +275,6 @@ crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event
 crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 
-# Skia roll
-crbug.com/583651 fast/backgrounds/repeat/negative-offset-repeat-transformed.html [ NeedsRebaseline ]
-crbug.com/583651 fast/borders/border-image-repeat-round.html [ NeedsRebaseline ]
-crbug.com/583651 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
-crbug.com/583651 fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
-crbug.com/583651 svg/W3C-SVG-1.1/pservers-grad-06-b.svg [ NeedsRebaseline ]
-crbug.com/583651 svg/custom/nested-pattern-boundingBoxModeContent.svg [ NeedsRebaseline ]
-crbug.com/583651 svg/custom/non-scaling-stroke.svg [ NeedsRebaseline ]
-crbug.com/583651 svg/custom/pattern-skew-transformed.svg [ NeedsRebaseline ]
-crbug.com/583651 svg/custom/pattern-with-transformation.svg [ NeedsRebaseline ]
-crbug.com/583651 svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
-
 crbug.com/461179 virtual/spv2/paint/invalidation/invalidate-when-receiving-paint-layer.html [ Failure ]
 
 crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
