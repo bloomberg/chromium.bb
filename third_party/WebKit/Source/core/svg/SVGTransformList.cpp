@@ -122,13 +122,13 @@ SVGParseStatus parseTransformArgumentsForType(
 {
     const size_t required = requiredValuesForType[type];
     const size_t optional = optionalValuesForType[type];
-    const size_t maxPossibleParams = required + optional;
-    ASSERT(maxPossibleParams <= kMaxTransformArguments);
+    const size_t requiredWithOptional = required + optional;
+    ASSERT(requiredWithOptional <= kMaxTransformArguments);
     ASSERT(arguments.isEmpty());
 
     bool trailingDelimiter = false;
 
-    while (arguments.size() < maxPossibleParams) {
+    while (arguments.size() < requiredWithOptional) {
         float argumentValue = 0;
         if (!parseNumber(ptr, end, argumentValue, AllowLeadingWhitespace))
             break;
@@ -136,7 +136,7 @@ SVGParseStatus parseTransformArgumentsForType(
         arguments.append(argumentValue);
         trailingDelimiter = false;
 
-        if (arguments.size() == maxPossibleParams)
+        if (arguments.size() == requiredWithOptional)
             break;
 
         if (skipOptionalSVGSpaces(ptr, end) && *ptr == ',') {
@@ -145,7 +145,7 @@ SVGParseStatus parseTransformArgumentsForType(
         }
     }
 
-    if (!(arguments.size() == required || arguments.size() == maxPossibleParams))
+    if (arguments.size() != required && arguments.size() != requiredWithOptional)
         return SVGParseStatus::ExpectedNumber;
     if (trailingDelimiter)
         return SVGParseStatus::TrailingGarbage;
