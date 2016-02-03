@@ -1372,8 +1372,6 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
     Vector<unsigned> autoSizedTracksIndex;
     for (unsigned i = 0; i < tracks.size(); ++i) {
         const GridTrackSize& trackSize = gridTrackSize(direction, i);
-        // If there is some flexible-sized track, they should have exhausted available space during sizing algorithm.
-        ASSERT(!trackSize.maxTrackBreadth().isFlex());
         if (trackSize.hasAutoMaxTrackBreadth())
             autoSizedTracksIndex.append(i);
     }
