@@ -813,6 +813,7 @@
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
       'browser/safe_browsing/unverified_download_field_trial_unittest.cc',
       'browser/safe_browsing/unverified_download_policy_unittest.cc',
+      'browser/safe_browsing/v4_protocol_manager_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_mac_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_unittest.cc',
       'common/safe_browsing/binary_feature_extractor_win_unittest.cc',
