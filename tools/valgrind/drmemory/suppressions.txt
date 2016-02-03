@@ -810,6 +810,12 @@ name=bug_580636_a
 system call NtDuplicateObject
 KERNELBASE.dll!DuplicateHandle
 ...
-ipc.dll!IPC::internal::HandleAttachmentWin::HandleAttachmentWin
+*!IPC::internal::HandleAttachmentWin::HandleAttachmentWin
 
-
+HANDLE LEAK
+name=bug_580636_b
+system call NtDuplicateObject
+KERNELBASE.dll!DuplicateHandle
+...
+*!content::HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory
+*!content::RenderMessageFilter::AllocateLockedDiscardableSharedMemoryOnFileThread
