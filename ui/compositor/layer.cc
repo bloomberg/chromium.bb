@@ -107,9 +107,7 @@ Layer::~Layer() {
   // Destroying the animator may cause observers to use the layer (and
   // indirectly the WebLayer). Destroy the animator first so that the WebLayer
   // is still around.
-  if (animator_.get())
-    animator_->SetDelegate(NULL);
-  animator_ = NULL;
+  SetAnimator(nullptr);
   if (compositor_)
     compositor_->SetRootLayer(NULL);
   if (parent_)
@@ -233,9 +231,21 @@ bool Layer::Contains(const Layer* other) const {
 }
 
 void Layer::SetAnimator(LayerAnimator* animator) {
-  if (animator)
-    animator->SetDelegate(this);
+  Compositor* compositor = GetCompositor();
+
+  if (animator_) {
+    if (compositor)
+      animator_->ResetCompositor(compositor);
+    animator_->SetDelegate(nullptr);
+  }
+
   animator_ = animator;
+
+  if (animator_) {
+    animator_->SetDelegate(this);
+    if (compositor)
+      animator_->SetCompositor(compositor);
+  }
 }
 
 LayerAnimator* Layer::GetAnimator() {

@@ -216,6 +216,10 @@ bool LayerAnimator::HasPendingThreadedAnimationsForTesting() const {
   return animation_player_->has_pending_animations_for_testing();
 }
 
+cc::AnimationPlayer* LayerAnimator::GetAnimationPlayerForTesting() const {
+  return animation_player_.get();
+}
+
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
   scoped_refptr<LayerAnimator> retain(this);
   OnScheduled(animation);

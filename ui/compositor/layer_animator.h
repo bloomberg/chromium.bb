@@ -121,6 +121,7 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   // Whether this animator has animations waiting to get sent to cc::LAC.
   bool HasPendingThreadedAnimationsForTesting() const;
+  cc::AnimationPlayer* GetAnimationPlayerForTesting() const;
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
