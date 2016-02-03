@@ -18,8 +18,7 @@ HandoffActiveURLObserver::HandoffActiveURLObserver(
   DCHECK(delegate_);
 
   BrowserList::AddObserver(this);
-  SetActiveBrowser(chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_NATIVE));
+  SetActiveBrowser(chrome::FindLastActive());
 }
 
 HandoffActiveURLObserver::~HandoffActiveURLObserver() {
@@ -36,8 +35,7 @@ void HandoffActiveURLObserver::OnBrowserRemoved(Browser* removed_browser) {
   if (active_browser_ != removed_browser)
     return;
 
-  SetActiveBrowser(chrome::FindLastActiveWithHostDesktopType(
-      chrome::HOST_DESKTOP_TYPE_NATIVE));
+  SetActiveBrowser(chrome::FindLastActive());
   delegate_->HandoffActiveURLChanged(GetActiveWebContents());
 }
 

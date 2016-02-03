@@ -123,10 +123,8 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
   } else {
     // If the owning window is still unknown, this could be a background page or
     // and extension popup. Use the last active browser.
-    if (!owner_browser) {
-      owner_browser =
-          chrome::FindLastActiveWithHostDesktopType(chrome::GetActiveDesktop());
-    }
+    if (!owner_browser)
+      owner_browser = chrome::FindLastActive();
     if (owner_browser) {
       *base_window = owner_browser->window();
       *web_contents = owner_browser->tab_strip_model()->GetActiveWebContents();

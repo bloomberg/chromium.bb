@@ -260,7 +260,7 @@ void CheckDefaultBrowserObserver::ResetCheckDefaultBrowserPref() {
 }
 
 void CheckDefaultBrowserObserver::ShowPrompt() {
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type_);
+  Browser* browser = chrome::FindLastActive();
   if (!browser)
     return;  // Reached during ui tests.
 

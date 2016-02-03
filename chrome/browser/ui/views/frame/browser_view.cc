@@ -1842,9 +1842,7 @@ bool BrowserView::GetSavedWindowPlacement(
     // assume none were given by the window.open() command.
     if (window_rect.x() == 0 && window_rect.y() == 0) {
       gfx::Size size = window_rect.size();
-      window_rect.set_origin(
-          WindowSizer::GetDefaultPopupOrigin(size,
-                                             browser_->host_desktop_type()));
+      window_rect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
     *bounds = window_rect;

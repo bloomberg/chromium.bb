@@ -128,8 +128,7 @@ bool g_is_opening_new_window = false;
 // there are only minimized windows), it will unminimize it.
 Browser* ActivateBrowser(Profile* profile) {
   Browser* browser = chrome::FindLastActiveWithProfile(
-      profile->IsGuestSession() ? profile->GetOffTheRecordProfile() : profile,
-      chrome::HOST_DESKTOP_TYPE_NATIVE);
+      profile->IsGuestSession() ? profile->GetOffTheRecordProfile() : profile);
   if (browser)
     browser->window()->Activate();
   return browser;
@@ -777,8 +776,7 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
 
   startupComplete_ = YES;
 
-  Browser* browser =
-      FindLastActiveWithHostDesktopType(chrome::HOST_DESKTOP_TYPE_NATIVE);
+  Browser* browser = chrome::FindLastActive();
   content::WebContents* activeWebContents = nullptr;
   if (browser)
     activeWebContents = browser->tab_strip_model()->GetActiveWebContents();

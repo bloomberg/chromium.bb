@@ -400,8 +400,7 @@ void BackgroundModeManager::LaunchBackgroundApplication(
 // static
 Browser* BackgroundModeManager::GetBrowserWindowForProfile(Profile* profile) {
   chrome::HostDesktopType host_desktop_type = chrome::GetActiveDesktop();
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile, host_desktop_type);
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   return browser ? browser
                  : chrome::OpenEmptyWindow(profile, host_desktop_type);
 }

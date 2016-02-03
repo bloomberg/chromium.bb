@@ -207,7 +207,7 @@ void UrlHashHelper::ExecuteUrlHash() {
 
   Browser* target_browser = browser_;
   if (!target_browser) {
-    target_browser = chrome::FindLastActiveWithProfile(profile_, desktop_type_);
+    target_browser = chrome::FindLastActiveWithProfile(profile_);
     if (!target_browser)
       return;
   }

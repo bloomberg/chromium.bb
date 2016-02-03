@@ -545,7 +545,7 @@ Browser* OneClickSigninSyncStarter::EnsureBrowser(
     // The user just created a new profile or has closed the browser that
     // we used previously. Grab the most recently active browser or else
     // create a new one.
-    browser = chrome::FindLastActiveWithProfile(profile, desktop_type);
+    browser = chrome::FindLastActiveWithProfile(profile);
     if (!browser) {
       browser = new Browser(Browser::CreateParams(profile,
                                                    desktop_type));

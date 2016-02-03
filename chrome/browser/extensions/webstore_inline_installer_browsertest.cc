@@ -248,8 +248,8 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
                           CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), install_url);
   // The test page opens a popup which is a new |browser| window.
-  Browser* popup_browser = chrome::FindLastActiveWithProfile(
-      browser()->profile(), chrome::GetActiveDesktop());
+  Browser* popup_browser =
+      chrome::FindLastActiveWithProfile(browser()->profile());
   WebContents* popup_contents =
       popup_browser->tab_strip_model()->GetActiveWebContents();
   EXPECT_EQ(base::ASCIIToUTF16("POPUP"), popup_contents->GetTitle());

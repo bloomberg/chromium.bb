@@ -295,9 +295,7 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
     if (browser_->is_type_popup() &&
         windowRect.x() == 0 && windowRect.y() == 0) {
       gfx::Size size = windowRect.size();
-      windowRect.set_origin(
-          WindowSizer::GetDefaultPopupOrigin(size,
-                                             browser_->host_desktop_type()));
+      windowRect.set_origin(WindowSizer::GetDefaultPopupOrigin(size));
     }
 
     // Size and position the window.  Note that it is not yet onscreen.  Popup

@@ -211,8 +211,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (disable_failure_ui_for_tests() || skip_post_install_ui_)
     return;
 
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   if (!browser)  // Can be NULL in unittests.
     return;
   WebContents* web_contents =
@@ -256,8 +255,7 @@ void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {
 }
 
 gfx::NativeWindow ExtensionInstallUIDefault::GetDefaultInstallDialogParent() {
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   if (browser) {
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();

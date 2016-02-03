@@ -285,8 +285,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
       profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir());
   Profile* profile = profile_manager->GetProfileByPath(last_used_profile_path);
   if (profile) {
-    Browser* browser = chrome::FindLastActiveWithProfile(profile,
-        chrome::GetActiveDesktop());
+    Browser* browser = chrome::FindLastActiveWithProfile(profile);
     if (browser) {
       gfx::NativeView native_view =
           views::Widget::GetWidgetForNativeWindow(

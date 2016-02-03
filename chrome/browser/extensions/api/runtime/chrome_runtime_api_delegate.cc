@@ -169,8 +169,7 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
 
 void ChromeRuntimeAPIDelegate::OpenURL(const GURL& uninstall_url) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
     browser =
         new Browser(Browser::CreateParams(profile, chrome::GetActiveDesktop()));
@@ -241,8 +240,7 @@ bool ChromeRuntimeAPIDelegate::RestartDevice(std::string* error_message) {
 
 bool ChromeRuntimeAPIDelegate::OpenOptionsPage(const Extension* extension) {
   Profile* profile = Profile::FromBrowserContext(browser_context_);
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   if (!browser)
     return false;
   return extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser);

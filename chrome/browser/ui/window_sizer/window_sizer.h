@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -108,8 +107,7 @@ class WindowSizer {
       ui::WindowShowState* show_state);
 
   // Returns the default origin for popups of the given size.
-  static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size,
-                                          chrome::HostDesktopType type);
+  static gfx::Point GetDefaultPopupOrigin(const gfx::Size& size);
 
   // How much horizontal and vertical offset there is between newly
   // opened windows.  This value may be different on each platform.

@@ -87,10 +87,8 @@ void DownloadShelfUIControllerDelegate::OnNewDownloadReady(
 
   // As a last resort, use the last active browser for this profile. Not ideal,
   // but better than not showing the download at all.
-  if (browser == NULL) {
-    browser = chrome::FindLastActiveWithProfile(profile_,
-                                                chrome::GetActiveDesktop());
-  }
+  if (browser == nullptr)
+    browser = chrome::FindLastActiveWithProfile(profile_);
 
   if (browser && browser->window() &&
       DownloadItemModel(item).ShouldShowInShelf()) {

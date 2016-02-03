@@ -9,7 +9,7 @@
 namespace chrome {
 
 Browser* GetLastActiveBrowser() {
-  return FindLastActiveWithHostDesktopType(HOST_DESKTOP_TYPE_NATIVE);
+  return FindLastActive();
 }
 
 }  // namespace chrome

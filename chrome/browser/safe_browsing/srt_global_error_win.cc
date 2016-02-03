@@ -198,8 +198,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
 void SRTGlobalError::FallbackToDownloadPage() {
   RecordSRTPromptHistogram(SRT_PROMPT_FALLBACK);
 
-  chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
+  Browser* browser = chrome::FindLastActive();
   if (browser) {
     browser->OpenURL(content::OpenURLParams(
         GURL(kSRTDownloadURL), content::Referrer(), NEW_FOREGROUND_TAB,

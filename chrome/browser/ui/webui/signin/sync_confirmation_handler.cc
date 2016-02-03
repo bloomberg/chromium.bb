@@ -96,10 +96,8 @@ void SyncConfirmationHandler::OnAccountUpdated(const AccountInfo& info) {
 Browser* SyncConfirmationHandler::GetDesktopBrowser() {
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  if (!browser) {
-    browser = chrome::FindLastActiveWithProfile(
-        Profile::FromWebUI(web_ui()), chrome::GetActiveDesktop());
-  }
+  if (!browser)
+    browser = chrome::FindLastActiveWithProfile(Profile::FromWebUI(web_ui()));
   DCHECK(browser);
   return browser;
 }

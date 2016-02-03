@@ -37,8 +37,7 @@ void BookmarkBubbleSignInDelegate::OnBrowserRemoved(Browser* browser) {
 void BookmarkBubbleSignInDelegate::EnsureBrowser() {
   if (!browser_) {
     Profile* original_profile = profile_->GetOriginalProfile();
-    browser_ = chrome::FindLastActiveWithProfile(original_profile,
-                                                 desktop_type_);
+    browser_ = chrome::FindLastActiveWithProfile(original_profile);
     if (!browser_) {
       browser_ = new Browser(Browser::CreateParams(original_profile,
                                                    desktop_type_));

@@ -67,7 +67,7 @@ Browser* FindBrowserWithWebContents(const content::WebContents* web_contents);
 // clicks on another app before the first browser window appears) then this
 // returns NULL.
 // WARNING #2: this will always be NULL in unit tests run on the bots.
-Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type);
+Browser* FindLastActiveWithProfile(Profile* profile);
 
 // Returns the Browser object on the given desktop type whose window was most
 // recently active. If no such Browsers exist, returns NULL.
@@ -77,7 +77,7 @@ Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type);
 // clicks on another app before the first browser window appears) then this
 // returns NULL.
 // WARNING #2: this will always be NULL in unit tests run on the bots.
-Browser* FindLastActiveWithHostDesktopType(HostDesktopType type);
+Browser* FindLastActive();
 
 // Returns the number of browsers across all profiles and desktops.
 size_t GetTotalBrowserCount();

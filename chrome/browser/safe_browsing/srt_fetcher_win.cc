@@ -96,7 +96,7 @@ void DisplaySRTPrompt(const base::FilePath& download_path) {
   // reporter. We can't use other ways of finding a browser because we don't
   // have a profile.
   chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
+  Browser* browser = chrome::FindLastActive();
   if (!browser)
     return;
 
@@ -526,8 +526,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // a profile, which we need, to tell whether we should prompt or not.
     // TODO(mad): crbug.com/503269, investigate whether we should change how we
     // decide when it's time to download the SRT and when to display the prompt.
-    chrome::HostDesktopType desktop_type = chrome::GetActiveDesktop();
-    Browser* browser = chrome::FindLastActiveWithHostDesktopType(desktop_type);
+    Browser* browser = chrome::FindLastActive();
     if (!browser) {
       RecordReporterStepHistogram(SW_REPORTER_NO_BROWSER);
       BrowserList::AddObserver(this);

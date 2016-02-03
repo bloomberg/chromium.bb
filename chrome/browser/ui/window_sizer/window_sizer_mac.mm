@@ -9,20 +9,18 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/host_desktop.h"
 
 // How much horizontal and vertical offset there is between newly
 // opened windows.
 const int WindowSizer::kWindowTilePixels = 22;
 
 // static
-gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size,
-                                              chrome::HostDesktopType type) {
+gfx::Point WindowSizer::GetDefaultPopupOrigin(const gfx::Size& size) {
   NSRect work_area = [[NSScreen mainScreen] visibleFrame];
   NSRect main_area = [[[NSScreen screens] firstObject] frame];
   NSPoint corner = NSMakePoint(NSMinX(work_area), NSMaxY(work_area));
 
-  if (Browser* browser = chrome::FindLastActiveWithHostDesktopType(type)) {
+  if (Browser* browser = chrome::FindLastActive()) {
     NSWindow* window = browser->window()->GetNativeWindow();
     NSRect window_frame = [window frame];
 

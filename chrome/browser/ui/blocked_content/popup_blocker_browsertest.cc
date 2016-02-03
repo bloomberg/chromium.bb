@@ -107,9 +107,8 @@ class CloseObserver : public content::WebContentsObserver {
 
 class BrowserActivationObserver : public chrome::BrowserListObserver {
  public:
-  explicit BrowserActivationObserver(chrome::HostDesktopType desktop_type)
-      : browser_(chrome::FindLastActiveWithHostDesktopType(desktop_type)),
-        observed_(false) {
+  BrowserActivationObserver()
+      : browser_(chrome::FindLastActive()), observed_(false) {
     BrowserList::AddObserver(this);
   }
   ~BrowserActivationObserver() override { BrowserList::RemoveObserver(this); }
@@ -580,8 +579,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
 
   NavigateAndCheckPopupShown(url, ExpectPopup);
 
-  Browser* popup_browser =
-      chrome::FindLastActiveWithHostDesktopType(browser()->host_desktop_type());
+  Browser* popup_browser = chrome::FindLastActive();
   ASSERT_NE(popup_browser, browser());
 
   // Showing an alert will raise the tab over the popup.
@@ -593,15 +591,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ModalPopUnder) {
   app_modal::JavaScriptAppModalDialog* js_dialog =
       static_cast<app_modal::JavaScriptAppModalDialog*>(dialog);
 
-  BrowserActivationObserver activation_observer(browser()->host_desktop_type());
+  BrowserActivationObserver activation_observer;
   js_dialog->native_dialog()->AcceptAppModalDialog();
 
-  if (popup_browser != chrome::FindLastActiveWithHostDesktopType(
-                           popup_browser->host_desktop_type())) {
+  if (popup_browser != chrome::FindLastActive())
     activation_observer.WaitForActivation();
-  }
-  ASSERT_EQ(popup_browser, chrome::FindLastActiveWithHostDesktopType(
-                               popup_browser->host_desktop_type()));
+  ASSERT_EQ(popup_browser, chrome::FindLastActive());
 }
 
 void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,

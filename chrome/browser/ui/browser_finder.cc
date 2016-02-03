@@ -201,7 +201,7 @@ Browser* FindBrowserWithWebContents(const WebContents* web_contents) {
   return NULL;
 }
 
-Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
+Browser* FindLastActiveWithProfile(Profile* profile) {
   BrowserList* list = BrowserList::GetInstance();
   // We are only interested in last active browsers, so we don't fall back to
   // all browsers like FindBrowserWith* do.
@@ -209,7 +209,7 @@ Browser* FindLastActiveWithProfile(Profile* profile, HostDesktopType type) {
                              profile, Browser::FEATURE_NONE, kMatchAny);
 }
 
-Browser* FindLastActiveWithHostDesktopType(HostDesktopType type) {
+Browser* FindLastActive() {
   BrowserList* browser_list_impl = BrowserList::GetInstance();
   if (browser_list_impl)
     return browser_list_impl->GetLastActive();

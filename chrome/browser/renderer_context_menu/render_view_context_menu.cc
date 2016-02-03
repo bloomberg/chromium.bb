@@ -425,13 +425,12 @@ void AddIconToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
 }
 #endif  // !defined(OS_CHROMEOS)
 
-void OnProfileCreated(chrome::HostDesktopType desktop_type,
-                      const GURL& link_url,
+void OnProfileCreated(const GURL& link_url,
                       const content::Referrer& referrer,
                       Profile* profile,
                       Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    Browser* browser = chrome::FindLastActiveWithProfile(profile, desktop_type);
+    Browser* browser = chrome::FindLastActiveWithProfile(profile);
     chrome::NavigateParams nav_params(browser, link_url,
                                       ui::PAGE_TRANSITION_LINK);
     nav_params.disposition = NEW_FOREGROUND_TAB;
@@ -898,9 +897,6 @@ void RenderViewContextMenu::AppendLinkItems() {
       ProfileManager* profile_manager = g_browser_process->profile_manager();
       const ProfileInfoCache& profile_info_cache =
           profile_manager->GetProfileInfoCache();
-      chrome::HostDesktopType desktop_type =
-          chrome::GetHostDesktopTypeForNativeView(
-              source_web_contents_->GetNativeView());
 
       // Find all regular profiles other than the current one which have at
       // least one open window.
@@ -915,7 +911,7 @@ void RenderViewContextMenu::AppendLinkItems() {
             !profile_info_cache.IsOmittedProfileAtIndex(profile_index) &&
             !profile_info_cache.ProfileIsSigninRequiredAtIndex(profile_index)) {
           target_profiles.push_back(profile_index);
-          if (chrome::FindLastActiveWithProfile(profile, desktop_type))
+          if (chrome::FindLastActiveWithProfile(profile))
             multiple_profiles_open_ = true;
         }
       }
@@ -1668,7 +1664,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     Profile* profile = profile_manager->GetProfileByPath(profile_path);
     UmaEnumOpenLinkAsUser profile_state;
-    if (chrome::FindLastActiveWithProfile(profile, desktop_type)) {
+    if (chrome::FindLastActiveWithProfile(profile)) {
       profile_state = OPEN_LINK_AS_USER_ACTIVE_PROFILE_ENUM_ID;
     } else if (multiple_profiles_open_) {
       profile_state =
@@ -1682,7 +1678,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     profiles::SwitchToProfile(
         profile_path, desktop_type, false,
-        base::Bind(OnProfileCreated, desktop_type, params_.link_url,
+        base::Bind(OnProfileCreated, params_.link_url,
                    CreateReferrer(params_.link_url, params_)),
         ProfileMetrics::SWITCH_PROFILE_CONTEXT_MENU);
     return;

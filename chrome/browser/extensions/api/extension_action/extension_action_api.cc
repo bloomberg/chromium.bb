@@ -616,8 +616,7 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
 bool BrowserActionOpenPopupFunction::RunAsync() {
   // We only allow the popup in the active window.
   Profile* profile = GetProfile();
-  Browser* browser = chrome::FindLastActiveWithProfile(
-                         profile, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile);
   // It's possible that the last active browser actually corresponds to the
   // associated incognito profile, and this won't be returned by
   // FindLastActiveWithProfile. If the browser we found isn't active and the
@@ -625,8 +624,8 @@ bool BrowserActionOpenPopupFunction::RunAsync() {
   if ((!browser || !browser->window()->IsActive()) &&
       util::IsIncognitoEnabled(extension()->id(), profile) &&
       profile->HasOffTheRecordProfile()) {
-    browser = chrome::FindLastActiveWithProfile(
-        profile->GetOffTheRecordProfile(), chrome::GetActiveDesktop());
+    browser =
+        chrome::FindLastActiveWithProfile(profile->GetOffTheRecordProfile());
   }
 
   // If there's no active browser, or the Toolbar isn't visible, abort.

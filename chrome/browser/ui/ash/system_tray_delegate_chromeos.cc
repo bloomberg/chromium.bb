@@ -493,8 +493,7 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
   // Packaged app is not counted as 'last active', so if a browser opening the
   // display settings is in background of a packaged app, it will return true.
   // TODO(mukai): fix this.
-  Browser* active_browser =
-      chrome::FindLastActiveWithHostDesktopType(chrome::HOST_DESKTOP_TYPE_ASH);
+  Browser* active_browser = chrome::FindLastActive();
   if (!active_browser)
     return true;
 

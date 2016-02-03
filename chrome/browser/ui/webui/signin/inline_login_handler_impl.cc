@@ -386,8 +386,7 @@ bool InlineSigninHelper::HandleCrossAccountError(
     return false;
   }
 
-  Browser* browser = chrome::FindLastActiveWithProfile(
-      profile_, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
 
@@ -410,8 +409,7 @@ void InlineSigninHelper::ConfirmEmailAction(
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     OneClickSigninSyncStarter::StartSyncMode start_mode,
     InlineSigninHelper::Action action) {
-  Browser* browser = chrome::FindLastActiveWithProfile(
-      profile_, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   switch (action) {
     case InlineSigninHelper::CREATE_NEW_USER:
       content::RecordAction(
@@ -859,10 +857,8 @@ void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
 Browser* InlineLoginHandlerImpl::GetDesktopBrowser() {
   Browser* browser = chrome::FindBrowserWithWebContents(
       web_ui()->GetWebContents());
-  if (!browser) {
-    browser = chrome::FindLastActiveWithProfile(
-        Profile::FromWebUI(web_ui()), chrome::GetActiveDesktop());
-  }
+  if (!browser)
+    browser = chrome::FindLastActiveWithProfile(Profile::FromWebUI(web_ui()));
   return browser;
 }
 

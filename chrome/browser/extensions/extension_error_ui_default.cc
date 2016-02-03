@@ -27,8 +27,7 @@ ExtensionErrorUIDefault::~ExtensionErrorUIDefault() {
 }
 
 bool ExtensionErrorUIDefault::ShowErrorInBubbleView() {
-  Browser* browser =
-      chrome::FindLastActiveWithProfile(profile_, chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
   if (!browser)
     return false;
 

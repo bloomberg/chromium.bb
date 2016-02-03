@@ -16,8 +16,7 @@ namespace chrome {
 namespace {
 
 void ShowPrintErrorDialogTask() {
-  Browser* browser = chrome::FindLastActiveWithHostDesktopType(
-      chrome::GetActiveDesktop());
+  Browser* browser = chrome::FindLastActive();
   ShowMessageBox(browser ? browser->window()->GetNativeWindow() : NULL,
                  l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_TITLE_TEXT),
                  l10n_util::GetStringUTF16(IDS_PRINT_SPOOL_FAILED_ERROR_TEXT),

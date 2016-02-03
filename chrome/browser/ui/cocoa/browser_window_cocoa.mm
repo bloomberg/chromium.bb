@@ -153,8 +153,8 @@ void BrowserWindowCocoa::Show() {
   // browser at the time |Show()| is called. This is the natural behaviour under
   // Windows, but |-makeKeyAndOrderFront:| won't send |-windowDidBecomeMain:|
   // until we return to the runloop. Therefore any calls to
-  // |chrome::FindLastActiveWithHostDesktopType| will return the previous
-  // browser instead if we don't explicitly set it here.
+  // |chrome::FindLastActive| will return the previous browser instead if we
+  // don't explicitly set it here.
   BrowserList::SetLastActive(browser_);
 
   bool is_session_restore = browser_->is_session_restore();

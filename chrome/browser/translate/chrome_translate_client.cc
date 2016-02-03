@@ -331,10 +331,8 @@ void ChromeTranslateClient::ShowBubble(
   // because the bubble takes the focus from the other widgets including the
   // browser windows. So it is checked that |browser| is the last activated
   // browser, not is now activated.
-  if (browser !=
-      chrome::FindLastActiveWithHostDesktopType(browser->host_desktop_type())) {
+  if (browser != chrome::FindLastActive())
     return;
-  }
 
   // During auto-translating, the bubble should not be shown.
   if (step == translate::TRANSLATE_STEP_TRANSLATING ||

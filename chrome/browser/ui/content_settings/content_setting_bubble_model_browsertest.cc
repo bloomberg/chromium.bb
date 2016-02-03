@@ -119,8 +119,7 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
   content::WebContents* GetActiveTab() {
     // First, we need to find the active browser window. It should be at
     // the same desktop as the browser in which we invoked the bubble.
-    Browser* active_browser = chrome::FindLastActiveWithHostDesktopType(
-        browser()->host_desktop_type());
+    Browser* active_browser = chrome::FindLastActive();
     return active_browser->tab_strip_model()->GetActiveWebContents();
   }
 };

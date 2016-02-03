@@ -30,7 +30,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
-#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -784,8 +783,7 @@ void BackgroundContentsService::AddWebContents(
     bool user_gesture,
     bool* was_blocked) {
   Browser* browser = chrome::FindLastActiveWithProfile(
-      Profile::FromBrowserContext(new_contents->GetBrowserContext()),
-      chrome::GetActiveDesktop());
+      Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   if (browser) {
     chrome::AddWebContents(browser, NULL, new_contents, disposition,
                            initial_rect, user_gesture, was_blocked);
