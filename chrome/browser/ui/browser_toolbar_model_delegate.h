@@ -7,13 +7,13 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 
 class Browser;
 
 // Implementation of ToolbarModelDelegate which uses an instance of
 // Browser in order to fulfil its duties.
-class BrowserToolbarModelDelegate : public ToolbarModelDelegate {
+class BrowserToolbarModelDelegate : public ChromeToolbarModelDelegate {
  public:
   explicit BrowserToolbarModelDelegate(Browser* browser);
   ~BrowserToolbarModelDelegate() override;

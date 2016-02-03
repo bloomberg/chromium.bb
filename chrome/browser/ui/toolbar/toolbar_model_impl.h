@@ -15,7 +15,6 @@
 #include "components/toolbar/toolbar_model.h"
 #include "url/gurl.h"
 
-class Profile;
 class ToolbarModelDelegate;
 
 namespace content {
@@ -53,9 +52,6 @@ class ToolbarModelImpl : public ToolbarModel {
   // from which the states are retrieved.
   // If this returns NULL, default values are used.
   content::NavigationController* GetNavigationController() const;
-
-  // Helper method to extract the profile from the navigation controller.
-  Profile* GetProfile() const;
 
   // Returns search terms as in search::GetSearchTerms() if such terms should
   // appear in the omnibox (i.e. the page is sufficiently secure, search term

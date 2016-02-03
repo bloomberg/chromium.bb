@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/command_updater_delegate.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "components/security_state/security_state_model.h"
 #include "content/public/browser/page_navigator.h"
@@ -40,7 +40,7 @@ class StubBubbleModelDelegate;
 class SimpleWebViewDialog : public views::ButtonListener,
                             public views::WidgetDelegateView,
                             public LocationBarView::Delegate,
-                            public ToolbarModelDelegate,
+                            public ChromeToolbarModelDelegate,
                             public CommandUpdaterDelegate,
                             public content::PageNavigator,
                             public content::WebContentsDelegate {

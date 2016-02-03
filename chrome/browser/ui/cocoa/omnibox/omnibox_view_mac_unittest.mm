@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
@@ -69,7 +69,7 @@ class MockOmniboxPopupView : public OmniboxPopupView {
   DISALLOW_COPY_AND_ASSIGN(MockOmniboxPopupView);
 };
 
-class TestingToolbarModelDelegate : public ToolbarModelDelegate {
+class TestingToolbarModelDelegate : public ChromeToolbarModelDelegate {
  public:
   TestingToolbarModelDelegate() {}
   ~TestingToolbarModelDelegate() override {}

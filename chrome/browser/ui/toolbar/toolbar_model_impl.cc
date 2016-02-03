@@ -7,18 +7,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
 #include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/omnibox/browser/autocomplete_classifier.h"
-#include "components/omnibox/browser/autocomplete_input.h"
-#include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/security_state_model.h"
 #include "components/url_formatter/elide_url.h"
@@ -60,21 +54,18 @@ base::string16 ToolbarModelImpl::GetText() const {
 }
 
 base::string16 ToolbarModelImpl::GetFormattedURL(size_t* prefix_end) const {
-  std::string languages;  // Empty if we don't have a |navigation_controller|.
-  Profile* profile = GetProfile();
-  if (profile)
-    languages = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
+  // May be empty during initialization.
+  std::string languages = delegate_->GetAcceptLanguages();
 
   GURL url(GetURL());
   // Note that we can't unescape spaces here, because if the user copies this
   // and pastes it into another program, that program may think the URL ends at
   // the space.
   const base::string16 formatted_text =
-      AutocompleteInput::FormattedStringWithEquivalentMeaning(
+      delegate_->FormattedStringWithEquivalentMeaning(
           url, url_formatter::FormatUrl(
                    url, languages, url_formatter::kFormatUrlOmitAll,
-                   net::UnescapeRule::NORMAL, nullptr, prefix_end, nullptr),
-          ChromeAutocompleteSchemeClassifier(profile));
+                   net::UnescapeRule::NORMAL, nullptr, prefix_end, nullptr));
   if (formatted_text.length() <= content::kMaxURLDisplayChars)
     return formatted_text;
 
@@ -236,13 +227,6 @@ NavigationController* ToolbarModelImpl::GetNavigationController() const {
   // to the window).
   WebContents* current_tab = delegate_->GetActiveWebContents();
   return current_tab ? &current_tab->GetController() : NULL;
-}
-
-Profile* ToolbarModelImpl::GetProfile() const {
-  NavigationController* navigation_controller = GetNavigationController();
-  return navigation_controller ?
-      Profile::FromBrowserContext(navigation_controller->GetBrowserContext()) :
-      NULL;
 }
 
 base::string16 ToolbarModelImpl::GetSearchTerms(bool ignore_editing) const {

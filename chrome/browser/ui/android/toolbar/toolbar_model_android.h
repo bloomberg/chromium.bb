@@ -10,7 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "components/toolbar/toolbar_model.h"
 
 namespace content {
@@ -18,7 +18,7 @@ class WebContents;
 }  // content
 
 // Owns a ToolbarModel and provides a way for Java to interact with it.
-class ToolbarModelAndroid : public ToolbarModelDelegate {
+class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
  public:
   explicit ToolbarModelAndroid(JNIEnv* env, jobject jdelegate);
   ~ToolbarModelAndroid() override;
