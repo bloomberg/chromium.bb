@@ -144,13 +144,6 @@ source_set("param_traits") {
   ]
 }
 
-group("ipc_tests_run") {
-  testonly = true
-  deps = [
-    ":ipc_tests",
-  ]
-}
-
 test("ipc_tests") {
   sources = [
     "attachment_broker_mac_unittest.cc",

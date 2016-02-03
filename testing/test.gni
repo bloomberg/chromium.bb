@@ -186,6 +186,8 @@ template("test") {
       ]
     }
   } else {
+    main_target_name = target_name
+
     executable(target_name) {
       forward_variables_from(invoker, "*")
 
@@ -201,6 +203,15 @@ template("test") {
 
         # Give tests the default manifest on Windows (a no-op elsewhere).
         "//build/win:default_exe_manifest",
+      ]
+    }
+
+    # TODO(GYP): Delete this after we've converted everything to GN.
+    # The _run targets exist only for compatibility with GYP.
+    group("${target_name}_run") {
+      testonly = true
+      deps = [
+        ":$main_target_name",
       ]
     }
   }

@@ -190,15 +190,6 @@ executable("chromedriver") {
   ]
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("chromedriver_unittests_run") {
-  testonly = true
-  deps = [
-    ":chromedriver_unittests",
-  ]
-}
-
 test("chromedriver_unittests") {
   sources =
       rebase_path(chrome_tests_gypi_values.chrome_driver_unittests_sources,

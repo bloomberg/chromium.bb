@@ -192,13 +192,22 @@ action("bpf_dsl_golden") {
       rebase_path(outputs, root_build_dir) + rebase_path(inputs, root_build_dir)
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
+# TODO(GYP): Delete these after we've converted everything to GN.
 # The _run targets exist only for compatibility w/ GYP.
 group("sandbox_linux_unittests_run") {
   testonly = true
   deps = [
     ":sandbox_linux_unittests",
   ]
+}
+
+if (is_android) {
+  group("sandbox_linux_unittests_apk_run") {
+    testonly = true
+    deps = [
+      ":sandbox_linux_unittests",
+    ]
+  }
 }
 
 # The main sandboxing test target. "sandbox_linux_unittests" cannot use the

@@ -160,15 +160,6 @@ source_set("test_support") {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("compositor_unittests_run") {
-  testonly = true
-  deps = [
-    ":compositor_unittests",
-  ]
-}
-
 test("compositor_unittests") {
   sources = [
     "callback_layer_animation_observer_unittest.cc",

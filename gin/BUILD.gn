@@ -202,12 +202,3 @@ test("gin_unittests") {
     ":gin_shell",
   ]
 }
-
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("gin_unittests_run") {
-  testonly = true
-  deps = [
-    ":gin_unittests",
-  ]
-}

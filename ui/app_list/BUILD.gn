@@ -267,15 +267,6 @@ if (is_linux && !is_chromeos) {
   }
 }
 
-# TODO(GYP): Delete this after we've converted everything to GN.
-# The _run targets exist only for compatibility w/ GYP.
-group("app_list_unittests_run") {
-  testonly = true
-  deps = [
-    ":app_list_unittests",
-  ]
-}
-
 test("app_list_unittests") {
   sources = [
     "app_list_item_list_unittest.cc",
