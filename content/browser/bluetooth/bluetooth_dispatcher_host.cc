@@ -278,8 +278,9 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BluetoothDispatcherHost, message)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RequestDevice, OnRequestDevice)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_ConnectGATT, OnConnectGATT)
-  IPC_MESSAGE_HANDLER(BluetoothHostMsg_Disconnect, OnDisconnect)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerConnect, OnGATTServerConnect)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_GATTServerDisconnect,
+                      OnGATTServerDisconnect)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
@@ -623,10 +624,11 @@ void BluetoothDispatcherHost::OnRequestDevice(
                       optional_services);
 }
 
-void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
-                                            int request_id,
-                                            int frame_routing_id,
-                                            const std::string& device_id) {
+void BluetoothDispatcherHost::OnGATTServerConnect(
+    int thread_id,
+    int request_id,
+    int frame_routing_id,
+    const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::CONNECT_GATT);
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -636,8 +638,8 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
 
   if (query_result.outcome != CacheQueryOutcome::SUCCESS) {
     RecordConnectGATTOutcome(query_result.outcome);
-    Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
-                                           query_result.GetWebError()));
+    Send(new BluetoothMsg_GATTServerConnectError(thread_id, request_id,
+                                                 query_result.GetWebError()));
     return;
   }
 
@@ -646,8 +648,7 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
   if (connection_iter != device_id_to_connection_map_.end()) {
     if (connection_iter->second->IsConnected()) {
       VLOG(1) << "Already connected.";
-      Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
-                                               device_id));
+      Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
       return;
     }
   }
@@ -661,9 +662,10 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
                  start_time));
 }
 
-void BluetoothDispatcherHost::OnDisconnect(int thread_id,
-                                           int frame_routing_id,
-                                           const std::string& device_id) {
+void BluetoothDispatcherHost::OnGATTServerDisconnect(
+    int thread_id,
+    int frame_routing_id,
+    const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RecordWebBluetoothFunctionCall(
       UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
@@ -1266,7 +1268,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
   device_id_to_connection_map_[device_id] = std::move(connection);
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
-  Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id, device_id));
+  Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
 }
 
 void BluetoothDispatcherHost::OnCreateGATTConnectionError(
@@ -1281,8 +1283,8 @@ void BluetoothDispatcherHost::OnCreateGATTConnectionError(
   // https://webbluetoothchrome.github.io/web-bluetooth/#dom-bluetoothdevice-connectgatt
   RecordConnectGATTTimeFailed(base::TimeTicks::Now() - start_time);
   // RecordConnectGATTOutcome is called by TranslateConnectError.
-  Send(new BluetoothMsg_ConnectGATTError(thread_id, request_id,
-                                         TranslateConnectError(error_code)));
+  Send(new BluetoothMsg_GATTServerConnectError(
+      thread_id, request_id, TranslateConnectError(error_code)));
 }
 
 void BluetoothDispatcherHost::AddToServicesMapAndSendGetPrimaryServiceSuccess(

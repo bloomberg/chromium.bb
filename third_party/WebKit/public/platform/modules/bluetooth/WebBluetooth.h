@@ -17,7 +17,6 @@ class WebBluetoothGATTCharacteristic;
 
 struct WebBluetoothDevice;
 struct WebBluetoothGATTCharacteristicInit;
-struct WebBluetoothGATTRemoteServer;
 struct WebBluetoothGATTService;
 struct WebRequestDeviceOptions;
 
@@ -25,7 +24,7 @@ struct WebRequestDeviceOptions;
 using WebBluetoothRequestDeviceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothDevice>, const WebBluetoothError&>;
 
 // Success and failure callbacks for connectGATT.
-using WebBluetoothConnectGATTCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTRemoteServer>, const WebBluetoothError&>;
+using WebBluetoothGATTServerConnectCallbacks = WebCallbacks<void, const WebBluetoothError&>;
 
 // Success and failure callbacks for getPrimaryService.
 using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTService>, const WebBluetoothError&>;
@@ -53,13 +52,11 @@ public:
     virtual void requestDevice(const WebRequestDeviceOptions&, WebBluetoothRequestDeviceCallbacks*) { }
 
     // BluetoothDevice methods:
-    // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothdevice
-    // WebBluetoothConnectGATTCallbacks ownership transferred to the callee.
-    virtual void connectGATT(const WebString& deviceId,
-        WebBluetoothConnectGATTCallbacks*) { }
 
     // BluetoothGATTRemoteServer methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
+    virtual void connect(const WebString& deviceId,
+        WebBluetoothGATTServerConnectCallbacks*) { }
     virtual void disconnect(const WebString& deviceId) = 0;
     virtual void getPrimaryService(const WebString& deviceId,
         const WebString& serviceUUID,

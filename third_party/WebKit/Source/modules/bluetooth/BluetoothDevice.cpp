@@ -18,22 +18,24 @@
 
 namespace blink {
 
-BluetoothDevice::BluetoothDevice(PassOwnPtr<WebBluetoothDevice> webDevice)
+BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDevice> webDevice)
     : m_webDevice(webDevice)
     , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower,
         m_webDevice->rssi))
+    , m_gatt(BluetoothGATTRemoteServer::create(context, m_webDevice->id))
 {
 }
 
-BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice> webDevice)
+BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
     ASSERT(webDevice);
-    return new BluetoothDevice(webDevice);
+    return new BluetoothDevice(resolver->executionContext(), webDevice);
 }
 
 DEFINE_TRACE(BluetoothDevice)
 {
     visitor->trace(m_adData);
+    visitor->trace(m_gatt);
 }
 
 unsigned BluetoothDevice::deviceClass(bool& isNull)
@@ -81,20 +83,7 @@ Vector<String> BluetoothDevice::uuids()
 
 ScriptPromise BluetoothDevice::connectGATT(ScriptState* scriptState)
 {
-    // TODO(ortuno): Allow connections when the tab is in the background.
-    // This is a short term solution instead of implementing a tab indicator
-    // for bluetooth connections.
-    // https://crbug.com/579746
-    if (!toDocument(scriptState->executionContext())->page()->isPageVisible()) {
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that a page is connected to a device."));
-    }
-    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
-    if (!webbluetooth)
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError));
-    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-    ScriptPromise promise = resolver->promise();
-    webbluetooth->connectGATT(id(), new CallbackPromiseAdapter<BluetoothGATTRemoteServer, BluetoothError>(resolver));
-    return promise;
+    return m_gatt->connect(scriptState);
 }
 
 } // namespace blink

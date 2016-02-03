@@ -23,7 +23,7 @@
     });
     testRunner.setBluetoothMockDataSet('HeartRateAdapter');
     let iframe = document.createElement('iframe');
-    iframe.src = '../resources/connectGATT-iframe.html';
+    iframe.src = '../resources/connect-iframe.html';
     document.body.appendChild(iframe);
   }, 'Detach frame then garbage collect. We shouldn\'t crash.');
   </script>

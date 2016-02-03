@@ -308,6 +308,7 @@ interface BluetoothCharacteristicProperties
 interface BluetoothDevice
     getter adData
     getter deviceClass
+    getter gatt
     getter id
     getter instanceID
     getter name
@@ -331,6 +332,7 @@ interface BluetoothGATTCharacteristic : EventTarget
     setter oncharacteristicvaluechanged
 interface BluetoothGATTRemoteServer
     getter connected
+    method connect
     method constructor
     method disconnect
     method getPrimaryService

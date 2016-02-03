@@ -750,6 +750,8 @@ static const char* milestoneString(int milestone)
         return "M50, around April 2016";
     case 51:
         return "M51, around June 2016";
+    case 52:
+        return "M52, around August 2016";
     case 53:
         return "M53, around September 2016";
     }
@@ -953,6 +955,9 @@ String UseCounter::deprecationMessage(Feature feature)
 
     case BluetoothDeviceInstanceId:
         return replacedBy("'BluetoothDevice.instanceID'", "'BluetoothDevice.id'");
+
+    case BluetoothDeviceConnectGATT:
+        return replacedWillBeRemoved("'BluetoothDevice.connectGATT'", "'BluetoothDevice.gatt.connect'", 52, "5264933985976320");
 
     case V8SVGElement_OffsetParent_AttributeGetter:
         return willBeRemoved("'SVGElement.offsetParent'", 50, "5724912467574784");

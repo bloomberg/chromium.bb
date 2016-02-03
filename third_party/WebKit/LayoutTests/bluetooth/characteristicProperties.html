@@ -10,7 +10,7 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('heart_rate'))
     .then(service => {
       return Promise.all([service.getCharacteristic('body_sensor_location'),

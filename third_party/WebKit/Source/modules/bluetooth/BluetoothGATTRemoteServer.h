@@ -10,7 +10,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/page/PageLifecycleObserver.h"
 #include "platform/heap/Heap.h"
-#include "public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -22,11 +21,6 @@ class ScriptPromiseResolver;
 class ScriptState;
 
 // BluetoothGATTRemoteServer provides a way to interact with a connected bluetooth peripheral.
-//
-// Callbacks providing WebBluetoothGATTRemoteServer objects are handled by
-// CallbackPromiseAdapter templatized with this class. See this class's
-// "Interface required by CallbackPromiseAdapter" section and the
-// CallbackPromiseAdapter class comments.
 class BluetoothGATTRemoteServer final
     : public GarbageCollectedFinalized<BluetoothGATTRemoteServer>
     , public ActiveDOMObject
@@ -36,11 +30,9 @@ class BluetoothGATTRemoteServer final
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothGATTRemoteServer);
 public:
-    BluetoothGATTRemoteServer(ExecutionContext*, PassOwnPtr<WebBluetoothGATTRemoteServer>);
+    BluetoothGATTRemoteServer(ExecutionContext*, const String& deviceId);
 
-    // Interface required by CallbackPromiseAdapter:
-    using WebType = OwnPtr<WebBluetoothGATTRemoteServer>;
-    static BluetoothGATTRemoteServer* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTRemoteServer>);
+    static BluetoothGATTRemoteServer* create(ExecutionContext*, const String& deviceId);
 
     // We should disconnect from the device in all of the following cases:
     // 1. When the object gets GarbageCollected e.g. it went out of scope.
@@ -68,17 +60,20 @@ public:
     void pageVisibilityChanged() override;
 
     void disconnectIfConnected();
+    void setConnected(bool connected) { m_connected = connected; }
 
     // Interface required by Garbage Collectoin:
     DECLARE_VIRTUAL_TRACE();
 
     // IDL exposed interface:
-    bool connected() { return m_webGATT->connected; }
+    bool connected() { return m_connected; }
+    ScriptPromise connect(ScriptState*);
     void disconnect(ScriptState*);
     ScriptPromise getPrimaryService(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
 
 private:
-    OwnPtr<WebBluetoothGATTRemoteServer> m_webGATT;
+    String m_deviceId;
+    bool m_connected;
 };
 
 } // namespace blink

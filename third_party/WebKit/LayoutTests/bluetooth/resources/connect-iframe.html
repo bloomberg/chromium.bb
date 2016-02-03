@@ -5,7 +5,7 @@
       navigator.bluetooth.requestDevice({
         filters: [{services: ['heart_rate']}]
       })
-      .then(device => device.connectGATT())
+      .then(device => device.gatt.connect())
       .then(gattServer => {
         parent.postMessage('Connected', '*');
       }).catch(err => {

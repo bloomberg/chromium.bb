@@ -65,9 +65,9 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void requestDevice(int frame_routing_id,
                      const blink::WebRequestDeviceOptions& options,
                      blink::WebBluetoothRequestDeviceCallbacks* callbacks);
-  void connectGATT(int frame_routing_id,
-                   const blink::WebString& device_id,
-                   blink::WebBluetoothConnectGATTCallbacks* callbacks);
+  void connect(int frame_routing_id,
+               const blink::WebString& device_id,
+               blink::WebBluetoothGATTServerConnectCallbacks* callbacks);
   void disconnect(int frame_routing_id, const blink::WebString& device_id);
   void getPrimaryService(
       int frame_routing_id,
@@ -179,12 +179,10 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   void OnRequestDeviceError(int thread_id,
                             int request_id,
                             blink::WebBluetoothError error);
-  void OnConnectGATTSuccess(int thread_id,
-                            int request_id,
-                            const std::string& message);
-  void OnConnectGATTError(int thread_id,
-                          int request_id,
-                          blink::WebBluetoothError error);
+  void OnGATTServerConnectSuccess(int thread_id, int request_id);
+  void OnGATTServerConnectError(int thread_id,
+                                int request_id,
+                                blink::WebBluetoothError error);
   void OnGetPrimaryServiceSuccess(int thread_id,
                                   int request_id,
                                   const std::string& service_instance_id);
@@ -230,7 +228,7 @@ class BluetoothDispatcher : public WorkerThread::Observer {
       pending_requests_;
   // Tracks requests to connect to a device.
   // Owns callback objects.
-  IDMap<blink::WebBluetoothConnectGATTCallbacks, IDMapOwnPointer>
+  IDMap<blink::WebBluetoothGATTServerConnectCallbacks, IDMapOwnPointer>
       pending_connect_requests_;
   // Tracks requests to get a primary service from a device.
   // Owns request objects.

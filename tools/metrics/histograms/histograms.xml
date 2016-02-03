@@ -3442,7 +3442,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>ortuno@chromium.org</owner>
   <owner>scheib@chromium.org</owner>
   <summary>
-    Records the result of a device.connectGATT() call. Used to understand what
+    Records the result of a device.gatt.connect() call. Used to understand what
     errors developers are getting so we can target efforts toward the most
     common ones.
   </summary>
@@ -66133,6 +66133,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1150" label="MediaStreamConstraintsNameValue"/>
   <int value="1151" label="MediaStreamConstraintsFromDictionary"/>
   <int value="1152" label="MediaStreamConstraintsConformant"/>
+  <int value="1153" label="CSSSelectorIndirectAdjacent"/>
+  <int value="1154" label="NodeTreeRoot"/>
+  <int value="1155" label="BluetoothDeviceConnectGATT"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

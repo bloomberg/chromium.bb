@@ -14,7 +14,7 @@ promise_test(() => {
     .then(device => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
       return assert_promise_rejects_with_message(
-        device.connectGATT(),
+        device.gatt.connect(),
         new DOMException('Bluetooth Device is no longer in range.',
                          'NetworkError'),
         'Device went out of range.');
@@ -110,7 +110,7 @@ promise_test(() => {
     return requestDeviceWithKeyDown({filters: [{services: [testSpec.uuid]}]})
       .then(device => {
         assert_promise_rejects_with_message(
-          device.connectGATT(),
+          device.gatt.connect(),
           testSpec.error,
           'Adapter failed to connect to device.');
       });
@@ -127,7 +127,7 @@ promise_test(() => {
     .then(device => {
       testRunner.setPageVisibility('hidden');
       return assert_promise_rejects_with_message(
-        device.connectGATT(),
+        device.gatt.connect(),
         new DOMException('Connection is only allowed while the page is visible. ' +
                          'This is a temporary measure until we are able to ' +
                          'effectively communicate to the user that a page is ' +
@@ -144,7 +144,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => assert_true(gattServer.connected));
 }, 'Device will connect');
 
@@ -152,11 +152,17 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => {
-      return Promise.all([device.connectGATT(), device.connectGATT()])
+      return Promise.all([device.gatt.connect(), device.gatt.connect()])
     }).then(gattServers => {
-      // connectGATT should return the same object if it was created earlier.
-      // TODO(ortuno): change to assert_equals.
-      assert_not_equals(gattServers[0], gattServers[1]);
+      assert_equals(gattServers[0], gattServers[1]);
     });
 });
+
+// TODO(ortuno): Remove connectGATT in M52.
+// http://crbug.com/582292
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+}, 'Make sure deprecated method is still usable.')
 </script>

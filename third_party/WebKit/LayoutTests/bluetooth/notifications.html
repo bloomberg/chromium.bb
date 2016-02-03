@@ -11,7 +11,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let start_promise;
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -26,7 +26,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   let stop_promise;
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -42,7 +42,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -55,7 +55,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -69,7 +69,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -83,7 +83,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -97,7 +97,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -109,7 +109,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -123,7 +123,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -136,7 +136,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => {
@@ -150,7 +150,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gattServer => gattServer.getPrimaryService('heart_rate'))
    .then(service => service.getCharacteristic('heart_rate_measurement'))
    .then(characteristic => characteristic.stopNotifications())
@@ -161,7 +161,7 @@ gatt_errors_tests.forEach(testSpec => {
   promise_test(() => {
     testRunner.setBluetoothMockDataSet('FailingGATTOperationsAdapter');
     return requestDeviceWithKeyDown({filters: [{services: [errorUUID(0xA0)]}]})
-      .then(device => device.connectGATT())
+      .then(device => device.gatt.connect())
       .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
       .then(service => service.getCharacteristic(testSpec.uuid))
       .then(characteristic => {

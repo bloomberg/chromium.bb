@@ -28,7 +28,7 @@ enum VendorIDSource {
     readonly    attribute unsigned long?             vendorID;
     readonly    attribute unsigned long?             productID;
     readonly    attribute unsigned long?             productVersion;
-//    readonly    attribute BluetoothGATTRemoteServer? gattServer;
+    readonly    attribute BluetoothGATTRemoteServer  gatt;
     readonly    attribute UUID[]                     uuids;
-    [CallWith=ScriptState] Promise<BluetoothGATTRemoteServer> connectGATT ();
+    [CallWith=ScriptState, DeprecateAs=BluetoothDeviceConnectGATT] Promise<BluetoothGATTRemoteServer> connectGATT ();
 };

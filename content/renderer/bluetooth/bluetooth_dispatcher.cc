@@ -18,15 +18,13 @@
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
 
-using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
 using blink::WebBluetoothGATTCharacteristicInit;
-using blink::WebBluetoothGATTRemoteServer;
+using blink::WebBluetoothGATTServerConnectCallbacks;
 using blink::WebBluetoothGATTService;
 using blink::WebBluetoothReadValueCallbacks;
 using blink::WebBluetoothRequestDeviceCallbacks;
@@ -169,8 +167,10 @@ void BluetoothDispatcher::OnMessageReceived(const IPC::Message& msg) {
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceSuccess,
                       OnRequestDeviceSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_RequestDeviceError, OnRequestDeviceError);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTSuccess, OnConnectGATTSuccess);
-  IPC_MESSAGE_HANDLER(BluetoothMsg_ConnectGATTError, OnConnectGATTError);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_GATTServerConnectSuccess,
+                      OnGATTServerConnectSuccess);
+  IPC_MESSAGE_HANDLER(BluetoothMsg_GATTServerConnectError,
+                      OnGATTServerConnectError);
   IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceSuccess,
                       OnGetPrimaryServiceSuccess);
   IPC_MESSAGE_HANDLER(BluetoothMsg_GetPrimaryServiceError,
@@ -229,19 +229,19 @@ void BluetoothDispatcher::requestDevice(
                                           optional_services));
 }
 
-void BluetoothDispatcher::connectGATT(
+void BluetoothDispatcher::connect(
     int frame_routing_id,
     const blink::WebString& device_id,
-    blink::WebBluetoothConnectGATTCallbacks* callbacks) {
+    blink::WebBluetoothGATTServerConnectCallbacks* callbacks) {
   int request_id = pending_connect_requests_.Add(callbacks);
-  Send(new BluetoothHostMsg_ConnectGATT(CurrentWorkerId(), request_id,
-                                        frame_routing_id, device_id.utf8()));
+  Send(new BluetoothHostMsg_GATTServerConnect(
+      CurrentWorkerId(), request_id, frame_routing_id, device_id.utf8()));
 }
 
 void BluetoothDispatcher::disconnect(int frame_routing_id,
                                      const blink::WebString& device_id) {
-  Send(new BluetoothHostMsg_Disconnect(CurrentWorkerId(), frame_routing_id,
-                                       device_id.utf8()));
+  Send(new BluetoothHostMsg_GATTServerDisconnect(
+      CurrentWorkerId(), frame_routing_id, device_id.utf8()));
 }
 
 void BluetoothDispatcher::getPrimaryService(
@@ -608,19 +608,16 @@ void BluetoothDispatcher::OnRequestDeviceError(int thread_id,
   pending_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnConnectGATTSuccess(int thread_id,
-                                               int request_id,
-                                               const std::string& device_id) {
+void BluetoothDispatcher::OnGATTServerConnectSuccess(int thread_id,
+                                                     int request_id) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
-  pending_connect_requests_.Lookup(request_id)
-      ->onSuccess(blink::adoptWebPtr(new WebBluetoothGATTRemoteServer(
-          WebString::fromUTF8(device_id), true /* connected */)));
+  pending_connect_requests_.Lookup(request_id)->onSuccess();
   pending_connect_requests_.Remove(request_id);
 }
 
-void BluetoothDispatcher::OnConnectGATTError(int thread_id,
-                                             int request_id,
-                                             WebBluetoothError error) {
+void BluetoothDispatcher::OnGATTServerConnectError(int thread_id,
+                                                   int request_id,
+                                                   WebBluetoothError error) {
   DCHECK(pending_connect_requests_.Lookup(request_id)) << request_id;
   pending_connect_requests_.Lookup(request_id)
       ->onError(WebBluetoothError(error));

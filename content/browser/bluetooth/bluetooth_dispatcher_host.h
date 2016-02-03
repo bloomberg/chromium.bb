@@ -103,13 +103,13 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       int frame_routing_id,
       const std::vector<content::BluetoothScanFilter>& filters,
       const std::vector<device::BluetoothUUID>& optional_services);
-  void OnConnectGATT(int thread_id,
-                     int request_id,
-                     int frame_routing_id,
-                     const std::string& device_id);
-  void OnDisconnect(int thread_id,
-                    int frame_routing_id,
-                    const std::string& device_id);
+  void OnGATTServerConnect(int thread_id,
+                           int request_id,
+                           int frame_routing_id,
+                           const std::string& device_id);
+  void OnGATTServerDisconnect(int thread_id,
+                              int frame_routing_id,
+                              const std::string& device_id);
   void OnGetPrimaryService(int thread_id,
                            int request_id,
                            int frame_routing_id,

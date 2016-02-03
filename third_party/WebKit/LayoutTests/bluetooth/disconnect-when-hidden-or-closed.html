@@ -15,7 +15,7 @@ promise_test(() => {
   testRunner.setPageVisibility("visible");
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gatt_server => {
      assert_true(gatt_server.connected);
      testRunner.setPageVisibility("hidden");
@@ -29,7 +29,7 @@ promise_test(() => {
   testRunner.setPageVisibility('visible');
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gatt_server => {})
    .then(() => runGarbageCollection())
    .then(() => testRunner.setPageVisibility('hidden'));
@@ -40,7 +40,7 @@ promise_test(() => {
   testRunner.setPageVisibility('visible');
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-   .then(device => device.connectGATT())
+   .then(device => device.gatt.connect())
    .then(gatt_server => testRunner.setPageVisibility('hidden'))
    .then(() => runGarbageCollection());
 }, 'Test object gets garbage collected after tab becomes hidden. ' +
@@ -51,7 +51,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
    .then(device => {
-     let connect_promise = device.connectGATT();
+     let connect_promise = device.gatt.connect();
      testRunner.setPageVisibility('hidden');
      return connect_promise;
    }).then(gatt_server => {

@@ -129,13 +129,12 @@ IPC_MESSAGE_CONTROL3(BluetoothMsg_RequestDeviceError,
                      blink::WebBluetoothError /* result */)
 
 // Informs the renderer that the connection request |request_id| succeeded.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTSuccess,
+IPC_MESSAGE_CONTROL2(BluetoothMsg_GATTServerConnectSuccess,
                      int /* thread_id */,
-                     int /* request_id */,
-                     std::string /* device_id */)
+                     int /* request_id */)
 
 // Informs the renderer that the connection request |request_id| failed.
-IPC_MESSAGE_CONTROL3(BluetoothMsg_ConnectGATTError,
+IPC_MESSAGE_CONTROL3(BluetoothMsg_GATTServerConnectError,
                      int /* thread_id */,
                      int /* request_id */,
                      blink::WebBluetoothError /* result */)
@@ -226,14 +225,14 @@ IPC_MESSAGE_CONTROL5(BluetoothHostMsg_RequestDevice,
                      std::vector<device::BluetoothUUID> /* optional_services */)
 
 // Connects to a bluetooth device.
-IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ConnectGATT,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GATTServerConnect,
                      int /* thread_id */,
                      int /* request_id */,
                      int /* frame_routing_id */,
                      std::string /* device_id */)
 
 // Disconnect from a device.
-IPC_MESSAGE_CONTROL3(BluetoothHostMsg_Disconnect,
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_GATTServerDisconnect,
                      int /* thread_id */,
                      int /* frame_routing_id */,
                      std::string /* device_id */)

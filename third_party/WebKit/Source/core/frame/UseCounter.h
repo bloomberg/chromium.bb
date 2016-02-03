@@ -1008,6 +1008,7 @@ public:
         MediaStreamConstraintsConformant = 1152,
         CSSSelectorIndirectAdjacent = 1153,
         NodeTreeRoot = 1154,
+        BluetoothDeviceConnectGATT = 1155,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

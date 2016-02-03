@@ -12,7 +12,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => {
       testRunner.setBluetoothMockDataSet('EmptyAdapter');
@@ -28,7 +28,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattService => gattService.getPrimaryService('generic_access'))
     .then(service => {
       testRunner.setBluetoothMockDataSet('MissingServiceHeartRateAdapter');
@@ -47,7 +47,7 @@ promise_test(() => {
                                   'NotFoundError');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => Promise.all(
       [assert_promise_rejects_with_message(
@@ -62,7 +62,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => Promise.all(
       [service.getCharacteristic(device_name.alias),
@@ -81,7 +81,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(services => Promise.all(
       [services.getCharacteristic(device_name.alias),
@@ -106,7 +106,7 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}],
                                    optionalServices: ['generic_access']})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => gattServer.getPrimaryService('generic_access'))
     .then(service => {
       return assert_promise_rejects_with_message(

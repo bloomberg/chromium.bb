@@ -14,7 +14,7 @@ test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => {
       gattServer.disconnect();
       assert_false(gattServer.connected);
@@ -24,7 +24,7 @@ promise_test(() => {
 promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
-    .then(device => device.connectGATT())
+    .then(device => device.gatt.connect())
     .then(gattServer => {
       gattServer.disconnect();
       assert_false(gattServer.connected);
@@ -38,11 +38,11 @@ promise_test(() => {
   testRunner.setBluetoothMockDataSet('HeartRateAdapter');
   return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
     .then(device => {
-      return device.connectGATT().then(gattServer => {
+      return device.gatt.connect().then(gattServer => {
         gattServer.disconnect();
         assert_false(gattServer.connected);
       })
-      .then(() => device.connectGATT()).then(gattServer => {
+      .then(() => device.gatt.connect()).then(gattServer => {
         gattServer.disconnect();
         assert_false(gattServer.connected);
       });

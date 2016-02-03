@@ -14,9 +14,10 @@
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers 
 {
-  // readonly attribute BluetoothDevice      device;
+    // readonly attribute BluetoothDevice                   device;
     readonly attribute boolean                           connected;
-    [CallWith=ScriptState] void                                           disconnect ();
+    [CallWith=ScriptState] Promise<BluetoothGATTRemoteServer>             connect();
+    [CallWith=ScriptState] void                                           disconnect();
     [CallWith=ScriptState, RaisesException] Promise<BluetoothGATTService> getPrimaryService (BluetoothServiceUUID service);
   // Promise<sequence<BluetoothGATTService>> getPrimaryServices (optional BluetoothServiceUUID service);
 };

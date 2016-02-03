@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/bluetooth/BluetoothAdvertisingData.h"
+#include "modules/bluetooth/BluetoothGATTRemoteServer.h"
 #include "platform/heap/Heap.h"
 #include "public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "wtf/OwnPtr.h"
@@ -30,9 +31,7 @@ class BluetoothDevice final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    BluetoothDevice(PassOwnPtr<WebBluetoothDevice>);
-
-    ScriptPromise connectGATT(ScriptState*);
+    BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDevice>);
 
     // Interface required by CallbackPromiseAdapter:
     using WebType = OwnPtr<WebBluetoothDevice>;
@@ -50,11 +49,16 @@ public:
     unsigned vendorID(bool& isNull);
     unsigned productID(bool& isNull);
     unsigned productVersion(bool& isNull);
+    BluetoothGATTRemoteServer* gatt() { return m_gatt; }
     Vector<String> uuids();
+    // TODO(ortuno): Remove connectGATT
+    // http://crbug.com/582292
+    ScriptPromise connectGATT(ScriptState*);
 
 private:
     OwnPtr<WebBluetoothDevice> m_webDevice;
     Member<BluetoothAdvertisingData> m_adData;
+    Member<BluetoothGATTRemoteServer> m_gatt;
 };
 
 } // namespace blink

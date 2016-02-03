@@ -97,7 +97,7 @@ void RecordRequestDeviceArguments(
   RecordUnionOfServices(filters, optional_services);
 }
 
-// connectGATT
+// GATTServer.Connect
 
 void RecordConnectGATTOutcome(UMAConnectGATTOutcome outcome) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.Web.ConnectGATT.Outcome",
