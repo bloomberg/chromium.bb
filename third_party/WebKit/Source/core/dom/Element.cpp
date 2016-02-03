@@ -623,42 +623,11 @@ void Element::callApplyScroll(ScrollState& scrollState)
         callback->handleEvent(&scrollState);
 };
 
-static float localZoomForLayoutObject(LayoutObject& layoutObject)
-{
-    // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each
-    // other out, but the alternative is that we'd have to crawl up the whole layout tree every
-    // time (or store an additional bit in the ComputedStyle to indicate that a zoom was specified).
-    float zoomFactor = 1;
-    if (layoutObject.style()->effectiveZoom() != 1) {
-        // Need to find the nearest enclosing LayoutObject that set up
-        // a differing zoom, and then we divide our result by it to eliminate the zoom.
-        LayoutObject* prev = &layoutObject;
-        for (LayoutObject* curr = prev->parent(); curr; curr = curr->parent()) {
-            if (curr->style()->effectiveZoom() != prev->style()->effectiveZoom()) {
-                zoomFactor = prev->style()->zoom();
-                break;
-            }
-            prev = curr;
-        }
-        if (prev->isLayoutView())
-            zoomFactor = prev->style()->zoom();
-    }
-    return zoomFactor;
-}
-
-static double adjustForLocalZoom(LayoutUnit value, LayoutObject& layoutObject)
-{
-    float zoomFactor = localZoomForLayoutObject(layoutObject);
-    if (zoomFactor == 1)
-        return value.toDouble();
-    return value.toDouble() / zoomFactor;
-}
-
 int Element::offsetLeft()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return lroundf(adjustForLocalZoom(layoutObject->offsetLeft(), *layoutObject));
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetLeft(), *layoutObject).round();
     return 0;
 }
 
@@ -666,7 +635,7 @@ int Element::offsetTop()
 {
     document().updateLayoutIgnorePendingStylesheets();
     if (LayoutBoxModelObject* layoutObject = layoutBoxModelObject())
-        return lroundf(adjustForLocalZoom(layoutObject->pixelSnappedOffsetTop(), *layoutObject));
+        return adjustLayoutUnitForAbsoluteZoom(layoutObject->pixelSnappedOffsetTop(), *layoutObject).round();
     return 0;
 }
 
