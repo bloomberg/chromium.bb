@@ -12,6 +12,7 @@ import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -165,7 +166,6 @@ public class ToolbarPhone extends ToolbarLayout
     private Drawable mLocationBarBackground;
     private boolean mForceDrawLocationBarBackground;
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
-    private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
     private final int mLightModeDefaultColor;
     private final int mDarkModeDefaultColor;
@@ -306,11 +306,7 @@ public class ToolbarPhone extends ToolbarLayout
         mNewTabButton = (NewTabButton) findViewById(R.id.new_tab_button);
 
         mToggleTabStackButton.setClickable(false);
-        Resources resources = getResources();
-        mTabSwitcherButtonDrawable =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, false);
-        mTabSwitcherButtonDrawableLight =
-                TabSwitcherDrawable.createTabSwitcherDrawable(resources, true);
+        mTabSwitcherButtonDrawable = new TabSwitcherDrawable(getResources(), mDarkModeTint);
         mToggleTabStackButton.setImageDrawable(mTabSwitcherButtonDrawable);
         mTabSwitcherModeViews.add(mNewTabButton);
 
@@ -1686,15 +1682,13 @@ public class ToolbarPhone extends ToolbarLayout
         mToggleTabStackButton.setContentDescription(
                 getResources().getString(R.string.accessibility_toolbar_btn_tabswitcher_toggle,
                         numberOfTabs));
-        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
-        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
+        mTabSwitcherButtonDrawable.setCount(numberOfTabs);
 
         boolean useTabStackDrawableLight = isIncognito();
         if (mTabSwitcherAnimationTabStackDrawable == null
                 || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
-            mTabSwitcherAnimationTabStackDrawable =
-                    TabSwitcherDrawable.createTabSwitcherDrawable(
-                            getResources(), useTabStackDrawableLight);
+            mTabSwitcherAnimationTabStackDrawable = new TabSwitcherDrawable(getResources(),
+                    useTabStackDrawableLight ? mLightModeTint : mDarkModeTint);
             int[] stateSet = {android.R.attr.state_enabled};
             mTabSwitcherAnimationTabStackDrawable.setState(stateSet);
             mTabSwitcherAnimationTabStackDrawable.setBounds(
@@ -1703,8 +1697,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
 
         if (mTabSwitcherAnimationTabStackDrawable != null) {
-            mTabSwitcherAnimationTabStackDrawable.updateForTabCount(
-                    numberOfTabs, isIncognito());
+            mTabSwitcherAnimationTabStackDrawable.setCount(numberOfTabs);
         }
     }
 
@@ -1932,12 +1925,12 @@ public class ToolbarPhone extends ToolbarLayout
                 : R.color.progress_bar_foreground);
         getProgressBar().setForegroundColor(progressBarForegroundColor);
 
+        final ColorStateList tint = mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint;
+
         if (mToggleTabStackButton != null) {
-            mToggleTabStackButton.setImageDrawable(mUseLightToolbarDrawables
-                    ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
+            mTabSwitcherButtonDrawable.setTint(tint);
             if (mTabSwitcherAnimationTabStackDrawable != null) {
-                mTabSwitcherAnimationTabStackDrawable.setTint(
-                        mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+                mTabSwitcherAnimationTabStackDrawable.setTint(tint);
             }
         }
 
@@ -1949,10 +1942,10 @@ public class ToolbarPhone extends ToolbarLayout
             if (mShowMenuBadge && isInTabSwitcherMode) {
                 mMenuButton.setImageDrawable(mUnbadgedMenuButtonDrawable);
             }
-            mMenuButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+            mMenuButton.setTint(tint);
         }
         if (mHomeButton.getVisibility() != GONE) {
-            mHomeButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+            mHomeButton.setTint(tint);
         }
 
         mPhoneLocationBar.updateVisualsForState();
