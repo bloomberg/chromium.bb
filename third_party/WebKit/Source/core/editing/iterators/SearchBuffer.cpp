@@ -380,8 +380,8 @@ static size_t findPlainTextInternal(CharacterIteratorAlgorithm<Strategy>& it, co
 
     if (buffer.needsMoreContext()) {
         for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionTemplate<Strategy>::firstPositionInNode(it.ownerDocument()), PositionTemplate<Strategy>(it.currentContainer(), it.startOffset())); !backwardsIterator.atEnd(); backwardsIterator.advance()) {
-            Vector<UChar, 1024> characters;
-            backwardsIterator.copyTextTo(characters);
+            BackwardsTextBuffer characters;
+            backwardsIterator.copyTextTo(&characters);
             buffer.prependContext(characters.data(), characters.size());
             if (!buffer.needsMoreContext())
                 break;

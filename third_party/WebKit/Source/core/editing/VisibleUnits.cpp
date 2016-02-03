@@ -39,6 +39,7 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/iterators/BackwardsCharacterIterator.h"
+#include "core/editing/iterators/BackwardsTextBuffer.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/ForwardsTextBuffer.h"
 #include "core/editing/iterators/SimplifiedBackwardsTextIterator.h"
@@ -685,8 +686,8 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         }
     }
 
-    Vector<UChar, 1024> string;
-    string.append(suffixString.data(), suffixString.size());
+    BackwardsTextBuffer string;
+    string.pushRange(suffixString.data(), suffixString.size());
 
     SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(start, end);
     unsigned next = 0;
@@ -695,16 +696,12 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         bool inTextSecurityMode = it.isInTextSecurityMode();
         // iterate to get chunks until the searchFunction returns a non-zero
         // value.
-        // TODO(xiaochengh): Iterative prepending has quadratic running time
-        // in the worst case. Should improve it to linear.
         if (!inTextSecurityMode) {
-            it.copyTextTo(string);
+            it.copyTextTo(&string);
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries
-            Vector<UChar, 1024> iteratorString;
-            iteratorString.fill('x', it.length());
-            string.prepend(iteratorString.data(), iteratorString.size());
+            string.pushCharacters('x', it.length());
         }
         // TODO(xiaochengh): The following line takes O(string.size()) time,
         // which makes the while loop take quadratic time in the worst case.
@@ -751,20 +748,18 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
     Document& d = boundary->document();
     const PositionTemplate<Strategy> start(pos.parentAnchoredEquivalent());
 
-    Vector<UChar, 1024> prefixString;
+    BackwardsTextBuffer prefixString;
     unsigned prefixLength = 0;
 
     if (requiresContextForWordBoundary(characterAfter(c))) {
         SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionTemplate<Strategy>::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             // TODO(xiaochengh): Eliminate this intermediate buffer.
-            Vector<UChar, 1024> characters;
-            backwardsIterator.copyTextTo(characters);
+            BackwardsTextBuffer characters;
+            backwardsIterator.copyTextTo(&characters);
             int length = characters.size();
             int i = startOfLastWordBoundaryContext(characters.data(), length);
-            // TODO(xiaochengh): Iterative prepending has quadratic running
-            // time in the worst case. Should improve it to linear.
-            prefixString.prepend(characters.data() + i, length - i);
+            prefixString.pushRange(characters.data() + i, length - i);
             prefixLength += length - i;
             if (i > 0)
                 break;

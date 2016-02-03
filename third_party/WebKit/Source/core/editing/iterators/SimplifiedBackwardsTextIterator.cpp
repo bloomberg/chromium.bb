@@ -410,6 +410,42 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(
     return position > 0 && position < length() && U16_IS_TRAIL(characterAt(position - 1)) && U16_IS_LEAD(characterAt(position));
 }
 
+template <typename Strategy>
+int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyTextTo(BackwardsTextBuffer* output, int position, int minLength) const
+{
+    int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
+    copyCodeUnitsTo(output, position, copiedLength);
+    return copiedLength;
+}
+
+template <typename Strategy>
+int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyTextTo(BackwardsTextBuffer* output, int position) const
+{
+    return copyTextTo(output, position, m_textLength - position);
+}
+
+template <typename Strategy>
+void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyCodeUnitsTo(BackwardsTextBuffer* output, int position, int copyLength) const
+{
+    ASSERT(position >= 0);
+    ASSERT(copyLength >= 0);
+    ASSERT(position + copyLength <= m_textLength);
+    // Make sure there's no integer overflow.
+    ASSERT(position + copyLength >= position);
+    if (m_textLength == 0 || copyLength == 0)
+        return;
+    ASSERT(output);
+    if (m_singleCharacterBuffer) {
+        output->pushCharacters(m_singleCharacterBuffer, 1);
+        return;
+    }
+    int offset = m_textOffset + m_textLength - position - copyLength;
+    if (m_textContainer.is8Bit())
+        output->pushRange(m_textContainer.characters8() + offset, copyLength);
+    else
+        output->pushRange(m_textContainer.characters16() + offset, copyLength);
+}
+
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 

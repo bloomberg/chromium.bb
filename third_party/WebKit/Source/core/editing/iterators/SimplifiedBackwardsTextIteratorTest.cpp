@@ -18,11 +18,11 @@ template <typename Strategy>
 static String extractString(const Element& element)
 {
     const EphemeralRangeTemplate<Strategy> range = EphemeralRangeTemplate<Strategy>::rangeOfContents(element);
-    Vector<UChar> buffer;
+    BackwardsTextBuffer buffer;
     for (SimplifiedBackwardsTextIteratorAlgorithm<Strategy> it(range.startPosition(), range.endPosition()); !it.atEnd(); it.advance()) {
-        it.copyTextTo(buffer);
+        it.copyTextTo(&buffer);
     }
-    return String(buffer);
+    return String(buffer.data(), buffer.size());
 }
 
 TEST_F(SimplifiedBackwardsTextIteratorTest, SubrangeWithReplacedElements)
@@ -103,42 +103,42 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo)
 
     EphemeralRangeTemplate<EditingStrategy> range1(EphemeralRangeTemplate<EditingStrategy>::rangeOfContents(*host));
     SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy> backIter1(range1.startPosition(), range1.endPosition());
-    Vector<UChar> output1;
-    backIter1.copyTextTo(output1, 0, 2);
-    EXPECT_EQ("wo", String(output1)) << String::format(message, 1, "wo").utf8().data();
-    backIter1.copyTextTo(output1, 2, 1);
-    EXPECT_EQ("two", String(output1)) << String::format(message, 1, "two").utf8().data();
+    BackwardsTextBuffer output1;
+    backIter1.copyTextTo(&output1, 0, 2);
+    EXPECT_EQ("wo", String(output1.data(), output1.size())) << String::format(message, 1, "wo").utf8().data();
+    backIter1.copyTextTo(&output1, 2, 1);
+    EXPECT_EQ("two", String(output1.data(), output1.size())) << String::format(message, 1, "two").utf8().data();
     backIter1.advance();
-    backIter1.copyTextTo(output1, 0, 1);
-    EXPECT_EQ("etwo", String(output1)) << String::format(message, 1, "etwo").utf8().data();
-    backIter1.copyTextTo(output1, 1, 2);
-    EXPECT_EQ("onetwo", String(output1)) << String::format(message, 1, "onetwo").utf8().data();
+    backIter1.copyTextTo(&output1, 0, 1);
+    EXPECT_EQ("etwo", String(output1.data(), output1.size())) << String::format(message, 1, "etwo").utf8().data();
+    backIter1.copyTextTo(&output1, 1, 2);
+    EXPECT_EQ("onetwo", String(output1.data(), output1.size())) << String::format(message, 1, "onetwo").utf8().data();
 
     EphemeralRangeTemplate<EditingInComposedTreeStrategy> range2(EphemeralRangeTemplate<EditingInComposedTreeStrategy>::rangeOfContents(*host));
     SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy> backIter2(range2.startPosition(), range2.endPosition());
-    Vector<UChar> output2;
-    backIter2.copyTextTo(output2, 0, 2);
-    EXPECT_EQ("ro", String(output2)) << String::format(message, 2, "ro").utf8().data();
-    backIter2.copyTextTo(output2, 2, 3);
-    EXPECT_EQ(" zero", String(output2)) << String::format(message, 2, " zero").utf8().data();
+    BackwardsTextBuffer output2;
+    backIter2.copyTextTo(&output2, 0, 2);
+    EXPECT_EQ("ro", String(output2.data(), output2.size())) << String::format(message, 2, "ro").utf8().data();
+    backIter2.copyTextTo(&output2, 2, 3);
+    EXPECT_EQ(" zero", String(output2.data(), output2.size())) << String::format(message, 2, " zero").utf8().data();
     backIter2.advance();
-    backIter2.copyTextTo(output2, 0, 1);
-    EXPECT_EQ("e zero", String(output2)) << String::format(message, 2, "e zero").utf8().data();
-    backIter2.copyTextTo(output2, 1, 2);
-    EXPECT_EQ("one zero", String(output2)) << String::format(message, 2, "one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 0, 1);
+    EXPECT_EQ("e zero", String(output2.data(), output2.size())) << String::format(message, 2, "e zero").utf8().data();
+    backIter2.copyTextTo(&output2, 1, 2);
+    EXPECT_EQ("one zero", String(output2.data(), output2.size())) << String::format(message, 2, "one zero").utf8().data();
     backIter2.advance();
-    backIter2.copyTextTo(output2, 0, 1);
-    EXPECT_EQ(" one zero", String(output2)) << String::format(message, 2, " one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 0, 1);
+    EXPECT_EQ(" one zero", String(output2.data(), output2.size())) << String::format(message, 2, " one zero").utf8().data();
     backIter2.advance();
-    backIter2.copyTextTo(output2, 0, 2);
-    EXPECT_EQ("wo one zero", String(output2)) << String::format(message, 2, "wo one zero").utf8().data();
-    backIter2.copyTextTo(output2, 2, 1);
-    EXPECT_EQ("two one zero", String(output2)) << String::format(message, 2, "two one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 0, 2);
+    EXPECT_EQ("wo one zero", String(output2.data(), output2.size())) << String::format(message, 2, "wo one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 2, 1);
+    EXPECT_EQ("two one zero", String(output2.data(), output2.size())) << String::format(message, 2, "two one zero").utf8().data();
     backIter2.advance();
-    backIter2.copyTextTo(output2, 0, 3);
-    EXPECT_EQ("ee two one zero", String(output2)) << String::format(message, 2, "ee two one zero").utf8().data();
-    backIter2.copyTextTo(output2, 3, 3);
-    EXPECT_EQ("three two one zero", String(output2)) << String::format(message, 2, "three two one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 0, 3);
+    EXPECT_EQ("ee two one zero", String(output2.data(), output2.size())) << String::format(message, 2, "ee two one zero").utf8().data();
+    backIter2.copyTextTo(&output2, 3, 3);
+    EXPECT_EQ("three two one zero", String(output2.data(), output2.size())) << String::format(message, 2, "three two one zero").utf8().data();
 }
 
 TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints)
@@ -151,12 +151,12 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints)
 
     EphemeralRange range(EphemeralRange::rangeOfContents(document()));
     SimplifiedBackwardsTextIterator iter(range.startPosition(), range.endPosition());
-    Vector<UChar> buffer;
-    EXPECT_EQ(1, iter.copyTextTo(buffer, 0, 1)) << "Should emit 1 UChar for '.'.";
-    EXPECT_EQ(2, iter.copyTextTo(buffer, 1, 1)) << "Should emit 2 UChars for 'U+13141'.";
-    EXPECT_EQ(2, iter.copyTextTo(buffer, 3, 2)) << "Should emit 2 UChars for 'U+13140'.";
-    EXPECT_EQ(5, iter.copyTextTo(buffer, 5, 4)) << "Should emit 5 UChars for 'U+13001U+13002 '.";
-    EXPECT_EQ(2, iter.copyTextTo(buffer, 10, 2)) << "Should emit 2 UChars for 'U+13000'.";
+    BackwardsTextBuffer buffer;
+    EXPECT_EQ(1, iter.copyTextTo(&buffer, 0, 1)) << "Should emit 1 UChar for '.'.";
+    EXPECT_EQ(2, iter.copyTextTo(&buffer, 1, 1)) << "Should emit 2 UChars for 'U+13141'.";
+    EXPECT_EQ(2, iter.copyTextTo(&buffer, 3, 2)) << "Should emit 2 UChars for 'U+13140'.";
+    EXPECT_EQ(5, iter.copyTextTo(&buffer, 5, 4)) << "Should emit 5 UChars for 'U+13001U+13002 '.";
+    EXPECT_EQ(2, iter.copyTextTo(&buffer, 10, 2)) << "Should emit 2 UChars for 'U+13000'.";
     for (int i = 0; i < 12; i++)
         EXPECT_EQ(expected[i], buffer[i]);
 }
