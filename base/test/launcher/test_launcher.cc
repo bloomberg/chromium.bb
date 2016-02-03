@@ -790,10 +790,10 @@ bool TestLauncher::Init() {
   }
 
   if (command_line->HasSwitch(switches::kTestLauncherFilterFile)) {
+    base::FilePath filter_file_path = base::MakeAbsoluteFilePath(
+        command_line->GetSwitchValuePath(switches::kTestLauncherFilterFile));
     std::string filter;
-    if (!ReadFileToString(
-            command_line->GetSwitchValuePath(switches::kTestLauncherFilterFile),
-            &filter)) {
+    if (!ReadFileToString(filter_file_path, &filter)) {
       LOG(ERROR) << "Failed to read the filter file.";
       return false;
     }
