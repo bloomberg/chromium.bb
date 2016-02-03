@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Setting src twice after MediaKeys set</title>
+        <title>Reset src after setMediaKeys()</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -26,8 +26,8 @@
                     // This event is fired once for the audio stream and once
                     // for the video stream each time .src is set.
                     if (encryptedEventIndex == 2) {
-                        // Finished first video, set src a second time.
-                        video.src = '../content/test-encrypted.webm';
+                        // Finished first video; set src to a different video.
+                        video.src = '../content/test-encrypted-different-av-keys.webm';
                     } else if (encryptedEventIndex == 4) {
                         // Finished second video.
                         test.done();
@@ -53,7 +53,7 @@
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);
                 });
-            }, 'Setting src twice after MediaKeys set.');
+            }, 'Reset src after setMediaKeys().');
         </script>
     </body>
 </html>

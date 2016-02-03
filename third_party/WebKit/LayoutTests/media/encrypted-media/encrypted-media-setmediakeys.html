@@ -1,20 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>MediaKeys</title>
+        <title>setMediaKeys</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
     </head>
     <body>
-        <video id="testVideo"></video>
+        <video id="video"></video>
         <div id="log"></div>
         <script>
             async_test(function(test)
             {
                 var mediaKeys;
-                var mediaKeys2;
-                var video = document.getElementById('testVideo');
+                var video = document.getElementById('video');
                 assert_not_equals(video, null);
 
                 // Test MediaKeys assignment.
@@ -46,61 +45,6 @@
                 }).then(function(result) {
                     assert_not_equals(video.mediaKeys, null);
                     assert_true(video.mediaKeys === mediaKeys);
-
-                    // Set it a second time.
-                    return video.setMediaKeys(mediaKeys);
-                }).then(function(result) {
-                    assert_not_equals(video.mediaKeys, null);
-                    assert_true(video.mediaKeys === mediaKeys);
-
-                    // Create a second MediaKeys.
-                    return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]);
-                }).then(function(access) {
-                    assert_equals(access.keySystem, 'org.w3.clearkey');
-                    return access.createMediaKeys();
-                }).then(function(result) {
-                    mediaKeys2 = result;
-                    assert_not_equals(mediaKeys, null);
-                    assert_not_equals(mediaKeys2, null);
-                    assert_not_equals(mediaKeys, mediaKeys2);
-                    assert_equals(typeof mediaKeys.createSession, 'function');
-                    assert_equals(typeof mediaKeys2.createSession, 'function');
-
-                    // Assign the second MediaKeys to video.
-                    return video.setMediaKeys(mediaKeys2);
-                }).then(function(result) {
-                    assert_not_equals(video.mediaKeys, null);
-                    assert_not_equals(video.mediaKeys, mediaKeys);
-                    assert_true(video.mediaKeys === mediaKeys2);
-
-                    // Set it back to first MediaKeys.
-                    return video.setMediaKeys(mediaKeys);
-                }, function(error) {
-                    // Some implementations don't support changing MediaKeys
-                    // once set, so this test is a success.
-                    // FIXME: Allow this case to pass as necessary before
-                    // submitting to W3C.
-                    assert_equals(error.name, "NotSupportedError");
-                    forceTestFailureFromPromise(test, error);
-                }).then(function(result) {
-                    assert_true(video.mediaKeys === mediaKeys);
-                    assert_not_equals(video.mediaKeys, mediaKeys2);
-
-                    // Set mediaKeys to null.
-                    return video.setMediaKeys(null);
-                }).then(function(result) {
-                    assert_equals(video.mediaKeys, null);
-
-                    // Set it to null a second time.
-                    return video.setMediaKeys(null);
-                }).then(function(result) {
-                    assert_equals(video.mediaKeys, null);
-
-                    // Set it back to first MediaKeys again.
-                    return video.setMediaKeys(mediaKeys);
-                }).then(function(result) {
-                    assert_true(video.mediaKeys === mediaKeys);
-                    assert_not_equals(video.mediaKeys, mediaKeys2);
                     test.done();
                 }).catch(function(error) {
                     forceTestFailureFromPromise(test, error);

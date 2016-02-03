@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Set MediaKeys twice</title>
+        <title>setMediaKeys() on multiple video elements.</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -40,7 +40,7 @@
                     // Should be assignable to video2.
                     return video2.setMediaKeys(mediaKeys);
                 });
-            }, 'Set MediaKeys twice');
+            }, 'setMediaKeys() on multiple video elements.');
         </script>
     </body>
 </html>

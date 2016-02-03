@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Change MediaKeys after play</title>
+        <title>setMediaKeys() again after resetting src</title>
         <script src="encrypted-media-utils.js"></script>
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
@@ -24,21 +24,17 @@
                 }).then(function() {
                     return playVideoAndWaitForTimeupdate(video, content, duration);
                 }).then(function() {
-                    // Now create a second MediaKeys.
+                    // Now create a second MediaKeys and repeat.
                     return createMediaKeys(keyId, rawKey);
                 }).then(function(mediaKeys) {
-                    // video is currently playing, so should not be able to
-                    // change MediaKeys now.
-                    assert_false(video.ended);
+                    // MediaKeys is use by previous video, so clear .src
+                    // so that MediaKeys can be assigned.
+                    video.src = '';
                     return video.setMediaKeys(mediaKeys);
                 }).then(function() {
-                    assert_unreached('Able to change MediaKeys while playing.');
-                }, function(error) {
-                    // Error expected.
-                    assert_equals(error.name, 'InvalidStateError');
-                    return Promise.resolve('success');
+                    return playVideoAndWaitForTimeupdate(video, content, duration);
                 });
-            }, 'Change MediaKeys after play');
+            }, 'setMediaKeys() again after resetting src');
         </script>
     </body>
 </html>
