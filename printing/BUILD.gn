@@ -196,6 +196,15 @@ component("printing") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("printing_unittests_run") {
+  testonly = true
+  deps = [
+    ":printing_unittests",
+  ]
+}
+
 test("printing_unittests") {
   sources = [
     "emf_win_unittest.cc",

@@ -241,6 +241,15 @@ executable("gn") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gn_unittests_run") {
+  testonly = true
+  deps = [
+    ":gn_unittests",
+  ]
+}
+
 test("gn_unittests") {
   sources = [
     "action_target_generator_unittest.cc",

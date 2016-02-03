@@ -333,6 +333,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("events_unittests_run") {
+  testonly = true
+  deps = [
+    ":events_unittests",
+  ]
+}
+
 test("events_unittests") {
   sources = [
     "android/scroller_unittest.cc",

@@ -64,6 +64,15 @@ source_set("url_type_converters") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("mojo_common_unittests_run") {
+  testonly = true
+  deps = [
+    ":mojo_common_unittests",
+  ]
+}
+
 # GYP version: mojo/mojo_base.gyp:mojo_common_unittests
 test("mojo_common_unittests") {
   deps = [

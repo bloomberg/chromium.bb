@@ -101,6 +101,13 @@ source_set("test_support") {
   ]
 }
 
+group("gl_tests_run") {
+  testonly = true
+  deps = [
+    ":gl_tests",
+  ]
+}
+
 test("gl_tests") {
   sources = [
     "command_buffer/tests/compressed_texture_test.cc",
@@ -168,6 +175,15 @@ test("gl_tests") {
     libs += [ "android" ]
     deps += [ "//ui/android:ui_java" ]
   }
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gpu_unittests_run") {
+  testonly = true
+  deps = [
+    ":gpu_unittests",
+  ]
 }
 
 test("gpu_unittests") {
@@ -310,6 +326,15 @@ test("gpu_perftests") {
     "//testing/perf",
     "//ui/gfx/geometry",
     "//ui/gl",
+  ]
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("angle_unittests_run") {
+  testonly = true
+  deps = [
+    "//third_party/angle/src/tests:angle_unittests",
   ]
 }
 

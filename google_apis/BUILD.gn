@@ -224,6 +224,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("google_apis_unittests_run") {
+  testonly = true
+  deps = [
+    ":google_apis_unittests",
+  ]
+}
+
 test("google_apis_unittests") {
   sources = [
     "gaia/gaia_auth_fetcher_unittest.cc",

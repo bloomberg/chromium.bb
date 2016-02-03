@@ -121,6 +121,15 @@ if (enable_webrtc || !is_android) {
     ]
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("jingle_unittests_run") {
+    testonly = true
+    deps = [
+      ":jingle_unittests",
+    ]
+  }
+
   # GYP version: jingle/jingle.gyp:jingle_unittests
   test("jingle_unittests") {
     sources = [

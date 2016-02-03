@@ -359,6 +359,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("blink_heap_unittests_run") {
+  testonly = true
+  deps = [
+    ":blink_heap_unittests",
+  ]
+}
+
 # GYP: blink_heap_unittests
 test("blink_heap_unittests") {
   visibility = []  # Allow re-assignment of list.
@@ -391,6 +400,15 @@ test("blink_heap_unittests") {
       "//net/android:net_java",
     ]
   }
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("blink_platform_unittests_run") {
+  testonly = true
+  deps = [
+    ":blink_platform_unittests",
+  ]
 }
 
 test("blink_platform_unittests") {

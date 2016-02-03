@@ -130,6 +130,15 @@ if (is_chromeos) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("display_unittests_run") {
+  testonly = true
+  deps = [
+    ":display_unittests",
+  ]
+}
+
 # This test covers the ChromeOS "display" target as well as the cross-platform
 # //display/util target.
 test("display_unittests") {

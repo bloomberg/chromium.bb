@@ -71,6 +71,15 @@ source_set("loader") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("nacl_loader_unittests_run") {
+  testonly = true
+  deps = [
+    ":nacl_loader_unittests",
+  ]
+}
+
 test("nacl_loader_unittests") {
   sources = [
     "nacl_ipc_adapter_unittest.cc",
@@ -147,14 +156,29 @@ if (is_linux) {
       "//base",
       "//base/test:test_launcher_nacl_nonsfi",
     ]
-    data_deps = [
-      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
-    ]
   }
 
   group("helper_nonsfi") {
     data_deps = [
       ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+    ]
+  }
+
+  group("helper_nonsfi_unittests") {
+    testonly = true
+    data_deps = [
+      ":nacl_helper_nonsfi_unittests",
+      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+    ]
+  }
+
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("nacl_helper_nonsfi_unittests_run") {
+    testonly = true
+    data_deps = [
+      ":helper_nonsfi_unittests",
+      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
   }
 }

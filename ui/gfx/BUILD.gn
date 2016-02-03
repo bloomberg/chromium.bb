@@ -627,6 +627,15 @@ source_set("test_support") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gfx_unittests_run") {
+  testonly = true
+  deps = [
+    ":gfx_unittests",
+  ]
+}
+
 test("gfx_unittests") {
   sources = [
     "font_render_params_linux_unittest.cc",

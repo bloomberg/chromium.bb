@@ -58,3 +58,12 @@ test("blimp_unittests") {
     deps += [ "//blimp/engine:unit_tests" ]
   }
 }
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("blimp_unittests_run") {
+  testonly = true
+  deps = [
+    ":blimp_unittests",
+  ]
+}

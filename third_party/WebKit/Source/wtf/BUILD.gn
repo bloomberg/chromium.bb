@@ -95,6 +95,15 @@ component("wtf") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("wtf_unittests_run") {
+  testonly = true
+  deps = [
+    ":wtf_unittests",
+  ]
+}
+
 test("wtf_unittests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]

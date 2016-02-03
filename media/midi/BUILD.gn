@@ -150,6 +150,15 @@ component("midi") {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("midi_unittests_run") {
+  testonly = true
+  deps = [
+    ":midi_unittests",
+  ]
+}
+
 test("midi_unittests") {
   sources = [
     "midi_manager_unittest.cc",

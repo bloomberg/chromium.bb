@@ -12,6 +12,15 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("components_unittests_run") {
+  testonly = true
+  deps = [
+    ":components_unittests",
+  ]
+}
+
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component (it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here. You can add more than one unit
@@ -319,6 +328,15 @@ if (is_android) {
     resource_dirs = [ "//components/test/android/browsertests_apk/res" ]
     custom_package = "org.chromium.components_browsertests_apk"
   }
+}
+
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("components_browsertests_run") {
+  testonly = true
+  deps = [
+    ":components_browsertests",
+  ]
 }
 
 test("components_browsertests") {

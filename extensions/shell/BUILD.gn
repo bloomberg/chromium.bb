@@ -145,6 +145,15 @@ if (!(is_chromeos && !use_ozone)) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("app_shell_unittests_run") {
+  testonly = true
+  deps = [
+    ":app_shell_unittests",
+  ]
+}
+
 test("app_shell_unittests") {
   sources = rebase_path(app_shell_gypi_values.app_shell_unittests_sources,
                         ".",

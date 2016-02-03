@@ -104,6 +104,15 @@ source_set("test_support") {
 
 # TODO(GYP) remoting_unittests on Mac. Needs to be tested.
 if (!is_mac) {
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("remoting_unittests_run") {
+    testonly = true
+    deps = [
+      ":remoting_unittests",
+    ]
+  }
+
   test("remoting_unittests") {
     configs += [
       ":version",

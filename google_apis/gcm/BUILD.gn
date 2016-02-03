@@ -123,6 +123,15 @@ executable("mcs_probe") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("gcm_unit_tests_run") {
+  testonly = true
+  deps = [
+    ":gcm_unit_tests",
+  ]
+}
+
 test("gcm_unit_tests") {
   sources = [
     "base/mcs_message_unittest.cc",

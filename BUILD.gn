@@ -462,8 +462,8 @@ group("both_gn_and_gyp") {
         # TODO(dpranke): Figure out what platforms should actually have this.
         deps += [
           "//components/nacl/loader:helper_nonsfi",
+          "//components/nacl/loader:helper_nonsfi_unittests",
           "//components/nacl/loader:nacl_helper",
-          "//components/nacl/loader:nacl_helper_nonsfi_unittests",
         ]
       }
     }

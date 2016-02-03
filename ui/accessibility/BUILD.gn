@@ -126,6 +126,15 @@ source_set("test_support") {
   ]
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("accessibility_unittests_run") {
+  testonly = true
+  deps = [
+    ":accessibility_unittests",
+  ]
+}
+
 test("accessibility_unittests") {
   sources = [
     "ax_generated_tree_unittest.cc",
