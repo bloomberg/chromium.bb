@@ -117,7 +117,6 @@ class CONTENT_EXPORT RequestPeer {
       const base::TimeTicks& completion_time,
       int64_t total_transfer_size) = 0;
 
- protected:
   virtual ~RequestPeer() {}
 };
 

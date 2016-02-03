@@ -16,19 +16,23 @@ namespace content {
 
 class RequestPeer;
 
-// Interface that allows observing request events and optionally replacing the
-// peer.
+// Interface that allows observing request events and optionally replacing
+// the peer. Note that if it doesn't replace the peer it must return the
+// current peer so that the ownership is continued to be held by
+// ResourceDispatcher.
 class CONTENT_EXPORT ResourceDispatcherDelegate {
  public:
   virtual ~ResourceDispatcherDelegate() {}
 
-  virtual RequestPeer* OnRequestComplete(RequestPeer* current_peer,
-                                         ResourceType resource_type,
-                                         int error_code) = 0;
+  virtual scoped_ptr<RequestPeer> OnRequestComplete(
+      scoped_ptr<RequestPeer> current_peer,
+      ResourceType resource_type,
+      int error_code) = 0;
 
-  virtual RequestPeer* OnReceivedResponse(RequestPeer* current_peer,
-                                          const std::string& mime_type,
-                                          const GURL& url) = 0;
+  virtual scoped_ptr<RequestPeer> OnReceivedResponse(
+      scoped_ptr<RequestPeer> current_peer,
+      const std::string& mime_type,
+      const GURL& url) = 0;
 };
 
 }  // namespace content

@@ -28,8 +28,8 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
  public:
   ~ExtensionLocalizationPeer() override;
 
-  static ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
-      content::RequestPeer* peer,
+  static scoped_ptr<content::RequestPeer> CreateExtensionLocalizationPeer(
+      scoped_ptr<content::RequestPeer> peer,
       IPC::Sender* message_sender,
       const std::string& mime_type,
       const GURL& request_url);
@@ -60,7 +60,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   friend class ExtensionLocalizationPeerTest;
 
   // Use CreateExtensionLocalizationPeer to create an instance.
-  ExtensionLocalizationPeer(content::RequestPeer* peer,
+  ExtensionLocalizationPeer(scoped_ptr<content::RequestPeer> peer,
                             IPC::Sender* message_sender,
                             const GURL& request_url);
 
@@ -69,7 +69,7 @@ class ExtensionLocalizationPeer : public content::RequestPeer {
   void ReplaceMessages();
 
   // Original peer that handles the request once we are done processing data_.
-  content::RequestPeer* original_peer_;
+  scoped_ptr<content::RequestPeer> original_peer_;
 
   // We just pass though the response info. This holds the copy of the original.
   content::ResourceResponseInfo response_info_;

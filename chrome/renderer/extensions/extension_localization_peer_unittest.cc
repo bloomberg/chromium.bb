@@ -125,77 +125,72 @@ class ExtensionLocalizationPeerTest : public testing::Test {
  protected:
   void SetUp() override {
     sender_.reset(new MockIpcMessageSender());
-    original_peer_.reset(new MockRequestPeer());
-    filter_peer_.reset(
-        ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-            original_peer_.get(), sender_.get(), "text/css",
-            GURL(kExtensionUrl_1)));
   }
 
-  ExtensionLocalizationPeer* CreateExtensionLocalizationPeer(
-      const std::string& mime_type,
-      const GURL& request_url) {
-    return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        original_peer_.get(), sender_.get(), mime_type, request_url);
+  void SetUpExtensionLocalizationPeer(const std::string& mime_type,
+                                      const GURL& request_url) {
+    scoped_ptr<MockRequestPeer> original_peer(new MockRequestPeer());
+    original_peer_ = original_peer.get();
+    filter_peer_ = ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+        std::move(original_peer), sender_.get(), mime_type, request_url);
+    ASSERT_TRUE(filter_peer_);
   }
 
-  std::string GetData(ExtensionLocalizationPeer* filter_peer) {
-    EXPECT_TRUE(NULL != filter_peer);
-    return filter_peer->data_;
+  std::string GetData() {
+    return static_cast<ExtensionLocalizationPeer*>(filter_peer_.get())->data_;
   }
 
-  void SetData(ExtensionLocalizationPeer* filter_peer,
-               const std::string& data) {
-    EXPECT_TRUE(NULL != filter_peer);
-    filter_peer->data_ = data;
+  void SetData(const std::string& data) {
+    static_cast<ExtensionLocalizationPeer*>(filter_peer_.get())->data_ = data;
   }
 
   scoped_ptr<MockIpcMessageSender> sender_;
-  scoped_ptr<MockRequestPeer> original_peer_;
-  scoped_ptr<ExtensionLocalizationPeer> filter_peer_;
+  MockRequestPeer* original_peer_;
+  scoped_ptr<content::RequestPeer> filter_peer_;
 };
 
 TEST_F(ExtensionLocalizationPeerTest, CreateWithWrongMimeType) {
-  filter_peer_.reset(
-      CreateExtensionLocalizationPeer("text/html", GURL(kExtensionUrl_1)));
-  EXPECT_TRUE(NULL == filter_peer_.get());
+  scoped_ptr<content::RequestPeer> peer =
+      ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
+          nullptr, sender_.get(), "text/html", GURL(kExtensionUrl_1));
+  EXPECT_EQ(nullptr, peer);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, CreateWithValidInput) {
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
   EXPECT_TRUE(NULL != filter_peer_.get());
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnReceivedData) {
-  EXPECT_TRUE(GetData(filter_peer_.get()).empty());
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
+  EXPECT_TRUE(GetData().empty());
 
   const std::string data_chunk("12345");
   filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
       data_chunk.data(), data_chunk.length(), -1)));
 
-  EXPECT_EQ(data_chunk, GetData(filter_peer_.get()));
+  EXPECT_EQ(data_chunk, GetData());
 
   filter_peer_->OnReceivedData(make_scoped_ptr(new content::FixedReceivedData(
       data_chunk.data(), data_chunk.length(), -1)));
-  EXPECT_EQ(data_chunk + data_chunk, GetData(filter_peer_.get()));
+  EXPECT_EQ(data_chunk + data_chunk, GetData());
 }
 
 MATCHER_P(IsURLRequestEqual, status, "") { return arg.status() == status; }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestBadURLRequestStatus) {
-  // It will self-delete once it exits OnCompletedRequest.
-  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
 
   EXPECT_CALL(*original_peer_, OnReceivedCompletedResponseInternal(
                                    _, nullptr, 0, 0, net::ERR_ABORTED, false,
                                    false, "", base::TimeTicks(), -1));
 
-  filter_peer->OnCompletedRequest(
-      net::ERR_FAILED, false, false, std::string(), base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::ERR_FAILED, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
-  // It will self-delete once it exits OnCompletedRequest.
-  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
 
   EXPECT_CALL(*original_peer_, OnReceivedDataInternal(_, _, _)).Times(0);
   EXPECT_CALL(*sender_, Send(_)).Times(0);
@@ -204,40 +199,42 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestEmptyData) {
                                    _, nullptr, 0, 0, net::OK, false, false, "",
                                    base::TimeTicks(), -1));
 
-  filter_peer->OnCompletedRequest(
-      net::OK, false, false, std::string(), base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestNoCatalogs) {
-  // It will self-delete once it exits OnCompletedRequest.
-  ExtensionLocalizationPeer* filter_peer = filter_peer_.release();
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
 
-  SetData(filter_peer, "some text");
+  SetData("some text");
 
   EXPECT_CALL(*sender_, Send(_));
 
-  std::string data = GetData(filter_peer);
+  std::string data = GetData();
   EXPECT_CALL(*original_peer_,
               OnReceivedCompletedResponseInternal(
                   _, StrEq(data.c_str()), data.size(), -1, net::OK, false,
-                  false, "", base::TimeTicks(), -1)).Times(2);
+                  false, "", base::TimeTicks(), -1))
+      .Times(1);
 
-  filter_peer->OnCompletedRequest(
-      net::OK, false, false, std::string(), base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 
   // Test if Send gets called again (it shouldn't be) when first call returned
   // an empty dictionary.
-  filter_peer =
-      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
-  SetData(filter_peer, "some text");
-  filter_peer->OnCompletedRequest(
-      net::OK, false, false, std::string(), base::TimeTicks(), -1);
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_1));
+  EXPECT_CALL(*original_peer_,
+              OnReceivedCompletedResponseInternal(
+                  _, StrEq(data.c_str()), data.size(), -1, net::OK, false,
+                  false, "", base::TimeTicks(), -1))
+      .Times(1);
+  SetData("some text");
+  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
-  // It will self-delete once it exits OnCompletedRequest.
-  ExtensionLocalizationPeer* filter_peer =
-      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_2));
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_2));
 
   extensions::L10nMessagesMap messages;
   messages.insert(std::make_pair("text", "new text"));
@@ -245,7 +242,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
       *extensions::GetExtensionToL10nMessagesMap();
   l10n_messages_map["some_id2"] = messages;
 
-  SetData(filter_peer, "some __MSG_text__");
+  SetData("some __MSG_text__");
 
   // We already have messages in memory, Send will be skipped.
   EXPECT_CALL(*sender_, Send(_)).Times(0);
@@ -257,14 +254,12 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestWithCatalogs) {
                   _, StrEq(data.c_str()), data.size(), -1, net::OK, false,
                   false, std::string(), base::TimeTicks(), -1));
 
-  filter_peer->OnCompletedRequest(
-      net::OK, false, false, std::string(), base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 }
 
 TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
-  // It will self-delete once it exits OnCompletedRequest.
-  ExtensionLocalizationPeer* filter_peer =
-      CreateExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_3));
+  SetUpExtensionLocalizationPeer("text/css", GURL(kExtensionUrl_3));
 
   extensions::L10nMessagesMap messages;
   messages.insert(std::make_pair("text", "new text"));
@@ -273,7 +268,7 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
   l10n_messages_map["some_id3"] = messages;
 
   std::string message("some __MSG_missing_message__");
-  SetData(filter_peer, message);
+  SetData(message);
 
   // We already have messages in memory, Send will be skipped.
   EXPECT_CALL(*sender_, Send(_)).Times(0);
@@ -283,6 +278,6 @@ TEST_F(ExtensionLocalizationPeerTest, OnCompletedRequestReplaceMessagesFails) {
                   _, StrEq(message.c_str()), message.size(), -1, net::OK, false,
                   false, "", base::TimeTicks(), -1));
 
-  filter_peer->OnCompletedRequest(
-      net::OK, false, false, std::string(), base::TimeTicks(), -1);
+  filter_peer_->OnCompletedRequest(net::OK, false, false, std::string(),
+                                   base::TimeTicks(), -1);
 }

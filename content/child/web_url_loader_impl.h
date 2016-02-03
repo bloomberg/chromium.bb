@@ -72,6 +72,7 @@ class CONTENT_EXPORT WebURLLoaderImpl
 
  private:
   class Context;
+  class RequestPeerImpl;
   scoped_refptr<Context> context_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderImpl);

@@ -37,31 +37,31 @@ class StringData final : public content::RequestPeer::ReceivedData {
 }  // namespace
 
 ExtensionLocalizationPeer::ExtensionLocalizationPeer(
-    content::RequestPeer* peer,
+    scoped_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
     const GURL& request_url)
-    : original_peer_(peer),
+    : original_peer_(std::move(peer)),
       message_sender_(message_sender),
-      request_url_(request_url) {
-}
+      request_url_(request_url) {}
 
 ExtensionLocalizationPeer::~ExtensionLocalizationPeer() {
 }
 
 // static
-ExtensionLocalizationPeer*
+scoped_ptr<content::RequestPeer>
 ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-    content::RequestPeer* peer,
+    scoped_ptr<content::RequestPeer> peer,
     IPC::Sender* message_sender,
     const std::string& mime_type,
     const GURL& request_url) {
-  // Return NULL if content is not text/css or it doesn't belong to extension
-  // scheme.
+  // Return the given |peer| as is if content is not text/css or it doesn't
+  // belong to extension scheme.
   return (request_url.SchemeIs(extensions::kExtensionScheme) &&
           base::StartsWith(mime_type, "text/css",
                            base::CompareCase::INSENSITIVE_ASCII))
-             ? new ExtensionLocalizationPeer(peer, message_sender, request_url)
-             : NULL;
+             ? make_scoped_ptr(new ExtensionLocalizationPeer(
+                   std::move(peer), message_sender, request_url))
+             : std::move(peer);
 }
 
 void ExtensionLocalizationPeer::OnUploadProgress(uint64_t position,
@@ -92,8 +92,6 @@ void ExtensionLocalizationPeer::OnCompletedRequest(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
   // Give sub-classes a chance at altering the data.
   if (error_code != net::OK) {
     // We failed to load the resource.
@@ -122,8 +120,6 @@ void ExtensionLocalizationPeer::OnReceivedCompletedResponse(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<ExtensionLocalizationPeer> this_deleter(this);
   original_peer_->OnReceivedCompletedResponse(
       info, std::move(data), error_code, was_ignored_by_handler,
       stale_copy_in_cache, security_info, completion_time, total_transfer_size);

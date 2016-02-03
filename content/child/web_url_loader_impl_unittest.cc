@@ -68,7 +68,6 @@ class TestResourceDispatcher : public ResourceDispatcher {
  public:
   TestResourceDispatcher() :
       ResourceDispatcher(nullptr, nullptr),
-      peer_(NULL),
       canceled_(false) {
   }
 
@@ -78,9 +77,9 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
   int StartAsync(const RequestInfo& request_info,
                  ResourceRequestBody* request_body,
-                 RequestPeer* peer) override {
+                 scoped_ptr<RequestPeer> peer) override {
     EXPECT_FALSE(peer_);
-    peer_ = peer;
+    peer_ = std::move(peer);
     url_ = request_info.url;
     return 1;
   }
@@ -90,14 +89,14 @@ class TestResourceDispatcher : public ResourceDispatcher {
     canceled_ = true;
   }
 
-  RequestPeer* peer() { return peer_; }
+  RequestPeer* peer() { return peer_.get(); }
 
   bool canceled() { return canceled_; }
 
   const GURL& url() { return url_; }
 
  private:
-  RequestPeer* peer_;
+  scoped_ptr<RequestPeer> peer_;
   bool canceled_;
   GURL url_;
 

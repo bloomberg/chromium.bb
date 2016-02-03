@@ -15,18 +15,17 @@
 #include "net/http/http_response_headers.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SecurityFilterPeer::SecurityFilterPeer(content::RequestPeer* peer)
-    : original_peer_(peer) {
-}
+SecurityFilterPeer::SecurityFilterPeer(scoped_ptr<content::RequestPeer> peer)
+    : original_peer_(std::move(peer)) {}
 
 SecurityFilterPeer::~SecurityFilterPeer() {
 }
 
 // static
-SecurityFilterPeer*
+scoped_ptr<content::RequestPeer>
 SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     content::ResourceType resource_type,
-    content::RequestPeer* peer,
+    scoped_ptr<content::RequestPeer> peer,
     int os_error) {
   // Create a filter for SSL and CERT errors.
   switch (os_error) {
@@ -45,18 +44,20 @@ SecurityFilterPeer::CreateSecurityFilterPeerForDeniedRequest(
     case net::ERR_INSECURE_RESPONSE:
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
       if (content::IsResourceTypeFrame(resource_type))
-        return CreateSecurityFilterPeerForFrame(peer, os_error);
+        return CreateSecurityFilterPeerForFrame(std::move(peer), os_error);
       // Any other content is entirely filtered-out.
-      return new ReplaceContentPeer(peer, std::string(), std::string());
+      return make_scoped_ptr(new ReplaceContentPeer(
+          std::move(peer), std::string(), std::string()));
     default:
       // For other errors, we use our normal error handling.
-      return NULL;
+      return peer;
   }
 }
 
 // static
-SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
-    content::RequestPeer* peer,
+scoped_ptr<content::RequestPeer>
+SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
+    scoped_ptr<content::RequestPeer> peer,
     int os_error) {
   // TODO(jcampan): use a different message when getting a phishing/malware
   // error.
@@ -65,7 +66,8 @@ SecurityFilterPeer* SecurityFilterPeer::CreateSecurityFilterPeerForFrame(
       "<body style='background-color:#990000;color:white;'>"
       "%s</body></html>",
       l10n_util::GetStringUTF8(IDS_UNSAFE_FRAME_MESSAGE).c_str());
-  return new ReplaceContentPeer(peer, "text/html", html);
+  return make_scoped_ptr(
+      new ReplaceContentPeer(std::move(peer), "text/html", html));
 }
 
 void SecurityFilterPeer::OnUploadProgress(uint64_t position, uint64_t size) {
@@ -110,9 +112,9 @@ void ProcessResponseInfo(const content::ResourceResponseInfo& info_in,
 ////////////////////////////////////////////////////////////////////////////////
 // BufferedPeer
 
-BufferedPeer::BufferedPeer(content::RequestPeer* peer,
+BufferedPeer::BufferedPeer(scoped_ptr<content::RequestPeer> peer,
                            const std::string& mime_type)
-    : SecurityFilterPeer(peer), mime_type_(mime_type) {}
+    : SecurityFilterPeer(std::move(peer)), mime_type_(mime_type) {}
 
 BufferedPeer::~BufferedPeer() {
 }
@@ -132,9 +134,6 @@ void BufferedPeer::OnCompletedRequest(int error_code,
                                       const std::string& security_info,
                                       const base::TimeTicks& completion_time,
                                       int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<BufferedPeer> this_deleter(this);
-
   // Give sub-classes a chance at altering the data.
   if (error_code != net::OK || !DataReady()) {
     // Pretend we failed to load the resource.
@@ -162,8 +161,6 @@ void BufferedPeer::OnReceivedCompletedResponse(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<BufferedPeer> this_deleter(this);
   original_peer_->OnReceivedCompletedResponse(
       info, std::move(data), error_code, was_ignored_by_handler,
       stale_copy_in_cache, security_info, completion_time, total_transfer_size);
@@ -172,12 +169,10 @@ void BufferedPeer::OnReceivedCompletedResponse(
 ////////////////////////////////////////////////////////////////////////////////
 // ReplaceContentPeer
 
-ReplaceContentPeer::ReplaceContentPeer(content::RequestPeer* peer,
+ReplaceContentPeer::ReplaceContentPeer(scoped_ptr<content::RequestPeer> peer,
                                        const std::string& mime_type,
                                        const std::string& data)
-    : SecurityFilterPeer(peer),
-      mime_type_(mime_type),
-      data_(data) {}
+    : SecurityFilterPeer(std::move(peer)), mime_type_(mime_type), data_(data) {}
 
 ReplaceContentPeer::~ReplaceContentPeer() {
 }
@@ -198,9 +193,6 @@ void ReplaceContentPeer::OnCompletedRequest(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<ReplaceContentPeer> this_deleter(this);
-
   content::ResourceResponseInfo info;
   ProcessResponseInfo(info, &info, mime_type_);
   info.security_info = security_info;
@@ -223,9 +215,6 @@ void ReplaceContentPeer::OnReceivedCompletedResponse(
     const std::string& security_info,
     const base::TimeTicks& completion_time,
     int64_t total_transfer_size) {
-  // Make sure we delete ourselves at the end of this call.
-  scoped_ptr<ReplaceContentPeer> this_deleter(this);
-
   original_peer_->OnReceivedCompletedResponse(
       info, std::move(data), error_code, was_ignored_by_handler,
       stale_copy_in_cache, security_info, completion_time, total_transfer_size);

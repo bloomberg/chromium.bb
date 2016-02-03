@@ -156,11 +156,11 @@ void ResourceDispatcher::OnReceivedResponse(
   request_info->response_start = ConsumeIOTimestamp();
 
   if (delegate_) {
-    RequestPeer* new_peer =
-        delegate_->OnReceivedResponse(
-            request_info->peer, response_head.mime_type, request_info->url);
-    if (new_peer)
-      request_info->peer = new_peer;
+    scoped_ptr<RequestPeer> new_peer = delegate_->OnReceivedResponse(
+        std::move(request_info->peer), response_head.mime_type,
+        request_info->url);
+    DCHECK(new_peer);
+    request_info->peer = std::move(new_peer);
   }
 
   ResourceResponseInfo renderer_response_info;
@@ -273,12 +273,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
 
     CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
-    // Ensure that the SHM buffer remains valid for the duration of this scope.
-    // It is possible for Cancel() to be called before we exit this scope.
-    // SharedMemoryReceivedDataFactory stores the SHM buffer inside it.
-    scoped_refptr<SharedMemoryReceivedDataFactory> factory(
-        request_info->received_data_factory);
-
     base::TimeTicks time_start = base::TimeTicks::Now();
 
     const char* data_start = static_cast<char*>(request_info->buffer->memory());
@@ -302,7 +296,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
           data_ptr, data_length, encoded_data_length);
     } else {
       scoped_ptr<RequestPeer::ReceivedData> data =
-          factory->Create(data_offset, data_length, encoded_data_length);
+          request_info->received_data_factory->Create(
+              data_offset, data_length, encoded_data_length);
       // |data| takes care of ACKing.
       send_ack = false;
       request_info->peer->OnReceivedData(std::move(data));
@@ -385,15 +380,14 @@ void ResourceDispatcher::OnRequestComplete(
   request_info->received_data_factory = nullptr;
   request_info->buffer_size = 0;
 
-  RequestPeer* peer = request_info->peer;
+  RequestPeer* peer = request_info->peer.get();
 
   if (delegate_) {
-    RequestPeer* new_peer =
-        delegate_->OnRequestComplete(
-            request_info->peer, request_info->resource_type,
-            request_complete_data.error_code);
-    if (new_peer)
-      request_info->peer = new_peer;
+    scoped_ptr<RequestPeer> new_peer = delegate_->OnRequestComplete(
+        std::move(request_info->peer), request_info->resource_type,
+        request_complete_data.error_code);
+    DCHECK(new_peer);
+    request_info->peer = std::move(new_peer);
   }
 
   base::TimeTicks renderer_completion_time = ToRendererCompletionTime(
@@ -412,6 +406,9 @@ void ResourceDispatcher::OnRequestComplete(
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
+  // TODO(kinuko): Revisit here. This probably needs to call request_info->peer
+  // but the past attempt to change it seems to have caused crashes.
+  // (crbug.com/547047)
   peer->OnCompletedRequest(request_complete_data.error_code,
                            request_complete_data.was_ignored_by_handler,
                            request_complete_data.exists_in_cache,
@@ -428,13 +425,12 @@ void ResourceDispatcher::CompletedRequestAfterBackgroundThreadFlush(
   if (!request_info)
     return;
 
-  RequestPeer* peer = request_info->peer;
-  peer->OnCompletedRequest(request_complete_data.error_code,
-                           request_complete_data.was_ignored_by_handler,
-                           request_complete_data.exists_in_cache,
-                           request_complete_data.security_info,
-                           renderer_completion_time,
-                           request_complete_data.encoded_data_length);
+  request_info->peer->OnCompletedRequest(
+      request_complete_data.error_code,
+      request_complete_data.was_ignored_by_handler,
+      request_complete_data.exists_in_cache,
+      request_complete_data.security_info, renderer_completion_time,
+      request_complete_data.encoded_data_length);
 }
 
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {
@@ -447,6 +443,11 @@ bool ResourceDispatcher::RemovePendingRequest(int request_id) {
   bool release_downloaded_file = request_info->download_to_file;
 
   ReleaseResourcesInMessageQueue(&request_info->deferred_message_queue);
+
+  // Always delete the pending_request asyncly so that cancelling the request
+  // doesn't delete the request context info while its response is still being
+  // handled.
+  main_thread_task_runner_->DeleteSoon(FROM_HERE, it->second.release());
   pending_requests_.erase(it);
 
   if (release_downloaded_file) {
@@ -540,13 +541,13 @@ bool ResourceDispatcher::AttachThreadedDataReceiver(
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
-    RequestPeer* peer,
+    scoped_ptr<RequestPeer> peer,
     ResourceType resource_type,
     int origin_pid,
     const GURL& frame_origin,
     const GURL& request_url,
     bool download_to_file)
-    : peer(peer),
+    : peer(std::move(peer)),
       resource_type(resource_type),
       origin_pid(origin_pid),
       url(request_url),
@@ -640,20 +641,16 @@ void ResourceDispatcher::StartSync(const RequestInfo& request_info,
 
 int ResourceDispatcher::StartAsync(const RequestInfo& request_info,
                                    ResourceRequestBody* request_body,
-                                   RequestPeer* peer) {
+                                   scoped_ptr<RequestPeer> peer) {
   GURL frame_origin;
   scoped_ptr<ResourceHostMsg_Request> request =
       CreateRequest(request_info, request_body, &frame_origin);
 
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
-  pending_requests_[request_id] =
-      make_scoped_ptr(new PendingRequestInfo(peer,
-                         request->resource_type,
-                         request->origin_pid,
-                         frame_origin,
-                         request->url,
-                         request_info.download_to_file));
+  pending_requests_[request_id] = make_scoped_ptr(new PendingRequestInfo(
+      std::move(peer), request->resource_type, request->origin_pid,
+      frame_origin, request->url, request_info.download_to_file));
 
   if (resource_scheduling_filter_.get() &&
       request_info.loading_web_task_runner) {
