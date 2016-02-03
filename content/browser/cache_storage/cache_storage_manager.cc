@@ -290,11 +290,11 @@ void CacheStorageManager::DeleteOriginData(
     const storage::QuotaClient::DeletionCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  // Create the CacheStorage for the origin if it hasn't been loaded yet.
+  FindOrCreateCacheStorage(origin);
+
   CacheStorageMap::iterator it = cache_storage_map_.find(origin);
-  if (it == cache_storage_map_.end()) {
-    callback.Run(storage::kQuotaStatusOk);
-    return;
-  }
+  DCHECK(it != cache_storage_map_.end());
 
   CacheStorage* cache_storage = it->second.release();
   cache_storage_map_.erase(origin);

@@ -938,6 +938,11 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
   DISALLOW_COPY_AND_ASSIGN(CacheStorageQuotaClientTest);
 };
 
+class CacheStorageQuotaClientDiskOnlyTest : public CacheStorageQuotaClientTest {
+ public:
+  bool MemoryOnly() override { return false; }
+};
+
 class CacheStorageQuotaClientTestP : public CacheStorageQuotaClientTest,
                                      public testing::WithParamInterface<bool> {
   bool MemoryOnly() override { return !GetParam(); }
@@ -992,6 +997,25 @@ TEST_P(CacheStorageQuotaClientTestP, QuotaDeleteOriginData) {
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaDeleteEmptyOrigin) {
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
+}
+
+TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
+  EXPECT_TRUE(Open(origin1_, "foo"));
+  // Call put to test that initialized caches are properly deleted too.
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
+
+  // Close the cache backend so that it writes out its index to disk.
+  base::RunLoop run_loop;
+  callback_cache_->Close(run_loop.QuitClosure());
+  run_loop.Run();
+
+  // Create a new CacheStorageManager that hasn't yet loaded the origin.
+  quota_manager_proxy_->SimulateQuotaManagerDestroyed();
+  cache_manager_ = CacheStorageManager::Create(cache_manager_.get());
+  quota_client_.reset(new CacheStorageQuotaClient(cache_manager_->AsWeakPtr()));
+
+  EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
+  EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
 }
 
 TEST_P(CacheStorageQuotaClientTestP, QuotaDoesSupport) {
