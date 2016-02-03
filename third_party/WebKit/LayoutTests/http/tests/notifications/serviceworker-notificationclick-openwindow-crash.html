@@ -27,7 +27,7 @@
               });
           }).then(function() {
               // (2) Simulate a click on the notification, invokes the Service Worker event.
-              testRunner.simulateWebNotificationClick(scope);
+              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
 
               workerInfo.port.addEventListener('message', function(event) {
                   if (typeof event.data != 'object' || !event.data.command) {

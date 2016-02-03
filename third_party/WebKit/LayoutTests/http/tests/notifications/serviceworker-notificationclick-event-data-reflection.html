@@ -54,7 +54,7 @@
                   // notification's display promise has been resolved.
                   if (event.data.command == 'show') {
                       assert_true(event.data.success, 'The notification must have been displayed.');
-                      testRunner.simulateWebNotificationClick(scope);
+                      testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
                       return;
                   }
 

@@ -29,7 +29,7 @@
               });
           }).then(function() {
               // (2) Simulate a click on the notification that has been displayed.
-              testRunner.simulateWebNotificationClick(scope);
+              testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
 
               workerInfo.port.addEventListener('message', function(event) {
                   if (typeof event.data != 'object' || !event.data.command) {

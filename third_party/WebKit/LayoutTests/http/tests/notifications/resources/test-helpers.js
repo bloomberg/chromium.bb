@@ -7,7 +7,7 @@ function supportTestRunnerMessagesOnPort(messagePort)
 
     messagePort.addEventListener('message', function(message) {
         if (message.data.type == 'simulateWebNotificationClick')
-            testRunner.simulateWebNotificationClick(message.data.title);
+            testRunner.simulateWebNotificationClick(message.data.title, -1 /* action_index */);
     });
 }
 

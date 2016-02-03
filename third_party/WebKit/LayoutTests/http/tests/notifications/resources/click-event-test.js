@@ -12,7 +12,7 @@ async_test(function(test) {
     var notification = new Notification('My Notification');
     notification.addEventListener('show', function() {
         if (testRunner)
-            testRunner.simulateWebNotificationClick('My Notification');
+            testRunner.simulateWebNotificationClick('My Notification', -1 /* action_index */);
     });
 
     notification.addEventListener('click', function() {

@@ -39,7 +39,7 @@ t.step(function() {
         if (message.type !== 'click')
           return;
         if (window.testRunner)
-          testRunner.simulateWebNotificationClick(message.title);
+          testRunner.simulateWebNotificationClick(message.title, -1 /* action_index */);
         return;
       }
 

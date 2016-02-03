@@ -13,9 +13,9 @@ self.addEventListener('connect', function(event) {
 });
 
 var testRunner = {
-    simulateWebNotificationClick: function(title)
+    simulateWebNotificationClick: function(title, action_index)
     {
         if (_port)
-            _port.postMessage({ type: 'simulateWebNotificationClick', title: title });
+            _port.postMessage({ type: 'simulateWebNotificationClick', title: title, action_index: action_index });
     }
 };

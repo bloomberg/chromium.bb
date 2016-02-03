@@ -295,7 +295,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                        v8::Local<v8::Function> callback);
   void SetPOSIXLocale(const std::string& locale);
   void SetMIDIAccessorResult(bool result);
-  void SimulateWebNotificationClick(gin::Arguments* args);
+  void SimulateWebNotificationClick(const std::string& title, int action_index);
   void AddMockSpeechRecognitionResult(const std::string& transcript,
                                       double confidence);
   void SetMockSpeechRecognitionError(const std::string& error,
@@ -1413,16 +1413,11 @@ void TestRunnerBindings::SetMIDIAccessorResult(bool result) {
     runner_->SetMIDIAccessorResult(result);
 }
 
-void TestRunnerBindings::SimulateWebNotificationClick(gin::Arguments* args) {
+void TestRunnerBindings::SimulateWebNotificationClick(const std::string& title,
+                                                      int action_index) {
   if (!runner_)
     return;
-  std::string title;
-  int action_index = -1;
-  if (args->GetNext(&title) &&
-      (args->PeekNext().IsEmpty() || args->GetNext(&action_index)))
-    runner_->SimulateWebNotificationClick(title, action_index);
-  else
-    args->ThrowError();
+  runner_->SimulateWebNotificationClick(title, action_index);
 }
 
 void TestRunnerBindings::AddMockSpeechRecognitionResult(
