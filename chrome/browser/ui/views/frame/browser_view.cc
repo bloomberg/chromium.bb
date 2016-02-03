@@ -1248,8 +1248,12 @@ bool BrowserView::IsTabStripEditable() const {
 bool BrowserView::IsToolbarVisible() const {
   if (immersive_mode_controller_->ShouldHideTopViews())
     return false;
-  return browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
-         browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+  // It's possible to reach here before we've been notified of being added to a
+  // widget, so |toolbar_| is still null.  Return false in this case so callers
+  // don't assume they can access the toolbar yet.
+  return (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
+          browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) &&
+         toolbar_;
 }
 
 gfx::Rect BrowserView::GetRootWindowResizerRect() const {

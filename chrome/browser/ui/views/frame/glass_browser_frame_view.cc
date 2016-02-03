@@ -563,7 +563,7 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
     x = width() - frame()->GetMinimizeButtonOffset() +
         (new_avatar_button() ?
             (new_avatar_button()->width() + kNewAvatarButtonOffset) : 0);
-  } else if (!md && !avatar_button() &&
+  } else if (!md && !avatar_button() && IsToolbarVisible() &&
              (base::win::GetVersion() < base::win::VERSION_WIN10)) {
     // In non-MD before Win 10, the toolbar has a rounded corner that we don't
     // want the tabstrip to overlap.
