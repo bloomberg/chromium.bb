@@ -20,9 +20,7 @@ int LaunchTestRunner(int argc, char** argv) {
     base::MessageLoop message_loop;
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    if (!shell_context.Init(shell_dir)) {
-      return 0;
-    }
+    shell_context.Init(shell_dir);
 
     message_loop.PostTask(FROM_HERE,
                           base::Bind(&mojo::shell::Context::Run,

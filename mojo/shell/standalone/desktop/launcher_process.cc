@@ -45,8 +45,7 @@ int LauncherProcessMain(const GURL& mojo_url, const base::Closure& callback) {
     base::MessageLoop message_loop;
     base::FilePath shell_dir;
     PathService::Get(base::DIR_MODULE, &shell_dir);
-    if (!shell_context.Init(shell_dir))
-      return 0;
+    shell_context.Init(shell_dir);
 
     if (mojo_url.is_empty()) {
       message_loop.PostTask(

@@ -34,9 +34,8 @@ class Context : public embedder::ProcessDelegate {
   static void EnsureEmbedderIsInitialized();
 
   // This must be called with a message loop set up for the current thread,
-  // which must remain alive until after Shutdown() is called. Returns true on
-  // success.
-  bool Init(const base::FilePath& shell_file_root);
+  // which must remain alive until after Shutdown() is called.
+  void Init(const base::FilePath& shell_file_root);
 
   // If Init() was called and succeeded, this must be called before destruction.
   void Shutdown();
