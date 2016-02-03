@@ -48,7 +48,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
             INTENT_BOOKMARKS_TO_MOVE = "EnhancedBookmarkFolderSelectActivity.bookmarksToMove";
     static final int CREATE_FOLDER_REQUEST_CODE = 13;
 
-    private EnhancedBookmarksModel mEnhancedBookmarksModel;
+    private EnhancedBookmarksModel mModel;
     private boolean mIsCreatingFolder;
     private List<BookmarkId> mBookmarksToMove;
     private BookmarkId mParentId;
@@ -114,18 +114,26 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         super.onCreate(savedInstanceState);
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this,
                 getString(R.string.enhanced_bookmark_choose_folder));
-        mEnhancedBookmarksModel = new EnhancedBookmarksModel();
-        mEnhancedBookmarksModel.addObserver(mBookmarkModelObserver);
+        mModel = new EnhancedBookmarksModel();
+        mModel.addObserver(mBookmarkModelObserver);
         List<String> stringList = getIntent().getStringArrayListExtra(INTENT_BOOKMARKS_TO_MOVE);
         mBookmarksToMove = new ArrayList<>(stringList.size());
         for (String string : stringList) {
-            mBookmarksToMove.add(BookmarkId.getBookmarkIdFromString(string));
+            BookmarkId bookmarkId = BookmarkId.getBookmarkIdFromString(string);
+            if (mModel.doesBookmarkExist(bookmarkId)) {
+                mBookmarksToMove.add(bookmarkId);
+            }
         }
+        if (mBookmarksToMove.isEmpty()) {
+            finish();
+            return;
+        }
+
         mIsCreatingFolder = getIntent().getBooleanExtra(INTENT_IS_CREATING_FOLDER, false);
         if (mIsCreatingFolder) {
-            mParentId = mEnhancedBookmarksModel.getMobileFolderId();
+            mParentId = mModel.getMobileFolderId();
         } else {
-            mParentId = mEnhancedBookmarksModel.getBookmarkById(mBookmarksToMove.get(0))
+            mParentId = mModel.getBookmarkById(mBookmarksToMove.get(0))
                     .getParentId();
         }
 
@@ -145,7 +153,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
     private void updateFolderList() {
         List<BookmarkId> folderList = new ArrayList<BookmarkId>();
         List<Integer> depthList = new ArrayList<Integer>();
-        mEnhancedBookmarksModel.getMoveDestinations(folderList, depthList, mBookmarksToMove);
+        mModel.getMoveDestinations(folderList, depthList, mBookmarksToMove);
         List<FolderListEntry> entryList = new ArrayList<FolderListEntry>(folderList.size() + 3);
 
         if (!mIsCreatingFolder) {
@@ -157,9 +165,9 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         for (int i = 0; i < folderList.size(); i++) {
             BookmarkId folder = folderList.get(i);
 
-            if (!mEnhancedBookmarksModel.isFolderVisible(folder)) continue;
+            if (!mModel.isFolderVisible(folder)) continue;
 
-            String title = mEnhancedBookmarksModel.getBookmarkById(folder).getTitle();
+            String title = mModel.getBookmarkById(folder).getTitle();
             entryList.add(new FolderListEntry(folder, depthList.get(i), title,
                     folder.equals(mParentId), FolderListEntry.TYPE_NORMAL));
         }
@@ -179,9 +187,9 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mEnhancedBookmarksModel.removeObserver(mBookmarkModelObserver);
-        mEnhancedBookmarksModel.destroy();
-        mEnhancedBookmarksModel = null;
+        mModel.removeObserver(mBookmarkModelObserver);
+        mModel.destroy();
+        mModel = null;
     }
 
     /**
@@ -205,7 +213,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         } else if (entry.mType == FolderListEntry.TYPE_NEW_FOLDER) {
             EnhancedBookmarkAddEditFolderActivity.startAddFolderActivity(this, mBookmarksToMove);
         } else if (entry.mType == FolderListEntry.TYPE_NORMAL) {
-            mEnhancedBookmarksModel.moveBookmarks(mBookmarksToMove, entry.mId);
+            mModel.moveBookmarks(mBookmarksToMove, entry.mId);
             EnhancedBookmarkUtils.setLastUsedParent(this, entry.mId);
             finish();
         }
@@ -218,7 +226,7 @@ public class EnhancedBookmarkFolderSelectActivity extends EnhancedBookmarkActivi
         if (requestCode == CREATE_FOLDER_REQUEST_CODE && resultCode == RESULT_OK) {
             BookmarkId createdBookmark = BookmarkId.getBookmarkIdFromString(data.getStringExtra(
                     EnhancedBookmarkAddEditFolderActivity.INTENT_CREATED_BOOKMARK));
-            mEnhancedBookmarksModel.moveBookmarks(mBookmarksToMove, createdBookmark);
+            mModel.moveBookmarks(mBookmarksToMove, createdBookmark);
             EnhancedBookmarkUtils.setLastUsedParent(this, createdBookmark);
             finish();
         }
