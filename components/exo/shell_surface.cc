@@ -234,6 +234,11 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
   surface->RemoveSurfaceObserver(this);
   surface_ = nullptr;
 
+  // Hide widget before surface is destroyed. This allows hide animations to
+  // run using the current surface contents.
+  if (widget_)
+    widget_->Hide();
+
   // Note: In its use in the Wayland server implementation, the surface
   // destroyed callback may destroy the ShellSurface instance. This call needs
   // to be last so that the instance can be destroyed.
