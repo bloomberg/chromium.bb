@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/test/testing_application_context.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/test/test_chrome_provider_initializer.h"
+#include "ios/public/provider/chrome/browser/test_chrome_provider_initializer.h"
 #include "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"

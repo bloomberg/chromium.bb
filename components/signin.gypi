@@ -211,9 +211,9 @@
       ],
     }],
     ['OS == "ios"', {
-      # GN version: //components/signin/core/browser:ios
       'targets': [
         {
+          # GN version: //components/signin/ios/browser
           'target_name': 'signin_ios_browser',
           'type': 'static_library',
           'dependencies': [
@@ -238,6 +238,7 @@
           ],
         },
         {
+          # GN version: //components/signin/ios/browser:test_support
           'target_name': 'signin_ios_browser_test_support',
           'type': 'static_library',
           'dependencies': [

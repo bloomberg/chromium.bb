@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/translate/translate_service_ios.h"
 
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/public/test/test_chrome_provider_initializer.h"
+#include "ios/public/provider/chrome/browser/test_chrome_provider_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

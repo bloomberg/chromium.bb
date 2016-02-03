@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/public/test/test_updatable_resource_provider.h"
+#import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"

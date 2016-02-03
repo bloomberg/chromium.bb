@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_PUBLIC_TEST_TEST_UPDATABLE_RESOURCE_PROVIDER_H_
-#define IOS_PUBLIC_TEST_TEST_UPDATABLE_RESOURCE_PROVIDER_H_
+#ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_TEST_UPDATABLE_RESOURCE_PROVIDER_H_
+#define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_TEST_UPDATABLE_RESOURCE_PROVIDER_H_
 
 #import "ios/public/provider/chrome/browser/updatable_resource_provider.h"
 
@@ -22,4 +22,4 @@ class TestUpdatableResourceProvider : public ios::UpdatableResourceProvider {
 
 }  // namespace ios
 
-#endif  // IOS_PUBLIC_TEST_TEST_UPDATABLE_RESOURCE_PROVIDER_H_
+#endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_TEST_UPDATABLE_RESOURCE_PROVIDER_H_

@@ -27,7 +27,6 @@
         '../../third_party/ocmock/ocmock.gyp:ocmock',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/gfx/gfx.gyp:gfx_test_support',
-        '../ios_tests.gyp:test_support_ios',
         '../web/ios_web.gyp:ios_web',
         '../web/ios_web.gyp:ios_web_test_support',
         'ios_chrome.gyp:ios_chrome_app',
@@ -94,18 +93,23 @@
       'includes': ['ios_chrome_resources_bundle.gypi'],
     },
     {
-      # GN version: //ios/chrome/browser:test_support + //ios/public/test
+      # GN version: //ios/chrome/browser:test_support
       'target_name': 'ios_chrome_test_support',
       'type': 'static_library',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../components/components.gyp:keyed_service_core',
+        '../../components/components.gyp:keyed_service_ios',
         '../../components/components.gyp:password_manager_core_browser_test_support',
         '../../components/components.gyp:signin_ios_browser_test_support',
+        '../../components/components.gyp:sync_driver_test_support',
+        '../../sync/sync.gyp:sync',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
         '../../ui/base/ui_base.gyp:ui_base',
         '../../url/url.gyp:url_lib',
         '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser',
+        '../provider/ios_provider_chrome.gyp:ios_provider_chrome_browser_test_support',
         'ios_chrome.gyp:ios_chrome_browser',
       ],
       'sources': [
@@ -118,6 +122,8 @@
         'browser/signin/fake_oauth2_token_service_builder.h',
         'browser/signin/fake_signin_manager_builder.cc',
         'browser/signin/fake_signin_manager_builder.h',
+        'browser/sync/fake_sync_service_factory.cc',
+        'browser/sync/fake_sync_service_factory.h',
         'browser/sync/ios_chrome_profile_sync_test_util.cc',
         'browser/sync/ios_chrome_profile_sync_test_util.h',
         'browser/sync/sync_setup_service_mock.cc',

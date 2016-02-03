@@ -1,7 +1,0 @@
-include_rules = [
-  "+components/autofill/core/browser",
-  "+components/keyed_service/core",
-  "+components/keyed_service/ios",
-  "+components/signin/ios",
-  "+components/sync_driver",
-]

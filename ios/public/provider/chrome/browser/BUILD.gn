@@ -32,3 +32,23 @@ source_set("browser") {
     "//ios/web",
   ]
 }
+
+source_set("test_support") {
+  testonly = true
+
+  sources = [
+    "test_chrome_browser_provider.h",
+    "test_chrome_browser_provider.mm",
+    "test_chrome_provider_initializer.cc",
+    "test_chrome_provider_initializer.h",
+    "test_updatable_resource_provider.h",
+    "test_updatable_resource_provider.mm",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//components/signin/ios/browser:test_support",
+    "//testing/gtest",
+  ]
+}

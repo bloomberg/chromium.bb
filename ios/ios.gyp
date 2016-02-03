@@ -17,7 +17,6 @@
         'crnet/crnet_consumer/crnet_consumer.gyp:*',
         'crnet/crnet_pack.gyp:*',
         'crnet/test/crnet_test.gyp:*',
-        'ios_tests.gyp:*',
         'net/ios_net.gyp:*',
         'net/ios_net_unittests.gyp:*',
         'provider/ios_provider_chrome.gyp:*',

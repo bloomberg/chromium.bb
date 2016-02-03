@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/public/test/test_chrome_provider_initializer.h"
+#include "ios/public/provider/chrome/browser/test_chrome_provider_initializer.h"
 
-#include "ios/public/test/test_chrome_browser_provider.h"
+#include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ios {

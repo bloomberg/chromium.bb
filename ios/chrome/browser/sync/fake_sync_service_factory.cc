@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/public/test/fake_sync_service_factory.h"
+#include "ios/chrome/browser/sync/fake_sync_service_factory.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -39,7 +39,8 @@ sync_driver::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<KeyedFakeSyncService*>(
              FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(
-                 browser_state, true))->fake_sync_service();
+                 browser_state, true))
+      ->fake_sync_service();
 }
 
 // static
@@ -48,17 +49,16 @@ FakeSyncServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<KeyedFakeSyncService*>(
              FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(
-                 browser_state, false))->fake_sync_service();
+                 browser_state, false))
+      ->fake_sync_service();
 }
 
 FakeSyncServiceFactory::FakeSyncServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "FakeSyncService",
-          BrowserStateDependencyManager::GetInstance()) {
-}
+          BrowserStateDependencyManager::GetInstance()) {}
 
-FakeSyncServiceFactory::~FakeSyncServiceFactory() {
-}
+FakeSyncServiceFactory::~FakeSyncServiceFactory() {}
 
 scoped_ptr<KeyedService> FakeSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
