@@ -3647,11 +3647,6 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         m_focusedElement = newFocusedElement;
 
         m_focusedElement->setFocus(true);
-        // Element::setFocus for frames can dispatch events.
-        if (m_focusedElement != newFocusedElement) {
-            focusChangeBlocked = true;
-            goto SetFocusedElementDone;
-        }
         cancelFocusAppearanceUpdate();
         m_focusedElement->updateFocusAppearance(params.selectionBehavior);
 
