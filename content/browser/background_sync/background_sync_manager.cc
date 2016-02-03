@@ -126,7 +126,8 @@ void OnSyncEventFinished(
     int request_id,
     const ServiceWorkerVersion::StatusCallback& callback,
     ServiceWorkerEventStatus status) {
-  if (!active_version->FinishRequest(request_id))
+  if (!active_version->FinishRequest(
+          request_id, status == content::ServiceWorkerEventStatus::COMPLETED))
     return;
   callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
 }

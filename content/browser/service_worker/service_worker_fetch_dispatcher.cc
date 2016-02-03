@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_version.h"
+#include "content/common/service_worker/service_worker_messages.h"
 
 namespace content {
 
@@ -36,7 +37,7 @@ void ServiceWorkerFetchDispatcher::Run() {
                    weak_factory_.GetWeakPtr()));
     return;
   }
-  DispatchFetchEvent();
+  DidWaitActivation();
 }
 
 void ServiceWorkerFetchDispatcher::DidWaitActivation() {
@@ -45,7 +46,11 @@ void ServiceWorkerFetchDispatcher::DidWaitActivation() {
     DidFailActivation();
     return;
   }
-  DispatchFetchEvent();
+  version_->RunAfterStartWorker(
+      base::Bind(&ServiceWorkerFetchDispatcher::DispatchFetchEvent,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ServiceWorkerFetchDispatcher::DidFail,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerFetchDispatcher::DidFailActivation() {
@@ -59,14 +64,19 @@ void ServiceWorkerFetchDispatcher::DidFailActivation() {
 }
 
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
-  TRACE_EVENT_ASYNC_BEGIN0(
-      "ServiceWorker",
-      "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
-      request_.get());
-  version_->DispatchFetchEvent(
-      *request_.get(),
-      base::Bind(&ServiceWorkerFetchDispatcher::DidPrepare,
-                 weak_factory_.GetWeakPtr()),
+  DCHECK_EQ(ServiceWorkerVersion::RUNNING, version_->running_status())
+      << "Worker stopped too soon after it was started.";
+
+  DCHECK(!prepare_callback_.is_null());
+  base::Closure prepare_callback = prepare_callback_;
+  prepare_callback.Run();
+
+  int request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH,
+                             base::Bind(&ServiceWorkerFetchDispatcher::DidFail,
+                                        weak_factory_.GetWeakPtr()));
+  version_->DispatchEvent<ServiceWorkerHostMsg_FetchEventFinished>(
+      request_id, ServiceWorkerMsg_FetchEvent(request_id, *request_.get()),
       base::Bind(&ServiceWorkerFetchDispatcher::DidFinish,
                  weak_factory_.GetWeakPtr()));
 }
@@ -77,17 +87,27 @@ void ServiceWorkerFetchDispatcher::DidPrepare() {
   prepare_callback.Run();
 }
 
-void ServiceWorkerFetchDispatcher::DidFinish(
-    ServiceWorkerStatusCode status,
-    ServiceWorkerFetchEventResult fetch_result,
-    const ServiceWorkerResponse& response) {
-  TRACE_EVENT_ASYNC_END0(
-      "ServiceWorker",
-      "ServiceWorkerFetchDispatcher::DispatchFetchEvent",
-      request_.get());
+void ServiceWorkerFetchDispatcher::DidFail(ServiceWorkerStatusCode status) {
   DCHECK(!fetch_callback_.is_null());
   FetchCallback fetch_callback = fetch_callback_;
-  fetch_callback.Run(status, fetch_result, response, version_);
+  scoped_refptr<ServiceWorkerVersion> version = version_;
+  fetch_callback.Run(status, SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK,
+                     ServiceWorkerResponse(), version);
+}
+
+void ServiceWorkerFetchDispatcher::DidFinish(
+    int request_id,
+    ServiceWorkerFetchEventResult fetch_result,
+    const ServiceWorkerResponse& response) {
+  const bool handled =
+      (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+  if (!version_->FinishRequest(request_id, handled))
+    NOTREACHED() << "Should only receive one reply per event";
+
+  DCHECK(!fetch_callback_.is_null());
+  FetchCallback fetch_callback = fetch_callback_;
+  scoped_refptr<ServiceWorkerVersion> version = version_;
+  fetch_callback.Run(SERVICE_WORKER_OK, fetch_result, response, version);
 }
 
 }  // namespace content

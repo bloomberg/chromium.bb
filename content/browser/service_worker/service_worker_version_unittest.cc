@@ -107,13 +107,6 @@ void ObserveStatusChanges(ServiceWorkerVersion* version,
       base::Bind(&ObserveStatusChanges, base::Unretained(version), statuses));
 }
 
-void ReceiveFetchResult(ServiceWorkerStatusCode* status,
-                        ServiceWorkerStatusCode actual_status,
-                        ServiceWorkerFetchEventResult actual_result,
-                        const ServiceWorkerResponse& response) {
-  *status = actual_status;
-}
-
 void ReceiveTestEventResult(int* request_id,
                             std::string* data,
                             const base::Closure& callback,
@@ -271,7 +264,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // And finish request, as if a response to the event was received.
-    EXPECT_TRUE(version_->FinishRequest(request_id));
+    EXPECT_TRUE(version_->FinishRequest(request_id, true));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
   }
@@ -360,33 +353,6 @@ class ServiceWorkerStallInStoppingTest : public ServiceWorkerVersionTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerStallInStoppingTest);
-};
-
-class MessageReceiverDisallowFetch : public MessageReceiver {
- public:
-  MessageReceiverDisallowFetch() : MessageReceiver() {}
-  ~MessageReceiverDisallowFetch() override {}
-
-  void OnFetchEvent(int embedded_worker_id,
-                    int request_id,
-                    const ServiceWorkerFetchRequest& request) override {
-    // Do nothing.
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowFetch);
-};
-
-class ServiceWorkerWaitForeverInFetchTest : public ServiceWorkerVersionTest {
- protected:
-  ServiceWorkerWaitForeverInFetchTest() : ServiceWorkerVersionTest() {}
-
-  scoped_ptr<MessageReceiver> GetMessageReceiver() override {
-    return make_scoped_ptr(new MessageReceiverDisallowFetch());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerWaitForeverInFetchTest);
 };
 
 class MessageReceiverMojoTestService : public MessageReceiver {
@@ -524,14 +490,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
 
   // Dispatch an event on the unregistered and stopped but still live worker.
   status = SERVICE_WORKER_ERROR_FAILED;
-  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
-                               base::Bind(&base::DoNothing),
-                               base::Bind(&ReceiveFetchResult, &status));
-  base::RunLoop().RunUntilIdle();
-
-  // Dispatch an event should return SERVICE_WORKER_OK since the worker
-  // should have been restarted to dispatch the event.
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH);
 
   // The worker should be now started again.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
@@ -664,15 +623,9 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   EXPECT_LT(idle_time, version_->idle_time_);
 
   // Completing an event resets the idle time.
-  status = SERVICE_WORKER_ERROR_FAILED;
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
-  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
-                               base::Bind(&base::DoNothing),
-                               base::Bind(&ReceiveFetchResult, &status));
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH);
   EXPECT_LT(idle_time, version_->idle_time_);
 
   // Starting and finishing a request resets the idle time.
@@ -681,7 +634,7 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   int request_id =
       version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
                              CreateReceiverOnCurrentThread(&status));
-  EXPECT_TRUE(version_->FinishRequest(request_id));
+  EXPECT_TRUE(version_->FinishRequest(request_id, true));
 
   EXPECT_EQ(SERVICE_WORKER_OK, status);
   EXPECT_LT(idle_time, version_->idle_time_);
@@ -850,13 +803,17 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
 }
 
-TEST_F(ServiceWorkerWaitForeverInFetchTest, RequestTimeout) {
+TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
-
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
-                               base::Bind(&base::DoNothing),
-                               base::Bind(&ReceiveFetchResult, &status));
+
+  version_->StartWorker(base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+
+  // Create a request.
+  int request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH,
+                             CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
 
   // Callback has not completed yet.
@@ -870,6 +827,7 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, RequestTimeout) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
+  EXPECT_FALSE(version_->FinishRequest(request_id, true));
 }
 
 TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
@@ -891,7 +849,7 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeout) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
 
-  EXPECT_FALSE(version_->FinishRequest(request_id));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true));
 
   // CONTINUE_ON_TIMEOUT timeouts don't stop the service worker.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
@@ -916,13 +874,13 @@ TEST_F(ServiceWorkerVersionTest, RequestCustomizedTimeoutKill) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
 
-  EXPECT_FALSE(version_->FinishRequest(request_id));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 }
 
-TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
+TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
   ServiceWorkerStatusCode sync_status =
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   ServiceWorkerStatusCode fetch_status =
@@ -933,11 +891,11 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
   base::RunLoop().RunUntilIdle();
 
   // Create a fetch request that should expire sometime later.
-  version_->DispatchFetchEvent(ServiceWorkerFetchRequest(),
-                               base::Bind(&base::DoNothing),
-                               base::Bind(&ReceiveFetchResult, &fetch_status));
+  int fetch_request_id =
+      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH,
+                             CreateReceiverOnCurrentThread(&fetch_status));
   // Create a request that should expire Now().
-  int request_id = version_->StartRequestWithCustomTimeout(
+  int sync_request_id = version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::SYNC,
       CreateReceiverOnCurrentThread(&sync_status), base::TimeDelta(),
       ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
@@ -955,7 +913,7 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
 
   // Gracefully handle the sync event finishing after the timeout.
-  EXPECT_FALSE(version_->FinishRequest(request_id));
+  EXPECT_FALSE(version_->FinishRequest(sync_request_id, true));
 
   // Verify that the fetch times out later.
   version_->SetAllRequestExpirations(base::TimeTicks::Now());
@@ -963,37 +921,11 @@ TEST_F(ServiceWorkerWaitForeverInFetchTest, MixedRequestTimeouts) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, fetch_status);
 
+  // Fetch request should no longer exist.
+  EXPECT_FALSE(version_->FinishRequest(fetch_request_id, true));
+
   // Other timeouts do stop the service worker.
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
-}
-
-TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
-
-  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-  version_->StartWorker(base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
-  base::RunLoop().RunUntilIdle();
-  int request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::SYNC,
-                             CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-
-  // Callback has not completed yet.
-  EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
-  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
-
-  // Simulate timeout.
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  version_->SetAllRequestExpirations(
-      base::TimeTicks::Now() -
-      base::TimeDelta::FromMinutes(
-          ServiceWorkerVersion::kRequestTimeoutMinutes + 1));
-  version_->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, status);
-  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
-
-  EXPECT_FALSE(version_->FinishRequest(request_id));
 }
 
 TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
@@ -1199,7 +1131,7 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 
   // Request already failed, calling finsh should return false.
-  EXPECT_FALSE(version_->FinishRequest(request_id));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true));
 }
 
 TEST_F(ServiceWorkerVersionWithMojoTest, MojoService) {
@@ -1223,7 +1155,7 @@ TEST_F(ServiceWorkerVersionWithMojoTest, MojoService) {
   // Mojo service does exist in worker, so error callback should not have been
   // called and FinishRequest should return true.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(version_->FinishRequest(request_id));
+  EXPECT_TRUE(version_->FinishRequest(request_id, true));
 }
 
 TEST_F(ServiceWorkerVersionTest, NonExistentMojoService) {
@@ -1247,7 +1179,7 @@ TEST_F(ServiceWorkerVersionTest, NonExistentMojoService) {
   // Mojo service doesn't exist in worker, so error callback should have been
   // called and FinishRequest should return false.
   EXPECT_EQ(SERVICE_WORKER_ERROR_FAILED, status);
-  EXPECT_FALSE(version_->FinishRequest(request_id));
+  EXPECT_FALSE(version_->FinishRequest(request_id, true));
 }
 
 TEST_F(ServiceWorkerVersionTest, DispatchEvent) {
@@ -1291,7 +1223,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchEvent) {
   // Should not have timed out, so error callback should not have been
   // called and FinishRequest should return true.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_TRUE(version_->FinishRequest(request_id));
+  EXPECT_TRUE(version_->FinishRequest(request_id, true));
 }
 
 TEST_F(ServiceWorkerFailToStartTest, FailingWorkerIsDisabled) {
@@ -1414,7 +1346,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   EXPECT_EQ(request_id2, received_request_id2);
   EXPECT_EQ(reply2, received_data2);
   EXPECT_EQ(SERVICE_WORKER_OK, status2);
-  EXPECT_TRUE(version_->FinishRequest(request_id2));
+  EXPECT_TRUE(version_->FinishRequest(request_id2, true));
 
   // Reply to first event.
   std::string reply1("hello world");
@@ -1427,7 +1359,7 @@ TEST_F(ServiceWorkerVersionTest, DispatchConcurrentEvent) {
   EXPECT_EQ(request_id2, received_request_id2);
   EXPECT_EQ(reply1, received_data1);
   EXPECT_EQ(SERVICE_WORKER_OK, status1);
-  EXPECT_TRUE(version_->FinishRequest(request_id1));
+  EXPECT_TRUE(version_->FinishRequest(request_id1, true));
 }
 
 TEST_F(ServiceWorkerVersionTest, DispatchSimpleEvent_Completed) {

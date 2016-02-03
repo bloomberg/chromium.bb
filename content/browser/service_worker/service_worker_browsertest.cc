@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -119,7 +120,8 @@ void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
                         FetchResult* out_result,
                         ServiceWorkerStatusCode actual_status,
                         ServiceWorkerFetchEventResult actual_result,
-                        const ServiceWorkerResponse& actual_response) {
+                        const ServiceWorkerResponse& actual_response,
+                        const scoped_refptr<ServiceWorkerVersion>& worker) {
   out_result->status = actual_status;
   out_result->result = actual_result;
   out_result->response = actual_response;
@@ -132,7 +134,7 @@ void ReceiveFetchResult(BrowserThread::ID run_quit_thread,
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit);
 }
 
-ServiceWorkerVersion::FetchCallback CreateResponseReceiver(
+ServiceWorkerFetchDispatcher::FetchCallback CreateResponseReceiver(
     BrowserThread::ID run_quit_thread,
     const base::Closure& quit,
     ChromeBlobStorageContext* blob_context,
@@ -448,9 +450,11 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                                        &fetch_result));
     fetch_run_loop.Run();
     ASSERT_TRUE(prepare_result);
+    ASSERT_TRUE(fetch_dispatcher_);
     *result = fetch_result.result;
     *response = fetch_result.response;
     *blob_data_handle = std::move(fetch_result.blob_data_handle);
+    fetch_dispatcher_.reset();
     ASSERT_EQ(SERVICE_WORKER_OK, fetch_result.status);
   }
 
@@ -654,18 +658,16 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
                        bool* prepare_result,
                        FetchResult* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    ServiceWorkerFetchRequest request(
-        embedded_test_server()->GetURL("/service_worker/empty.html"),
-        "GET",
-        ServiceWorkerHeaderMap(),
-        Referrer(),
-        false);
+    scoped_ptr<ServiceWorkerFetchRequest> request(new ServiceWorkerFetchRequest(
+        embedded_test_server()->GetURL("/service_worker/empty.html"), "GET",
+        ServiceWorkerHeaderMap(), Referrer(), false));
     version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
-    version_->DispatchFetchEvent(
-        request,
+    fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
+        std::move(request), version_.get(),
         CreatePrepareReceiver(prepare_result),
-        CreateResponseReceiver(
-            BrowserThread::UI, done, blob_context_.get(), result));
+        CreateResponseReceiver(BrowserThread::UI, done, blob_context_.get(),
+                               result)));
+    fetch_dispatcher_->Run();
   }
 
   void StopOnIOThread(const base::Closure& done,
@@ -678,6 +680,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
   scoped_refptr<ChromeBlobStorageContext> blob_context_;
+  scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
 };
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartAndStop) {

@@ -188,10 +188,11 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   // For FORWARD_TO_SERVICE_WORKER case.
   void DidPrepareFetchEvent();
-  void DidDispatchFetchEvent(ServiceWorkerStatusCode status,
-                             ServiceWorkerFetchEventResult fetch_result,
-                             const ServiceWorkerResponse& response,
-                             scoped_refptr<ServiceWorkerVersion> version);
+  void DidDispatchFetchEvent(
+      ServiceWorkerStatusCode status,
+      ServiceWorkerFetchEventResult fetch_result,
+      const ServiceWorkerResponse& response,
+      const scoped_refptr<ServiceWorkerVersion>& version);
 
   // Populates |http_response_headers_|.
   void CreateResponseHeader(int status_code,

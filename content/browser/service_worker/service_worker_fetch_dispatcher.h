@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 
@@ -16,12 +17,12 @@ namespace content {
 class ServiceWorkerVersion;
 
 // A helper class to dispatch fetch event to a service worker.
-class ServiceWorkerFetchDispatcher {
+class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode,
                               ServiceWorkerFetchEventResult,
                               const ServiceWorkerResponse&,
-                              scoped_refptr<ServiceWorkerVersion>)>
+                              const scoped_refptr<ServiceWorkerVersion>&)>
       FetchCallback;
 
   ServiceWorkerFetchDispatcher(scoped_ptr<ServiceWorkerFetchRequest> request,
@@ -39,7 +40,8 @@ class ServiceWorkerFetchDispatcher {
   void DidFailActivation();
   void DispatchFetchEvent();
   void DidPrepare();
-  void DidFinish(ServiceWorkerStatusCode status,
+  void DidFail(ServiceWorkerStatusCode status);
+  void DidFinish(int request_id,
                  ServiceWorkerFetchEventResult fetch_result,
                  const ServiceWorkerResponse& response);
 

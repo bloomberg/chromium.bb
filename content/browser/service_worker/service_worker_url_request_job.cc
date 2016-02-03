@@ -567,7 +567,7 @@ void ServiceWorkerURLRequestJob::DidDispatchFetchEvent(
     ServiceWorkerStatusCode status,
     ServiceWorkerFetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
-    scoped_refptr<ServiceWorkerVersion> version) {
+    const scoped_refptr<ServiceWorkerVersion>& version) {
   fetch_dispatcher_.reset();
   ServiceWorkerMetrics::RecordFetchEventStatus(is_main_resource_load_, status);
 

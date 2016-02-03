@@ -67,9 +67,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public EmbeddedWorkerInstance::Listener {
  public:
   typedef base::Callback<void(ServiceWorkerStatusCode)> StatusCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode,
-                              ServiceWorkerFetchEventResult,
-                              const ServiceWorkerResponse&)> FetchCallback;
 
   enum RunningStatus {
     STOPPED = EmbeddedWorkerInstance::STOPPED,
@@ -203,7 +200,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no pending requests with the provided id exist, for
   // example if the request has already timed out.
-  bool FinishRequest(int request_id);
+  // Pass the result of the event to |was_handled|, which is used to record
+  // statistics based on the event status.
+  // TODO(mek): Use something other than a bool for event status.
+  bool FinishRequest(int request_id, bool was_handled);
 
   // Connects to a specific mojo service exposed by the (running) service
   // worker. If a connection to a service for the same Interface already exists
@@ -251,15 +251,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const base::string16& message,
       const std::vector<TransferredMessagePort>& sent_message_ports,
       const StatusCallback& callback);
-
-  // Sends fetch event to the associated embedded worker and calls
-  // |callback| with the response from the worker.
-  //
-  // This must be called when the status() is ACTIVATED. Calling this in other
-  // statuses will result in an error SERVICE_WORKER_ERROR_FAILED.
-  void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
-                          const base::Closure& prepare_callback,
-                          const FetchCallback& fetch_callback);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -364,7 +355,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, StaleUpdate_RunningWorker);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            StaleUpdate_DoNotDeferTimer);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionBrowserTest,
@@ -378,14 +368,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            RequestCustomizedTimeoutKill);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest,
-                           MixedRequestTimeouts);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, MixedRequestTimeouts);
 
   class Metrics;
   class PingController;
 
   enum RequestType {
-    REQUEST_FETCH,
     REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
   };
@@ -541,9 +529,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnGetClients(int request_id,
                     const ServiceWorkerClientQueryOptions& options);
 
-  void OnFetchEventFinished(int request_id,
-                            ServiceWorkerFetchEventResult result,
-                            const ServiceWorkerResponse& response);
   void OnSimpleEventResponse(int request_id,
                              blink::WebServiceWorkerEventResult result);
   void OnOpenWindow(int request_id, GURL url);
@@ -669,7 +654,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Message callbacks. (Update HasInflightRequests() too when you update this
   // list.)
-  IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 
   // Stores all open connections to mojo services. Maps the service name to

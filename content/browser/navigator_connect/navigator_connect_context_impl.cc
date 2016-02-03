@@ -223,7 +223,8 @@ void NavigatorConnectContextImpl::OnConnectResult(
     const mojo::String& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!worker->FinishRequest(request_id))
+  if (!worker->FinishRequest(request_id,
+                             result == ServicePortConnectResult::ACCEPT))
     return;
 
   if (result != ServicePortConnectResult::ACCEPT) {

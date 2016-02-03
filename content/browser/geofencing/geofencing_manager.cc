@@ -424,7 +424,8 @@ void GeofencingManager::OnEventResponse(
     const scoped_refptr<ServiceWorkerRegistration>& registration,
     int request_id,
     blink::WebServiceWorkerEventResult result) {
-  bool finish_result = worker->FinishRequest(request_id);
+  bool finish_result = worker->FinishRequest(
+      request_id, result == blink::WebServiceWorkerEventResultCompleted);
   DCHECK(finish_result)
       << "No messages should be passed to handler if request had "
          "already finished";
