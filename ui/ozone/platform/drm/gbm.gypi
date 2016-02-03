@@ -123,8 +123,6 @@
         'gpu/screen_manager.h',
         'host/drm_cursor.cc',
         'host/drm_cursor.h',
-        'host/drm_cursor_core.cc',
-        'host/drm_cursor_core.h',
         'host/drm_device_handle.cc',
         'host/drm_device_handle.h',
         'host/drm_display_host.cc',

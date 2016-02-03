@@ -14,6 +14,67 @@
 
 namespace ui {
 
+namespace {
+
+// Helper class that provides DrmCursor with a mechanism to send messages
+// to the GPU process.
+class CursorIPC : public DrmCursorProxy {
+ public:
+  CursorIPC(scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+            const base::Callback<void(IPC::Message*)>& send_callback);
+  ~CursorIPC() override;
+
+  // DrmCursorProxy implementation.
+  void CursorSet(gfx::AcceleratedWidget window,
+                 const std::vector<SkBitmap>& bitmaps,
+                 gfx::Point point,
+                 int frame_delay_ms) override;
+  void Move(gfx::AcceleratedWidget window, gfx::Point point) override;
+
+ private:
+  bool IsConnected();
+  void Send(IPC::Message* message);
+
+  scoped_refptr<base::SingleThreadTaskRunner> send_runner_;
+  base::Callback<void(IPC::Message*)> send_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(CursorIPC);
+};
+
+CursorIPC::CursorIPC(scoped_refptr<base::SingleThreadTaskRunner> send_runner,
+                     const base::Callback<void(IPC::Message*)>& send_callback)
+    : send_runner_(send_runner), send_callback_(send_callback) {}
+
+CursorIPC::~CursorIPC() {}
+
+bool CursorIPC::IsConnected() {
+  return !send_callback_.is_null();
+}
+
+void CursorIPC::CursorSet(gfx::AcceleratedWidget window,
+                          const std::vector<SkBitmap>& bitmaps,
+                          gfx::Point point,
+                          int frame_delay_ms) {
+  Send(new OzoneGpuMsg_CursorSet(window, bitmaps, point, frame_delay_ms));
+}
+
+void CursorIPC::Move(gfx::AcceleratedWidget window, gfx::Point point) {
+  Send(new OzoneGpuMsg_CursorMove(window, point));
+}
+
+void CursorIPC::Send(IPC::Message* message) {
+  if (IsConnected() &&
+      send_runner_->PostTask(FROM_HERE, base::Bind(send_callback_, message)))
+    return;
+
+  // Drop disconnected updates. DrmWindowHost will call
+  // CommitBoundsChange() when we connect to initialize the cursor
+  // location.
+  delete message;
+}
+
+}  // namespace
+
 DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
     : cursor_(cursor) {
 }
@@ -75,15 +136,15 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished(
   // and notify it after all other observers/handlers are notified such that the
   // (windowing) state on the GPU can be initialized before the cursor is
   // allowed to IPC messages (which are targeted to a specific window).
-  cursor_->OnChannelEstablished(host_id, send_runner_, send_callback_);
+  cursor_->SetDrmCursorProxy(new CursorIPC(send_runner_, send_callback_));
 }
 
 void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
   TRACE_EVENT1("drm", "DrmGpuPlatformSupportHost::OnChannelDestroyed",
                "host_id", host_id);
-  cursor_->OnChannelDestroyed(host_id);
 
   if (host_id_ == host_id) {
+    cursor_->ResetDrmCursorProxy();
     host_id_ = -1;
     send_runner_ = nullptr;
     send_callback_.Reset();
