@@ -209,4 +209,13 @@ bool WebLayerTreeViewImplForTesting::haveWheelEventHandlers() const {
   return layer_tree_host_->have_wheel_event_handlers();
 }
 
+void WebLayerTreeViewImplForTesting::setHaveScrollEventHandlers(
+    bool have_event_handlers) {
+  layer_tree_host_->SetHaveScrollEventHandlers(have_event_handlers);
+}
+
+bool WebLayerTreeViewImplForTesting::haveScrollEventHandlers() const {
+  return layer_tree_host_->have_scroll_event_handlers();
+}
+
 }  // namespace content

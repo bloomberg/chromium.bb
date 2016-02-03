@@ -436,6 +436,13 @@ class CC_EXPORT LayerTreeImpl {
                                       const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
 
+  bool have_scroll_event_handlers() const {
+    return have_scroll_event_handlers_;
+  }
+  void set_have_scroll_event_handlers(bool have_event_handlers) {
+    have_scroll_event_handlers_ = have_event_handlers;
+  }
+
   bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
   void set_have_wheel_event_handlers(bool have_event_handlers) {
     have_wheel_event_handlers_ = have_event_handlers;
@@ -528,6 +535,7 @@ class CC_EXPORT LayerTreeImpl {
 
   int render_surface_layer_list_id_;
 
+  bool have_scroll_event_handlers_;
   bool have_wheel_event_handlers_;
 
   // Whether or not Blink's viewport size was shrunk by the height of the top

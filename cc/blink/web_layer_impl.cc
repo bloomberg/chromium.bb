@@ -320,14 +320,6 @@ bool WebLayerImpl::userScrollableVertical() const {
   return layer_->user_scrollable_vertical();
 }
 
-void WebLayerImpl::setHaveScrollEventHandlers(bool have_scroll_event_handlers) {
-  layer_->SetHaveScrollEventHandlers(have_scroll_event_handlers);
-}
-
-bool WebLayerImpl::haveScrollEventHandlers() const {
-  return layer_->have_scroll_event_handlers();
-}
-
 void WebLayerImpl::addMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
   DCHECK(main_thread_scrolling_reasons);

@@ -137,6 +137,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void clearSelection() override;
   void setHaveWheelEventHandlers(bool) override;
   bool haveWheelEventHandlers() const override;
+  void setHaveScrollEventHandlers(bool) override;
+  bool haveScrollEventHandlers() const override;
   int layerTreeId() const override;
   void setShowFPSCounter(bool show) override;
   void setShowPaintRects(bool show) override;

@@ -181,6 +181,19 @@ private:
         return false;
     }
 
+    void setHaveScrollEventHandlers(bool hasEventHandlers) override
+    {
+        if (m_popup->m_layerTreeView)
+            m_popup->m_layerTreeView->setHaveScrollEventHandlers(hasEventHandlers);
+    }
+
+    bool haveScrollEventHandlers() const override
+    {
+        if (m_popup->m_layerTreeView)
+            return m_popup->m_layerTreeView->haveScrollEventHandlers();
+        return false;
+    }
+
     void setTouchAction(TouchAction touchAction) override
     {
         if (WebViewClient* client = m_popup->m_webView->client())

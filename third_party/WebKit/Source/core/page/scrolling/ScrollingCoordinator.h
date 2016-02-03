@@ -76,8 +76,6 @@ public:
 
     void updateAfterCompositingChangeIfNeeded();
 
-    void updateHaveScrollEventHandlers();
-
     // Should be called whenever a scrollable area is added or removed, or gains/loses a composited layer.
     void scrollableAreasDidChange();
 

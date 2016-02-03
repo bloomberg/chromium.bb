@@ -143,10 +143,12 @@ public:
 
     // Input properties ---------------------------------------------------
     virtual void setHaveWheelEventHandlers(bool) { };
+    virtual void setHaveScrollEventHandlers(bool) { };
 
     // Debugging / dangerous ---------------------------------------------
 
     virtual bool haveWheelEventHandlers() const { return false; };
+    virtual bool haveScrollEventHandlers() const { return false; };
 
     virtual int layerTreeId() const { return 0; }
 

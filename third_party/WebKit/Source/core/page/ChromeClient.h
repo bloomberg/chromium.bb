@@ -201,6 +201,8 @@ public:
     virtual void needTouchEvents(bool) = 0;
     virtual void setHaveWheelEventHandlers(bool) = 0;
     virtual bool haveWheelEventHandlers() const = 0;
+    virtual void setHaveScrollEventHandlers(bool) = 0;
+    virtual bool haveScrollEventHandlers() const = 0;
 
     virtual void setTouchAction(TouchAction) = 0;
 

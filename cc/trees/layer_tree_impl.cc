@@ -76,6 +76,7 @@ LayerTreeImpl::LayerTreeImpl(
       next_activation_forces_redraw_(false),
       has_ever_been_drawn_(false),
       render_surface_layer_list_id_(0),
+      have_scroll_event_handlers_(false),
       have_wheel_event_handlers_(false),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
@@ -346,6 +347,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_source_frame_number(source_frame_number());
   target_tree->set_background_color(background_color());
   target_tree->set_has_transparent_background(has_transparent_background());
+  target_tree->set_have_scroll_event_handlers(have_scroll_event_handlers());
   target_tree->set_have_wheel_event_handlers(have_wheel_event_handlers());
 
   if (ViewportSizeInvalid())

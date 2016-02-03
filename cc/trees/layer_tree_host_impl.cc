@@ -552,7 +552,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   bool scroll_on_main_thread = false;
   uint32_t main_thread_scrolling_reasons;
   LayerImpl* test_layer_impl = FindScrollLayerForDeviceViewportPoint(
-      device_viewport_point, type, layer_impl, &scroll_on_main_thread, nullptr,
+      device_viewport_point, type, layer_impl, &scroll_on_main_thread,
       &main_thread_scrolling_reasons);
 
   if (!test_layer_impl)
@@ -2433,7 +2433,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     InputHandler::ScrollInputType type,
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
-    bool* optional_has_ancestor_scroll_handler,
     uint32_t* main_thread_scrolling_reasons) const {
   DCHECK(scroll_on_main_thread);
   DCHECK(main_thread_scrolling_reasons);
@@ -2466,10 +2465,6 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
         *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
         return NULL;
       }
-
-      if (optional_has_ancestor_scroll_handler &&
-          layer_impl->have_scroll_event_handlers())
-        *optional_has_ancestor_scroll_handler = true;
 
       if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
           !potentially_scrolling_layer_impl) {
@@ -2598,8 +2593,11 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   bool scroll_on_main_thread = false;
   LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread,
-      &scroll_affects_scroll_handler_,
       &scroll_status.main_thread_scrolling_reasons);
+
+  if (scrolling_layer_impl)
+    scroll_affects_scroll_handler_ =
+        scrolling_layer_impl->layer_tree_impl()->have_scroll_event_handlers();
 
   if (scroll_on_main_thread) {
     RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
@@ -3075,7 +3073,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   uint32_t main_thread_scrolling_reasons;
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::GESTURE, layer_impl,
-      &scroll_on_main_thread, NULL, &main_thread_scrolling_reasons);
+      &scroll_on_main_thread, &main_thread_scrolling_reasons);
   if (scroll_layer_impl == InnerViewportScrollLayer())
     scroll_layer_impl = OuterViewportScrollLayer();
   if (scroll_on_main_thread || !scroll_layer_impl)

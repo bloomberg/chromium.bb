@@ -1334,6 +1334,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
     layer_tree_host()->SetViewportSize(gfx::Size(20, 20));
     layer_tree_host()->set_background_color(SK_ColorGRAY);
     layer_tree_host()->SetHaveWheelEventHandlers(true);
+    layer_tree_host()->SetHaveScrollEventHandlers(true);
 
     PostSetNeedsCommitToMainThread();
   }
@@ -1342,6 +1343,7 @@ class LayerTreeHostTestCommit : public LayerTreeHostTest {
     EXPECT_EQ(gfx::Size(20, 20), impl->DrawViewportSize());
     EXPECT_EQ(SK_ColorGRAY, impl->active_tree()->background_color());
     EXPECT_TRUE(impl->active_tree()->have_wheel_event_handlers());
+    EXPECT_TRUE(impl->active_tree()->have_scroll_event_handlers());
 
     EndTest();
   }

@@ -54,4 +54,5 @@ message LayerTreeHost {
   optional uint32 surface_id_namespace = 32;
   optional uint32 next_surface_sequence = 33;
   optional bool have_wheel_event_handlers = 34;
+  optional bool have_scroll_event_handlers = 35;
 }

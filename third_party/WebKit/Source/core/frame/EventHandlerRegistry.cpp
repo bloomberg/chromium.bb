@@ -195,12 +195,9 @@ void EventHandlerRegistry::didRemoveAllEventHandlers(EventTarget& target)
 
 void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerClass, bool hasActiveHandlers)
 {
-    ScrollingCoordinator* scrollingCoordinator = m_frameHost->page().scrollingCoordinator();
-
     switch (handlerClass) {
     case ScrollEvent:
-        if (scrollingCoordinator)
-            scrollingCoordinator->updateHaveScrollEventHandlers();
+        m_frameHost->chromeClient().setHaveScrollEventHandlers(hasActiveHandlers);
         break;
     case WheelEvent:
         m_frameHost->chromeClient().setHaveWheelEventHandlers(hasActiveHandlers);

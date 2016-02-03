@@ -183,6 +183,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       gpu_rasterization_histogram_recorded_(false),
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
+      have_scroll_event_handlers_(false),
       have_wheel_event_handlers_(false),
       did_complete_scale_animation_(false),
       in_paint_layer_contents_(false),
@@ -399,6 +400,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->set_background_color(background_color_);
   sync_tree->set_has_transparent_background(has_transparent_background_);
+  sync_tree->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   sync_tree->set_have_wheel_event_handlers(have_wheel_event_handlers_);
 
   if (page_scale_layer_.get() && inner_viewport_scroll_layer_.get()) {
@@ -1114,6 +1116,14 @@ void LayerTreeHost::RegisterSelection(const LayerSelection& selection) {
   SetNeedsCommit();
 }
 
+void LayerTreeHost::SetHaveScrollEventHandlers(bool have_event_handlers) {
+  if (have_scroll_event_handlers_ == have_event_handlers)
+    return;
+
+  have_scroll_event_handlers_ = have_event_handlers;
+  SetNeedsCommit();
+}
+
 void LayerTreeHost::SetHaveWheelEventHandlers(bool have_event_handlers) {
   if (have_wheel_event_handlers_ == have_event_handlers)
     return;
@@ -1447,6 +1457,7 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {
       content_is_suitable_for_gpu_rasterization_);
   proto->set_background_color(background_color_);
   proto->set_has_transparent_background(has_transparent_background_);
+  proto->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   proto->set_have_wheel_event_handlers(have_wheel_event_handlers_);
   proto->set_in_paint_layer_contents(in_paint_layer_contents_);
   proto->set_id(id_);
@@ -1512,6 +1523,7 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
       proto.content_is_suitable_for_gpu_rasterization();
   background_color_ = proto.background_color();
   has_transparent_background_ = proto.has_transparent_background();
+  have_scroll_event_handlers_ = proto.have_scroll_event_handlers();
   have_wheel_event_handlers_ = proto.have_wheel_event_handlers();
   in_paint_layer_contents_ = proto.in_paint_layer_contents();
   id_ = proto.id();

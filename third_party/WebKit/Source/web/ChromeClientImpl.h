@@ -114,6 +114,8 @@ public:
     void needTouchEvents(bool needTouchEvents) override;
     void setHaveWheelEventHandlers(bool hasEventHandlers) override;
     bool haveWheelEventHandlers() const override;
+    void setHaveScrollEventHandlers(bool hasEventHandlers) override;
+    bool haveScrollEventHandlers() const override;
     void setTouchAction(TouchAction) override;
 
     GraphicsLayerFactory* graphicsLayerFactory() const override;

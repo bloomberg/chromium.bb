@@ -751,6 +751,14 @@ bool RenderWidgetCompositor::haveWheelEventHandlers() const {
   return layer_tree_host_->have_wheel_event_handlers();
 }
 
+void RenderWidgetCompositor::setHaveScrollEventHandlers(bool has_handlers) {
+  layer_tree_host_->SetHaveScrollEventHandlers(has_handlers);
+}
+
+bool RenderWidgetCompositor::haveScrollEventHandlers() const {
+  return layer_tree_host_->have_scroll_event_handlers();
+}
+
 void CompositeAndReadbackAsyncCallback(
     blink::WebCompositeAndReadbackAsyncCallback* callback,
     scoped_ptr<cc::CopyOutputResult> result) {

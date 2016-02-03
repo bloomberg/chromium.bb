@@ -197,9 +197,6 @@ public:
     virtual bool userScrollableHorizontal() const = 0;
     virtual bool userScrollableVertical() const = 0;
 
-    virtual void setHaveScrollEventHandlers(bool) = 0;
-    virtual bool haveScrollEventHandlers() const = 0;
-
     // Indicates that this layer will always scroll on the main thread for the provided reason.
     virtual void addMainThreadScrollingReasons(uint32_t) = 0;
     // Indicates that the layer could scroll on the compositor thread.

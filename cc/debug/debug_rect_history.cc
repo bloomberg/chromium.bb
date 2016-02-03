@@ -197,7 +197,7 @@ void DebugRectHistory::SaveScrollEventHandlerRects(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveScrollEventHandlerRectsCallback(LayerImpl* layer) {
-  if (!layer->have_scroll_event_handlers())
+  if (!layer->layer_tree_impl()->have_scroll_event_handlers())
     return;
 
   debug_rects_.push_back(

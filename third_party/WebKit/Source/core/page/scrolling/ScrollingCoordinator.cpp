@@ -680,22 +680,6 @@ void ScrollingCoordinator::willDestroyLayer(PaintLayer* layer)
     m_layersWithTouchRects.remove(layer);
 }
 
-void ScrollingCoordinator::updateHaveScrollEventHandlers()
-{
-    ASSERT(isMainThread());
-    ASSERT(m_page);
-    if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
-        return;
-
-    // Currently the compositor only cares whether there are scroll handlers anywhere on the page
-    // instead on a per-layer basis. We therefore only update this information for the root
-    // scrolling layer.
-    if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
-        bool haveHandlers = m_page->frameHost().eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::ScrollEvent);
-        scrollLayer->setHaveScrollEventHandlers(haveHandlers);
-    }
-}
-
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons mainThreadScrollingReasons)
 {
     if (!m_page->mainFrame()->isLocalFrame() || !m_page->deprecatedLocalMainFrame()->view())
@@ -947,7 +931,6 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
         return;
 
     notifyGeometryChanged();
-    updateHaveScrollEventHandlers();
 }
 
 #if OS(MACOSX)

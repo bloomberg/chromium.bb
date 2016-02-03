@@ -121,8 +121,6 @@ class WebLayerImpl : public blink::WebLayer {
   void setUserScrollable(bool horizontal, bool vertical) override;
   bool userScrollableHorizontal() const override;
   bool userScrollableVertical() const override;
-  void setHaveScrollEventHandlers(bool have_scroll_event_handlers) override;
-  bool haveScrollEventHandlers() const override;
   void addMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons) override;
   void clearMainThreadScrollingReasons() override;

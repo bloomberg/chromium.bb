@@ -964,8 +964,8 @@ TEST_F(LayerTreeHostImplTest, NonFastScrollableRegionWithOffset) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollHandlerNotPresent) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  EXPECT_FALSE(scroll_layer->have_scroll_event_handlers());
+  SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  EXPECT_FALSE(host_impl_->active_tree()->have_scroll_event_handlers());
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
 
@@ -978,8 +978,8 @@ TEST_F(LayerTreeHostImplTest, ScrollHandlerNotPresent) {
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollHandlerPresent) {
-  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
-  scroll_layer->SetHaveScrollEventHandlers(true);
+  SetupScrollAndContentsLayers(gfx::Size(200, 200));
+  host_impl_->active_tree()->set_have_scroll_event_handlers(true);
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   DrawFrame();
 
@@ -7982,7 +7982,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
                                      &set_needs_commit_count,
                                      &set_needs_redraw_count,
                                      &forward_to_main_count));
-    LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+    SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
     // Scrolling normally should not trigger any forwarding.
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
@@ -8001,7 +8001,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
     // Scrolling with a scroll handler should defer the swap to the main
     // thread.
-    scroll_layer->SetHaveScrollEventHandlers(true);
+    host_impl_->active_tree()->set_have_scroll_event_handlers(true);
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                       InputHandler::GESTURE)

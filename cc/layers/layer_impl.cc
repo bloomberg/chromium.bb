@@ -60,7 +60,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       scroll_clip_layer_id_(Layer::INVALID_ID),
       main_thread_scrolling_reasons_(
           MainThreadScrollingReason::kNotScrollingOnMain),
-      have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
       user_scrollable_vertical_(true),
       stacking_order_changed_(false),
@@ -614,7 +613,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
   layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
-  layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
@@ -763,8 +761,6 @@ base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
   if (scrollable())
     result->SetBoolean("Scrollable", true);
 
-  if (have_scroll_event_handlers_)
-    result->SetBoolean("ScrollHandler", have_scroll_event_handlers_);
   if (!touch_event_handler_region_.IsEmpty()) {
     scoped_ptr<base::Value> region = touch_event_handler_region_.AsValue();
     result->Set("TouchRegion", region.release());
@@ -1724,13 +1720,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   if (!touch_event_handler_region_.IsEmpty()) {
     state->BeginArray("touch_event_handler_region");
     touch_event_handler_region_.AsValueInto(state);
-    state->EndArray();
-  }
-  if (have_scroll_event_handlers_) {
-    gfx::Rect scroll_rect(bounds());
-    Region scroll_region(scroll_rect);
-    state->BeginArray("scroll_event_handler_region");
-    scroll_region.AsValueInto(state);
     state->EndArray();
   }
   if (!non_fast_scrollable_region_.IsEmpty()) {

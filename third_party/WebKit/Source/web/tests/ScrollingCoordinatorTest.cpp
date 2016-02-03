@@ -321,8 +321,7 @@ TEST_F(ScrollingCoordinatorTest, scrollEventHandler)
     navigateTo(m_baseURL + "scroll-event-handler.html");
     forceFullCompositingUpdate();
 
-    WebLayer* rootScrollLayer = getRootScrollLayer();
-    ASSERT_TRUE(rootScrollLayer->haveScrollEventHandlers());
+    ASSERT_TRUE(webLayerTreeView()->haveScrollEventHandlers());
 }
 
 TEST_F(ScrollingCoordinatorTest, updateEventHandlersDuringTeardown)

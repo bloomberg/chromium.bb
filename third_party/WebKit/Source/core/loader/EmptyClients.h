@@ -159,6 +159,8 @@ public:
     void needTouchEvents(bool) override {}
     void setHaveWheelEventHandlers(bool) override {}
     bool haveWheelEventHandlers() const override { return false; }
+    void setHaveScrollEventHandlers(bool) override {}
+    bool haveScrollEventHandlers() const override { return false; }
 
     void setTouchAction(TouchAction) override {}
 

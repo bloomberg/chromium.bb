@@ -134,8 +134,6 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->masks_to_bounds_, dest->masks_to_bounds_);
     EXPECT_EQ(src->main_thread_scrolling_reasons_,
               dest->main_thread_scrolling_reasons_);
-    EXPECT_EQ(src->have_scroll_event_handlers_,
-              dest->have_scroll_event_handlers_);
     EXPECT_EQ(src->non_fast_scrollable_region_,
               dest->non_fast_scrollable_region_);
     EXPECT_EQ(src->touch_event_handler_region_,
@@ -249,7 +247,6 @@ class LayerSerializationTest : public testing::Test {
     layer->masks_to_bounds_ = true;
     layer->main_thread_scrolling_reasons_ =
         MainThreadScrollingReason::kNotScrollingOnMain;
-    layer->have_scroll_event_handlers_ = false;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
     layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
     layer->contents_opaque_ = true;
@@ -298,7 +295,6 @@ class LayerSerializationTest : public testing::Test {
     layer->masks_to_bounds_ = !layer->masks_to_bounds_;
     layer->main_thread_scrolling_reasons_ =
         MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-    layer->have_scroll_event_handlers_ = !layer->have_scroll_event_handlers_;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
     layer->touch_event_handler_region_ = Region(gfx::Rect(3, 14, 1, 5));
     layer->contents_opaque_ = !layer->contents_opaque_;
@@ -966,7 +962,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
                                  MainThreadScrollingReason::kEventHandlers));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHaveScrollEventHandlers(true));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetTransform(
       gfx::Transform(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetDoubleSided(false));

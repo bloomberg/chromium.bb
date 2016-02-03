@@ -125,10 +125,6 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     new_layer->SetScrollClipLayerId(scrollable ? new_layer->id()
                                                : Layer::INVALID_ID);
 
-  bool scroll_handler;
-  if (dict->GetBoolean("ScrollHandler", &scroll_handler))
-    new_layer->SetHaveScrollEventHandlers(scroll_handler);
-
   bool is_3d_sorted;
   if (dict->GetBoolean("Is3DSorted", &is_3d_sorted)) {
     // A non-zero context ID will put the layer into a 3D sorting context
