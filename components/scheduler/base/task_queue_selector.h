@@ -162,9 +162,14 @@ class SCHEDULER_EXPORT TaskQueueSelector {
   void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
                                   bool chose_delayed_over_immediate);
 
+  // No enabled queue could be selected, check if we could have chosen a
+  // disabled (blocked) work queue instead.
+  void TrySelectingBlockedQueue();
+
   // Check if we could have chosen a disabled (blocked) work queue instead.
-  // |chosen_enabled_queue| is the enabled queue that got chosen (or null).
-  void TrySelectingBlockedQueue(WorkQueue* chosen_enabled_queue);
+  // |chosen_enabled_queue| is the enabled queue that got chosen.
+  void TrySelectingBlockedQueueOverEnabledQueue(
+      const WorkQueue& chosen_enabled_queue);
 
   // Number of high priority tasks which can be run before a normal priority
   // task should be selected to prevent starvation.

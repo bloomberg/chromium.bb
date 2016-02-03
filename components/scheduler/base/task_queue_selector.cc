@@ -121,9 +121,9 @@ void TaskQueueSelector::PrioritizingSelector::RemoveQueue(
 
 #if DCHECK_IS_ON()
   DCHECK(!delayed_work_queue_sets_.ContainsWorkQueueForTest(
-              queue->delayed_work_queue()));
+      queue->delayed_work_queue()));
   DCHECK(!immediate_work_queue_sets_.ContainsWorkQueueForTest(
-              queue->delayed_work_queue()));
+      queue->delayed_work_queue()));
 #endif
 }
 
@@ -146,6 +146,7 @@ bool TaskQueueSelector::PrioritizingSelector::
         bool* out_chose_delayed_over_immediate,
         WorkQueue** out_work_queue) const {
   WorkQueue* immediate_queue;
+  DCHECK_EQ(*out_chose_delayed_over_immediate, false);
   if (immediate_work_queue_sets_.GetOldestQueueInSet(priority,
                                                      &immediate_queue)) {
     WorkQueue* delayed_queue;
@@ -189,6 +190,7 @@ bool TaskQueueSelector::PrioritizingSelector::SelectWorkQueueToService(
     WorkQueue** out_work_queue,
     bool* out_chose_delayed_over_immediate) {
   DCHECK(task_queue_selector_->main_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(*out_chose_delayed_over_immediate, false);
 
   // Always service the control queue if it has any work.
   if (max_priority > TaskQueue::CONTROL_PRIORITY &&
@@ -225,27 +227,39 @@ bool TaskQueueSelector::SelectWorkQueueToService(WorkQueue** out_work_queue) {
       TaskQueue::QUEUE_PRIORITY_COUNT, out_work_queue,
       &chose_delayed_over_immediate);
   if (!found_queue) {
-    TrySelectingBlockedQueue(nullptr);
+    TrySelectingBlockedQueue();
     return false;
   }
 
-  TrySelectingBlockedQueue(*out_work_queue);
+  TrySelectingBlockedQueueOverEnabledQueue(**out_work_queue);
   DidSelectQueueWithPriority(
       (*out_work_queue)->task_queue()->GetQueuePriority(),
       chose_delayed_over_immediate);
   return true;
 }
 
-void TaskQueueSelector::TrySelectingBlockedQueue(
-    WorkQueue* chosen_enabled_queue) {
+void TaskQueueSelector::TrySelectingBlockedQueue() {
+  if (!num_blocked_queues_to_report_ || !task_queue_selector_observer_)
+    return;
+  WorkQueue* chosen_blocked_queue;
+  bool chose_delayed_over_immediate = false;
+  // There was nothing unblocked to run, see if we could have run a blocked
+  // task.
+  if (blocked_selector_.SelectWorkQueueToService(
+          TaskQueue::QUEUE_PRIORITY_COUNT, &chosen_blocked_queue,
+          &chose_delayed_over_immediate)) {
+    task_queue_selector_observer_->OnTriedToSelectBlockedWorkQueue(
+        chosen_blocked_queue);
+  }
+}
+
+void TaskQueueSelector::TrySelectingBlockedQueueOverEnabledQueue(
+    const WorkQueue& chosen_enabled_queue) {
   if (!num_blocked_queues_to_report_ || !task_queue_selector_observer_)
     return;
 
-  TaskQueue::QueuePriority max_priority = TaskQueue::QUEUE_PRIORITY_COUNT;
-  if (chosen_enabled_queue) {
-    max_priority =
-        NextPriority(chosen_enabled_queue->task_queue()->GetQueuePriority());
-  }
+  TaskQueue::QueuePriority max_priority =
+      NextPriority(chosen_enabled_queue.task_queue()->GetQueuePriority());
 
   WorkQueue* chosen_blocked_queue;
   bool chose_delayed_over_immediate = false;
@@ -254,18 +268,20 @@ void TaskQueueSelector::TrySelectingBlockedQueue(
   if (!found_queue)
     return;
 
-  // If we did not choose a normal task or chose one at a lower priority than a
-  // potential blocked task, we would have run the blocked task instead.
-  if (!chosen_enabled_queue ||
-      chosen_blocked_queue->task_queue()->GetQueuePriority() <
-          chosen_enabled_queue->task_queue()->GetQueuePriority()) {
+  // Check if the chosen blocked queue has a lower numerical priority than the
+  // chosen enabled queue.  If so we would have chosen the blocked queue (since
+  // zero is the highest priority).
+  if (chosen_blocked_queue->task_queue()->GetQueuePriority() <
+      chosen_enabled_queue.task_queue()->GetQueuePriority()) {
     task_queue_selector_observer_->OnTriedToSelectBlockedWorkQueue(
         chosen_blocked_queue);
     return;
   }
+  DCHECK_EQ(chosen_blocked_queue->task_queue()->GetQueuePriority(),
+            chosen_enabled_queue.task_queue()->GetQueuePriority());
   // Otherwise there was an enabled and a blocked task with the same priority.
   // The one with the older enqueue order wins.
-  if (chosen_blocked_queue->ShouldRunBefore(chosen_enabled_queue)) {
+  if (chosen_blocked_queue->ShouldRunBefore(&chosen_enabled_queue)) {
     task_queue_selector_observer_->OnTriedToSelectBlockedWorkQueue(
         chosen_blocked_queue);
   }
