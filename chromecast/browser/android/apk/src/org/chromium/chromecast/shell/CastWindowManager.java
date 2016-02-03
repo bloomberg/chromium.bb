@@ -143,7 +143,8 @@ public class CastWindowManager extends FrameLayout {
         shellView.setContentViewRenderView(null);
         shellView.setWindow(null);
         removeView(shellView);
-
+        mContentViewRenderView.destroy();
+        mContentViewRenderView = null;
         if (mDelegate != null) {
             mDelegate.onClosed();
         }
