@@ -1349,16 +1349,7 @@ void BrowserView::ShowOneClickSigninBubble(
 #endif
 
 void BrowserView::SetDownloadShelfVisible(bool visible) {
-  // This can be called from the superclass destructor, when it destroys our
-  // child views. At that point, browser_ is already gone.
-  if (!browser_)
-    return;
-
-  if (visible && IsDownloadShelfVisible() != visible) {
-    // Invoke GetDownloadShelf to force the shelf to be created.
-    GetDownloadShelf();
-  }
-
+  DCHECK(download_shelf_);
   browser_->UpdateDownloadShelfVisibility(visible);
 
   // SetDownloadShelfVisible can force-close the shelf, so make sure we lay out
@@ -1372,6 +1363,7 @@ bool BrowserView::IsDownloadShelfVisible() const {
 }
 
 DownloadShelf* BrowserView::GetDownloadShelf() {
+  DCHECK(browser_->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF));
   if (!download_shelf_.get()) {
     download_shelf_.reset(new DownloadShelfView(browser_.get(), this));
     download_shelf_->set_owned_by_client();
@@ -2674,14 +2666,17 @@ WebContents* BrowserView::GetActiveWebContents() {
 }
 
 void BrowserView::UnhideDownloadShelf() {
-  GetDownloadShelf()->Unhide();
+  if (download_shelf_)
+    download_shelf_->Unhide();
 }
 
 void BrowserView::HideDownloadShelf() {
-  GetDownloadShelf()->Hide();
-  StatusBubble* statusBubble = GetStatusBubble();
-  if (statusBubble)
-    statusBubble->Hide();
+  if (download_shelf_)
+    download_shelf_->Hide();
+
+  StatusBubble* status_bubble = GetStatusBubble();
+  if (status_bubble)
+    status_bubble->Hide();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
