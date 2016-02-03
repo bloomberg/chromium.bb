@@ -145,6 +145,11 @@ void ShowCertificateViewerModalDialog(content::WebContents* web_contents,
 }
 #endif
 
+bool IsFileExtensionPkcs12(const base::FilePath& path) {
+  return path.MatchesExtension(FILE_PATH_LITERAL(".p12")) ||
+         path.MatchesExtension(FILE_PATH_LITERAL(".pfx"));
+}
+
 }  // namespace
 
 namespace options {
@@ -716,6 +721,7 @@ void CertificateManagerHandler::StartImportPersonal(
   }
   file_type_info.extensions.resize(1);
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("p12"));
+  file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("pfx"));
   file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("crt"));
   file_type_info.extension_description_overrides.push_back(
       l10n_util::GetStringUTF16(IDS_CERT_USAGE_SSL_CLIENT));
@@ -732,13 +738,13 @@ void CertificateManagerHandler::StartImportPersonal(
 void CertificateManagerHandler::ImportPersonalFileSelected(
     const base::FilePath& path) {
   file_path_ = path;
-  if (file_path_.MatchesExtension(FILE_PATH_LITERAL(".p12"))) {
+  if (IsFileExtensionPkcs12(file_path_)) {
     web_ui()->CallJavascriptFunction(
         "CertificateManager.importPersonalAskPassword");
     return;
   }
 
-  // Non .p12 files are treated as unencrypted certificates.
+  // Non .p12/.pfx files are treated as unencrypted certificates.
   password_.clear();
   file_access_provider_->StartRead(
       file_path_,
@@ -776,7 +782,7 @@ void CertificateManagerHandler::ImportPersonalFileRead(
 
   file_data_ = *data;
 
-  if (file_path_.MatchesExtension(FILE_PATH_LITERAL(".p12"))) {
+  if (IsFileExtensionPkcs12(file_path_)) {
     if (use_hardware_backed_) {
       module_ = certificate_manager_model_->cert_db()->GetPrivateModule();
     } else {
@@ -795,9 +801,10 @@ void CertificateManagerHandler::ImportPersonalFileRead(
     return;
   }
 
-  // Non .p12 files are assumed to be single/chain certificates without private
-  // key data. The default extension according to spec is '.crt', however other
-  // extensions are also used in some places to represent these certificates.
+  // Non .p12/.pfx files are assumed to be single/chain certificates without
+  // private key data. The default extension according to spec is '.crt',
+  // however other extensions are also used in some places to represent these
+  // certificates.
   int result = certificate_manager_model_->ImportUserCert(file_data_);
   ImportExportCleanup();
   web_ui()->CallJavascriptFunction("CertificateRestoreOverlay.dismiss");
