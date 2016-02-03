@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.bookmark;
 
+import android.text.TextUtils;
 import android.util.Pair;
 
 import org.chromium.base.ObserverList;
@@ -559,7 +560,7 @@ public class BookmarksBridge {
      *               bookmark folder or a managed bookomark folder or root node of the entire
      *               bookmark model.
      * @param index The position where the bookmark will be placed in parent folder
-     * @param title Title of the new bookmark
+     * @param title Title of the new bookmark. If empty, the URL will be used as the title.
      * @param url Url of the new bookmark
      * @return Id of the added node. If adding failed (index is invalid, string is null, parent is
      *         not editable), returns null.
@@ -570,6 +571,7 @@ public class BookmarksBridge {
         assert title != null;
         assert url != null;
 
+        if (TextUtils.isEmpty(title)) title = url;
         return nativeAddBookmark(mNativeBookmarksBridge, parent, index, title, url);
     }
 
