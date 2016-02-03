@@ -454,7 +454,8 @@ HWTEST_CONTINUOUS_POOL = 'continuous'
 #   CANARY:  Non-blocking suite run only against the canaries.
 #   AFDO:  Non-blocking suite run only AFDO builders.
 #   MOBLAB: Blocking Suite run only on *_moblab builders.
-HWTEST_ARC_SUITE = 'arc-bvt-cq'
+HWTEST_ARC_COMMIT_SUITE = 'arc-bvt-cq'
+HWTEST_ARC_CANARY_SUITE = 'arc-bvt-perbuild'
 HWTEST_AU_SUITE = 'au'
 HWTEST_BVT_SUITE = 'bvt-inline'
 HWTEST_COMMIT_SUITE = 'bvt-cq'
