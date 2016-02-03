@@ -322,13 +322,11 @@ bool WebLayerImpl::userScrollableVertical() const {
 
 void WebLayerImpl::addMainThreadScrollingReasons(
     uint32_t main_thread_scrolling_reasons) {
-  DCHECK(main_thread_scrolling_reasons);
   // WebLayerImpl should only know about non-transient scrolling
   // reasons. Transient scrolling reasons are computed per hit test.
-  // TODO(tdresser): This is comparing less than a bit flag but that's not valid
-  // if there is more than one reason given in |main_thread_scrolling_reasons|.
-  DCHECK_LE(main_thread_scrolling_reasons,
-            cc::MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
+  DCHECK(main_thread_scrolling_reasons);
+  DCHECK(cc::MainThreadScrollingReason::MainThreadCanSetScrollReasons(
+      main_thread_scrolling_reasons));
   layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 

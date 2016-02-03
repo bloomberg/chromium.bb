@@ -8,6 +8,8 @@
 namespace cc {
 
 // Ensure this stays in sync with MainThreadScrollingReason in histograms.xml.
+// When adding a new MainThreadScrollingReason, make sure the corresponding
+// [MainThread/Compositor]CanSetScrollReasons function is also updated.
 struct MainThreadScrollingReason {
   // Non-transient scrolling reasons.
   enum : uint32_t { kNotScrollingOnMain = 0 };
@@ -16,9 +18,6 @@ struct MainThreadScrollingReason {
   enum : uint32_t { kThreadedScrollingDisabled = 1 << 2 };
   enum : uint32_t { kScrollbarScrolling = 1 << 3 };
   enum : uint32_t { kPageOverlay = 1 << 4 };
-  // The maximum value reachable as a combination of the non-transient scrolling
-  // reasons.
-  enum : uint32_t { kMaxNonTransientScrollingReasons = (1 << 5) - 1 };
 
   // Transient scrolling reasons. These are computed for each scroll begin.
   enum : uint32_t { kNonFastScrollableRegion = 1 << 5 };
@@ -32,6 +31,26 @@ struct MainThreadScrollingReason {
 
   // The number of flags in this struct (excluding itself).
   enum : uint32_t { kMainThreadScrollingReasonCount = 14 };
+
+  // Returns true if the given MainThreadScrollingReason can be set by the main
+  // thread.
+  static bool MainThreadCanSetScrollReasons(uint32_t reasons) {
+    uint32_t reasons_set_by_main_thread =
+        kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
+        kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
+        kScrollbarScrolling | kPageOverlay;
+    return (reasons & reasons_set_by_main_thread) == reasons;
+  }
+
+  // Returns true if the given MainThreadScrollingReason can be set by the
+  // compositor.
+  static bool CompositorCanSetScrollReasons(uint32_t reasons) {
+    uint32_t reasons_set_by_compositor =
+        kNonFastScrollableRegion | kEventHandlers | kFailedHitTest |
+        kNoScrollingLayer | kNotScrollable | kContinuingMainThreadScroll |
+        kNonInvertibleTransform | kPageBasedScrolling;
+    return (reasons & reasons_set_by_compositor) == reasons;
+  }
 };
 
 }  // namespace cc

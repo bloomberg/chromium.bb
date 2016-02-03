@@ -2452,13 +2452,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
       ScrollStatus status = layer_impl->TryScroll(device_viewport_point, type);
       if (status.thread == SCROLL_ON_MAIN_THREAD) {
         if (layer_impl->should_scroll_on_main_thread()) {
-          DCHECK_LE(
-              status.main_thread_scrolling_reasons,
-              MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
+          DCHECK(MainThreadScrollingReason::MainThreadCanSetScrollReasons(
+              status.main_thread_scrolling_reasons));
         } else {
-          DCHECK_GT(
-              status.main_thread_scrolling_reasons,
-              MainThreadScrollingReason::kMaxNonTransientScrollingReasons);
+          DCHECK(MainThreadScrollingReason::CompositorCanSetScrollReasons(
+              status.main_thread_scrolling_reasons));
         }
 
         *scroll_on_main_thread = true;
