@@ -43,7 +43,7 @@ class ExclusiveAccessContext {
 
   // Returns true if the window is fullscreen with additional UI elements. See
   // EnterFullscreen |with_toolbar|.
-  virtual bool IsFullscreenWithToolbar() const = 0;
+  virtual bool IsFullscreenWithToolbar() const;
 
   // Enters fullscreen and update exit bubble.
   // On Mac, the tab strip and toolbar will be shown if |with_toolbar| is true,
@@ -80,10 +80,10 @@ class ExclusiveAccessContext {
   // hide/unhide its download shelf widget when it is instructed to enter/exit
   // fullscreen mode.
   // Displays the download shelf associated with currently active window.
-  virtual void UnhideDownloadShelf();
+  virtual void UnhideDownloadShelf() = 0;
 
   // Hides download shelf associated with currently active window.
-  virtual void HideDownloadShelf();
+  virtual void HideDownloadShelf() = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_EXCLUSIVE_ACCESS_EXCLUSIVE_ACCESS_CONTEXT_H_

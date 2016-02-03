@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -373,15 +374,17 @@ IN_PROC_BROWSER_TEST_F(
   AddTabAtIndex(0, GURL(url::kAboutBlankURL), PAGE_TRANSITION_TYPED);
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ExclusiveAccessContext* context =
+      browser()->window()->GetExclusiveAccessContext();
 
   {
     FullscreenNotificationObserver fullscreen_observer;
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
+    EXPECT_FALSE(context->IsFullscreenWithToolbar());
     browser()->EnterFullscreenModeForTab(tab, GURL());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
+    EXPECT_FALSE(context->IsFullscreenWithToolbar());
   }
 
   {
@@ -389,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_FALSE(browser()->window()->IsFullscreen());
-    EXPECT_FALSE(browser()->window()->IsFullscreenWithToolbar());
+    EXPECT_FALSE(context->IsFullscreenWithToolbar());
   }
 
   if (chrome::mac::SupportsSystemFullscreen()) {
@@ -399,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(
     chrome::ToggleFullscreenMode(browser());
     fullscreen_observer.Wait();
     EXPECT_TRUE(browser()->window()->IsFullscreen());
-    EXPECT_TRUE(browser()->window()->IsFullscreenWithToolbar());
+    EXPECT_TRUE(context->IsFullscreenWithToolbar());
   }
 }
 #endif
@@ -827,9 +830,11 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 // TODO(erg): linux_aura bringup: http://crbug.com/163931
-#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation DISABLED_TestTabDoesntExitMouseLockOnSubFrameNavigation
+#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation \
+  DISABLED_TestTabDoesntExitMouseLockOnSubFrameNavigation
 #else
-#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation TestTabDoesntExitMouseLockOnSubFrameNavigation
+#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation \
+  TestTabDoesntExitMouseLockOnSubFrameNavigation
 #endif
 
 // Tests mouse lock is not exited on sub frame navigation.

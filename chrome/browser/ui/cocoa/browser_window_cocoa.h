@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -36,7 +35,6 @@ class Extension;
 
 class BrowserWindowCocoa
     : public BrowserWindow,
-      public ExclusiveAccessContext,
       public extensions::ExtensionKeybindingRegistry::Delegate,
       public SearchModelObserver {
  public:
@@ -78,22 +76,9 @@ class BrowserWindowCocoa
   void Maximize() override;
   void Minimize() override;
   void Restore() override;
-  void EnterFullscreen(const GURL& url,
-                       ExclusiveAccessBubbleType type,
-                       bool with_toolbar) override;
-  void ExitFullscreen() override;
-  void UpdateExclusiveAccessExitBubbleContent(
-      const GURL& url,
-      ExclusiveAccessBubbleType bubble_type) override;
-  void OnExclusiveAccessUserInput() override;
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
-  bool SupportsFullscreenWithToolbar() const override;
-  void UpdateFullscreenWithToolbar(bool with_toolbar) override;
-  void ToggleFullscreenToolbar() override;
-  bool IsFullscreenWithToolbar() const override;
-  bool ShouldHideFullscreenToolbar() const override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
@@ -170,12 +155,6 @@ class BrowserWindowCocoa
   void ExecuteExtensionCommand(const extensions::Extension* extension,
                                const extensions::Command& command) override;
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
-
-  // ExclusiveAccessContext interface
-  Profile* GetProfile() override;
-  content::WebContents* GetActiveWebContents() override;
-  void UnhideDownloadShelf() override;
-  void HideDownloadShelf() override;
 
   // Overridden from ExtensionKeybindingRegistry::Delegate:
   extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()

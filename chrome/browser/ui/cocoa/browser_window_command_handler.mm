@@ -53,7 +53,9 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
   }
 
   if (tag == IDC_TOGGLE_FULLSCREEN_TOOLBAR) {
-    SetToggleState(browser->window()->ShouldHideFullscreenToolbar(), item);
+    BrowserWindowController* controller =
+        [browser->window()->GetNativeWindow() windowController];
+    SetToggleState([controller shouldHideFullscreenToolbar], item);
     return;
   }
 

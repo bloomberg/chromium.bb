@@ -16,7 +16,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h"
+#import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
@@ -46,7 +46,7 @@
 #include "chrome/browser/ui/cocoa/task_manager_mac.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -207,7 +207,7 @@ void BrowserWindowCocoa::Hide() {
 void BrowserWindowCocoa::SetBounds(const gfx::Rect& bounds) {
   gfx::Rect real_bounds = [controller_ enforceMinWindowSize:bounds];
 
-  ExitFullscreen();
+  GetExclusiveAccessContext()->ExitFullscreen();
   NSRect cocoa_bounds = NSMakeRect(real_bounds.x(), 0,
                                    real_bounds.width(),
                                    real_bounds.height());
@@ -409,35 +409,6 @@ void BrowserWindowCocoa::Restore() {
     [window() deminiaturize:controller_];
 }
 
-// See browser_window_controller.h for a detailed explanation of the logic in
-// this method.
-void BrowserWindowCocoa::EnterFullscreen(const GURL& url,
-                                         ExclusiveAccessBubbleType bubble_type,
-                                         bool with_toolbar) {
-  if (browser_->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsWindowFullscreenForTabOrPending())
-    [controller_ enterWebContentFullscreenForURL:url bubbleType:bubble_type];
-  else if (!url.is_empty())
-    [controller_ enterExtensionFullscreenForURL:url bubbleType:bubble_type];
-  else
-    [controller_ enterBrowserFullscreenWithToolbar:with_toolbar];
-}
-
-void BrowserWindowCocoa::ExitFullscreen() {
-  [controller_ exitAnyFullscreen];
-}
-
-void BrowserWindowCocoa::UpdateExclusiveAccessExitBubbleContent(
-    const GURL& url,
-    ExclusiveAccessBubbleType bubble_type) {
-  [controller_ updateFullscreenExitBubbleURL:url bubbleType:bubble_type];
-}
-
-void BrowserWindowCocoa::OnExclusiveAccessUserInput() {
-  // TODO(mgiuca): Route this signal to the exclusive access bubble on Mac.
-}
-
 bool BrowserWindowCocoa::ShouldHideUIForFullscreen() const {
   // On Mac, fullscreen mode has most normal things (in a slide-down panel).
   return false;
@@ -448,27 +419,7 @@ bool BrowserWindowCocoa::IsFullscreen() const {
 }
 
 bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
-  return false;
-}
-
-bool BrowserWindowCocoa::SupportsFullscreenWithToolbar() const {
-  return chrome::mac::SupportsSystemFullscreen();
-}
-
-void BrowserWindowCocoa::UpdateFullscreenWithToolbar(bool with_toolbar) {
-  [controller_ updateFullscreenWithToolbar:with_toolbar];
-}
-
-void BrowserWindowCocoa::ToggleFullscreenToolbar() {
-  [controller_ toggleFullscreenToolbar];
-}
-
-bool BrowserWindowCocoa::IsFullscreenWithToolbar() const {
-  return IsFullscreen() && ![controller_ inPresentationMode];
-}
-
-bool BrowserWindowCocoa::ShouldHideFullscreenToolbar() const {
-  return [controller_ shouldHideFullscreenToolbar];
+  return false;  // Currently only called from toolkit-views website_settings.
 }
 
 void BrowserWindowCocoa::ConfirmAddSearchProvider(
@@ -884,24 +835,5 @@ void BrowserWindowCocoa::ExecuteExtensionCommand(
 }
 
 ExclusiveAccessContext* BrowserWindowCocoa::GetExclusiveAccessContext() {
-  return this;
-}
-
-Profile* BrowserWindowCocoa::GetProfile() {
-  return browser_->profile();
-}
-
-WebContents* BrowserWindowCocoa::GetActiveWebContents() {
-  return browser_->tab_strip_model()->GetActiveWebContents();
-}
-
-void BrowserWindowCocoa::UnhideDownloadShelf() {
-  GetDownloadShelf()->Unhide();
-}
-
-void BrowserWindowCocoa::HideDownloadShelf() {
-  GetDownloadShelf()->Hide();
-  StatusBubble* statusBubble = GetStatusBubble();
-  if (statusBubble)
-    statusBubble->Hide();
+  return [controller_ exclusiveAccessController];
 }

@@ -261,7 +261,9 @@
 - (NSNumber*)presenting {
   BOOL presentingValue = browser_->window() &&
                          browser_->window()->IsFullscreen() &&
-                         !browser_->window()->IsFullscreenWithToolbar();
+                         !browser_->window()
+                              ->GetExclusiveAccessContext()
+                              ->IsFullscreenWithToolbar();
   return [NSNumber numberWithBool:presentingValue];
 }
 

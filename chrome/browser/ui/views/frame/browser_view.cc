@@ -1040,28 +1040,6 @@ bool BrowserView::IsFullscreenBubbleVisible() const {
   return exclusive_access_bubble_ != nullptr;
 }
 
-bool BrowserView::SupportsFullscreenWithToolbar() const {
-  return false;
-}
-
-void BrowserView::UpdateFullscreenWithToolbar(bool with_toolbar) {
-  // This is currently a Mac only feature.
-  NOTIMPLEMENTED();
-}
-
-void BrowserView::ToggleFullscreenToolbar() {
-  // This is currently a Mac only feature.
-  NOTIMPLEMENTED();
-}
-
-bool BrowserView::IsFullscreenWithToolbar() const {
-  return false;
-}
-
-bool BrowserView::ShouldHideFullscreenToolbar() const {
-  return false;
-}
-
 #if defined(OS_WIN)
 void BrowserView::SetMetroSnapMode(bool enable) {
   LOCAL_HISTOGRAM_COUNTS("Metro.SnapModeToggle", enable);

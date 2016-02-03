@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -109,17 +110,17 @@ TEST_F(ExclusiveAccessBubbleWindowControllerTest,
     ASSERT_TRUE(browser()->window()->IsFullscreen());
   }
 
-  ExclusiveAccessBubbleWindowController* bubble =
-      [bwc exclusiveAccessBubbleWindowController];
-  EXPECT_TRUE(bubble);
+  ExclusiveAccessController* access_controller =
+      [bwc exclusiveAccessController];
+  EXPECT_TRUE(access_controller->cocoa_bubble());
   {
     content::WindowedNotificationObserver fullscreen_observer(
         chrome::NOTIFICATION_FULLSCREEN_CHANGED,
         content::NotificationService::AllSources());
-    [bubble deny:nil];
+    [access_controller->cocoa_bubble() deny:nil];
     fullscreen_observer.Wait();
   }
-  EXPECT_FALSE([bwc exclusiveAccessBubbleWindowController]);
+  EXPECT_FALSE(access_controller->cocoa_bubble());
   EXPECT_FALSE(browser()->window()->IsFullscreen());
   CloseBrowserWindow();
 }

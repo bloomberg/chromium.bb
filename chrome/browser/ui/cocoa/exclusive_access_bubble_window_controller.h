@@ -57,6 +57,6 @@ class Profile;
 - (void)closeImmediately;
 
 // Positions the exclusive access bubble in the top-center of the window.
-- (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth;
+- (void)positionInWindowAtTop:(CGFloat)maxY;
 
 @end

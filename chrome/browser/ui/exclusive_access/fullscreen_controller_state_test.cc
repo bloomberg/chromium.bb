@@ -13,6 +13,7 @@
 #include "chrome/browser/fullscreen.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -741,10 +742,12 @@ void FullscreenControllerStateTest::VerifyWindowStateExpectations(
     FullscreenForBrowserExpectation fullscreen_for_browser,
     FullscreenForTabExpectation fullscreen_for_tab,
     InMetroSnapExpectation in_metro_snap) {
+  ExclusiveAccessContext* context =
+      GetBrowser()->window()->GetExclusiveAccessContext();
   if (fullscreen_with_toolbar != FULLSCREEN_WITH_CHROME_NO_EXPECTATION &&
-      GetBrowser()->window()->SupportsFullscreenWithToolbar()) {
-    EXPECT_EQ(GetBrowser()->window()->IsFullscreenWithToolbar(),
-              !!fullscreen_with_toolbar) << GetAndClearDebugLog();
+      context->SupportsFullscreenWithToolbar()) {
+    EXPECT_EQ(context->IsFullscreenWithToolbar(), !!fullscreen_with_toolbar)
+        << GetAndClearDebugLog();
   }
   if (fullscreen_for_browser != FULLSCREEN_FOR_BROWSER_NO_EXPECTATION) {
     EXPECT_EQ(GetFullscreenController()->IsFullscreenForBrowser(),

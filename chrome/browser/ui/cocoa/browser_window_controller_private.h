@@ -44,7 +44,6 @@ class WebContents;
 
 // Shows the informational "how to exit fullscreen" bubble.
 - (void)showFullscreenExitBubbleIfNecessary;
-- (void)destroyFullscreenExitBubbleIfNecessary;
 
 // Lays out the tab strip and avatar button.
 - (void)applyTabStripLayout:(const chrome::TabStripLayout&)layout;

@@ -870,6 +870,8 @@
       'browser/ui/cocoa/bookmarks/bookmark_tree_browser_cell.mm',
       'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.h',
       'browser/ui/cocoa/browser/edit_search_engine_cocoa_controller.mm',
+      'browser/ui/cocoa/browser/exclusive_access_controller_views.h',
+      'browser/ui/cocoa/browser/exclusive_access_controller_views.mm',
       'browser/ui/cocoa/browser/zoom_bubble_controller.h',
       'browser/ui/cocoa/browser/zoom_bubble_controller.mm',
       'browser/ui/cocoa/browser_window_cocoa.h',

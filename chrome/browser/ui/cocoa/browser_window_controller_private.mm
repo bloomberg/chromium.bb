@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #import "chrome/browser/ui/cocoa/browser_window_fullscreen_transition.h"
 #import "chrome/browser/ui/cocoa/browser_window_layout.h"
+#import "chrome/browser/ui/cocoa/browser/exclusive_access_controller_views.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/dev_tools_controller.h"
@@ -630,27 +631,16 @@ willPositionSheet:(NSWindow*)sheet
 
   [self hideOverlayIfPossibleWithAnimation:NO delay:NO];
 
-  if (exclusiveAccessBubbleType_ == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
-      exclusiveAccessBubbleType_ ==
-          EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION) {
-    // Show no exit instruction bubble on Mac when in Browser Fullscreen.
-    [self destroyFullscreenExitBubbleIfNecessary];
-  } else {
-    [exclusiveAccessBubbleWindowController_ closeImmediately];
-    exclusiveAccessBubbleWindowController_.reset(
-        [[ExclusiveAccessBubbleWindowController alloc]
-                       initWithOwner:self
-            exclusive_access_manager:browser_.get()->exclusive_access_manager()
-                             profile:browser_.get()->profile()
-                                 url:fullscreenUrl_
-                          bubbleType:exclusiveAccessBubbleType_]);
-    [exclusiveAccessBubbleWindowController_ showWindow];
-  }
-}
+  switch (exclusiveAccessController_->bubble_type()) {
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE:
+    case EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION:
+      // Show no exit instruction bubble on Mac when in Browser Fullscreen.
+      exclusiveAccessController_->Destroy();
+      break;
 
-- (void)destroyFullscreenExitBubbleIfNecessary {
-  [exclusiveAccessBubbleWindowController_ closeImmediately];
-  exclusiveAccessBubbleWindowController_.reset();
+    default:
+      exclusiveAccessController_->Show();
+  }
 }
 
 - (void)contentViewDidResize:(NSNotification*)notification {
@@ -856,7 +846,7 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)adjustUIForExitingFullscreen {
-  [self destroyFullscreenExitBubbleIfNecessary];
+  exclusiveAccessController_->Destroy();
   [self adjustUIForExitingFullscreenAndStopOmniboxSliding];
 }
 
@@ -1051,9 +1041,7 @@ willPositionSheet:(NSWindow*)sheet
       positionFindBarViewAtMaxY:output.findBarMaxY
                        maxWidth:NSWidth(output.contentAreaFrame)];
 
-  [exclusiveAccessBubbleWindowController_
-      positionInWindowAtTop:output.fullscreenExitButtonMaxY
-                      width:NSWidth(output.contentAreaFrame)];
+  exclusiveAccessController_->Layout(output.fullscreenExitButtonMaxY);
 }
 
 - (void)updateSubviewZOrder {

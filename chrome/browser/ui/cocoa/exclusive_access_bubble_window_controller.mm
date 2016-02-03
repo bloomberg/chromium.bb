@@ -141,7 +141,7 @@ const float kHideDuration = 0.7;
   [self initializeLabelAndButton];
 }
 
-- (void)positionInWindowAtTop:(CGFloat)maxY width:(CGFloat)maxWidth {
+- (void)positionInWindowAtTop:(CGFloat)maxY {
   NSRect windowFrame = [self window].frame;
   NSRect ownerWindowFrame = [owner_ window].frame;
   NSPoint origin;

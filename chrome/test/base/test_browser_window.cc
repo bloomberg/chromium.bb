@@ -114,23 +114,6 @@ bool TestBrowserWindow::IsFullscreenBubbleVisible() const {
   return false;
 }
 
-bool TestBrowserWindow::SupportsFullscreenWithToolbar() const {
-  return false;
-}
-
-void TestBrowserWindow::UpdateFullscreenWithToolbar(bool with_toolbar) {
-}
-
-void TestBrowserWindow::ToggleFullscreenToolbar() {}
-
-bool TestBrowserWindow::IsFullscreenWithToolbar() const {
-  return false;
-}
-
-bool TestBrowserWindow::ShouldHideFullscreenToolbar() const {
-  return false;
-}
-
 #if defined(OS_WIN)
 bool TestBrowserWindow::IsInMetroSnapMode() const {
   return false;
