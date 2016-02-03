@@ -98,22 +98,33 @@ AST_MATCHER(clang::CXXMethodDecl, isBlinkMethod) {
 
 // Helper to convert from a camelCaseName to camel_case_name. It uses some
 // heuristics to try to handle acronyms in camel case names correctly.
-std::string CamelCaseToUnderscoreCase(StringRef input) {
+std::string CamelCaseToUnderscoreCase(StringRef input,
+                                      bool numbers_are_separated) {
   std::string output;
   bool needs_underscore = false;
   bool was_lowercase = false;
+  bool was_number = false;
   bool was_uppercase = false;
+  bool first_char = true;
   // Iterate in reverse to minimize the amount of backtracking.
   for (const unsigned char* i = input.bytes_end() - 1; i >= input.bytes_begin();
        --i) {
     char c = *i;
     bool is_lowercase = clang::isLowercase(c);
+    bool is_number = clang::isDigit(c);
     bool is_uppercase = clang::isUppercase(c);
     c = clang::toLowercase(c);
     // Transitioning from upper to lower case requires an underscore. This is
     // needed to handle names with acronyms, e.g. handledHTTPRequest needs a '_'
     // in 'dH'. This is a complement to the non-acronym case further down.
-    if (needs_underscore || (was_uppercase && is_lowercase)) {
+    if (was_uppercase && is_lowercase)
+      needs_underscore = true;
+    // If enabled, when entering or exiting a set of numbers, insert a '_'.
+    else if (!first_char && numbers_are_separated && !was_number && is_number)
+      needs_underscore = true;
+    else if (numbers_are_separated && was_number && !is_number)
+      needs_underscore = true;
+    if (needs_underscore) {
       output += '_';
       needs_underscore = false;
     }
@@ -121,10 +132,12 @@ std::string CamelCaseToUnderscoreCase(StringRef input) {
     // Handles the non-acronym case: transitioning from lower to upper case
     // requires an underscore when emitting the next character, e.g. didLoad
     // needs a '_' in 'dL'.
-    if (i != input.bytes_end() - 1 && was_lowercase && is_uppercase)
+    if (!first_char && was_lowercase && is_uppercase)
       needs_underscore = true;
     was_lowercase = is_lowercase;
+    was_number = is_number;
     was_uppercase = is_uppercase;
+    first_char = false;
   }
   std::reverse(output.begin(), output.end());
   return output;
@@ -170,6 +183,17 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
   return true;
 }
 
+bool GetNameForDecl(const clang::EnumConstantDecl& decl,
+                    const clang::ASTContext& context,
+                    std::string& name) {
+  StringRef original_name = decl.getName();
+
+  name = CamelCaseToUnderscoreCase(original_name, true);
+  for (auto& c : name)
+    c = clang::toUppercase(c);
+  return true;
+}
+
 bool GetNameForDecl(const clang::CXXMethodDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
@@ -200,7 +224,7 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
       !original_name.startswith(kBlinkFieldPrefix))
     return false;
   name = CamelCaseToUnderscoreCase(
-      original_name.substr(strlen(kBlinkFieldPrefix)));
+      original_name.substr(strlen(kBlinkFieldPrefix)), false);
   // The few examples I could find used struct-style naming with no `_` suffix
   // for unions.
   bool c = decl.getParent()->isClass();
@@ -238,7 +262,7 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     name.append(original_name.data(), original_name.size());
     name[1] = clang::toUppercase(name[1]);
   } else {
-    name = CamelCaseToUnderscoreCase(original_name);
+    name = CamelCaseToUnderscoreCase(original_name, false);
   }
 
   // Static members end with _ just like other members, but constants should
@@ -282,6 +306,8 @@ bool GetNameForDecl(const clang::UsingDecl& decl,
   if (auto* function_template =
           clang::dyn_cast<clang::FunctionTemplateDecl>(shadowed_name))
     return GetNameForDecl(*function_template, context, name);
+  if (auto* enumc = clang::dyn_cast<clang::EnumConstantDecl>(shadowed_name))
+    return GetNameForDecl(*enumc, context, name);
 
   return false;
 }
@@ -385,6 +411,11 @@ using MethodRefRewriter =
 using MethodMemberRewriter =
     RewriterBase<clang::CXXMethodDecl, clang::MemberExpr>;
 
+using EnumConstantDeclRewriter =
+    RewriterBase<clang::EnumConstantDecl, clang::NamedDecl>;
+using EnumConstantDeclRefRewriter =
+    RewriterBase<clang::EnumConstantDecl, clang::DeclRefExpr>;
+
 using UsingDeclRewriter = RewriterBase<clang::UsingDecl, clang::NamedDecl>;
 
 }  // namespace
@@ -412,17 +443,20 @@ int main(int argc, const char* argv[]) {
   // too for making testing easier.
   auto is_generated = decl(isExpansionInFileMatching("^gen/|/gen/"));
 
-  // Field and variable declarations ========
+  // Field, variable, and enum declarations ========
   // Given
   //   int x;
   //   struct S {
   //     int y;
+  //     enum { VALUE };
   //   };
-  // matches |x| and |y|.
+  // matches |x|, |y|, and |VALUE|.
   auto field_decl_matcher =
       id("decl", fieldDecl(in_blink_namespace, unless(is_generated)));
   auto var_decl_matcher =
       id("decl", varDecl(in_blink_namespace, unless(is_generated)));
+  auto enum_member_decl_matcher =
+      id("decl", enumConstantDecl(in_blink_namespace, unless(is_generated)));
 
   FieldDeclRewriter field_decl_rewriter(&replacements);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);
@@ -430,7 +464,10 @@ int main(int argc, const char* argv[]) {
   VarDeclRewriter var_decl_rewriter(&replacements);
   match_finder.addMatcher(var_decl_matcher, &var_decl_rewriter);
 
-  // Field and variable references ========
+  EnumConstantDeclRewriter enum_member_decl_rewriter(&replacements);
+  match_finder.addMatcher(enum_member_decl_matcher, &enum_member_decl_rewriter);
+
+  // Field, variable, and enum references ========
   // Given
   //   bool x = true;
   //   if (x) {
@@ -448,12 +485,17 @@ int main(int argc, const char* argv[]) {
           // there's nothing interesting to rewrite in those either.
           unless(hasAncestor(functionDecl(internal_hack::isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
+  auto enum_member_ref_matcher =
+      id("expr", declRefExpr(to(enum_member_decl_matcher)));
 
   MemberRewriter member_rewriter(&replacements);
   match_finder.addMatcher(member_matcher, &member_rewriter);
 
   DeclRefRewriter decl_ref_rewriter(&replacements);
   match_finder.addMatcher(decl_ref_matcher, &decl_ref_rewriter);
+
+  EnumConstantDeclRefRewriter enum_member_ref_rewriter(&replacements);
+  match_finder.addMatcher(enum_member_ref_matcher, &enum_member_ref_rewriter);
 
   // Non-method function declarations ========
   // Given
@@ -560,7 +602,8 @@ int main(int argc, const char* argv[]) {
       id("decl",
          usingDecl(hasAnyUsingShadowDecl(hasTargetDecl(
              anyOf(var_decl_matcher, field_decl_matcher, function_decl_matcher,
-                   method_decl_matcher, function_template_decl_matcher))))),
+                   method_decl_matcher, function_template_decl_matcher,
+                   enum_member_decl_matcher))))),
       &using_decl_rewriter);
 
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
@@ -586,6 +629,8 @@ int main(int argc, const char* argv[]) {
     replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
   for (const auto& p : var_decl_rewriter.replacement_names())
     replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
+  for (const auto& p : enum_member_decl_rewriter.replacement_names())
+    replacement_db_file << "enu:" << p.first << ":" << p.second << "\n";
   for (const auto& p : function_decl_rewriter.replacement_names())
     replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
   for (const auto& p : method_decl_rewriter.replacement_names())
