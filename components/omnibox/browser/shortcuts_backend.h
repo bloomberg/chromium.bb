@@ -27,7 +27,14 @@
 #include "components/search_engines/search_terms_data.h"
 #include "url/gurl.h"
 
+class ShortcutsBackend;
 class TemplateURLService;
+struct TestShortcutData;
+
+void PopulateShortcutsBackendWithTestData(
+    scoped_refptr<ShortcutsBackend> backend,
+    TestShortcutData* db,
+    size_t db_size);
 
 namespace history {
 class HistoryService;
@@ -89,8 +96,11 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
  private:
   friend class base::RefCountedThreadSafe<ShortcutsBackend>;
-  friend class ShortcutsProviderTest;
   friend class ShortcutsBackendTest;
+  friend void PopulateShortcutsBackendWithTestData(
+      scoped_refptr<ShortcutsBackend> backend,
+      TestShortcutData* db,
+      size_t db_size);
   FRIEND_TEST_ALL_PREFIXES(ShortcutsBackendTest, EntitySuggestionTest);
 
   enum CurrentState {

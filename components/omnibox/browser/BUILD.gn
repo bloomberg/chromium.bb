@@ -165,6 +165,8 @@ static_library("test_support") {
     "in_memory_url_index_test_util.h",
     "mock_autocomplete_provider_client.cc",
     "mock_autocomplete_provider_client.h",
+    "shortcuts_provider_test_util.cc",
+    "shortcuts_provider_test_util.h",
     "test_scheme_classifier.cc",
     "test_scheme_classifier.h",
   ]
@@ -177,6 +179,7 @@ static_library("test_support") {
     "//components/search_engines",
     "//net",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
@@ -201,7 +204,9 @@ source_set("unit_tests") {
     "omnibox_popup_model_unittest.cc",
     "omnibox_view_unittest.cc",
     "scored_history_match_unittest.cc",
+    "shortcuts_backend_unittest.cc",
     "shortcuts_database_unittest.cc",
+    "shortcuts_provider_unittest.cc",
     "suggestion_answer_unittest.cc",
     "zero_suggest_provider_unittest.cc",
   ]

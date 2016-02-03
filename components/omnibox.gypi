@@ -187,6 +187,8 @@
         'omnibox/browser/in_memory_url_index_test_util.h',
         'omnibox/browser/mock_autocomplete_provider_client.cc',
         'omnibox/browser/mock_autocomplete_provider_client.h',
+        'omnibox/browser/shortcuts_provider_test_util.cc',
+        'omnibox/browser/shortcuts_provider_test_util.h',
         'omnibox/browser/test_scheme_classifier.cc',
         'omnibox/browser/test_scheme_classifier.h',
       ],

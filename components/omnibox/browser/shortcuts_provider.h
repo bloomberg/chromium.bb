@@ -33,6 +33,7 @@ class ShortcutsProvider : public AutocompleteProvider,
 
  private:
   friend class ClassifyTest;
+  friend class ShortcutsProviderExtensionTest;
   friend class ShortcutsProviderTest;
   FRIEND_TEST_ALL_PREFIXES(ShortcutsProviderTest, CalculateScore);
 
