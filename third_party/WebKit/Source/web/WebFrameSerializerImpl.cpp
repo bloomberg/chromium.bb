@@ -86,6 +86,7 @@
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLMetaElement.h"
@@ -304,17 +305,25 @@ void WebFrameSerializerImpl::openTagToString(
     result.append('<');
     result.append(element->nodeName().lower());
 
-    // Find out if this element owns a frame.
+    // Find out if we need to do frame-specific link rewriting.
     WebFrame* frame = nullptr;
     if (element->isFrameOwnerElement()) {
         frame = WebFrame::fromFrame(
             toHTMLFrameOwnerElement(element)->contentFrame());
     }
+    WebString rewrittenFrameLink;
+    bool shouldRewriteFrameSrc =
+        frame && m_delegate->rewriteFrameSource(frame, &rewrittenFrameLink);
+    bool didRewriteFrameSrc = false;
 
     // Go through all attributes and serialize them.
     for (const auto& it : element->attributes()) {
         const QualifiedName& attrName = it.name();
         String attrValue = it.value();
+
+        // Skip srcdoc attribute if we will emit src attribute (for frames).
+        if (shouldRewriteFrameSrc && attrName == HTMLNames::srcdocAttr)
+            continue;
 
         // Rewrite the attribute value if requested.
         if (element->hasLegalLinkAttribute(attrName)) {
@@ -324,11 +333,12 @@ void WebFrameSerializerImpl::openTagToString(
                 KURL completeURL = param->document->completeURL(attrValue);
 
                 // Check whether we have a local file to link to.
-                WebString rewrittenLink;
-                if (frame && m_delegate->rewriteFrameSource(frame, &rewrittenLink)) {
-                    attrValue = rewrittenLink;
-                } else if (m_delegate->rewriteLink(completeURL, &rewrittenLink)) {
-                    attrValue = rewrittenLink;
+                WebString rewrittenURL;
+                if (shouldRewriteFrameSrc) {
+                    attrValue = rewrittenFrameLink;
+                    didRewriteFrameSrc = true;
+                } else if (m_delegate->rewriteLink(completeURL, &rewrittenURL)) {
+                    attrValue = rewrittenURL;
                 } else {
                     attrValue = completeURL;
                 }
@@ -336,6 +346,14 @@ void WebFrameSerializerImpl::openTagToString(
         }
 
         appendAttribute(result, param->isHTMLDocument, attrName.toString(), attrValue);
+    }
+
+    // For frames where link rewriting was requested, ensure that src attribute
+    // is written even if the original document didn't have that attribute
+    // (mainly needed for iframes with srcdoc, but with no src attribute).
+    if (shouldRewriteFrameSrc && !didRewriteFrameSrc && isHTMLIFrameElement(element)) {
+        appendAttribute(
+            result, param->isHTMLDocument, HTMLNames::srcAttr.toString(), rewrittenFrameLink);
     }
 
     // Do post action for open tag.

@@ -553,7 +553,7 @@ bool SavePackage::GenerateFileName(const std::string& disposition,
 // We have received a message from SaveFileManager about a new saving job. We
 // find a SaveItem and store it in our in_progress list.
 void SavePackage::StartSave(const SaveFileCreateInfo* info) {
-  DCHECK(info && !info->url.is_empty());
+  DCHECK(info);
 
   SaveItemIdMap::iterator it = in_progress_items_.find(info->save_item_id);
   if (it == in_progress_items_.end()) {
@@ -1175,8 +1175,6 @@ SaveItem* SavePackage::CreatePendingSaveItem(
     const GURL& url,
     const Referrer& referrer,
     SaveFileCreateInfo::SaveFileSource save_source) {
-  DCHECK(url.is_valid());  // |url| should be validated by the callers.
-
   SaveItem* save_item;
   Referrer sanitized_referrer = Referrer::SanitizeForRequest(url, referrer);
   save_item = new SaveItem(url, sanitized_referrer, this, save_source,
@@ -1232,9 +1230,6 @@ void SavePackage::EnqueueSavableResource(int container_frame_tree_node_id,
 void SavePackage::EnqueueFrame(int container_frame_tree_node_id,
                                int frame_tree_node_id,
                                const GURL& frame_original_url) {
-  if (!frame_original_url.is_valid())
-    return;
-
   SaveItem* save_item = CreatePendingSaveItem(
       container_frame_tree_node_id, frame_tree_node_id, frame_original_url,
       Referrer(), SaveFileCreateInfo::SAVE_FILE_FROM_DOM);

@@ -61,13 +61,9 @@ void GetSavableResourceLinkForElement(
     const WebElement& element,
     const WebDocument& current_doc,
     SavableResourcesResult* result) {
-  // Check whether the node has sub resource URL or not.
-  WebString value = GetSubResourceLinkFromElement(element);
-  if (value.isNull())
-    return;
-
   // Get absolute URL.
-  GURL element_url = current_doc.completeURL(value);
+  WebString link_attribute_value = GetSubResourceLinkFromElement(element);
+  GURL element_url = current_doc.completeURL(link_attribute_value);
 
   // See whether to report this element as a subframe.
   WebFrame* web_frame = WebFrame::fromFrameOwnerElement(element);
@@ -78,6 +74,10 @@ void GetSavableResourceLinkForElement(
     result->subframes->push_back(subframe);
     return;
   }
+
+  // Check whether the node has sub resource URL or not.
+  if (link_attribute_value.isNull())
+    return;
 
   // Ignore invalid URL.
   if (!element_url.is_valid())
