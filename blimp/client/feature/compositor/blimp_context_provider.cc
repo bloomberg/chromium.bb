@@ -43,11 +43,14 @@ static void BindGrContextCallback(const GrGLInterface* interface) {
 
 // static
 scoped_refptr<BlimpContextProvider> BlimpContextProvider::Create(
-    gfx::AcceleratedWidget widget) {
-  return new BlimpContextProvider(widget);
+    gfx::AcceleratedWidget widget,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+  return new BlimpContextProvider(widget, gpu_memory_buffer_manager);
 }
 
-BlimpContextProvider::BlimpContextProvider(gfx::AcceleratedWidget widget) {
+BlimpContextProvider::BlimpContextProvider(
+    gfx::AcceleratedWidget widget,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   context_thread_checker_.DetachFromThread();
 
   gpu::gles2::ContextCreationAttribHelper attribs_for_gles2;
@@ -66,7 +69,7 @@ BlimpContextProvider::BlimpContextProvider(gfx::AcceleratedWidget widget) {
       widget, gfx::Size(1, 1), nullptr /* share_context */,
       false /* share_resources */, attribs_for_gles2, gfx::PreferDiscreteGpu,
       gpu::GLInProcessContextSharedMemoryLimits(),
-      nullptr /* gpu_memory_buffer_manager */, nullptr /* memory_limits */));
+      gpu_memory_buffer_manager, nullptr /* memory_limits */));
   context_->SetContextLostCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));
 }

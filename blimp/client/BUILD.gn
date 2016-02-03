@@ -9,10 +9,12 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-component("blimp_client") {
+source_set("blimp_client") {
   sources = [
     "app/blimp_client_switches.cc",
     "app/blimp_client_switches.h",
+    "app/blimp_discardable_memory_allocator.cc",
+    "app/blimp_discardable_memory_allocator.h",
     "app/blimp_startup.cc",
     "app/blimp_startup.h",
     "blimp_client_export.h",
@@ -41,12 +43,31 @@ component("blimp_client") {
   ]
 }
 
+source_set("app_unit_tests") {
+  testonly = true
+
+  sources = [
+    "app/blimp_discardable_memory_allocator_unittest.cc",
+  ]
+
+  deps = [
+    ":blimp_client",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
+
 source_set("feature") {
   sources = [
     "feature/compositor/blimp_compositor.cc",
     "feature/compositor/blimp_compositor.h",
     "feature/compositor/blimp_context_provider.cc",
     "feature/compositor/blimp_context_provider.h",
+    "feature/compositor/blimp_gpu_memory_buffer_manager.cc",
+    "feature/compositor/blimp_gpu_memory_buffer_manager.h",
     "feature/compositor/blimp_input_handler_wrapper.cc",
     "feature/compositor/blimp_input_handler_wrapper.h",
     "feature/compositor/blimp_input_manager.cc",
@@ -69,6 +90,7 @@ source_set("feature") {
     "//blimp/common:blimp_common",
     "//cc",
     "//cc/proto",
+    "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gl_in_process_context",
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
@@ -93,7 +115,6 @@ source_set("feature_unit_tests") {
   ]
 
   deps = [
-    ":blimp_client",
     ":feature",
     "//base",
     "//base/test:run_all_unittests",

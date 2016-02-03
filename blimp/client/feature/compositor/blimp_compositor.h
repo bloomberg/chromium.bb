@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/client/blimp_client_export.h"
+#include "blimp/client/feature/compositor/blimp_gpu_memory_buffer_manager.h"
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "cc/layers/layer_settings.h"
@@ -146,6 +147,8 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   scoped_ptr<base::Thread> compositor_thread_;
 
   gfx::AcceleratedWidget window_;
+
+  BlimpGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   // Whether or not |host_| should be visible.  This is stored in case |host_|
   // is null when SetVisible() is called or if we don't have a

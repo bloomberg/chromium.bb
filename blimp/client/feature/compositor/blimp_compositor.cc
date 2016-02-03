@@ -241,6 +241,7 @@ void BlimpCompositor::CreateLayerTreeHost(
   cc::LayerTreeHost::InitParams params;
   params.client = this;
   params.task_graph_runner = g_task_graph_runner.Pointer();
+  params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
   params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
   params.settings = settings_.get();
 
@@ -306,7 +307,7 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
     return;
 
   scoped_refptr<BlimpContextProvider> context_provider =
-      BlimpContextProvider::Create(window_);
+      BlimpContextProvider::Create(window_, &gpu_memory_buffer_manager_);
 
   host_->SetOutputSurface(
       make_scoped_ptr(new BlimpOutputSurface(context_provider)));

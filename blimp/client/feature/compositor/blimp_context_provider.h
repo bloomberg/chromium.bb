@@ -23,7 +23,8 @@ namespace client {
 class BlimpContextProvider : public cc::ContextProvider {
  public:
   static scoped_refptr<BlimpContextProvider> Create(
-      gfx::AcceleratedWidget widget);
+      gfx::AcceleratedWidget widget,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;
@@ -40,7 +41,9 @@ class BlimpContextProvider : public cc::ContextProvider {
       const LostContextCallback& lost_context_callback) override;
 
  protected:
-  explicit BlimpContextProvider(gfx::AcceleratedWidget widget);
+  BlimpContextProvider(
+      gfx::AcceleratedWidget widget,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~BlimpContextProvider() override;
 
  private:

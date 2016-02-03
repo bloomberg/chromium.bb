@@ -9,12 +9,16 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "blimp/client/app/blimp_discardable_memory_allocator.h"
 #include "third_party/skia/include/core/SkGraphics.h"
 #include "ui/gl/gl_surface.h"
 
 namespace {
 base::LazyInstance<scoped_ptr<base::MessageLoopForUI>> g_main_message_loop =
     LAZY_INSTANCE_INITIALIZER;
+
+base::LazyInstance<blimp::client::BlimpDiscardableMemoryAllocator>
+    g_discardable_memory_allocator = LAZY_INSTANCE_INITIALIZER;
 }
 
 namespace blimp {
@@ -44,6 +48,9 @@ void InitializeLogging() {
 bool InitializeMainMessageLoop() {
   // TODO(dtrainor): Initialize ICU?
 
+  // Set the DiscardableMemoryAllocator.
+  base::DiscardableMemoryAllocator::SetInstance(
+      g_discardable_memory_allocator.Pointer());
   if (!gfx::GLSurface::InitializeOneOff())
     return false;
   SkGraphics::Init();
