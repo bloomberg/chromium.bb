@@ -120,8 +120,6 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
 
     if (geometry.intersectionRect.size().isZero())
         geometry.intersectionRect = LayoutRect();
-    if (!m_shouldReportRootBounds)
-        geometry.rootRect = LayoutRect();
 
     return true;
 }
@@ -151,11 +149,13 @@ void IntersectionObservation::computeIntersectionObservations(double timestamp)
         return;
     float newVisibleRatio = intersectionArea / targetArea;
     unsigned newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
+    IntRect snappedRootBounds = pixelSnappedIntRect(geometry.rootRect);
+    IntRect* rootBoundsPointer = m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
     if (m_lastThresholdIndex != newThresholdIndex) {
         IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
             timestamp / 1000.0,
             pixelSnappedIntRect(geometry.targetRect),
-            pixelSnappedIntRect(geometry.rootRect),
+            rootBoundsPointer,
             pixelSnappedIntRect(geometry.intersectionRect),
             targetElement);
         observer().enqueueIntersectionObserverEntry(*newEntry);

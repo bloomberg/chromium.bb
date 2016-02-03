@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<div style="width:100%; height:700px;"></div>
+<iframe id="target-iframe" src="http://localhost:8080/intersection-observer/resources/cross-origin-subframe.html" style="height: 100px; overflow-y: scroll"></iframe>
+<div style="width:100%; height:700px;"></div>
+
+<script>
+setPrintTestResultsLazily();
+self.jsTestIsAsync = true;
+
+description("Simple intersection observer test with no explicit root and target in a cross-origin iframe.");
+
+var iframe = document.getElementById("target-iframe");
+var actual;
+
+function checkData(actualData, expected) {
+  actual = actualData;
+  shouldBeEqualToNumber("actual.length", expected.length);
+  for (var i = 0; i < actualData.length && i < expected.length; i++) {
+    actual = actualData[i];
+    shouldBeEqualToNumber("actual.boundingClientRect.left", expected[i].boundingClientRect.left);
+    shouldBeEqualToNumber("actual.boundingClientRect.top", expected[i].boundingClientRect.top);
+    shouldBeEqualToNumber("actual.boundingClientRect.right", expected[i].boundingClientRect.right);
+    shouldBeEqualToNumber("actual.boundingClientRect.bottom", expected[i].boundingClientRect.bottom);
+    shouldBeEqualToNumber("actual.boundingClientRect.width", expected[i].boundingClientRect.width);
+    shouldBeEqualToNumber("actual.boundingClientRect.height", expected[i].boundingClientRect.height);
+    shouldBeEqualToNumber("actual.intersectionRect.left", expected[i].intersectionRect.left);
+    shouldBeEqualToNumber("actual.intersectionRect.top", expected[i].intersectionRect.top);
+    shouldBeEqualToNumber("actual.intersectionRect.right", expected[i].intersectionRect.right);
+    shouldBeEqualToNumber("actual.intersectionRect.bottom", expected[i].intersectionRect.bottom);
+    shouldBeEqualToNumber("actual.intersectionRect.width", expected[i].intersectionRect.width);
+    shouldBeEqualToNumber("actual.intersectionRect.height", expected[i].intersectionRect.height);
+    if (expected[i].rootBounds == "null") {
+      shouldBe("actual.rootBounds", "null");
+    } else if (actual.rootBounds == "null") {
+      shouldNotBe("actual.rootBounds", "null");
+    } else {
+      shouldBeEqualToNumber("actual.rootBounds.left", expected[i].rootBounds.left);
+      shouldBeEqualToNumber("actual.rootBounds.top", expected[i].rootBounds.top);
+      shouldBeEqualToNumber("actual.rootBounds.right", expected[i].rootBounds.right);
+      shouldBeEqualToNumber("actual.rootBounds.bottom", expected[i].rootBounds.bottom);
+      shouldBeEqualToNumber("actual.rootBounds.width", expected[i].rootBounds.width);
+      shouldBeEqualToNumber("actual.rootBounds.height", expected[i].rootBounds.height);
+    }
+    shouldBeEqualToString("actual.target", expected[i].target);
+  }
+}
+
+function handleMessage(event) {
+  if (event.data.hasOwnProperty('scrollTo')) {
+    document.scrollingElement.scrollTop = event.data.scrollTo;
+    requestAnimationFrame(function () { iframe.contentWindow.postMessage("", "*") });
+  } else if (event.data.hasOwnProperty('actual')) {
+    checkData(event.data.actual, event.data.expected);
+  } else if (event.data.hasOwnProperty('DONE')) {
+    finishJSTest();
+    document.scrollingElement.scrollTop = 0;
+  } else {
+    requestAnimationFrame(function () { iframe.contentWindow.postMessage("", "*") });
+  }
+}
+
+window.addEventListener("message", handleMessage);
+iframe.onload = function() {
+  iframe.contentWindow.postMessage("", "*")
+};
+</script>

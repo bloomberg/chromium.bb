@@ -1,0 +1,42 @@
+Simple intersection observer test with no explicit root and target in a cross-origin iframe.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS actual.length is 0
+PASS actual.length is 0
+PASS actual.length is 1
+PASS actual.boundingClientRect.left is 18
+PASS actual.boundingClientRect.top is 468
+PASS actual.boundingClientRect.right is 118
+PASS actual.boundingClientRect.bottom is 568
+PASS actual.boundingClientRect.width is 100
+PASS actual.boundingClientRect.height is 100
+PASS actual.intersectionRect.left is 18
+PASS actual.intersectionRect.top is 510
+PASS actual.intersectionRect.right is 118
+PASS actual.intersectionRect.bottom is 568
+PASS actual.intersectionRect.width is 100
+PASS actual.intersectionRect.height is 58
+PASS actual.rootBounds is null
+PASS actual.target is "target"
+PASS actual.length is 1
+PASS actual.boundingClientRect.left is 18
+PASS actual.boundingClientRect.top is 568
+PASS actual.boundingClientRect.right is 118
+PASS actual.boundingClientRect.bottom is 668
+PASS actual.boundingClientRect.width is 100
+PASS actual.boundingClientRect.height is 100
+PASS actual.intersectionRect.left is 0
+PASS actual.intersectionRect.top is 0
+PASS actual.intersectionRect.right is 0
+PASS actual.intersectionRect.bottom is 0
+PASS actual.intersectionRect.width is 0
+PASS actual.intersectionRect.height is 0
+PASS actual.rootBounds is null
+PASS actual.target is "target"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

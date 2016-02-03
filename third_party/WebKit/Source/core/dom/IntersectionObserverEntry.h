@@ -17,7 +17,7 @@ class Element;
 class IntersectionObserverEntry final : public GarbageCollectedFinalized<IntersectionObserverEntry>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    IntersectionObserverEntry(double timestamp, const IntRect& boundingClientRect, const IntRect& rootBounds, const IntRect& intersectionRect, Element*);
+    IntersectionObserverEntry(double timestamp, const IntRect& boundingClientRect, const IntRect* rootBounds, const IntRect& intersectionRect, Element*);
     ~IntersectionObserverEntry();
 
     double time() const { return m_time; }
