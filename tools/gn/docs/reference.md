@@ -532,7 +532,7 @@
 ## **gn gen**: Generate ninja files.
 
 ```
-  gn gen <out_dir>
+  gn gen [--ide=<ide_name>] <out_dir>
 
   Generates ninja files from the current tree and puts them in the given
   output directory.
@@ -541,6 +541,10 @@
       //out/foo
   Or it can be a directory relative to the current directory such as:
       out/foo
+
+  --ide=<ide_name>
+    Also generate files for an IDE. Currently supported values:
+      'vs' - Visual Studio project/solution files.
 
   See "gn help switches" for the common command-line switches.
 
@@ -1040,21 +1044,25 @@
 
 ```
 
-### **Variables valid in a config definition**:
+### **Variables valid in a config definition**
+
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
          asmflags, defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
+  Nested configs: configs
 
 ```
 
-### **Variables on a target used to apply configs**:
+### **Variables on a target used to apply configs**
+
 ```
   all_dependent_configs, configs, public_configs
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   config("myconfig") {
     includes = [ "include/common" ]
@@ -1390,7 +1398,7 @@
     }
   }
 
-  # A template that wraps another. It adds behavior based on one
+  # A template that wraps another. It adds behavior based on one 
   # variable, and forwards all others to the nested target.
   template("my_ios_test_app") {
     ios_test_app(target_name) {
@@ -1875,7 +1883,7 @@
 
 ```
 
-### **Arguments**:
+### **Arguments**
 
 ```
   input
@@ -1909,6 +1917,12 @@
   string or a list of strings). All relative and source-absolute file
   names will be converted to be relative to the requested output
   System-absolute paths will be unchanged.
+
+  Whether an output path will end in a slash will match whether the
+  corresponding input path ends in a slash. It will return "." or
+  "./" (depending on whether the input ends in a slash) to avoid
+  returning empty strings. This means if you want a root path
+  ("//" or "/") not ending in a slash, you can add a dot ("//.").
 
 ```
 
@@ -3352,6 +3366,51 @@
 
 
 ```
+## **assert_no_deps**: Ensure no deps on these targets.
+
+```
+  A list of label patterns.
+
+  This list is a list of patterns that must not match any of the
+  transitive dependencies of the target. These include all public,
+  private, and data dependencies, and cross shared library boundaries.
+  This allows you to express that undesirable code isn't accidentally
+  added to downstream dependencies in a way that might otherwise be
+  difficult to notice.
+
+  Checking does not cross executable boundaries. If a target depends on
+  an executable, it's assumed that the executable is a tool that is
+  producing part of the build rather than something that is linked and
+  distributed. This allows assert_no_deps to express what is distributed
+  in the final target rather than depend on the internal build steps
+  (which may include non-distributable code).
+
+  See "gn help label_pattern" for the format of the entries in the
+  list. These patterns allow blacklisting individual targets or whole
+  directory hierarchies.
+
+  Sometimes it is desirable to enforce that many targets have no
+  dependencies on a target or set of targets. One efficient way to
+  express this is to create a group with the assert_no_deps rule on
+  it, and make that group depend on all targets you want to apply that
+  assertion to.
+
+```
+
+### **Example**
+
+```
+  executable("doom_melon") {
+    deps = [ "//foo:bar" ]
+    ...
+    assert_no_deps = [
+      "//evil/*",  # Don't link any code from the evil directory.
+      "//foo:test_support",  # This target is also disallowed.
+    ]
+  }
+
+
+```
 ## **cflags***: Flags passed to the C compiler.
 
 ```
@@ -4083,6 +4142,10 @@
      "deps" list. If a dependency is public, they will be applied
      recursively.
 
+  For "libs" and "lib_dirs" only, the values propagated from
+  dependencies (as described above) are applied last assuming they
+  are not already in the list.
+
 ```
 
 ### **Example**
@@ -4095,31 +4158,45 @@
 ## **libs**: Additional libraries to link.
 
 ```
-  A list of strings.
+  A list of library names or library paths.
 
-  These files will be passed to the linker, which will generally search
-  the library include path. Unlike a normal list of files, they will be
-  passed to the linker unmodified rather than being treated as file
-  names relative to the current build file. Generally you would set
-  the "lib_dirs" so your library is found. If you need to specify
-  a path, you can use "rebase_path" to convert a path to be relative
-  to the build directory.
-
-  When constructing the linker command, the "lib_prefix" attribute of
-  the linker tool in the current toolchain will be prepended to each
-  library. So your BUILD file should not specify the switch prefix
-  (like "-l").
-
-  Libraries ending in ".framework" will be special-cased: the switch
-  "-framework" will be prepended instead of the lib_prefix, and the
-  ".framework" suffix will be trimmed. This is to support the way Mac
-  links framework dependencies.
+  These libraries will be linked into the final binary (executable or
+  shared library) containing the current target.
 
   libs and lib_dirs work differently than other flags in two respects.
   First, then are inherited across static library boundaries until a
   shared library or executable target is reached. Second, they are
   uniquified so each one is only passed once (the first instance of it
   will be the one used).
+
+```
+
+### **Types of libs**
+
+```
+  There are several different things that can be expressed in libs:
+
+  File paths
+      Values containing '/' will be treated as references to files in
+      the checkout. They will be rebased to be relative to the build
+      directory and specified in the "libs" for linker tools. This
+      facility should be used for libraries that are checked in to the
+      version control. For libraries that are generated by the build,
+      use normal GN deps to link them.
+
+  System libraries
+      Values not containing '/' will be treated as system library names.
+      These will be passed unmodified to the linker and prefixed with
+      the "lib_prefix" attribute of the linker tool. Generally you
+      would set the "lib_dirs" so the given library is found. Your
+      BUILD.gn file should not specify the switch (like "-l"): this
+      will be encoded in the "lib_prefix" of the tool.
+
+  Apple frameworks
+      System libraries ending in ".framework" will be special-cased:
+      the switch "-framework" will be prepended instead of the
+      lib_prefix, and the ".framework" suffix will be trimmed. This is
+      to support the way Mac links framework dependencies.
 
 ```
 
@@ -4140,6 +4217,10 @@
      "deps" list. If a dependency is public, they will be applied
      recursively.
 
+  For "libs" and "lib_dirs" only, the values propagated from
+  dependencies (as described above) are applied last assuming they
+  are not already in the list.
+
 ```
 
 ### **Examples**
@@ -4147,6 +4228,7 @@
 ```
   On Windows:
     libs = [ "ctl3d.lib" ]
+
   On Linux:
     libs = [ "ld" ]
 
@@ -4852,7 +4934,8 @@
       string           = `"` { char | escape | expansion } `"` .
       escape           = `\` ( "$" | `"` | char ) .
       BracketExpansion = "{" ( identifier | ArrayAccess | ScopeAccess ) "}" .
-      expansion        = "$" ( identifier | BracketExpansion ) .
+      Hex              = "0x" [0-9A-Fa-f][0-9A-Fa-f]
+      expansion        = "$" ( identifier | BracketExpansion | Hex ) .
       char             = /* any character except "$", `"`, or newline */ .
 
   After a backslash, certain sequences represent special characters:
@@ -4862,6 +4945,9 @@
           \\    U+005C    backslash
 
   All other backslashes represent themselves.
+
+  To insert an arbitrary byte value, use $0xFF. For example, to
+  insert a newline character: "Line one$0x0ALine two".
 
 ```
 

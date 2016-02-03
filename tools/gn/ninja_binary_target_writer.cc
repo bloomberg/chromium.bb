@@ -779,10 +779,13 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   // End of the link "build" line.
   out_ << std::endl;
 
-  // These go in the inner scope of the link line.
-  WriteLinkerFlags(optional_def_file);
-
-  WriteLibs();
+  // The remaining things go in the inner scope of the link line.
+  if (target_->output_type() == Target::EXECUTABLE ||
+      target_->output_type() == Target::SHARED_LIBRARY ||
+      target_->output_type() == Target::LOADABLE_MODULE) {
+    WriteLinkerFlags(optional_def_file);
+    WriteLibs();
+  }
   WriteOutputExtension();
   WriteSolibs(solibs);
 }
