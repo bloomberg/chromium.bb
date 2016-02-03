@@ -45,7 +45,7 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
   @classmethod
   def setUpClass(cls):
     assert cros_build_lib.IsInsideChroot()
-    logging.info('Generating board configs. This takes about 10m...')
+    logging.info('Generating board configs. This takes about 30m...')
     board_keys = binhost.GetAllImportantBoardKeys(cls.site_config)
     boards = set(key.board for key in board_keys)
     for board in sorted(boards):
