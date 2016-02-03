@@ -147,7 +147,7 @@ const char kCardNumberRe[] =
     "|信用卡卡號"  // zh-TW
     "|카드";  // ko-KR
 const char kCardCvcRe[] =
-    "verification|card identification|security code|card code"
+    "verification|card.?identification|security.?code|card.?code"
     "|cvn|cvv|cvc|csc|cvd|cid|ccv"
     "|\\bcid\\b";
 
