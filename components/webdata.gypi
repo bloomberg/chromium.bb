@@ -12,7 +12,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../content/content.gyp:content_browser',
         '../sql/sql.gyp:sql',
       ],
       'defines': [
