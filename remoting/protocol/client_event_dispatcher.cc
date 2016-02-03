@@ -6,20 +6,18 @@
 
 #include "base/time/time.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"
-#include "remoting/protocol/message_serialization.h"
+#include "remoting/protocol/message_pipe.h"
 
 namespace remoting {
 namespace protocol {
 
 ClientEventDispatcher::ClientEventDispatcher()
-    : ChannelDispatcherBase(kEventChannelName) {
-}
-
-ClientEventDispatcher::~ClientEventDispatcher() {
-}
+    : ChannelDispatcherBase(kEventChannelName) {}
+ClientEventDispatcher::~ClientEventDispatcher() {}
 
 void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   DCHECK(event.has_usb_keycode());
@@ -27,7 +25,7 @@ void ClientEventDispatcher::InjectKeyEvent(const KeyEvent& event) {
   EventMessage message;
   message.set_timestamp(base::TimeTicks::Now().ToInternalValue());
   message.mutable_key_event()->CopyFrom(event);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientEventDispatcher::InjectTextEvent(const TextEvent& event) {
@@ -35,21 +33,21 @@ void ClientEventDispatcher::InjectTextEvent(const TextEvent& event) {
   EventMessage message;
   message.set_timestamp(base::TimeTicks::Now().ToInternalValue());
   message.mutable_text_event()->CopyFrom(event);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientEventDispatcher::InjectMouseEvent(const MouseEvent& event) {
   EventMessage message;
   message.set_timestamp(base::TimeTicks::Now().ToInternalValue());
   message.mutable_mouse_event()->CopyFrom(event);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientEventDispatcher::InjectTouchEvent(const TouchEvent& event) {
   EventMessage message;
   message.set_timestamp(base::TimeTicks::Now().ToInternalValue());
   message.mutable_touch_event()->CopyFrom(event);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientEventDispatcher::OnIncomingMessage(

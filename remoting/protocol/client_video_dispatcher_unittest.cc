@@ -12,6 +12,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/fake_stream_socket.h"
+#include "remoting/protocol/message_reader.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/video_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"

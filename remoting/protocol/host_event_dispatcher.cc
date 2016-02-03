@@ -5,6 +5,7 @@
 #include "remoting/protocol/host_event_dispatcher.h"
 
 #include "net/socket/stream_socket.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/proto/internal.pb.h"

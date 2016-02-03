@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
+#include "remoting/protocol/stream_message_pipe_adapter.h"
 
 namespace remoting {
 namespace protocol {
@@ -16,8 +17,7 @@ namespace protocol {
 ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
     : channel_name_(channel_name),
       channel_factory_(nullptr),
-      event_handler_(nullptr) {
-}
+      event_handler_(nullptr) {}
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
   if (channel_factory_)
@@ -41,21 +41,16 @@ void ChannelDispatcherBase::OnChannelReady(
   }
 
   channel_factory_ = nullptr;
-  channel_ = std::move(socket);
-  writer_.Start(
-      base::Bind(&P2PStreamSocket::Write, base::Unretained(channel_.get())),
-      base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
-                 base::Unretained(this)));
-  reader_.StartReading(channel_.get(),
-                       base::Bind(&ChannelDispatcherBase::OnIncomingMessage,
-                                  base::Unretained(this)),
-                       base::Bind(&ChannelDispatcherBase::OnReadWriteFailed,
-                                  base::Unretained(this)));
+  message_pipe_.reset(new StreamMessagePipeAdapter(
+      std::move(socket),
+      base::Bind(&ChannelDispatcherBase::OnPipeError, base::Unretained(this))));
+  message_pipe_->StartReceiving(base::Bind(
+      &ChannelDispatcherBase::OnIncomingMessage, base::Unretained(this)));
 
   event_handler_->OnChannelInitialized(this);
 }
 
-void ChannelDispatcherBase::OnReadWriteFailed(int error) {
+void ChannelDispatcherBase::OnPipeError(int error) {
   event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
 }
 

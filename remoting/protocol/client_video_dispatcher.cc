@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/video_stub.h"
 
@@ -66,7 +68,7 @@ void ClientVideoDispatcher::OnPacketDone(
   while (!pending_frames_.empty() && pending_frames_.front().done) {
     VideoAck ack_message;
     ack_message.set_frame_id(pending_frames_.front().frame_id);
-    writer()->Write(SerializeAndFrameMessage(ack_message), base::Closure());
+    message_pipe()->Send(&ack_message, base::Closure());
     pending_frames_.pop_front();
   }
 }

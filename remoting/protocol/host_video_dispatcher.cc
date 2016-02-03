@@ -8,8 +8,10 @@
 
 #include "base/bind.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/video.pb.h"
+#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/video_feedback_stub.h"
 
@@ -22,7 +24,7 @@ HostVideoDispatcher::~HostVideoDispatcher() {}
 
 void HostVideoDispatcher::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
                                              const base::Closure& done) {
-  writer()->Write(SerializeAndFrameMessage(*packet), done);
+  message_pipe()->Send(packet.get(), done);
 }
 
 void HostVideoDispatcher::OnIncomingMessage(

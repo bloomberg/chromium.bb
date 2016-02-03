@@ -9,10 +9,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "net/socket/stream_socket.h"
+#include "remoting/base/compound_buffer.h"
 #include "remoting/base/constants.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
+#include "remoting/protocol/message_pipe.h"
 #include "remoting/protocol/message_serialization.h"
 
 namespace remoting {
@@ -66,47 +68,47 @@ void ClientControlDispatcher::InjectClipboardEvent(
     const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::NotifyClientResolution(
     const ClientResolution& resolution) {
   ControlMessage message;
   message.mutable_client_resolution()->CopyFrom(resolution);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::ControlVideo(const VideoControl& video_control) {
   ControlMessage message;
   message.mutable_video_control()->CopyFrom(video_control);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::ControlAudio(const AudioControl& audio_control) {
   ControlMessage message;
   message.mutable_audio_control()->CopyFrom(audio_control);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::SetCapabilities(
     const Capabilities& capabilities) {
   ControlMessage message;
   message.mutable_capabilities()->CopyFrom(capabilities);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::RequestPairing(
     const PairingRequest& pairing_request) {
   ControlMessage message;
   message.mutable_pairing_request()->CopyFrom(pairing_request);
-  writer()->Write(SerializeAndFrameMessage(message), base::Closure());
+  message_pipe()->Send(&message, base::Closure());
 }
 
 void ClientControlDispatcher::DeliverClientMessage(
     const ExtensionMessage& message) {
   ControlMessage control_message;
   control_message.mutable_extension_message()->CopyFrom(message);
-  writer()->Write(SerializeAndFrameMessage(control_message), base::Closure());
+  message_pipe()->Send(&control_message, base::Closure());
 }
 
 void ClientControlDispatcher::OnIncomingMessage(

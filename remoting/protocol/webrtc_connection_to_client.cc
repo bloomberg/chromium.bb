@@ -149,7 +149,6 @@ void WebrtcConnectionToClient::OnWebrtcTransportConnecting() {
 
 void WebrtcConnectionToClient::OnWebrtcTransportConnected() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnConnectionChannelsConnected(this);
 }
 
 void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
@@ -168,6 +167,11 @@ void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamRemoved(
 void WebrtcConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (control_dispatcher_ && control_dispatcher_->is_connected() &&
+      event_dispatcher_ && event_dispatcher_->is_connected()) {
+    event_handler_->OnConnectionChannelsConnected(this);
+  }
 }
 
 void WebrtcConnectionToClient::OnChannelError(
