@@ -72,7 +72,7 @@ private:
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, size_t) override;
 
-    bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
+    bool shouldIgnoreHTTPStatusCodeErrors() const override { return !isLinkPreload(); }
 
     void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
     void updateRequest(const ResourceRequest&) override;

@@ -238,7 +238,7 @@ static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribut
     if (settings && settings->logPreload())
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
     linkRequest.setForPreload(true);
-    linkRequest.setAvoidBlockingOnLoad(true);
+    linkRequest.setLinkPreload(true);
     return document.loader()->startPreload(type, linkRequest);
 }
 

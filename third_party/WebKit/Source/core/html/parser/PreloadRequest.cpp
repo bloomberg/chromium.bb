@@ -49,7 +49,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     request.setIntegrityMetadata(m_integrityMetadata);
 
     if (m_requestType == RequestTypeLinkRelPreload)
-        request.setAvoidBlockingOnLoad(true);
+        request.setLinkPreload(true);
     return request;
 }
 

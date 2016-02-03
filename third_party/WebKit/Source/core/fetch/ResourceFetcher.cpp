@@ -329,7 +329,7 @@ ResourcePtr<Resource> ResourceFetcher::preCacheData(const FetchRequest& request,
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource, const FetchRequest& request)
 {
     // TODO(yoav): Test that non-blocking resources (video/audio/track) continue to not-block even after being preloaded and discovered.
-    if (resource && resource->loader() && resource->isLoadEventBlockingResourceType() && resource->avoidBlockingOnLoad() && !request.forPreload()) {
+    if (resource && resource->loader() && resource->isLoadEventBlockingResourceType() && resource->isLinkPreload() && !request.forPreload()) {
         if (m_nonBlockingLoaders)
             m_nonBlockingLoaders->remove(resource->loader());
         if (!m_loaders)
@@ -547,7 +547,7 @@ ResourcePtr<Resource> ResourceFetcher::createResourceForLoading(FetchRequest& re
 
     initializeResourceRequest(request.mutableResourceRequest(), factory.type());
     ResourcePtr<Resource> resource = factory.create(request.resourceRequest(), charset);
-    resource->setAvoidBlockingOnLoad(request.avoidBlockingOnLoad());
+    resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);
 
     memoryCache()->add(resource.get());
@@ -847,8 +847,7 @@ void ResourceFetcher::clearPreloads(ClearPreloadsPolicy policy)
     for (auto resource : *m_preloads) {
         resource->decreasePreloadCount();
         bool deleted = resource->deleteIfPossible();
-        // avoidBlockingOnLoad is only set on non speculative preloads (i.e. <link rel=preload> triggered preloads)
-        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->avoidBlockingOnLoad()))
+        if (!deleted && resource->preloadResult() == Resource::PreloadNotReferenced && (policy == ClearAllPreloads || !resource->isLinkPreload()))
             memoryCache()->remove(resource.get());
     }
     m_preloads.clear();

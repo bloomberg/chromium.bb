@@ -167,7 +167,7 @@ Resource::Resource(const ResourceRequest& request, Type type)
     , m_status(Pending)
     , m_wasPurged(false)
     , m_needsSynchronousCacheHit(false)
-    , m_avoidBlockingOnLoad(false)
+    , m_linkPreload(false)
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     , m_deleted(false)
 #endif
@@ -1132,7 +1132,7 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
 
 bool Resource::shouldBlockLoadEvent() const
 {
-    return !m_avoidBlockingOnLoad && isLoadEventBlockingResourceType();
+    return !m_linkPreload && isLoadEventBlockingResourceType();
 }
 
 bool Resource::isLoadEventBlockingResourceType() const

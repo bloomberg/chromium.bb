@@ -114,8 +114,8 @@ public:
 
     void setNeedsSynchronousCacheHit(bool needsSynchronousCacheHit) { m_needsSynchronousCacheHit = needsSynchronousCacheHit; }
 
-    void setAvoidBlockingOnLoad(bool doNotBlock) { m_avoidBlockingOnLoad = doNotBlock; }
-    bool avoidBlockingOnLoad() { return m_avoidBlockingOnLoad; }
+    void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
+    bool isLinkPreload() const { return m_linkPreload; }
 
     void setResourceError(const ResourceError& error) { m_error = error; }
     const ResourceError& resourceError() const { return m_error; }
@@ -420,7 +420,7 @@ private:
     unsigned m_wasPurged : 1;
 
     unsigned m_needsSynchronousCacheHit : 1;
-    unsigned m_avoidBlockingOnLoad : 1;
+    unsigned m_linkPreload : 1;
 
 #ifdef ENABLE_RESOURCE_IS_DELETED_CHECK
     bool m_deleted;
