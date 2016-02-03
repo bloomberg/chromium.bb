@@ -629,6 +629,12 @@ class Command;
 // positioned relative to.
 - (NSRect)omniboxPopupAnchorRect;
 
+// Returns the flag |blockLayoutSubviews_|.
+- (BOOL)isLayoutSubviewsBlocked;
+
+// Returns the active tab contents controller's |blockFullscreenResize_| flag.
+- (BOOL)isActiveTabContentsControllerResizeBlocked;
+
 @end  // @interface BrowserWindowController (TestingAPI)
 
 

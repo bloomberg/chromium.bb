@@ -33,6 +33,8 @@
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
+#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -355,6 +357,25 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
       checker.CheckViewExposed(view);
   }
 
+  // NOTIFICATION_FULLSCREEN_CHANGED is sent asynchronously.
+  // This method toggles fullscreen and waits for the notification.
+  void ToggleFullscreenAndWaitForNotification() {
+    scoped_ptr<FullscreenNotificationObserver> waiter(
+        new FullscreenNotificationObserver());
+    browser()
+        ->exclusive_access_manager()
+        ->fullscreen_controller()
+        ->ToggleBrowserFullscreenWithToolbar();
+    waiter->Wait();
+  }
+
+  // Verifies that the flags |blockLayoutSubviews_| and |blockFullscreenResize|
+  // are false.
+  void VerifyFullscreenResizeFlagsAfterTransition() {
+    ASSERT_FALSE([controller() isLayoutSubviewsBlocked]);
+    ASSERT_FALSE([controller() isActiveTabContentsControllerResizeBlocked]);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserWindowControllerTest);
 };
@@ -639,4 +660,16 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, TrafficLightZOrder) {
   [controller() enterImmersiveFullscreen];
   [controller() exitImmersiveFullscreen];
   VerifyWindowControlsZOrder();
+}
+
+// Ensure that the blocking resize flags set during fullscreen transition to
+// are reset correctly after the transition.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenResizeFlags) {
+  // Enter fullscreen and verify the flags.
+  ToggleFullscreenAndWaitForNotification();
+  VerifyFullscreenResizeFlagsAfterTransition();
+
+  // Exit fullscreen and verify the flags.
+  ToggleFullscreenAndWaitForNotification();
+  VerifyFullscreenResizeFlagsAfterTransition();
 }

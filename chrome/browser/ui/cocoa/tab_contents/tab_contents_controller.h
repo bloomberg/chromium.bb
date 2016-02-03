@@ -38,11 +38,18 @@ class WebContents;
    // and auto-embeds fullscreen widgets as a subview.
    scoped_ptr<FullscreenObserver> fullscreenObserver_;
    // Set to true while TabContentsController is embedding a fullscreen widget
-   // view as a subview instead of the normal WebContentsView render view. Note:
-   // This will be false in the case of non-Flash fullscreen.
+   // view as a subview instead of the normal WebContentsView render view.
+   // Note: This will be false in the case of non-Flash fullscreen.
    BOOL isEmbeddingFullscreenWidget_;
 }
 @property(readonly, nonatomic) content::WebContents* webContents;
+
+// This flag is set to true when we don't want the fullscreen widget to
+// resize. This is done so that we can avoid resizing the fullscreen widget
+// to intermediate sizes during the fullscreen transition.
+// As a result, we would prevent janky movements during the transition and
+// Pepper Fullscreen from blowing up.
+@property(assign, nonatomic) BOOL blockFullscreenResize;
 
 // Create the contents of a tab represented by |contents|.
 - (id)initWithContents:(content::WebContents*)contents;
@@ -56,6 +63,10 @@ class WebContents;
 // properly sized. Then, this method will select either the WebContents view or
 // the fullscreen view and swap it into the view hierarchy for display.
 - (void)ensureContentsVisible;
+
+// Called after we enter fullscreen to ensure that the fullscreen widget will
+// have the right frame.
+- (void)updateFullscreenWidgetFrame;
 
 // Call to change the underlying web contents object. View is not changed,
 // call |-ensureContentsVisible| to display the |newContents|'s render widget

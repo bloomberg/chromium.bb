@@ -168,6 +168,10 @@ class WebContents;
 // out of AppKit Fullscreen.
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen;
 
+// Resets the variables that were set from using custom AppKit fullscreen
+// animation.
+- (void)resetCustomAppKitFullscreenVariables;
+
 - (content::WebContents*)webContents;
 - (PermissionBubbleManager*)permissionBubbleManager;
 

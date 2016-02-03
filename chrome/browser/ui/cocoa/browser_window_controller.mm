@@ -1901,6 +1901,15 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return [[toolbarView superview] convertRect:anchorRect toView:nil];
 }
 
+- (BOOL)isLayoutSubviewsBlocked {
+  return blockLayoutSubviews_;
+}
+
+- (BOOL)isActiveTabContentsControllerResizeBlocked {
+  return
+      [[tabStripController_ activeTabContentsController] blockFullscreenResize];
+}
+
 - (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)code
             context:(void*)context {
