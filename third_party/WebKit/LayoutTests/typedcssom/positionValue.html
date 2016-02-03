@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+
+test(function() {
+  assert_equals(new PositionValue(new SimpleLength(50, 'px'),
+    new CalcLength({px: -10, em: -3.2, pt: 0})).cssString, '50px calc((-10px - 3.2em) + 0pt)');
+  assert_equals(new PositionValue(new SimpleLength(50, 'px'),
+    new SimpleLength(2, 'em')).cssString, '50px 2em');
+  assert_equals(new PositionValue(new CalcLength({px: -10, em: -3.2, pt: 0}),
+    new CalcLength({px: -10, em: 3.2})).cssString, 'calc((-10px - 3.2em) + 0pt) calc(-10px + 3.2em)');
+  assert_equals(new PositionValue(new CalcLength({px: -10, em: -3.2, pt: 0}),
+    new SimpleLength(10, 'percent')).cssString, 'calc((-10px - 3.2em) + 0pt) 10%');
+}, "cssString returns a string with the x and y positions cssStrings separated by a space");
+
+</script>
+
+<body>
+</body>

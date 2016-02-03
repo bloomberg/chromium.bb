@@ -3882,6 +3882,10 @@ interface PositionSensorVRDevice : VRDevice
     method getImmediateState
     method getState
     method resetSensor
+interface PositionValue : StyleValue
+    getter x
+    getter y
+    method constructor
 interface Presentation
     getter defaultRequest
     getter receiver
