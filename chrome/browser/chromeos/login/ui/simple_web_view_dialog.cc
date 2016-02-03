@@ -29,6 +29,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "grit/components_strings.h"
 #include "ipc/ipc_message.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -166,7 +167,8 @@ void SimpleWebViewDialog::Init() {
   if (web_view_->GetWebContents())
     ChromeSecurityStateModelClient::CreateForWebContents(
         web_view_->GetWebContents());
-  toolbar_model_.reset(new ToolbarModelImpl(this));
+  toolbar_model_.reset(
+      new ToolbarModelImpl(this, content::kMaxURLDisplayChars));
 
   set_background(views::Background::CreateSolidBackground(kDialogColor));
 

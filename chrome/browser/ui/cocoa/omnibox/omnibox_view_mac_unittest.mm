@@ -15,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
+#include "content/public/common/content_constants.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/geometry/rect.h"
@@ -74,7 +75,7 @@ class TestingToolbarModelDelegate : public ChromeToolbarModelDelegate {
   TestingToolbarModelDelegate() {}
   ~TestingToolbarModelDelegate() override {}
 
-  // Overridden from ToolbarModelDelegate:
+  // Overridden from ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override { return NULL; }
 
  private:
@@ -150,7 +151,7 @@ TEST_F(OmniboxViewMacTest, SetGrayTextAutocompletion) {
       [[AutocompleteTextField alloc] initWithFrame:frame]);
 
   TestingToolbarModelDelegate delegate;
-  ToolbarModelImpl toolbar_model(&delegate);
+  ToolbarModelImpl toolbar_model(&delegate, content::kMaxURLDisplayChars);
   TestingOmniboxEditController controller(&toolbar_model);
   OmniboxViewMac view(&controller, profile(), NULL, field.get());
 

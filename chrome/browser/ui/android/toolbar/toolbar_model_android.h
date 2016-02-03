@@ -33,7 +33,7 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
   jboolean WouldReplaceURL(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
 
-  // ToolbarDelegate:
+  // ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
   static bool RegisterToolbarModelAndroid(JNIEnv* env);

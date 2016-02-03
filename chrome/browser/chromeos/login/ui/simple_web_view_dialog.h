@@ -90,7 +90,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
       const security_state::SecurityStateModel::SecurityInfo& security_info)
       override;
 
-  // Implements ToolbarModelDelegate:
+  // Implements ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
   // Implements CommandUpdaterDelegate:

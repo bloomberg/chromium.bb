@@ -18,7 +18,7 @@ class BrowserToolbarModelDelegate : public ChromeToolbarModelDelegate {
   explicit BrowserToolbarModelDelegate(Browser* browser);
   ~BrowserToolbarModelDelegate() override;
 
-  // ToolbarModelDelegate:
+  // ChromeToolbarModelDelegate:
   content::WebContents* GetActiveWebContents() const override;
 
  private:

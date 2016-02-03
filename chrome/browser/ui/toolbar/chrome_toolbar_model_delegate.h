@@ -11,6 +11,7 @@
 class Profile;
 
 namespace content {
+class NavigationEntry;
 class NavigationController;
 }
 
@@ -18,21 +19,33 @@ class NavigationController;
 // how to fetch the active WebContents to its subclasses.
 class ChromeToolbarModelDelegate : public ToolbarModelDelegate {
  public:
-  // ToolbarModelDelegate implementation:
-  std::string GetAcceptLanguages() const override;
-  base::string16 FormattedStringWithEquivalentMeaning(
-      const GURL& url,
-      const base::string16& formatted_url) const override;
+  // Returns active WebContents.
+  virtual content::WebContents* GetActiveWebContents() const = 0;
 
  protected:
   ChromeToolbarModelDelegate();
   ~ChromeToolbarModelDelegate() override;
 
  private:
+  // ToolbarModelDelegate implementation:
+  std::string GetAcceptLanguages() const override;
+  base::string16 FormattedStringWithEquivalentMeaning(
+      const GURL& url,
+      const base::string16& formatted_url) const override;
+  bool GetURL(GURL* url) const override;
+  bool ShouldDisplayURL() const override;
+  SecurityLevel GetSecurityLevel() const override;
+  base::string16 GetSearchTerms(SecurityLevel security_level) const override;
+  scoped_refptr<net::X509Certificate> GetCertificate() const override;
+
   // Returns the navigation controller used to retrieve the navigation entry
   // from which the states are retrieved. If this returns null, default values
   // are used.
   content::NavigationController* GetNavigationController() const;
+
+  // Helper method to extract the navigation entry from the navigation
+  // controller.
+  content::NavigationEntry* GetNavigationEntry() const;
 
   // Helper method to extract the profile from the navigation controller.
   Profile* GetProfile() const;

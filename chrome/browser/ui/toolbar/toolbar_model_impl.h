@@ -31,7 +31,8 @@ class X509Certificate;
 // from the navigation controller returned by GetNavigationController().
 class ToolbarModelImpl : public ToolbarModel {
  public:
-  explicit ToolbarModelImpl(ToolbarModelDelegate* delegate);
+  ToolbarModelImpl(ToolbarModelDelegate* delegate,
+                   size_t max_url_display_chars);
   ~ToolbarModelImpl() override;
 
  private:
@@ -48,11 +49,6 @@ class ToolbarModelImpl : public ToolbarModel {
   base::string16 GetEVCertName() const override;
   bool ShouldDisplayURL() const override;
 
-  // Returns the navigation controller used to retrieve the navigation entry
-  // from which the states are retrieved.
-  // If this returns NULL, default values are used.
-  content::NavigationController* GetNavigationController() const;
-
   // Returns search terms as in search::GetSearchTerms() if such terms should
   // appear in the omnibox (i.e. the page is sufficiently secure, search term
   // replacement is enabled, editing is not in progress, etc.).  If
@@ -60,6 +56,7 @@ class ToolbarModelImpl : public ToolbarModel {
   base::string16 GetSearchTerms(bool ignore_editing) const;
 
   ToolbarModelDelegate* delegate_;
+  const size_t max_url_display_chars_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelImpl);
 };
