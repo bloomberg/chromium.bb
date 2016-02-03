@@ -17,6 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,8 +35,6 @@
 #include "components/history/core/test/test_history_database.h"
 #include "components/history/core/test/thumbnail.h"
 #include "components/history/core/test/wait_top_sites_loaded_observer.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // The test must be in the history namespace for the gtest forward declarations

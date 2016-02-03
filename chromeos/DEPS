@@ -3,7 +3,6 @@
 # be kept as small as possible.
 include_rules = [
   "+components/device_event_log",
-  "+components/prefs",
   "+crypto",
   "+net",
   "+policy/proto",

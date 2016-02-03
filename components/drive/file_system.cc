@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/prefs/pref_service.h"
 #include "components/drive/change_list_loader.h"
 #include "components/drive/directory_loader.h"
 #include "components/drive/drive.pb.h"
@@ -34,7 +35,6 @@
 #include "components/drive/resource_entry_conversion.h"
 #include "components/drive/search_metadata.h"
 #include "components/drive/sync_client.h"
-#include "components/prefs/pref_service.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

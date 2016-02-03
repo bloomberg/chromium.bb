@@ -8,8 +8,8 @@
 // information and MUST not be extracted, overwritten or modified except
 // through Chromium defined APIs.
 
-#ifndef COMPONENTS_PREFS_PREF_SERVICE_H_
-#define COMPONENTS_PREFS_PREF_SERVICE_H_
+#ifndef BASE_PREFS_PREF_SERVICE_H_
+#define BASE_PREFS_PREF_SERVICE_H_
 
 #include <stdint.h>
 
@@ -51,7 +51,7 @@ class ScopedUserPrefUpdateBase;
 // Settings and storage accessed through this class represent
 // user-selected preferences and information and MUST not be
 // extracted, overwritten or modified except through the defined APIs.
-class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
+class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
  public:
   enum PrefInitializationStatus {
     INITIALIZATION_STATUS_WAITING,
@@ -61,7 +61,7 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   };
 
   // A helper class to store all the information associated with a preference.
-  class COMPONENTS_PREFS_EXPORT Preference {
+  class BASE_PREFS_EXPORT Preference {
    public:
     // The type of the preference is determined by the type with which it is
     // registered. This type needs to be a boolean, integer, double, string,
@@ -382,4 +382,4 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
-#endif  // COMPONENTS_PREFS_PREF_SERVICE_H_
+#endif  // BASE_PREFS_PREF_SERVICE_H_

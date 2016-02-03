@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREFS_PERSISTENT_PREF_STORE_H_
-#define COMPONENTS_PREFS_PERSISTENT_PREF_STORE_H_
+#ifndef BASE_PREFS_PERSISTENT_PREF_STORE_H_
+#define BASE_PREFS_PERSISTENT_PREF_STORE_H_
 
 #include <string>
 
@@ -13,7 +13,7 @@
 // This interface is complementary to the PrefStore interface, declaring
 // additional functionality that adds support for setting values and persisting
 // the data to some backing store.
-class COMPONENTS_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
+class BASE_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
  public:
   // Unique integer code for each type of error so we can report them
   // distinctly in a histogram.
@@ -74,4 +74,4 @@ class COMPONENTS_PREFS_EXPORT PersistentPrefStore : public WriteablePrefStore {
   ~PersistentPrefStore() override {}
 };
 
-#endif  // COMPONENTS_PREFS_PERSISTENT_PREF_STORE_H_
+#endif  // BASE_PREFS_PERSISTENT_PREF_STORE_H_

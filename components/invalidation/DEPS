@@ -2,6 +2,5 @@ include_rules = [
   # Explicitly forbid //content even though it is not allowed presently.
   "-content",
   "-components/invalidation",
-  "+components/prefs",
   "+google/cacheinvalidation",
 ]

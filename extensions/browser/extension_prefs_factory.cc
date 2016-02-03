@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"

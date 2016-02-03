@@ -6,10 +6,10 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
-#include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {

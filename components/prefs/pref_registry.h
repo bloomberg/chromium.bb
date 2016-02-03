@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREFS_PREF_REGISTRY_H_
-#define COMPONENTS_PREFS_PREF_REGISTRY_H_
+#ifndef BASE_PREFS_PREF_REGISTRY_H_
+#define BASE_PREFS_PREF_REGISTRY_H_
 
 #include <stdint.h>
 
@@ -29,8 +29,7 @@ class PrefStore;
 //
 // Currently, registrations after constructing the PrefService will
 // also work, but this is being deprecated.
-class COMPONENTS_PREFS_EXPORT PrefRegistry
-    : public base::RefCounted<PrefRegistry> {
+class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
  public:
   // Registration flags that can be specified which impact how the pref will
   // behave or be stored. This will be passed in a bitmask when the pref is
@@ -87,4 +86,4 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);
 };
 
-#endif  // COMPONENTS_PREFS_PREF_REGISTRY_H_
+#endif  // BASE_PREFS_PREF_REGISTRY_H_

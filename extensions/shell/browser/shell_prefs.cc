@@ -4,13 +4,13 @@
 
 #include "extensions/shell/browser/shell_prefs.h"
 
+#include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_filter.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/pref_service_factory.h"
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_filter.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -53,7 +53,7 @@ scoped_ptr<PrefService> CreateLocalState(const FilePath& data_dir) {
   scoped_refptr<JsonPrefStore> pref_store = CreateAndLoadPrefStore(filepath);
 
   // Local state is considered "user prefs" from the factory's perspective.
-  PrefServiceFactory factory;
+  base::PrefServiceFactory factory;
   factory.set_user_prefs(pref_store);
 
   // Local state preferences are not syncable.
@@ -68,7 +68,7 @@ scoped_ptr<PrefService> CreateUserPrefService(
   FilePath filepath = browser_context->GetPath().AppendASCII("user_prefs.json");
   scoped_refptr<JsonPrefStore> pref_store = CreateAndLoadPrefStore(filepath);
 
-  PrefServiceFactory factory;
+  base::PrefServiceFactory factory;
   factory.set_user_prefs(pref_store);
 
   // TODO(jamescook): If we want to support prefs that are set by extensions

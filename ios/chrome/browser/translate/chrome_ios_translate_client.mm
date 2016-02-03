@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/prefs/pref_service.h"
 #include "components/infobars/core/infobar.h"
-#include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"

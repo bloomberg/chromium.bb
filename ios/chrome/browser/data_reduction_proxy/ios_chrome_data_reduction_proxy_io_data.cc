@@ -4,11 +4,11 @@
 
 #include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_io_data.h"
 
+#include "base/prefs/pref_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_retrieval_params.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
-#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/data_reduction_proxy/ios_chrome_data_reduction_proxy_settings.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_client.h"

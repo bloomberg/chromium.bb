@@ -5,9 +5,9 @@
 #include "ios/chrome/browser/translate/translate_accept_languages_factory.h"
 
 #include "base/macros.h"
+#include "base/prefs/pref_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/pref_names.h"

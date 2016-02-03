@@ -14,7 +14,7 @@
         '../..',
       ],
       'defines': [
-        'COMPONENTS_PREFS_IMPLEMENTATION',
+        'BASE_PREFS_IMPLEMENTATION',
       ],
       'sources': [
         'default_pref_store.cc',

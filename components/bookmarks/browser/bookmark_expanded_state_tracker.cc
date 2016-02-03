@@ -6,12 +6,12 @@
 
 #include <stdint.h>
 
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
-#include "components/prefs/pref_service.h"
 
 namespace bookmarks {
 

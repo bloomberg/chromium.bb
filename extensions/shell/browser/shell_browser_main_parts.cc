@@ -7,11 +7,11 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 #include "components/devtools_http_handler/devtools_http_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/prefs/pref_service.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/update_client/update_query_params.h"
 #include "content/public/browser/child_process_security_policy.h"

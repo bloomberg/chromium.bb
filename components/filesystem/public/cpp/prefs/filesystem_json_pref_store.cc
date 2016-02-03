@@ -17,12 +17,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/prefs/pref_filter.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
-#include "components/prefs/pref_filter.h"
 #include "mojo/common/common_type_converters.h"
 
 namespace filesystem {

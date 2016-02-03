@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "ios/chrome/browser/application_context.h"
 
 // static

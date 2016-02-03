@@ -144,7 +144,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   void VerifyResetRecorded(bool reset_expected) {
     EXPECT_EQ(reset_expected, reset_recorded_);
 
-    PrefServiceFactory pref_service_factory;
+    base::PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
     scoped_ptr<PrefService> pref_service(
@@ -158,7 +158,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
   void ClearResetRecorded() {
     reset_recorded_ = false;
 
-    PrefServiceFactory pref_service_factory;
+    base::PrefServiceFactory pref_service_factory;
     pref_service_factory.set_user_prefs(pref_store_);
 
     scoped_ptr<PrefService> pref_service(

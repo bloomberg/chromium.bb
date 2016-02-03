@@ -11,9 +11,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 

@@ -6,12 +6,12 @@
 
 #include <utility>
 
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/arc/arc_auth_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 
 namespace arc {
 

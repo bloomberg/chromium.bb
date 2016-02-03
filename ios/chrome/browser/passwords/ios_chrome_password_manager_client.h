@@ -6,9 +6,9 @@
 #define IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_PASSWORD_MANAGER_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/prefs/pref_member.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/sync/browser/sync_credentials_filter.h"
-#include "components/prefs/pref_member.h"
 
 namespace ios {
 class ChromeBrowserState;

@@ -7,6 +7,9 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/prefs/pref_service.h"
+#include "base/prefs/pref_service_factory.h"
+#include "base/prefs/testing_pref_store.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -19,9 +22,6 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/os_crypt/os_crypt.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/testing_pref_store.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -62,7 +62,7 @@ scoped_ptr<PrefService> PrefServiceForTesting() {
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
   registry->RegisterInt64Pref(AccountFetcherService::kLastUpdatePref, 0);
 
-  PrefServiceFactory factory;
+  base::PrefServiceFactory factory;
   factory.set_user_prefs(make_scoped_refptr(new TestingPrefStore()));
   return factory.Create(registry.get());
 }

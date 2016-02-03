@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"

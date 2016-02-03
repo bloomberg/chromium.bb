@@ -6,11 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
-#include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 

@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/prefs/testing_pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -17,9 +20,6 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "components/prefs/testing_pref_service.h"
 
 using testing::_;
 using testing::AnyNumber;

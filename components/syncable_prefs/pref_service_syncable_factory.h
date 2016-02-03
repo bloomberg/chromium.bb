@@ -29,7 +29,7 @@ class PrefServiceSyncable;
 // A PrefServiceFactory that also knows how to build a
 // PrefServiceSyncable, and may know about Chrome concepts such as
 // PolicyService.
-class PrefServiceSyncableFactory : public PrefServiceFactory {
+class PrefServiceSyncableFactory : public base::PrefServiceFactory {
  public:
   PrefServiceSyncableFactory();
   ~PrefServiceSyncableFactory() override;

@@ -10,8 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
+#include "base/prefs/pref_store.h"
 #include "base/scoped_observer.h"
-#include "components/prefs/pref_store.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/storage.h"
 
 class WriteablePrefStore;

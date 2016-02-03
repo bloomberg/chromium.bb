@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/synchronization/lock.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
 

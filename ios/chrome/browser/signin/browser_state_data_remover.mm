@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"

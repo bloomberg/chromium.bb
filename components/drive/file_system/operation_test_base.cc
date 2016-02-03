@@ -4,6 +4,7 @@
 
 #include "components/drive/file_system/operation_test_base.h"
 
+#include "base/prefs/testing_pref_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/drive/change_list_loader.h"
 #include "components/drive/event_logger.h"
@@ -15,7 +16,6 @@
 #include "components/drive/resource_metadata.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "components/drive/service/test_util.h"
-#include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"

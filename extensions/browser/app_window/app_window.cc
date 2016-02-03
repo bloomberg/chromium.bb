@@ -57,7 +57,7 @@
 #include "ui/gfx/screen.h"
 
 #if !defined(OS_MACOSX)
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "extensions/browser/pref_names.h"
 #endif
 

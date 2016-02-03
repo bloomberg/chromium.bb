@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREFS_PREF_REGISTRY_SIMPLE_H_
-#define COMPONENTS_PREFS_PREF_REGISTRY_SIMPLE_H_
+#ifndef BASE_PREFS_PREF_REGISTRY_SIMPLE_H_
+#define BASE_PREFS_PREF_REGISTRY_SIMPLE_H_
 
 #include <stdint.h>
 
@@ -20,7 +20,7 @@ class ListValue;
 }
 
 // A simple implementation of PrefRegistry.
-class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
+class BASE_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
  public:
   PrefRegistrySimple();
 
@@ -88,4 +88,4 @@ class COMPONENTS_PREFS_EXPORT PrefRegistrySimple : public PrefRegistry {
   DISALLOW_COPY_AND_ASSIGN(PrefRegistrySimple);
 };
 
-#endif  // COMPONENTS_PREFS_PREF_REGISTRY_SIMPLE_H_
+#endif  // BASE_PREFS_PREF_REGISTRY_SIMPLE_H_

@@ -6,7 +6,7 @@
 #define COMPONENTS_FILESYSTEM_PUBLIC_CPP_PREFS_PREF_SERVICE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 
 namespace mojo {
 class ApplicationImpl;

@@ -10,8 +10,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string16.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class GURL;
 class PrefService;

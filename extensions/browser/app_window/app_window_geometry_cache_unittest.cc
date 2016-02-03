@@ -10,11 +10,11 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/mock_pref_change_callback.h"
+#include "base/prefs/pref_service_factory.h"
+#include "base/prefs/testing_pref_store.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/mock_pref_change_callback.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/testing_pref_store.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
@@ -85,7 +85,7 @@ void AppWindowGeometryCacheTest::SetUp() {
 
   // Set up all the dependencies of ExtensionPrefs.
   extension_pref_value_map_.reset(new ExtensionPrefValueMap);
-  PrefServiceFactory factory;
+  base::PrefServiceFactory factory;
   factory.set_user_prefs(new TestingPrefStore);
   factory.set_extension_prefs(new TestingPrefStore);
   user_prefs::PrefRegistrySyncable* pref_registry =

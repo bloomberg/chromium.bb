@@ -907,7 +907,7 @@ class WizardControllerBrokenLocalStateTest : public WizardControllerTest {
   }
 
   void SetUpOnMainThread() override {
-    PrefServiceFactory factory;
+    base::PrefServiceFactory factory;
     factory.set_user_prefs(make_scoped_refptr(new PrefStoreStub()));
     local_state_ = factory.Create(new PrefRegistrySimple());
     WizardController::set_local_state_for_testing(local_state_.get());

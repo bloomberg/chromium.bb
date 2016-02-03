@@ -1,6 +1,5 @@
 include_rules = [
   "+components/pref_registry",
-  "+components/prefs",
   "+grit/components_strings.h",
   "+ui/base",
 ]

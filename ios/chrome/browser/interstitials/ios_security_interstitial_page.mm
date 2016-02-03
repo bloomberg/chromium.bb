@@ -5,7 +5,7 @@
 #include "ios/chrome/browser/interstitials/ios_security_interstitial_page.h"
 
 #include "base/logging.h"
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_service.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "grit/components_resources.h"

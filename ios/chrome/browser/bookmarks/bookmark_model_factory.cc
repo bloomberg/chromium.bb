@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/memory/singleton.h"
+#include "base/prefs/pref_service.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "components/prefs/pref_service.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_client_impl.h"
 #include "ios/chrome/browser/bookmarks/startup_task_runner_service_factory.h"

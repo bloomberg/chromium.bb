@@ -6,7 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_GLUE_AUTOFILL_WALLET_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "components/prefs/pref_change_registrar.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "components/sync_driver/non_ui_data_type_controller.h"
 
 namespace autofill {

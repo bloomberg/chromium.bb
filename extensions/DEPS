@@ -3,7 +3,6 @@ include_rules = [
   "+components/browsing_data",
   "+components/crx_file",
   "+components/guest_view",
-  "+components/prefs",
   "+components/url_matcher",
   "-content",
   "+content/grit/content_resources.h",

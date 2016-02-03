@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREFS_PREF_SERVICE_FACTORY_H_
-#define COMPONENTS_PREFS_PREF_SERVICE_FACTORY_H_
+#ifndef BASE_PREFS_PREF_SERVICE_FACTORY_H_
+#define BASE_PREFS_PREF_SERVICE_FACTORY_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -16,12 +16,12 @@
 class PrefService;
 
 namespace base {
+
 class FilePath;
 class SequencedTaskRunner;
-}
 
 // A class that allows convenient building of PrefService.
-class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
+class BASE_PREFS_EXPORT PrefServiceFactory {
  public:
   PrefServiceFactory();
   virtual ~PrefServiceFactory();
@@ -86,4 +86,6 @@ class COMPONENTS_PREFS_EXPORT PrefServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(PrefServiceFactory);
 };
 
-#endif  // COMPONENTS_PREFS_PREF_SERVICE_FACTORY_H_
+}  // namespace base
+
+#endif  // BASE_PREFS_PREF_SERVICE_FACTORY_H_

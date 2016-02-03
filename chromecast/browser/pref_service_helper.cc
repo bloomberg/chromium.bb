@@ -10,12 +10,12 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/prefs/json_pref_store.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service_factory.h"
+#include "base/prefs/pref_store.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/pref_names.h"
-#include "components/prefs/json_pref_store.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service_factory.h"
-#include "components/prefs/pref_store.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromecast {
@@ -56,7 +56,7 @@ scoped_ptr<PrefService> PrefServiceHelper::CreatePrefService(
 
   RegisterPlatformPrefs(registry);
 
-  PrefServiceFactory prefServiceFactory;
+  base::PrefServiceFactory prefServiceFactory;
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       JsonPrefStore::GetTaskRunnerForFile(
           config_path,

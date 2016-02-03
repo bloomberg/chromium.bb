@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PREFS_OVERLAY_USER_PREF_STORE_H_
-#define COMPONENTS_PREFS_OVERLAY_USER_PREF_STORE_H_
+#ifndef BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
+#define BASE_PREFS_OVERLAY_USER_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -21,7 +21,7 @@
 // PrefValueMap. Read operations are first answered by the PrefValueMap.
 // If the PrefValueMap does not contain a value for the requested key,
 // the look-up is passed on to an underlying PersistentPrefStore |underlay_|.
-class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
+class BASE_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
                                                public PrefStore::Observer {
  public:
   explicit OverlayUserPrefStore(PersistentPrefStore* underlay);
@@ -86,4 +86,4 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   DISALLOW_COPY_AND_ASSIGN(OverlayUserPrefStore);
 };
 
-#endif  // COMPONENTS_PREFS_OVERLAY_USER_PREF_STORE_H_
+#endif  // BASE_PREFS_OVERLAY_USER_PREF_STORE_H_

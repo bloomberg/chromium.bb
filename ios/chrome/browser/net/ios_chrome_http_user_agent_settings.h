@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/prefs/pref_member.h"
+#include "base/prefs/pref_member.h"
 #include "net/url_request/http_user_agent_settings.h"
 
 class PrefService;

@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/string_split.h"
 #include "base/time/clock.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -18,7 +19,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/pref_names.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "url/gurl.h"
 
 namespace {

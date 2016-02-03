@@ -8,8 +8,8 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
+#include "base/prefs/pref_registry_simple.h"
+#include "base/prefs/pref_service.h"
 
 namespace metrics {
 

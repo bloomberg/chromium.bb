@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/prefs",
   "+components/webp_transcode",
   "+crypto/nss_util.h",
   "+ios/crnet",
