@@ -62,6 +62,7 @@ ContentSettingImageView::ContentSettingImageView(
   image()->EnableCanvasFlippingForRTLUI(true);
   image()->SetAccessibilityFocusable(true);
   label()->SetElideBehavior(gfx::NO_ELIDE);
+  label()->SetVisible(false);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
   slide_animator_.SetTweenType(gfx::Tween::LINEAR);
