@@ -164,10 +164,6 @@
 #define HAVE_ARM_NEON_INTRINSICS 1
 #endif
 
-#if defined(__ARM_ARCH_7S__)
-#define WTF_CPU_APPLE_ARMV7S 1
-#endif
-
 #endif /* ARM */
 
 /* CPU(ARM64) - AArch64 64-bit */

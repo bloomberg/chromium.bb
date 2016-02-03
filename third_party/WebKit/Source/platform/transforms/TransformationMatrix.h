@@ -54,7 +54,7 @@ class PLATFORM_EXPORT TransformationMatrix {
     USING_FAST_MALLOC(TransformationMatrix);
 public:
 
-#if CPU(APPLE_ARMV7S) || defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
+#if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
     typedef WTF_ALIGNED(double, Matrix4[4][4], 16);
 #else
     typedef double Matrix4[4][4];
@@ -388,7 +388,7 @@ private:
 
     void checkAlignment()
     {
-#if CPU(APPLE_ARMV7S) || defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
+#if defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
         // m_matrix can cause this class to require higher than usual alignment.
         // Make sure the allocator handles this.
         ASSERT((reinterpret_cast<uintptr_t>(this) & (WTF_ALIGN_OF(TransformationMatrix) - 1)) == 0);
