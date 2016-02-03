@@ -1,0 +1,72 @@
+git-hyper-blame(1)
+==================
+
+NAME
+----
+git-hyper-blame -
+include::_git-hyper-blame_desc.helper.txt[]
+
+SYNOPSIS
+--------
+[verse]
+'git hyper-blame' [-i <rev> [-i <rev> ...]] [<rev>] [--] <file>
+
+DESCRIPTION
+-----------
+
+`git hyper-blame` is like `git blame` but it can ignore or "look through" a
+given set of commits, to find the real culprit.
+
+This is useful if you have a commit that makes sweeping changes that are
+unlikely to be what you are looking for in a blame, such as mass reformatting or
+renaming. By adding these commits to the hyper-blame ignore list, `git
+hyper-blame` will look past these commits to find the previous commit that
+touched a given line.
+
+Follows the normal `blame` syntax: annotates `<file>` with the revision that
+last modified each line. Optional `<rev>` specifies the revision of `<file>` to
+start from.
+
+OPTIONS
+-------
+
+-i <rev>::
+  A revision to ignore. Can be specified as many times as needed.
+
+EXAMPLE
+-------
+
+Let's run `git blame` on a file:
+
+demo:1[]
+
+Notice that almost the entire file has been blamed on a formatting change? You
+aren't interested in the uppercasing of the file. You want to know who
+wrote/modified those lines in the first place. Just tell `hyper-blame` to ignore
+that commit:
+
+demo:2[]
+
+`hyper-blame` places a `*` next to any line where it has skipped over an ignored
+commit, so you know that the line in question has been changed (by an ignored
+commit) since the given person wrote it.
+
+BUGS
+----
+
+- When a commit is ignored, hyper-blame currently just blames the same line in
+  the previous version of the file. This can be wildly inaccurate if the ignored
+  commit adds or removes lines, resulting in a completely wrong commit being
+  blamed.
+- There is currently no way to pass the ignore list as a file.
+- It should be possible for a git repository to configure an automatic list of
+  commits to ignore (like `.gitignore`), so that project owners can maintain a
+  list of "big change" commits that are ignored by hyper-blame by default.
+
+SEE ALSO
+--------
+linkgit:git-blame[1]
+
+include::_footer.txt[]
+
+// vim: ft=asciidoc:

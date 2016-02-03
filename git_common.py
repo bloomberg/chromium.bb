@@ -281,6 +281,16 @@ def once(function):
 ## Git functions
 
 
+def blame(filename, revision=None, porcelain=False, *args):
+  command = ['blame']
+  if porcelain:
+    command.append('-p')
+  if revision is not None:
+    command.append(revision)
+  command.extend(['--', filename])
+  return run(*command)
+
+
 def branch_config(branch, option, default=None):
   return config('branch.%s.%s' % (branch, option), default=default)
 
@@ -546,8 +556,37 @@ def remove_merge_base(branch):
   del_branch_config(branch, 'base-upstream')
 
 
+def repo_root():
+  """Returns the absolute path to the repository root."""
+  return run('rev-parse', '--show-toplevel')
+
+
 def root():
   return config('depot-tools.upstream', 'origin/master')
+
+
+@contextlib.contextmanager
+def less():  # pragma: no cover
+  """Runs 'less' as context manager yielding its stdin as a PIPE.
+
+  Automatically checks if sys.stdout is a non-TTY stream. If so, it avoids
+  running less and just yields sys.stdout.
+  """
+  if not sys.stdout.isatty():
+    yield sys.stdout
+    return
+
+  # Run with the same options that git uses (see setup_pager in git repo).
+  # -F: Automatically quit if the output is less than one screen.
+  # -R: Don't escape ANSI color codes.
+  # -X: Don't clear the screen before starting.
+  cmd = ('less', '-FRX')
+  try:
+    proc = subprocess2.Popen(cmd, stdin=subprocess2.PIPE)
+    yield proc.stdin
+  finally:
+    proc.stdin.close()
+    proc.wait()
 
 
 def run(*cmd, **kwargs):

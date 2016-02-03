@@ -4,7 +4,7 @@
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="generator" content="AsciiDoc 8.6.9" />
-<title>depot_tools(7)</title>
+<title>git-hyper-blame(1)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
 
@@ -741,186 +741,123 @@ asciidoc.install();
 <body class="manpage">
 <div id="header">
 <h1>
-depot_tools(7) Manual Page
+git-hyper-blame(1) Manual Page
 </h1>
 <h2>NAME</h2>
 <div class="sectionbody">
-<p>depot_tools -
-   A collection of tools for dealing with Chromium development.
+<p>git-hyper-blame -
+   Like git blame, but with the ability to ignore or bypass certain commits.
 </p>
 </div>
 </div>
 <div id="content">
 <div class="sect1">
-<h2 id="_description">DESCRIPTION</h2>
+<h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>The Chromium depot_tools suite contains many tools to assist/augment the
-Chromium development environment. The tools may be downloaded from
-<a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
-<div class="paragraph"><p>There are two primary categories of tools. Some of these tools are <em>essential</em>
-to the development flow, in the sense that you cannot successfully develop
-Chromium without them.</p></div>
-<div class="paragraph"><p>Other tools are merely <em>helper</em> tools. Not required, but they can substantially
-ease the develpment workflow.</p></div>
-<div class="paragraph"><p>A listing of both categories of tools follows.</p></div>
+<div class="verseblock">
+<pre class="content"><em>git hyper-blame</em> [-i &lt;rev&gt; [-i &lt;rev&gt; &#8230;]] [&lt;rev&gt;] [--] &lt;file&gt;</pre>
+<div class="attribution">
+</div></div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_helper_tools">HELPER TOOLS</h2>
+<h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>A tutorial for these tools can be found at <a href="depot_tools_tutorial.html">depot_tools_tutorial(7)</a>.</p></div>
+<div class="paragraph"><p><code>git hyper-blame</code> is like <code>git blame</code> but it can ignore or "look through" a
+given set of commits, to find the real culprit.</p></div>
+<div class="paragraph"><p>This is useful if you have a commit that makes sweeping changes that are
+unlikely to be what you are looking for in a blame, such as mass reformatting or
+renaming. By adding these commits to the hyper-blame ignore list, <code>git
+hyper-blame</code> will look past these commits to find the previous commit that
+touched a given line.</p></div>
+<div class="paragraph"><p>Follows the normal <code>blame</code> syntax: annotates <code>&lt;file&gt;</code> with the revision that
+last modified each line. Optional <code>&lt;rev&gt;</code> specifies the revision of <code>&lt;file&gt;</code> to
+start from.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_options">OPTIONS</h2>
+<div class="sectionbody">
 <div class="dlist"><dl>
 <dt class="hdlist1">
-<a href="git-cherry-pick-upload.html">git-cherry-pick-upload(1)</a>
+-i &lt;rev&gt;
 </dt>
 <dd>
 <p>
-Upload the diff between a revision and its parent to rietveld.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-drover.html">git-drover(1)</a>
-</dt>
-<dd>
-<p>
-Apply a commit from the trunk to a release branch, or from one release branch to
-another.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-footers.html">git-footers(1)</a>
-</dt>
-<dd>
-<p>
-Extract meta-information expressed as footers in a commit message.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-freeze.html">git-freeze(1)</a>
-</dt>
-<dd>
-<p>
-Freeze all changes on a branch (indexed and unindexed).
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-hyper-blame.html">git-hyper-blame(1)</a>
-</dt>
-<dd>
-<p>
-Like git blame, but with the ability to ignore or bypass certain commits.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-map-branches.html">git-map-branches(1)</a>
-</dt>
-<dd>
-<p>
-Helper script to display all local git branches with ‘upstream’ hierarchy in
-colorized terminal format.
+  A revision to ignore. Can be specified as many times as needed.
 </p>
 </dd>
 </dl></div>
-<div class="dlist"><dl>
-<dt class="hdlist1">
-<a href="git-map.html">git-map(1)</a>
-</dt>
-<dd>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_example">EXAMPLE</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Let&#8217;s run <code>git blame</code> on a file:</p></div>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git blame ipsum.txt</span>
+c6eb3bfa (lorem           2014-08-11 23:15:57 +0000 1) LOREM IPSUM DOLOR SIT AMET, CONSECTETUR
+3ddda43c (auto-uppercaser 2014-07-05 02:05:18 +0000 2) ADIPISCING ELIT, SED DO EIUSMOD TEMPOR
+3ddda43c (auto-uppercaser 2014-07-05 02:05:18 +0000 3) INCIDIDUNT UT LABORE ET DOLORE MAGNA
+3ddda43c (auto-uppercaser 2014-07-05 02:05:18 +0000 4) ALIQUA. UT ENIM AD MINIM VENIAM, QUIS
+c6eb3bfa (lorem           2014-08-11 23:15:57 +0000 5) NOSTRUD EXERCITATION ULLAMCO LABORIS
+3ddda43c (auto-uppercaser 2014-07-05 02:05:18 +0000 6) NISI UT ALIQUIP EX EA COMMODO CONSEQUAT.
+</code></pre></div></div><p><div class="paragraph"></p></div>
+<div class="paragraph"><p>Notice that almost the entire file has been blamed on a formatting change? You
+aren&#8217;t interested in the uppercasing of the file. You want to know who
+wrote/modified those lines in the first place. Just tell <code>hyper-blame</code> to ignore
+that commit:</p></div>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code><span style="font-weight: bold; color: #ffffff">$ git hyper-blame -i 3ddda43c ipsum.txt</span>
+c6eb3bfa (lorem 2014-08-11 23:15:57 +0000  1) LOREM IPSUM DOLOR SIT AMET, CONSECTETUR
+134200d1 (lorem 2014-04-10 08:54:46 +0000 2*) ADIPISCING ELIT, SED DO EIUSMOD TEMPOR
+a34a1d0d (ipsum 2014-04-11 11:25:04 +0000 3*) INCIDIDUNT UT LABORE ET DOLORE MAGNA
+134200d1 (lorem 2014-04-10 08:54:46 +0000 4*) ALIQUA. UT ENIM AD MINIM VENIAM, QUIS
+c6eb3bfa (lorem 2014-08-11 23:15:57 +0000  5) NOSTRUD EXERCITATION ULLAMCO LABORIS
+0f0d17bd (dolor 2014-06-02 11:31:48 +0000 6*) NISI UT ALIQUIP EX EA COMMODO CONSEQUAT.
+</code></pre></div></div><p><div class="paragraph"></p></div>
+<div class="paragraph"><p><code>hyper-blame</code> places a <code>*</code> next to any line where it has skipped over an ignored
+commit, so you know that the line in question has been changed (by an ignored
+commit) since the given person wrote it.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_bugs">BUGS</h2>
+<div class="sectionbody">
+<div class="ulist"><ul>
+<li>
 <p>
-Display history of all branches in a colorized terminal format.
+When a commit is ignored, hyper-blame currently just blames the same line in
+  the previous version of the file. This can be wildly inaccurate if the ignored
+  commit adds or removes lines, resulting in a completely wrong commit being
+  blamed.
 </p>
-</dd>
-</dl></div>
-<div class="dlist"><dl>
-<dt class="hdlist1">
-<a href="git-mark-merge-base.html">git-mark-merge-base(1)</a>
-</dt>
-<dd>
+</li>
+<li>
 <p>
-Manually interact with depot_tools' merge-base markers.
+There is currently no way to pass the ignore list as a file.
 </p>
-</dd>
-<dt class="hdlist1">
-<a href="git-nav-downstream.html">git-nav-downstream(1)</a>
-</dt>
-<dd>
+</li>
+<li>
 <p>
-Checkout a downstream branch of the currently checked out branch.
+It should be possible for a git repository to configure an automatic list of
+  commits to ignore (like <code>.gitignore</code>), so that project owners can maintain a
+  list of "big change" commits that are ignored by hyper-blame by default.
 </p>
-</dd>
-<dt class="hdlist1">
-<a href="git-nav-upstream.html">git-nav-upstream(1)</a>
-</dt>
-<dd>
-<p>
-Checkout the upstream branch of the currently checked out branch.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-new-branch.html">git-new-branch(1)</a>
-</dt>
-<dd>
-<p>
-Create a new branch with correct tracking information.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-rebase-update.html">git-rebase-update(1)</a>
-</dt>
-<dd>
-<p>
-Updates all branches to have the latest changes from their upstreams.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-rename-branch.html">git-rename-branch(1)</a>
-</dt>
-<dd>
-<p>
-Rename a branch and correctly preserve all downstream relationships.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-reparent-branch.html">git-reparent-branch(1)</a>
-</dt>
-<dd>
-<p>
-Alter the parentage (upstream) for the current branch.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-retry.html">git-retry(1)</a>
-</dt>
-<dd>
-<p>
-Bootstrap function to retry a git command.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-squash-branch.html">git-squash-branch(1)</a>
-</dt>
-<dd>
-<p>
-Takes all commits in a single branch and replaces them with a single commit.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-thaw.html">git-thaw(1)</a>
-</dt>
-<dd>
-<p>
-Un-freeze all changes on a frozen branch.
-</p>
-</dd>
-<dt class="hdlist1">
-<a href="git-upstream-diff.html">git-upstream-diff(1)</a>
-</dt>
-<dd>
-<p>
-Print a diff of the current branch, compared to its upstream.
-</p>
-</dd>
-</dl></div>
+</li>
+</ul></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_see_also">SEE ALSO</h2>
+<div class="sectionbody">
+<div class="paragraph"><p><a href="git-blame.html">git-blame(1)</a></p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_chromium_depot_tools">CHROMIUM DEPOT_TOOLS</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
+assist with the development of chromium and related projects. Download the tools
+from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
 </div>
 </div>

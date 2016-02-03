@@ -176,15 +176,15 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
   COMMIT_C = {
     'some/files/file2': {
       'mode': 0755,
-      'data': 'file2 - vanilla'},
+      'data': 'file2 - vanilla\n'},
   }
 
   COMMIT_E = {
-    'some/files/file2': {'data': 'file2 - merged'},
+    'some/files/file2': {'data': 'file2 - merged\n'},
   }
 
   COMMIT_D = {
-    'some/files/file2': {'data': 'file2 - vanilla\nfile2 - merged'},
+    'some/files/file2': {'data': 'file2 - vanilla\nfile2 - merged\n'},
   }
 
   def testHashes(self):
@@ -259,6 +259,40 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     self.repo.git('config', 'branch.master.dormant', 'true')
     self.assertTrue(self.repo.run(self.gc.is_dormant, 'master'))
 
+  def testBlame(self):
+    def get_porcelain_for_commit(commit_name, lines):
+      format_string = ('%H {}\nauthor %an\nauthor-mail <%ae>\nauthor-time %at\n'
+                       'author-tz +0000\ncommitter %cn\ncommitter-mail <%ce>\n'
+                       'committer-time %ct\ncommitter-tz +0000\nsummary {}')
+      format_string = format_string.format(lines, commit_name)
+      info = self.repo.show_commit(commit_name, format_string=format_string)
+      return info.split('\n')
+
+    # Expect to blame line 1 on C, line 2 on E.
+    c_short = self.repo['C'][:8]
+    c_author = self.repo.show_commit('C', format_string='%an %ai')
+    e_short = self.repo['E'][:8]
+    e_author = self.repo.show_commit('E', format_string='%an %ai')
+    expected_output = ['%s (%s 1) file2 - vanilla' % (c_short, c_author),
+                       '%s (%s 2) file2 - merged' % (e_short, e_author)]
+    self.assertEqual(expected_output,
+                     self.repo.run(self.gc.blame, 'some/files/file2',
+                                   'tag_D').split('\n'))
+
+    # Test porcelain.
+    expected_output = []
+    expected_output.extend(get_porcelain_for_commit('C', '1 1 1'))
+    expected_output.append('previous %s some/files/file2' % self.repo['B'])
+    expected_output.append('filename some/files/file2')
+    expected_output.append('\tfile2 - vanilla')
+    expected_output.extend(get_porcelain_for_commit('E', '1 2 1'))
+    expected_output.append('previous %s some/files/file2' % self.repo['B'])
+    expected_output.append('filename some/files/file2')
+    expected_output.append('\tfile2 - merged')
+    self.assertEqual(expected_output,
+                     self.repo.run(self.gc.blame, 'some/files/file2',
+                                   'tag_D', porcelain=True).split('\n'))
+
   def testParseCommitrefs(self):
     ret = self.repo.run(
       self.gc.parse_commitrefs, *[
@@ -279,6 +313,17 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
 
     with self.assertRaisesRegexp(Exception, r"one of \('master', 'bananas'\)"):
       self.repo.run(self.gc.parse_commitrefs, 'master', 'bananas')
+
+  def testRepoRoot(self):
+    def cd_and_repo_root(path):
+      print(os.getcwd())
+      os.chdir(path)
+      return self.gc.repo_root()
+
+    self.assertEqual(self.repo.repo_path, self.repo.run(self.gc.repo_root))
+    # cd to a subdirectory; repo_root should still return the root dir.
+    self.assertEqual(self.repo.repo_path,
+                     self.repo.run(cd_and_repo_root, 'some/files'))
 
   def testTags(self):
     self.assertEqual(set(self.repo.run(self.gc.tags)),
