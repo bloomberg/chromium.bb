@@ -205,6 +205,15 @@ void ContentSettingImageView::OnMouseReleased(const ui::MouseEvent& event) {
     OnClick();
 }
 
+bool ContentSettingImageView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
+    return false;
+
+  ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+  OnClick();
+  return true;
+}
+
 void ContentSettingImageView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     if (!label()->visible())

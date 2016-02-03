@@ -79,6 +79,7 @@ class ContentSettingImageView : public IconLabelBubbleView,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnNativeThemeChanged(const ui::NativeTheme* native_theme) override;
 

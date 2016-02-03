@@ -108,12 +108,12 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE ||
-      event.key_code() == ui::VKEY_RETURN) {
-    ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
-    return true;
-  }
-  return false;
+  if (event.key_code() != ui::VKEY_SPACE && event.key_code() != ui::VKEY_RETURN)
+    return false;
+
+  ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+  ExecuteCommand(EXECUTE_SOURCE_KEYBOARD);
+  return true;
 }
 
 void BubbleIconView::ViewHierarchyChanged(
