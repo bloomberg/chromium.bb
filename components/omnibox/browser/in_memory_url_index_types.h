@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/strings/string16.h"
 #include "components/history/core/browser/history_types.h"
 #include "url/gurl.h"
@@ -162,7 +163,7 @@ struct HistoryInfoMapValue {
 };
 
 // A map from history_id to the history's URL and title.
-typedef std::map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
+typedef base::hash_map<HistoryID, HistoryInfoMapValue> HistoryInfoMap;
 
 // A map from history_id to URL and page title word start metrics.
 struct RowWordStarts {
