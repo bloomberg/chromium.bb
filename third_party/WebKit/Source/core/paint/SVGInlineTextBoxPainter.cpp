@@ -271,7 +271,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDe
                     break;
                 strokePaint.setAntiAlias(true);
                 StrokeData strokeData;
-                SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, decorationStyle, *decorationLayoutObject);
+                SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, decorationStyle, *decorationLayoutObject, 1);
                 if (svgDecorationStyle.vectorEffect() == VE_NON_SCALING_STROKE)
                     strokeData.setThickness(strokeData.thickness() / scalingFactor);
                 strokeData.setupPaint(&strokePaint);
@@ -320,7 +320,7 @@ bool SVGInlineTextBoxPainter::setupTextPaint(const PaintInfo& paintInfo, const C
 
     if (resourceMode == ApplyToStrokeMode) {
         StrokeData strokeData;
-        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, *LineLayoutAPIShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()));
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, style, *LineLayoutAPIShim::layoutObjectFrom(m_svgInlineTextBox.parent()->lineLayoutItem()), 1);
         if (style.svgStyle().vectorEffect() != VE_NON_SCALING_STROKE)
             strokeData.setThickness(strokeData.thickness() * scalingFactor);
         strokeData.setupPaint(&paint);

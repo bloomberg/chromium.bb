@@ -71,6 +71,7 @@ public:
         return *m_path;
     }
     bool hasPath() const { return m_path.get(); }
+    float dashScaleFactor() const;
 
     virtual bool isShapeEmpty() const { return path().isEmpty(); }
 

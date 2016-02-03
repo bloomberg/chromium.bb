@@ -84,7 +84,7 @@ public:
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 
     // Shared between SVG layoutObjects and resources.
-    static void applyStrokeStyleToStrokeData(StrokeData&, const ComputedStyle&, const LayoutObject&);
+    static void applyStrokeStyleToStrokeData(StrokeData&, const ComputedStyle&, const LayoutObject&, float dashScaleFactor);
 
     static DashArray resolveSVGDashArray(const SVGDashArray&, const ComputedStyle&, const SVGLengthContext&);
 

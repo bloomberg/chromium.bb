@@ -37,6 +37,7 @@
 #include "core/paint/SVGShapePainter.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "core/svg/SVGLengthContext.h"
+#include "core/svg/SVGPathElement.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/StrokeData.h"
 #include "wtf/MathExtras.h"
@@ -62,6 +63,28 @@ void LayoutSVGShape::createPath()
     *m_path = toSVGGeometryElement(element())->asPath();
     if (m_rareData.get())
         m_rareData->m_cachedNonScalingStrokePath.clear();
+}
+
+float LayoutSVGShape::dashScaleFactor() const
+{
+    if (!isSVGPathElement(element()))
+        return 1;
+    SVGPathElement& pathElement = toSVGPathElement(*element());
+    if (!pathElement.pathLength()->isSpecified())
+        return 1;
+    const SVGComputedStyle& svgStyle = styleRef().svgStyle();
+    float authorPathLength = pathElement.pathLength()->currentValue()->value();
+    if (authorPathLength < 0 || !svgStyle.strokeDashArray()->size())
+        return 1;
+    if (!authorPathLength)
+        return 0;
+    // Since we know this is a <path> element, we also know the source of the
+    // path - the 'd' presentation attribute. Since the StylePath already
+    // caches the computed path length for use, use that here directly.
+    float computedPathLength = svgStyle.d()->length();
+    if (!computedPathLength)
+        return 1;
+    return computedPathLength / authorPathLength;
 }
 
 void LayoutSVGShape::updateShapeFromElement()
@@ -91,7 +114,7 @@ bool LayoutSVGShape::shapeDependentStrokeContains(const FloatPoint& point)
 {
     ASSERT(m_path);
     StrokeData strokeData;
-    SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
+    SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this, dashScaleFactor());
 
     if (hasNonScalingStroke()) {
         AffineTransform nonScalingTransform = nonScalingStrokeTransform();
@@ -257,7 +280,7 @@ FloatRect LayoutSVGShape::calculateStrokeBoundingBox() const
 
     if (style()->svgStyle().hasStroke()) {
         StrokeData strokeData;
-        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this);
+        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, styleRef(), *this, dashScaleFactor());
         if (hasNonScalingStroke()) {
             AffineTransform nonScalingTransform = nonScalingStrokeTransform();
             if (nonScalingTransform.isInvertible()) {

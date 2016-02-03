@@ -372,7 +372,7 @@ DashArray SVGLayoutSupport::resolveSVGDashArray(const SVGDashArray& svgDashArray
     return dashArray;
 }
 
-void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const ComputedStyle& style, const LayoutObject& object)
+void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, const ComputedStyle& style, const LayoutObject& object, float dashScaleFactor)
 {
     ASSERT(object.node());
     ASSERT(object.node()->isSVGElement());
@@ -386,7 +386,15 @@ void SVGLayoutSupport::applyStrokeStyleToStrokeData(StrokeData& strokeData, cons
     strokeData.setMiterLimit(svgStyle.strokeMiterLimit());
 
     DashArray dashArray = resolveSVGDashArray(*svgStyle.strokeDashArray(), style, lengthContext);
-    strokeData.setLineDash(dashArray, lengthContext.valueForLength(svgStyle.strokeDashOffset(), style));
+    float dashOffset = lengthContext.valueForLength(svgStyle.strokeDashOffset(), style);
+    // Apply scaling from 'pathLength'.
+    if (dashScaleFactor != 1) {
+        ASSERT(dashScaleFactor >= 0);
+        dashOffset *= dashScaleFactor;
+        for (auto& dashItem : dashArray)
+            dashItem *= dashScaleFactor;
+    }
+    strokeData.setLineDash(dashArray, dashOffset);
 }
 
 bool SVGLayoutSupport::isLayoutableTextNode(const LayoutObject* object)

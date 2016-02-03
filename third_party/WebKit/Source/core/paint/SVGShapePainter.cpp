@@ -93,7 +93,7 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo)
                         strokePaint.setAntiAlias(shouldAntiAlias);
 
                         StrokeData strokeData;
-                        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, m_layoutSVGShape.styleRef(), m_layoutSVGShape);
+                        SVGLayoutSupport::applyStrokeStyleToStrokeData(strokeData, m_layoutSVGShape.styleRef(), m_layoutSVGShape, m_layoutSVGShape.dashScaleFactor());
                         strokeData.setupPaint(&strokePaint);
 
                         strokeShape(paintContext.paintInfo().context, strokePaint);
