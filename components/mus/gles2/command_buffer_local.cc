@@ -192,7 +192,8 @@ scoped_refptr<gpu::Buffer> CommandBufferLocal::CreateTransferBuffer(
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
       base::Bind(&CommandBufferLocal::RegisterTransferBufferOnGpuThread,
-                 base::Unretained(this), *id, base::Passed(&duped), size));
+                 base::Unretained(this), *id, base::Passed(&duped),
+                 static_cast<uint32_t>(size)));
   scoped_ptr<gpu::BufferBacking> backing(
       new mus::MojoBufferBacking(std::move(handle), memory, size));
   scoped_refptr<gpu::Buffer> buffer(new gpu::Buffer(std::move(backing)));
