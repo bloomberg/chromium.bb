@@ -50,6 +50,7 @@ static void amdgpu_userptr_test(void);
 static void amdgpu_semaphore_test(void);
 
 static void amdgpu_command_submission_write_linear_helper(unsigned ip_type);
+static void amdgpu_command_submission_const_fill_helper(unsigned ip_type);
 
 CU_TestInfo basic_tests[] = {
 	{ "Query Info Test",  amdgpu_query_info_test },
@@ -839,7 +840,7 @@ static void amdgpu_command_submission_sdma_write_linear(void)
 	amdgpu_command_submission_write_linear_helper(AMDGPU_HW_IP_DMA);
 }
 
-static void amdgpu_command_submission_sdma_const_fill(void)
+static void amdgpu_command_submission_const_fill_helper(unsigned ip_type)
 {
 	const int sdma_write_length = 1024 * 1024;
 	const int pm4_dw = 256;
@@ -888,15 +889,17 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 
 		/* fullfill PM4: test DMA const fill */
 		i = j = 0;
-		pm4[i++] = SDMA_PACKET(SDMA_OPCODE_CONSTANT_FILL, 0,
-				   SDMA_CONSTANT_FILL_EXTRA_SIZE(2));
-		pm4[i++] = 0xffffffff & bo_mc;
-		pm4[i++] = (0xffffffff00000000 & bo_mc) >> 32;
-		pm4[i++] = 0xdeadbeaf;
-		pm4[i++] = sdma_write_length;
+		if (ip_type == AMDGPU_HW_IP_DMA) {
+			pm4[i++] = SDMA_PACKET(SDMA_OPCODE_CONSTANT_FILL, 0,
+					       SDMA_CONSTANT_FILL_EXTRA_SIZE(2));
+			pm4[i++] = 0xffffffff & bo_mc;
+			pm4[i++] = (0xffffffff00000000 & bo_mc) >> 32;
+			pm4[i++] = 0xdeadbeaf;
+			pm4[i++] = sdma_write_length;
+		}
 
 		amdgpu_test_exec_cs_helper(context_handle,
-					   AMDGPU_HW_IP_DMA, 0,
+					   ip_type, 0,
 					   i, pm4,
 					   1, resources,
 					   ib_info, ibs_request);
@@ -921,6 +924,11 @@ static void amdgpu_command_submission_sdma_const_fill(void)
 	/* end of test */
 	r = amdgpu_cs_ctx_free(context_handle);
 	CU_ASSERT_EQUAL(r, 0);
+}
+
+static void amdgpu_command_submission_sdma_const_fill(void)
+{
+	amdgpu_command_submission_const_fill_helper(AMDGPU_HW_IP_DMA);
 }
 
 static void amdgpu_command_submission_sdma_copy_linear(void)
