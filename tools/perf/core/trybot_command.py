@@ -114,7 +114,7 @@ class Trybot(command_line.ArgParseCommand):
   def _GetBuilderList(cls):
     if not cls._builders:
       f = urllib2.urlopen(
-          'http://build.chromium.org/p/tryserver.chromium.perf/json')
+          'https://build.chromium.org/p/tryserver.chromium.perf/json')
       builders = json.loads(f.read()).get('builders', {}).keys()
       # Exclude unsupported bots like win xp and some dummy bots.
       cls._builders = [bot for bot in builders if bot not in EXCLUDED_BOTS]
