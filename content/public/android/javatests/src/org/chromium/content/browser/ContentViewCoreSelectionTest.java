@@ -8,7 +8,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
@@ -451,23 +450,27 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertNotSame(mContentViewCore.getSelectedText(), "SampleTextToCopy");
     }
 
-    /**
-     * crbug.com/552387
-     */
-    @FlakyTest
-//    @SmallTest
-//    @Feature({"TextInput"})
+    @SmallTest
+    @Feature({"TextInput"})
     public void testSelectActionBarInputPaste() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
+
+        // Select the input field.
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
+
+        // Paste into the input field.
         assertNotNull(mContentViewCore.getSelectActionHandler());
         selectActionBarPaste();
+        waitForSelectActionBarVisible(false);
+        assertFalse(mContentViewCore.hasSelection());
+
+        // Ensure the new text matches the pasted text.
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
-        assertEquals(mContentViewCore.getSelectedText(), "SampleTextToCopy");
+        assertEquals("SampleTextToCopy", mContentViewCore.getSelectedText());
     }
 
     @SmallTest
