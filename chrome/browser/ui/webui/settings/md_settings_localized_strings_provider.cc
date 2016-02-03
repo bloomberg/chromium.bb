@@ -674,8 +674,15 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL);
   html_source->AddLocalizedString("searchEnginesQueryURLLabel",
                                   IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_LABEL);
-  html_source->AddLocalizedString("searchEnginesAddButtonLabel",
-                                  IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL);
+  html_source->AddLocalizedString(
+      "searchEnginesAdd", IDS_SETTINGS_SEARCH_ENGINES_ADD);
+  html_source->AddLocalizedString(
+      "searchEnginesMakeDefault", IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT);
+  html_source->AddLocalizedString(
+      "searchEnginesEdit", IDS_SETTINGS_SEARCH_ENGINES_EDIT);
+  html_source->AddLocalizedString(
+      "searchEnginesRemoveFromList",
+      IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST);
 }
 
 void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {

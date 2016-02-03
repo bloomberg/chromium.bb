@@ -471,8 +471,17 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES_QUERY_URL_LABEL" desc="Label for Query URL column header for a search engine">
     Query URL
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD_BUTTON_LABEL" desc="Label for Add button for adding a new search engine">
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_ADD" desc="Label for Add button for adding a new search engine">
     Add
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_MAKE_DEFAULT" desc="Text of the button that makes the selected endgine the default search engine">
+    Make default
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_EDIT" desc="Label for a button that allows the user to edit a search engine entry">
+   Edit
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_REMOVE_FROM_LIST" desc="Label for a button that removes a search engine from the list of search engines">
+    Remove from list
   </message>
 
   <!-- Site Settings Page -->
