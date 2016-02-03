@@ -208,6 +208,11 @@
             }
         }
     ],
+    "PageRevisitInstrumentation": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "PasswordBranding": [
         {
             "group_name": "SmartLockBrandingSavePromptOnly"
