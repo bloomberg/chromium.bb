@@ -337,6 +337,7 @@ cvox.KeyUtil.getReadableNameForKeyCode = function(keyCode) {
   } else if (keyCode >= 48 && keyCode <= 90) {
     return String.fromCharCode(keyCode);
   }
+  return '';
 };
 
 /**

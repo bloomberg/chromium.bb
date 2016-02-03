@@ -491,6 +491,7 @@ cvox.ChromeVoxEventWatcher.mutationHandler = function(mutations) {
         cvox.ChromeVoxEventWatcher.addEvent(evt);
         return true;
       });
+  return false;
 };
 
 
@@ -1043,6 +1044,7 @@ cvox.ChromeVoxEventWatcher.setUpTextHandler = function() {
 
     return (null != cvox.ChromeVoxEventWatcher.currentTextHandler);
   }
+  return false;
 };
 
 /**

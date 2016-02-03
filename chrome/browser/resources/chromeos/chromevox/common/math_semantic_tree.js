@@ -902,6 +902,7 @@ cvox.SemanticTree.prototype.appendExistingOperator_ = function(root, op, node) {
       /** @type {!cvox.SemanticTree.Node} */
       (root.childNodes[root.childNodes.length - 1]),
       op, node);
+  return false;
 };
 
 
@@ -1477,6 +1478,7 @@ cvox.SemanticTree.prototype.getFunctionArgs_ = function(func, rest, heuristic) {
     return rest;
     break;
   }
+  return [];
 };
 
 

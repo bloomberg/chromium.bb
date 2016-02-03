@@ -2510,6 +2510,7 @@ cvox.DomUtil.getMathSpanId = function(jaxId) {
       return span.id;
     }
   }
+  return '';
 };
 
 

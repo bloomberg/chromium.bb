@@ -289,6 +289,7 @@ cvox.TtsBackground.prototype.speak = function(
 
   var utterance = new cvox.Utterance(textString, mergedProperties);
   this.speakUsingQueue_(utterance, queueMode);
+  return this;
 };
 
 /**
@@ -474,6 +475,7 @@ cvox.TtsBackground.prototype.shouldCancel_ =
       return (utteranceToCancel.properties['category'] ==
           newUtterance.properties['category']);
   }
+  return false;
 };
 
 /**

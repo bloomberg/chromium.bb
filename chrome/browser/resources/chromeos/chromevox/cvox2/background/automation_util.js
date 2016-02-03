@@ -45,6 +45,7 @@ AutomationUtil.findNodePre = function(cur, dir, pred) {
     child = dir == Dir.BACKWARD ?
         child.previousSibling : child.nextSibling;
   }
+  return null;
 };
 
 /**
@@ -70,6 +71,8 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
 
   if (pred(cur))
     return cur;
+
+  return null;
 };
 
 /**

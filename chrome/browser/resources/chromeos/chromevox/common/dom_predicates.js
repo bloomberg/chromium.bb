@@ -279,6 +279,7 @@ cvox.DomPredicates.visitedLinkPredicate = function(nodes) {
       return nodes[i];
     }
   }
+  return null;
 };
 
 

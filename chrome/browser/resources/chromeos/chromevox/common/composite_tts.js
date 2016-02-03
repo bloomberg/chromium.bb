@@ -45,6 +45,7 @@ cvox.CompositeTts.prototype.speak =
   this.ttsEngines_.forEach(function(engine) {
     engine.speak(textString, queueMode, properties);
   });
+  return this;
 };
 
 
@@ -100,4 +101,5 @@ cvox.CompositeTts.prototype.getDefaultProperty = function(property) {
       return value;
     }
   }
+  return null;
 };

@@ -383,6 +383,7 @@ cvox.SearchWidget.prototype.getNextResult_ = function(searchStr) {
     cvox.ChromeVox.navigationManager.setReversed(r);
   } while (cvox.ChromeVox.navigationManager.navigate(true,
       cvox.NavigationShifter.GRANULARITIES.OBJECT));
+  return null;
 };
 
 

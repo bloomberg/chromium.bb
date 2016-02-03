@@ -261,7 +261,7 @@ cvox.ChromeVox.isStickyModeOn = function() {
 /**
  * Shortcut for document.getElementById.
  * @param {string} id of the element.
- * @return {HTMLElement} with the id.
+ * @return {Element} with the id.
  */
 function $(id) {
   return document.getElementById(id);

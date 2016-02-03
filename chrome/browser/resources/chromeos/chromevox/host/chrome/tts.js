@@ -46,6 +46,7 @@ cvox.ChromeTts.prototype.speak = function(textString, queueMode, properties) {
 
   cvox.ExtensionBridge.send(
       this.createMessageForProperties_(textString, queueMode, properties));
+  return this;
 };
 
 /** @override */

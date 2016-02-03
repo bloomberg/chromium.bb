@@ -543,6 +543,7 @@ Background.prototype = {
       evt.stopPropagation();
     }
     Output.flushNextSpeechUtterance();
+    return false;
   },
 
   /**
@@ -561,6 +562,7 @@ Background.prototype = {
         this.passThroughKeyUpCount_++;
       }
     }
+    return false;
   },
 
   /**

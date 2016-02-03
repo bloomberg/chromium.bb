@@ -80,4 +80,5 @@ cvox.OverlayWidget.prototype.onKeyDown = function(evt) {
         cvox.ChromeVox.navigationManager.getDescription(),
         cvox.QueueMode.FLUSH, null);
   }
+  return false;
 };

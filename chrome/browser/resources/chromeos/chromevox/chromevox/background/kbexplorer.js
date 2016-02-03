@@ -59,6 +59,7 @@ cvox.KbExplorer.onKeyDown = function(evt) {
   }
   evt.preventDefault();
   evt.stopPropagation();
+  return false;
 };
 
 
