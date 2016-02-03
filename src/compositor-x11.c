@@ -1092,6 +1092,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
 				    &weston_event);
+			notify_pointer_frame(&b->core_seat);
 		}
 		return;
 	case 5:
@@ -1104,6 +1105,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
 				    &weston_event);
+			notify_pointer_frame(&b->core_seat);
 		}
 		return;
 	case 6:
@@ -1116,6 +1118,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
 				    &weston_event);
+			notify_pointer_frame(&b->core_seat);
 		}
 		return;
 	case 7:
@@ -1128,6 +1131,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
 				    &weston_event);
+			notify_pointer_frame(&b->core_seat);
 		}
 		return;
 	default:
