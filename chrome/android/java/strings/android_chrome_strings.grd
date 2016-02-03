@@ -2300,12 +2300,14 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 You must have Bluetooth and Location turned on in order to use the Physical Web.
       </message>
       <message name="IDS_PHYSICAL_WEB_OPTIN_TITLE" desc="The title for a dialog inviting the user to opt-in to the Physical Web.">
-        The Physical Web
+        Chrome + Physical Web
       </message>
       <message name="IDS_PHYSICAL_WEB_OPTIN_DESCRIPTION" desc="Description of the Physical Web displayed in the opt-in dialog">
-        Discover web pages sent by nearby objects.
+        Chrome can now find and show you nearby web pages using Bluetooth.
 
 Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results.
+
+You can control Physical Web settings in Chrome privacy settings.
       </message>
       <message name="IDS_PHYSICAL_WEB_LIST_URLS_ACTIVITY_TITLE" desc="The title for a dialog that shows a list of URLs broadcasted from nearby devices.">
         The Physical Web
