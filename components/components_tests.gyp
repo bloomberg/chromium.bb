@@ -76,6 +76,7 @@
       'bookmarks/managed/managed_bookmarks_tracker_unittest.cc',
     ],
     'browser_sync_unittest_sources': [
+      'browser_sync/browser/profile_sync_service_startup_unittest.cc',
       'browser_sync/browser/profile_sync_service_unittest.cc',
     ],
     'browser_watcher_unittest_sources': [

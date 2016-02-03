@@ -9,6 +9,7 @@ include_rules = [
   "+components/pref_registry",
   "+components/prefs",
   "+components/signin/core/browser",
+  "+components/signin/core/common",
   "+components/syncable_prefs",
   "+components/sync_bookmarks",
   "+components/sync_driver",

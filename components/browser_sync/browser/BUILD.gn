@@ -48,6 +48,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "profile_sync_service_startup_unittest.cc",
     "profile_sync_service_unittest.cc",
   ]
 
@@ -60,8 +61,10 @@ source_set("unit_tests") {
     "//components/dom_distiller/core",
     "//components/invalidation/impl",
     "//components/invalidation/public",
+    "//components/prefs",
     "//components/signin/core/browser",
     "//components/signin/core/browser:test_support",
+    "//components/signin/core/common:common",
     "//components/strings",
     "//components/sync_driver",
     "//components/sync_driver:test_support",
