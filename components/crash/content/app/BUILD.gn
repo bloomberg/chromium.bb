@@ -49,6 +49,13 @@ source_set("app") {
   ]
 
   deps += [ ":lib" ]
+  if (is_win) {
+    deps += [
+      # TODO(fdoray): Remove this once the PreRead field trial has expired.
+      # crbug.com/577698
+      "//components/startup_metric_utils/common",
+    ]
+  }
   if (is_mac || is_win) {
     deps += [
       "//third_party/crashpad/crashpad/client",

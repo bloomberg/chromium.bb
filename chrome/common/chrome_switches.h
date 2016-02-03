@@ -359,6 +359,8 @@ extern const char kForceDesktop[];
 extern const char kForceImmersive[];
 extern const char kHideIcons[];
 extern const char kNoNetworkProfileWarning[];
+extern const char kPrefetchArgumentBrowserBackground[];
+extern const char kPrefetchArgumentWatcher[];
 extern const char kRelaunchShortcut[];
 extern const char kShowIcons[];
 extern const char kUninstall[];

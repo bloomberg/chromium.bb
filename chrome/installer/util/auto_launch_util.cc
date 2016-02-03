@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "crypto/sha2.h"
 
 namespace {
@@ -58,6 +59,9 @@ void EnableBackgroundStartAtLogin() {
 
   base::CommandLine cmd_line(application_dir.Append(installer::kChromeExe));
   cmd_line.AppendSwitch(switches::kNoStartupWindow);
+
+  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
+    cmd_line.AppendArg(switches::kPrefetchArgumentBrowserBackground);
 
   base::win::AddCommandToAutoRun(HKEY_CURRENT_USER, GetAutoLaunchKeyName(),
                                  cmd_line.GetCommandLineString());

@@ -4,5 +4,10 @@ include_rules = [
   "+chrome/grit/chromium_strings.h",
 
   "+components/metrics",
+
+  # TODO(fdoray): Remove this once the PreRead field trial has expired.
+  # crbug.com/577698
+  "+components/startup_metric_utils/common",
+
   "+third_party/crashpad",
 ]

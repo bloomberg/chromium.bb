@@ -214,6 +214,10 @@ void ChromeLauncher::Run() {
       cmd.AppendSwitchPath(switches::kUserDataDir, user_data_);
       cmd.AppendSwitch(switches::kNoServiceAutorun);
 
+#if defined(OS_WIN)
+      cmd.AppendArg(switches::kPrefetchArgumentOther);
+#endif  // defined(OS_WIN)
+
       // Optional.
       cmd.AppendSwitch(switches::kDisableDefaultApps);
       cmd.AppendSwitch(switches::kDisableExtensions);

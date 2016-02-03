@@ -39,7 +39,6 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
@@ -64,13 +63,11 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
   // Get pre-read options from the PreRead field trial.
-  startup_metric_utils::InitializePreReadOptions(
-      BrowserDistribution::GetDistribution()->GetRegistryPath());
   const startup_metric_utils::PreReadOptions pre_read_options =
       startup_metric_utils::GetPreReadOptions();
 
   // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
-  if (!pre_read_options.no_pre_read) {
+  if (pre_read_options.pre_read) {
     base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
     if (pre_read_options.high_priority) {
       previous_priority = base::PlatformThread::GetCurrentThreadPriority();

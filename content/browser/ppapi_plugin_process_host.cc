@@ -394,6 +394,13 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                                          : switches::kPpapiPluginProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
+#if defined(OS_WIN)
+  if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument()) {
+    cmd_line->AppendArg(is_broker_ ? switches::kPrefetchArgumentPpapiBroker
+                                   : switches::kPrefetchArgumentPpapi);
+  }
+#endif  // defined(OS_WIN)
+
   // These switches are forwarded to both plugin and broker pocesses.
   static const char* kCommonForwardSwitches[] = {
     switches::kVModule

@@ -583,7 +583,10 @@ void SetupPreReadFieldTrial() {
       registry_path,
       base::Bind(&ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial));
 
-  // After startup is complete, update the pre-read group in the registry. The
+  // Initialize the PreRead options for the current process.
+  startup_metric_utils::InitializePreReadOptions(registry_path);
+
+  // After startup is complete, update the PreRead group in the registry. The
   // group written in the registry will be used for the next startup.
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, content::BrowserThread::GetBlockingPool(),

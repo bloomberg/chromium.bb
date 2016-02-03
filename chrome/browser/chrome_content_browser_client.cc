@@ -168,6 +168,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/chrome_browser_main_mac.h"
@@ -2692,6 +2693,10 @@ bool ChromeContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
   }
 
   return false;
+}
+
+bool ChromeContentBrowserClient::ShouldUseWindowsPrefetchArgument() const {
+  return startup_metric_utils::GetPreReadOptions().use_prefetch_argument;
 }
 #endif  // defined(OS_WIN)
 

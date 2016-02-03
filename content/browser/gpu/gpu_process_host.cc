@@ -962,6 +962,11 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
   cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
 
+#if defined(OS_WIN)
+  if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
+    cmd_line->AppendArg(switches::kPrefetchArgumentGpu);
+#endif  // defined(OS_WIN)
+
   if (kind_ == GPU_PROCESS_KIND_UNSANDBOXED)
     cmd_line->AppendSwitch(switches::kDisableGpuSandbox);
 

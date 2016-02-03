@@ -31,6 +31,10 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_WIN)
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
+#endif  // defined(OS_WIN)
+
 #if !defined(OS_MACOSX)
 
 namespace {
@@ -160,6 +164,12 @@ scoped_ptr<base::CommandLine> CreateServiceProcessCommandLine() {
   scoped_ptr<base::CommandLine> command_line(new base::CommandLine(exe_path));
   command_line->AppendSwitchASCII(switches::kProcessType,
                                   switches::kServiceProcess);
+
+#if defined(OS_WIN)
+  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
+    command_line->AppendArg(switches::kPrefetchArgumentOther);
+#endif  // defined(OS_WIN)
+
   static const char* const kSwitchesToCopy[] = {
     switches::kCloudPrintSetupProxy,
     switches::kCloudPrintURL,

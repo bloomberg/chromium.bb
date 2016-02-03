@@ -756,6 +756,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // a process hosting a plugin with the specified |mime_type|.
   virtual bool IsWin32kLockdownEnabledForMimeType(
       const std::string& mime_type) const;
+
+  // Returns true if processes should be launched with a /prefetch:# argument.
+  // See the kPrefetchArgument* constants in content_switches.cc for details.
+  virtual bool ShouldUseWindowsPrefetchArgument() const;
 #endif
 
 #if defined(VIDEO_HOLE)

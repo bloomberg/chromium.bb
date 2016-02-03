@@ -71,6 +71,11 @@ static_library("service") {
       "service_utility_process_host.cc",
       "service_utility_process_host.h",
     ]
+    deps += [
+      # TODO(fdoray): Remove this once the PreRead field trial has expired.
+      # crbug.com/577698
+      "//components/startup_metric_utils/common",
+    ]
   } else {
     sources += [ "cloud_print/print_system_dummy.cc" ]
   }

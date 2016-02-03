@@ -681,11 +681,6 @@ base::Process StartSandboxedProcess(
 
   ProcessDebugFlags(cmd_line);
 
-  // Prefetch hints on windows:
-  // Using a different prefetch profile per process type will allow Windows
-  // to create separate pretetch settings for browser, renderer etc.
-  cmd_line->AppendArg(base::StringPrintf("/prefetch:%d", base::Hash(type_str)));
-
   if ((!delegate->ShouldSandbox()) ||
       browser_command_line.HasSwitch(switches::kNoSandbox) ||
       cmd_line->HasSwitch(switches::kNoSandbox)) {

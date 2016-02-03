@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/content_switches.h"
 
 namespace {
@@ -154,6 +155,12 @@ base::CommandLine GenerateChromeWatcherCommandLine(
   AppendHandleSwitch(kOnIninitializedEventHandleSwitch, on_initialized_event,
                      &command_line);
   AppendHandleSwitch(kParentHandleSwitch, parent_process, &command_line);
+
+#if defined(OS_WIN)
+  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
+    command_line.AppendArg(switches::kPrefetchArgumentWatcher);
+#endif  // defined(OS_WIN)
+
   return command_line;
 }
 

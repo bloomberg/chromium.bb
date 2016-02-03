@@ -162,6 +162,10 @@ source_set("browser") {
     "//components/ssl_errors",
     "//components/startup_metric_utils/browser:lib",
     "//components/startup_metric_utils/browser:message_filter_lib",
+
+    # TODO(fdoray): Remove this once the PreRead field trial has expired.
+    # crbug.com/577698
+    "//components/startup_metric_utils/common",
     "//components/strings",
     "//components/suggestions",
     "//components/sync_bookmarks",

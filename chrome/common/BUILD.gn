@@ -211,6 +211,14 @@ static_library("common") {
       sources += rebase_path(gypi_values.chrome_common_service_process_sources,
                              ".",
                              "//chrome")
+
+      if (is_win) {
+        deps = [
+          # TODO(fdoray): Remove this once the PreRead field trial has expired.
+          # crbug.com/577698
+          "//components/startup_metric_utils/common",
+        ]
+      }
     }
   }
 

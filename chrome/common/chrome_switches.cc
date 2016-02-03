@@ -1249,6 +1249,14 @@ const char kForceImmersive[]                = "force-immersive";
 // This flag is only relevant for Windows currently.
 const char kNoNetworkProfileWarning[]       = "no-network-profile-warning";
 
+// /prefetch:# arguments for the browser process launched in background mode and
+// for the watcher process. Use profiles 5, 6 and 7 as documented on
+// kPrefetchArgument* in content_switches.cc.
+const char kPrefetchArgumentBrowserBackground[] = "/prefetch:5";
+const char kPrefetchArgumentWatcher[] = "/prefetch:6";
+// /prefetch:7 is used by crashpad, which can't depend on constants defined
+// here. See crashpad_win.cc for more details.
+
 // For the DelegateExecute verb handler to launch Chrome in desktop mode on
 // Windows 8 and higher.  Used when relaunching metro Chrome.
 const char kForceDesktop[]                  = "force-desktop";

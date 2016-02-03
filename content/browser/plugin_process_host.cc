@@ -209,6 +209,11 @@ bool PluginProcessHost::Init(const WebPluginInfo& info) {
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kPluginProcess);
   cmd_line->AppendSwitchPath(switches::kPluginPath, info.path);
 
+#if defined(OS_WIN)
+  if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
+    cmd_line->AppendArg(switches::kPrefetchArgumentOther);
+#endif  // defined(OS_WIN)
+
   // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
   static const char* const kSwitchNames[] = {

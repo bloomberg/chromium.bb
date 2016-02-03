@@ -3,6 +3,11 @@ include_rules = [
 
   "+content/public/common/content_descriptors.h",
   "+content/public/common/result_codes.h",
+
+  # TODO(fdoray): Remove this once the PreRead field trial has expired.
+  # crbug.com/577698
+  "+components/startup_metric_utils/common/pre_read_field_trial_utils_win.h",
+
   "+third_party/crashpad",
   "+third_party/kasko",
   "+third_party/lss/linux_syscall_support.h",

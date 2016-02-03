@@ -63,6 +63,14 @@ source_set("browser") {
     data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
   }
 
+  if (is_win) {
+    deps += [
+      # TODO(fdoray): Remove this once the PreRead field trial has expired.
+      # crbug.com/577698
+      "//components/startup_metric_utils/common",
+    ]
+  }
+
   if (is_win && current_cpu == "x86") {
     data_deps += [ "//components/nacl/broker:nacl64" ]
   }

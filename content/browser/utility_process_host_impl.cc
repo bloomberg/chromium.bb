@@ -312,6 +312,11 @@ bool UtilityProcessHostImpl::StartProcess() {
     std::string locale = GetContentClient()->browser()->GetApplicationLocale();
     cmd_line->AppendSwitchASCII(switches::kLang, locale);
 
+#if defined(OS_WIN)
+    if (GetContentClient()->browser()->ShouldUseWindowsPrefetchArgument())
+      cmd_line->AppendArg(switches::kPrefetchArgumentOther);
+#endif  // defined(OS_WIN)
+
     if (no_sandbox_)
       cmd_line->AppendSwitch(switches::kNoSandbox);
 

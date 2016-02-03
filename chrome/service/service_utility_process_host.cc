@@ -34,6 +34,10 @@
 #include "sandbox/win/src/sandbox_types.h"
 #include "ui/base/ui_base_switches.h"
 
+#if defined(OS_WIN)
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
+#endif  // defined(OS_WIN)
+
 namespace {
 
 using content::ChildProcessHost;
@@ -224,6 +228,11 @@ bool ServiceUtilityProcessHost::StartProcess(bool no_sandbox) {
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kUtilityProcess);
   cmd_line.AppendSwitchASCII(switches::kProcessChannelID, channel_id);
   cmd_line.AppendSwitch(switches::kLang);
+
+#if defined(OS_WIN)
+  if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument)
+    cmd_line.AppendArg(switches::kPrefetchArgumentOther);
+#endif  // defined(OS_WIN)
 
   if (Launch(&cmd_line, no_sandbox)) {
     ReportUmaEvent(SERVICE_UTILITY_STARTED);

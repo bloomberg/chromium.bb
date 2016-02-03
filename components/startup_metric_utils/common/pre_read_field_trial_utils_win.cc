@@ -25,12 +25,16 @@ const char kPreReadFieldTrialName[] = "PreRead";
 // annotated with the pre-read group that is actually used during this startup.
 const char kPreReadSyntheticFieldTrialName[] = "SyntheticPreRead";
 
-// Variation names for the PreRead field trial.
+// Variation names for the PreRead field trial. All variations change the
+// default behavior, i.e. the default is the inverse of the variation. Thus,
+// variations that cancel something that is done by default have a negative
+// name.
 const base::char16 kNoPreReadVariationName[] = L"NoPreRead";
 const base::char16 kHighPriorityVariationName[] = L"HighPriority";
 const base::char16 kOnlyIfColdVariationName[] = L"OnlyIfCold";
 const base::char16 kPrefetchVirtualMemoryVariationName[] =
     L"PrefetchVirtualMemory";
+const base::char16 kNoPrefetchArgumentVariationName[] = L"NoPrefetchArgument";
 
 // Registry key in which the PreRead field trial group is stored.
 const base::char16 kPreReadFieldTrialRegistryKey[] = L"\\PreReadFieldTrial";
@@ -45,6 +49,12 @@ base::string16 GetPreReadRegistryPath(
   return product_registry_path + kPreReadFieldTrialRegistryKey;
 }
 
+// Returns true if |key| has a value named |name| which is not zero.
+bool ReadBool(const base::win::RegKey& key, const base::char16* name) {
+  DWORD value = 0;
+  return key.ReadValueDW(name, &value) == ERROR_SUCCESS && value != 0;
+}
+
 }  // namespace
 
 void InitializePreReadOptions(const base::string16& product_registry_path) {
@@ -57,27 +67,13 @@ void InitializePreReadOptions(const base::string16& product_registry_path) {
                               KEY_QUERY_VALUE);
 
   // Set the PreRead field trial's options.
-  struct {
-    const base::char16* name;
-    bool* option;
-  } const variations_mappings[] = {
-      {kNoPreReadVariationName, &g_pre_read_options.no_pre_read},
-      {kHighPriorityVariationName, &g_pre_read_options.high_priority},
-      {kOnlyIfColdVariationName, &g_pre_read_options.only_if_cold},
-      {kPrefetchVirtualMemoryVariationName,
-       &g_pre_read_options.prefetch_virtual_memory},
-  };
-
-  for (const auto& mapping : variations_mappings) {
-    // Set the option variable to true if the corresponding value is found in
-    // the registry. Set to false otherwise (default behavior).
-    DWORD value = 0;
-    if (key.ReadValueDW(mapping.name, &value) == ERROR_SUCCESS) {
-      DCHECK_EQ(1U, value);
-      DCHECK(!*mapping.option);
-      *mapping.option = true;
-    }
-  }
+  g_pre_read_options.pre_read = !ReadBool(key, kNoPreReadVariationName);
+  g_pre_read_options.high_priority = ReadBool(key, kHighPriorityVariationName);
+  g_pre_read_options.only_if_cold = ReadBool(key, kOnlyIfColdVariationName);
+  g_pre_read_options.prefetch_virtual_memory =
+      ReadBool(key, kPrefetchVirtualMemoryVariationName);
+  g_pre_read_options.use_prefetch_argument =
+      !ReadBool(key, kNoPrefetchArgumentVariationName);
 }
 
 PreReadOptions GetPreReadOptions() {

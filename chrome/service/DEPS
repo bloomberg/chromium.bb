@@ -1,6 +1,11 @@
 include_rules = [
   "+chrome/grit",  # For generated headers.
   "+components/prefs",
+
+  # TODO(fdoray): Remove this once the PreRead field trial has expired.
+  # crbug.com/577698
+  "+components/startup_metric_utils/common",
+
   "+components/version_info",
   "+sandbox/win/src",
 ]

@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/client/simulate_crash_win.h"
@@ -84,6 +85,13 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     } else {
       arguments.push_back("--type=crashpad-handler");
+
+      if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument) {
+        // The prefetch argument added here has to be documented in
+        // chrome_switches.cc, below the kPrefetchArgument* constants. A
+        // constant can't be used here because crashpad can't depend on Chrome.
+        arguments.push_back("/prefetch:7");
+      }
     }
 
     // TODO(scottmg): See https://crashpad.chromium.org/bug/23.

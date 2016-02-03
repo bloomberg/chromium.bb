@@ -418,7 +418,11 @@ bool ContentBrowserClient::IsWin32kLockdownEnabledForMimeType(
   // is enabled by default in Chrome. See crbug.com/523278.
   return false;
 }
-#endif
+
+bool ContentBrowserClient::ShouldUseWindowsPrefetchArgument() const {
+  return true;
+}
+#endif  // defined(OS_WIN)
 
 #if defined(VIDEO_HOLE)
 ExternalVideoSurfaceContainer*

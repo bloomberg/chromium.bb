@@ -109,6 +109,10 @@ static_library("with_no_strings") {
       ":generate_strings",
       "//base/third_party/dynamic_annotations",
       "//components/metrics",
+
+      # TODO(fdoray): Remove this once the PreRead field trial has expired.
+      # crbug.com/577698
+      "//components/startup_metric_utils/common",
       "//courgette:courgette_lib",
       "//crypto",
       "//third_party/bspatch",
