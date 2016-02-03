@@ -364,6 +364,13 @@ decideLoadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   [self verifyCert:cert
                 forHost:host
       completionHandler:^(net::CertVerifyResult certVerifierResult) {
+        if (!net::IsCertStatusError(certVerifierResult.cert_status)) {
+          // |cert_status| must not be no-error if SecTrust API considers the
+          // cert as invalid. Otherwise there will be issues with errors
+          // reporting and recovery.
+          certVerifierResult.cert_status = net::CERT_STATUS_INVALID;
+        }
+
         web::CertAcceptPolicy policy =
             [self loadPolicyForRejectedTrustResult:trustResult
                                 certVerifierResult:certVerifierResult
