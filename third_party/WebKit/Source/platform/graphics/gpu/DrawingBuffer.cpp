@@ -995,6 +995,12 @@ void DrawingBuffer::deleteChromiumImageForTexture(TextureInfo* info)
 
 DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const IntSize& size)
 {
+    // TODO(erikchen): Add support for a CHROMIUM_image back buffer whose
+    // behavior mimics a texture with internal format GL_RGB.
+    // https://crbug.com/581777.
+    if (!m_requestedAttributes.alpha)
+        return createDefaultTextureAndAllocateMemory(size);
+
     if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled())
         return createDefaultTextureAndAllocateMemory(size);
 
