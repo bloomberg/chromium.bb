@@ -280,7 +280,6 @@ crbug.com/583651 fast/backgrounds/repeat/negative-offset-repeat-transformed.html
 crbug.com/583651 fast/borders/border-image-repeat-round.html [ NeedsRebaseline ]
 crbug.com/583651 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
 crbug.com/583651 fast/borders/border-image-side-reduction.html [ NeedsRebaseline ]
-crbug.com/583651 fast/dom/shadow/scoped-events-by-ua-stopped.html [ NeedsRebaseline ]
 crbug.com/583651 svg/W3C-SVG-1.1/pservers-grad-06-b.svg [ NeedsRebaseline ]
 crbug.com/583651 svg/custom/nested-pattern-boundingBoxModeContent.svg [ NeedsRebaseline ]
 crbug.com/583651 svg/custom/non-scaling-stroke.svg [ NeedsRebaseline ]
@@ -1398,5 +1397,12 @@ crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
 
 crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
+
+crbug.com/573166 fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/573166 svg/transforms/animated-path-inside-transformed-html.xhtml [ NeedsRebaseline ]
+crbug.com/579816 svg/W3C-SVG-1.1/coords-units-01-b.svg [ NeedsRebaseline ]
+
+# No baselines, but this js test is also showing FAIL
+crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 
 crbug.com/581203 [ Linux ] web-animations-api/player-finish-sample-only.html [ Failure Pass ]
