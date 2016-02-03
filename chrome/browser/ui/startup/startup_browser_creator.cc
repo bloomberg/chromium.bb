@@ -592,8 +592,11 @@ std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
           // line. See ExistingUserController::OnLoginSuccess.
           (url.spec().find(chrome::kChromeUISettingsURL) == 0) ||
 #else
-          ((url.spec().find(std::string(chrome::kChromeUISettingsURL) +
-                            chrome::kResetProfileSettingsSubPage) == 0)) ||
+          // Exposed for external cleaners to offer a settings reset to the
+          // user. So the URL must match exactly, without any param or prefix.
+          (url.spec() ==
+           std::string(chrome::kChromeUISettingsURL) +
+               chrome::kResetProfileSettingsSubPage) ||
 #endif
           (url.spec().compare(url::kAboutBlankURL) == 0)) {
         urls.push_back(url);
