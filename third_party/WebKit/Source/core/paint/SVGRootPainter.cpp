@@ -8,12 +8,14 @@
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintTiming.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "wtf/Optional.h"
 
 namespace blink {
@@ -43,6 +45,21 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
     }
 
     PaintInfo paintInfoBeforeFiltering(paintInfo);
+
+    // At the HTML->SVG boundary, SVGRoot will have a paint offset transform
+    // paint property but may not have a PaintLayer, so we need to update the
+    // paint properties here since they will not be updated by PaintLayer
+    // (See: PaintPropertyTreeBuilder::createPaintOffsetTranslationIfNeeded).
+    Optional<ScopedPaintChunkProperties> paintOffsetTranslationPropertyScope;
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !m_layoutSVGRoot.hasLayer()) {
+        const auto* objectProperties = m_layoutSVGRoot.objectPaintProperties();
+        if (objectProperties && objectProperties->paintOffsetTranslation()) {
+            auto& paintController = paintInfoBeforeFiltering.context.paintController();
+            PaintChunkProperties properties(paintController.currentPaintChunkProperties());
+            properties.transform = objectProperties->paintOffsetTranslation();
+            paintOffsetTranslationPropertyScope.emplace(paintController, properties);
+        }
+    }
 
     // Apply initial viewport clip.
     Optional<ClipRecorder> clipRecorder;

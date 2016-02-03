@@ -457,6 +457,7 @@ crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/019
 crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/020.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
+crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure

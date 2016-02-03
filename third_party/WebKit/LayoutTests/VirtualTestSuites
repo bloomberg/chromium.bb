@@ -204,6 +204,11 @@
     "args": ["--enable-slimming-paint-v2"]
   },
   {
+    "prefix": "spv2",
+    "base": "svg",
+    "args": ["--enable-slimming-paint-v2"]
+  },
+  {
     "prefix": "scalefactor200",
     "base": "fast/hidpi/static",
     "args": ["--force-device-scale-factor=2"]
