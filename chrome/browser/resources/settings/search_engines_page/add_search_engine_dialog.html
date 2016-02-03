@@ -1,0 +1,44 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+
+<dom-module id="settings-add-search-engine-dialog">
+  <link rel="import" type="css" href="chrome://md-settings/settings_dialog.css">
+  <template>
+    <paper-dialog modal id="dialog">
+      <div id="dialog-content">
+        <div class="top-row">
+          <span class="title">Add search engine</span>
+          <paper-icon-button icon="clear" on-tap="onCancelTap_">
+          </paper-icon-button>
+        </div>
+        <div class="body">
+          <div class="explanation">
+            <paper-input always-float-label id="searchEngine"
+                i18n-values="label:searchEnginesSearchEngineLabel"
+                value="{{searchEngine}}">
+            </paper-input>
+            <paper-input always-float-label id="keyword"
+                i18n-values="label:searchEnginesKeywordLabel"
+                value="{{keyword}}">
+            </paper-input>
+            <paper-input always-float-label id="queryUrl"
+                i18n-values="label:searchEnginesQueryURLLabel"
+                value="{{queryUrl}}">
+            </paper-input>
+          </div>
+          <div class="button-container">
+            <paper-button class="cancel-button" id="cancel"
+                on-tap="onCancelTap_" i18n-content="cancel"></paper-button>
+            <paper-button class="action-button" id="add"
+                on-tap="onAddTap_" i18n-content="searchEnginesAddButtonLabel">
+            </paper-button>
+          </div>
+        </div>
+      </div>
+    </paper-dialog>
+  </template>
+  <script src="add_search_engine_dialog.js"></script>
+</dom-module>

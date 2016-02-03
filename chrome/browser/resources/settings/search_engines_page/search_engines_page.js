@@ -32,6 +32,12 @@ Polymer({
       type: Array,
       value: function() { return []; }
     },
+
+    /** @type {boolean} */
+    showAddSearchEngineDialog_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** @override */
@@ -54,5 +60,20 @@ Polymer({
             chrome.searchEnginesPrivate.SearchEngineType.OTHER;
       }, this);
     }.bind(this));
-  }
+  },
+
+  /** @private */
+  onAddSearchEngineTap_: function() {
+    this.showAddSearchEngineDialog_ = true;
+    this.async(function() {
+      var dialog = this.$$('settings-add-search-engine-dialog');
+      // Register listener to detect when the dialog is closed. Flip the boolean
+      // once closed to force a restamp next time it is shown such that the
+      // previous dialog's contents are cleared.
+      dialog.addEventListener('iron-overlay-closed', function() {
+        this.showAddSearchEngineDialog_ = false;
+      }.bind(this));
+      dialog.open();
+    }.bind(this));
+  },
 });

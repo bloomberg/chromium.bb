@@ -7,6 +7,11 @@
  * Common dialog styles for Material Design settings.
  */
 
+paper-dialog {
+  min-width: 500px;
+  max-width: 800px;
+}
+
 #dialog-content {
   -webkit-padding-end: 0;
   -webkit-padding-start: 0;

@@ -1,31 +1,33 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 
-<dom-module id="cr-search-engine-entry">
-  <link rel="import" type="css" href="search_engine_entry.css">
+<dom-module id="settings-search-engine-entry">
+  <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="chrome://md-settings/search_engines_page/search_engine_entry.css">
   <template>
-    <div class="entry">
-      <div class="inputs">
-        <paper-input id="domainField" disabled required
-            class="narrow-input" auto-validate="false"
-            value="{{engine.name}}" on-change="fieldChanged_">
-        </paper-input>
-        <paper-input id="keywordField" disabled required
-            class="narrow-input" auto-validate="false"
-            value="{{engine.keyword}}" on-change="fieldChanged_">
-        </paper-input>
-        <paper-input id="queryURLField" disabled required
-            class="wide-input" auto-validate="false"
-            value="{{engine.url}}" on-change="fieldChanged_">
-        </paper-input>
+    <div id="container" class="list-item">
+      <div class="name-column">
+        <span class="icon-container">
+          <iron-icon icon="image:brightness-1" item-icon></iron-icon>
+        </span>
+        <div class="name">{{engine.name}}</div>
       </div>
-      <div class="icons">
-        <iron-icon icon="settings" on-tap="toggleEditable_"></iron-icon>
-        <iron-icon id="checkIcon" icon="check" on-tap="makeDefault_">
-        </iron-icon>
-        <iron-icon id="deleteIcon" icon="clear" on-tap="deleteEngine_">
-        </iron-icon>
+      <div class="keyword-column">{{engine.keyword}}</div>
+      <div class="url-column">{{engine.url}}</div>
+      <div class="icon-container">
+        <paper-icon-button icon="more-vert" toggles active="{{editMenuOpened}}">
+        </paper-icon-button>
+        <iron-dropdown opened="{{editMenuOpened}}" horizontal-align="right"
+            vertical-align="top">
+          <div class="dropdown-content">
+            <!-- TODO(dpapad): localize strings -->
+            <paper-item on-tap="onMakeDefaultTap_">Make default</paper-item>
+            <paper-item on-tap="onEditTap_">Edit</paper-item>
+            <paper-item on-tap="onDeleteTap_">Remove from list</paper-item>
+          <div>
+        </iron-dropdown>
       </div>
     </div>
   </template>

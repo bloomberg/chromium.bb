@@ -667,8 +667,9 @@ void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "searchEnginesOtherLabel",
       IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES_LABEL);
-  html_source->AddLocalizedString("searchEnginesDomainLabel",
-                                  IDS_SETTINGS_SEARCH_ENGINES_DOMAIN_LABEL);
+  html_source->AddLocalizedString(
+      "searchEnginesSearchEngineLabel",
+      IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE_LABEL);
   html_source->AddLocalizedString("searchEnginesKeywordLabel",
                                   IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL);
   html_source->AddLocalizedString("searchEnginesQueryURLLabel",

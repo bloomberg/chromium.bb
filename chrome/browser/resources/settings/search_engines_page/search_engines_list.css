@@ -2,24 +2,16 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.container {
-  max-height: 400px;
-}
-
 .headers {
   display: flex;
+  padding: 10px 0;
 }
 
-.headers > div {
-  background-color: #6c6c6c;
-  color: white;
-  padding: 5px;
-}
-
-.narrow-label {
+.headers .name,
+.headers .keyword {
   flex: 1;
 }
 
-.wide-label {
+.headers .url {
   flex: 3;
 }

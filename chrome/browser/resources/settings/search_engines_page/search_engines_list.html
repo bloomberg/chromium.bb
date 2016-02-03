@@ -1,23 +1,21 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="search_engine_entry.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engine_entry.html">
 
-<dom-module id="cr-search-engines-list">
+<dom-module id="settings-search-engines-list">
   <link rel="import" type="css" href="search_engines_list.css">
   <template>
-    <div class="container">
       <div class="headers">
-        <div class="narrow-label" i18n-content="searchEnginesDomainLabel"></div>
-        <div class="narrow-label" i18n-content="searchEnginesKeywordLabel">
-        </div>
-        <div class="wide-label" i18n-content="searchEnginesQueryURLLabel"></div>
+        <div class="name" i18n-content="searchEnginesSearchEngineLabel"></div>
+        <div class="keyword" i18n-content="searchEnginesKeywordLabel"></div>
+        <div class="url" i18n-content="searchEnginesQueryURLLabel"></div>
       </div>
-      <div class="entries">
+      <div>
         <template is="dom-repeat" items="[[engines]]">
-          <cr-search-engine-entry engine="[[item]]"></cr-search-engine-entry>
+          <settings-search-engine-entry engine="[[item]]">
+          </settings-search-engine-entry>
         </template>
       </div>
-    </div>
   </template>
   <script src="search_engines_list.js"></script>
 </dom-module>

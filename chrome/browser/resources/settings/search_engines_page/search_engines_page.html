@@ -1,20 +1,46 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="search_engine_adder.html">
-<link rel="import" href="search_engines_list.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/add_search_engine_dialog.html">
+<link rel="import" href="chrome://md-settings/search_engines_page/search_engines_list.html">
+<link rel="import" href="chrome://md-settings/reset_page/reset_profile_dialog.html">
 
 <dom-module id="settings-search-engines-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <template>
+    <style>
+      .other-label-container {
+        display: flex;
+      }
+
+      .other-label-container span {
+        flex: 1;
+      }
+    </style>
+    <div class="settings-box block">
+      <settings-search-engines-list engines="[[defaultEngines]]">
+      </settings-search-engines-list>
+    </div>
     <div class="settings-box">
-      <cr-search-engine-adder></cr-search-engine-adder>
+      <paper-button class="link-button"
+          i18n-content="searchEnginesAddSearchEngineLabel"
+          on-tap="onAddSearchEngineTap_"></paper-button>
+    </div>
+    <template is="dom-if" if="[[showAddSearchEngineDialog_]]" restamp>
+      <settings-add-search-engine-dialog></settings-add-search-engine-dialog>
+    </template>
+    <div class="settings-box block">
+      <div class="other-label-container">
+        <span i18n-content="searchEnginesOtherLabel"></span>
+        <cr-expand-button expanded="{{otherSearchEnginesExpanded}}">
+        </cr-expand-button>
+      </div>
 
-      <h2 i18n-content="searchEnginesLabel"></h2>
-      <cr-search-engines-list engines="[[defaultEngines]]">
-      </cr-search-engines-list>
-
-      <h2 i18n-content="searchEnginesOtherLabel"></h2>
-      <cr-search-engines-list engines="[[otherEngines]]">
-      </cr-search-engines-list>
+      <iron-collapse id="collapse" opened=[[otherSearchEnginesExpanded]]>
+        <settings-search-engines-list engines="[[otherEngines]]">
+        </settings-search-engines-list>
+      </iron-collapse>
     </div>
   </template>
   <script src="search_engines_page.js"></script>

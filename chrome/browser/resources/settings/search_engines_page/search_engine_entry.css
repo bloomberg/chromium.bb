@@ -2,18 +2,42 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.icons {
-  display: inline-block;
+.name-column,
+.keyword-column {
+  flex: 2;
 }
 
-.inputs {
+.name-column {
   display: flex;
 }
 
-.narrow-input {
-  flex: 1;
+.url-column {
+  flex: 5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.wide-input {
+.icon-container {
+  flex: 1;
+  text-align: center;
+}
+
+.name {
   flex: 3;
+}
+
+#container {
+  border-top: 1px solid lightgray;
+  display: flex;
+  padding: 10px 0;
+}
+
+.dropdown-content {
+  background: white;
+  box-shadow: 0 2px 6px grey;
+}
+
+paper-item:hover {
+  background-color: #f0f0f0;
 }

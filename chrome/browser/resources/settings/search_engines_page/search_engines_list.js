@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview 'cr-search-engines-list' is a component for showing a list of
- * search engines.
+ * @fileoverview 'settings-search-engines-list' is a component for showing a
+ * list of search engines.
  *
  * @group Chrome Settings Elements
- * @element cr-search-engines-list
+ * @element settings-search-engines-list
  */
 Polymer({
-  is: 'cr-search-engines-list',
+  is: 'settings-search-engines-list',
 
   properties: {
     /** @type {!Array<!SearchEngine>} */

@@ -462,8 +462,8 @@
   <message name="IDS_SETTINGS_SEARCH_ENGINES_OTHER_ENGINES_LABEL" desc="Label for 'other' Search Engines section">
     Other search engines
   </message>
-  <message name="IDS_SETTINGS_SEARCH_ENGINES_DOMAIN_LABEL" desc="Label for Domain column header for a search engine">
-    Domain
+  <message name="IDS_SETTINGS_SEARCH_ENGINES_SEARCH_ENGINE_LABEL" desc="Label for a table column that holds the name of a search engine">
+    Search engine
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_KEYWORD_LABEL" desc="Label for Keyword column header for a search engine">
     Keyword
