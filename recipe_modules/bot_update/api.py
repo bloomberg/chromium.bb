@@ -57,10 +57,6 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert isinstance(cmd, (list, tuple))
     bot_update_path = self.resource('bot_update.py')
     kwargs.setdefault('infra_step', True)
-    kwargs.setdefault('env', {})
-    kwargs['env'].setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        str(self._module.PACKAGE_DIRECTORY), kwargs['env']['PATH']])
     return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property

@@ -25,9 +25,6 @@
       "--with_branch_heads"
     ],
     "cwd": "[SLAVE_BUILD]",
-    "env": {
-      "PATH": "RECIPE_PACKAGE[depot_tools]:%(PATH)s"
-    },
     "name": "bot_update - with branch heads",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
