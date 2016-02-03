@@ -754,6 +754,9 @@ public:
     virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&);
 
     bool isWritingModeRoot() const { return !parent() || parent()->style()->writingMode() != style()->writingMode(); }
+    bool isOrthogonalWritingModeRoot() const { return parent() && parent()->isHorizontalWritingMode() != isHorizontalWritingMode(); }
+    void markOrthogonalWritingModeRoot();
+    void unmarkOrthogonalWritingModeRoot();
 
     bool isDeprecatedFlexItem() const { return !isInline() && !isFloatingOrOutOfFlowPositioned() && parent() && parent()->isDeprecatedFlexibleBox(); }
     bool isFlexItemIncludingDeprecated() const { return !isInline() && !isFloatingOrOutOfFlowPositioned() && parent() && parent()->isFlexibleBoxIncludingDeprecated(); }
@@ -881,6 +884,9 @@ public:
 
 protected:
     void willBeDestroyed() override;
+
+    void insertedIntoTree() override;
+    void willBeRemovedFromTree() override;
 
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

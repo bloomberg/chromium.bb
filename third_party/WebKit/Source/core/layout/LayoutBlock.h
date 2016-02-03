@@ -256,10 +256,6 @@ public:
     LayoutUnit startOffsetForContent() const { return style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
     LayoutUnit endOffsetForContent() const { return !style()->isLeftToRightDirection() ? logicalLeftOffsetForContent() : logicalWidth() - logicalRightOffsetForContent(); }
 
-    bool needsRecalcLogicalWidthAfterLayoutChildren() const { return m_needsRecalcLogicalWidthAfterLayoutChildren; }
-    void setNeedsRecalcLogicalWidthAfterLayoutChildren() { m_needsRecalcLogicalWidthAfterLayoutChildren = true; }
-    void clearNeedsRecalcLogicalWidthAfterLayoutChildren() { m_needsRecalcLogicalWidthAfterLayoutChildren = false; }
-
     virtual LayoutUnit logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const;
     virtual LayoutUnit logicalRightSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const;
 
@@ -491,7 +487,6 @@ protected:
     unsigned m_widthAvailableToChildrenChanged  : 1;
     mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
-    mutable unsigned m_needsRecalcLogicalWidthAfterLayoutChildren : 1;
 
     unsigned m_hasPositionedObjects : 1;
     unsigned m_hasPercentHeightDescendants : 1;

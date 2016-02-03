@@ -132,7 +132,6 @@ LayoutBlock::LayoutBlock(ContainerNode* node)
     , m_widthAvailableToChildrenChanged(false)
     , m_hasOnlySelfCollapsingChildren(false)
     , m_descendantsWithFloatsMarkedForLayout(false)
-    , m_needsRecalcLogicalWidthAfterLayoutChildren(false)
     , m_hasPositionedObjects(false)
     , m_hasPercentHeightDescendants(false)
 {
@@ -2080,7 +2079,6 @@ void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, Layout
             minPreferredLogicalWidth = maxPreferredLogicalWidth = toLayoutBox(child).logicalHeight();
             return;
         }
-        m_needsRecalcLogicalWidthAfterLayoutChildren = true;
         minPreferredLogicalWidth = maxPreferredLogicalWidth = toLayoutBox(child).computeLogicalHeightWithoutLayout();
         return;
     }
@@ -2096,9 +2094,6 @@ void LayoutBlock::computeChildPreferredLogicalWidths(LayoutObject& child, Layout
         else if (computedInlineSize.isMinContent())
             maxPreferredLogicalWidth = minPreferredLogicalWidth;
     }
-
-    if (child.isLayoutBlock() && toLayoutBlock(child).needsRecalcLogicalWidthAfterLayoutChildren())
-        m_needsRecalcLogicalWidthAfterLayoutChildren = true;
 }
 
 bool LayoutBlock::hasLineIfEmpty() const

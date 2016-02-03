@@ -224,6 +224,7 @@ void FrameView::reset()
     clearFragmentAnchor();
     m_viewportConstrainedObjects.clear();
     m_layoutSubtreeRootList.clear();
+    m_orthogonalWritingModeRootList.clear();
 }
 
 // Call function for each non-throttled frame view in pre tree order.
@@ -844,10 +845,13 @@ void FrameView::performLayout(bool inSubtreeLayout)
 
     forceLayoutParentViewIfNeeded();
 
+    if (hasOrthogonalWritingModeRoots())
+        layoutOrthogonalWritingModeRoots();
+
     if (inSubtreeLayout) {
         if (m_analyzer)
             m_analyzer->increment(LayoutAnalyzer::PerformLayoutRootLayoutObjects, m_layoutSubtreeRootList.size());
-        while (LayoutObject* root = m_layoutSubtreeRootList.takeDeepestRoot()) {
+        for (auto& root : m_layoutSubtreeRootList.ordered()) {
             if (!root->needsLayout())
                 continue;
             layoutFromRootObject(*root);
@@ -858,6 +862,7 @@ void FrameView::performLayout(bool inSubtreeLayout)
             if (LayoutObject* container = root->container())
                 container->setMayNeedPaintInvalidation();
         }
+        m_layoutSubtreeRootList.clear();
     } else {
         layoutFromRootObject(*layoutView());
     }
@@ -1727,12 +1732,42 @@ void FrameView::handleLoadCompleted()
 
 void FrameView::clearLayoutSubtreeRoot(const LayoutObject& root)
 {
-    m_layoutSubtreeRootList.removeRoot(const_cast<LayoutObject&>(root));
+    m_layoutSubtreeRootList.remove(const_cast<LayoutObject&>(root));
 }
 
 void FrameView::clearLayoutSubtreeRootsAndMarkContainingBlocks()
 {
     m_layoutSubtreeRootList.clearAndMarkContainingBlocksForLayout();
+}
+
+void FrameView::addOrthogonalWritingModeRoot(LayoutBox& root)
+{
+    m_orthogonalWritingModeRootList.add(root);
+}
+
+void FrameView::removeOrthogonalWritingModeRoot(LayoutBox& root)
+{
+    m_orthogonalWritingModeRootList.remove(root);
+}
+
+bool FrameView::hasOrthogonalWritingModeRoots() const
+{
+    return !m_orthogonalWritingModeRootList.isEmpty();
+}
+
+void FrameView::layoutOrthogonalWritingModeRoots()
+{
+    for (auto& root : m_orthogonalWritingModeRootList.ordered()) {
+        ASSERT(root->isBox() && toLayoutBox(*root).isOrthogonalWritingModeRoot());
+        if (!root->needsLayout()
+            || root->isOutOfFlowPositioned()
+            || root->isColumnSpanAll()
+            || !root->styleRef().logicalHeight().isIntrinsicOrAuto()) {
+            continue;
+        }
+        LayoutState layoutState(*root);
+        root->layout();
+    }
 }
 
 void FrameView::scheduleRelayout()
@@ -1776,7 +1811,7 @@ void FrameView::scheduleRelayoutOfSubtree(LayoutObject* relayoutRoot)
     if (relayoutRoot == layoutView)
         m_layoutSubtreeRootList.clearAndMarkContainingBlocksForLayout();
     else
-        m_layoutSubtreeRootList.addRoot(*relayoutRoot);
+        m_layoutSubtreeRootList.add(*relayoutRoot);
 
     if (m_layoutSchedulingEnabled) {
         m_hasPendingLayout = true;

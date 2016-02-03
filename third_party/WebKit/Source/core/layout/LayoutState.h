@@ -68,7 +68,7 @@ class LayoutState {
 public:
     // Constructor for root LayoutState created by LayoutView
     LayoutState(LayoutUnit pageLogicalHeight, bool pageLogicalHeightChanged, LayoutView&);
-    // Constructor for sub-tree layout
+    // Constructor for sub-tree layout and orthogonal writing-mode roots
     explicit LayoutState(LayoutObject& root);
 
     LayoutState(LayoutBox&, const LayoutSize& offset, LayoutUnit pageLogicalHeight = LayoutUnit(), bool pageHeightLogicalChanged = false, bool containingBlockLogicalWidthChanged = false);

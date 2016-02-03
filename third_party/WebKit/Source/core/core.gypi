@@ -525,6 +525,8 @@
             'layout/ColumnBalancer.h',
             'layout/CounterNode.cpp',
             'layout/CounterNode.h',
+            'layout/DepthOrderedLayoutObjectList.cpp',
+            'layout/DepthOrderedLayoutObjectList.h',
             'layout/FloatingObjects.cpp',
             'layout/FloatingObjects.h',
             'layout/FragmentationContext.h',

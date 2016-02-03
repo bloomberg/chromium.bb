@@ -133,10 +133,28 @@ void LayoutBox::willBeDestroyed()
     if (isOutOfFlowPositioned())
         LayoutBlock::removePositionedObject(this);
     removeFromPercentHeightContainer();
+    if (isOrthogonalWritingModeRoot() && !documentBeingDestroyed())
+        unmarkOrthogonalWritingModeRoot();
 
     ShapeOutsideInfo::removeInfo(*this);
 
     LayoutBoxModelObject::willBeDestroyed();
+}
+
+void LayoutBox::insertedIntoTree()
+{
+    LayoutBoxModelObject::insertedIntoTree();
+
+    if (isOrthogonalWritingModeRoot())
+        markOrthogonalWritingModeRoot();
+}
+
+void LayoutBox::willBeRemovedFromTree()
+{
+    if (!documentBeingDestroyed() && isOrthogonalWritingModeRoot())
+        unmarkOrthogonalWritingModeRoot();
+
+    LayoutBoxModelObject::willBeRemovedFromTree();
 }
 
 void LayoutBox::removeFloatingOrPositionedChildFromBlockLists()
@@ -223,8 +241,16 @@ void LayoutBox::styleDidChange(StyleDifference diff, const ComputedStyle* oldSty
     if (needsLayout() && oldStyle)
         removeFromPercentHeightContainer();
 
-    if (oldHorizontalWritingMode != isHorizontalWritingMode())
+    if (oldHorizontalWritingMode != isHorizontalWritingMode()) {
+        if (parent()) {
+            if (isOrthogonalWritingModeRoot())
+                markOrthogonalWritingModeRoot();
+            else
+                unmarkOrthogonalWritingModeRoot();
+        }
+
         clearPercentHeightDescendants();
+    }
 
     // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
     // new zoomed coordinate space.
@@ -3947,6 +3973,18 @@ void LayoutBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScop
     // is childless, though.
     if (view()->layoutState()->pageLogicalHeightChanged() && slowFirstChild())
         layoutScope.setChildNeedsLayout(this);
+}
+
+void LayoutBox::markOrthogonalWritingModeRoot()
+{
+    ASSERT(frameView());
+    frameView()->addOrthogonalWritingModeRoot(*this);
+}
+
+void LayoutBox::unmarkOrthogonalWritingModeRoot()
+{
+    ASSERT(frameView());
+    frameView()->removeOrthogonalWritingModeRoot(*this);
 }
 
 void LayoutBox::addVisualEffectOverflow()

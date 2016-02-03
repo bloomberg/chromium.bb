@@ -375,16 +375,6 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
     else
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
-    if (needsRecalcLogicalWidthAfterLayoutChildren()) {
-        // In perpendicular writing-mode, min-content logicalWidth depends on the child's logicalHeight,
-        // so logicalWidth needs to be updated after children layout is done.
-        // Strictly speaking, children need re-layout if logicalWidth is changed, but in most cases,
-        // perpendicular children do not re-flow according to parent's logicalWidth.
-        clearNeedsRecalcLogicalWidthAfterLayoutChildren();
-        setPreferredLogicalWidthsDirty(MarkOnlyThis);
-        updateLogicalWidthAndColumnWidth();
-    }
-
     // Expand our intrinsic height to encompass floats.
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);

@@ -109,13 +109,7 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
 
         LayoutUnit minPreferredLogicalWidth;
         LayoutUnit maxPreferredLogicalWidth;
-        bool hasOrthogonalWritingMode = child->isHorizontalWritingMode() != isHorizontalWritingMode();
-        if (hasOrthogonalWritingMode) {
-            minPreferredLogicalWidth = maxPreferredLogicalWidth = child->computeLogicalHeightWithoutLayout();
-        } else {
-            minPreferredLogicalWidth = child->minPreferredLogicalWidth();
-            maxPreferredLogicalWidth = child->maxPreferredLogicalWidth();
-        }
+        computeChildPreferredLogicalWidths(*child, minPreferredLogicalWidth, maxPreferredLogicalWidth);
         ASSERT(minPreferredLogicalWidth >= 0);
         ASSERT(maxPreferredLogicalWidth >= 0);
         minPreferredLogicalWidth += margin;

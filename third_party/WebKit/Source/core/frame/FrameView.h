@@ -120,6 +120,10 @@ public:
     bool isInPerformLayout() const;
 
     void clearLayoutSubtreeRoot(const LayoutObject&);
+    void addOrthogonalWritingModeRoot(LayoutBox&);
+    void removeOrthogonalWritingModeRoot(LayoutBox&);
+    bool hasOrthogonalWritingModeRoots() const;
+    void layoutOrthogonalWritingModeRoots();
     int layoutCount() const { return m_layoutCount; }
 
     void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects, bool& isPartial);
@@ -786,6 +790,7 @@ private:
 
     bool m_hasPendingLayout;
     LayoutSubtreeRootList m_layoutSubtreeRootList;
+    DepthOrderedLayoutObjectList m_orthogonalWritingModeRootList;
 
     bool m_layoutSchedulingEnabled;
     bool m_inSynchronousPostLayout;

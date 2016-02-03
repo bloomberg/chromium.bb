@@ -5,13 +5,12 @@
 #ifndef LayoutSubtreeRootList_h
 #define LayoutSubtreeRootList_h
 
+#include "core/layout/DepthOrderedLayoutObjectList.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
 namespace blink {
-
-class LayoutObject;
 
 // This class keeps track of layout objects that have identified to be
 // independent layout roots meaning they won't affect other parts of the tree
@@ -27,66 +26,21 @@ class LayoutObject;
 // a higher root.
 // TODO(leviw): This should really be something akin to a LayoutController
 // that FrameView delegates layout work to.
-class LayoutSubtreeRootList {
+class LayoutSubtreeRootList : public DepthOrderedLayoutObjectList {
     DISALLOW_NEW();
 public:
     LayoutSubtreeRootList()
     { }
 
-    void addRoot(LayoutObject& object)
-    {
-        ASSERT(m_orderedRoots.isEmpty());
-        m_roots.add(&object);
-    }
-    void removeRoot(LayoutObject&);
-
     void clearAndMarkContainingBlocksForLayout();
-    void clear() { m_roots.clear(); }
-    int size() { return m_roots.size(); }
-    bool isEmpty() const { return m_roots.isEmpty(); }
 
     // TODO(leviw): Remove this once we stop exposing to DevTools one root
     // for a layout crbug.com/460596
     LayoutObject* randomRoot();
 
-    LayoutObject* takeDeepestRoot();
-
     void countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned& totalObjects);
 
     static void countObjectsNeedingLayoutInRoot(const LayoutObject* root, unsigned& needsLayoutObjects, unsigned& totalObjects);
-
-private:
-    struct LayoutSubtree {
-        LayoutSubtree(LayoutObject* inObject)
-            : object(inObject)
-            , depth(determineDepth(inObject))
-        { }
-
-        LayoutSubtree()
-            : object(0)
-            , depth(0)
-        { }
-
-        LayoutObject* object;
-        unsigned depth;
-
-        bool operator<(const LayoutSubtreeRootList::LayoutSubtree& other) const
-        {
-            return depth < other.depth;
-        }
-
-        private:
-            static unsigned determineDepth(LayoutObject*);
-    };
-
-    // Layout roots sorted by depth (shallowest first). This structure is only
-    // populated at the beginning of layout.
-    Vector<LayoutSubtree> m_orderedRoots;
-
-    // Outside of layout, roots can be added when marked as needing layout and
-    // removed when removed when destroyed. They're kept in this hashset to
-    // keep those operations fast.
-    HashSet<LayoutObject*> m_roots;
 };
 
 } // namespace blink
