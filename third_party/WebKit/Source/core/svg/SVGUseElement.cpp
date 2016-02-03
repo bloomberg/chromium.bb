@@ -227,7 +227,8 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName)
         SVGElement::InvalidationGuard invalidationGuard(this);
         if (isStructurallyExternal()) {
             KURL url = document().completeURL(hrefString());
-            if (url.hasFragmentIdentifier()) {
+            const KURL& existingURL = m_resource ? m_resource->url() : KURL();
+            if (url.hasFragmentIdentifier() && !equalIgnoringFragmentIdentifier(url, existingURL)) {
                 FetchRequest request(ResourceRequest(url), localName());
                 setDocumentResource(DocumentResource::fetchSVGDocument(request, document().fetcher()));
             }

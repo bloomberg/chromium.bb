@@ -2,3 +2,7 @@
 Header set Cache-Control "no-cache, must-revalidate"
 Header set Pragma no-cache
 </Files>
+<Files "circles-no-cache.svg">
+Header set Cache-Control "no-cache, must-revalidate"
+Header set Pragma no-cache
+</Files>
