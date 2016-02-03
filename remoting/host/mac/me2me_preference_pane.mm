@@ -296,7 +296,7 @@ std::string JsonHostConfig::GetSerializedData() const {
     [self showError];
     return;
   }
-  if (!remoting::VerifyHostPinHash(pin_utf8, host_id, host_secret_hash)) {
+  if (!remoting::VerifyHostPinHash(host_secret_hash, host_id, pin_utf8)) {
     [self showIncorrectPinMessage];
     return;
   }
