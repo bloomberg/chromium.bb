@@ -10,16 +10,16 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGAngleInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGAngleInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    return InterpolationValue::create(*this, InterpolableNumber::create(0));
+    return InterpolationValue(InterpolableNumber::create(0));
 }
 
-PassOwnPtr<InterpolationValue> SVGAngleInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGAngleInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (toSVGAngle(svgValue).orientType()->enumValue() != SVGMarkerOrientAngle)
         return nullptr;
-    return InterpolationValue::create(*this, InterpolableNumber::create(toSVGAngle(svgValue).value()));
+    return InterpolationValue(InterpolableNumber::create(toSVGAngle(svgValue).value()));
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGAngleInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

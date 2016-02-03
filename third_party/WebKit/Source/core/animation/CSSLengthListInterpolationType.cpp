@@ -20,36 +20,32 @@ CSSLengthListInterpolationType::CSSLengthListInterpolationType(CSSPropertyID pro
 {
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlyingValue);
+    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlying);
     conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
 
     if (underlyingLength == 0)
         return nullptr;
 
-    InterpolationComponent component = ListInterpolationFunctions::createList(underlyingLength, [](size_t) {
-        return InterpolationComponent(CSSLengthInterpolationType::createNeutralInterpolableValue());
+    return ListInterpolationFunctions::createList(underlyingLength, [](size_t) {
+        return InterpolationValue(CSSLengthInterpolationType::createNeutralInterpolableValue());
     });
-    return InterpolationValue::create(*this, component);
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertInitial() const
 {
     return maybeConvertLengthList(LengthListPropertyFunctions::getInitialLengthList(cssProperty()), 1);
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertLengthList(const RefVector<Length>* lengthList, float zoom) const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertLengthList(const RefVector<Length>* lengthList, float zoom) const
 {
     if (!lengthList || lengthList->size() == 0)
         return nullptr;
 
-    InterpolationComponent component = ListInterpolationFunctions::createList(lengthList->size(), [lengthList, zoom](size_t index) {
+    return ListInterpolationFunctions::createList(lengthList->size(), [lengthList, zoom](size_t index) {
         return CSSLengthInterpolationType::maybeConvertLength(lengthList->at(index), zoom);
     });
-    if (!component)
-        return nullptr;
-    return InterpolationValue::create(*this, component);
 }
 
 class ParentLengthListChecker : public InterpolationType::ConversionChecker {
@@ -68,7 +64,7 @@ private:
         , m_inheritedLengthList(inheritedLengthList)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         const RefVector<Length>* lengthList = LengthListPropertyFunctions::getLengthList(m_property, *environment.state().parentStyle());
         if (!lengthList && !m_inheritedLengthList)
@@ -82,7 +78,7 @@ private:
     RefPtr<RefVector<Length>> m_inheritedLengthList;
 };
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!state.parentStyle())
         return nullptr;
@@ -93,36 +89,31 @@ PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertInher
     return maybeConvertLengthList(inheritedLengthList, state.parentStyle()->effectiveZoom());
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     if (!value.isBaseValueList())
         return nullptr;
 
     const CSSValueList& list = toCSSValueList(value);
-    InterpolationComponent component = ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
+    return ListInterpolationFunctions::createList(list.length(), [&list](size_t index) {
         return CSSLengthInterpolationType::maybeConvertCSSValue(*list.item(index));
     });
-    return InterpolationValue::create(*this, component);
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> CSSLengthListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+PairwiseInterpolationValue CSSLengthListInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const
 {
-    PairwiseInterpolationComponent component = ListInterpolationFunctions::mergeSingleConversions(
-        startValue.mutableComponent(),
-        endValue.mutableComponent(),
-        CSSLengthInterpolationType::mergeSingleConversionComponents);
-    return PairwisePrimitiveInterpolation::create(*this, component);
+    return ListInterpolationFunctions::mergeSingleConversions(start, end, CSSLengthInterpolationType::staticMergeSingleConversions);
 }
 
-PassOwnPtr<InterpolationValue> CSSLengthListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+InterpolationValue CSSLengthListInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     const RefVector<Length>* underlyingLengthList = LengthListPropertyFunctions::getLengthList(cssProperty(), *environment.state().style());
     return maybeConvertLengthList(underlyingLengthList, environment.state().style()->effectiveZoom());
 }
 
-void CSSLengthListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+void CSSLengthListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
 {
-    ListInterpolationFunctions::composite(underlyingValue, underlyingFraction, value,
+    ListInterpolationFunctions::composite(underlyingValueOwner, underlyingFraction, *this, value,
         CSSLengthInterpolationType::nonInterpolableValuesAreCompatible,
         CSSLengthInterpolationType::composite);
 }

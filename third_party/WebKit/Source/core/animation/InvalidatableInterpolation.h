@@ -6,9 +6,9 @@
 #define InvalidatableInterpolation_h
 
 #include "core/animation/InterpolationType.h"
-#include "core/animation/InterpolationValue.h"
 #include "core/animation/PrimitiveInterpolation.h"
 #include "core/animation/StyleInterpolation.h"
+#include "core/animation/TypedInterpolationValue.h"
 
 namespace blink {
 
@@ -50,13 +50,13 @@ private:
         , m_isCached(false)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
-    const InterpolationValue* ensureValidInterpolation(const InterpolationEnvironment&, const UnderlyingValue&) const;
+    PassOwnPtr<TypedInterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
+    const TypedInterpolationValue* ensureValidInterpolation(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     void clearCache() const;
-    bool isCacheValid(const InterpolationEnvironment&, const UnderlyingValue&) const;
+    bool isCacheValid(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     bool isNeutralKeyframeActive() const;
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValue&) const;
-    PassOwnPtr<InterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&) const;
+    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
+    PassOwnPtr<TypedInterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;
 
@@ -68,7 +68,7 @@ private:
     mutable bool m_isCached;
     mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;
     mutable InterpolationType::ConversionCheckers m_conversionCheckers;
-    mutable OwnPtr<InterpolationValue> m_cachedValue;
+    mutable OwnPtr<TypedInterpolationValue> m_cachedValue;
 };
 
 DEFINE_TYPE_CASTS(InvalidatableInterpolation, Interpolation, value, value->isInvalidatableInterpolation(), value.isInvalidatableInterpolation());

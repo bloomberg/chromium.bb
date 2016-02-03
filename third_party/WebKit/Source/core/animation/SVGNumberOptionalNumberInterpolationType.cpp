@@ -9,15 +9,15 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGNumberOptionalNumberInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(0));
     result->set(1, InterpolableNumber::create(0));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
-PassOwnPtr<InterpolationValue> SVGNumberOptionalNumberInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGNumberOptionalNumberInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedNumberOptionalNumber)
         return nullptr;
@@ -26,7 +26,7 @@ PassOwnPtr<InterpolationValue> SVGNumberOptionalNumberInterpolationType::maybeCo
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(numberOptionalNumber.firstNumber()->value()));
     result->set(1, InterpolableNumber::create(numberOptionalNumber.secondNumber()->value()));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGNumberOptionalNumberInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

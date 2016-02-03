@@ -15,15 +15,15 @@ public:
         : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
-    PassOwnPtr<InterpolationValue> createNumberValue(double number) const;
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue createNumberValue(double number) const;
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertInitial() const final;
+    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
 };
 
 } // namespace blink

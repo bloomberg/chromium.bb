@@ -17,21 +17,21 @@ public:
         : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const final
+    PairwiseInterpolationValue maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final
     {
         return nullptr;
     }
 
-    PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final;
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final
     {
         return nullptr;
     }
 
-    void composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const final
+    void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const final
     {
-        underlyingValue.set(&value);
+        underlyingValueOwner.set(*this, value);
     }
 
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;

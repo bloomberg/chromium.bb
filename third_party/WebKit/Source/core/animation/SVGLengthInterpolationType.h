@@ -22,12 +22,12 @@ public:
     { }
 
     static PassOwnPtr<InterpolableValue> neutralInterpolableValue();
-    static InterpolationComponent convertSVGLength(const SVGLength&);
+    static InterpolationValue convertSVGLength(const SVGLength&);
     static PassRefPtrWillBeRawPtr<SVGLength> resolveInterpolableSVGLength(const InterpolableValue&, const SVGLengthContext&, SVGLengthMode, bool negativeValuesForbidden);
 
 private:
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 

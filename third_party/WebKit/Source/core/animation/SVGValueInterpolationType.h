@@ -18,26 +18,26 @@ public:
     { }
 
 private:
-    PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const final
+    PairwiseInterpolationValue maybeConvertPairwise(const PropertySpecificKeyframe& startKeyframe, const PropertySpecificKeyframe& endKeyframe, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final
     {
         return nullptr;
     }
 
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final
     {
         return nullptr;
     }
 
-    PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase&) const final;
+    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase&) const final;
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final
     {
         return nullptr;
     }
 
-    void composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const final
+    void composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const final
     {
-        underlyingValue.set(&value);
+        underlyingValueOwner.set(*this, value);
     }
 
     PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;

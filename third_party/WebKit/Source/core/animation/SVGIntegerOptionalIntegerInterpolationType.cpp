@@ -9,15 +9,15 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(0));
     result->set(1, InterpolableNumber::create(0));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
-PassOwnPtr<InterpolationValue> SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGIntegerOptionalIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedIntegerOptionalInteger)
         return nullptr;
@@ -26,7 +26,7 @@ PassOwnPtr<InterpolationValue> SVGIntegerOptionalIntegerInterpolationType::maybe
     OwnPtr<InterpolableList> result = InterpolableList::create(2);
     result->set(0, InterpolableNumber::create(integerOptionalInteger.firstInteger()->value()));
     result->set(1, InterpolableNumber::create(integerOptionalInteger.secondInteger()->value()));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
 static PassRefPtrWillBeRawPtr<SVGInteger> toPositiveInteger(const InterpolableValue* number)

@@ -5,30 +5,30 @@
 #ifndef ListInterpolationFunctions_h
 #define ListInterpolationFunctions_h
 
-#include "core/animation/InterpolationComponent.h"
+#include "core/animation/InterpolationValue.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
 class CSSValueList;
-class UnderlyingValue;
-class InterpolationValue;
+class UnderlyingValueOwner;
+class InterpolationType;
 
 class ListInterpolationFunctions {
 public:
     template <typename CreateItemCallback>
-    static InterpolationComponent createList(size_t length, CreateItemCallback);
-    static InterpolationComponent createEmptyList() { return InterpolationComponent(InterpolableList::create(0)); }
+    static InterpolationValue createList(size_t length, CreateItemCallback);
+    static InterpolationValue createEmptyList() { return InterpolationValue(InterpolableList::create(0)); }
 
-    using MergeSingleItemConversionsCallback = PairwiseInterpolationComponent (*)(InterpolationComponent& start, InterpolationComponent& end);
-    static PairwiseInterpolationComponent mergeSingleConversions(InterpolationComponent& start, InterpolationComponent& end, MergeSingleItemConversionsCallback);
+    using MergeSingleItemConversionsCallback = PairwiseInterpolationValue (*)(InterpolationValue& start, InterpolationValue& end);
+    static PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end, MergeSingleItemConversionsCallback);
 
     using EqualNonInterpolableValuesCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
-    static bool equalValues(const InterpolationComponent&, const InterpolationComponent&, EqualNonInterpolableValuesCallback);
+    static bool equalValues(const InterpolationValue&, const InterpolationValue&, EqualNonInterpolableValuesCallback);
 
     using NonInterpolableValuesAreCompatibleCallback = bool (*)(const NonInterpolableValue*, const NonInterpolableValue*);
     using CompositeItemCallback = void (*)(OwnPtr<InterpolableValue>&, RefPtr<NonInterpolableValue>&, double underlyingFraction, const InterpolableValue&, const NonInterpolableValue*);
-    static void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&, NonInterpolableValuesAreCompatibleCallback, CompositeItemCallback);
+    static void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationType&, const InterpolationValue&, NonInterpolableValuesAreCompatibleCallback, CompositeItemCallback);
 };
 
 class NonInterpolableList : public NonInterpolableValue {
@@ -59,20 +59,20 @@ private:
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(NonInterpolableList);
 
 template <typename CreateItemCallback>
-InterpolationComponent ListInterpolationFunctions::createList(size_t length, CreateItemCallback createItem)
+InterpolationValue ListInterpolationFunctions::createList(size_t length, CreateItemCallback createItem)
 {
     if (length == 0)
         return createEmptyList();
     OwnPtr<InterpolableList> interpolableList = InterpolableList::create(length);
     Vector<RefPtr<NonInterpolableValue>> nonInterpolableValues(length);
     for (size_t i = 0; i < length; i++) {
-        InterpolationComponent component = createItem(i);
-        if (!component)
+        InterpolationValue item = createItem(i);
+        if (!item)
             return nullptr;
-        interpolableList->set(i, component.interpolableValue.release());
-        nonInterpolableValues[i] = component.nonInterpolableValue.release();
+        interpolableList->set(i, item.interpolableValue.release());
+        nonInterpolableValues[i] = item.nonInterpolableValue.release();
     }
-    return InterpolationComponent(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
+    return InterpolationValue(interpolableList.release(), NonInterpolableList::create(nonInterpolableValues));
 }
 
 } // namespace blink

@@ -24,7 +24,7 @@ private:
         , m_number(number)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         double parentNumber;
         if (!NumberPropertyFunctions::getNumber(m_property, *environment.state().parentStyle(), parentNumber))
@@ -38,17 +38,17 @@ private:
     const double m_number;
 };
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::createNumberValue(double number) const
+InterpolationValue CSSNumberInterpolationType::createNumberValue(double number) const
 {
-    return InterpolationValue::create(*this, InterpolableNumber::create(number));
+    return InterpolationValue(InterpolableNumber::create(number));
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue CSSNumberInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
     return createNumberValue(0);
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSNumberInterpolationType::maybeConvertInitial() const
 {
     double initialNumber;
     if (!NumberPropertyFunctions::getInitialNumber(cssProperty(), initialNumber))
@@ -56,7 +56,7 @@ PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInitial()
     return createNumberValue(initialNumber);
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!state.parentStyle())
         return nullptr;
@@ -67,14 +67,14 @@ PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertInherit(c
     return createNumberValue(inheritedNumber);
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
+InterpolationValue CSSNumberInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
     if (!value.isPrimitiveValue() || !toCSSPrimitiveValue(value).isNumber())
         return nullptr;
     return createNumberValue(toCSSPrimitiveValue(value).getDoubleValue());
 }
 
-PassOwnPtr<InterpolationValue> CSSNumberInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+InterpolationValue CSSNumberInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     double underlyingNumber;
     if (!NumberPropertyFunctions::getNumber(cssProperty(), *environment.state().style(), underlyingNumber))

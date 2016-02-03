@@ -84,7 +84,7 @@ PassOwnPtr<InterpolableValue> SVGLengthInterpolationType::neutralInterpolableVal
     return listOfValues.release();
 }
 
-InterpolationComponent SVGLengthInterpolationType::convertSVGLength(const SVGLength& length)
+InterpolationValue SVGLengthInterpolationType::convertSVGLength(const SVGLength& length)
 {
     double value = length.valueInSpecifiedUnits();
     LengthInterpolatedUnit unitType = convertToInterpolatedUnit(length.typeWithCalcResolved(), value);
@@ -96,7 +96,7 @@ InterpolationComponent SVGLengthInterpolationType::convertSVGLength(const SVGLen
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(values[i]));
 
-    return InterpolationComponent(listOfValues.release());
+    return InterpolationValue(listOfValues.release());
 }
 
 PassRefPtrWillBeRawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolableSVGLength(const InterpolableValue& interpolableValue, const SVGLengthContext& lengthContext, SVGLengthMode unitMode, bool negativeValuesForbidden)
@@ -139,19 +139,17 @@ PassRefPtrWillBeRawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolabl
     return result.release();
 }
 
-PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGLengthInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    return InterpolationValue::create(*this, neutralInterpolableValue());
+    return InterpolationValue(neutralInterpolableValue());
 }
 
-PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedLength)
         return nullptr;
 
-    const SVGLength& length = toSVGLength(svgValue);
-    InterpolationComponent component = convertSVGLength(length);
-    return InterpolationValue::create(*this, component);
+    return convertSVGLength(toSVGLength(svgValue));
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

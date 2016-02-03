@@ -67,30 +67,30 @@ PassRefPtr<CSSImageNonInterpolableValue> CSSImageNonInterpolableValue::merge(Pas
     return create(startImagePair.m_start, endImagePair.m_end);
 }
 
-InterpolationComponent CSSImageInterpolationType::maybeConvertStyleImage(const StyleImage& styleImage, bool acceptGradients)
+InterpolationValue CSSImageInterpolationType::maybeConvertStyleImage(const StyleImage& styleImage, bool acceptGradients)
 {
     return maybeConvertCSSValue(*styleImage.cssValue(), acceptGradients);
 }
 
-InterpolationComponent CSSImageInterpolationType::maybeConvertCSSValue(const CSSValue& value, bool acceptGradients)
+InterpolationValue CSSImageInterpolationType::maybeConvertCSSValue(const CSSValue& value, bool acceptGradients)
 {
     if (value.isImageValue() || (value.isGradientValue() && acceptGradients)) {
         CSSValue* refableCSSValue = const_cast<CSSValue*>(&value);
-        return InterpolationComponent(InterpolableNumber::create(1), CSSImageNonInterpolableValue::create(refableCSSValue, refableCSSValue));
+        return InterpolationValue(InterpolableNumber::create(1), CSSImageNonInterpolableValue::create(refableCSSValue, refableCSSValue));
     }
     return nullptr;
 }
 
-PairwiseInterpolationComponent CSSImageInterpolationType::mergeSingleConversionComponents(InterpolationComponent& startValue, InterpolationComponent& endValue)
+PairwiseInterpolationValue CSSImageInterpolationType::staticMergeSingleConversions(InterpolationValue& start, InterpolationValue& end)
 {
-    if (!toCSSImageNonInterpolableValue(*startValue.nonInterpolableValue).isSingle()
-        || !toCSSImageNonInterpolableValue(*endValue.nonInterpolableValue).isSingle()) {
+    if (!toCSSImageNonInterpolableValue(*start.nonInterpolableValue).isSingle()
+        || !toCSSImageNonInterpolableValue(*end.nonInterpolableValue).isSingle()) {
         return nullptr;
     }
-    return PairwiseInterpolationComponent(
+    return PairwiseInterpolationValue(
         InterpolableNumber::create(0),
         InterpolableNumber::create(1),
-        CSSImageNonInterpolableValue::merge(startValue.nonInterpolableValue, endValue.nonInterpolableValue));
+        CSSImageNonInterpolableValue::merge(start.nonInterpolableValue, end.nonInterpolableValue));
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSImageInterpolationType::createCSSValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)
@@ -113,44 +113,39 @@ class UnderlyingImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingImageChecker() final {}
 
-    static PassOwnPtr<UnderlyingImageChecker> create(const InterpolationType& type, PassOwnPtr<InterpolationValue> underlyingValue)
+    static PassOwnPtr<UnderlyingImageChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingImageChecker(type, std::move(underlyingValue)));
+        return adoptPtr(new UnderlyingImageChecker(type, underlying));
     }
 
 private:
-    UnderlyingImageChecker(const InterpolationType& type, PassOwnPtr<InterpolationValue> underlyingValue)
+    UnderlyingImageChecker(const InterpolationType& type, const InterpolationValue& underlying)
         : ConversionChecker(type)
-        , m_underlyingValue(std::move(underlyingValue))
+        , m_underlying(underlying.clone())
     { }
 
-    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
+    bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
     {
-        if (!underlyingValue && !m_underlyingValue)
+        if (!underlying && !m_underlying)
             return true;
-        if (!underlyingValue || !m_underlyingValue)
+        if (!underlying || !m_underlying)
             return false;
-        return m_underlyingValue->interpolableValue().equals(underlyingValue->interpolableValue())
-            && CSSImageInterpolationType::equalNonInterpolableValues(m_underlyingValue->nonInterpolableValue(), underlyingValue->nonInterpolableValue());
+        return m_underlying.interpolableValue->equals(*underlying.interpolableValue)
+            && CSSImageInterpolationType::equalNonInterpolableValues(m_underlying.nonInterpolableValue.get(), underlying.nonInterpolableValue.get());
     }
 
-    OwnPtr<InterpolationValue> m_underlyingValue;
+    const InterpolationValue m_underlying;
 };
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSImageInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    if (!underlyingValue) {
-        conversionCheckers.append(UnderlyingImageChecker::create(*this, nullptr));
-        return nullptr;
-    }
-    conversionCheckers.append(UnderlyingImageChecker::create(*this, underlyingValue->clone()));
-    return underlyingValue->clone();
+    conversionCheckers.append(UnderlyingImageChecker::create(*this, underlying));
+    return InterpolationValue(underlying.clone());
 }
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSImageInterpolationType::maybeConvertInitial() const
 {
-    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getInitialStyleImage(cssProperty()), true);
-    return component ? InterpolationValue::create(*this, component) : nullptr;
+    return maybeConvertStyleImage(ImagePropertyFunctions::getInitialStyleImage(cssProperty()), true);
 }
 
 class ParentImageChecker : public InterpolationType::ConversionChecker {
@@ -169,7 +164,7 @@ private:
         , m_inheritedImage(inheritedImage)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(m_property, *environment.state().parentStyle());
         if (!m_inheritedImage && !inheritedImage)
@@ -183,7 +178,7 @@ private:
     RefPtrWillBePersistent<StyleImage> m_inheritedImage;
 };
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSImageInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!state.parentStyle())
         return nullptr;
@@ -191,31 +186,22 @@ PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertInherit(co
     const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(cssProperty(), *state.parentStyle());
     StyleImage* refableImage = const_cast<StyleImage*>(inheritedImage);
     conversionCheckers.append(ParentImageChecker::create(*this, cssProperty(), refableImage));
-    InterpolationComponent component = maybeConvertStyleImage(inheritedImage, true);
-    return component ? InterpolationValue::create(*this, component) : nullptr;
+    return maybeConvertStyleImage(inheritedImage, true);
 }
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
+InterpolationValue CSSImageInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const
 {
-    InterpolationComponent component = maybeConvertCSSValue(value, true);
-    return component ? InterpolationValue::create(*this, component) : nullptr;
+    return maybeConvertCSSValue(value, true);
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> CSSImageInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+InterpolationValue CSSImageInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
-    PairwiseInterpolationComponent pairwiseComponent = mergeSingleConversionComponents(startValue.mutableComponent(), endValue.mutableComponent());
-    return pairwiseComponent ? PairwisePrimitiveInterpolation::create(*this, pairwiseComponent) : nullptr;
+    return maybeConvertStyleImage(ImagePropertyFunctions::getStyleImage(cssProperty(), *environment.state().style()), true);
 }
 
-PassOwnPtr<InterpolationValue> CSSImageInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+void CSSImageInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
 {
-    InterpolationComponent component = maybeConvertStyleImage(ImagePropertyFunctions::getStyleImage(cssProperty(), *environment.state().style()), true);
-    return component ? InterpolationValue::create(*this, component) : nullptr;
-}
-
-void CSSImageInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
-{
-    underlyingValue.set(&value);
+    underlyingValueOwner.set(*this, value);
 }
 
 void CSSImageInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const

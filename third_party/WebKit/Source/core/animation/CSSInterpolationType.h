@@ -19,11 +19,11 @@ protected:
 
     CSSPropertyID cssProperty() const { return property().cssProperty(); }
 
-    virtual PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const;
-    virtual PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtr<InterpolationValue> maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
-    virtual PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const;
+    virtual InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual InterpolationValue maybeConvertInitial() const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
+    virtual InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const { ASSERT_NOT_REACHED(); return nullptr; }
 };
 
 } // namespace blink

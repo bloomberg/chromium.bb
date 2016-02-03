@@ -19,7 +19,7 @@ public:
         : CSSInterpolationType(property)
     { }
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
     static PassOwnPtr<InterpolableValue> createInterpolableColor(const Color&);
@@ -29,11 +29,11 @@ public:
     static Color resolveInterpolableColor(const InterpolableValue& interpolableColor, const StyleResolverState&, bool isVisited = false, bool isTextDecoration = false);
 
 private:
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> convertStyleColorPair(const StyleColor&, const StyleColor&) const;
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertInitial() const final;
+    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue convertStyleColorPair(const StyleColor&, const StyleColor&) const;
 };
 
 } // namespace blink

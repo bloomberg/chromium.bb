@@ -147,7 +147,7 @@ private:
         , m_color(color)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         return m_color == ColorPropertyFunctions::getUnvisitedColor(m_property, *environment.state().parentStyle());
     }
@@ -161,18 +161,18 @@ private:
     const StyleColor m_color;
 };
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue CSSColorInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
     return convertStyleColorPair(StyleColor(Color::transparent), StyleColor(Color::transparent));
 }
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSColorInterpolationType::maybeConvertInitial() const
 {
     const StyleColor initialColor = ColorPropertyFunctions::getInitialColor(cssProperty());
     return convertStyleColorPair(initialColor, initialColor);
 }
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSColorInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!state.parentStyle())
         return nullptr;
@@ -188,7 +188,7 @@ enum InterpolableColorPairIndex {
     InterpolableColorPairIndexCount,
 };
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSColorInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (cssProperty() == CSSPropertyColor && value.isPrimitiveValue() && toCSSPrimitiveValue(value).getValueID() == CSSValueCurrentcolor)
         return maybeConvertInherit(state, conversionCheckers);
@@ -199,18 +199,18 @@ PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertValue(cons
     OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, interpolableColor->clone());
     colorPair->set(Visited, interpolableColor.release());
-    return InterpolationValue::create(*this, colorPair.release());
+    return InterpolationValue(colorPair.release());
 }
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
+InterpolationValue CSSColorInterpolationType::convertStyleColorPair(const StyleColor& unvisitedColor, const StyleColor& visitedColor) const
 {
     OwnPtr<InterpolableList> colorPair = InterpolableList::create(InterpolableColorPairIndexCount);
     colorPair->set(Unvisited, createInterpolableColor(unvisitedColor));
     colorPair->set(Visited, createInterpolableColor(visitedColor));
-    return InterpolationValue::create(*this, colorPair.release());
+    return InterpolationValue(colorPair.release());
 }
 
-PassOwnPtr<InterpolationValue> CSSColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+InterpolationValue CSSColorInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     return convertStyleColorPair(
         ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *environment.state().style()),

@@ -36,12 +36,12 @@ private:
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSValueNonInterpolableValue);
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSValueNonInterpolableValue);
 
-PassOwnPtr<InterpolationValue> CSSValueInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue CSSValueInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment&, const InterpolationValue&, ConversionCheckers&) const
 {
     if (keyframe.isNeutral())
         return nullptr;
 
-    return InterpolationValue::create(*this, InterpolableList::create(0), CSSValueNonInterpolableValue::create(toCSSPropertySpecificKeyframe(keyframe).value()));
+    return InterpolationValue(InterpolableList::create(0), CSSValueNonInterpolableValue::create(toCSSPropertySpecificKeyframe(keyframe).value()));
 }
 
 void CSSValueInterpolationType::apply(const InterpolableValue&, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const

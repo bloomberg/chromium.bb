@@ -9,16 +9,16 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGIntegerInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGIntegerInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    return InterpolationValue::create(*this, InterpolableNumber::create(0));
+    return InterpolationValue(InterpolableNumber::create(0));
 }
 
-PassOwnPtr<InterpolationValue> SVGIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGIntegerInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedInteger)
         return nullptr;
-    return InterpolationValue::create(*this, InterpolableNumber::create(toSVGInteger(svgValue).value()));
+    return InterpolationValue(InterpolableNumber::create(toSVGInteger(svgValue).value()));
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGIntegerInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const

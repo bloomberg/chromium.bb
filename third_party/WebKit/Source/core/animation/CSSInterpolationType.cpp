@@ -28,7 +28,7 @@ private:
         , m_resolvedValue(resolvedValue)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         // TODO(alancutter): Just check the variables referenced instead of doing a full CSSValue resolve.
         RefPtrWillBeRawPtr<CSSValue> resolvedValue = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), m_property, *m_variableReference);
@@ -40,13 +40,13 @@ private:
     RefPtrWillBePersistent<CSSValue> m_resolvedValue;
 };
 
-PassOwnPtr<InterpolationValue> CSSInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
     RefPtrWillBeRawPtr<CSSValue> resolvedCSSValueOwner;
     const CSSValue* value = toCSSPropertySpecificKeyframe(keyframe).value();
 
     if (!value)
-        return maybeConvertNeutral(underlyingValue, conversionCheckers);
+        return maybeConvertNeutral(underlying, conversionCheckers);
 
     if (value->isVariableReferenceValue() && !isShorthandProperty(cssProperty())) {
         resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), cssProperty(), toCSSVariableReferenceValue(*value));

@@ -17,12 +17,12 @@ public:
     { }
 
 private:
-    PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValue&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
+    InterpolationValue maybeConvertSingle(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const InterpolationValue& underlying, ConversionCheckers&) const final;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
 
-    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const final;
-    void composite(UnderlyingValue&, double, const InterpolationValue&) const final;
+    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;
+    void composite(UnderlyingValueOwner&, double, const InterpolationValue&) const final;
 };
 
 } // namespace blink

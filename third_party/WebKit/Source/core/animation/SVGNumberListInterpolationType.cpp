@@ -10,9 +10,9 @@
 
 namespace blink {
 
-PassOwnPtr<InterpolationValue> SVGNumberListInterpolationType::maybeConvertNeutral(const UnderlyingValue& underlyingValue, ConversionCheckers& conversionCheckers) const
+InterpolationValue SVGNumberListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlyingValue);
+    size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlying);
     conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
 
     if (underlyingLength == 0)
@@ -21,10 +21,10 @@ PassOwnPtr<InterpolationValue> SVGNumberListInterpolationType::maybeConvertNeutr
     OwnPtr<InterpolableList> result = InterpolableList::create(underlyingLength);
     for (size_t i = 0; i < underlyingLength; i++)
         result->set(i, InterpolableNumber::create(0));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
-PassOwnPtr<InterpolationValue> SVGNumberListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGNumberListInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedNumberList)
         return nullptr;
@@ -33,16 +33,16 @@ PassOwnPtr<InterpolationValue> SVGNumberListInterpolationType::maybeConvertSVGVa
     OwnPtr<InterpolableList> result = InterpolableList::create(numberList.length());
     for (size_t i = 0; i < numberList.length(); i++)
         result->set(i, InterpolableNumber::create(numberList.at(i)->value()));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> SVGNumberListInterpolationType::mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const
+PairwiseInterpolationValue SVGNumberListInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const
 {
-    size_t startLength = toInterpolableList(startValue.interpolableValue()).length();
-    size_t endLength = toInterpolableList(endValue.interpolableValue()).length();
+    size_t startLength = toInterpolableList(*start.interpolableValue).length();
+    size_t endLength = toInterpolableList(*end.interpolableValue).length();
     if (startLength != endLength)
         return nullptr;
-    return InterpolationType::mergeSingleConversions(startValue, endValue);
+    return InterpolationType::mergeSingleConversions(start, end);
 }
 
 static void padWithZeroes(OwnPtr<InterpolableValue>& listPointer, size_t paddedLength)
@@ -61,14 +61,14 @@ static void padWithZeroes(OwnPtr<InterpolableValue>& listPointer, size_t paddedL
     listPointer = result.release();
 }
 
-void SVGNumberListInterpolationType::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value) const
+void SVGNumberListInterpolationType::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationValue& value) const
 {
-    const InterpolableList& list = toInterpolableList(value.interpolableValue());
+    const InterpolableList& list = toInterpolableList(*value.interpolableValue);
 
-    if (toInterpolableList(underlyingValue->interpolableValue()).length() <= list.length())
-        padWithZeroes(underlyingValue.mutableComponent().interpolableValue, list.length());
+    if (toInterpolableList(*underlyingValueOwner.value().interpolableValue).length() <= list.length())
+        padWithZeroes(underlyingValueOwner.mutableValue().interpolableValue, list.length());
 
-    InterpolableList& underlyingList = *toInterpolableList(underlyingValue.mutableComponent().interpolableValue.get());
+    InterpolableList& underlyingList = toInterpolableList(*underlyingValueOwner.mutableValue().interpolableValue);
 
     ASSERT(underlyingList.length() >= list.length());
     size_t i = 0;

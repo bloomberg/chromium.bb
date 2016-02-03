@@ -7,7 +7,6 @@
 
 #include "core/animation/InterpolableValue.h"
 #include "core/animation/InterpolationType.h"
-#include "core/animation/UnderlyingValue.h"
 
 namespace blink {
 
@@ -18,16 +17,16 @@ public:
         return adoptPtr(new UnderlyingLengthChecker(type, underlyingLength));
     }
 
-    static size_t getUnderlyingLength(const UnderlyingValue& underlyingValue)
+    static size_t getUnderlyingLength(const InterpolationValue& underlying)
     {
-        if (!underlyingValue)
+        if (!underlying)
             return 0;
-        return toInterpolableList(underlyingValue->interpolableValue()).length();
+        return toInterpolableList(*underlying.interpolableValue).length();
     }
 
-    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
+    bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
     {
-        return m_underlyingLength == getUnderlyingLength(underlyingValue);
+        return m_underlyingLength == getUnderlyingLength(underlying);
     }
 
 private:

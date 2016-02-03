@@ -68,7 +68,7 @@ private:
         , m_fontWeight(fontWeight)
     { }
 
-    bool isValid(const InterpolationEnvironment& environment, const UnderlyingValue&) const final
+    bool isValid(const InterpolationEnvironment& environment, const InterpolationValue&) const final
     {
         return m_fontWeight == environment.state().parentStyle()->fontWeight();
     }
@@ -78,22 +78,22 @@ private:
     const double m_fontWeight;
 };
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::createFontWeightValue(FontWeight fontWeight) const
+InterpolationValue CSSFontWeightInterpolationType::createFontWeightValue(FontWeight fontWeight) const
 {
-    return InterpolationValue::create(*this, InterpolableNumber::create(fontWeightToDouble(fontWeight)));
+    return InterpolationValue(InterpolableNumber::create(fontWeightToDouble(fontWeight)));
 }
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
-    return InterpolationValue::create(*this, InterpolableNumber::create(0));
+    return InterpolationValue(InterpolableNumber::create(0));
 }
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertInitial() const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertInitial() const
 {
     return createFontWeightValue(FontWeightNormal);
 }
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertInherit(const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!state.parentStyle())
         return nullptr;
@@ -102,7 +102,7 @@ PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertInher
     return createFontWeightValue(inheritedFontWeight);
 }
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(const CSSValue& value, const StyleResolverState& state, ConversionCheckers& conversionCheckers) const
 {
     if (!value.isPrimitiveValue())
         return nullptr;
@@ -128,7 +128,7 @@ PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertValue
     }
 }
 
-PassOwnPtr<InterpolationValue> CSSFontWeightInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+InterpolationValue CSSFontWeightInterpolationType::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     return createFontWeightValue(environment.state().style()->fontWeight());
 }

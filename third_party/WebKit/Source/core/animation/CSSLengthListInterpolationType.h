@@ -16,19 +16,19 @@ class CSSLengthListInterpolationType : public CSSInterpolationType {
 public:
     CSSLengthListInterpolationType(CSSPropertyID);
 
-    PassOwnPtr<InterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
-    void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
+    InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
+    void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
 private:
-    PassOwnPtr<InterpolationValue> maybeConvertLengthList(const RefVector<Length>*, float zoom) const;
+    InterpolationValue maybeConvertLengthList(const RefVector<Length>*, float zoom) const;
 
-    PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInitial() const final;
-    PassOwnPtr<InterpolationValue> maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
-    PassOwnPtr<InterpolationValue> maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertInitial() const final;
+    InterpolationValue maybeConvertInherit(const StyleResolverState&, ConversionCheckers&) const final;
+    InterpolationValue maybeConvertValue(const CSSValue&, const StyleResolverState&, ConversionCheckers&) const final;
 
-    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const final;
+    PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const final;
 
     const ValueRange m_valueRange;
 };

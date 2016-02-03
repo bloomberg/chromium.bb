@@ -24,44 +24,44 @@ void InvalidatableInterpolation::interpolate(int, double fraction)
     // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConvertPairwise(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
     ASSERT(m_currentFraction != 0 && m_currentFraction != 1);
     for (const auto& interpolationType : m_interpolationTypes) {
-        if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValue || underlyingValue->type() != *interpolationType))
+        if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValueOwner || underlyingValueOwner.type() != *interpolationType))
             continue;
-        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, environment, underlyingValue, m_conversionCheckers);
-        if (pairwiseConversion) {
-            ASSERT(pairwiseConversion->type() == *interpolationType);
-            return pairwiseConversion.release();
+        PairwiseInterpolationValue result = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, environment, underlyingValueOwner.value(), m_conversionCheckers);
+        if (result) {
+            return PairwisePrimitiveInterpolation::create(*interpolationType,
+                result.startInterpolableValue.release(),
+                result.endInterpolableValue.release(),
+                result.nonInterpolableValue.release());
         }
     }
     return nullptr;
 }
 
-PassOwnPtr<InterpolationValue> InvalidatableInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::convertSingleKeyframe(const PropertySpecificKeyframe& keyframe, const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
-    if (keyframe.isNeutral() && !underlyingValue)
+    if (keyframe.isNeutral() && !underlyingValueOwner)
         return nullptr;
     for (const auto& interpolationType : m_interpolationTypes) {
-        if (keyframe.isNeutral() && underlyingValue->type() != *interpolationType)
+        if (keyframe.isNeutral() && underlyingValueOwner.type() != *interpolationType)
             continue;
-        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValue, m_conversionCheckers);
-        if (result) {
-            ASSERT(result->type() == *interpolationType);
-            return result.release();
-        }
+        InterpolationValue result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValueOwner.value(), m_conversionCheckers);
+        if (result)
+            return TypedInterpolationValue::create(*interpolationType, result.interpolableValue.release(), result.nonInterpolableValue.release());
     }
     ASSERT(keyframe.isNeutral());
     return nullptr;
 }
 
-PassOwnPtr<InterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
+PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const
 {
     for (const auto& interpolationType : m_interpolationTypes) {
-        OwnPtr<InterpolationValue> result = interpolationType->maybeConvertUnderlyingValue(environment);
+        InterpolationValue result = interpolationType->maybeConvertUnderlyingValue(environment);
         if (result)
-            return result.release();
+            return TypedInterpolationValue::create(*interpolationType, result.interpolableValue.release(), result.nonInterpolableValue.release());
     }
     return nullptr;
 }
@@ -84,7 +84,7 @@ void InvalidatableInterpolation::clearCache() const
     m_cachedValue.clear();
 }
 
-bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
     if (!m_isCached)
         return false;
@@ -92,35 +92,35 @@ bool InvalidatableInterpolation::isCacheValid(const InterpolationEnvironment& en
         if (m_cachedPairConversion && m_cachedPairConversion->isFlip())
             return false;
         // Pairwise interpolation can never happen between different InterpolationTypes, neutral values always represent the underlying value.
-        if (!underlyingValue || !m_cachedValue || m_cachedValue->type() != underlyingValue->type())
+        if (!underlyingValueOwner || !m_cachedValue || m_cachedValue->type() != underlyingValueOwner.type())
             return false;
     }
     for (const auto& checker : m_conversionCheckers) {
-        if (!checker->isValid(environment, underlyingValue))
+        if (!checker->isValid(environment, underlyingValueOwner.value()))
             return false;
     }
     return true;
 }
 
-const InterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(const InterpolationEnvironment& environment, const UnderlyingValue& underlyingValue) const
+const TypedInterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(const InterpolationEnvironment& environment, const UnderlyingValueOwner& underlyingValueOwner) const
 {
     ASSERT(!std::isnan(m_currentFraction));
-    if (isCacheValid(environment, underlyingValue))
+    if (isCacheValid(environment, underlyingValueOwner))
         return m_cachedValue.get();
     clearCache();
     if (m_currentFraction == 0) {
-        m_cachedValue = convertSingleKeyframe(*m_startKeyframe, environment, underlyingValue);
+        m_cachedValue = convertSingleKeyframe(*m_startKeyframe, environment, underlyingValueOwner);
     } else if (m_currentFraction == 1) {
-        m_cachedValue = convertSingleKeyframe(*m_endKeyframe, environment, underlyingValue);
+        m_cachedValue = convertSingleKeyframe(*m_endKeyframe, environment, underlyingValueOwner);
     } else {
-        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValue);
+        OwnPtr<PairwisePrimitiveInterpolation> pairwiseConversion = maybeConvertPairwise(environment, underlyingValueOwner);
         if (pairwiseConversion) {
             m_cachedValue = pairwiseConversion->initialValue();
             m_cachedPairConversion = pairwiseConversion.release();
         } else {
             m_cachedPairConversion = FlipPrimitiveInterpolation::create(
-                convertSingleKeyframe(*m_startKeyframe, environment, underlyingValue),
-                convertSingleKeyframe(*m_endKeyframe, environment, underlyingValue));
+                convertSingleKeyframe(*m_startKeyframe, environment, underlyingValueOwner),
+                convertSingleKeyframe(*m_endKeyframe, environment, underlyingValueOwner));
         }
         m_cachedPairConversion->interpolateValue(m_currentFraction, m_cachedValue);
     }
@@ -157,12 +157,12 @@ void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpol
     size_t startingIndex = 0;
 
     // Compute the underlying value to composite onto.
-    UnderlyingValue underlyingValue;
+    UnderlyingValueOwner underlyingValueOwner;
     const InvalidatableInterpolation& firstInterpolation = toInvalidatableInterpolation(*interpolations.at(startingIndex));
     if (firstInterpolation.dependsOnUnderlyingValue()) {
-        underlyingValue.set(firstInterpolation.maybeConvertUnderlyingValue(environment));
+        underlyingValueOwner.set(firstInterpolation.maybeConvertUnderlyingValue(environment));
     } else {
-        const InterpolationValue* firstValue = firstInterpolation.ensureValidInterpolation(environment, UnderlyingValue());
+        const TypedInterpolationValue* firstValue = firstInterpolation.ensureValidInterpolation(environment, underlyingValueOwner);
         // Fast path for replace interpolations that are the only one to apply.
         if (interpolations.size() == 1) {
             if (firstValue) {
@@ -171,7 +171,7 @@ void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpol
             }
             return;
         }
-        underlyingValue.set(firstValue);
+        underlyingValueOwner.set(firstValue);
         startingIndex++;
     }
 
@@ -180,20 +180,20 @@ void InvalidatableInterpolation::applyStack(const ActiveInterpolations& interpol
     for (size_t i = startingIndex; i < interpolations.size(); i++) {
         const InvalidatableInterpolation& currentInterpolation = toInvalidatableInterpolation(*interpolations.at(i));
         ASSERT(currentInterpolation.dependsOnUnderlyingValue());
-        const InterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(environment, underlyingValue);
+        const TypedInterpolationValue* currentValue = currentInterpolation.ensureValidInterpolation(environment, underlyingValueOwner);
         if (!currentValue)
             continue;
         shouldApply = true;
         currentInterpolation.setFlagIfInheritUsed(environment);
         double underlyingFraction = currentInterpolation.underlyingFraction();
-        if (underlyingFraction == 0 || !underlyingValue || underlyingValue->type() != currentValue->type())
-            underlyingValue.set(currentValue);
+        if (underlyingFraction == 0 || !underlyingValueOwner || underlyingValueOwner.type() != currentValue->type())
+            underlyingValueOwner.set(currentValue);
         else
-            currentValue->type().composite(underlyingValue, underlyingFraction, *currentValue);
+            currentValue->type().composite(underlyingValueOwner, underlyingFraction, currentValue->value());
     }
 
-    if (shouldApply && underlyingValue)
-        underlyingValue->type().apply(underlyingValue->interpolableValue(), underlyingValue->nonInterpolableValue(), environment);
+    if (shouldApply && underlyingValueOwner)
+        underlyingValueOwner.type().apply(*underlyingValueOwner.value().interpolableValue, underlyingValueOwner.value().nonInterpolableValue.get(), environment);
 }
 
 } // namespace blink

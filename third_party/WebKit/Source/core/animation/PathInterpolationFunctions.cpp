@@ -46,7 +46,7 @@ enum PathComponentIndex {
     PathComponentIndexCount,
 };
 
-PassOwnPtr<InterpolationValue> PathInterpolationFunctions::convertValue(const InterpolationType& type, const SVGPathByteStream& byteStream)
+InterpolationValue PathInterpolationFunctions::convertValue(const SVGPathByteStream& byteStream)
 {
     SVGPathByteStreamSource pathSource(byteStream);
     size_t length = 0;
@@ -69,16 +69,16 @@ PassOwnPtr<InterpolationValue> PathInterpolationFunctions::convertValue(const In
     result->set(PathArgsIndex, pathArgs.release());
     result->set(PathNeutralIndex, InterpolableNumber::create(0));
 
-    return InterpolationValue::create(type, result.release(), SVGPathNonInterpolableValue::create(pathSegTypes));
+    return InterpolationValue(result.release(), SVGPathNonInterpolableValue::create(pathSegTypes));
 }
 
 class UnderlyingPathSegTypesChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingPathSegTypesChecker() final {}
 
-    static PassOwnPtr<UnderlyingPathSegTypesChecker> create(const InterpolationType& type, const UnderlyingValue& underlyingValue)
+    static PassOwnPtr<UnderlyingPathSegTypesChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingPathSegTypesChecker(type, getPathSegTypes(underlyingValue)));
+        return adoptPtr(new UnderlyingPathSegTypesChecker(type, getPathSegTypes(underlying)));
     }
 
 private:
@@ -87,27 +87,26 @@ private:
         , m_pathSegTypes(pathSegTypes)
     { }
 
-    static const Vector<SVGPathSegType>& getPathSegTypes(const UnderlyingValue& underlyingValue)
+    static const Vector<SVGPathSegType>& getPathSegTypes(const InterpolationValue& underlying)
     {
-        return toSVGPathNonInterpolableValue(underlyingValue->nonInterpolableValue())->pathSegTypes();
+        return toSVGPathNonInterpolableValue(*underlying.nonInterpolableValue).pathSegTypes();
     }
 
-    bool isValid(const InterpolationEnvironment&, const UnderlyingValue& underlyingValue) const final
+    bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
     {
-        return m_pathSegTypes == getPathSegTypes(underlyingValue);
+        return m_pathSegTypes == getPathSegTypes(underlying);
     }
 
     Vector<SVGPathSegType> m_pathSegTypes;
 };
 
-PassOwnPtr<InterpolationValue> PathInterpolationFunctions::maybeConvertNeutral(const InterpolationType& type, const UnderlyingValue& underlyingValue, InterpolationType::ConversionCheckers& conversionCheckers)
+InterpolationValue PathInterpolationFunctions::maybeConvertNeutral(const InterpolationType& type, const InterpolationValue& underlying, InterpolationType::ConversionCheckers& conversionCheckers)
 {
-    conversionCheckers.append(UnderlyingPathSegTypesChecker::create(type, underlyingValue));
+    conversionCheckers.append(UnderlyingPathSegTypesChecker::create(type, underlying));
     OwnPtr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
-    result->set(PathArgsIndex, toInterpolableList(underlyingValue->interpolableValue()).get(PathArgsIndex)->cloneAndZero());
+    result->set(PathArgsIndex, toInterpolableList(*underlying.interpolableValue).get(PathArgsIndex)->cloneAndZero());
     result->set(PathNeutralIndex, InterpolableNumber::create(1));
-    return InterpolationValue::create(type, result.release(),
-        const_cast<NonInterpolableValue*>(underlyingValue->nonInterpolableValue())); // Take ref.
+    return InterpolationValue(result.release(), underlying.nonInterpolableValue.get());
 }
 
 static bool pathSegTypesMatch(const Vector<SVGPathSegType>& a, const Vector<SVGPathSegType>& b)
@@ -123,34 +122,31 @@ static bool pathSegTypesMatch(const Vector<SVGPathSegType>& a, const Vector<SVGP
     return true;
 }
 
-PassOwnPtr<PairwisePrimitiveInterpolation> PathInterpolationFunctions::mergeSingleConversions(const InterpolationType& type, InterpolationValue& startValue, InterpolationValue& endValue)
+PairwiseInterpolationValue PathInterpolationFunctions::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end)
 {
-    const Vector<SVGPathSegType>& startTypes = toSVGPathNonInterpolableValue(startValue.nonInterpolableValue())->pathSegTypes();
-    const Vector<SVGPathSegType>& endTypes = toSVGPathNonInterpolableValue(endValue.nonInterpolableValue())->pathSegTypes();
+    const Vector<SVGPathSegType>& startTypes = toSVGPathNonInterpolableValue(*start.nonInterpolableValue).pathSegTypes();
+    const Vector<SVGPathSegType>& endTypes = toSVGPathNonInterpolableValue(*end.nonInterpolableValue).pathSegTypes();
     if (!pathSegTypesMatch(startTypes, endTypes))
         return nullptr;
 
-    return PairwisePrimitiveInterpolation::create(type,
-        startValue.mutableComponent().interpolableValue.release(),
-        endValue.mutableComponent().interpolableValue.release(),
-        const_cast<NonInterpolableValue*>(endValue.nonInterpolableValue())); // Take ref.
+    return PairwiseInterpolationValue(start.interpolableValue.release(), end.interpolableValue.release(), end.nonInterpolableValue.release());
 }
 
-void PathInterpolationFunctions::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value)
+void PathInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationType& type, const InterpolationValue& value)
 {
-    const InterpolableList& list = toInterpolableList(value.interpolableValue());
+    const InterpolableList& list = toInterpolableList(*value.interpolableValue);
     double neutralComponent = toInterpolableNumber(list.get(PathNeutralIndex))->value();
 
     if (neutralComponent == 0) {
-        underlyingValue.set(&value);
+        underlyingValueOwner.set(type, value);
         return;
     }
 
     ASSERT(pathSegTypesMatch(
-        toSVGPathNonInterpolableValue(underlyingValue->nonInterpolableValue())->pathSegTypes(),
-        toSVGPathNonInterpolableValue(value.nonInterpolableValue())->pathSegTypes()));
-    underlyingValue.mutableComponent().interpolableValue->scaleAndAdd(neutralComponent, value.interpolableValue());
-    underlyingValue.mutableComponent().nonInterpolableValue = const_cast<NonInterpolableValue*>(value.nonInterpolableValue()); // Take ref.
+        toSVGPathNonInterpolableValue(*underlyingValueOwner.value().nonInterpolableValue).pathSegTypes(),
+        toSVGPathNonInterpolableValue(*value.nonInterpolableValue).pathSegTypes()));
+    underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(neutralComponent, *value.interpolableValue);
+    underlyingValueOwner.mutableValue().nonInterpolableValue = value.nonInterpolableValue.get();
 }
 
 PassRefPtr<SVGPathByteStream> PathInterpolationFunctions::appliedValue(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue)

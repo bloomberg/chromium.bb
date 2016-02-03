@@ -4,7 +4,7 @@
 
 #include "core/animation/ListInterpolationFunctions.h"
 
-#include "core/animation/UnderlyingValue.h"
+#include "core/animation/UnderlyingValueOwner.h"
 #include "core/css/CSSValueList.h"
 #include "wtf/MathExtras.h"
 
@@ -12,8 +12,14 @@ namespace blink {
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(NonInterpolableList);
 
-bool ListInterpolationFunctions::equalValues(const InterpolationComponent& a, const InterpolationComponent& b, EqualNonInterpolableValuesCallback equalNonInterpolableValues)
+bool ListInterpolationFunctions::equalValues(const InterpolationValue& a, const InterpolationValue& b, EqualNonInterpolableValuesCallback equalNonInterpolableValues)
 {
+    if (!a && !b)
+        return true;
+
+    if (!a || !b)
+        return false;
+
     const InterpolableList& interpolableListA = toInterpolableList(*a.interpolableValue);
     const InterpolableList& interpolableListB = toInterpolableList(*b.interpolableValue);
 
@@ -34,13 +40,13 @@ bool ListInterpolationFunctions::equalValues(const InterpolationComponent& a, co
     return true;
 }
 
-PairwiseInterpolationComponent ListInterpolationFunctions::mergeSingleConversions(InterpolationComponent& start, InterpolationComponent& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
+PairwiseInterpolationValue ListInterpolationFunctions::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end, MergeSingleItemConversionsCallback mergeSingleItemConversions)
 {
     size_t startLength = toInterpolableList(*start.interpolableValue).length();
     size_t endLength = toInterpolableList(*end.interpolableValue).length();
 
     if (startLength == 0 && endLength == 0) {
-        return PairwiseInterpolationComponent(
+        return PairwiseInterpolationValue(
             start.interpolableValue.release(),
             end.interpolableValue.release(),
             nullptr);
@@ -48,7 +54,7 @@ PairwiseInterpolationComponent ListInterpolationFunctions::mergeSingleConversion
 
     if (startLength == 0) {
         OwnPtr<InterpolableValue> startInterpolableValue = end.interpolableValue->cloneAndZero();
-        return PairwiseInterpolationComponent(
+        return PairwiseInterpolationValue(
             startInterpolableValue.release(),
             end.interpolableValue.release(),
             end.nonInterpolableValue.release());
@@ -56,7 +62,7 @@ PairwiseInterpolationComponent ListInterpolationFunctions::mergeSingleConversion
 
     if (endLength == 0) {
         OwnPtr<InterpolableValue> endInterpolableValue = start.interpolableValue->cloneAndZero();
-        return PairwiseInterpolationComponent(
+        return PairwiseInterpolationValue(
             start.interpolableValue.release(),
             endInterpolableValue.release(),
             start.nonInterpolableValue.release());
@@ -73,23 +79,23 @@ PairwiseInterpolationComponent ListInterpolationFunctions::mergeSingleConversion
     NonInterpolableList& endNonInterpolableList = toNonInterpolableList(*end.nonInterpolableValue);
 
     for (size_t i = 0; i < finalLength; i++) {
-        InterpolationComponent startComponent(startInterpolableList.get(i % startLength)->clone(), startNonInterpolableList.get(i % startLength));
-        InterpolationComponent endComponent(endInterpolableList.get(i % endLength)->clone(), endNonInterpolableList.get(i % endLength));
-        PairwiseInterpolationComponent resultComponent = mergeSingleItemConversions(startComponent, endComponent);
-        if (!resultComponent)
+        InterpolationValue start(startInterpolableList.get(i % startLength)->clone(), startNonInterpolableList.get(i % startLength));
+        InterpolationValue end(endInterpolableList.get(i % endLength)->clone(), endNonInterpolableList.get(i % endLength));
+        PairwiseInterpolationValue result = mergeSingleItemConversions(start, end);
+        if (!result)
             return nullptr;
-        resultStartInterpolableList->set(i, resultComponent.startInterpolableValue.release());
-        resultEndInterpolableList->set(i, resultComponent.endInterpolableValue.release());
-        resultNonInterpolableValues[i] = resultComponent.nonInterpolableValue.release();
+        resultStartInterpolableList->set(i, result.startInterpolableValue.release());
+        resultEndInterpolableList->set(i, result.endInterpolableValue.release());
+        resultNonInterpolableValues[i] = result.nonInterpolableValue.release();
     }
 
-    return PairwiseInterpolationComponent(
+    return PairwiseInterpolationValue(
         resultStartInterpolableList.release(),
         resultEndInterpolableList.release(),
         NonInterpolableList::create(resultNonInterpolableValues));
 }
 
-static void repeatToLength(InterpolationComponent& value, size_t length)
+static void repeatToLength(InterpolationValue& value, size_t length)
 {
     InterpolableList& interpolableList = toInterpolableList(*value.interpolableValue);
     NonInterpolableList& nonInterpolableList = toNonInterpolableList(*value.nonInterpolableValue);
@@ -117,36 +123,36 @@ static bool nonInterpolableListsAreCompatible(const NonInterpolableList& a, cons
     return true;
 }
 
-void ListInterpolationFunctions::composite(UnderlyingValue& underlyingValue, double underlyingFraction, const InterpolationValue& value, NonInterpolableValuesAreCompatibleCallback nonInterpolableValuesAreCompatible, CompositeItemCallback compositeItem)
+void ListInterpolationFunctions::composite(UnderlyingValueOwner& underlyingValueOwner, double underlyingFraction, const InterpolationType& type, const InterpolationValue& value, NonInterpolableValuesAreCompatibleCallback nonInterpolableValuesAreCompatible, CompositeItemCallback compositeItem)
 {
-    size_t underlyingLength = toInterpolableList(underlyingValue->interpolableValue()).length();
+    size_t underlyingLength = toInterpolableList(*underlyingValueOwner.value().interpolableValue).length();
     if (underlyingLength == 0) {
-        ASSERT(!underlyingValue->nonInterpolableValue());
-        underlyingValue.set(&value);
+        ASSERT(!underlyingValueOwner.value().nonInterpolableValue);
+        underlyingValueOwner.set(type, value);
         return;
     }
 
-    const InterpolableList& interpolableList = toInterpolableList(value.interpolableValue());
+    const InterpolableList& interpolableList = toInterpolableList(*value.interpolableValue);
     size_t valueLength = interpolableList.length();
     if (valueLength == 0) {
-        ASSERT(!value.nonInterpolableValue());
-        underlyingValue.mutableComponent().interpolableValue->scale(underlyingFraction);
+        ASSERT(!value.nonInterpolableValue);
+        underlyingValueOwner.mutableValue().interpolableValue->scale(underlyingFraction);
         return;
     }
 
-    const NonInterpolableList& nonInterpolableList = toNonInterpolableList(*value.nonInterpolableValue());
+    const NonInterpolableList& nonInterpolableList = toNonInterpolableList(*value.nonInterpolableValue);
     size_t newLength = lowestCommonMultiple(underlyingLength, valueLength);
-    if (!nonInterpolableListsAreCompatible(toNonInterpolableList(*underlyingValue->nonInterpolableValue()), nonInterpolableList, newLength, nonInterpolableValuesAreCompatible)) {
-        underlyingValue.set(&value);
+    if (!nonInterpolableListsAreCompatible(toNonInterpolableList(*underlyingValueOwner.value().nonInterpolableValue), nonInterpolableList, newLength, nonInterpolableValuesAreCompatible)) {
+        underlyingValueOwner.set(type, value);
         return;
     }
 
-    InterpolationComponent& underlyingComponent = underlyingValue.mutableComponent();
+    InterpolationValue& underlyingValue = underlyingValueOwner.mutableValue();
     if (underlyingLength < newLength)
-        repeatToLength(underlyingComponent, newLength);
+        repeatToLength(underlyingValue, newLength);
 
-    InterpolableList& underlyingInterpolableList = toInterpolableList(*underlyingComponent.interpolableValue);
-    NonInterpolableList& underlyingNonInterpolableList = toNonInterpolableList(*underlyingComponent.nonInterpolableValue);
+    InterpolableList& underlyingInterpolableList = toInterpolableList(*underlyingValue.interpolableValue);
+    NonInterpolableList& underlyingNonInterpolableList = toNonInterpolableList(*underlyingValue.nonInterpolableValue);
     for (size_t i = 0; i < newLength; i++) {
         compositeItem(
             underlyingInterpolableList.getMutable(i),

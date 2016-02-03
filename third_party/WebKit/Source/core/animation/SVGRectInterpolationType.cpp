@@ -18,15 +18,15 @@ enum RectComponentIndex {
     RectComponentIndexCount,
 };
 
-PassOwnPtr<InterpolationValue> SVGRectInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+InterpolationValue SVGRectInterpolationType::maybeConvertNeutral(const InterpolationValue&, ConversionCheckers&) const
 {
     OwnPtr<InterpolableList> result = InterpolableList::create(RectComponentIndexCount);
     for (size_t i = 0; i < RectComponentIndexCount; i++)
         result->set(i, InterpolableNumber::create(0));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
-PassOwnPtr<InterpolationValue> SVGRectInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationValue SVGRectInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
 {
     if (svgValue.type() != AnimatedRect)
         return nullptr;
@@ -37,7 +37,7 @@ PassOwnPtr<InterpolationValue> SVGRectInterpolationType::maybeConvertSVGValue(co
     result->set(RectY, InterpolableNumber::create(rect.y()));
     result->set(RectWidth, InterpolableNumber::create(rect.width()));
     result->set(RectHeight, InterpolableNumber::create(rect.height()));
-    return InterpolationValue::create(*this, result.release());
+    return InterpolationValue(result.release());
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGRectInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
