@@ -1023,6 +1023,169 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
 }
 
+TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
+  const base::string16 line1(L"This is a very long line of text that ");
+  const base::string16 line2(L"should wrap on more than one lines ");
+  const base::string16 text(line1 + line2);
+
+  std::vector<int32_t> line1_word_starts;
+  line1_word_starts.push_back(0);
+  line1_word_starts.push_back(5);
+  line1_word_starts.push_back(8);
+  line1_word_starts.push_back(10);
+  line1_word_starts.push_back(15);
+  line1_word_starts.push_back(20);
+  line1_word_starts.push_back(25);
+  line1_word_starts.push_back(28);
+  line1_word_starts.push_back(33);
+
+  std::vector<int32_t> line2_word_starts;
+  line2_word_starts.push_back(0);
+  line2_word_starts.push_back(7);
+  line2_word_starts.push_back(12);
+  line2_word_starts.push_back(15);
+  line2_word_starts.push_back(20);
+  line2_word_starts.push_back(25);
+  line2_word_starts.push_back(29);
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.state = (1 << ui::AX_STATE_READ_ONLY) | (1 << ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData textarea, textarea_div, textarea_text;
+  textarea.id = 2;
+  textarea_div.id = 3;
+  textarea_text.id = 4;
+  textarea.role = ui::AX_ROLE_TEXT_FIELD;
+  textarea_div.role = ui::AX_ROLE_DIV;
+  textarea_text.role = ui::AX_ROLE_STATIC_TEXT;
+  textarea.state = (1 << ui::AX_STATE_EDITABLE) |
+                   (1 << ui::AX_STATE_FOCUSABLE) |
+                   (1 << ui::AX_STATE_MULTILINE);
+  textarea_div.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea_text.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea.SetValue(base::UTF16ToUTF8(text));
+  textarea_text.SetName(base::UTF16ToUTF8(text));
+  textarea.child_ids.push_back(textarea_div.id);
+  textarea_div.child_ids.push_back(textarea_text.id);
+
+  ui::AXNodeData textarea_line1, textarea_line2;
+  textarea_line1.id = 5;
+  textarea_line2.id = 6;
+  textarea_line1.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  textarea_line2.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  textarea_line1.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea_line2.state = 1 << ui::AX_STATE_EDITABLE;
+  textarea_line1.SetName(base::UTF16ToUTF8(line1));
+  textarea_line2.SetName(base::UTF16ToUTF8(line2));
+  textarea_line1.AddIntListAttribute(ui::AX_ATTR_WORD_STARTS,
+                                     line1_word_starts);
+  textarea_line2.AddIntListAttribute(ui::AX_ATTR_WORD_STARTS,
+                                     line2_word_starts);
+  textarea_text.child_ids.push_back(textarea_line1.id);
+  textarea_text.child_ids.push_back(textarea_line2.id);
+
+  ui::AXNodeData text_field, text_field_div, text_field_text;
+  text_field.id = 7;
+  text_field_div.id = 8;
+  text_field_text.id = 9;
+  text_field.role = ui::AX_ROLE_TEXT_FIELD;
+  text_field_div.role = ui::AX_ROLE_DIV;
+  text_field_text.role = ui::AX_ROLE_STATIC_TEXT;
+  text_field.state =
+      (1 << ui::AX_STATE_EDITABLE) | (1 << ui::AX_STATE_FOCUSABLE);
+  text_field_div.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field_text.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field.SetValue(base::UTF16ToUTF8(line1));
+  text_field_text.SetName(base::UTF16ToUTF8(line1));
+  text_field.child_ids.push_back(text_field_div.id);
+  text_field_div.child_ids.push_back(text_field_text.id);
+
+  ui::AXNodeData text_field_line;
+  text_field_line.id = 10;
+  text_field_line.role = ui::AX_ROLE_INLINE_TEXT_BOX;
+  text_field_line.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field_line.SetName(base::UTF16ToUTF8(line1));
+  text_field_line.AddIntListAttribute(ui::AX_ATTR_WORD_STARTS,
+                                      line1_word_starts);
+  text_field_text.child_ids.push_back(text_field_line.id);
+
+  root.child_ids.push_back(2);  // Textarea.
+  root.child_ids.push_back(7);  // Text field.
+
+  CountedBrowserAccessibility::reset();
+  scoped_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, textarea, textarea_div, textarea_text,
+                           textarea_line1, textarea_line2, text_field,
+                           text_field_div, text_field_text, text_field_line),
+          nullptr, new CountedBrowserAccessibilityFactory()));
+  ASSERT_EQ(10, CountedBrowserAccessibility::num_instances());
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* root_accessible =
+      manager->GetRoot()->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, root_accessible);
+  ASSERT_EQ(2U, root_accessible->PlatformChildCount());
+
+  BrowserAccessibilityWin* textarea_accessible =
+      root_accessible->PlatformGetChild(0)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, textarea_accessible);
+  BrowserAccessibilityWin* text_field_accessible =
+      root_accessible->PlatformGetChild(1)->ToBrowserAccessibilityWin();
+  ASSERT_NE(nullptr, text_field_accessible);
+
+  base::win::ScopedComPtr<IAccessibleText> textarea_object;
+  EXPECT_HRESULT_SUCCEEDED(textarea_accessible->QueryInterface(
+      IID_IAccessibleText,
+      reinterpret_cast<void**>(textarea_object.Receive())));
+  base::win::ScopedComPtr<IAccessibleText> text_field_object;
+  EXPECT_HRESULT_SUCCEEDED(text_field_accessible->QueryInterface(
+      IID_IAccessibleText,
+      reinterpret_cast<void**>(text_field_object.Receive())));
+
+  LONG offset = 0;
+  while (offset < static_cast<LONG>(text.length())) {
+    LONG start, end;
+    base::win::ScopedBstr word;
+    EXPECT_EQ(S_OK,
+              textarea_object->get_textAtOffset(offset, IA2_TEXT_BOUNDARY_WORD,
+                                                &start, &end, word.Receive()));
+    EXPECT_EQ(offset, start);
+    EXPECT_LT(offset, end);
+    LONG space_offset = static_cast<LONG>(text.find(' ', offset));
+    EXPECT_EQ(space_offset + 1, end);
+    LONG length = end - start;
+    EXPECT_STREQ(text.substr(start, length).c_str(), word);
+    word.Reset();
+    offset = end;
+  }
+
+  offset = 0;
+  while (offset < static_cast<LONG>(line1.length())) {
+    LONG start, end;
+    base::win::ScopedBstr word;
+    EXPECT_EQ(S_OK, text_field_object->get_textAtOffset(
+                        offset, IA2_TEXT_BOUNDARY_WORD, &start, &end,
+                        word.Receive()));
+    EXPECT_EQ(offset, start);
+    EXPECT_LT(offset, end);
+    LONG space_offset = static_cast<LONG>(line1.find(' ', offset));
+    EXPECT_EQ(space_offset + 1, end);
+    LONG length = end - start;
+    EXPECT_STREQ(text.substr(start, length).c_str(), word);
+    word.Reset();
+    offset = end;
+  }
+
+  textarea_object.Release();
+  text_field_object.Release();
+
+  manager.reset();
+  ASSERT_EQ(0, CountedBrowserAccessibility::num_instances());
+}
+
 TEST_F(BrowserAccessibilityTest, TestCaretAndSelectionInSimpleFields) {
   ui::AXNodeData root;
   root.id = 1;

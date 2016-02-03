@@ -413,7 +413,7 @@ int BrowserAccessibility::GetWordStartBoundary(
         child_start = child_end;
         BrowserAccessibility* child = InternalGetChild(i);
         DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
-        int child_len = static_cast<int>(GetText().size());
+        int child_len = static_cast<int>(child->GetText().size());
         child_end += child_len; // End is one past the last character.
 
         const std::vector<int32_t>& word_starts =
