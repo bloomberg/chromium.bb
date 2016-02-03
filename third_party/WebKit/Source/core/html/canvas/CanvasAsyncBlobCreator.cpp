@@ -4,6 +4,7 @@
 
 #include "CanvasAsyncBlobCreator.h"
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -33,14 +34,51 @@ bool isDeadlineNearOrPassed(double deadlineSeconds)
 
 } // anonymous namespace
 
-PassRefPtr<CanvasAsyncBlobCreator> CanvasAsyncBlobCreator::create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback)
+class CanvasAsyncBlobCreator::ContextObserver final : public NoBaseWillBeGarbageCollected<CanvasAsyncBlobCreator::ContextObserver>, public ContextLifecycleObserver {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(CanvasAsyncBlobCreator::ContextObserver);
+public:
+    ContextObserver(ExecutionContext* executionContext, CanvasAsyncBlobCreator* asyncBlobCreator)
+        : ContextLifecycleObserver(executionContext)
+        , m_asyncBlobCreator(asyncBlobCreator)
+    {
+    }
+
+    DECLARE_VIRTUAL_TRACE();
+
+    void contextDestroyed() override
+    {
+        ContextLifecycleObserver::contextDestroyed();
+        if (!!m_asyncBlobCreator) {
+            m_asyncBlobCreator->m_cancelled = true;
+            // After sending cancel signal to asyncBlobCreator, the observer has
+            // done its job and thus deref asyncBlobCreator for proper destruction
+            m_asyncBlobCreator = nullptr;
+        }
+    }
+
+    void dispose()
+    {
+        // In Oilpan context, on-heap ContextObserver sometimes live longer than
+        // off-heap CanvasAsyncBlobCreator, thus we need to dispose backref to
+        // m_asyncBlobCreator here when its destructor is called to avoid
+        // heap-use-after-free error.
+        m_asyncBlobCreator = nullptr;
+    }
+
+private:
+    CanvasAsyncBlobCreator* m_asyncBlobCreator;
+};
+
+PassRefPtr<CanvasAsyncBlobCreator> CanvasAsyncBlobCreator::create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize& size, BlobCallback* callback, ExecutionContext* executionContext)
 {
     RefPtr<CanvasAsyncBlobCreator> asyncBlobCreator = adoptRef(new CanvasAsyncBlobCreator(unpremultipliedRGBAImageData, mimeType, size, callback));
+    asyncBlobCreator->createContextObserver(executionContext);
     return asyncBlobCreator.release();
 }
 
 CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> data, const String& mimeType, const IntSize& size, BlobCallback* callback)
-    : m_data(data)
+    : m_cancelled(false)
+    , m_data(data)
     , m_size(size)
     , m_mimeType(mimeType)
     , m_callback(callback)
@@ -53,6 +91,13 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(PassRefPtr<DOMUint8ClampedArray> 
 
 CanvasAsyncBlobCreator::~CanvasAsyncBlobCreator()
 {
+    if (!!m_contextObserver)
+        m_contextObserver->dispose();
+}
+
+DEFINE_TRACE(CanvasAsyncBlobCreator::ContextObserver)
+{
+    ContextLifecycleObserver::trace(visitor);
 }
 
 void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality)
@@ -63,9 +108,6 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
     // Make self-reference to keep this object alive until the final task completes
     m_selfRef = this;
 
-    // At the time being, progressive encoding is only applicable to png image format,
-    // and thus idle tasks scheduling can only be applied to png image format.
-    // TODO(xlai): Progressive encoding on jpeg and webp image formats (crbug.com/571398, crbug.com/571399)
     if (canUseIdlePeriodScheduling) {
         ASSERT(m_mimeType == "image/png");
         Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
@@ -124,12 +166,71 @@ void CanvasAsyncBlobCreator::createBlobAndCall()
 void CanvasAsyncBlobCreator::encodeImageOnEncoderThread(double quality)
 {
     ASSERT(!isMainThread());
+    if (initializeEncodeImageOnEncoderThread()) {
+        if (m_mimeType == "image/png") {
+            // At the time being, progressive encoding is only applicable to png image format
+            // TODO(xlai): Progressive encoding on jpeg and webp image formats (crbug.com/571398, crbug.com/571399)
+            progressiveEncodeImageOnEncoderThread();
+        } else {
+            nonprogressiveEncodeImageOnEncoderThread(quality);
+        }
+    }
+}
 
+bool CanvasAsyncBlobCreator::initializeEncodeImageOnEncoderThread()
+{
+    if (m_cancelled) {
+        scheduleClearSelfRefOnMainThread();
+        return false;
+    }
+
+    if (m_mimeType == "image/png") {
+        m_encoderState = PNGImageEncoderState::create(m_size, m_encodedImage.get());
+        if (m_cancelled) {
+            scheduleClearSelfRefOnMainThread();
+            return false;
+        }
+        if (!m_encoderState) {
+            scheduleCreateNullptrAndCallOnMainThread();
+            return false;
+        }
+    } // else, do nothing; as encoding on other image formats are not progressive
+    return true;
+}
+
+void CanvasAsyncBlobCreator::nonprogressiveEncodeImageOnEncoderThread(double quality)
+{
     if (ImageDataBuffer(m_size, m_data->data()).encodeImage(m_mimeType, quality, m_encodedImage.get())) {
         scheduleCreateBlobAndCallOnMainThread();
     } else {
         scheduleCreateNullptrAndCallOnMainThread();
     }
+}
+
+void CanvasAsyncBlobCreator::progressiveEncodeImageOnEncoderThread()
+{
+    unsigned char* inputPixels = m_data->data() + m_pixelRowStride * m_numRowsCompleted;
+    for (int y = 0; y < m_size.height() && !m_cancelled; ++y) {
+        PNGImageEncoder::writeOneRowToPng(inputPixels, m_encoderState.get());
+        inputPixels += m_pixelRowStride;
+    }
+    if (m_cancelled) {
+        scheduleClearSelfRefOnMainThread();
+        return;
+    }
+
+    PNGImageEncoder::finalizePng(m_encoderState.get());
+    if (m_cancelled) {
+        scheduleClearSelfRefOnMainThread();
+        return;
+    }
+
+    scheduleCreateBlobAndCallOnMainThread();
+}
+
+void CanvasAsyncBlobCreator::createContextObserver(ExecutionContext* executionContext)
+{
+    m_contextObserver = adoptPtrWillBeNoop(new ContextObserver(executionContext, this));
 }
 
 void CanvasAsyncBlobCreator::clearSelfReference()

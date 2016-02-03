@@ -53,5 +53,5 @@ interface HTMLCanvasElement : HTMLElement
     // FIXME: type should not have a default value.
     [RaisesException] DOMString toDataURL(optional DOMString type = null, optional any arguments);
 
-    [RaisesException] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
+    [RaisesException, CallWith=ScriptState] void toBlob(BlobCallback _callback, optional DOMString type = null, optional any arguments);
 };

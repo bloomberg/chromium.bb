@@ -12,7 +12,7 @@
   },
   {
     "prefix": "threaded",
-    "base": "fast/canvas-toBlob",
+    "base": "fast/canvas/toBlob",
     "args": ["--enable-threaded-compositing"]
   },
   {
