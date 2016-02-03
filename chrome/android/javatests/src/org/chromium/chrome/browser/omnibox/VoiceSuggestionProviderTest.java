@@ -11,6 +11,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -31,17 +32,20 @@ public class VoiceSuggestionProviderTest extends NativeLibraryTestBase {
     }
 
     private static OmniboxSuggestion createDummySuggestion(String text) {
+        List<MatchClassification> classifications = new ArrayList<>();
+        classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         return new OmniboxSuggestion(OmniboxSuggestionType.SEARCH_SUGGEST,
                 true,
                 0,
                 1,
                 text,
+                classifications,
                 null,
+                classifications,
                 null,
                 null,
                 "",
                 "http://www.google.com",
-                "google.com",
                 false,
                 false);
     }

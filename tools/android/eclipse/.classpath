@@ -97,6 +97,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/accessibility_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/activity_type_ids_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/android_resource_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_java/"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/autocomplete_match_type_java/"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/ax_enumerations_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/base_java_application_state"/>

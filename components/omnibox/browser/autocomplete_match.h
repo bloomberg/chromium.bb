@@ -62,6 +62,10 @@ struct AutocompleteMatch {
     // The values in here are not mutually exclusive -- use them like a
     // bitfield.  This also means we use "int" instead of this enum type when
     // passing the values around, so the compiler doesn't complain.
+    //
+    // A Java counterpart will be generated for this enum.
+    // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.omnibox
+    // GENERATED_JAVA_CLASS_NAME_OVERRIDE: MatchClassificationStyle
     enum Style {
       NONE  = 0,
       URL   = 1 << 0,  // A URL

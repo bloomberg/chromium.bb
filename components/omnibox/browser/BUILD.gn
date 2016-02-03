@@ -142,6 +142,13 @@ source_set("browser") {
 }
 
 if (is_android) {
+  # GYP: //component/omnibox.gypi:autocomplete_match_java
+  java_cpp_enum("autocomplete_match_javagen") {
+    sources = [
+      "autocomplete_match.h",
+    ]
+  }
+
   # GYP: //component/omnibox.gypi:autocomplete_match_type_java
   java_cpp_enum("autocomplete_match_type_javagen") {
     sources = [

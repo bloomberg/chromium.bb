@@ -7,8 +7,10 @@
 #include <stddef.h>
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -58,6 +60,7 @@ using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaRef;
+using base::android::ToJavaIntArray;
 using bookmarks::BookmarkModel;
 using metrics::OmniboxEventProto;
 
@@ -439,14 +442,90 @@ AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
   return OmniboxEventProto::OTHER;
 }
 
+namespace {
+
+// Updates the formatting of Android omnibox suggestions where we intentionally
+// deviate from the desktop logic.
+//
+// For URL suggestions, the leading https:// and www. will be omitted if the
+// user query did not explicitly contain them.  The http:// portion is already
+// omitted for all ports.
+//
+// If the match is not for a URL, it will leave |out_content| and
+// |out_classifications| untouched.
+void FormatMatchContentsForDisplay(
+    const AutocompleteMatch& match,
+    base::string16* out_content,
+    ACMatchClassifications* out_classifications) {
+  if (AutocompleteMatch::IsSearchType(match.type))
+    return;
+
+  int match_offset = -1;
+  for (auto contents_class : match.contents_class) {
+    if (contents_class.style & ACMatchClassification::MATCH) {
+      match_offset = contents_class.offset;
+      break;
+    }
+  }
+  int original_match_offset(match_offset);
+  const base::string16 https(base::ASCIIToUTF16("https://"));
+  if (base::StartsWith(*out_content, https, base::CompareCase::SENSITIVE)) {
+    if (match_offset >= static_cast<int>(https.length())) {
+      *out_content = out_content->substr(https.length());
+      match_offset -= https.length();
+    }
+  }
+  const base::string16 www(base::ASCIIToUTF16("www."));
+  if (base::StartsWith(*out_content, www, base::CompareCase::SENSITIVE)) {
+    if (match_offset >= static_cast<int>(www.length())) {
+      *out_content = out_content->substr(www.length());
+      match_offset -= www.length();
+    }
+  }
+  int match_offset_delta = original_match_offset - match_offset;
+  if (match_offset_delta > 0) {
+    out_classifications->clear();
+    for (size_t i = match.contents_class.size(); i > 0; --i) {
+      ACMatchClassification classification(match.contents_class[i - 1]);
+      int updated_offset = std::max(
+          0 , static_cast<int>(classification.offset) - match_offset_delta);
+      out_classifications->insert(
+          out_classifications->begin(),
+          ACMatchClassification(updated_offset, classification.style));
+      if (updated_offset == 0)
+        break;
+    }
+  }
+}
+
+}  // namespace
+
 ScopedJavaLocalRef<jobject>
 AutocompleteControllerAndroid::BuildOmniboxSuggestion(
     JNIEnv* env,
     const AutocompleteMatch& match) {
-  ScopedJavaLocalRef<jstring> contents =
-      ConvertUTF16ToJavaString(env, match.contents);
+  base::string16 contents(match.contents);
+  ACMatchClassifications contents_classifications(match.contents_class);
+  FormatMatchContentsForDisplay(match, &contents, &contents_classifications);
+
+  ScopedJavaLocalRef<jstring> jcontents =
+      ConvertUTF16ToJavaString(env, contents);
+  std::vector<int> contents_class_offsets;
+  std::vector<int> contents_class_styles;
+  for (auto contents_class : contents_classifications) {
+    contents_class_offsets.push_back(contents_class.offset);
+    contents_class_styles.push_back(contents_class.style);
+  }
+
   ScopedJavaLocalRef<jstring> description =
       ConvertUTF16ToJavaString(env, match.description);
+  std::vector<int> description_class_offsets;
+  std::vector<int> description_class_styles;
+  for (auto description_class : match.description_class) {
+    description_class_offsets.push_back(description_class.offset);
+    description_class_styles.push_back(description_class.style);
+  }
+
   ScopedJavaLocalRef<jstring> answer_contents =
       ConvertUTF16ToJavaString(env, match.answer_contents);
   ScopedJavaLocalRef<jstring> answer_type =
@@ -455,9 +534,6 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ConvertUTF16ToJavaString(env, match.fill_into_edit);
   ScopedJavaLocalRef<jstring> destination_url =
       ConvertUTF8ToJavaString(env, match.destination_url.spec());
-  // Note that we are also removing 'www' host from formatted url.
-  ScopedJavaLocalRef<jstring> formatted_url = ConvertUTF16ToJavaString(env,
-      FormatURLUsingAcceptLanguages(match.stripped_destination_url));
   BookmarkModel* bookmark_model = BookmarkModelFactory::GetForProfile(profile_);
   return Java_AutocompleteController_buildOmniboxSuggestion(
       env,
@@ -465,13 +541,16 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       AutocompleteMatch::IsSearchType(match.type),
       match.relevance,
       match.transition,
-      contents.obj(),
+      jcontents.obj(),
+      ToJavaIntArray(env, contents_class_offsets).obj(),
+      ToJavaIntArray(env, contents_class_styles).obj(),
       description.obj(),
+      ToJavaIntArray(env, description_class_offsets).obj(),
+      ToJavaIntArray(env, description_class_styles).obj(),
       answer_contents.obj(),
       answer_type.obj(),
       fill_into_edit.obj(),
       destination_url.obj(),
-      formatted_url.obj(),
       bookmark_model && bookmark_model->IsBookmarked(match.destination_url),
       match.SupportsDeletion());
 }

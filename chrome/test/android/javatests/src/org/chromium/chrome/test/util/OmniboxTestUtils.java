@@ -14,7 +14,9 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.omnibox.AutocompleteController.OnSuggestionsReceivedListener;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
+import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.content.browser.test.util.Criteria;
@@ -71,8 +73,11 @@ public class OmniboxTestUtils {
 
         public SuggestionsResultBuilder addGeneratedSuggestion(
                 int type, String text, String url) {
+            List<MatchClassification> classifications = new ArrayList<>();
+            classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
             mSuggestions.add(new OmniboxSuggestion(
-                    type, false, 0, 0, text, null, null, null, "", url, url, false, false));
+                    type, false, 0, 0, text, classifications, null, classifications,
+                    null, null, "", url, false, false));
             return this;
         }
 

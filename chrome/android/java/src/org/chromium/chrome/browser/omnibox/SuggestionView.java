@@ -33,10 +33,12 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
 import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Container view for omnibox suggestions made very specific for omnibox suggestions to minimize
@@ -383,21 +385,42 @@ class SuggestionView extends ViewGroup {
     /**
      * Sets (and highlights) the URL text of the second line of the omnibox suggestion.
      *
-     * @param suggestion The suggestion containing the URL.
+     * @param result The suggestion containing the URL.
      * @return Whether the URL was highlighted based on the user query.
      */
-    private boolean setUrlText(OmniboxResultItem suggestion) {
-        String query = suggestion.getMatchedQuery();
-        String url = suggestion.getSuggestion().getFormattedUrl();
-        int index = url.indexOf(query);
-        Spannable str = SpannableString.valueOf(url);
-        if (index >= 0) {
-            // Bold the part of the URL that matches the user query.
-            str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
-                    index, index + query.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+    private boolean setUrlText(OmniboxResultItem result) {
+        OmniboxSuggestion suggestion = result.getSuggestion();
+        Spannable str = SpannableString.valueOf(suggestion.getDisplayText());
+        boolean hasMatch = applyHighlightToMatchRegions(
+                str, suggestion.getDisplayTextClassifications());
         showDescriptionLine(str, URL_COLOR);
-        return index >= 0;
+        return hasMatch;
+    }
+
+    private boolean applyHighlightToMatchRegions(
+            Spannable str, List<MatchClassification> classifications) {
+        boolean hasMatch = false;
+        for (int i = 0; i < classifications.size(); i++) {
+            MatchClassification classification = classifications.get(i);
+            if ((classification.style & MatchClassificationStyle.MATCH)
+                    == MatchClassificationStyle.MATCH) {
+                int matchStartIndex = classification.offset;
+                int matchEndIndex;
+                if (i == classifications.size() - 1) {
+                    matchEndIndex = str.length();
+                } else {
+                    matchEndIndex = classifications.get(i + 1).offset;
+                }
+                matchStartIndex = Math.min(matchStartIndex, str.length());
+                matchEndIndex = Math.min(matchEndIndex, str.length());
+
+                hasMatch = true;
+                // Bold the part of the URL that matches the user query.
+                str.setSpan(new StyleSpan(android.graphics.Typeface.BOLD),
+                        matchStartIndex, matchEndIndex, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+        }
+        return hasMatch;
     }
 
     /**
@@ -427,20 +450,21 @@ class SuggestionView extends ViewGroup {
             boolean isUrlQuery, boolean isUrlHighlighted) {
         String userQuery = suggestionItem.getMatchedQuery();
         String suggestedQuery = null;
+        List<MatchClassification> classifications;
         OmniboxSuggestion suggestion = suggestionItem.getSuggestion();
         if (showDescriptionIfPresent && !TextUtils.isEmpty(suggestion.getUrl())
                 && !TextUtils.isEmpty(suggestion.getDescription())) {
             suggestedQuery = suggestion.getDescription();
+            classifications = suggestion.getDescriptionClassifications();
         } else {
             suggestedQuery = suggestion.getDisplayText();
+            classifications = suggestion.getDisplayTextClassifications();
         }
         if (suggestedQuery == null) {
             assert false : "Invalid suggestion sent with no displayable text";
             suggestedQuery = "";
-        } else if (suggestedQuery.equals(suggestion.getUrl())) {
-            // This is a navigation match with the title defaulted to the URL, display formatted URL
-            // so that they continue matching.
-            suggestedQuery = suggestion.getFormattedUrl();
+            classifications = new ArrayList<MatchClassification>();
+            classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
         }
 
         if (mSuggestion.getType() == OmniboxSuggestionType.SEARCH_SUGGEST_TAIL) {
@@ -449,13 +473,18 @@ class SuggestionView extends ViewGroup {
             if (fillIntoEdit.startsWith(userQuery)
                     && fillIntoEdit.endsWith(suggestedQuery)
                     && fillIntoEdit.length() < userQuery.length() + suggestedQuery.length()) {
-                String ignoredPrefix = fillIntoEdit.substring(
-                        0, fillIntoEdit.length() - suggestedQuery.length());
                 final String ellipsisPrefix = "\u2026 ";
                 suggestedQuery = ellipsisPrefix + suggestedQuery;
-                if (userQuery.startsWith(ignoredPrefix)) {
-                    userQuery = ellipsisPrefix + userQuery.substring(ignoredPrefix.length());
+
+                // Offset the match classifications by the length of the ellipsis prefix to ensure
+                // the highlighting remains correct.
+                for (int i = 0; i < classifications.size(); i++) {
+                    classifications.set(i, new MatchClassification(
+                            classifications.get(i).offset + ellipsisPrefix.length(),
+                            classifications.get(i).style));
                 }
+                classifications.add(0, new MatchClassification(0, MatchClassificationStyle.NONE));
+
                 if (DeviceFormFactor.isTablet(getContext())) {
                     TextPaint tp = mContentsView.mTextLine1.getPaint();
                     mContentsView.mRequiredWidth =
@@ -472,28 +501,7 @@ class SuggestionView extends ViewGroup {
         }
 
         Spannable str = SpannableString.valueOf(suggestedQuery);
-        int userQueryIndex = isUrlHighlighted ? -1
-                : suggestedQuery.toLowerCase(Locale.getDefault()).indexOf(
-                        userQuery.toLowerCase(Locale.getDefault()));
-        if (userQueryIndex != -1) {
-            int spanStart = 0;
-            int spanEnd = 0;
-            if (isUrlQuery) {
-                spanStart = userQueryIndex;
-                spanEnd = userQueryIndex + userQuery.length();
-            } else {
-                spanStart = userQueryIndex + userQuery.length();
-                spanEnd = str.length();
-            }
-            spanStart = Math.min(spanStart, str.length());
-            spanEnd = Math.min(spanEnd, str.length());
-            if (spanStart != spanEnd) {
-                str.setSpan(
-                        new StyleSpan(android.graphics.Typeface.BOLD),
-                        spanStart, spanEnd,
-                        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
-        }
+        if (!isUrlHighlighted) applyHighlightToMatchRegions(str, classifications);
         mContentsView.mTextLine1.setText(str, BufferType.SPANNABLE);
     }
 
