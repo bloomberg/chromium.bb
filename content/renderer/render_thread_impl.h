@@ -26,7 +26,6 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "net/base/network_change_notifier.h"
@@ -467,10 +466,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
-  CreateCommandBufferResult CreateViewCommandBuffer(
-      int32_t surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id) override;
+  gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) override;
 
   void Init();
 

@@ -135,8 +135,6 @@ bool GpuChannelManager::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(GpuChannelManager, msg)
     IPC_MESSAGE_HANDLER(GpuMsg_EstablishChannel, OnEstablishChannel)
     IPC_MESSAGE_HANDLER(GpuMsg_CloseChannel, OnCloseChannel)
-    IPC_MESSAGE_HANDLER(GpuMsg_CreateViewCommandBuffer,
-                        OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
@@ -163,21 +161,21 @@ scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
+    bool allow_view_command_buffers,
     bool allow_real_time_streams) {
   return make_scoped_ptr(new GpuChannel(
       this, sync_point_manager(), watchdog_, share_group(), mailbox_manager(),
       preempts ? preemption_flag() : nullptr, task_runner_.get(),
       io_task_runner_.get(), client_id, client_tracing_id,
-      allow_real_time_streams));
+      allow_view_command_buffers, allow_real_time_streams));
 }
 
 void GpuChannelManager::OnEstablishChannel(
     const GpuMsg_EstablishChannel_Params& params) {
-  DCHECK(!params.preempts || !params.preempted);
   scoped_ptr<GpuChannel> channel(CreateGpuChannel(
       params.client_id, params.client_tracing_id, params.preempts,
-      params.allow_real_time_streams));
-  if (params.preempted)
+      params.allow_view_command_buffers, params.allow_real_time_streams));
+  if (!params.preempts)
     channel->SetPreemptByFlag(preemption_flag_.get());
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
 
@@ -194,21 +192,6 @@ void GpuChannelManager::OnCloseChannel(
       return;
     }
   }
-}
-
-void GpuChannelManager::OnCreateViewCommandBuffer(
-    const gfx::GLSurfaceHandle& window,
-    int32_t client_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id) {
-  CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
-
-  auto it = gpu_channels_.find(client_id);
-  if (it != gpu_channels_.end()) {
-    result = it->second->CreateViewCommandBuffer(window, init_params, route_id);
-  }
-
-  Send(new GpuHostMsg_CommandBufferCreated(result));
 }
 
 void GpuChannelManager::DestroyGpuMemoryBuffer(

@@ -22,7 +22,6 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "content/common/gpu/gpu_result_codes.h"
 #include "content/common/gpu/gpu_stream_priority.h"
 #include "content/common/message_router.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
@@ -78,6 +77,7 @@ class CONTENT_EXPORT GpuChannel
              base::SingleThreadTaskRunner* io_task_runner,
              int client_id,
              uint64_t client_tracing_id,
+             bool allow_view_command_buffers,
              bool allow_real_time_streams);
   ~GpuChannel() override;
 
@@ -117,11 +117,6 @@ class CONTENT_EXPORT GpuChannel
   // descheduled states. When any stub is descheduled, we stop preempting
   // other channels.
   void OnStubSchedulingChanged(GpuCommandBufferStub* stub, bool scheduled);
-
-  CreateCommandBufferResult CreateViewCommandBuffer(
-      const gfx::GLSurfaceHandle& window,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id);
 
   gfx::GLShareGroup* share_group() const { return share_group_.get(); }
 
@@ -184,6 +179,9 @@ class CONTENT_EXPORT GpuChannel
   // are completed.
   void HandleOutOfOrderMessage(const IPC::Message& msg);
 
+  // Synchronously handle the message to make testing convenient.
+  void HandleMessageForTesting(const IPC::Message& msg);
+
 #if defined(OS_ANDROID)
   const GpuCommandBufferStub* GetOneStub() const;
 #endif
@@ -220,8 +218,14 @@ class CONTENT_EXPORT GpuChannel
   bool OnControlMessageReceived(const IPC::Message& msg);
 
   void ScheduleHandleMessage();
+  void HandleMessageHelper(const IPC::Message& msg);
 
   // Message handlers.
+  void OnCreateViewCommandBuffer(
+      const gfx::GLSurfaceHandle& window,
+      const GPUCreateCommandBufferConfig& init_params,
+      int32_t route_id,
+      bool* succeeded);
   void OnCreateOffscreenCommandBuffer(
       const gfx::Size& size,
       const GPUCreateCommandBufferConfig& init_params,
@@ -229,6 +233,11 @@ class CONTENT_EXPORT GpuChannel
       bool* succeeded);
   void OnDestroyCommandBuffer(int32_t route_id);
   void OnCreateJpegDecoder(int32_t route_id, IPC::Message* reply_msg);
+
+  bool CreateCommandBuffer(const gfx::GLSurfaceHandle& window,
+                           const gfx::Size& size,
+                           const GPUCreateCommandBufferConfig& init_params,
+                           int32_t route_id);
 
   // The lifetime of objects of this class is managed by a GpuChannelManager.
   // The GpuChannelManager destroy all the GpuChannels that they own when they
@@ -287,6 +296,7 @@ class CONTENT_EXPORT GpuChannel
   // Map of stream id to stream state.
   base::hash_map<int32_t, StreamState> streams_;
 
+  bool allow_view_command_buffers_;
   bool allow_real_time_streams_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure

@@ -69,13 +69,13 @@ void GpuMessageFilter::OnEstablishGpuChannel(
   }
 
   bool preempts = false;
-  bool preempted = true;
+  bool allow_view_command_buffers = false;
   bool allow_real_time_streams = false;
   host->EstablishGpuChannel(
       render_process_id_,
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
-      preempts, preempted, allow_real_time_streams,
+      preempts, allow_view_command_buffers, allow_real_time_streams,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }

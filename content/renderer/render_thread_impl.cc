@@ -1707,12 +1707,9 @@ scoped_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
   return HostAllocateSharedMemoryBuffer(size);
 }
 
-CreateCommandBufferResult RenderThreadImpl::CreateViewCommandBuffer(
-    int32_t surface_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id) {
+gfx::GLSurfaceHandle RenderThreadImpl::GetSurfaceHandle(int32_t surface_id) {
   NOTREACHED();
-  return CREATE_COMMAND_BUFFER_FAILED;
+  return gfx::GLSurfaceHandle();
 }
 
 void RenderThreadImpl::DoNotNotifyWebKitOfModalLoop() {

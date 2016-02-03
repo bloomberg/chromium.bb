@@ -32,10 +32,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   bool IsMainThread() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
-  CreateCommandBufferResult CreateViewCommandBuffer(
-      int32_t surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id) override;
+  gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) override;
 
   int GpuProcessHostId() { return gpu_host_id_; }
 #if !defined(OS_ANDROID)
@@ -58,12 +55,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   ~BrowserGpuChannelHostFactory() override;
 
   void GpuChannelEstablished();
-  void CreateViewCommandBufferOnIO(
-      CreateRequest* request,
-      int32_t surface_id,
-      const GPUCreateCommandBufferConfig& init_params);
-  static void CommandBufferCreatedOnIO(CreateRequest* request,
-                                       CreateCommandBufferResult result);
+
   static void AddFilterOnIO(int gpu_host_id,
                             scoped_refptr<IPC::MessageFilter> filter);
   static void InitializeShaderDiskCacheOnIO(int gpu_client_id,

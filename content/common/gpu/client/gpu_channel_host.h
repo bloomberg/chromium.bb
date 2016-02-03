@@ -21,7 +21,6 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_result_codes.h"
 #include "content/common/gpu/gpu_stream_priority.h"
 #include "content/common/message_router.h"
 #include "gpu/config/gpu_info.h"
@@ -70,10 +69,7 @@ class CONTENT_EXPORT GpuChannelHostFactory {
   virtual scoped_refptr<base::SingleThreadTaskRunner>
   GetIOThreadTaskRunner() = 0;
   virtual scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) = 0;
-  virtual CreateCommandBufferResult CreateViewCommandBuffer(
-      int32_t surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id) = 0;
+  virtual gfx::GLSurfaceHandle GetSurfaceHandle(int32_t surface_id) = 0;
 };
 
 // Encapsulates an IPC channel between the client and one GPU process.

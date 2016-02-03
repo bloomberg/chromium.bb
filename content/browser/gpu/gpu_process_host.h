@@ -22,7 +22,6 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_result_codes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -67,9 +66,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   typedef base::Callback<void(const IPC::ChannelHandle&, const gpu::GPUInfo&)>
       EstablishChannelCallback;
-
-  typedef base::Callback<void(CreateCommandBufferResult)>
-      CreateCommandBufferCallback;
 
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       CreateGpuMemoryBufferCallback;
@@ -116,18 +112,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void EstablishGpuChannel(int client_id,
                            uint64_t client_tracing_id,
                            bool preempts,
-                           bool preempted,
+                           bool allow_view_command_buffers,
                            bool allow_real_time_streams,
                            const EstablishChannelCallback& callback);
-
-  // Tells the GPU process to create a new command buffer that draws into the
-  // given surface.
-  void CreateViewCommandBuffer(
-      const gfx::GLSurfaceHandle& compositing_surface,
-      int client_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int route_id,
-      const CreateCommandBufferCallback& callback);
 
   // Tells the GPU process to create a new GPU memory buffer.
   void CreateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -189,7 +176,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Message handlers.
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
-  void OnCommandBufferCreated(CreateCommandBufferResult result);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
   void OnDidCreateOffscreenContext(const GURL& url);
   void OnDidLoseContext(bool offscreen,
@@ -230,9 +216,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // These are the channel requests that we have already sent to
   // the GPU process, but haven't heard back about yet.
   std::queue<EstablishChannelCallback> channel_requests_;
-
-  // The pending create command buffer requests we need to reply to.
-  std::queue<CreateCommandBufferCallback> create_command_buffer_requests_;
 
   // The pending create gpu memory buffer requests we need to reply to.
   std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;

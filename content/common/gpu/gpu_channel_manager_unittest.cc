@@ -35,7 +35,7 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
   params.client_id = kClientId;
   params.client_tracing_id = kClientTracingId;
   params.preempts = false;
-  params.preempted = false;
+  params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
   EXPECT_TRUE(
       channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
@@ -76,7 +76,7 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   params.client_id = kClientId1;
   params.client_tracing_id = kClientTracingId1;
   params.preempts = false;
-  params.preempted = false;
+  params.allow_view_command_buffers = false;
   params.allow_real_time_streams = false;
   EXPECT_TRUE(
       channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));

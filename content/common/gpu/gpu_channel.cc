@@ -491,6 +491,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        base::SingleThreadTaskRunner* io_task_runner,
                        int client_id,
                        uint64_t client_tracing_id,
+                       bool allow_view_command_buffers,
                        bool allow_real_time_streams)
     : gpu_channel_manager_(gpu_channel_manager),
       sync_point_manager_(sync_point_manager),
@@ -506,6 +507,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
       pending_valuebuffer_state_(new gpu::ValueStateMap),
       watchdog_(watchdog),
       num_stubs_descheduled_(0),
+      allow_view_command_buffers_(allow_view_command_buffers),
       allow_real_time_streams_(allow_real_time_streams),
       weak_factory_(this) {
   DCHECK(gpu_channel_manager);
@@ -625,63 +627,6 @@ void GpuChannel::OnStubSchedulingChanged(GpuCommandBufferStub* stub,
   }
 }
 
-CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
-    const gfx::GLSurfaceHandle& window,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id) {
-  TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
-               route_id);
-
-  int32_t share_group_id = init_params.share_group_id;
-  GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
-
-  if (!share_group && share_group_id != MSG_ROUTING_NONE)
-    return CREATE_COMMAND_BUFFER_FAILED;
-
-  int32_t stream_id = init_params.stream_id;
-  GpuStreamPriority stream_priority = init_params.stream_priority;
-
-  if (share_group && stream_id != share_group->stream_id())
-    return CREATE_COMMAND_BUFFER_FAILED;
-
-  if (!allow_real_time_streams_ &&
-      stream_priority == GpuStreamPriority::REAL_TIME)
-    return CREATE_COMMAND_BUFFER_FAILED;
-
-  auto stream_it = streams_.find(stream_id);
-  if (stream_it != streams_.end() &&
-      stream_priority != GpuStreamPriority::INHERIT &&
-      stream_priority != stream_it->second.priority()) {
-    return CREATE_COMMAND_BUFFER_FAILED;
-  }
-
-  bool offscreen = false;
-  scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, sync_point_manager_, task_runner_.get(), share_group, window,
-      mailbox_manager_.get(), preempted_flag_.get(),
-      subscription_ref_set_.get(), pending_valuebuffer_state_.get(),
-      gfx::Size(), disallowed_features_, init_params.attribs,
-      init_params.gpu_preference, stream_id, route_id, offscreen, watchdog_,
-      init_params.active_url));
-
-  if (!router_.AddRoute(route_id, stub.get())) {
-    DLOG(ERROR) << "GpuChannel::CreateViewCommandBuffer(): "
-                   "failed to add route";
-    return CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST;
-  }
-
-  if (stream_it != streams_.end()) {
-    stream_it->second.AddRoute(route_id);
-  } else {
-    StreamState stream(stream_id, stream_priority);
-    stream.AddRoute(route_id);
-    streams_.insert(std::make_pair(stream_id, stream));
-  }
-
-  stubs_.set(route_id, std::move(stub));
-  return CREATE_COMMAND_BUFFER_SUCCEEDED;
-}
-
 GpuCommandBufferStub* GpuChannel::LookupCommandBuffer(int32_t route_id) {
   return stubs_.get(route_id);
 }
@@ -717,6 +662,8 @@ void GpuChannel::OnDestroy() {
 bool GpuChannel::OnControlMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(GpuChannel, msg)
+    IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateViewCommandBuffer,
+                        OnCreateViewCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_CreateOffscreenCommandBuffer,
                         OnCreateOffscreenCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuChannelMsg_DestroyCommandBuffer,
@@ -756,21 +703,7 @@ void GpuChannel::HandleMessage() {
   DVLOG(1) << "received message @" << &message << " on channel @" << this
            << " with type " << message.type();
 
-  bool handled = false;
-
-  if (routing_id == MSG_ROUTING_CONTROL) {
-    handled = OnControlMessageReceived(message);
-  } else {
-    handled = router_.RouteMessage(message);
-  }
-
-  // Respond to sync messages even if router failed to route.
-  if (!handled && message.is_sync()) {
-    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&message);
-    reply->set_reply_error();
-    Send(reply);
-    handled = true;
-  }
+  HandleMessageHelper(message);
 
   // A command buffer may be descheduled or preempted but only in the middle of
   // a flush. In this case we should not pop the message from the queue.
@@ -801,6 +734,24 @@ void GpuChannel::ScheduleHandleMessage() {
                                                weak_factory_.GetWeakPtr()));
 }
 
+void GpuChannel::HandleMessageHelper(const IPC::Message& msg) {
+  int32_t routing_id = msg.routing_id();
+
+  bool handled = false;
+  if (routing_id == MSG_ROUTING_CONTROL) {
+    handled = OnControlMessageReceived(msg);
+  } else {
+    handled = router_.RouteMessage(msg);
+  }
+
+  // Respond to sync messages even if router failed to route.
+  if (!handled && msg.is_sync()) {
+    IPC::Message* reply = IPC::SyncMessage::GenerateReply(&msg);
+    reply->set_reply_error();
+    Send(reply);
+  }
+}
+
 void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
   switch (msg.type()) {
     case GpuCommandBufferMsg_WaitForGetOffsetInRange::ID:
@@ -810,6 +761,10 @@ void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
     default:
       NOTREACHED();
   }
+}
+
+void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
+  HandleMessageHelper(msg);
 }
 
 #if defined(OS_ANDROID)
@@ -823,6 +778,20 @@ const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
 }
 #endif
 
+void GpuChannel::OnCreateViewCommandBuffer(
+    const gfx::GLSurfaceHandle& window,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32_t route_id,
+    bool* succeeded) {
+  TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
+               route_id);
+  *succeeded = false;
+  if (allow_view_command_buffers_ && !window.is_null()) {
+    *succeeded =
+        CreateCommandBuffer(window, gfx::Size(), init_params, route_id);
+  }
+}
+
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,
@@ -830,51 +799,51 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     bool* succeeded) {
   TRACE_EVENT1("gpu", "GpuChannel::OnCreateOffscreenCommandBuffer", "route_id",
                route_id);
+  *succeeded =
+      CreateCommandBuffer(gfx::GLSurfaceHandle(), size, init_params, route_id);
+}
 
+bool GpuChannel::CreateCommandBuffer(
+    const gfx::GLSurfaceHandle& window,
+    const gfx::Size& size,
+    const GPUCreateCommandBufferConfig& init_params,
+    int32_t route_id) {
   int32_t share_group_id = init_params.share_group_id;
   GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
 
-  if (!share_group && share_group_id != MSG_ROUTING_NONE) {
-    *succeeded = false;
-    return;
-  }
+  if (!share_group && share_group_id != MSG_ROUTING_NONE)
+    return false;
 
   int32_t stream_id = init_params.stream_id;
   GpuStreamPriority stream_priority = init_params.stream_priority;
 
-  if (share_group && stream_id != share_group->stream_id()) {
-    *succeeded = false;
-    return;
-  }
+  if (share_group && stream_id != share_group->stream_id())
+    return false;
 
   if (!allow_real_time_streams_ &&
       stream_priority == GpuStreamPriority::REAL_TIME) {
-    *succeeded = false;
-    return;
+    return false;
   }
 
   auto stream_it = streams_.find(stream_id);
   if (stream_it != streams_.end() &&
       stream_priority != GpuStreamPriority::INHERIT &&
       stream_priority != stream_it->second.priority()) {
-    *succeeded = false;
-    return;
+    return false;
   }
 
-  bool offscreen = true;
+  bool offscreen = window.is_null();
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
-      this, sync_point_manager_, task_runner_.get(), share_group,
-      gfx::GLSurfaceHandle(), mailbox_manager_.get(), preempted_flag_.get(),
+      this, sync_point_manager_, task_runner_.get(), share_group, window,
+      mailbox_manager_.get(), preempted_flag_.get(),
       subscription_ref_set_.get(), pending_valuebuffer_state_.get(), size,
       disallowed_features_, init_params.attribs, init_params.gpu_preference,
       init_params.stream_id, route_id, offscreen, watchdog_,
       init_params.active_url));
 
   if (!router_.AddRoute(route_id, stub.get())) {
-    DLOG(ERROR) << "GpuChannel::OnCreateOffscreenCommandBuffer(): "
-                   "failed to add route";
-    *succeeded = false;
-    return;
+    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): failed to add route";
+    return false;
   }
 
   if (stream_it != streams_.end()) {
@@ -886,7 +855,7 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
   }
 
   stubs_.set(route_id, std::move(stub));
-  *succeeded = true;
+  return true;
 }
 
 void GpuChannel::OnDestroyCommandBuffer(int32_t route_id) {

@@ -599,7 +599,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHost, message)
     IPC_MESSAGE_HANDLER(GpuHostMsg_Initialized, OnInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
@@ -674,7 +673,7 @@ void GpuProcessHost::EstablishGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
     bool preempts,
-    bool preempted,
+    bool allow_view_command_buffers,
     bool allow_real_time_streams,
     const EstablishChannelCallback& callback) {
   DCHECK(CalledOnValidThread());
@@ -691,7 +690,7 @@ void GpuProcessHost::EstablishGpuChannel(
   params.client_id = client_id;
   params.client_tracing_id = client_tracing_id;
   params.preempts = preempts;
-  params.preempted = preempted;
+  params.allow_view_command_buffers = allow_view_command_buffers;
   params.allow_real_time_streams = allow_real_time_streams;
   if (Send(new GpuMsg_EstablishChannel(params))) {
     channel_requests_.push(callback);
@@ -703,27 +702,6 @@ void GpuProcessHost::EstablishGpuChannel(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
     CreateChannelCache(client_id);
-  }
-}
-
-void GpuProcessHost::CreateViewCommandBuffer(
-    const gfx::GLSurfaceHandle& compositing_surface,
-    int client_id,
-    const GPUCreateCommandBufferConfig& init_params,
-    int route_id,
-    const CreateCommandBufferCallback& callback) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::CreateViewCommandBuffer");
-
-  DCHECK(CalledOnValidThread());
-
-  if (!compositing_surface.is_null() &&
-      Send(new GpuMsg_CreateViewCommandBuffer(compositing_surface, client_id,
-                                              init_params, route_id))) {
-    create_command_buffer_requests_.push(callback);
-  } else {
-    // Could distinguish here between compositing_surface being NULL
-    // and Send failing, if desired.
-    callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
 }
 
@@ -828,18 +806,6 @@ void GpuProcessHost::OnChannelEstablished(
   }
 
   callback.Run(channel_handle, gpu_info_);
-}
-
-void GpuProcessHost::OnCommandBufferCreated(CreateCommandBufferResult result) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnCommandBufferCreated");
-
-  if (create_command_buffer_requests_.empty())
-    return;
-
-  CreateCommandBufferCallback callback =
-      create_command_buffer_requests_.front();
-  create_command_buffer_requests_.pop();
-  callback.Run(result);
 }
 
 void GpuProcessHost::OnGpuMemoryBufferCreated(
@@ -1045,13 +1011,6 @@ void GpuProcessHost::SendOutstandingReplies() {
     EstablishChannelCallback callback = channel_requests_.front();
     channel_requests_.pop();
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
-  }
-
-  while (!create_command_buffer_requests_.empty()) {
-    CreateCommandBufferCallback callback =
-        create_command_buffer_requests_.front();
-    create_command_buffer_requests_.pop();
-    callback.Run(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST);
   }
 
   while (!create_gpu_memory_buffer_requests_.empty()) {

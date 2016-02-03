@@ -119,10 +119,12 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 #endif
 
  protected:
-  virtual scoped_ptr<GpuChannel> CreateGpuChannel(int client_id,
-                                                  uint64_t client_tracing_id,
-                                                  bool preempts,
-                                                  bool allow_real_time_streams);
+  virtual scoped_ptr<GpuChannel> CreateGpuChannel(
+      int client_id,
+      uint64_t client_tracing_id,
+      bool preempts,
+      bool allow_view_command_buffers,
+      bool allow_real_time_streams);
 
   gpu::SyncPointManager* sync_point_manager() const {
     return sync_point_manager_;
@@ -152,11 +154,6 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void OnVisibilityChanged(int32_t render_view_id,
                            int32_t client_id,
                            bool visible);
-  void OnCreateViewCommandBuffer(
-      const gfx::GLSurfaceHandle& window,
-      int32_t client_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id);
   void OnLoadedShader(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id, int client_id);
