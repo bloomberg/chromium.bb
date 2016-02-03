@@ -82,6 +82,12 @@ bool WorkQueueSets::GetOldestQueueInSet(size_t set_index,
     return false;
   *out_work_queue =
       enqueue_order_to_work_queue_maps_[set_index].begin()->second;
+#ifndef NDEBUG
+  EnqueueOrder enqueue_order;
+  DCHECK((*out_work_queue)->GetFrontTaskEnqueueOrder(&enqueue_order));
+  DCHECK_EQ(enqueue_order,
+            enqueue_order_to_work_queue_maps_[set_index].begin()->first);
+#endif
   return true;
 }
 
@@ -90,6 +96,27 @@ bool WorkQueueSets::IsSetEmpty(size_t set_index) const {
       << " set_index = " << set_index;
   return enqueue_order_to_work_queue_maps_[set_index].empty();
 }
+
+#if DCHECK_IS_ON() || !defined(NDEBUG)
+bool WorkQueueSets::ContainsWorkQueueForTest(WorkQueue* work_queue) const {
+  EnqueueOrder enqueue_order;
+  bool has_enqueue_order = work_queue->GetFrontTaskEnqueueOrder(&enqueue_order);
+
+  for (const EnqueueOrderToWorkQueueMap& map :
+       enqueue_order_to_work_queue_maps_) {
+    for (const EnqueueOrderToWorkQueueMap::value_type& key_value_pair : map) {
+      if (key_value_pair.second == work_queue) {
+        DCHECK(has_enqueue_order);
+        DCHECK_EQ(key_value_pair.first, enqueue_order);
+        DCHECK_EQ(this, work_queue->work_queue_sets());
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+#endif
 
 }  // namespace internal
 }  // namespace scheduler

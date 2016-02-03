@@ -92,12 +92,39 @@ void TaskQueueSelector::PrioritizingSelector::AssignQueueToSet(
                                             priority);
   immediate_work_queue_sets_.AssignQueueToSet(queue->immediate_work_queue(),
                                               priority);
+  // The #if DCHECK_IS_ON() shouldn't be necessary but this doesn't compile on
+  // chromeos bots without it :(
+#if DCHECK_IS_ON()
+  DCHECK_EQ(queue->delayed_work_queue()->Empty(),
+            !delayed_work_queue_sets_.ContainsWorkQueueForTest(
+                queue->delayed_work_queue()));
+  DCHECK_EQ(queue->immediate_work_queue()->Empty(),
+            !immediate_work_queue_sets_.ContainsWorkQueueForTest(
+                queue->immediate_work_queue()));
+#endif
 }
 
 void TaskQueueSelector::PrioritizingSelector::RemoveQueue(
     internal::TaskQueueImpl* queue) {
+#if DCHECK_IS_ON()
+  DCHECK_EQ(queue->delayed_work_queue()->Empty(),
+            !delayed_work_queue_sets_.ContainsWorkQueueForTest(
+                queue->delayed_work_queue()))
+      << " Did you try to RemoveQueue twice? Thats not supported!";
+  DCHECK_EQ(queue->immediate_work_queue()->Empty(),
+            !immediate_work_queue_sets_.ContainsWorkQueueForTest(
+                queue->immediate_work_queue()))
+      << " Did you try to RemoveQueue twice? Thats not supported!";
+#endif
   delayed_work_queue_sets_.RemoveQueue(queue->delayed_work_queue());
   immediate_work_queue_sets_.RemoveQueue(queue->immediate_work_queue());
+
+#if DCHECK_IS_ON()
+  DCHECK(!delayed_work_queue_sets_.ContainsWorkQueueForTest(
+              queue->delayed_work_queue()));
+  DCHECK(!immediate_work_queue_sets_.ContainsWorkQueueForTest(
+              queue->delayed_work_queue()));
+#endif
 }
 
 bool TaskQueueSelector::PrioritizingSelector::

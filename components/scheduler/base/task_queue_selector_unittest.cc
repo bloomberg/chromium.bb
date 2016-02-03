@@ -62,13 +62,9 @@ class TaskQueueSelectorTest : public testing::Test {
     std::set<size_t> changed_queue_set;
     for (size_t i = 0; i < num_tasks; i++) {
       changed_queue_set.insert(queue_indices[i]);
-      task_queues_[queue_indices[i]]->immediate_work_queue()->PushTaskForTest(
+      task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
           TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
                               true, i));
-    }
-    for (size_t queue_index : changed_queue_set) {
-      enabled_selector()->immediate_work_queue_sets()->OnPushQueue(
-          task_queues_[queue_index]->immediate_work_queue());
     }
   }
 
@@ -78,13 +74,9 @@ class TaskQueueSelectorTest : public testing::Test {
     std::set<size_t> changed_queue_set;
     for (size_t i = 0; i < num_tasks; i++) {
       changed_queue_set.insert(queue_indices[i]);
-      task_queues_[queue_indices[i]]->immediate_work_queue()->PushTaskForTest(
+      task_queues_[queue_indices[i]]->immediate_work_queue()->Push(
           TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
                               true, enqueue_orders[i]));
-    }
-    for (size_t queue_index : changed_queue_set) {
-      immediate_work_queue_sets()->OnPushQueue(
-          task_queues_[queue_index]->immediate_work_queue());
     }
   }
 
@@ -102,6 +94,16 @@ class TaskQueueSelectorTest : public testing::Test {
   }
 
   static void TestFunction() {}
+
+  void EnableQueue(TaskQueueImpl* queue) {
+    queue->SetQueueEnabled(true);
+    selector_.EnableQueue(queue);
+  }
+
+  void DisableQueue(TaskQueueImpl* queue) {
+    queue->SetQueueEnabled(false);
+    selector_.DisableQueue(queue);
+  }
 
  protected:
   void SetUp() final {
@@ -170,13 +172,11 @@ TEST_F(TaskQueueSelectorTest, TestControlPriority) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {
-  task_queues_[1]->SetQueueEnabled(false);
-  selector_.DisableQueue(task_queues_[1].get());
+  DisableQueue(task_queues_[1].get());
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(1);
-  task_queues_[1]->SetQueueEnabled(true);
-  selector_.EnableQueue(task_queues_[1].get());
+  EnableQueue(task_queues_[1].get());
 }
 
 TEST_F(TaskQueueSelectorTest,
@@ -194,24 +194,38 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
 
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(queue_order, 5);
-  task_queues_[2]->SetQueueEnabled(false);
-  task_queues_[4]->SetQueueEnabled(false);
-  selector_.DisableQueue(task_queues_[2].get());
-  selector_.DisableQueue(task_queues_[4].get());
+  DisableQueue(task_queues_[2].get());
+  DisableQueue(task_queues_[4].get());
   // Disabling a queue should not affect its priority.
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[2]->GetQueuePriority());
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[4]->GetQueuePriority());
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
-  task_queues_[2]->SetQueueEnabled(true);
-  selector_.EnableQueue(task_queues_[2].get());
+  EnableQueue(task_queues_[2].get());
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
-  task_queues_[4]->SetQueueEnabled(true);
-  selector_.EnableQueue(task_queues_[4].get());
+  EnableQueue(task_queues_[4].get());
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4));
+}
+
+TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
+  EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
+  EXPECT_TRUE(task_queues_[2]->immediate_work_queue()->Empty());
+
+  DisableQueue(task_queues_[2].get());
+  selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::HIGH_PRIORITY);
+
+  size_t queue_order[] = {0, 1, 2, 3, 4};
+  PushTasks(queue_order, 5);
+
+  EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
+  EXPECT_FALSE(task_queues_[2]->immediate_work_queue()->Empty());
+  EnableQueue(task_queues_[2].get());
+
+  EXPECT_EQ(TaskQueue::HIGH_PRIORITY, task_queues_[2]->GetQueuePriority());
+  EXPECT_THAT(PopTasks(), testing::ElementsAre(2, 0, 1, 3, 4));
 }
 
 TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
@@ -326,9 +340,8 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_Empty) {
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
-  task_queues_[0]->delayed_work_queue()->PushTaskForTest(TaskQueueImpl::Task(
+  task_queues_[0]->delayed_work_queue()->Push(TaskQueueImpl::Task(
       FROM_HERE, test_closure_, base::TimeTicks(), 0, true, 0));
-  delayed_work_queue_sets()->OnPushQueue(task_queues_[0]->delayed_work_queue());
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -340,10 +353,8 @@ TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyDelayed) {
 }
 
 TEST_F(TaskQueueSelectorTest, ChooseOldestWithPriority_OnlyImmediate) {
-  task_queues_[0]->immediate_work_queue()->PushTaskForTest(TaskQueueImpl::Task(
+  task_queues_[0]->immediate_work_queue()->Push(TaskQueueImpl::Task(
       FROM_HERE, test_closure_, base::TimeTicks(), 0, true, 0));
-  immediate_work_queue_sets()->OnPushQueue(
-      task_queues_[0]->immediate_work_queue());
 
   WorkQueue* chosen_work_queue = nullptr;
   bool chose_delayed_over_immediate = false;
@@ -432,18 +443,15 @@ class ChooseOldestWithPriorityTest
       public testing::WithParamInterface<ChooseOldestWithPriorityTestParam> {};
 
 TEST_P(ChooseOldestWithPriorityTest, RoundRobinTest) {
-  task_queues_[0]->immediate_work_queue()->PushTaskForTest(
+  task_queues_[0]->immediate_work_queue()->Push(
       TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(),
                           GetParam().immediate_task_enqueue_order, true,
                           GetParam().immediate_task_enqueue_order));
-  immediate_work_queue_sets()->OnPushQueue(
-      task_queues_[0]->immediate_work_queue());
 
-  task_queues_[0]->delayed_work_queue()->PushTaskForTest(
+  task_queues_[0]->delayed_work_queue()->Push(
       TaskQueueImpl::Task(FROM_HERE, test_closure_, base::TimeTicks(),
                           GetParam().delayed_task_enqueue_order, true,
                           GetParam().delayed_task_enqueue_order));
-  delayed_work_queue_sets()->OnPushQueue(task_queues_[0]->delayed_work_queue());
 
   selector_.SetImmediateStarvationCountForTest(
       GetParam().immediate_starvation_count);

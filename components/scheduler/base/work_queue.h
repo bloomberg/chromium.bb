@@ -72,9 +72,8 @@ class SCHEDULER_EXPORT WorkQueue {
 
   size_t work_queue_set_index() const { return work_queue_set_index_; }
 
-  // Test support functions.  These should not be used in production code.
+  // Test support function. This should not be used in production code.
   void PopTaskForTest();
-  void PushTaskForTest(TaskQueueImpl::Task&& task);
 
   // Returns true if the front task in this queue has an older enqueue order
   // than the front task of |other_queue|. Both queue are assumed to be

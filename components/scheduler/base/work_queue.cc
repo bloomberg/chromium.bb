@@ -50,10 +50,6 @@ void WorkQueue::Push(TaskQueueImpl::Task&& task) {
     work_queue_sets_->OnPushQueue(this);
 }
 
-void WorkQueue::PushTaskForTest(TaskQueueImpl::Task&& task) {
-  work_queue_.push(task);
-}
-
 void WorkQueue::PushAndSetEnqueueOrder(TaskQueueImpl::Task&& task,
                                        EnqueueOrder enqueue_order) {
   DCHECK(work_queue_sets_);

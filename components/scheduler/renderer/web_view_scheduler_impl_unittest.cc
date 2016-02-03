@@ -389,4 +389,76 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
   EXPECT_THAT(run_order, ElementsAre(1));
 }
 
+namespace {
+class DeleteWebFrameSchedulerTask : public blink::WebTaskRunner::Task {
+ public:
+  explicit DeleteWebFrameSchedulerTask(WebViewSchedulerImpl* web_view_scheduler)
+      : web_frame_scheduler_(
+            web_view_scheduler->createWebFrameSchedulerImpl()) {}
+
+  ~DeleteWebFrameSchedulerTask() override {}
+
+  void run() override { web_frame_scheduler_.reset(); }
+
+  WebFrameSchedulerImpl* web_frame_scheduler() const {
+    return web_frame_scheduler_.get();
+  }
+
+ private:
+  scoped_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;
+};
+
+class DeleteWebViewSchedulerTask : public blink::WebTaskRunner::Task {
+ public:
+  explicit DeleteWebViewSchedulerTask(WebViewSchedulerImpl* web_view_scheduler)
+      : web_view_scheduler_(web_view_scheduler) {}
+
+  ~DeleteWebViewSchedulerTask() override {}
+
+  void run() override { web_view_scheduler_.reset(); }
+
+ private:
+  scoped_ptr<WebViewSchedulerImpl> web_view_scheduler_;
+};
+}  // namespace
+
+TEST_F(WebViewSchedulerImplTest, DeleteWebFrameSchedulers_InTask) {
+  for (int i = 0; i < 10; i++) {
+    DeleteWebFrameSchedulerTask* task =
+        new DeleteWebFrameSchedulerTask(web_view_scheduler_.get());
+    task->web_frame_scheduler()->timerTaskRunner()->postDelayedTask(
+        BLINK_FROM_HERE, task, 1.0);
+  }
+  mock_task_runner_->RunUntilIdle();
+}
+
+TEST_F(WebViewSchedulerImplTest, DeleteWebViewScheduler_InTask) {
+  web_frame_scheduler_->timerTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      new DeleteWebViewSchedulerTask(web_view_scheduler_.release()));
+  mock_task_runner_->RunUntilIdle();
+}
+
+TEST_F(WebViewSchedulerImplTest, DeleteThrottledQueue_InTask) {
+  web_view_scheduler_->setPageVisible(false);
+
+  DeleteWebFrameSchedulerTask* delete_frame_task =
+      new DeleteWebFrameSchedulerTask(web_view_scheduler_.get());
+  blink::WebTaskRunner* timer_task_runner =
+      delete_frame_task->web_frame_scheduler()->timerTaskRunner();
+
+  int run_count = 0;
+  timer_task_runner->postDelayedTask(
+      BLINK_FROM_HERE, new RepeatingTask(timer_task_runner, &run_count), 1.0);
+
+  // Note this will run at time t = 10s since we start at time t = 5000us, and
+  // it will prevent further tasks from running (i.e. the RepeatingTask) by
+  // deleting the WebFrameScheduler.
+  timer_task_runner->postDelayedTask(BLINK_FROM_HERE, delete_frame_task,
+                                     9990.0);
+
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(100));
+  EXPECT_EQ(10, run_count);
+}
+
 }  // namespace scheduler

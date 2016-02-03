@@ -1316,6 +1316,26 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_WithDelayedTasks) {
   ASSERT_THAT(run_order, ElementsAre(1, 3));
 }
 
+namespace {
+void UnregisterQueue(scoped_refptr<internal::TaskQueueImpl> queue) {
+  queue->UnregisterTaskQueue();
+}
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterTaskQueue_InTasks) {
+  Initialize(3u);
+
+  std::vector<EnqueueOrder> run_order;
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&UnregisterQueue, runners_[1]));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&UnregisterQueue, runners_[2]));
+  runners_[1]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
+  runners_[2]->PostTask(FROM_HERE, base::Bind(&TestTask, 3, &run_order));
+
+  test_task_runner_->RunUntilIdle();
+  ASSERT_THAT(run_order, ElementsAre(1));
+}
+
 void PostTestTasksFromNestedMessageLoop(
     base::MessageLoop* message_loop,
     scoped_refptr<base::SingleThreadTaskRunner> main_runner,
