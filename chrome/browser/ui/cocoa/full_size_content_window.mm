@@ -159,9 +159,15 @@ static IMP g_original_callstacksymbols_implementation;
 }
 
 - (void)forceContentViewFrame:(NSRect)frame {
-  FullSizeContentView* contentView =
-      base::mac::ObjCCast<FullSizeContentView>(chromeWindowView_);
-  [contentView forceFrame:frame];
+  if ([chromeWindowView_ isKindOfClass:[FullSizeContentView class]]) {
+    FullSizeContentView* contentView =
+        base::mac::ObjCCast<FullSizeContentView>(chromeWindowView_);
+    [contentView forceFrame:frame];
+  } else if (chromeWindowView_) {
+    [chromeWindowView_ setFrame:frame];
+  } else {
+    [self.contentView setFrame:frame];
+  }
 }
 
 #pragma mark - Private Methods

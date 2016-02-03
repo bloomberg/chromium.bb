@@ -784,6 +784,9 @@ willPositionSheet:(NSWindow*)sheet
   browser_->WindowFullscreenStateChanged();
 
   [self resetCustomAppKitFullscreenVariables];
+
+  // Ensure that the window is layout properly.
+  [self layoutSubviews];
 }
 
 - (void)windowDidFailToEnterFullScreen:(NSWindow*)window {
