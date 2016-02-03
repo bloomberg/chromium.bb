@@ -5,10 +5,10 @@
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 
 #include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_service.h"
 #include "sync/api/sync_error.h"

@@ -5,10 +5,10 @@
 #include "ios/chrome/browser/google/google_url_tracker_factory.h"
 
 #include "base/memory/singleton.h"
-#include "base/prefs/pref_service.h"
 #include "components/google/core/browser/google_pref_names.h"
 #include "components/google/core/browser/google_url_tracker.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/google/google_url_tracker_client_impl.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"

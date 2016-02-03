@@ -11,9 +11,9 @@
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache_observer.h"
 #include "ios/chrome/browser/pref_names.h"
 

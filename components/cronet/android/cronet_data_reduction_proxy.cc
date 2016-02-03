@@ -8,9 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_factory.h"
 #include "base/single_thread_task_runner.h"
 #include "components/cronet/android/cronet_in_memory_pref_store.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -23,6 +20,9 @@
 #include "components/data_reduction_proxy/core/browser/data_store.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_interceptor.h"
 
@@ -36,7 +36,7 @@ scoped_ptr<PrefService> CreatePrefService() {
   scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
   pref_registry->RegisterBooleanPref(kDataReductionProxyEnabled, false);
   data_reduction_proxy::RegisterSimpleProfilePrefs(pref_registry.get());
-  base::PrefServiceFactory pref_service_factory;
+  PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(
       make_scoped_refptr(new CronetInMemoryPrefStore()));
   scoped_ptr<PrefService> pref_service =

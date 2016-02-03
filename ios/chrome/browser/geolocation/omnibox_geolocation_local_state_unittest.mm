@@ -6,7 +6,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "ios/chrome/browser/geolocation/location_manager.h"
 #include "ios/chrome/browser/geolocation/omnibox_geolocation_local_state.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"

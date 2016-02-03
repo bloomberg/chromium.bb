@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_DEFAULT_PREF_STORE_H_
-#define BASE_PREFS_DEFAULT_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_DEFAULT_PREF_STORE_H_
+#define COMPONENTS_PREFS_DEFAULT_PREF_STORE_H_
 
 #include <string>
 
@@ -15,7 +15,7 @@
 #include "components/prefs/pref_value_map.h"
 
 // Used within a PrefRegistry to keep track of default preference values.
-class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
+class COMPONENTS_PREFS_EXPORT DefaultPrefStore : public PrefStore {
  public:
   typedef PrefValueMap::const_iterator const_iterator;
 
@@ -50,4 +50,4 @@ class BASE_PREFS_EXPORT DefaultPrefStore : public PrefStore {
   DISALLOW_COPY_AND_ASSIGN(DefaultPrefStore);
 };
 
-#endif  // BASE_PREFS_DEFAULT_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_DEFAULT_PREF_STORE_H_

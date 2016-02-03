@@ -6,7 +6,7 @@
 #define IOS_CHROME_TEST_IOS_CHROME_SCOPED_TESTING_LOCAL_STATE_H_
 
 #include "base/macros.h"
-#include "base/prefs/testing_pref_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 // Helper class to temporarily set up a |local_state| in the global
 // TestingApplicationContext.

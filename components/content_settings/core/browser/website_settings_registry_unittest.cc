@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/prefs/pref_registry.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content_settings {

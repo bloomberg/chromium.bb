@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_VALUE_MAP_PREF_STORE_H_
-#define BASE_PREFS_VALUE_MAP_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_VALUE_MAP_PREF_STORE_H_
+#define COMPONENTS_PREFS_VALUE_MAP_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@
 
 // A basic PrefStore implementation that uses a simple name-value map for
 // storing the preference values.
-class BASE_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
+class COMPONENTS_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
  public:
   ValueMapPrefStore();
 
@@ -54,4 +54,4 @@ class BASE_PREFS_EXPORT ValueMapPrefStore : public WriteablePrefStore {
   DISALLOW_COPY_AND_ASSIGN(ValueMapPrefStore);
 };
 
-#endif  // BASE_PREFS_VALUE_MAP_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_VALUE_MAP_PREF_STORE_H_

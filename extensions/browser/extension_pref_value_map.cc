@@ -4,8 +4,8 @@
 
 #include "extensions/browser/extension_pref_value_map.h"
 
-#include "base/prefs/pref_value_map.h"
 #include "base/values.h"
+#include "components/prefs/pref_value_map.h"
 
 using extensions::ExtensionPrefsScope;
 

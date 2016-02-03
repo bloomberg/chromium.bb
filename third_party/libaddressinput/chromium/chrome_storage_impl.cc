@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/prefs/writeable_pref_store.h"
 #include "base/values.h"
+#include "components/prefs/writeable_pref_store.h"
 #include "third_party/libaddressinput/chromium/fallback_data_store.h"
 
 namespace autofill {

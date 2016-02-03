@@ -5,8 +5,8 @@
 // A helper class that assists preferences in firing notifications when lists
 // or dictionaries are changed.
 
-#ifndef BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_
-#define BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#ifndef COMPONENTS_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#define COMPONENTS_PREFS_SCOPED_USER_PREF_UPDATE_H_
 
 #include <string>
 
@@ -31,7 +31,8 @@ namespace subtle {
 // We need this base class mostly for making it a friend of PrefService
 // and getting access to PrefService::GetMutableUserPref and
 // PrefService::ReportUserPrefChanged.
-class BASE_PREFS_EXPORT ScopedUserPrefUpdateBase : public base::NonThreadSafe {
+class COMPONENTS_PREFS_EXPORT ScopedUserPrefUpdateBase
+    : public base::NonThreadSafe {
  protected:
   ScopedUserPrefUpdateBase(PrefService* service, const std::string& path);
 
@@ -105,4 +106,4 @@ typedef ScopedUserPrefUpdate<base::DictionaryValue,
 typedef ScopedUserPrefUpdate<base::ListValue, base::Value::TYPE_LIST>
     ListPrefUpdate;
 
-#endif  // BASE_PREFS_SCOPED_USER_PREF_UPDATE_H_
+#endif  // COMPONENTS_PREFS_SCOPED_USER_PREF_UPDATE_H_

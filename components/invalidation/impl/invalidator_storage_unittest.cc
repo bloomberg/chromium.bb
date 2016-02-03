@@ -4,10 +4,10 @@
 
 #include "components/invalidation/impl/invalidator_storage.h"
 
-#include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {

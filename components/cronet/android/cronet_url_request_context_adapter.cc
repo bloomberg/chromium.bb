@@ -21,16 +21,16 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
-#include "base/prefs/pref_change_registrar.h"
-#include "base/prefs/pref_filter.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/pref_service.h"
-#include "base/prefs/pref_service_factory.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/url_request_context_config.h"
+#include "components/prefs/pref_change_registrar.h"
+#include "components/prefs/pref_filter.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/pref_service_factory.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/external_estimate_provider.h"
 #include "net/base/load_flags.h"
@@ -443,7 +443,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     context_builder.SetFileTaskRunner(GetFileThread()->task_runner());
 
     // Set up HttpServerPropertiesManager.
-    base::PrefServiceFactory factory;
+    PrefServiceFactory factory;
     factory.set_user_prefs(json_pref_store_);
     scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
     registry->RegisterDictionaryPref(kHttpServerProperties,

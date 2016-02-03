@@ -5,9 +5,9 @@
 #include "components/metrics/clean_exit_beacon.h"
 
 #include "base/logging.h"
-#include "base/prefs/pref_service.h"
 #include "build/build_config.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/prefs/pref_service.h"
 
 #if defined(OS_WIN)
 #include "base/metrics/histogram.h"

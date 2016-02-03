@@ -13,11 +13,6 @@ include_rules = [
   "+content/shell",  # for content_browsertests
   "+content/test",
 
-  # content isn't tied to prefs so that other embedders are able to pick
-  # different ways of storing their preferences. Also, this is to avoid prefs
-  # being used as a parallel API to the Content API.
-  "-base/prefs",
-
   "+blink",
 
   "+cc",

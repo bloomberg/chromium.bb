@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_TESTING_PREF_STORE_H_
-#define BASE_PREFS_TESTING_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_TESTING_PREF_STORE_H_
+#define COMPONENTS_PREFS_TESTING_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -111,4 +111,4 @@ class TestingPrefStore : public PersistentPrefStore {
   DISALLOW_COPY_AND_ASSIGN(TestingPrefStore);
 };
 
-#endif  // BASE_PREFS_TESTING_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_TESTING_PREF_STORE_H_

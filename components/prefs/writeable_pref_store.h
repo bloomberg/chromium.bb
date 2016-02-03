@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_WRITEABLE_PREF_STORE_H_
-#define BASE_PREFS_WRITEABLE_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_WRITEABLE_PREF_STORE_H_
+#define COMPONENTS_PREFS_WRITEABLE_PREF_STORE_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ class Value;
 }
 
 // A pref store that can be written to as well as read from.
-class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
+class COMPONENTS_PREFS_EXPORT WriteablePrefStore : public PrefStore {
  public:
   // PrefWriteFlags can be used to change the way a pref will be written to
   // storage.
@@ -69,4 +69,4 @@ class BASE_PREFS_EXPORT WriteablePrefStore : public PrefStore {
   DISALLOW_COPY_AND_ASSIGN(WriteablePrefStore);
 };
 
-#endif  // BASE_PREFS_WRITEABLE_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_WRITEABLE_PREF_STORE_H_

@@ -4,10 +4,10 @@
 
 #include "components/drive/drive_test_util.h"
 
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 
 namespace drive {
 namespace test_util {

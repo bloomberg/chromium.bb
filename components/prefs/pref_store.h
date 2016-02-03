@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PREF_STORE_H_
-#define BASE_PREFS_PREF_STORE_H_
+#ifndef COMPONENTS_PREFS_PREF_STORE_H_
+#define COMPONENTS_PREFS_PREF_STORE_H_
 
 #include <string>
 
@@ -22,10 +22,10 @@ class Value;
 // CommandLinePrefStore, which bridges command line options to preferences and
 // ConfigurationPolicyPrefStore, which is used for hooking up configuration
 // policy with the preference subsystem.
-class BASE_PREFS_EXPORT PrefStore : public base::RefCounted<PrefStore> {
+class COMPONENTS_PREFS_EXPORT PrefStore : public base::RefCounted<PrefStore> {
  public:
   // Observer interface for monitoring PrefStore.
-  class BASE_PREFS_EXPORT Observer {
+  class COMPONENTS_PREFS_EXPORT Observer {
    public:
     // Called when the value for the given |key| in the store changes.
     virtual void OnPrefValueChanged(const std::string& key) = 0;
@@ -60,4 +60,4 @@ class BASE_PREFS_EXPORT PrefStore : public base::RefCounted<PrefStore> {
   DISALLOW_COPY_AND_ASSIGN(PrefStore);
 };
 
-#endif  // BASE_PREFS_PREF_STORE_H_
+#endif  // COMPONENTS_PREFS_PREF_STORE_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
-#define BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#ifndef COMPONENTS_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#define COMPONENTS_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
 
 #include <string>
 
@@ -48,4 +48,4 @@ class MockPrefChangeCallback {
   PrefService* prefs_;
 };
 
-#endif  // BASE_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_
+#endif  // COMPONENTS_PREFS_MOCK_PREF_CHANGE_CALLBACK_H_

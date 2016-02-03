@@ -18,14 +18,14 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/prefs/base_prefs_export.h"
-#include "base/prefs/persistent_pref_store.h"
-#include "base/prefs/pref_filter.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/filesystem/public/interfaces/file.mojom.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "components/filesystem/public/interfaces/types.mojom.h"
+#include "components/prefs/base_prefs_export.h"
+#include "components/prefs/persistent_pref_store.h"
+#include "components/prefs/pref_filter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 class PrefFilter;
@@ -45,9 +45,9 @@ namespace filesystem {
 // filesystem. Unlike base::JsonPrefStore, this class can safely be used inside
 // a sandboxed process.
 //
-// In the long run, we'll want to replace the current base::PrefService code
-// with something very different, especially since this component hard punts on
-// all the hard things that the preference service does (enterprise management,
+// In the long run, we'll want to replace the current PrefService code with
+// something very different, especially since this component hard punts on all
+// the hard things that the preference service does (enterprise management,
 // parental controls, extension integration, etc.) and its interface is really
 // not optimal for a mojoified world--there are a few places where we assume
 // that writing to disk is synchronous...but it no longer is!

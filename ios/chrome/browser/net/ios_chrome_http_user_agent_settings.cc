@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/net/ios_chrome_http_user_agent_settings.h"
 
-#include "base/prefs/pref_service.h"
+#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_thread.h"

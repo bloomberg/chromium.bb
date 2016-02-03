@@ -10,13 +10,13 @@
 
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
-#include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/event_logger.h"
+#include "components/prefs/pref_service.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {

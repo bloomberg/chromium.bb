@@ -14,8 +14,6 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
-#include "base/prefs/pref_registry_simple.h"
-#include "base/prefs/testing_pref_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +23,8 @@
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/testing_pref_service.h"
 #include "grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

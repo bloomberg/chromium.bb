@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PREF_VALUE_MAP_H_
-#define BASE_PREFS_PREF_VALUE_MAP_H_
+#ifndef COMPONENTS_PREFS_PREF_VALUE_MAP_H_
+#define COMPONENTS_PREFS_PREF_VALUE_MAP_H_
 
 #include <string>
 #include <vector>
@@ -18,7 +18,7 @@ class Value;
 }
 
 // A generic string to value map used by the PrefStore implementations.
-class BASE_PREFS_EXPORT PrefValueMap {
+class COMPONENTS_PREFS_EXPORT PrefValueMap {
  public:
   using Map = base::ScopedPtrHashMap<std::string, scoped_ptr<base::Value>>;
   using iterator = Map::iterator;
@@ -88,4 +88,4 @@ class BASE_PREFS_EXPORT PrefValueMap {
   DISALLOW_COPY_AND_ASSIGN(PrefValueMap);
 };
 
-#endif  // BASE_PREFS_PREF_VALUE_MAP_H_
+#endif  // COMPONENTS_PREFS_PREF_VALUE_MAP_H_

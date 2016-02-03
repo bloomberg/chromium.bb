@@ -8,11 +8,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/prefs/testing_pref_service.h"
 #include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_devices_pref_handler.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/audio_node.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

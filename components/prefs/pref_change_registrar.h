@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_PREFS_PREF_CHANGE_REGISTRAR_H_
-#define BASE_PREFS_PREF_CHANGE_REGISTRAR_H_
+#ifndef COMPONENTS_PREFS_PREF_CHANGE_REGISTRAR_H_
+#define COMPONENTS_PREFS_PREF_CHANGE_REGISTRAR_H_
 
 #include <map>
 #include <string>
@@ -19,7 +19,7 @@ class PrefService;
 // with a PrefStore. Functions much like NotificationRegistrar, but specifically
 // manages observers of preference changes. When the Registrar is destroyed,
 // all registered observers are automatically unregistered with the PrefStore.
-class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
+class COMPONENTS_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
  public:
   // You can register this type of callback if you need to know the
   // path of the preference that is changing.
@@ -78,4 +78,4 @@ class BASE_PREFS_EXPORT PrefChangeRegistrar : public PrefObserver {
   DISALLOW_COPY_AND_ASSIGN(PrefChangeRegistrar);
 };
 
-#endif  // BASE_PREFS_PREF_CHANGE_REGISTRAR_H_
+#endif  // COMPONENTS_PREFS_PREF_CHANGE_REGISTRAR_H_

@@ -1,4 +1,5 @@
 include_rules = [
+  "+components/prefs",
   "+mojo/common",
   "+mojo/shell",
   "+mojo/platform_handle",
