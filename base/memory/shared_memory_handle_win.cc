@@ -17,7 +17,7 @@ SharedMemoryHandle::SharedMemoryHandle(HANDLE h, base::ProcessId pid)
 SharedMemoryHandle::SharedMemoryHandle(const SharedMemoryHandle& handle)
     : handle_(handle.handle_),
       pid_(handle.pid_),
-      ownership_passes_to_ipc_(false) {}
+      ownership_passes_to_ipc_(handle.ownership_passes_to_ipc_) {}
 
 SharedMemoryHandle& SharedMemoryHandle::operator=(
     const SharedMemoryHandle& handle) {
