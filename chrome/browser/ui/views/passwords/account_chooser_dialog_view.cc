@@ -23,10 +23,6 @@
 
 namespace {
 
-const int kDesiredWidth = 370;
-const int kTitleHorizontalInset = 16;
-const int kTitleTopInset = 12;
-
 // An identifier for views::ColumnSet.
 enum ColumnSetType {
   SINGLE_VIEW_COLUMN_SET,
@@ -35,14 +31,14 @@ enum ColumnSetType {
 // Construct a SINGLE_VIEW_COLUMN_SET ColumnSet and add it to |layout|.
 void BuildOneColumnSet(views::GridLayout* layout) {
   views::ColumnSet* column_set = layout->AddColumnSet(SINGLE_VIEW_COLUMN_SET);
-  column_set->AddPaddingColumn(0, kTitleHorizontalInset);
+  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, kTitleHorizontalInset);
+  column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 }
 
 views::StyledLabel::RangeStyleInfo GetLinkStyle() {
@@ -108,7 +104,7 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
 
 void AccountChooserDialogView::OnClosed() {
   if (controller_)
-    controller_->OnCloseAccountChooser();
+    controller_->OnCloseDialog();
 }
 
 gfx::Size AccountChooserDialogView::GetPreferredSize() const {

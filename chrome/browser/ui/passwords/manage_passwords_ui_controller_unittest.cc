@@ -584,7 +584,7 @@ TEST_F(ManagePasswordsUIControllerTest, ChooseCredentialCancel) {
   EXPECT_EQ(origin, controller()->GetOrigin());
 
   EXPECT_CALL(dialog_prompt(), ControllerGone()).Times(0);
-  dialog_controller->OnCloseAccountChooser();
+  dialog_controller->OnCloseDialog();
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, controller()->GetState());
   ASSERT_TRUE(credential_info());
   EXPECT_TRUE(credential_info()->federation.is_empty());

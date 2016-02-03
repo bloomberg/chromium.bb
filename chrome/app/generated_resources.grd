@@ -12347,9 +12347,34 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_MANAGE_PASSWORDS_AUTO_SIGNIN_DEFAULT_WELCOME" desc="A warm welcome in the auto-signin toast appearing for users with Google Smart Lock disabled.">
         <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> remembers your passwords and signs you in to sites automatically on this device.
       </message>
-      <message name="IDS_MANAGE_PASSWORDS_DELETED_ACCOUNT" desc="The text that is used in the manage accounts bubble when an account is deleted.">
-        Account removed
+      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
+        Automatically sign in across your devices
       </message>
+      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE" desc="The title of the dialog during the autosign-in first run experience for the Chrome signed out users.">
+        Automatically sign in to sites on this device
+      </message>
+      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_SMART_LOCK_TEXT" desc="The text of the dialog during the autosign-in first run experience for the Chrome syncing users.">
+        <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Smart Lock</ex></ph> automatically signs you in to eligible sites and apps with passwords you saved.
+      </message>
+      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TEXT" desc="The text of the dialog during the autosign-in first run experience for the Chrome signed out users.">
+        <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Chrome</ex></ph> automatically signs you in to eligible sites with passwords you saved.
+      </message>
+      <if expr="use_titlecase">
+        <message name="IDS_AUTO_SIGNIN_FIRST_RUN_OK" desc="The text of the OK button in the dialog during the autosign-in first run experience.">
+          OK, Got It
+        </message>
+        <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF" desc="The text of the 'turn off' button in the dialog during the autosign-in first run experience.">
+          Turn Off
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_AUTO_SIGNIN_FIRST_RUN_OK" desc="The text of the OK button in the dialog during the autosign-in first run experience.">
+          OK, got it
+        </message>
+        <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TURN_OFF" desc="The text of the 'turn off' button in the dialog during the autosign-in first run experience.">
+          Turn off
+        </message>
+      </if>
 
       <message name="IDS_ALLOW_AUTOFILL_SYNC_CREDENTIAL" desc="The text for the choice to allow autofilling in about:flags">
         Allow

@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,10 +29,17 @@ using testing::StrictMock;
 
 const char kUsername[] = "user1";
 
-class MockAccountChooserPrompt : public AccountChooserPrompt {
+class MockPasswordPrompt : public AccountChooserPrompt,
+                           public AutoSigninFirstRunPrompt {
  public:
+  MockPasswordPrompt() = default;
+
   MOCK_METHOD0(ShowAccountChooser, void());
+  MOCK_METHOD0(ShowAutoSigninPrompt, void());
   MOCK_METHOD0(ControllerGone, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordPrompt);
 };
 
 autofill::PasswordForm GetLocalForm() {
@@ -62,6 +72,8 @@ class PasswordDialogControllerTest : public testing::Test {
 
   PasswordDialogControllerImpl& controller() { return controller_; }
 
+  PrefService* prefs() { return profile_.GetPrefs(); }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
@@ -72,7 +84,7 @@ class PasswordDialogControllerTest : public testing::Test {
 };
 
 TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
-  StrictMock<MockAccountChooserPrompt> prompt;
+  StrictMock<MockPasswordPrompt> prompt;
   autofill::PasswordForm local_form = GetLocalForm();
   autofill::PasswordForm idp_form = GetFederationProviderForm();
   std::vector<scoped_ptr<autofill::PasswordForm>> locals;
@@ -99,14 +111,66 @@ TEST_F(PasswordDialogControllerTest, ShowAccountChooser) {
 }
 
 TEST_F(PasswordDialogControllerTest, AccountChooserClosed) {
-  StrictMock<MockAccountChooserPrompt> prompt;
+  StrictMock<MockPasswordPrompt> prompt;
   EXPECT_CALL(prompt, ShowAccountChooser());
   controller().ShowAccountChooser(&prompt,
                                   PasswordDialogController::FormsVector(),
                                   PasswordDialogController::FormsVector());
 
-  EXPECT_CALL(ui_controller_mock(), OnBubbleHidden());
-  controller().OnCloseAccountChooser();
+  EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
+  controller().OnCloseDialog();
+}
+
+TEST_F(PasswordDialogControllerTest, AutoSigninPromo) {
+  StrictMock<MockPasswordPrompt> prompt;
+  EXPECT_CALL(prompt, ShowAutoSigninPrompt());
+  controller().ShowAutosigninPrompt(&prompt);
+
+  prefs()->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+  EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
+  controller().OnCloseDialog();
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          prefs()));
+}
+
+TEST_F(PasswordDialogControllerTest, AutoSigninPromoOkGotIt) {
+  StrictMock<MockPasswordPrompt> prompt;
+  EXPECT_CALL(prompt, ShowAutoSigninPrompt());
+  controller().ShowAutosigninPrompt(&prompt);
+
+  prefs()->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+  prefs()->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
+                      true);
+  EXPECT_CALL(prompt, ControllerGone());
+  EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
+  controller().OnAutoSigninOK();
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          prefs()));
+  EXPECT_TRUE(prefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin));
+}
+
+TEST_F(PasswordDialogControllerTest, AutoSigninPromoTurnOff) {
+  StrictMock<MockPasswordPrompt> prompt;
+  EXPECT_CALL(prompt, ShowAutoSigninPrompt());
+  controller().ShowAutosigninPrompt(&prompt);
+
+  prefs()->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
+  prefs()->SetBoolean(password_manager::prefs::kCredentialsEnableAutosignin,
+                      true);
+  EXPECT_CALL(prompt, ControllerGone());
+  EXPECT_CALL(ui_controller_mock(), OnDialogHidden());
+  controller().OnAutoSigninTurnOff();
+  EXPECT_FALSE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          prefs()));
+  EXPECT_FALSE(prefs()->GetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin));
 }
 
 }  // namespace

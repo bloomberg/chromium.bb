@@ -11,6 +11,12 @@ class WebContents;
 
 class PasswordDialogController;
 
+// Layout constants
+const int kDesiredWidth = 370;
+
+// The default inset from BubbleFrameView.
+const int kTitleTopInset = 12;
+
 // A platform-independent interface for the account chooser dialog.
 class AccountChooserPrompt {
  public:

@@ -240,9 +240,7 @@ void ManagePasswordsUIController::OnBubbleShown() {
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
-  dialog_controller_.reset();
-  if (GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
-      GetState() == password_manager::ui::CONFIRMATION_STATE ||
+  if (GetState() == password_manager::ui::CONFIRMATION_STATE ||
       GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
     passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
     UpdateBubbleAndIconVisibility();
@@ -320,6 +318,14 @@ void ManagePasswordsUIController::NavigateToPasswordManagerSettingsPage() {
   chrome::ShowSettingsSubPage(
       chrome::FindBrowserWithWebContents(web_contents()),
       chrome::kPasswordManagerSubPage);
+}
+
+void ManagePasswordsUIController::OnDialogHidden() {
+  dialog_controller_.reset();
+  if (GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+    UpdateBubbleAndIconVisibility();
+  }
 }
 
 void ManagePasswordsUIController::SavePasswordInternal() {

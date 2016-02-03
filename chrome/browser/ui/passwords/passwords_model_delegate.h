@@ -87,6 +87,9 @@ class PasswordsModelDelegate {
   // Open a new tab, pointing to the password manager settings page.
   virtual void NavigateToPasswordManagerSettingsPage() = 0;
 
+  // Called from the dialog controller when the dialog is hidden.
+  virtual void OnDialogHidden() = 0;
+
  protected:
   virtual ~PasswordsModelDelegate() = default;
 };

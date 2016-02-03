@@ -93,6 +93,7 @@ class ManagePasswordsUIController
   void NavigateToExternalPasswordManager() override;
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerSettingsPage() override;
+  void OnDialogHidden() override;
 
  protected:
   explicit ManagePasswordsUIController(

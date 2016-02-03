@@ -43,7 +43,7 @@ void PasswordPromptViewBridge::ControllerGone() {
 void PasswordPromptViewBridge::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   if (controller_)
-    controller_->OnCloseAccountChooser();
+    controller_->OnCloseDialog();
   delete this;
 }
 

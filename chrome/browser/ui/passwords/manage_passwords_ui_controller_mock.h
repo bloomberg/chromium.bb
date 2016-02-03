@@ -43,6 +43,7 @@ class ManagePasswordsUIControllerMock : public ManagePasswordsUIController {
   MOCK_METHOD0(NavigateToSmartLockPage, void());
   MOCK_METHOD0(NavigateToSmartLockHelpPage, void());
   MOCK_METHOD0(NavigateToPasswordManagerSettingsPage, void());
+  MOCK_METHOD0(OnDialogHidden, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsUIControllerMock);

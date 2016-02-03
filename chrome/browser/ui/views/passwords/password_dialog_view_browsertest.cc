@@ -4,15 +4,19 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/passwords/account_chooser_dialog_view.h"
+#include "chrome/browser/ui/views/passwords/auto_signin_first_run_dialog_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/widget/widget.h"
 
 using ::testing::Field;
 
@@ -40,13 +44,25 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
  public:
   explicit TestManagePasswordsUIController(content::WebContents* web_contents);
 
+  void OnDialogHidden() override;
   AccountChooserPrompt* CreateAccountChooser(
       PasswordDialogController* controller) override;
+  AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
+      PasswordDialogController* controller) override;
 
-  AccountChooserPrompt* current_dialog() const { return current_dialog_; }
+  AccountChooserPrompt* current_account_chooser() const {
+    return current_account_chooser_;
+  }
+
+  AutoSigninFirstRunPrompt* current_autosignin_prompt() const {
+    return current_autosignin_prompt_;
+  }
+
+  MOCK_METHOD0(OnDialogClosed, void());
 
  private:
-  AccountChooserPrompt* current_dialog_;
+  AccountChooserPrompt* current_account_chooser_;
+  AutoSigninFirstRunPrompt* current_autosignin_prompt_;
 
   DISALLOW_COPY_AND_ASSIGN(TestManagePasswordsUIController);
 };
@@ -54,7 +70,8 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
 TestManagePasswordsUIController::TestManagePasswordsUIController(
     content::WebContents* web_contents)
     : ManagePasswordsUIController(web_contents),
-      current_dialog_(nullptr) {
+      current_account_chooser_(nullptr),
+      current_autosignin_prompt_(nullptr) {
   // Attach TestManagePasswordsUIController to |web_contents| so the default
   // ManagePasswordsUIController isn't created.
   // Do not silently replace an existing ManagePasswordsUIController because it
@@ -63,11 +80,24 @@ TestManagePasswordsUIController::TestManagePasswordsUIController(
   web_contents->SetUserData(UserDataKey(), this);
 }
 
+void TestManagePasswordsUIController::OnDialogHidden() {
+  ManagePasswordsUIController::OnDialogHidden();
+  OnDialogClosed();
+}
+
 AccountChooserPrompt* TestManagePasswordsUIController::CreateAccountChooser(
     PasswordDialogController* controller) {
-  current_dialog_ =
+  current_account_chooser_ =
       ManagePasswordsUIController::CreateAccountChooser(controller);
-  return current_dialog_;
+  return current_account_chooser_;
+}
+
+AutoSigninFirstRunPrompt*
+TestManagePasswordsUIController::CreateAutoSigninPrompt(
+    PasswordDialogController* controller) {
+  current_autosignin_prompt_ =
+      ManagePasswordsUIController::CreateAutoSigninPrompt(controller);
+  return current_autosignin_prompt_;
 }
 
 class PasswordDialogViewTest : public InProcessBrowserTest {
@@ -151,13 +181,36 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooser) {
 
   SetupChooseCredentials(std::move(local_credentials),
                          ScopedVector<autofill::PasswordForm>(), origin);
-  ASSERT_TRUE(controller()->current_dialog());
-  AccountChooserDialogView* dialog =
-      static_cast<AccountChooserDialogView*>(controller()->current_dialog());
+  ASSERT_TRUE(controller()->current_account_chooser());
+  AccountChooserDialogView* dialog = static_cast<AccountChooserDialogView*>(
+      controller()->current_account_chooser());
   EXPECT_CALL(*this, OnChooseCredential(
       Field(&password_manager::CredentialInfo::type,
             password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
+  EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(dialog->Close());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+  controller()->OnPromptEnableAutoSignin();
+  ASSERT_TRUE(controller()->current_autosignin_prompt());
+  EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
+  AutoSigninFirstRunDialogView* dialog =
+      static_cast<AutoSigninFirstRunDialogView*>(
+          controller()->current_autosignin_prompt());
+  // This is the way how ESC is processed. It's important to reproduce it
+  // because of double AutoSigninFirstRunDialogView::OnClosed call due to a bug
+  // http://crbug.com/583330.
+  ui::Accelerator esc(ui::VKEY_ESCAPE, 0);
+  EXPECT_CALL(*controller(), OnDialogClosed());
+  EXPECT_TRUE(dialog->GetWidget()->client_view()->AcceleratorPressed(esc));
+  testing::Mock::VerifyAndClearExpectations(controller());
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
 }
 
 }  // namespace

@@ -4,13 +4,18 @@
 
 #include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 bool IsSmartLockBrandingEnabled(Profile* profile) {
@@ -18,6 +23,15 @@ bool IsSmartLockBrandingEnabled(Profile* profile) {
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
 }
+
+bool IsSyncingSettings(Profile* profile) {
+  const ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  return (sync_service && sync_service->IsFirstSetupComplete() &&
+          sync_service->IsSyncActive() &&
+          sync_service->GetActiveDataTypes().Has(syncer::PREFERENCES));
+}
+
 }  // namespace
 
 PasswordDialogControllerImpl::PasswordDialogControllerImpl(
@@ -75,6 +89,23 @@ PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
   return result;
 }
 
+base::string16 PasswordDialogControllerImpl::GetAutoSigninPromoTitle() const {
+  int message_id = IsSyncingSettings(profile_)
+                       ? IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES
+                       : IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE;
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+std::pair<base::string16, gfx::Range>
+PasswordDialogControllerImpl::GetAutoSigninText() const {
+  std::pair<base::string16, gfx::Range> result;
+  GetBrandedTextAndLinkRange(IsSmartLockBrandingEnabled(profile_),
+                             IDS_AUTO_SIGNIN_FIRST_RUN_SMART_LOCK_TEXT,
+                             IDS_AUTO_SIGNIN_FIRST_RUN_TEXT, &result.first,
+                             &result.second);
+  return result;
+}
+
 void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
   delegate_->NavigateToExternalPasswordManager();
 }
@@ -86,10 +117,26 @@ void PasswordDialogControllerImpl::OnChooseCredentials(
   delegate_->ChooseCredential(password_form, credential_type);
 }
 
-void PasswordDialogControllerImpl::OnCloseAccountChooser() {
+void PasswordDialogControllerImpl::OnAutoSigninOK() {
+  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
+      profile_->GetPrefs());
+  ResetDialog();
+  OnCloseDialog();
+}
+
+void PasswordDialogControllerImpl::OnAutoSigninTurnOff() {
+  profile_->GetPrefs()->SetBoolean(
+      password_manager::prefs::kCredentialsEnableAutosignin, false);
+  password_bubble_experiment::RecordAutoSignInPromptFirstRunExperienceWasShown(
+      profile_->GetPrefs());
+  ResetDialog();
+  OnCloseDialog();
+}
+
+void PasswordDialogControllerImpl::OnCloseDialog() {
   account_chooser_dialog_ = nullptr;
-  // The dialog isn't a bubble but ManagePasswordsUIController handles this.
-  delegate_->OnBubbleHidden();
+  autosignin_dialog_ = nullptr;
+  delegate_->OnDialogHidden();
 }
 
 void PasswordDialogControllerImpl::ResetDialog() {

@@ -58,11 +58,16 @@ class PasswordDialogControllerMock : public PasswordDialogController {
   MOCK_CONST_METHOD0(GetFederationsForms, const FormsVector&());
   MOCK_CONST_METHOD0(GetAccoutChooserTitle,
                      std::pair<base::string16, gfx::Range>());
+  MOCK_CONST_METHOD0(GetAutoSigninPromoTitle, base::string16());
+  MOCK_CONST_METHOD0(GetAutoSigninText,
+                     std::pair<base::string16, gfx::Range>());
   MOCK_METHOD0(OnSmartLockLinkClicked, void());
   MOCK_METHOD2(OnChooseCredentials, void(
       const autofill::PasswordForm& password_form,
       password_manager::CredentialType credential_type));
-  MOCK_METHOD0(OnCloseAccountChooser, void());
+  MOCK_METHOD0(OnAutoSigninOK, void());
+  MOCK_METHOD0(OnAutoSigninTurnOff, void());
+  MOCK_METHOD0(OnCloseDialog, void());
 };
 
 // Tests for the account chooser dialog view.
