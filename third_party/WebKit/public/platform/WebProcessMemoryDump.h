@@ -9,8 +9,18 @@
 #include "WebMemoryAllocatorDump.h"
 #include "WebMemoryDumpProvider.h"
 #include "WebString.h"
+#include "base/trace_event/heap_profiler_allocation_context.h"
 
 class SkTraceMemoryDump;
+
+namespace base {
+namespace trace_event {
+
+class ProcessMemoryDump;
+class TraceEventMemoryOverhead;
+
+} // namespace trace_event
+} // namespace base
 
 namespace blink {
 
@@ -102,6 +112,13 @@ public:
     {
         BLINK_ASSERT_NOT_REACHED();
         return nullptr;
+    }
+
+    // Dumps heap memory usage. |allocatorName| is used as an absolute name for
+    // base::trace_event::ProcessMemoryDump::AddHeapDump.
+    virtual void dumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext, size_t>& bytesByContext, base::trace_event::TraceEventMemoryOverhead& overhead, const char* allocatorName)
+    {
+        BLINK_ASSERT_NOT_REACHED();
     }
 };
 

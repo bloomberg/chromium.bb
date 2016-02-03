@@ -75,6 +75,12 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
       const std::string& name,
       base::DiscardableMemory* discardable);
 
+  void dumpHeapUsage(
+      const base::hash_map<base::trace_event::AllocationContext, size_t>&
+          bytes_by_context,
+      base::trace_event::TraceEventMemoryOverhead& overhead,
+      const char* allocator_name) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(WebProcessMemoryDumpImplTest, IntegrationTest);
 

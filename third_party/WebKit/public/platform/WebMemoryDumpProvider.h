@@ -13,6 +13,8 @@ class WebProcessMemoryDump;
 
 // Used to specify the type of memory dump the WebMemoryDumpProvider should
 // generate on dump requests.
+// TODO(hajimehoshi): Remove this and use base::trace_event::
+// MemoryDumpLevelOfDetail instead.
 enum class WebMemoryDumpLevelOfDetail {
     Light,
     Detailed
@@ -45,10 +47,9 @@ public:
     // provider itself.
     virtual bool supportsHeapProfiling() { return false; }
 
-    // Called by the memory dump manager to enable heap profiling (with
-    // non-null hook functions) or called to disable heap profiling (with null
-    // pointers).
-    virtual void onHeapProfilingEnabled(AllocationHook* allocationHook, FreeHook* freeHook) {}
+    // Called by the memory dump manager to enable heap profiling (with true) or
+    // called to disable heap profiling (with false).
+    virtual void onHeapProfilingEnabled(bool enabled) {}
 };
 
 } // namespace blink

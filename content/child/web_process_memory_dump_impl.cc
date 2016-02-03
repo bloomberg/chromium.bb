@@ -7,7 +7,10 @@
 #include <stddef.h>
 
 #include "base/memory/discardable_memory.h"
+#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event_argument.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 #include "content/child/web_memory_allocator_dump_impl.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
 
@@ -160,6 +163,21 @@ WebProcessMemoryDumpImpl::CreateDiscardableMemoryAllocatorDump(
       discardable->CreateMemoryAllocatorDump(name.c_str(),
                                              process_memory_dump_);
   return createWebMemoryAllocatorDump(dump);
+}
+
+void WebProcessMemoryDumpImpl::dumpHeapUsage(
+    const base::hash_map<base::trace_event::AllocationContext, size_t>&
+        bytes_by_context,
+    base::trace_event::TraceEventMemoryOverhead& overhead,
+    const char* allocator_name) {
+  scoped_refptr<base::trace_event::MemoryDumpSessionState> session_state =
+      process_memory_dump_->session_state();
+  scoped_refptr<base::trace_event::TracedValue> heap_dump = ExportHeapDump(
+      bytes_by_context,
+      session_state->stack_frame_deduplicator(),
+      session_state->type_name_deduplicator());
+  process_memory_dump_->AddHeapDump(allocator_name, heap_dump);
+  overhead.DumpInto("tracing/heap_profiler", process_memory_dump_);
 }
 
 }  // namespace content

@@ -4,6 +4,11 @@
 
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 
+#include "base/trace_event/heap_profiler_allocation_context.h"
+#include "base/trace_event/heap_profiler_allocation_context_tracker.h"
+#include "base/trace_event/heap_profiler_allocation_register.h"
+#include "base/trace_event/process_memory_dump.h"
+#include "base/trace_event/trace_event_memory_overhead.h"
 #include "public/platform/WebMemoryAllocatorDump.h"
 #include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Partitions.h"
@@ -14,6 +19,16 @@ namespace blink {
 namespace {
 
 using namespace WTF;
+
+void reportAllocation(void* address, size_t size, const char* typeName)
+{
+    PartitionAllocMemoryDumpProvider::instance()->insert(address, size, typeName);
+}
+
+void reportFree(void* address)
+{
+    PartitionAllocMemoryDumpProvider::instance()->remove(address);
+}
 
 const char kPartitionAllocDumpName[] = "partition_alloc";
 const char kPartitionsDumpName[] = "partitions";
@@ -94,6 +109,19 @@ PartitionAllocMemoryDumpProvider* PartitionAllocMemoryDumpProvider::instance()
 
 bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcessMemoryDump* memoryDump)
 {
+    if (levelOfDetail == WebMemoryDumpLevelOfDetail::Detailed && m_isHeapProfilingEnabled) {
+        base::trace_event::TraceEventMemoryOverhead overhead;
+        base::hash_map<base::trace_event::AllocationContext, size_t> bytesByContext;
+        {
+            MutexLocker locker(m_allocationRegisterMutex);
+            for (const auto& allocSize : *m_allocationRegister)
+                bytesByContext[allocSize.context] += allocSize.size;
+
+            m_allocationRegister->EstimateTraceMemoryOverhead(&overhead);
+        }
+        memoryDump->dumpHeapUsage(bytesByContext, overhead, "partition_alloc");
+    }
+
     PartitionStatsDumperImpl partitionStatsDumper(memoryDump, levelOfDetail);
 
     WebMemoryAllocatorDump* partitionsDump = memoryDump->createMemoryAllocatorDump(
@@ -110,6 +138,8 @@ bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail l
 }
 
 PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider()
+    : m_allocationRegister(adoptPtr(new base::trace_event::AllocationRegister()))
+    , m_isHeapProfilingEnabled(false)
 {
 }
 
@@ -117,12 +147,30 @@ PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider()
 {
 }
 
-void PartitionAllocMemoryDumpProvider::onHeapProfilingEnabled(AllocationHook* allocationHook, FreeHook* freeHook)
+void PartitionAllocMemoryDumpProvider::onHeapProfilingEnabled(bool enabled)
 {
-    // Make PartitionAlloc call |allocationHook| and |freeHook| for every
-    // subsequent allocation and free (or not if the pointers are null).
-    PartitionAllocHooks::setAllocationHook(allocationHook);
-    PartitionAllocHooks::setFreeHook(freeHook);
+    if (enabled) {
+        PartitionAllocHooks::setAllocationHook(reportAllocation);
+        PartitionAllocHooks::setFreeHook(reportFree);
+    } else {
+        PartitionAllocHooks::setAllocationHook(nullptr);
+        PartitionAllocHooks::setFreeHook(nullptr);
+    }
+    m_isHeapProfilingEnabled = enabled;
+}
+
+void PartitionAllocMemoryDumpProvider::insert(void* address, size_t size, const char* typeName)
+{
+    base::trace_event::AllocationContext context = base::trace_event::AllocationContextTracker::GetContextSnapshot();
+    context.type_name = typeName;
+    MutexLocker locker(m_allocationRegisterMutex);
+    m_allocationRegister->Insert(address, size, context);
+}
+
+void PartitionAllocMemoryDumpProvider::remove(void* address)
+{
+    MutexLocker locker(m_allocationRegisterMutex);
+    m_allocationRegister->Remove(address);
 }
 
 } // namespace blink

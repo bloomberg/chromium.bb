@@ -9,6 +9,16 @@
 #include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/ThreadingPrimitives.h"
+
+namespace base {
+namespace trace_event {
+
+class AllocationRegister;
+
+} // namespace trace_event
+} // namespace base
 
 namespace blink {
 
@@ -22,10 +32,18 @@ public:
     // WebMemoryDumpProvider implementation.
     bool onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
     bool supportsHeapProfiling() override { return true; }
-    void onHeapProfilingEnabled(AllocationHook*, FreeHook*) override;
+    void onHeapProfilingEnabled(bool) override;
+
+    // These methods are called only from PartitionAllocHooks' callbacks.
+    void insert(void*, size_t, const char*);
+    void remove(void*);
 
 private:
     PartitionAllocMemoryDumpProvider();
+
+    Mutex m_allocationRegisterMutex;
+    OwnPtr<base::trace_event::AllocationRegister> m_allocationRegister;
+    bool m_isHeapProfilingEnabled;
 };
 
 } // namespace blink
