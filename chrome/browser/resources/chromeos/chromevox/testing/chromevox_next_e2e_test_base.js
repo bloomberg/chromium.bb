@@ -40,6 +40,7 @@ ChromeVoxNextE2ETest.prototype = {
             return;
 
           r.removeEventListener('loadComplete', listener, true);
+          global.backgroundObj.onGotCommand('nextElement');
           callback && callback(evt.target);
           callback = null;
         };

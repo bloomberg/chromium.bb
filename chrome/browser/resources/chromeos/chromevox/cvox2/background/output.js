@@ -481,7 +481,8 @@ Output.RULES = {
       enter: '$name $role $description'
     },
     rootWebArea: {
-      enter: '$name'
+      enter: '$name',
+      speak: '$if($name, $name, $docUrl)'
     },
     row: {
       enter: '@row_granularity $tableRowIndex'

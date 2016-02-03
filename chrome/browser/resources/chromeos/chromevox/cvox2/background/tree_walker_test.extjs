@@ -134,10 +134,11 @@ TEST_F('AutomationTreeWalkerTest', 'RootLeafRestriction', function() {
       assertEquals('6', node6.name);
       walker = new AutomationTreeWalker(node6, 'backward', restrictions);
       while (walker.next().node) {}
-      assertEquals('53', visited);
+      assertEquals('532', visited);
 
       // We should skip node 2's subtree.
-      walker = new AutomationTreeWalker(node2, 'forward', {skipInitialSubtree: true});
+      walker = new AutomationTreeWalker(
+          node2, 'forward', {skipInitialSubtree: true});
       assertEquals(node6, walker.next().node);
     });
 });
@@ -168,10 +169,12 @@ TEST_F('AutomationTreeWalkerTest', 'RootPredicateEnding', function() {
   this.runWithLoadedTree(toolbarDoc, function(r) {
     var backwardWalker = new AutomationTreeWalker(r.firstChild, 'backward',
         {root: function(node) { return node === r; }});
+    assertEquals(r, backwardWalker.next().node);
     assertEquals(null, backwardWalker.next().node);
 
-    var forwardWalker = new AutomationTreeWalker(r.firstChild.lastChild, 'forward',
-        {root: function(node) { return node === r; }});
+    var forwardWalker =
+        new AutomationTreeWalker(r.firstChild.lastChild, 'forward',
+            {root: function(node) { return node === r; }});
     assertEquals(null, forwardWalker.next().node);
   });
 });

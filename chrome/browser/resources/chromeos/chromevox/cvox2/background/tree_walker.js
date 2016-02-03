@@ -127,7 +127,12 @@ AutomationTreeWalker.prototype = {
   next: function() {
     if (!this.node_)
       return this;
+
     do {
+      if (this.rootPred_(this.node_) && this.dir_ == constants.Dir.BACKWARD) {
+        this.node_ = null;
+        return this;
+      }
       if (this.dir_ == constants.Dir.FORWARD)
         this.forward_(this.node_);
       else
@@ -188,9 +193,6 @@ AutomationTreeWalker.prototype = {
       this.phase_ = AutomationTreeWalkerPhase.ANCESTOR;
       this.backwardAncestor_ = node.parent.parent;
     }
-    if (node.parent && this.rootPred_(node.parent))
-      this.node_ = null;
-    else
-      this.node_ = node.parent;
+    this.node_ = node.parent;
   }
 };

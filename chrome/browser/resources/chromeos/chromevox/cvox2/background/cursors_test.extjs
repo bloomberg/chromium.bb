@@ -85,10 +85,10 @@ CursorsTest.prototype = {
    * @param {Cursor} cursor
    */
   makeCursorAssertion: function(expected, cursor) {
-    if (goog.isDef(expected.index))
-      assertEquals(expected.index, cursor.index);
     if (goog.isDef(expected.value))
       assertEquals(expected.value, cursor.node.name);
+    if (goog.isDef(expected.index))
+      assertEquals(expected.index, cursor.index);
   },
 
   /**
@@ -132,8 +132,9 @@ TEST_F('CursorsTest', 'CharacterCursor', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
     [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
+    [CHARACTER, DIRECTIONAL, BACKWARD, {index: 0, value: undefined}],
 
+    [CHARACTER, DIRECTIONAL, FORWARD, {index: 0, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 1, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 2, value: 'start '}],
     [CHARACTER, DIRECTIONAL, FORWARD, {index: 3, value: 'start '}],
@@ -166,7 +167,7 @@ TEST_F('CursorsTest', 'WordCursor', function() {
     [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'same line'}],
 
     [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}],
-    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: 'start '}]]);
+    [WORD, DIRECTIONAL, BACKWARD, {index: 0, value: undefined}]]);
 });
 
 TEST_F('CursorsTest', 'CharacterWordCursor', function() {
@@ -197,8 +198,8 @@ TEST_F('CursorsTest', 'LineCursor', function() {
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}],
     [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
-    [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
-    [LINE, BOUND, BACKWARD, {value: 'start '}],
+    [LINE, DIRECTIONAL, BACKWARD, {value: undefined}],
+    [LINE, BOUND, BACKWARD, {value: undefined}],
     [LINE, DIRECTIONAL, FORWARD, {value: 'end'}]]);
 });
 
@@ -231,7 +232,7 @@ TEST_F('CursorsTest', 'CharacterRange', function() {
       [CHARACTER, BACKWARD,
           {value: 'start ', index: 0}, {value: 'start ', index: 1}],
       [CHARACTER, BACKWARD,
-          {value: 'start ', index: 0}, {value: 'start ', index: 1}],
+          {value: undefined, index: 0}, {value: undefined, index: 1}],
   ], this.RANGE);
 });
 
@@ -255,7 +256,7 @@ TEST_F('CursorsTest', 'WordRange', function() {
       [WORD, BACKWARD,
           {value: 'start ', index: 0}, {value: 'start ', index: 5}],
       [WORD, BACKWARD,
-          {value: 'start ', index: 0}, {value: 'start ', index: 5}],
+          {value: undefined, index: 0}, {value: undefined, index: 5}],
   ], this.RANGE);
 });
       
@@ -269,7 +270,7 @@ TEST_F('CursorsTest', 'LineRange', function() {
           {value: 'start ', index: 0}, {value: 'same line', index: 9}],
 
       [LINE, BACKWARD,
-          {value: 'start ', index: 0}, {value: 'same line', index: 9}],
+          {value: undefined, index: 0}, {value: undefined, index: 9}],
   ], this.RANGE);
 });
       
@@ -295,12 +296,17 @@ TEST_F('CursorsTest', 'DontSplitOnNodeNavigation', function() {
 
 TEST_F('CursorsTest', 'WrappingCursors', function() {
   this.runWithLoadedTree(this.multiInlineDoc, function(root) {
-    var para = root.firstChild;
-    var cursor = new cursors.WrappingCursor(para, -1);
+    var first = root;
+    var last = root.lastChild.firstChild;
+    var cursor = new cursors.WrappingCursor(first, -1);
+
+    // Wrap from first node to last node.
     cursor = cursor.move(DOM_NODE, DIRECTIONAL, BACKWARD);
-    assertEquals(root.lastChild.firstChild.firstChild, cursor.node);
+    assertEquals(last, cursor.node);
+
+    // Wrap from last node to first node.
     cursor = cursor.move(DOM_NODE, DIRECTIONAL, FORWARD);
-    assertEquals(root.firstChild.firstChild, cursor.node);
+    assertEquals(first, cursor.node);
   });
 });
 

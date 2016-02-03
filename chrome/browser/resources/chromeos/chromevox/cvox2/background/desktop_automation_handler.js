@@ -134,22 +134,6 @@ DesktopAutomationHandler.prototype = {
     if (node.role == RoleType.embeddedObject || node.role == RoleType.client)
       return;
 
-    // It almost never makes sense to place focus directly on a rootWebArea.
-    if (node.role == RoleType.rootWebArea) {
-      // Discard focus events for root web areas when focus was previously
-      // placed on a descendant.
-      var currentRange = ChromeVoxState.instance.currentRange;
-      if (currentRange && currentRange.start.node.root == node)
-        return;
-
-      // Discard focused root nodes without focused state set.
-      if (!node.state.focused)
-        return;
-
-      // Try to find a focusable descendant.
-      node = node.find({state: {focused: true}}) || node;
-    }
-
     if (this.isEditable_(node))
       this.createTextEditHandlerIfNeeded_(evt.target);
 
@@ -169,6 +153,10 @@ DesktopAutomationHandler.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
+    if (evt.target.docUrl.indexOf(
+        'chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/' +
+            'cvox2/background/panel.html') == 0)
+      return;
     ChromeVoxState.instance.refreshMode(evt.target.docUrl);
 
     // Don't process nodes inside of web content if ChromeVox Next is inactive.
@@ -180,31 +168,12 @@ DesktopAutomationHandler.prototype = {
     // tabbing before load complete), then don't move ChromeVox's position on
     // the page.
     if (ChromeVoxState.instance.currentRange &&
-        ChromeVoxState.instance.currentRange.start.node.role !=
-            RoleType.rootWebArea &&
-        ChromeVoxState.instance.currentRange.start.node.root.docUrl ==
-            evt.target.docUrl)
+        ChromeVoxState.instance.currentRange.start.node.root == evt.target)
       return;
 
-    var root = evt.target;
-    var webView = root;
-    while (webView && webView.role != RoleType.webView)
-      webView = webView.parent;
-
-    if (!webView || !webView.state.focused)
-      return;
-
-    var node = AutomationUtil.findNodePost(root,
-        Dir.FORWARD,
-        AutomationPredicate.leaf);
-
-    if (node)
-      ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(node));
-
-    if (ChromeVoxState.instance.currentRange)
-      new Output().withSpeechAndBraille(
-              ChromeVoxState.instance.currentRange, null, evt.type)
-          .go();
+    ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(evt.target));
+    new Output().withSpeechAndBraille(
+        ChromeVoxState.instance.currentRange, null, evt.type).go();
   },
 
   /** @override */

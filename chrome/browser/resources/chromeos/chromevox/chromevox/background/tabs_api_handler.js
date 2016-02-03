@@ -211,8 +211,9 @@ cvox.TabsApiHandler.prototype = {
    */
   focusTab_: function(id) {
     chrome.automation.getTree(id, function(tab) {
-      if (tab.state.focused)
-        ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(tab));
+      if (!tab)
+        return;
+
       global.backgroundObj.refreshMode(tab.docUrl);
     });
   },

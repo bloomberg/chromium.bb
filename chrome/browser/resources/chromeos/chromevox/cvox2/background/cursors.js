@@ -162,6 +162,11 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.WORD:
+        if (newNode.role != RoleType.inlineTextBox) {
+          newNode = AutomationUtil.findNodePre(
+              newNode, Dir.FORWARD, AutomationPredicate.inlineTextBox) ||
+                  newNode;
+        }
         switch (movement) {
           case Movement.BOUND:
             if (newNode.role == RoleType.inlineTextBox) {
@@ -234,6 +239,11 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.LINE:
+        if (newNode.role != RoleType.inlineTextBox) {
+          newNode = AutomationUtil.findNodePre(
+              newNode, Dir.FORWARD, AutomationPredicate.inlineTextBox) ||
+                  newNode;
+        }
         newIndex = 0;
         switch (movement) {
           case Movement.BOUND:
@@ -286,13 +296,28 @@ cursors.WrappingCursor.prototype = {
 
   /** @override */
   move: function(unit, movement, dir) {
-    var result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+    var result = this;
+
+    // Regular movement.
+    if (!AutomationUtil.isTraversalRoot(this.node) || dir == Dir.FORWARD)
+      result = cursors.Cursor.prototype.move.call(this, unit, movement, dir);
+
+    // There are two cases for wrapping:
+    // 1. moving forwards from the last element.
+    // 2. moving backwards from the document root.
+    // Both result in |move| returning the same cursor.
+    // For 1, simply place the new cursor on the document node.
+    // For 2, try to descend to the first leaf-like object.
     if (movement == Movement.DIRECTIONAL && result.equals(this)) {
       var pred = unit == Unit.DOM_NODE ?
-          AutomationPredicate.leafDomNode : AutomationPredicate.leaf;
+          AutomationPredicate.element : AutomationPredicate.leaf;
       var endpoint = this.node;
+
+      // Case 1: forwards (find the root-like node).
       while (!AutomationUtil.isTraversalRoot(endpoint) && endpoint.parent)
         endpoint = endpoint.parent;
+
+      // Case 2: backward (sync downwards to a leaf).
       if (dir == Dir.BACKWARD) {
         while (endpoint.lastChild)
           endpoint = endpoint.lastChild;

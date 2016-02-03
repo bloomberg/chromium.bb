@@ -92,6 +92,7 @@ TEST_F('LiveRegionsTest', 'LiveRegionRemoveElement', function() {
 });
 
 TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
+  LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
@@ -117,6 +118,12 @@ TEST_F('LiveRegionsTest', 'LiveRegionChangeAtomic', function() {
 });
 
 TEST_F('LiveRegionsTest', 'LiveRegionChangeImageAlt', function() {
+  // Note that there is a live region outputted as a result of page load; the
+  // test expects a live region announcement after a click on the button, but
+  // the LiveRegions module has a half second filter for live region
+  // announcements on the same node. Set that timeout to 0 to prevent
+  // flakeyness.
+  LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 0;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!
