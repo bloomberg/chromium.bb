@@ -21,8 +21,6 @@ const char kNoMatchingServiceWorker[] =
     "check that the service worker for the current page also controls the "
     "start URL from the manifest";
 const char kNoIconAvailable[] = "no icon available to display";
-const char kBannerAlreadyAdded[] =
-    "site requesting the banner has already been added";
 const char kUserNavigatedBeforeBannerShown[] =
     "the user navigated before the banner could be shown";
 const char kStartURLNotValid[] = "start URL in manifest is not valid";

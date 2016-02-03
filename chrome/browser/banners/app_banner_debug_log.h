@@ -20,7 +20,6 @@ extern const char kNoManifest[];
 extern const char kCannotDetermineBestIcon[];
 extern const char kNoMatchingServiceWorker[];
 extern const char kNoIconAvailable[];
-extern const char kBannerAlreadyAdded[];
 extern const char kUserNavigatedBeforeBannerShown[];
 extern const char kStartURLNotValid[];
 extern const char kManifestMissingNameOrShortName[];

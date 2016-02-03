@@ -300,8 +300,6 @@ void AppBannerDataFetcher::OnDidGetManifest(
   if (IsWebAppInstalled(web_contents->GetBrowserContext(),
                         manifest.start_url) &&
       !is_debug_mode_) {
-    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded,
-                                   is_debug_mode_);
     Cancel();
     return;
   }
@@ -384,8 +382,6 @@ void AppBannerDataFetcher::OnAppIconFetched(const SkBitmap& bitmap) {
   if (!is_debug_mode_ && !CheckIfShouldShowBanner()) {
     // At this point, the only possible case is that the banner has been added
     // to the homescreen, given all of the other checks that have been made.
-    OutputDeveloperNotShownMessage(web_contents, kBannerAlreadyAdded,
-                                   is_debug_mode_);
     Cancel();
     return;
   }
