@@ -349,8 +349,12 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 updateTabLoadingState(true);
                 mLoadProgressSimulator.cancel();
 
-                mToolbar.startLoadProgress();
-                setLoadProgress(0.0f);
+                if (NativePageFactory.isNativePageUrl(tab.getUrl(), tab.isIncognito())) {
+                    finishLoadProgress(false);
+                } else {
+                    mToolbar.startLoadProgress();
+                    setLoadProgress(0.0f);
+                }
             }
 
             @Override
