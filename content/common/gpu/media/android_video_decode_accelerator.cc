@@ -175,10 +175,10 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
     // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
     DCHECK(!gl_decoder_->GetContextGroup()->mailbox_manager()->UsesSync());
     DVLOG(1) << __FUNCTION__ << ", using deferred rendering strategy.";
-    strategy_.reset(new AndroidDeferredRenderingBackingStrategy());
+    strategy_.reset(new AndroidDeferredRenderingBackingStrategy(this));
   } else {
     DVLOG(1) << __FUNCTION__ << ", using copy back strategy.";
-    strategy_.reset(new AndroidCopyingBackingStrategy());
+    strategy_.reset(new AndroidCopyingBackingStrategy(this));
   }
 }
 
@@ -239,11 +239,20 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  strategy_->Initialize(this);
+  surface_ = strategy_->Initialize(config.surface_id);
+  if (surface_.IsEmpty()) {
+    LOG(ERROR) << "Failed to initialize the backing strategy. The returned "
+                  "Java surface is empty.";
+    return false;
+  }
 
-  surface_texture_ = strategy_->CreateSurfaceTexture();
-  on_frame_available_handler_ =
-      new OnFrameAvailableHandler(this, surface_texture_);
+  // TODO(watk,liberato): move this into the strategy.
+  scoped_refptr<gfx::SurfaceTexture> surface_texture =
+      strategy_->GetSurfaceTexture();
+  if (surface_texture) {
+    on_frame_available_handler_ =
+        new OnFrameAvailableHandler(this, surface_texture);
+  }
 
   // For encrypted streams we postpone configuration until MediaCrypto is
   // available.
@@ -512,7 +521,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
       case media::MEDIA_CODEC_OK:
         DCHECK_GE(buf_index, 0);
-        DVLOG(3) << "AVDA::DequeueOutput: pts:" << presentation_timestamp
+        DVLOG(3) << __FUNCTION__ << ": pts:" << presentation_timestamp
                  << " buf_index:" << buf_index << " offset:" << offset
                  << " size:" << size << " eos:" << eos;
         break;
@@ -524,7 +533,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   } while (buf_index < 0);
 
   if (eos) {
-    DVLOG(3) << "AVDA::DequeueOutput: Resetting codec state after EOS";
+    DVLOG(3) << __FUNCTION__ << ": Resetting codec state after EOS";
     ResetCodecState();
 
     base::MessageLoop::current()->PostTask(
@@ -561,7 +570,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     // correction and provides a non-decreasing timestamp sequence, which might
     // result in timestamp duplicates. Discard the frame if we cannot get the
     // corresponding buffer id.
-    DVLOG(3) << "AVDA::DequeueOutput: Releasing buffer with unexpected PTS: "
+    DVLOG(3) << __FUNCTION__ << ": Releasing buffer with unexpected PTS: "
              << presentation_timestamp;
     media_codec_->ReleaseOutputBuffer(buf_index, false);
   }
@@ -599,11 +608,12 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   // mechanism the strategy likes.
   strategy_->UseCodecBufferForPictureBuffer(codec_buffer_index, i->second);
 
+  const bool allow_overlay = strategy_->ArePicturesOverlayable();
   base::MessageLoop::current()->PostTask(
       FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyPictureReady,
                             weak_this_factory_.GetWeakPtr(),
                             media::Picture(picture_buffer_id, bitstream_id,
-                                           gfx::Rect(size_), false)));
+                                           gfx::Rect(size_), allow_overlay)));
 }
 
 void AndroidVideoDecodeAccelerator::Decode(
@@ -699,10 +709,7 @@ void AndroidVideoDecodeAccelerator::Flush() {
 
 bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(surface_texture_.get());
   TRACE_EVENT0("media", "AVDA::ConfigureMediaCodec");
-
-  gfx::ScopedJavaSurface surface(surface_texture_.get());
 
   jobject media_crypto = media_crypto_ ? media_crypto_->obj() : nullptr;
 
@@ -713,7 +720,8 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
   // when it's known from the bitstream.
   media_codec_.reset(media::VideoCodecBridge::CreateDecoder(
       codec_, needs_protected_surface_, gfx::Size(320, 240),
-      surface.j_surface().obj(), media_crypto));
+      surface_.j_surface().obj(), media_crypto));
+
   strategy_->CodecChanged(media_codec_.get(), output_picture_buffers_);
   if (!media_codec_) {
     LOG(ERROR) << "Failed to create MediaCodec instance.";

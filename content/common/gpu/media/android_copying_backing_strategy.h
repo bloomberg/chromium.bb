@@ -28,21 +28,22 @@ class AVDAStateProvider;
 class CONTENT_EXPORT AndroidCopyingBackingStrategy
     : public AndroidVideoDecodeAccelerator::BackingStrategy {
  public:
-  AndroidCopyingBackingStrategy();
+  explicit AndroidCopyingBackingStrategy(AVDAStateProvider* state_provider);
   ~AndroidCopyingBackingStrategy() override;
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
-  void Initialize(AVDAStateProvider*) override;
+  gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
   void Cleanup(bool have_context,
                const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
-  scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
                                       const media::PictureBuffer&) override;
   void CodecChanged(
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   void OnFrameAvailable() override;
+  bool ArePicturesOverlayable() override;
 
  private:
   // Used for copy the texture from surface texture to picture buffers.

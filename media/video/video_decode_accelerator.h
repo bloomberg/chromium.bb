@@ -82,6 +82,8 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
   // Config structure contains parameters required for the VDA initialization.
   struct MEDIA_EXPORT Config {
+    enum { kNoSurfaceID = -1 };
+
     Config() = default;
     Config(VideoCodecProfile profile);
     Config(const VideoDecoderConfig& video_decoder_config);
@@ -93,6 +95,11 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
 
     // The flag indicating whether the stream is encrypted.
     bool is_encrypted = false;
+
+    // An optional graphics surface that the VDA should render to. For setting
+    // an output SurfaceView on Android. It's only valid when not equal to
+    // |kNoSurfaceID|.
+    int surface_id = kNoSurfaceID;
   };
 
   // Interface for collaborating with picture interface to provide memory for

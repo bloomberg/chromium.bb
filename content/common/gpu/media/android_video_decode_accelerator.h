@@ -23,6 +23,7 @@
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/media_keys.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace gfx {
 class SurfaceTexture;
@@ -47,20 +48,23 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
    public:
     virtual ~BackingStrategy() {}
 
-    // Called after the state provider is given, but before any other
-    // calls to the BackingStrategy.
-    virtual void Initialize(AVDAStateProvider* provider) = 0;
+    // Must be called before anything else. If surface_view_id is not equal to
+    // |kNoSurfaceID| it refers to a SurfaceView that the strategy must render
+    // to.
+    // Returns the Java surface to configure MediaCodec with.
+    virtual gfx::ScopedJavaSurface Initialize(int surface_view_id) = 0;
 
     // Called before the AVDA does any Destroy() work.  This will be
     // the last call that the BackingStrategy receives.
     virtual void Cleanup(bool have_context,
                          const OutputBufferMap& buffer_map) = 0;
 
+    // This returns the SurfaceTexture created by Initialize, or nullptr if
+    // the strategy was initialized with a SurfaceView.
+    virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const = 0;
+
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32_t GetTextureTarget() const = 0;
-
-    // Create and return a surface texture for the MediaCodec to use.
-    virtual scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() = 0;
 
     // Make the provided PictureBuffer draw the image that is represented by
     // the decoded output buffer at codec_buffer_index.
@@ -91,6 +95,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // Notify the strategy that a frame is available.  This callback can happen
     // on any thread at any time.
     virtual void OnFrameAvailable() = 0;
+
+    // Whether the pictures produced by this backing strategy are overlayable.
+    virtual bool ArePicturesOverlayable() = 0;
   };
 
   AndroidVideoDecodeAccelerator(
@@ -246,8 +253,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // The low-level decoder which Android SDK provides.
   scoped_ptr<media::VideoCodecBridge> media_codec_;
 
-  // A container of texture. Used to set a texture to |media_codec_|.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  // The surface that MediaCodec is configured to output to. It's created by the
+  // backing strategy.
+  gfx::ScopedJavaSurface surface_;
 
   // Set to true after requesting picture buffers to the client.
   bool picturebuffers_requested_;

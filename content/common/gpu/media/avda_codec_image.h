@@ -13,8 +13,8 @@
 
 namespace content {
 
-// GLImage that renders MediaCodec buffers to a SurfaceTexture as needed
-// in order to draw them.
+// GLImage that renders MediaCodec buffers to a SurfaceTexture or SurfaceView as
+// needed in order to draw them.
 class AVDACodecImage : public gl::GLImage {
  public:
   AVDACodecImage(const scoped_refptr<AVDASharedState>&,
@@ -58,9 +58,11 @@ class AVDACodecImage : public gl::GLImage {
 
   void SetMediaCodec(media::MediaCodecBridge* codec);
 
-  void setTexture(gpu::gles2::Texture* texture);
+  void SetTexture(gpu::gles2::Texture* texture);
 
  private:
+  enum { kInvalidCodecBufferIndex = -1 };
+
   // Make sure that the surface texture's front buffer is current.
   void UpdateSurfaceTexture();
 
@@ -74,8 +76,8 @@ class AVDACodecImage : public gl::GLImage {
   // Shared state between the AVDA and all AVDACodecImages.
   scoped_refptr<AVDASharedState> shared_state_;
 
-  // Codec's buffer index that we should render to the surface texture,
-  // or <0 if none.
+  // The MediaCodec buffer index that we should render. Only valid if not equal
+  // to |kInvalidCodecBufferIndex|.
   int codec_buffer_index_;
 
   // Our image size.
@@ -86,6 +88,8 @@ class AVDACodecImage : public gl::GLImage {
 
   const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder_;
 
+  // The SurfaceTexture to render to. This is null when rendering to a
+  // SurfaceView.
   const scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   // Should we detach |surface_texture_| from its GL context when we are

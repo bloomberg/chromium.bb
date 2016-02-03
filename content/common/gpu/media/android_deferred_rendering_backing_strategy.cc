@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gpu/gpu_channel.h"
+#include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/common/gpu/media/avda_codec_image.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/avda_shared_state.h"
@@ -19,16 +20,27 @@
 namespace content {
 
 AndroidDeferredRenderingBackingStrategy::
-    AndroidDeferredRenderingBackingStrategy()
-    : state_provider_(nullptr), media_codec_(nullptr) {}
+    AndroidDeferredRenderingBackingStrategy(AVDAStateProvider* state_provider)
+    : state_provider_(state_provider), media_codec_(nullptr) {}
 
 AndroidDeferredRenderingBackingStrategy::
     ~AndroidDeferredRenderingBackingStrategy() {}
 
-void AndroidDeferredRenderingBackingStrategy::Initialize(
-    AVDAStateProvider* state_provider) {
-  state_provider_ = state_provider;
+gfx::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
+    int surface_view_id) {
   shared_state_ = new AVDASharedState();
+
+  gfx::ScopedJavaSurface surface;
+  if (surface_view_id != media::VideoDecodeAccelerator::Config::kNoSurfaceID) {
+    surface =
+        GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_view_id);
+  } else {
+    // Create a detached SurfaceTexture. Detaching it will silently fail to
+    // delete texture 0.
+    surface_texture_ = gfx::SurfaceTexture::Create(0);
+    surface_texture_->DetachFromGLContext();
+    surface = gfx::ScopedJavaSurface(surface_texture_.get());
+  }
 
   // Create a texture for the SurfaceTexture to use.  We don't attach it here
   // so that it gets attached in the compositor gl context in the common case.
@@ -36,6 +48,8 @@ void AndroidDeferredRenderingBackingStrategy::Initialize(
   glGenTextures(1, &service_id);
   DCHECK(service_id);
   shared_state_->set_surface_texture_service_id(service_id);
+
+  return surface;
 }
 
 void AndroidDeferredRenderingBackingStrategy::Cleanup(
@@ -57,19 +71,13 @@ void AndroidDeferredRenderingBackingStrategy::Cleanup(
     glDeleteTextures(1, &service_id);
 }
 
-uint32_t AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {
-  return GL_TEXTURE_EXTERNAL_OES;
+scoped_refptr<gfx::SurfaceTexture>
+AndroidDeferredRenderingBackingStrategy::GetSurfaceTexture() const {
+  return surface_texture_;
 }
 
-scoped_refptr<gfx::SurfaceTexture>
-AndroidDeferredRenderingBackingStrategy::CreateSurfaceTexture() {
-  // AVDACodecImage will handle attaching this to a texture later.
-  surface_texture_ = gfx::SurfaceTexture::Create(0);
-  // Detach from our GL context so that the GLImages can attach.  It will
-  // silently fail to delete texture 0.
-  surface_texture_->DetachFromGLContext();
-
-  return surface_texture_;
+uint32_t AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {
+  return GL_TEXTURE_EXTERNAL_OES;
 }
 
 gpu::gles2::TextureRef*
@@ -120,15 +128,25 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
         shared_state_->surface_texture_service_id());
 
     static_cast<AVDACodecImage*>(image.get())
-        ->setTexture(texture_ref->texture());
+        ->SetTexture(texture_ref->texture());
   } else {
     // Clear the unowned service_id, so that this texture is no longer going
     // to depend on the surface texture at all.
     texture_ref->texture()->SetUnownedServiceId(0);
   }
 
+  // For SurfaceTexture we set the image to UNBOUND so that the implementation
+  // will call CopyTexImage, which is where AVDACodecImage updates the
+  // SurfaceTexture to the right frame.
+  // For SurfaceView we set the image to be BOUND because ScheduleOverlayPlane
+  // expects it. If something tries to sample from this texture it won't work,
+  // but there's no way to sample from a SurfaceView anyway, so it doesn't
+  // matter. The only way to use this texture is to schedule it as an overlay.
+  const gpu::gles2::Texture::ImageState image_state =
+      surface_texture_ ? gpu::gles2::Texture::UNBOUND
+                       : gpu::gles2::Texture::BOUND;
   texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
-                                 image.get(), gpu::gles2::Texture::UNBOUND);
+                                 image.get(), image_state);
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
@@ -139,36 +157,36 @@ void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
 
   // Notify the AVDACodecImage for picture_buffer that it should use the
   // decoded buffer codec_buf_index to render this frame.
-  AVDACodecImage* avImage = GetImageForPicture(picture_buffer);
-  RETURN_IF_NULL(avImage);
-  DCHECK_EQ(avImage->GetMediaCodecBufferIndex(), -1);
+  AVDACodecImage* avda_image = GetImageForPicture(picture_buffer);
+  RETURN_IF_NULL(avda_image);
+  DCHECK_EQ(avda_image->GetMediaCodecBufferIndex(), -1);
   // Note that this is not a race, since we do not re-use a PictureBuffer
   // until after the CC is done drawing it.
-  avImage->SetMediaCodecBufferIndex(codec_buf_index);
-  avImage->SetSize(state_provider_->GetSize());
+  avda_image->SetMediaCodecBufferIndex(codec_buf_index);
+  avda_image->SetSize(state_provider_->GetSize());
 }
 
 void AndroidDeferredRenderingBackingStrategy::AssignOnePictureBuffer(
     const media::PictureBuffer& picture_buffer) {
   // Attach a GLImage to each texture that will use the surface texture.
   // We use a refptr here in case SetImageForPicture fails.
-  scoped_refptr<gl::GLImage> gl_image(
+  scoped_refptr<gl::GLImage> gl_image =
       new AVDACodecImage(shared_state_, media_codec_,
-                         state_provider_->GetGlDecoder(), surface_texture_));
+                         state_provider_->GetGlDecoder(), surface_texture_);
   SetImageForPicture(picture_buffer, gl_image);
 }
 
 void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBufferForPicture(
     const media::PictureBuffer& picture_buffer) {
-  AVDACodecImage* avImage = GetImageForPicture(picture_buffer);
+  AVDACodecImage* avda_image = GetImageForPicture(picture_buffer);
 
   // See if there is a media codec buffer still attached to this image.
-  const int32_t codec_buffer = avImage->GetMediaCodecBufferIndex();
+  const int32_t codec_buffer = avda_image->GetMediaCodecBufferIndex();
 
   if (codec_buffer >= 0) {
     // PictureBuffer wasn't displayed, so release the buffer.
     media_codec_->ReleaseOutputBuffer(codec_buffer, false);
-    avImage->SetMediaCodecBufferIndex(-1);
+    avda_image->SetMediaCodecBufferIndex(-1);
   }
 }
 
@@ -200,14 +218,20 @@ void AndroidDeferredRenderingBackingStrategy::CodecChanged(
   // doesn't know about them.
   media_codec_ = codec;
   for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
-    AVDACodecImage* avImage = GetImageForPicture(entry.second);
-    avImage->SetMediaCodec(codec);
-    avImage->SetMediaCodecBufferIndex(-1);
+    AVDACodecImage* avda_image = GetImageForPicture(entry.second);
+    avda_image->SetMediaCodec(codec);
+    avda_image->SetMediaCodecBufferIndex(-1);
   }
 }
 
 void AndroidDeferredRenderingBackingStrategy::OnFrameAvailable() {
   shared_state_->SignalFrameAvailable();
+}
+
+bool AndroidDeferredRenderingBackingStrategy::ArePicturesOverlayable() {
+  // SurfaceView frames are always overlayable because that's the only way to
+  // display them.
+  return !surface_texture_;
 }
 
 }  // namespace content

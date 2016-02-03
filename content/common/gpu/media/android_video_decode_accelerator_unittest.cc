@@ -31,9 +31,6 @@ bool MockMakeContextCurrent() {
 
 namespace content {
 
-// TODO(felipeg): Add more unit tests to test the ordinary behavior of
-// AndroidVideoDecodeAccelerator.
-// http://crbug.com/178647
 class MockVideoDecodeAcceleratorClient
     : public media::VideoDecodeAccelerator::Client {
  public:
@@ -60,8 +57,6 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   void SetUp() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     media::RegisterJni(env);
-    // TODO(felipeg): fix GL bindings, so that the decoder can perform GL
-    // calls.
 
     // Start message loop because
     // AndroidVideoDecodeAccelerator::ConfigureMediaCodec() starts a timer task.
@@ -78,7 +73,9 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   bool Configure(media::VideoCodec codec) {
     AndroidVideoDecodeAccelerator* accelerator =
         static_cast<AndroidVideoDecodeAccelerator*>(accelerator_.get());
-    accelerator->surface_texture_ = gfx::SurfaceTexture::Create(0);
+    scoped_refptr<gfx::SurfaceTexture> surface_texture =
+        gfx::SurfaceTexture::Create(0);
+    accelerator->surface_ = gfx::ScopedJavaSurface(surface_texture.get());
     accelerator->codec_ = codec;
     return accelerator->ConfigureMediaCodec();
   }

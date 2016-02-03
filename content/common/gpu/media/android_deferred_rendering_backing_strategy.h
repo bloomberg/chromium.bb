@@ -33,15 +33,16 @@ class AVDASharedState;
 class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
     : public AndroidVideoDecodeAccelerator::BackingStrategy {
  public:
-  AndroidDeferredRenderingBackingStrategy();
+  explicit AndroidDeferredRenderingBackingStrategy(
+      AVDAStateProvider* state_provider);
   ~AndroidDeferredRenderingBackingStrategy() override;
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
-  void Initialize(AVDAStateProvider*) override;
+  gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
   void Cleanup(bool have_context,
                const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
-  scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
                                       const media::PictureBuffer&) override;
   void AssignOnePictureBuffer(const media::PictureBuffer&) override;
@@ -51,6 +52,7 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
       media::VideoCodecBridge*,
       const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   void OnFrameAvailable() override;
+  bool ArePicturesOverlayable() override;
 
  private:
   // Release any codec buffer that is associated with the given picture buffer
@@ -69,6 +71,8 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
 
   AVDAStateProvider* state_provider_;
 
+  // The SurfaceTexture to render to. Non-null after Initialize() if
+  // we're not rendering to a SurfaceView.
   scoped_refptr<gfx::SurfaceTexture> surface_texture_;
 
   media::VideoCodecBridge* media_codec_;

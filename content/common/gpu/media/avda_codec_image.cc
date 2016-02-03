@@ -24,7 +24,7 @@ AVDACodecImage::AVDACodecImage(
     const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder,
     const scoped_refptr<gfx::SurfaceTexture>& surface_texture)
     : shared_state_(shared_state),
-      codec_buffer_index_(-1),
+      codec_buffer_index_(kInvalidCodecBufferIndex),
       media_codec_(codec),
       decoder_(decoder),
       surface_texture_(surface_texture),
@@ -55,6 +55,9 @@ bool AVDACodecImage::BindTexImage(unsigned target) {
 void AVDACodecImage::ReleaseTexImage(unsigned target) {}
 
 bool AVDACodecImage::CopyTexImage(unsigned target) {
+  if (!surface_texture_)
+    return false;
+
   if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
@@ -102,7 +105,18 @@ bool AVDACodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                           gfx::OverlayTransform transform,
                                           const gfx::Rect& bounds_rect,
                                           const gfx::RectF& crop_rect) {
-  return false;
+  // This should only be called when we're rendering to a SurfaceView.
+  if (surface_texture_) {
+    DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
+                "SurfaceTexture backed.";
+    return false;
+  }
+
+  if (codec_buffer_index_ != kInvalidCodecBufferIndex) {
+    media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
+    codec_buffer_index_ = kInvalidCodecBufferIndex;
+  }
+  return true;
 }
 
 void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
@@ -110,8 +124,10 @@ void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                   const std::string& dump_name) {}
 
 void AVDACodecImage::UpdateSurfaceTexture() {
+  DCHECK(surface_texture_);
+
   // Render via the media codec if needed.
-  if (codec_buffer_index_ <= -1 || !media_codec_)
+  if (codec_buffer_index_ == kInvalidCodecBufferIndex || !media_codec_)
     return;
 
   // The decoder buffer is still pending.
@@ -123,7 +139,7 @@ void AVDACodecImage::UpdateSurfaceTexture() {
   }
 
   // Don't bother to check if we're rendered again.
-  codec_buffer_index_ = -1;
+  codec_buffer_index_ = kInvalidCodecBufferIndex;
 
   // Swap the rendered image to the front.
   scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
@@ -153,14 +169,15 @@ void AVDACodecImage::SetMediaCodec(media::MediaCodecBridge* codec) {
   media_codec_ = codec;
 }
 
-void AVDACodecImage::setTexture(gpu::gles2::Texture* texture) {
+void AVDACodecImage::SetTexture(gpu::gles2::Texture* texture) {
   texture_ = texture;
 }
 
 void AVDACodecImage::AttachSurfaceTextureToContext() {
+  DCHECK(surface_texture_);
+
   // Attach the surface texture to the first context we're bound on, so that
   // no context switch is needed later.
-
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -174,6 +191,8 @@ void AVDACodecImage::AttachSurfaceTextureToContext() {
 }
 
 void AVDACodecImage::InstallTextureMatrix() {
+  DCHECK(surface_texture_);
+
   // glUseProgram() has been run already -- just modify the uniform.
   // Updating this via VideoFrameProvider::Client::DidUpdateMatrix() would
   // be a better solution, except that we'd definitely miss a frame at this
