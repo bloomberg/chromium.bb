@@ -412,23 +412,35 @@ Background.prototype = {
         return false;
       case 'continuousRead':
         global.isReadingContinuously = true;
-        var continueReading = function(prevRange) {
+        var continueReading = function() {
           if (!global.isReadingContinuously || !this.currentRange_)
             return;
 
+          var prevRange = this.currentRange_;
+          var newRange =
+              this.currentRange_.move(cursors.Unit.DOM_NODE, Dir.FORWARD);
+
+          // Stop if we've wrapped back to the document.
+          var maybeDoc = newRange.start.node;
+          if (maybeDoc.role == RoleType.rootWebArea &&
+              maybeDoc.parent.root.role == RoleType.desktop) {
+            global.isReadingContinuously = false;
+            return;
+          }
+
+          this.setCurrentRange(newRange);
+
           new Output().withSpeechAndBraille(
                   this.currentRange_, prevRange, Output.EventType.NAVIGATE)
-              .onSpeechEnd(function() { continueReading(prevRange); })
+              .onSpeechEnd(continueReading)
               .go();
-          prevRange = this.currentRange_;
-          this.setCurrentRange(
-              this.currentRange_.move(cursors.Unit.DOM_NODE, Dir.FORWARD));
-
-          if (!this.currentRange_ || this.currentRange_.equals(prevRange))
-            global.isReadingContinuously = false;
         }.bind(this);
 
-        continueReading(null);
+        new Output().withSpeechAndBraille(
+                this.currentRange_, null, Output.EventType.NAVIGATE)
+            .onSpeechEnd(continueReading)
+            .go();
+
         return false;
       case 'showContextMenu':
         if (this.currentRange_) {
