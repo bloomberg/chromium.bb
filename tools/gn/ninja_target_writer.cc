@@ -147,30 +147,79 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
       << "Toolchain not set on target "
       << target_->label().GetUserVisibleName(true);
 
-  // For an action (where we run a script only once) the sources are the same
-  // as the source prereqs.
-  bool list_sources_as_input_deps = (target_->output_type() == Target::ACTION);
+  // ----------
+  // Collect all input files that are input deps of this target. Knowing the
+  // number before writing allows us to either skip writing the input deps
+  // stamp or optimize it. Use pointers to avoid copies here.
+  std::vector<const SourceFile*> input_deps_sources;
+  input_deps_sources.reserve(32);
 
   // Actions get implicit dependencies on the script itself.
-  bool add_script_source_as_dep =
-      (target_->output_type() == Target::ACTION) ||
-      (target_->output_type() == Target::ACTION_FOREACH);
+  if (target_->output_type() == Target::ACTION ||
+      target_->output_type() == Target::ACTION_FOREACH)
+    input_deps_sources.push_back(&target_->action_values().script());
 
-  if (!add_script_source_as_dep &&
-      extra_hard_deps.empty() &&
-      target_->inputs().empty() &&
-      target_->recursive_hard_deps().empty() &&
-      (!list_sources_as_input_deps || target_->sources().empty()) &&
-      target_->toolchain()->deps().empty())
-    return OutputFile();  // No input/hard deps.
+  // Input files.
+  for (const auto& input : target_->inputs())
+    input_deps_sources.push_back(&input);
 
-  // One potential optimization is if there are few input dependencies (or
-  // potentially few sources that depend on these) it's better to just write
-  // all hard deps on each sources line than have this intermediate stamp. We
-  // do the stamp file because duplicating all the order-only deps for each
-  // source file can really explode the ninja file but this won't be the most
-  // optimal thing in all cases.
+  // For an action (where we run a script only once) the sources are the same
+  // as the inputs. For action_foreach, the sources will be operated on
+  // separately so don't handle them here.
+  if (target_->output_type() == Target::ACTION) {
+    for (const auto& source : target_->sources())
+      input_deps_sources.push_back(&source);
+  }
 
+  // ----------
+  // Collect all target input dependencies of this target as was done for the
+  // files above.
+  std::vector<const Target*> input_deps_targets;
+  input_deps_targets.reserve(32);
+
+  // Hard dependencies that are direct or indirect dependencies.
+  // These are large (up to 100s), hence why we check other
+  const std::set<const Target*>& hard_deps(target_->recursive_hard_deps());
+  for (const Target* target : hard_deps)
+    input_deps_targets.push_back(target);
+
+  // Extra hard dependencies passed in. These are usually empty or small, and
+  // we don't want to duplicate the explicit hard deps of the target.
+  for (const Target* target : extra_hard_deps) {
+    if (!hard_deps.count(target))
+      input_deps_targets.push_back(target);
+  }
+
+  // Toolchain dependencies. These must be resolved before doing anything.
+  // This just writes all toolchain deps for simplicity. If we find that
+  // toolchains often have more than one dependency, we could consider writing
+  // a toolchain-specific stamp file and only include the stamp here.
+  // Note that these are usually empty/small.
+  const LabelTargetVector& toolchain_deps = target_->toolchain()->deps();
+  for (const auto& toolchain_dep : toolchain_deps) {
+    // This could theoretically duplicate dependencies already in the list,
+    // but it shouldn't happen in practice, is inconvenient to check for,
+    // and only results in harmless redundant dependencies listed.
+    input_deps_targets.push_back(toolchain_dep.ptr);
+  }
+
+  // ---------
+  // Write the outputs.
+
+  if (input_deps_sources.size() + input_deps_targets.size() == 0)
+    return OutputFile();  // No input dependencies.
+
+  // If we're only generating one input dependency, return it directly instead
+  // of writing a stamp file for it.
+  if (input_deps_sources.size() == 1 && input_deps_targets.size() == 0)
+    return OutputFile(settings_->build_settings(), *input_deps_sources[0]);
+  if (input_deps_sources.size() == 0 && input_deps_targets.size() == 1) {
+    const OutputFile& dep = input_deps_targets[0]->dependency_output_file();
+    DCHECK(!dep.value().empty());
+    return dep;
+  }
+
+  // Make a stamp file.
   OutputFile input_stamp_file(
       RebasePath(GetTargetOutputDir(target_).value(),
                  settings_->build_settings()->build_dir(),
@@ -184,61 +233,19 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
        << GetNinjaRulePrefixForToolchain(settings_)
        << Toolchain::ToolTypeToName(Toolchain::TYPE_STAMP);
 
-  // Script file (if applicable).
-  if (add_script_source_as_dep) {
+  // File input deps.
+  for (const SourceFile* source : input_deps_sources) {
     out_ << " ";
-    path_output_.WriteFile(out_, target_->action_values().script());
+    path_output_.WriteFile(out_, *source);
   }
 
-  // Input files are order-only deps.
-  for (const auto& input : target_->inputs()) {
-    out_ << " ";
-    path_output_.WriteFile(out_, input);
-  }
-  if (list_sources_as_input_deps) {
-    for (const auto& source : target_->sources()) {
-      out_ << " ";
-      path_output_.WriteFile(out_, source);
-    }
-  }
-
-  // The different souces of input deps may duplicate some targets, so uniquify
-  // them. These are sorted so the generated files are deterministic.
-  std::vector<const Target*> sorted_deps;
-
-  // Hard dependencies that are direct or indirect dependencies.
-  // These are large (up to 100s), hence why we check other
-  const std::set<const Target*>& hard_deps(target_->recursive_hard_deps());
-
-  // Extra hard dependencies passed in. Note that these are usually empty/small.
-  for (const Target* target : extra_hard_deps) {
-    if (!hard_deps.count(target))
-      sorted_deps.push_back(target);
-  }
-
-  // Toolchain dependencies. These must be resolved before doing anything.
-  // This just writes all toolchain deps for simplicity. If we find that
-  // toolchains often have more than one dependency, we could consider writing
-  // a toolchain-specific stamp file and only include the stamp here.
-  // Note that these are usually empty/small.
-  const LabelTargetVector& toolchain_deps = target_->toolchain()->deps();
-  for (const auto& toolchain_dep : toolchain_deps) {
-    // This could theoretically duplicate dependencies already in the list,
-    // but shouldn't happen in practice, is inconvenient to check for,
-    // and only results in harmless redundant dependencies listed.
-    if (!hard_deps.count(toolchain_dep.ptr))
-      sorted_deps.push_back(toolchain_dep.ptr);
-  }
-
-  for (const Target* target : hard_deps) {
-    sorted_deps.push_back(target);
-  }
-
+  // Target input deps. Sort by label so the output is deterministic (otherwise
+  // some of the targets will have gone through std::sets which will have
+  // sorted them by pointer).
   std::sort(
-      sorted_deps.begin(), sorted_deps.end(),
+      input_deps_targets.begin(), input_deps_targets.end(),
       [](const Target* a, const Target* b) { return a->label() < b->label(); });
-
-  for (const auto& dep : sorted_deps) {
+  for (const auto& dep : input_deps_targets) {
     DCHECK(!dep->dependency_output_file().value().empty());
     out_ << " ";
     path_output_.WriteFile(out_, dep->dependency_output_file());

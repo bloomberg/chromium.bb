@@ -349,10 +349,9 @@ TEST(NinjaActionTargetWriter, ForEachWithResponseFile) {
           "${source_file_part} ${rspfile}\n"
       "  description = ACTION //foo:bar()\n"
       "  restat = 1\n"
-      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py\n"
       "\n"
       "build input1.out: __foo_bar___rule ../../foo/input1.txt"
-          " | obj/foo/bar.inputdeps.stamp\n"
+          " | ../../foo/script.py\n"
       // Necessary for the rspfile defined in the rule.
       "  unique_name = 0\n"
       // Substitution for the args.

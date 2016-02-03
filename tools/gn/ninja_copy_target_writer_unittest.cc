@@ -90,9 +90,7 @@ TEST(NinjaCopyTargetWriter, OrderOnlyDeps) {
   writer.Run();
 
   const char expected_linux[] =
-      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py\n"
-      "build input1.out: copy ../../foo/input1.txt || "
-          "obj/foo/bar.inputdeps.stamp\n"
+      "build input1.out: copy ../../foo/input1.txt || ../../foo/script.py\n"
       "\n"
       "build obj/foo/bar.stamp: stamp input1.out\n";
   std::string out_str = out.str();

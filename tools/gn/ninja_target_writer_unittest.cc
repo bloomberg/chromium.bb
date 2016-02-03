@@ -72,10 +72,10 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
     OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-    EXPECT_EQ("obj/foo/base.inputdeps.stamp", dep.value());
-    EXPECT_EQ("build obj/foo/base.inputdeps.stamp: stamp "
-                  "../../foo/script.py\n",
-              stream.str());
+    // Since there is only one dependency, it should just be returned and
+    // nothing written to the stream.
+    EXPECT_EQ("../../foo/script.py", dep.value());
+    EXPECT_EQ("", stream.str());
   }
 
   // Input deps for the target (should depend on the base).
@@ -85,6 +85,8 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDep) {
     OutputFile dep =
         writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
+    // Since there is more than one dependency, a stamp file will be returned
+    // and the rule for the stamp file will be written to the stream.
     EXPECT_EQ("obj/foo/target.inputdeps.stamp", dep.value());
     EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
                   "../../foo/input.txt obj/foo/base.stamp\n",
@@ -133,8 +135,8 @@ TEST(NinjaTargetWriter, WriteInputDepsStampAndGetDepWithToolchainDeps) {
   OutputFile dep =
       writer.WriteInputDepsStampAndGetDep(std::vector<const Target*>());
 
-  EXPECT_EQ("obj/foo/target.inputdeps.stamp", dep.value());
-  EXPECT_EQ("build obj/foo/target.inputdeps.stamp: stamp "
-                "obj/foo/setup.stamp\n",
-            stream.str());
+  // Since there is more than one dependency, a stamp file will be returned
+  // and the rule for the stamp file will be written to the stream.
+  EXPECT_EQ("obj/foo/setup.stamp", dep.value());
+  EXPECT_EQ("", stream.str());
 }

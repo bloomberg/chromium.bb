@@ -180,11 +180,10 @@ TEST(NinjaBinaryTargetWriter, ProductExtensionAndInputDeps) {
       "target_out_dir = obj/foo\n"
       "target_output_name = libshlib\n"
       "\n"
-      "build obj/foo/shlib.inputdeps.stamp: stamp obj/foo/action.stamp\n"
       "build obj/foo/libshlib.input1.o: cxx ../../foo/input1.cc"
-        " || obj/foo/shlib.inputdeps.stamp\n"
+        " || obj/foo/action.stamp\n"
       "build obj/foo/libshlib.input2.o: cxx ../../foo/input2.cc"
-        " || obj/foo/shlib.inputdeps.stamp\n"
+        " || obj/foo/action.stamp\n"
       "\n"
       "build ./libshlib.so.6: solink obj/foo/libshlib.input1.o "
       // The order-only dependency here is stricly unnecessary since the
