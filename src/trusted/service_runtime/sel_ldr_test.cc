@@ -138,7 +138,7 @@ TEST_F(SelLdrTest, CreateServiceSocket) {
 // TODO(tuduce): specify the death test name when checking in.
 TEST_F(SelLdrTest, ThreadTableTest) {
   struct NaClApp app;
-  struct NaClAppThread nat, *appt=&nat;
+  struct NaClAppThread nat, *appt = &nat;
   int ret_code;
 
   ret_code = NaClAppCtor(&app);
