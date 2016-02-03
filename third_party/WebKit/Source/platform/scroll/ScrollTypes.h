@@ -52,7 +52,8 @@ enum ScrollDirectionPhysical {
 enum ScrollType {
     UserScroll,
     ProgrammaticScroll,
-    CompositorScroll
+    CompositorScroll,
+    AnchoringScroll
 };
 
 // Convert logical scroll direction to physical. Physical scroll directions are unaffected.

@@ -173,14 +173,20 @@ void ScrollableArea::setScrollPosition(const DoublePoint& position, ScrollType s
     if (behavior == ScrollBehaviorAuto)
         behavior = scrollBehaviorStyle();
 
-    if (scrollType == CompositorScroll)
-        scrollPositionChanged(clampScrollPosition(position), CompositorScroll);
-    else if (scrollType == ProgrammaticScroll)
+    switch (scrollType) {
+    case CompositorScroll:
+    case AnchoringScroll:
+        scrollPositionChanged(clampScrollPosition(position), scrollType);
+        break;
+    case ProgrammaticScroll:
         programmaticScrollHelper(position, behavior);
-    else if (scrollType == UserScroll)
+        break;
+    case UserScroll:
         userScrollHelper(position, behavior);
-    else
+        break;
+    default:
         ASSERT_NOT_REACHED();
+    }
 }
 
 void ScrollableArea::scrollBy(const DoubleSize& delta, ScrollType type, ScrollBehavior behavior)
