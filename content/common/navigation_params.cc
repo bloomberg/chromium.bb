@@ -19,7 +19,7 @@ bool ShouldMakeNetworkRequestForURL(const GURL& url) {
   // TODO(clamy): same document navigations should not send requests to the
   // network stack. Neither should pushState/popState.
   return !url.SchemeIs(url::kDataScheme) && url != GURL(url::kAboutBlankURL) &&
-         !url.SchemeIs(url::kJavaScriptScheme);
+         !url.SchemeIs(url::kJavaScriptScheme) && !url.is_empty();
 }
 
 CommonNavigationParams::CommonNavigationParams()
