@@ -2313,7 +2313,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 
 Chrome will scan for nearby pages when your device is unlocked. These pages will go through a Google service to improve the quality of page results.
 
-You can control Physical Web settings in Chrome privacy settings.
+You can control the Physical Web in Chrome privacy settings.
       </message>
       <message name="IDS_PHYSICAL_WEB_LIST_URLS_ACTIVITY_TITLE" desc="The title for a dialog that shows a list of URLs broadcasted from nearby devices.">
         The Physical Web
@@ -2321,8 +2321,11 @@ You can control Physical Web settings in Chrome privacy settings.
       <message name="IDS_PHYSICAL_WEB_NOTIFICATION_TITLE" desc="The message displayed in a notification when there are nearby URLs.">
         Physical Web pages nearby
       </message>
-      <message name="IDS_PHYSICAL_WEB_OPTIN_NOTIFICATION_TITLE" desc="A notification message inviting the user to opt-in to the Physical Web.">
-        Turn on the Physical Web?
+      <message name="IDS_PHYSICAL_WEB_OPTIN_NOTIFICATION_TITLE" desc="The first line in a notification message informing the user there are nearby devices broadcasting URLs and Chrome can be used to browse the list of URLs.">
+        Physical Web pages are nearby
+      </message>
+      <message name="IDS_PHYSICAL_WEB_OPTIN_NOTIFICATION_TEXT" desc="The second line in a notification message informing the user there are nearby devices broadcasting URLs and Chrome can be used to browse the list of URLs.">
+        Use Chrome to browse them
       </message>
       <message name="IDS_PHYSICAL_WEB_EMPTY_LIST" desc="The message displayed in place of a list of nearby URLs when there are no URLs to display.">
         No nearby Physical Web pages found

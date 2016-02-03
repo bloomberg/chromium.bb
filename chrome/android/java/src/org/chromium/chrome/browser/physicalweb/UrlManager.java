@@ -398,14 +398,15 @@ class UrlManager {
         // Get values to display.
         Resources resources = mContext.getResources();
         String title = resources.getString(R.string.physical_web_optin_notification_title);
-        Bitmap largeIcon = BitmapFactory.decodeResource(resources,
-                R.drawable.physical_web_notification_large);
+        String text = resources.getString(R.string.physical_web_optin_notification_text);
+        Bitmap largeIcon = BitmapFactory.decodeResource(resources, R.mipmap.app_icon);
 
         // Create the notification.
         Notification notification = new NotificationCompat.Builder(mContext)
                 .setLargeIcon(largeIcon)
-                .setSmallIcon(R.drawable.ic_chrome)
+                .setSmallIcon(R.drawable.ic_physical_web_notification)
                 .setContentTitle(title)
+                .setContentText(text)
                 .setContentIntent(pendingIntent)
                 .setPriority(priority)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
