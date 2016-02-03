@@ -95,7 +95,7 @@ bool IsDefaultDeviceId(const std::string& device_id) {
 
 AudioOutputDeviceInfo GetDefaultDeviceInfoOnDeviceThread(
     media::AudioManager* audio_manager) {
-  DCHECK(audio_manager->GetWorkerTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   AudioOutputDeviceInfo default_device_info = {
       media::AudioManagerBase::kDefaultDeviceId,
       audio_manager->GetDefaultDeviceName(),
@@ -494,7 +494,7 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
       !media_stream_manager_->audio_output_device_enumerator()
            ->IsCacheEnabled()) {
     base::PostTaskAndReplyWithResult(
-        audio_manager_->GetWorkerTaskRunner().get(), FROM_HERE,
+        audio_manager_->GetTaskRunner().get(), FROM_HERE,
         base::Bind(&GetDefaultDeviceInfoOnDeviceThread, audio_manager_),
         base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id,
                    true));

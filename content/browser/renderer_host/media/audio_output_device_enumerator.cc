@@ -17,7 +17,7 @@ namespace {
 
 AudioOutputDeviceEnumeration EnumerateDevicesOnDeviceThread(
     media::AudioManager* audio_manager) {
-  DCHECK(audio_manager->GetWorkerTaskRunner()->BelongsToCurrentThread());
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
 
   AudioOutputDeviceEnumeration snapshot;
   media::AudioDeviceNames device_names;
@@ -114,7 +114,7 @@ void AudioOutputDeviceEnumerator::DoEnumerateDevices() {
   is_enumeration_ongoing_ = true;
   seq_last_enumeration_ = NewEventSequence();
   base::PostTaskAndReplyWithResult(
-      audio_manager_->GetWorkerTaskRunner().get(), FROM_HERE,
+      audio_manager_->GetTaskRunner().get(), FROM_HERE,
       base::Bind(&EnumerateDevicesOnDeviceThread, audio_manager_),
       base::Bind(&AudioOutputDeviceEnumerator::DevicesEnumerated,
                  weak_factory_.GetWeakPtr()));
