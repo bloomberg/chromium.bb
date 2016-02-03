@@ -213,10 +213,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // 10 milliseconds.
   virtual base::TimeDelta GetChildProcessIdleTime() const = 0;
 
-  // Called to resume the requests for a view created through window.open that
-  // were initially blocked.
-  virtual void ResumeRequestsForView(int route_id) = 0;
-
   // Checks that the given renderer can request |url|, if not it sets it to
   // about:blank.
   // |empty_allowed| must be set to false for navigations for security reasons.

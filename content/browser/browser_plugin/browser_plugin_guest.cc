@@ -791,6 +791,7 @@ void BrowserPluginGuest::OnWillAttachComplete(
     static_cast<RenderViewHostImpl*>(GetWebContents()->GetRenderViewHost())
         ->GetWidget()
         ->Init();
+    GetWebContents()->GetMainFrame()->Init();
     WebContentsViewGuest* web_contents_view =
         static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     if (!web_contents()->GetRenderViewHost()->GetWidget()->GetView()) {

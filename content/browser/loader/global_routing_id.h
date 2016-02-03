@@ -7,6 +7,8 @@
 
 #include <tuple>
 
+#include "ipc/ipc_message.h"
+
 namespace content {
 
 // Uniquely identifies the route from which a net::URLRequest comes.
@@ -34,6 +36,33 @@ struct GlobalRoutingID {
         route_id == other.route_id;
   }
   bool operator!=(const GlobalRoutingID& other) const {
+    return !(*this == other);
+  }
+};
+
+// Same as GlobalRoutingID except the route_id must be a RenderFrameHost routing
+// id.
+struct GlobalFrameRoutingId {
+  GlobalFrameRoutingId() : child_id(0), frame_routing_id(MSG_ROUTING_NONE) {}
+
+  GlobalFrameRoutingId(int child_id, int frame_routing_id)
+      : child_id(child_id), frame_routing_id(frame_routing_id) {}
+
+  // The unique ID of the child process (different from OS's PID).
+  int child_id;
+
+  // The route ID (unique for each URLRequest source).
+  int frame_routing_id;
+
+  bool operator<(const GlobalFrameRoutingId& other) const {
+    return std::tie(child_id, frame_routing_id) <
+           std::tie(other.child_id, other.frame_routing_id);
+  }
+  bool operator==(const GlobalFrameRoutingId& other) const {
+    return child_id == other.child_id &&
+           frame_routing_id == other.frame_routing_id;
+  }
+  bool operator!=(const GlobalFrameRoutingId& other) const {
     return !(*this == other);
   }
 };

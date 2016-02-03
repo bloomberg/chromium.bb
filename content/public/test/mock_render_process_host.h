@@ -76,7 +76,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void AddFilter(BrowserMessageFilter* filter) override;
   bool FastShutdownForPageCount(size_t count) override;
   base::TimeDelta GetChildProcessIdleTime() const override;
-  void ResumeRequestsForView(int route_id) override;
   void FilterURL(bool empty_allowed, GURL* url) override;
 #if defined(ENABLE_WEBRTC)
   void EnableAudioDebugRecordings(const base::FilePath& file) override;

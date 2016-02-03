@@ -941,6 +941,12 @@ class ResourceDispatcherHostTest : public testing::Test,
                        int request_id,
                        const GURL& url);
 
+  void MakeTestRequestWithRenderFrame(int render_view_id,
+                                      int render_frame_id,
+                                      int request_id,
+                                      const GURL& url,
+                                      ResourceType type);
+
   // Generates a request using the given filter and resource type.
   void MakeTestRequestWithResourceType(ResourceMessageFilter* filter,
                                        int render_view_id,
@@ -957,6 +963,11 @@ class ResourceDispatcherHostTest : public testing::Test,
   void MakeTestRequestWithPriority(int render_view_id,
                                    int request_id,
                                    net::RequestPriority priority);
+
+  void MakeTestRequestWithPriorityAndRenderFrame(int render_view_id,
+                                                 int render_frame_id,
+                                                 int request_id,
+                                                 net::RequestPriority priority);
 
   void MakeWebContentsAssociatedDownloadRequest(int request_id,
                                                 const GURL& url);
@@ -1030,6 +1041,10 @@ class ResourceDispatcherHostTest : public testing::Test,
     wait_for_request_complete_loop_.reset();
   }
 
+  void DeleteRenderFrame(const GlobalFrameRoutingId& global_routing_id) {
+    host_.OnRenderFrameDeleted(global_routing_id);
+  }
+
   scoped_ptr<LoadInfoTestRequestInfo> loader_test_request_info_;
   scoped_ptr<base::RunLoop> wait_for_request_create_loop_;
 
@@ -1058,6 +1073,19 @@ void ResourceDispatcherHostTest::MakeTestRequest(int render_view_id,
                                                  const GURL& url) {
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   url, RESOURCE_TYPE_SUB_RESOURCE);
+}
+
+void ResourceDispatcherHostTest::MakeTestRequestWithRenderFrame(
+    int render_view_id,
+    int render_frame_id,
+    int request_id,
+    const GURL& url,
+    ResourceType type) {
+  ResourceHostMsg_Request request = CreateResourceRequest("GET", type, url);
+  request.render_frame_id = render_frame_id;
+  ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
+  host_.OnMessageReceived(msg, filter_.get());
+  KickOffRequest();
 }
 
 void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
@@ -1097,8 +1125,18 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriority(
     int render_view_id,
     int request_id,
     net::RequestPriority priority) {
+  MakeTestRequestWithPriorityAndRenderFrame(render_view_id, -1, request_id,
+                                            priority);
+}
+
+void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
+    int render_view_id,
+    int render_frame_id,
+    int request_id,
+    net::RequestPriority priority) {
   ResourceHostMsg_Request request = CreateResourceRequest(
       "GET", RESOURCE_TYPE_SUB_RESOURCE, GURL("http://example.com/priority"));
+  request.render_frame_id = render_frame_id;
   request.priority = priority;
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
   host_.OnMessageReceived(msg, filter_.get());
@@ -1748,7 +1786,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancel) {
 
 // Tests whether the correct requests get canceled when a RenderViewHost is
 // deleted.
-TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderViewHostDeleted) {
+TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderFrameDeleted) {
   // Requests all hang once started.  This prevents requests from being
   // destroyed due to completion.
   job_factory_->SetHangAfterStartJobGeneration(true);
@@ -1760,29 +1798,32 @@ TEST_F(ResourceDispatcherHostTest, CancelRequestsOnRenderViewHostDeleted) {
 
   // One RenderView issues a high priority request and a low priority one. Both
   // should be started.
-  MakeTestRequestWithPriority(0, 1, net::HIGHEST);
-  MakeTestRequestWithPriority(0, 2, net::LOWEST);
+  MakeTestRequestWithPriorityAndRenderFrame(0, 10, 1, net::HIGHEST);
+  MakeTestRequestWithPriorityAndRenderFrame(0, 11, 2, net::LOWEST);
   KickOffRequest();
   EXPECT_EQ(2, network_delegate_.created_requests());
   EXPECT_EQ(0, network_delegate_.canceled_requests());
 
   // The same RenderView issues two more low priority requests. The
   // ResourceScheduler shouldn't let them start immediately.
-  MakeTestRequestWithPriority(0, 3, net::LOWEST);
-  MakeTestRequestWithPriority(0, 4, net::LOWEST);
+  MakeTestRequestWithPriorityAndRenderFrame(0, 10, 3, net::LOWEST);
+  MakeTestRequestWithPriorityAndRenderFrame(0, 11, 4, net::LOWEST);
   KickOffRequest();
   EXPECT_EQ(2, network_delegate_.created_requests());
   EXPECT_EQ(0, network_delegate_.canceled_requests());
 
   // Another RenderView in the same process as the old one issues a request,
   // which is then started.
-  MakeTestRequestWithPriority(1, 5, net::LOWEST);
+  MakeTestRequestWithPriorityAndRenderFrame(1, 12, 5, net::LOWEST);
   KickOffRequest();
   EXPECT_EQ(3, network_delegate_.created_requests());
   EXPECT_EQ(0, network_delegate_.canceled_requests());
 
-  // The first RenderView is destroyed.  All 4 of its requests should be
-  // cancelled, and none of the two deferred requests should be started.
+  // The first two RenderFrameHosts are destroyed.  All 4 of their requests
+  // should be cancelled, and none of the two deferred requests should be
+  // started.
+  DeleteRenderFrame(GlobalFrameRoutingId(filter_->child_id(), 10));
+  DeleteRenderFrame(GlobalFrameRoutingId(filter_->child_id(), 11));
   host_.OnRenderViewHostDeleted(filter_->child_id(), 0);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(3, network_delegate_.created_requests());
@@ -1842,16 +1883,22 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
 
 // Tests blocking and resuming requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
-  host_.BlockRequestsForRoute(filter_->child_id(), 1);
-  host_.BlockRequestsForRoute(filter_->child_id(), 2);
-  host_.BlockRequestsForRoute(filter_->child_id(), 3);
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 12));
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 13));
 
-  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
-  MakeTestRequest(1, 2, net::URLRequestTestJob::test_url_2());
-  MakeTestRequest(0, 3, net::URLRequestTestJob::test_url_3());
-  MakeTestRequest(1, 4, net::URLRequestTestJob::test_url_1());
-  MakeTestRequest(2, 5, net::URLRequestTestJob::test_url_2());
-  MakeTestRequest(3, 6, net::URLRequestTestJob::test_url_3());
+  MakeTestRequestWithRenderFrame(0, 10, 1, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(1, 11, 2, net::URLRequestTestJob::test_url_2(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(0, 10, 3, net::URLRequestTestJob::test_url_3(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(1, 11, 4, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(2, 12, 5, net::URLRequestTestJob::test_url_2(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(3, 13, 6, net::URLRequestTestJob::test_url_3(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
 
   // Flush all the pending requests
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1860,14 +1907,15 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
 
-  // All requests but the 2 for the RVH 0 should have been blocked.
+  // All requests but the 2 for the RFH 0 should have been blocked.
   ASSERT_EQ(2U, msgs.size());
 
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
   CheckSuccessfulRequest(msgs[1], net::URLRequestTestJob::test_data_3());
 
-  // Resume requests for RVH 1 and flush pending requests.
-  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 1);
+  // Resume requests for RFH 11 and flush pending requests.
+  host_.ResumeBlockedRequestsForRoute(
+      GlobalFrameRoutingId(filter_->child_id(), 11));
   KickOffRequest();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
@@ -1877,17 +1925,20 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_2());
   CheckSuccessfulRequest(msgs[1], net::URLRequestTestJob::test_data_1());
 
-  // Test that new requests are not blocked for RVH 1.
-  MakeTestRequest(1, 7, net::URLRequestTestJob::test_url_1());
+  // Test that new requests are not blocked for RFH 11.
+  MakeTestRequestWithRenderFrame(1, 11, 7, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   msgs.clear();
   accum_.GetClassifiedMessages(&msgs);
   ASSERT_EQ(1U, msgs.size());
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
 
-  // Now resumes requests for all RVH (2 and 3).
-  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 2);
-  host_.ResumeBlockedRequestsForRoute(filter_->child_id(), 3);
+  // Now resumes requests for all RFH (12 and 13).
+  host_.ResumeBlockedRequestsForRoute(
+      GlobalFrameRoutingId(filter_->child_id(), 12));
+  host_.ResumeBlockedRequestsForRoute(
+      GlobalFrameRoutingId(filter_->child_id(), 13));
   KickOffRequest();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
@@ -1900,16 +1951,20 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingResumingRequests) {
 
 // Tests blocking and canceling requests.
 TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
-  host_.BlockRequestsForRoute(filter_->child_id(), 1);
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 11));
 
-  MakeTestRequest(0, 1, net::URLRequestTestJob::test_url_1());
-  MakeTestRequest(1, 2, net::URLRequestTestJob::test_url_2());
-  MakeTestRequest(0, 3, net::URLRequestTestJob::test_url_3());
-  MakeTestRequest(1, 4, net::URLRequestTestJob::test_url_1());
+  MakeTestRequestWithRenderFrame(0, 10, 1, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(1, 11, 2, net::URLRequestTestJob::test_url_2(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(0, 10, 3, net::URLRequestTestJob::test_url_3(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
+  MakeTestRequestWithRenderFrame(1, 11, 4, net::URLRequestTestJob::test_url_1(),
+                                 RESOURCE_TYPE_SUB_RESOURCE);
   // Blocked detachable resources should not delay cancellation.
-  MakeTestRequestWithResourceType(filter_.get(), 1, 5,
-                                  net::URLRequestTestJob::test_url_4(),
-                                  RESOURCE_TYPE_PREFETCH);  // detachable type
+  //
+  MakeTestRequestWithRenderFrame(1, 11, 5, net::URLRequestTestJob::test_url_4(),
+                                 RESOURCE_TYPE_PREFETCH);  // detachable type
 
   // Flush all the pending requests.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
@@ -1918,14 +1973,15 @@ TEST_F(ResourceDispatcherHostTest, TestBlockingCancelingRequests) {
   ResourceIPCAccumulator::ClassifiedMessages msgs;
   accum_.GetClassifiedMessages(&msgs);
 
-  // The 2 requests for the RVH 0 should have been processed.
+  // The 2 requests for the RFH 10 should have been processed.
   ASSERT_EQ(2U, msgs.size());
 
   CheckSuccessfulRequest(msgs[0], net::URLRequestTestJob::test_data_1());
   CheckSuccessfulRequest(msgs[1], net::URLRequestTestJob::test_data_3());
 
-  // Cancel requests for RVH 1.
-  host_.CancelBlockedRequestsForRoute(filter_->child_id(), 1);
+  // Cancel requests for RFH 11.
+  host_.CancelBlockedRequestsForRoute(
+      GlobalFrameRoutingId(filter_->child_id(), 11));
   KickOffRequest();
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
@@ -1939,7 +1995,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
 
-  host_.BlockRequestsForRoute(second_filter->child_id(), 0);
+  host_.BlockRequestsForRoute(
+      GlobalFrameRoutingId(second_filter->child_id(), 0));
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),
@@ -1985,9 +2042,10 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
 
-  host_.BlockRequestsForRoute(filter_->child_id(), 1);
-  host_.BlockRequestsForRoute(filter_->child_id(), 2);
-  host_.BlockRequestsForRoute(second_filter->child_id(), 1);
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 1));
+  host_.BlockRequestsForRoute(GlobalFrameRoutingId(filter_->child_id(), 2));
+  host_.BlockRequestsForRoute(
+      GlobalFrameRoutingId(second_filter->child_id(), 1));
 
   MakeTestRequestWithResourceType(filter_.get(), 0, 1,
                                   net::URLRequestTestJob::test_url_1(),

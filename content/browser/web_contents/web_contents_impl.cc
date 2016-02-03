@@ -403,6 +403,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
 #else
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
 #endif
+  loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
   wake_lock_service_context_.reset(new WakeLockServiceContext(this));
 }
 
@@ -1849,7 +1850,10 @@ void WebContentsImpl::CreateNewWindow(
       // delete the RenderView that had already been created.
       Send(new ViewMsg_Close(route_id));
     }
-    GetRenderViewHost()->GetProcess()->ResumeRequestsForView(route_id);
+    // It's safe to only target the frame because the render process will not
+    // have a chance to create more frames at this point.
+    ResourceDispatcherHostImpl::ResumeBlockedRequestsForRouteFromUI(
+        GlobalFrameRoutingId(render_process_id, main_frame_route_id));
     return;
   }
 

@@ -402,8 +402,6 @@ void RenderWidgetHostImpl::Init() {
 
   renderer_initialized_ = true;
 
-  GetProcess()->ResumeRequestsForView(routing_id_);
-
   // If the RWHV has not yet been set, the surface ID namespace will get
   // passed down by the call to SetView().
   if (view_) {

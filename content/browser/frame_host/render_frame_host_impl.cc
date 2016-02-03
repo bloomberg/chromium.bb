@@ -34,6 +34,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
@@ -779,9 +780,7 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
 }
 
 void RenderFrameHostImpl::Init() {
-  // TODO(csharrison): Call GetProcess()->ResumeRequestsForFrame(routing_id_)
-  // once ResourceDispatcherHostImpl is keyed on render frame routing ids
-  // instead of render view routing ids.
+  ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(this);
 }
 
 void RenderFrameHostImpl::OnAddMessageToConsole(
@@ -1075,6 +1074,10 @@ RenderWidgetHostView* RenderFrameHostImpl::GetView() {
 
   NOTREACHED();
   return nullptr;
+}
+
+GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
+  return GlobalFrameRoutingId(GetProcess()->GetID(), GetRoutingID());
 }
 
 int RenderFrameHostImpl::GetEnabledBindings() {

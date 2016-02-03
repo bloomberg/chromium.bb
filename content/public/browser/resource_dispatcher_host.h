@@ -22,6 +22,7 @@ class ResourceContext;
 class ResourceDispatcherHostDelegate;
 struct DownloadSaveInfo;
 struct Referrer;
+class RenderFrameHost;
 
 class CONTENT_EXPORT ResourceDispatcherHost {
  public:
@@ -30,6 +31,16 @@ class CONTENT_EXPORT ResourceDispatcherHost {
 
   // Returns the singleton instance of the ResourceDispatcherHost.
   static ResourceDispatcherHost* Get();
+
+  // Causes all new requests for the root RenderFrameHost and its children to be
+  // blocked (not being started) until ResumeBlockedRequestsForFrameFromUI is
+  // called.
+  static void BlockRequestsForFrameFromUI(RenderFrameHost* root_frame_host);
+
+  // Resumes any blocked request for the specified root RenderFrameHost and
+  // child frame hosts.
+  static void ResumeBlockedRequestsForFrameFromUI(
+      RenderFrameHost* root_frame_host);
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcherHost.
@@ -65,14 +76,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
 
   // Clears the ResourceDispatcherHostLoginDelegate associated with the request.
   virtual void ClearLoginDelegateForRequest(net::URLRequest* request) = 0;
-
-  // Causes all new requests for the route identified by |child_id| and
-  // |route_id| to be blocked (not being started) until
-  // ResumeBlockedRequestsForRoute is called.
-  virtual void BlockRequestsForRoute(int child_id, int route_id) = 0;
-
-  // Resumes any blocked request for the specified route id.
-  virtual void ResumeBlockedRequestsForRoute(int child_id, int route_id) = 0;
 
  protected:
   virtual ~ResourceDispatcherHost() {}

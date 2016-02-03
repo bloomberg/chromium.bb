@@ -237,6 +237,7 @@
       'public/browser/render_widget_host_view_mac_delegate.h',
       'public/browser/resource_context.h',
       'public/browser/resource_controller.h',
+      'public/browser/resource_dispatcher_host.cc',
       'public/browser/resource_dispatcher_host.h',
       'public/browser/resource_dispatcher_host_delegate.cc',
       'public/browser/resource_dispatcher_host_delegate.h',

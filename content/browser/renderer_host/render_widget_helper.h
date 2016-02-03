@@ -96,10 +96,6 @@ class RenderWidgetHelper
   // for documentation.
   void ResumeDeferredNavigation(const GlobalRequestID& request_id);
 
-  // Called to resume the requests for a view after it's ready. The view was
-  // created by CreateNewWindow which initially blocked the requests.
-  void ResumeRequestsForView(int route_id);
-
   // IO THREAD ONLY -----------------------------------------------------------
 
   void CreateNewWindow(const ViewHostMsg_CreateWindow_Params& params,
@@ -127,9 +123,6 @@ class RenderWidgetHelper
                           int32_t main_frame_route_id,
                           int32_t main_frame_widget_route_id,
                           SessionStorageNamespace* session_storage_namespace);
-
-  // Called on the IO thread after a window was created on the UI thread.
-  void OnResumeRequestsForView(int route_id);
 
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int32_t opener_id,

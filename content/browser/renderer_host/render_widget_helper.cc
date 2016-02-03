@@ -82,17 +82,6 @@ void RenderWidgetHelper::ResumeDeferredNavigation(
                  request_id));
 }
 
-void RenderWidgetHelper::ResumeRequestsForView(int route_id) {
-  // We only need to resume blocked requests if we used a valid route_id.
-  // See CreateNewWindow.
-  if (route_id != MSG_ROUTING_NONE) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&RenderWidgetHelper::OnResumeRequestsForView,
-            this, route_id));
-  }
-}
-
 void RenderWidgetHelper::OnResumeDeferredNavigation(
     const GlobalRequestID& request_id) {
   resource_dispatcher_host_->ResumeDeferredNavigation(request_id);
@@ -122,10 +111,12 @@ void RenderWidgetHelper::CreateNewWindow(
     // should be updated to give the widget a distinct routing ID.
     // https://crbug.com/545684
     *main_frame_widget_route_id = *route_id;
-    // Block resource requests until the view is created, since the HWND might
-    // be needed if a response ends up creating a plugin.
+    // Block resource requests until the frame is created, since the HWND might
+    // be needed if a response ends up creating a plugin. We'll only have a
+    // single frame at this point. These requests will be resumed either in
+    // WebContentsImpl::CreateNewWindow or RenderFrameHost::Init.
     resource_dispatcher_host_->BlockRequestsForRoute(
-        render_process_id_, *route_id);
+        GlobalFrameRoutingId(render_process_id_, *main_frame_route_id));
   }
 
   BrowserThread::PostTask(
@@ -147,11 +138,6 @@ void RenderWidgetHelper::OnCreateWindowOnUI(
     host->CreateNewWindow(route_id, main_frame_route_id,
                           main_frame_widget_route_id, params,
                           session_storage_namespace);
-}
-
-void RenderWidgetHelper::OnResumeRequestsForView(int route_id) {
-  resource_dispatcher_host_->ResumeBlockedRequestsForRoute(
-      render_process_id_, route_id);
 }
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,

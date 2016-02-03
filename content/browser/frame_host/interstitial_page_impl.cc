@@ -53,28 +53,6 @@ using blink::WebDragOperation;
 using blink::WebDragOperationsMask;
 
 namespace content {
-namespace {
-
-void ResourceRequestHelper(ResourceDispatcherHostImpl* rdh,
-                           int process_id,
-                           int render_view_host_id,
-                           ResourceRequestAction action) {
-  switch (action) {
-    case BLOCK:
-      rdh->BlockRequestsForRoute(process_id, render_view_host_id);
-      break;
-    case RESUME:
-      rdh->ResumeBlockedRequestsForRoute(process_id, render_view_host_id);
-      break;
-    case CANCEL:
-      rdh->CancelBlockedRequestsForRoute(process_id, render_view_host_id);
-      break;
-    default:
-      NOTREACHED();
-  }
-}
-
-}  // namespace
 
 class InterstitialPageImpl::InterstitialPageRVHDelegateView
   : public RenderViewHostDelegateView {
@@ -855,22 +833,25 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
   // The tab might not have a render_view_host if it was closed (in which case,
   // we have taken care of the blocked requests when processing
   // NOTIFY_RENDER_WIDGET_HOST_DESTROYED.
-  // Also we need to test there is a ResourceDispatcherHostImpl, as when unit-
-  // tests we don't have one.
   RenderViewHostImpl* rvh = RenderViewHostImpl::FromID(original_child_id_,
                                                        original_rvh_id_);
-  if (!rvh || !ResourceDispatcherHostImpl::Get())
+  if (!rvh)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &ResourceRequestHelper,
-          ResourceDispatcherHostImpl::Get(),
-          original_child_id_,
-          original_rvh_id_,
-          action));
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(rvh->GetMainFrame());
+  switch (action) {
+    case BLOCK:
+      ResourceDispatcherHost::BlockRequestsForFrameFromUI(rfh);
+      break;
+    case RESUME:
+      ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(rfh);
+      break;
+    default:
+      DCHECK_EQ(action, CANCEL);
+      ResourceDispatcherHostImpl::CancelBlockedRequestsForFrameFromUI(rfh);
+      break;
+  }
 }
 
 void InterstitialPageImpl::OnDomOperationResponse(

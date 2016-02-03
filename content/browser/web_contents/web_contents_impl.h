@@ -58,6 +58,7 @@ class DownloadItem;
 class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
+class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
 class PluginContentOriginWhitelist;
@@ -1292,6 +1293,9 @@ class CONTENT_EXPORT WebContentsImpl
   scoped_ptr<WebContentsAudioMuter> audio_muter_;
 
   bool virtual_keyboard_requested_;
+
+  // Notifies ResourceDispatcherHostImpl of various events related to loading.
+  scoped_ptr<LoaderIOThreadNotifier> loader_io_thread_notifier_;
 
   // Manages media players, CDMs, and power save blockers for media.
   scoped_ptr<MediaWebContentsObserver> media_web_contents_observer_;

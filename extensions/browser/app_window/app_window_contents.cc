@@ -89,14 +89,8 @@ void AppWindowContentsImpl::OnWindowReady() {
   is_window_ready_ = true;
   if (is_blocking_requests_) {
     is_blocking_requests_ = false;
-    content::RenderFrameHost* frame = web_contents_->GetMainFrame();
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &content::ResourceDispatcherHost::ResumeBlockedRequestsForRoute,
-            base::Unretained(content::ResourceDispatcherHost::Get()),
-            frame->GetProcess()->GetID(),
-            frame->GetRenderViewHost()->GetRoutingID()));
+    content::ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(
+        web_contents_->GetMainFrame());
   }
 }
 
@@ -136,14 +130,7 @@ void AppWindowContentsImpl::SuspendRenderFrameHost(
   if (is_window_ready_)
     return;
   is_blocking_requests_ = true;
-  // The ResourceDispatcherHost only accepts RenderViewHost child ids.
-  // TODO(devlin): This will need to change for site isolation.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&content::ResourceDispatcherHost::BlockRequestsForRoute,
-                 base::Unretained(content::ResourceDispatcherHost::Get()),
-                 rfh->GetProcess()->GetID(),
-                 rfh->GetRenderViewHost()->GetRoutingID()));
+  content::ResourceDispatcherHost::BlockRequestsForFrameFromUI(rfh);
 }
 
 }  // namespace extensions

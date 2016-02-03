@@ -39,6 +39,7 @@
 #include "content/browser/download/save_file_manager.h"
 #include "content/browser/download/save_file_resource_handler.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
+#include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/async_resource_handler.h"
@@ -466,7 +467,79 @@ void RecordAbortRapporOnUI(const GURL& url,
     GetContentClient()->browser()->RecordURLMetric("Net.ErrAborted.Slow", url);
 }
 
+// The following functions simplify code paths where the UI thread notifies the
+// ResourceDispatcherHostImpl of information pertaining to loading behavior of
+// frame hosts.
+void NotifyForRouteOnIO(
+    base::Callback<void(ResourceDispatcherHostImpl*,
+                        const GlobalFrameRoutingId&)> frame_callback,
+    const GlobalFrameRoutingId& global_routing_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
+  if (rdh)
+    frame_callback.Run(rdh, global_routing_id);
+}
+
+void NotifyForRouteFromUI(
+    const GlobalFrameRoutingId& global_routing_id,
+    base::Callback<void(ResourceDispatcherHostImpl*,
+                        const GlobalFrameRoutingId&)> frame_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NotifyForRouteOnIO, frame_callback, global_routing_id));
+}
+
+void NotifyForRouteSetOnIO(
+    base::Callback<void(ResourceDispatcherHostImpl*,
+                        const GlobalFrameRoutingId&)> frame_callback,
+    scoped_ptr<std::set<GlobalFrameRoutingId>> routing_ids) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const auto& routing_id : *routing_ids)
+    NotifyForRouteOnIO(frame_callback, routing_id);
+}
+
+void NotifyForEachFrameFromUI(
+    RenderFrameHost* root_frame_host,
+    base::Callback<void(ResourceDispatcherHostImpl*,
+                        const GlobalFrameRoutingId&)> frame_callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  FrameTree* frame_tree = static_cast<RenderFrameHostImpl*>(root_frame_host)
+                              ->frame_tree_node()
+                              ->frame_tree();
+  DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
+  scoped_ptr<std::set<GlobalFrameRoutingId>> routing_ids(
+      new std::set<GlobalFrameRoutingId>());
+  for (FrameTreeNode* node : frame_tree->Nodes()) {
+    RenderFrameHostImpl* frame_host = node->current_frame_host();
+    RenderFrameHostImpl* pending_frame_host =
+        IsBrowserSideNavigationEnabled()
+            ? node->render_manager()->speculative_frame_host()
+            : node->render_manager()->pending_frame_host();
+    if (frame_host)
+      routing_ids->insert(frame_host->GetGlobalFrameRoutingId());
+    if (pending_frame_host)
+      routing_ids->insert(pending_frame_host->GetGlobalFrameRoutingId());
+  }
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&NotifyForRouteSetOnIO, frame_callback,
+                                     base::Passed(std::move(routing_ids))));
+}
+
 }  // namespace
+
+LoaderIOThreadNotifier::LoaderIOThreadNotifier(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+LoaderIOThreadNotifier::~LoaderIOThreadNotifier() {}
+
+void LoaderIOThreadNotifier::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  NotifyForRouteFromUI(
+      static_cast<RenderFrameHostImpl*>(render_frame_host)
+          ->GetGlobalFrameRoutingId(),
+      base::Bind(&ResourceDispatcherHostImpl::OnRenderFrameDeleted));
+}
 
 // static
 ResourceDispatcherHost* ResourceDispatcherHost::Get() {
@@ -532,6 +605,42 @@ ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
 // static
 ResourceDispatcherHostImpl* ResourceDispatcherHostImpl::Get() {
   return g_resource_dispatcher_host;
+}
+
+// static
+void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRouteFromUI(
+    const GlobalFrameRoutingId& global_routing_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForRouteFromUI(
+      global_routing_id,
+      base::Bind(&ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+}
+
+// static
+void ResourceDispatcherHostImpl::BlockRequestsForFrameFromUI(
+    RenderFrameHost* root_frame_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForEachFrameFromUI(
+      root_frame_host,
+      base::Bind(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
+}
+
+// static
+void ResourceDispatcherHostImpl::ResumeBlockedRequestsForFrameFromUI(
+    RenderFrameHost* root_frame_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForEachFrameFromUI(
+      root_frame_host,
+      base::Bind(&ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
+}
+
+// static
+void ResourceDispatcherHostImpl::CancelBlockedRequestsForFrameFromUI(
+    RenderFrameHostImpl* root_frame_host) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  NotifyForEachFrameFromUI(
+      root_frame_host,
+      base::Bind(&ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
 }
 
 void ResourceDispatcherHostImpl::SetDelegate(
@@ -1090,15 +1199,15 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   // Note that we have to do this in 2 passes as we cannot call
   // CancelBlockedRequestsForRoute while iterating over
   // blocked_loaders_map_, as it modifies it.
-  std::set<GlobalRoutingID> ids;
+  std::set<GlobalFrameRoutingId> ids;
   for (const auto& blocked_loaders : blocked_loaders_map_) {
-    std::pair<std::set<GlobalRoutingID>::iterator, bool> result =
+    std::pair<std::set<GlobalFrameRoutingId>::iterator, bool> result =
         ids.insert(blocked_loaders.first);
     // We should not have duplicates.
     DCHECK(result.second);
   }
   for (const auto& routing_id : ids) {
-    CancelBlockedRequestsForRoute(routing_id.child_id, routing_id.route_id);
+    CancelBlockedRequestsForRoute(routing_id);
   }
 
   scheduler_.reset();
@@ -1208,11 +1317,11 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     const ResourceHostMsg_Request& request_data,
     LoaderMap::iterator iter) {
   ResourceRequestInfoImpl* info = iter->second->GetRequestInfo();
-  GlobalRoutingID old_routing_id(
-      request_data.transferred_request_child_id, info->GetRouteID());
+  GlobalFrameRoutingId old_routing_id(request_data.transferred_request_child_id,
+                                      info->GetRenderFrameID());
   GlobalRequestID old_request_id(request_data.transferred_request_child_id,
                                  request_data.transferred_request_request_id);
-  GlobalRoutingID new_routing_id(child_id, route_id);
+  GlobalFrameRoutingId new_routing_id(child_id, request_data.render_frame_id);
   GlobalRequestID new_request_id(child_id, request_id);
 
   // Clear out data that depends on |info| before updating it.
@@ -1787,16 +1896,19 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       std::string());                          // original_headers
 }
 
+void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
+    const GlobalFrameRoutingId& global_routing_id) {
+  CancelRequestsForRoute(global_routing_id);
+}
+
 void ResourceDispatcherHostImpl::OnRenderViewHostCreated(int child_id,
                                                          int route_id) {
   scheduler_->OnClientCreated(child_id, route_id);
 }
 
-void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(
-    int child_id,
-    int route_id) {
+void ResourceDispatcherHostImpl::OnRenderViewHostDeleted(int child_id,
+                                                         int route_id) {
   scheduler_->OnClientDeleted(child_id, route_id);
-  CancelRequestsForRoute(child_id, route_id);
 }
 
 void ResourceDispatcherHostImpl::OnRenderViewHostSetIsLoading(int child_id,
@@ -1882,18 +1994,23 @@ void ResourceDispatcherHostImpl::ResumeDeferredNavigation(
 // for downloads and detachable resources, which belong to the browser process
 // even if initiated via a renderer.
 void ResourceDispatcherHostImpl::CancelRequestsForProcess(int child_id) {
-  CancelRequestsForRoute(child_id, -1 /* cancel all */);
+  CancelRequestsForRoute(
+      GlobalFrameRoutingId(child_id, MSG_ROUTING_NONE /* cancel all */));
   registered_temp_files_.erase(child_id);
 }
 
-void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
-                                                        int route_id) {
+void ResourceDispatcherHostImpl::CancelRequestsForRoute(
+    const GlobalFrameRoutingId& global_routing_id) {
   // Since pending_requests_ is a map, we first build up a list of all of the
   // matching requests to be cancelled, and then we cancel them.  Since there
   // may be more than one request to cancel, we cannot simply hold onto the map
   // iterators found in the first loop.
 
   // Find the global ID of all matching elements.
+  int child_id = global_routing_id.child_id;
+  int route_id = global_routing_id.frame_routing_id;
+  bool cancel_all_routes = (route_id == MSG_ROUTING_NONE);
+
   bool any_requests_transferring = false;
   std::vector<GlobalRequestID> matching_requests;
   for (const auto& loader : pending_loaders_) {
@@ -1911,7 +2028,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
       info->detachable_handler()->Detach();
     } else if (!info->IsDownload() && !info->is_stream() &&
                !IsTransferredNavigation(id) &&
-               (route_id == -1 || route_id == info->GetRouteID())) {
+               (cancel_all_routes || route_id == info->GetRenderFrameID())) {
       matching_requests.push_back(id);
     }
   }
@@ -1941,23 +2058,23 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
     return;
 
   // Now deal with blocked requests if any.
-  if (route_id != -1) {
-    if (blocked_loaders_map_.find(GlobalRoutingID(child_id, route_id)) !=
+  if (!cancel_all_routes) {
+    if (blocked_loaders_map_.find(global_routing_id) !=
         blocked_loaders_map_.end()) {
-      CancelBlockedRequestsForRoute(child_id, route_id);
+      CancelBlockedRequestsForRoute(global_routing_id);
     }
   } else {
-    // We have to do all render views for the process |child_id|.
+    // We have to do all render frames for the process |child_id|.
     // Note that we have to do this in 2 passes as we cannot call
     // CancelBlockedRequestsForRoute while iterating over
-    // blocked_loaders_map_, as it modifies it.
-    std::set<int> route_ids;
+    // blocked_loaders_map_, as blocking requests modifies the map.
+    std::set<GlobalFrameRoutingId> routing_ids;
     for (const auto& blocked_loaders : blocked_loaders_map_) {
       if (blocked_loaders.first.child_id == child_id)
-        route_ids.insert(blocked_loaders.first.route_id);
+        routing_ids.insert(blocked_loaders.first);
     }
-    for (int route_id : route_ids) {
-      CancelBlockedRequestsForRoute(child_id, route_id);
+    for (const GlobalFrameRoutingId& route_id : routing_ids) {
+      CancelBlockedRequestsForRoute(route_id);
     }
   }
 }
@@ -2304,7 +2421,7 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   scoped_ptr<ResourceLoader> loader(
       new ResourceLoader(std::move(request), std::move(handler), this));
 
-  GlobalRoutingID id(info->GetGlobalRoutingID());
+  GlobalFrameRoutingId id(info->GetChildID(), info->GetRenderFrameID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
   if (iter != blocked_loaders_map_.end()) {
     // The request should be blocked.
@@ -2428,31 +2545,31 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
                  base::Passed(&info_map)));
 }
 
-void ResourceDispatcherHostImpl::BlockRequestsForRoute(int child_id,
-                                                       int route_id) {
+void ResourceDispatcherHostImpl::BlockRequestsForRoute(
+    const GlobalFrameRoutingId& global_routing_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GlobalRoutingID key(child_id, route_id);
-  DCHECK(blocked_loaders_map_.find(key) == blocked_loaders_map_.end()) <<
-      "BlockRequestsForRoute called  multiple time for the same RVH";
-  blocked_loaders_map_[key] = make_scoped_ptr(new BlockedLoadersList());
+  DCHECK(blocked_loaders_map_.find(global_routing_id) ==
+         blocked_loaders_map_.end())
+      << "BlockRequestsForRoute called  multiple time for the same RFH";
+  blocked_loaders_map_[global_routing_id] =
+      make_scoped_ptr(new BlockedLoadersList());
 }
 
-void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute(int child_id,
-                                                               int route_id) {
-  ProcessBlockedRequestsForRoute(child_id, route_id, false);
+void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute(
+    const GlobalFrameRoutingId& global_routing_id) {
+  ProcessBlockedRequestsForRoute(global_routing_id, false);
 }
 
-void ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute(int child_id,
-                                                               int route_id) {
-  ProcessBlockedRequestsForRoute(child_id, route_id, true);
+void ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute(
+    const GlobalFrameRoutingId& global_routing_id) {
+  ProcessBlockedRequestsForRoute(global_routing_id, true);
 }
 
 void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
-    int child_id,
-    int route_id,
+    const GlobalFrameRoutingId& global_routing_id,
     bool cancel_requests) {
-  BlockedLoadersMap::iterator iter = blocked_loaders_map_.find(
-      GlobalRoutingID(child_id, route_id));
+  BlockedLoadersMap::iterator iter =
+      blocked_loaders_map_.find(global_routing_id);
   if (iter == blocked_loaders_map_.end()) {
     // It's possible to reach here if the renderer crashed while an interstitial
     // page was showing.

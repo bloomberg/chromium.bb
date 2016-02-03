@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/accessibility_mode_enums.h"
@@ -252,6 +253,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // pointer to the RenderViewHost (which inherits RenderWidgetHost).
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
+  GlobalFrameRoutingId GetGlobalFrameRoutingId();
 
   // This function is called when this is a swapped out RenderFrameHost that
   // lives in the same process as the parent frame. The

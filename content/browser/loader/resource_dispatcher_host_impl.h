@@ -39,6 +39,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
 #include "net/base/request_priority.h"
@@ -63,7 +64,9 @@ class ShareableFileReference;
 namespace content {
 class AppCacheService;
 class AsyncRevalidationManager;
+class FrameTree;
 class NavigationURLLoaderImplCore;
+class RenderFrameHostImpl;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceMessageDelegate;
@@ -77,6 +80,22 @@ struct DownloadSaveInfo;
 struct NavigationRequestInfo;
 struct Referrer;
 
+// This class is responsible for notifying the IO thread (specifically, the
+// ResourceDispatcherHostImpl) of frame events. It has an interace for callers
+// to use and also sends notifications on WebContentsObserver events. All
+// methods (static or class) will be called from the UI thread and post to the
+// IO thread.
+// TODO(csharrison): Add methods tracking visibility and audio changes, to
+// propogate to the ResourceScheduler.
+class LoaderIOThreadNotifier : public WebContentsObserver {
+ public:
+  explicit LoaderIOThreadNotifier(WebContents* web_contents);
+  ~LoaderIOThreadNotifier() override;
+
+  // content::WebContentsObserver:
+  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+};
+
 class CONTENT_EXPORT ResourceDispatcherHostImpl
     : public ResourceDispatcherHost,
       public ResourceLoaderDelegate {
@@ -87,6 +106,24 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Returns the current ResourceDispatcherHostImpl. May return NULL if it
   // hasn't been created yet.
   static ResourceDispatcherHostImpl* Get();
+
+  // The following static methods should all be called from the UI thread.
+
+  // Resumes requests for a given render frame routing id. This will only resume
+  // requests for a single frame.
+  static void ResumeBlockedRequestsForRouteFromUI(
+      const GlobalFrameRoutingId& global_routing_id);
+
+  // Blocks (and does not start) all requests for the frame and its subframes.
+  static void BlockRequestsForFrameFromUI(RenderFrameHost* root_frame_host);
+
+  // Resumes any blocked requests for the specified frame and its subframes.
+  static void ResumeBlockedRequestsForFrameFromUI(
+      RenderFrameHost* root_frame_host);
+
+  // Cancels any blocked request for the frame and its subframes.
+  static void CancelBlockedRequestsForFrameFromUI(
+      RenderFrameHostImpl* root_frame_host);
 
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
@@ -105,8 +142,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       uint32_t download_id,
       const DownloadStartedCallback& started_callback) override;
   void ClearLoginDelegateForRequest(net::URLRequest* request) override;
-  void BlockRequestsForRoute(int child_id, int route_id) override;
-  void ResumeBlockedRequestsForRoute(int child_id, int route_id) override;
 
   // Puts the resource dispatcher host in an inactive state (unable to begin
   // new requests).  Cancels all pending requests.
@@ -198,8 +233,17 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   void RemovePendingRequest(int child_id, int request_id);
 
+  // Causes all new requests for the route identified by |routing_id| to be
+  // blocked (not being started) until ResumeBlockedRequestsForRoute is called.
+  void BlockRequestsForRoute(const GlobalFrameRoutingId& global_routing_id);
+
+  // Resumes any blocked request for the specified route id.
+  void ResumeBlockedRequestsForRoute(
+      const GlobalFrameRoutingId& global_routing_id);
+
   // Cancels any blocked request for the specified route id.
-  void CancelBlockedRequestsForRoute(int child_id, int route_id);
+  void CancelBlockedRequestsForRoute(
+      const GlobalFrameRoutingId& global_routing_id);
 
   // Maintains a collection of temp files created in support of
   // the download_to_file capability. Used to grant access to the
@@ -277,6 +321,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void EnableStaleWhileRevalidateForTesting();
 
  private:
+  friend class LoaderIOThreadNotifier;
   friend class ResourceDispatcherHostTest;
 
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
@@ -323,6 +368,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // A shutdown helper that runs on the IO thread.
   void OnShutdown();
 
+  void OnRenderFrameDeleted(const GlobalFrameRoutingId& global_routing_id);
+
   // Helper function for regular and download requests.
   void BeginRequestInternal(scoped_ptr<net::URLRequest> request,
                             scoped_ptr<ResourceHandler> handler);
@@ -365,8 +412,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   static int CalculateApproximateMemoryCost(net::URLRequest* request);
 
   // Force cancels any pending requests for the given route id.  This method
-  // acts like CancelRequestsForProcess when route_id is -1.
-  void CancelRequestsForRoute(int child_id, int route_id);
+  // acts like CancelRequestsForProcess when the |route_id| member of
+  // |routing_id| is MSG_ROUTING_NONE.
+  void CancelRequestsForRoute(const GlobalFrameRoutingId& global_routing_id);
 
   // The list of all requests that we have pending. This list is not really
   // optimized, and assumes that we have relatively few requests pending at once
@@ -411,9 +459,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void UpdateLoadInfo();
 
   // Resumes or cancels (if |cancel_requests| is true) any blocked requests.
-  void ProcessBlockedRequestsForRoute(int child_id,
-                                      int route_id,
-                                      bool cancel_requests);
+  void ProcessBlockedRequestsForRoute(
+      const GlobalFrameRoutingId& global_routing_id,
+      bool cancel_requests);
 
   void OnRequestResource(int routing_id,
                          int request_id,
@@ -541,7 +589,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   using BlockedLoadersList = std::vector<scoped_ptr<ResourceLoader>>;
   using BlockedLoadersMap =
-      std::map<GlobalRoutingID, scoped_ptr<BlockedLoadersList>>;
+      std::map<GlobalFrameRoutingId, scoped_ptr<BlockedLoadersList>>;
   BlockedLoadersMap blocked_loaders_map_;
 
   // Maps the child_ids to the approximate number of bytes

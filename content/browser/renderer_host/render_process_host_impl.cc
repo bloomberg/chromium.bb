@@ -1953,10 +1953,6 @@ base::TimeDelta RenderProcessHostImpl::GetChildProcessIdleTime() const {
   return base::TimeTicks::Now() - child_process_activity_time_;
 }
 
-void RenderProcessHostImpl::ResumeRequestsForView(int route_id) {
-  widget_helper_->ResumeRequestsForView(route_id);
-}
-
 void RenderProcessHostImpl::FilterURL(bool empty_allowed, GURL* url) {
   FilterURL(this, empty_allowed, url);
 }
