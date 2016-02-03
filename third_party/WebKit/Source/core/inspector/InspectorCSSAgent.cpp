@@ -965,12 +965,9 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSKeyframesRule>> InspectorCSSA
         // Find CSSOM wrapper.
         CSSKeyframesRule* cssKeyframesRule = nullptr;
         for (CSSStyleSheet* styleSheet : *m_documentToCSSStyleSheets.get(ownerDocument)) {
-            ASSERT(styleSheet->ownerNode());
-            RuleSet& ruleSet = styleSheet->contents()->ruleSet();
-            for (auto& rule : ruleSet.keyframesRules()) {
-                if (rule->name().impl() == animationName)
-                    cssKeyframesRule = findKeyframesRule(styleSheet, keyframesRule);
-            }
+            cssKeyframesRule = findKeyframesRule(styleSheet, keyframesRule);
+            if (cssKeyframesRule)
+                break;
         }
         if (!cssKeyframesRule)
             continue;
