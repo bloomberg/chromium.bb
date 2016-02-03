@@ -23,6 +23,15 @@ void FakeBaseTabStripController::AddTab(int index, bool is_active) {
     active_index_ = index;
 }
 
+void FakeBaseTabStripController::AddPinnedTab(int index, bool is_active) {
+  TabRendererData data;
+  data.pinned = true;
+  num_tabs_++;
+  tab_strip_->AddTabAt(index, data, is_active);
+  if (is_active)
+    active_index_ = index;
+}
+
 void FakeBaseTabStripController::RemoveTab(int index) {
   num_tabs_--;
   tab_strip_->RemoveTabAt(index);

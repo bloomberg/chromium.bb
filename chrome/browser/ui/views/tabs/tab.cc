@@ -591,6 +591,10 @@ void Tab::ActiveStateChanged() {
   Layout();
 }
 
+void Tab::MediaStateChanged() {
+  Layout();
+}
+
 bool Tab::IsSelected() const {
   return controller_->IsTabSelected(this);
 }

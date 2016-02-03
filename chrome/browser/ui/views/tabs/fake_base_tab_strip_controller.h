@@ -18,6 +18,7 @@ class FakeBaseTabStripController : public TabStripController {
   ~FakeBaseTabStripController() override;
 
   void AddTab(int index, bool is_active);
+  void AddPinnedTab(int index, bool is_active);
   void RemoveTab(int index);
 
   void set_tab_strip(TabStrip* tab_strip) { tab_strip_ = tab_strip; }

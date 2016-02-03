@@ -49,13 +49,12 @@ class MediaIndicatorButton::FadeAnimationDelegate
   }
 
   void AnimationCanceled(const gfx::Animation* animation) override {
-    button_->showing_media_state_ = button_->media_state_;
-    button_->SchedulePaint();
+    AnimationEnded(animation);
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
     button_->showing_media_state_ = button_->media_state_;
-    button_->SchedulePaint();
+    button_->parent_tab_->MediaStateChanged();
   }
 
   MediaIndicatorButton* const button_;
@@ -78,6 +77,8 @@ MediaIndicatorButton::~MediaIndicatorButton() {}
 void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
   if (next_state == media_state_)
     return;
+
+  TabMediaState previous_media_showing_state = showing_media_state_;
 
   if (next_state != TAB_MEDIA_STATE_NONE)
     ResetImages(next_state);
@@ -104,6 +105,9 @@ void MediaIndicatorButton::TransitionToMediaState(TabMediaState next_state) {
   }
 
   media_state_ = next_state;
+
+  if (previous_media_showing_state != showing_media_state_)
+    parent_tab_->MediaStateChanged();
 
   UpdateEnabledForMuteToggle();
 

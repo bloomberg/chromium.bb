@@ -77,6 +77,7 @@ class MediaIndicatorButton : public views::ImageButton,
   bool IsTriggerableEvent(const ui::Event& event) override;
 
  private:
+  friend class MediaIndicatorButtonTest;
   class FadeAnimationDelegate;
 
   // Returns the tab (parent view) of this MediaIndicatorButton.

@@ -82,6 +82,9 @@ class Tab : public gfx::AnimationDelegate,
   // changed.
   void ActiveStateChanged();
 
+  // Called when the media indicator has changed states.
+  void MediaStateChanged();
+
   // Returns true if the tab is selected.
   bool IsSelected() const;
 
@@ -173,6 +176,7 @@ class Tab : public gfx::AnimationDelegate,
   static float GetInverseDiagonalSlope();
 
  private:
+  friend class MediaIndicatorButtonTest;
   friend class TabTest;
   friend class TabStripTest;
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabHitTestMaskWhenStacked);

@@ -1378,6 +1378,7 @@
       'browser/ui/views/tab_contents/chrome_web_contents_view_delegate_views_unittest.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.cc',
       'browser/ui/views/tabs/fake_base_tab_strip_controller.h',
+      'browser/ui/views/tabs/media_indicator_button_unittest.cc',
       'browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc',
       'browser/ui/views/tabs/tab_strip_layout_unittest.cc',
       'browser/ui/views/tabs/tab_strip_unittest.cc',
