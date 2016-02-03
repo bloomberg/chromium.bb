@@ -111,6 +111,9 @@ def CalculateHash(root):
   if matches:
     return timestamps_data['sha1']
 
+  # Make long hangs when updating the toolchain less mysterious.
+  print 'Calculating hash of toolchain in %s. Please wait...' % root
+  sys.stdout.flush()
   digest = hashlib.sha1()
   for path in file_list:
     digest.update(str(path).replace('/', '\\'))
@@ -293,16 +296,9 @@ def InstallUniversalCRTIfNeeded(abs_target_dir):
   # Trap OSError instead of WindowsError so pylint will succeed on Linux.
   except OSError as e:
     if e.winerror == 740: # The requested operation requires elevation
-      print
-      print '-'*80
-      print
-      print 'Elevation required. You must manually install this update:'
+      print 'Elevation required. You can manually install this update:'
       print '  %s' % installer
-      print
-      print '-'*80
-      print
-      raise Exception('Elevation required. You must manually install %s' %
-                      installer)
+      return
     raise e
 
 

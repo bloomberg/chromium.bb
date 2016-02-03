@@ -21,6 +21,7 @@ useful as the resulting zip can't be redistributed, and most will presumably
 have a Pro license anyway).
 """
 
+import glob
 import optparse
 import os
 import platform
@@ -67,10 +68,14 @@ def BuildFileList():
   elif VS_VERSION == '2015':
     paths += [
         ('VC/redist/x86/Microsoft.VC140.CRT', 'sys32'),
+        ('VC/redist/x86/Microsoft.VC140.CRT', 'win_sdk/bin/x86'),
         ('VC/redist/x86/Microsoft.VC140.MFC', 'sys32'),
         ('VC/redist/debug_nonredist/x86/Microsoft.VC140.DebugCRT', 'sys32'),
         ('VC/redist/debug_nonredist/x86/Microsoft.VC140.DebugMFC', 'sys32'),
         ('VC/redist/x64/Microsoft.VC140.CRT', 'sys64'),
+        ('VC/redist/x64/Microsoft.VC140.CRT', 'VC/bin/amd64_x86'),
+        ('VC/redist/x64/Microsoft.VC140.CRT', 'VC/bin/amd64'),
+        ('VC/redist/x64/Microsoft.VC140.CRT', 'win_sdk/bin/x64'),
         ('VC/redist/x64/Microsoft.VC140.MFC', 'sys64'),
         ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugCRT', 'sys64'),
         ('VC/redist/debug_nonredist/x64/Microsoft.VC140.DebugMFC', 'sys64'),
@@ -151,19 +156,37 @@ def BuildFileList():
                                   installer),
                      os.path.join('installers', installer)))
 
-    system_crt_files = [
-        # Needed to let debug binaries run.
-        'ucrtbased.dll',
-    ]
-    bitness = platform.architecture()[0]
-    # When running 64-bit python the x64 DLLs will be in System32
-    x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-    x64_path = os.path.join(r'C:\Windows', x64_path)
-    for system_crt_file in system_crt_files:
-        result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
-                       os.path.join('sys32', system_crt_file)))
-        result.append((os.path.join(x64_path, system_crt_file),
-                       os.path.join('sys64', system_crt_file)))
+    if VS_VERSION == '2015':
+      # Copy the x86 ucrt DLLs to all directories with 32-bit binaries that are
+      # added to the path by SetEnv.cmd, and to sys32.
+      ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x86\*'))
+      for ucrt_path in ucrt_paths:
+        ucrt_file = os.path.split(ucrt_path)[1]
+        for dest_dir in [ r'win_sdk\bin\x86', 'sys32' ]:
+          result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+
+      # Copy the x64 ucrt DLLs to all directories with 64-bit binaries that are
+      # added to the path by SetEnv.cmd, and to sys64.
+      ucrt_paths = glob.glob(os.path.join(sdk_path, r'redist\ucrt\dlls\x64\*'))
+      for ucrt_path in ucrt_paths:
+        ucrt_file = os.path.split(ucrt_path)[1]
+        for dest_dir in [ r'VC\bin\amd64_x86', r'VC\bin\amd64',
+                          r'win_sdk\bin\x64', 'sys64']:
+          result.append((ucrt_path, os.path.join(dest_dir, ucrt_file)))
+
+      system_crt_files = [
+          # Needed to let debug binaries run.
+          'ucrtbased.dll',
+      ]
+      bitness = platform.architecture()[0]
+      # When running 64-bit python the x64 DLLs will be in System32
+      x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
+      x64_path = os.path.join(r'C:\Windows', x64_path)
+      for system_crt_file in system_crt_files:
+          result.append((os.path.join(r'C:\Windows\SysWOW64', system_crt_file),
+                         os.path.join('sys32', system_crt_file)))
+          result.append((os.path.join(x64_path, system_crt_file),
+                         os.path.join('sys64', system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
   # drop .msi files because we don't need installers.
@@ -185,7 +208,6 @@ def GenerateSetEnvCmd(target_dir):
             # Common to x86 and x64
             'set VSINSTALLDIR=%~dp0..\\..\\\n'
             'set VCINSTALLDIR=%~dp0..\\..\\VC\\\n'
-            'set PATH=%~dp0..\\..\\Common7\\IDE;%PATH%\n'
             'set INCLUDE=%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\um;'
             '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\shared;'
             '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\winrt;'.replace(
