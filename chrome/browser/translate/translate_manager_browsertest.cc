@@ -92,16 +92,10 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest, PageLanguageDetection) {
             chrome_translate_client->GetLanguageState().original_language());
 }
 
-// Test is flaky on Win http://crbug.com/166334
-#if defined(OS_WIN)
-#define MAYBE_PRE_TranslateSessionRestore DISABLED_PRE_TranslateSessionRestore
-#else
-#define MAYBE_PRE_TranslateSessionRestore PRE_TranslateSessionRestore
-#endif
 // Test that session restore restores the translate infobar and other translate
 // settings.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
-                       MAYBE_PRE_TranslateSessionRestore) {
+                       PRE_TranslateSessionRestore) {
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
 
@@ -129,13 +123,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
             chrome_translate_client->GetLanguageState().original_language());
 }
 
-#if defined (OS_WIN)
-#define MAYBE_TranslateSessionRestore DISABLED_TranslateSessionRestore
-#else
-#define MAYBE_TranslateSessionRestore TranslateSessionRestore
-#endif
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
-                       MAYBE_TranslateSessionRestore) {
+                       TranslateSessionRestore) {
   content::WebContents* active_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ChromeTranslateClient* active_translate_client =
