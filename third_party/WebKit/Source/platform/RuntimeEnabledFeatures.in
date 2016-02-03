@@ -17,9 +17,6 @@
 // "stable" features listed here should be rare, as anything which we've shipped stable
 // can have its runtime flag removed soon after.
 //
-// condition=ENABLE_NAME is used for wrapping features in compile-time
-// #if ENABLE(FEATURE) guards.  These are deprecated and should all be removed.
-//
 // origin_trial_feature_name=FEATURE_NAME is used to integrate the feature with the experimental framework, so that the
 // feature can be enabled at runtime on a per-page basis through a signed token for the corresponding feature name.
 // Declaring the origin_trial_feature_name will cause a static method to be generated in OriginTrials.h/cpp. This static
