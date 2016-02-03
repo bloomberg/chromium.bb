@@ -387,8 +387,8 @@ SpdySessionDependencies::SpdySessionDependencies(
       time_func(&base::TimeTicks::Now),
       enable_spdy31(true),
       enable_http2(true),
-      parse_alternative_services(true),
-      enable_alternative_service_with_different_host(true),
+      parse_alternative_services(false),
+      enable_alternative_service_with_different_host(false),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
 }
