@@ -388,6 +388,8 @@ const char* SpdyFramer::StateToString(int state) {
       return "SPDY_GOAWAY_FRAME_PAYLOAD";
     case SPDY_RST_STREAM_FRAME_PAYLOAD:
       return "SPDY_RST_STREAM_FRAME_PAYLOAD";
+    case SPDY_SETTINGS_FRAME_HEADER:
+      return "SPDY_SETTINGS_FRAME_HEADER";
     case SPDY_SETTINGS_FRAME_PAYLOAD:
       return "SPDY_SETTINGS_FRAME_PAYLOAD";
     case SPDY_ALTSVC_FRAME_PAYLOAD:
@@ -541,18 +543,18 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       case SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK: {
         // Control frames that contain header blocks
         // (SYN_STREAM, SYN_REPLY, HEADERS, PUSH_PROMISE, CONTINUATION)
-        // take a different path through the state machine - they
+        // take a special path through the state machine - they
         // will go:
         //   1. SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK
         //   2. SPDY_CONTROL_FRAME_HEADER_BLOCK
-        //
-        // SETTINGS frames take a slightly modified route:
-        //   1. SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK
-        //   2. SPDY_SETTINGS_FRAME_PAYLOAD
-        //
-        //  All other control frames will use the alternate route directly to
-        //  SPDY_CONTROL_FRAME_PAYLOAD
         int bytes_read = ProcessControlFrameBeforeHeaderBlock(data, len);
+        len -= bytes_read;
+        data += bytes_read;
+        break;
+      }
+
+      case SPDY_SETTINGS_FRAME_HEADER: {
+        int bytes_read = ProcessSettingsFrameHeader(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -1126,15 +1128,19 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   }
 
   if (frame_size_without_variable_data > 0) {
-    // We have a control frame with a header block. We need to parse the
-    // remainder of the control frame's header before we can parse the header
-    // block. The start of the header block varies with the control type.
+    // We have a control frame with variable-size data. We need to parse the
+    // remainder of the control frame's header before we can parse the payload.
+    // The start of the payload varies with the control frame type.
     DCHECK_GE(frame_size_without_variable_data,
               static_cast<int32_t>(current_frame_buffer_.len()));
     remaining_control_header_ =
         frame_size_without_variable_data - current_frame_buffer_.len();
 
-    CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
+    if (current_frame_type_ == SETTINGS) {
+      CHANGE_STATE(SPDY_SETTINGS_FRAME_HEADER);
+    } else {
+      CHANGE_STATE(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK);
+    }
     return;
   }
 
@@ -1408,17 +1414,6 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         }
         CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
-      case SETTINGS:
-        if (protocol_version_ == HTTP2 &&
-            current_frame_flags_ & SETTINGS_FLAG_ACK) {
-          visitor_->OnSettingsAck();
-          CHANGE_STATE(SPDY_FRAME_COMPLETE);
-        } else {
-          visitor_->OnSettings(current_frame_flags_ &
-              SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
-          CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
-        }
-        break;
       case SYN_REPLY:
         DCHECK_EQ(SPDY3, protocol_version_);
         /* FALLTHROUGH */
@@ -1635,6 +1630,31 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
 
   // Return amount processed.
   return process_bytes;
+}
+
+size_t SpdyFramer::ProcessSettingsFrameHeader(const char* data, size_t len) {
+  // TODO(birenroy): Remove this state when removing SPDY3. I think it only
+  // exists to read the number of settings in the frame for SPDY3. This value
+  // is never parsed or used.
+  size_t bytes_read = 0;
+  if (remaining_control_header_ > 0) {
+    bytes_read =
+        UpdateCurrentFrameBuffer(&data, &len, remaining_control_header_);
+    remaining_control_header_ -= bytes_read;
+    remaining_data_length_ -= bytes_read;
+  }
+  if (remaining_control_header_ == 0) {
+    if (protocol_version_ == HTTP2 &&
+        current_frame_flags_ & SETTINGS_FLAG_ACK) {
+      visitor_->OnSettingsAck();
+      CHANGE_STATE(SPDY_FRAME_COMPLETE);
+    } else {
+      visitor_->OnSettings(current_frame_flags_ &
+                           SETTINGS_FLAG_CLEAR_PREVIOUSLY_PERSISTED_SETTINGS);
+      CHANGE_STATE(SPDY_SETTINGS_FRAME_PAYLOAD);
+    }
+  }
+  return bytes_read;
 }
 
 size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
