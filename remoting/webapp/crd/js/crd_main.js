@@ -16,11 +16,11 @@ var remoting = remoting || {};
 remoting.initHostlist_ = function(handleConnect) {
   remoting.hostController = new remoting.HostController();
   remoting.hostList = new remoting.HostList(
-      base.getHtmlElement('host-list'),
-      base.getHtmlElement('host-list-empty'),
-      base.getHtmlElement('host-list-error-message'),
-      base.getHtmlElement('host-list-refresh-failed-button'),
-      base.getHtmlElement('host-list-loading-indicator'),
+      document.getElementById('host-list'),
+      document.getElementById('host-list-empty'),
+      document.getElementById('host-list-error-message'),
+      document.getElementById('host-list-refresh-failed-button'),
+      document.getElementById('host-list-loading-indicator'),
       remoting.showErrorMessage,
       handleConnect);
 
@@ -68,13 +68,13 @@ function isHostModeSupported_() {
  */
 remoting.initHomeScreenUi = function() {
   remoting.setMode(remoting.AppMode.HOME);
-  var dialog = base.getHtmlElement('paired-clients-list');
-  var message = base.getHtmlElement('paired-client-manager-message');
-  var deleteAll = base.getHtmlElement('delete-all-paired-clients');
-  var close = base.getHtmlElement('close-paired-client-manager-dialog');
-  var working = base.getHtmlElement('paired-client-manager-dialog-working');
-  var error = base.getHtmlElement('paired-client-manager-dialog-error');
-  var noPairedClients = base.getHtmlElement('no-paired-clients');
+  var dialog = document.getElementById('paired-clients-list');
+  var message = document.getElementById('paired-client-manager-message');
+  var deleteAll = document.getElementById('delete-all-paired-clients');
+  var close = document.getElementById('close-paired-client-manager-dialog');
+  var working = document.getElementById('paired-client-manager-dialog-working');
+  var error = document.getElementById('paired-client-manager-dialog-error');
+  var noPairedClients = document.getElementById('no-paired-clients');
   remoting.pairedClientManager =
       new remoting.PairedClientManager(remoting.hostController, dialog, message,
                                        deleteAll, close, noPairedClients,

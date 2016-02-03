@@ -178,7 +178,7 @@ remoting.DesktopConnectedView.prototype.initUI_ = function() {
       this.plugin_, this.container_,
       this.container_.querySelector('.mouse-cursor-overlay'));
 
-  var scrollerElement = base.getHtmlElement('scroller');
+  var scrollerElement = document.getElementById('scroller');
   this.viewport_ = new remoting.DesktopViewport(
       scrollerElement || document.body,
       this.plugin_.hostDesktop(),

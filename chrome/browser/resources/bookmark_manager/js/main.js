@@ -295,7 +295,7 @@ function setSearch(searchText) {
  * This returns the user visible path to the folder where the bookmark is
  * located.
  * @param {number} parentId The ID of the parent folder.
- * @return {string|undefined} The path to the the bookmark,
+ * @return {string} The path to the the bookmark,
  */
 function getFolder(parentId) {
   var parentNode = bmm.tree.getBookmarkNodeById(parentId);

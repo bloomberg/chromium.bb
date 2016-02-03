@@ -180,11 +180,11 @@ remoting.AppRemotingActivity.prototype.onAppHostResponse_ =
  */
 remoting.AppRemotingActivity.prototype.onConnected = function(connectionInfo) {
   var connectedView = new remoting.AppConnectedView(
-      base.getHtmlElement('client-container'),
+      document.getElementById('client-container'),
       this.windowShape_, connectionInfo, this.windowMessageDispatcher_);
 
   var idleDetector = new remoting.IdleDetector(
-      base.getHtmlElement('idle-dialog'),
+      document.getElementById('idle-dialog'),
       this.windowShape_,
       this.app_.getApplicationName(),
       this.stop.bind(this));

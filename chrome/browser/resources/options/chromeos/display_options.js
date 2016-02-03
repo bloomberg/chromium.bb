@@ -346,7 +346,7 @@ cr.define('options', function() {
 
     /**
      * @param {string} id
-     * @return {!options.DisplayInfo|undefined}
+     * @return {options.DisplayInfo}
      */
     getDisplayInfoFromId_(id) {
       return this.displays_.find(function(display) {

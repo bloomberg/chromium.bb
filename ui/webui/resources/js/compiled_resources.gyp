@@ -32,7 +32,7 @@
     {
       'target_name': 'util',
       'variables': {
-        'depends': ['compiled_resources.gyp:cr', 'assert.js'],
+        'depends': ['compiled_resources.gyp:cr'],
         # TODO(jlklein): Get <(VARIABLES) in transient externs/depends working.
         'externs': ['../../../../third_party/closure_compiler/externs/chrome_send.js'],
       },

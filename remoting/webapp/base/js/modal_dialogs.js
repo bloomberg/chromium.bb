@@ -149,6 +149,7 @@ remoting.MessageDialog.prototype.dispose = function() {
 
 /**
  * @param {remoting.MessageDialog.Result} result
+ * @return {Function}
  * @private
  */
 remoting.MessageDialog.prototype.onClicked_ = function(result) {
@@ -269,7 +270,7 @@ remoting.ConnectingDialog = function(cancelCallback) {
   /** @private */
   this.dialog_ = new remoting.MessageDialog(
       remoting.AppMode.CLIENT_CONNECTING,
-      base.getHtmlElement('cancel-connect-button'));
+      document.getElementById('cancel-connect-button'));
   /** @private */
   this.onCancel_ = cancelCallback;
 };

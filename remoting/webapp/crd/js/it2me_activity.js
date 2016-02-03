@@ -24,7 +24,7 @@ remoting.It2MeActivity = function() {
   /** @private */
   this.passCode_ = '';
 
-  var form = base.getHtmlElement('access-code-form');
+  var form = document.getElementById('access-code-form');
   /** @private */
   this.accessCodeDialog_ = remoting.modalDialogFactory.createInputDialog(
     remoting.AppMode.CLIENT_UNCONNECTED,
@@ -151,7 +151,7 @@ remoting.It2MeActivity.prototype.getDesktopActivityForTesting = function() {
 remoting.It2MeActivity.prototype.showFinishDialog_ = function(mode) {
   var finishDialog = new remoting.MessageDialog(
       mode,
-      base.getHtmlElement('client-finished-it2me-button'));
+      document.getElementById('client-finished-it2me-button'));
   finishDialog.show().then(function() {
     remoting.setMode(remoting.AppMode.HOME);
   });

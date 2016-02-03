@@ -95,7 +95,7 @@ remoting.DesktopRemotingActivity.prototype.onConnected =
   }
 
   this.connectedView_ = remoting.DesktopConnectedView.create(
-      base.getHtmlElement('client-container'), connectionInfo);
+      document.getElementById('client-container'), connectionInfo);
 
   // Apply the default or previously-specified keyboard remapping.
   var remapping = connectionInfo.host().options.getRemapKeys();

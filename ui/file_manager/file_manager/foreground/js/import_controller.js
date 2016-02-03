@@ -516,8 +516,7 @@ importer.ClickSource = {
 importer.RuntimeCommandWidget = function() {
 
   /** @private {HTMLElement} */
-  this.detailsPanel_ = /** @type {HTMLElement} */(
-      document.getElementById('cloud-import-details'));
+  this.detailsPanel_ = document.getElementById('cloud-import-details');
   this.detailsPanel_.addEventListener(
       'transitionend',
       this.onDetailsTransitionEnd_.bind(this),

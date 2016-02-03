@@ -239,7 +239,7 @@ SearchBox.prototype.onKeyDown_ = function(event) {
   if (event.keyIdentifier != 'U+001B' /* Esc */ || this.inputElement.value)
     return;
 
-  this.inputElement.tabIndex = -1;  // Focus to default element after blur.
+  this.inputElement.tabIndex = '-1';  // Focus to default element after blur.
   this.inputElement.blur();
 };
 
@@ -275,8 +275,8 @@ SearchBox.prototype.updateStyles_ = function() {
   var hasFocusOnInput = this.element.classList.contains('has-cursor');
 
   // See go/filesapp-tabindex for tabindexes.
-  this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? 13 : -1;
-  this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? -1 : 12;
+  this.inputElement.tabIndex = (hasText || hasFocusOnInput) ? '13' : '-1';
+  this.searchButton.tabIndex = (hasText || hasFocusOnInput) ? '-1' : '12';
 };
 
 /**

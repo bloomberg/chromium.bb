@@ -70,7 +70,7 @@ browserTest.isVisible = function(id) {
   var pred = new browserTest.Predicate();
   pred.evaluate = function() {
     /** @type {HTMLElement} */
-    var element = base.getHtmlElement(id);
+    var element = document.getElementById(id);
     browserTest.expect(Boolean(element), 'No such element: ' + id);
     return element.getBoundingClientRect().width !== 0;
   };

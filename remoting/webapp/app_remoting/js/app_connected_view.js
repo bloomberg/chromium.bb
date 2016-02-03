@@ -49,7 +49,7 @@ remoting.AppConnectedView = function(containerElement, windowShape,
   // Initialize the context menus.
   if (!remoting.platformIsChromeOS()) {
     menuAdapter = new remoting.ContextMenuDom(
-        base.getHtmlElement('context-menu'), windowShape);
+        document.getElementById('context-menu'), windowShape);
   }
 
   this.contextMenu_ = new remoting.ApplicationContextMenu(
