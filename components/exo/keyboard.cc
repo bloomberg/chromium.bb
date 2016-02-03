@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "components/exo/keyboard_delegate.h"
+#include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
@@ -19,8 +20,10 @@ namespace exo {
 Keyboard::Keyboard(KeyboardDelegate* delegate)
     : delegate_(delegate), focus_(nullptr), modifier_flags_(0) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
-  aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
-      ->AddObserver(this);
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
+  focus_client->AddObserver(this);
+  OnWindowFocused(focus_client->GetFocusedWindow(), nullptr);
 }
 
 Keyboard::~Keyboard() {
@@ -111,7 +114,13 @@ void Keyboard::OnSurfaceDestroying(Surface* surface) {
 // Keyboard, private:
 
 Surface* Keyboard::GetEffectiveFocus(aura::Window* window) const {
-  Surface* focus = Surface::AsSurface(window);
+  Surface* main_surface =
+      ShellSurface::GetMainSurface(window->GetToplevelWindow());
+  Surface* window_surface = Surface::AsSurface(window);
+
+  // Use window surface as effective focus and fallback to main surface when
+  // needed.
+  Surface* focus = window_surface ? window_surface : main_surface;
   if (!focus)
     return nullptr;
 

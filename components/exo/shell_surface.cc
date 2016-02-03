@@ -70,6 +70,7 @@ class ShellSurfaceWidget : public views::Widget {
 // ShellSurface, public:
 
 DEFINE_LOCAL_WINDOW_PROPERTY_KEY(std::string*, kApplicationIdKey, nullptr)
+DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
 ShellSurface::ShellSurface(Surface* surface) : surface_(surface) {
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
@@ -190,6 +191,16 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   geometry_ = geometry;
 }
 
+// static
+void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
+  window->SetProperty(kMainSurfaceKey, surface);
+}
+
+// static
+Surface* ShellSurface::GetMainSurface(aura::Window* window) {
+  return window->GetProperty(kMainSurfaceKey);
+}
+
 scoped_refptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
     const {
   scoped_refptr<base::trace_event::TracedValue> value =
@@ -231,6 +242,8 @@ bool ShellSurface::IsSurfaceSynchronized() const {
 // SurfaceObserver overrides:
 
 void ShellSurface::OnSurfaceDestroying(Surface* surface) {
+  if (widget_)
+    SetMainSurface(widget_->GetNativeWindow(), nullptr);
   surface->RemoveSurfaceObserver(this);
   surface_ = nullptr;
 
@@ -333,6 +346,7 @@ void ShellSurface::CreateShellSurfaceWidget() {
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
   SetApplicationId(widget_->GetNativeWindow(), &application_id_);
+  SetMainSurface(widget_->GetNativeWindow(), surface_);
 
   // Start tracking window state changes.
   ash::wm::GetWindowState(widget_->GetNativeWindow())->AddObserver(this);

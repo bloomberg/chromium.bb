@@ -94,6 +94,10 @@ class ShellSurface : public SurfaceDelegate,
   // for the surface from the user's perspective.
   void SetGeometry(const gfx::Rect& geometry);
 
+  // Sets the main surface for the window.
+  static void SetMainSurface(aura::Window* window, Surface* surface);
+  static Surface* GetMainSurface(aura::Window* window);
+
   // Returns a trace value representing the state of the surface.
   scoped_refptr<base::trace_event::TracedValue> AsTracedValue() const;
 
