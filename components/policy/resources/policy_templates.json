@@ -7075,7 +7075,7 @@
       'id': 191,
       'caption': '''System wide flags to be applied on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> start-up''',
       'tags': [],
-      'desc': '''Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied before <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is started even for the sign-in screen.''',
+      'desc': '''Specifies the flags that should be applied to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when it starts. The specified flags are applied on the login screen only. Flags set via this policy do not propagate into user sessions.''',
     },
     {
       'name': 'UptimeLimit',

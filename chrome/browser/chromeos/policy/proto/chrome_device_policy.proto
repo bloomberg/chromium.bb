@@ -347,8 +347,9 @@ message AllowRedeemChromeOsRegistrationOffersProto {
 }
 
 message StartUpFlagsProto {
-  // The list of flags to be applied to chrome on start-up (back up store for
-  // owner set flags in about:flags).
+  // Specifies the flags that should be applied to Google Chrome when it starts.
+  // The specified flags are applied on the login screen only. Flags set via
+  // this policy do not propagate into user sessions.
   repeated string flags = 1;
 }
 
