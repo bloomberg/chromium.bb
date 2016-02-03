@@ -48,7 +48,7 @@
     <div id="main-container">
       <div id="date-accessed">[[historyDate]]</div>
       <div id="history-item-list">
-        <template is="dom-repeat" items="[[historyItems]]"
+        <template is="dom-repeat" items="{{historyItems}}"
             as="historyItem">
           <history-item time-accessed_="[[historyItem.dateTimeOfDay]]"
               website-title_="[[historyItem.title]]"
