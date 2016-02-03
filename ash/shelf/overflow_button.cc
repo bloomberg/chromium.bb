@@ -34,9 +34,9 @@ const int kBackgroundOffset = (48 - kButtonHoverSize) / 2;
 
 }  // namesapce
 
-OverflowButton::OverflowButton(views::ButtonListener* listener)
-    : CustomButton(listener),
-      bottom_image_(NULL) {
+OverflowButton::OverflowButton(views::ButtonListener* listener,
+                               ShelfLayoutManager* shelf)
+    : CustomButton(listener), bottom_image_(nullptr), shelf_(shelf) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   bottom_image_ = rb->GetImageNamed(IDR_ASH_SHELF_OVERFLOW).ToImageSkia();
 
@@ -53,11 +53,9 @@ void OverflowButton::OnShelfAlignmentChanged() {
 void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
   gfx::Rect bounds(GetContentsBounds());
   gfx::Rect rect(0, 0, kButtonHoverSize, kButtonHoverSize);
-  ShelfLayoutManager* shelf =
-      ShelfLayoutManager::ForShelf(GetWidget()->GetNativeView());
 
   // Nudge the background a little to line up right.
-  if (shelf->IsHorizontalAlignment()) {
+  if (shelf_->IsHorizontalAlignment()) {
     rect.set_origin(gfx::Point(
         bounds.x() + ((bounds.width() - kButtonHoverSize) / 2) - 1,
         bounds.y() + kBackgroundOffset - 1));
@@ -82,16 +80,14 @@ void OverflowButton::PaintBackground(gfx::Canvas* canvas, int alpha) {
 }
 
 void OverflowButton::OnPaint(gfx::Canvas* canvas) {
-  ShelfLayoutManager* layout_manager =
-      ShelfLayoutManager::ForShelf(GetWidget()->GetNativeView());
-  ShelfAlignment alignment = layout_manager->GetAlignment();
+  ShelfAlignment alignment = shelf_->GetAlignment();
 
   gfx::Rect bounds(GetContentsBounds());
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int background_image_id = 0;
-  if (layout_manager->shelf_widget()->shelf()->IsShowingOverflowBubble())
+  if (shelf_->shelf_widget()->shelf()->IsShowingOverflowBubble())
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_PRESSED;
-  else if(layout_manager->shelf_widget()->GetDimsShelf())
+  else if (shelf_->shelf_widget()->GetDimsShelf())
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_ON_BLACK;
   else
     background_image_id = IDR_AURA_NOTIFICATION_BACKGROUND_NORMAL;

@@ -30,7 +30,8 @@ namespace ash {
 
 const char StatusAreaWidget::kNativeViewName[] = "StatusAreaWidget";
 
-StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
+StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
+                                   ShelfWidget* shelf_widget)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
       overview_button_tray_(NULL),
       system_tray_(NULL),
@@ -39,7 +40,8 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container)
       logout_button_tray_(NULL),
       virtual_keyboard_tray_(NULL),
 #endif
-      login_status_(user::LOGGED_IN_NONE) {
+      login_status_(user::LOGGED_IN_NONE),
+      shelf_widget_(shelf_widget) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
@@ -101,7 +103,7 @@ bool StatusAreaWidget::ShouldShowShelf() const {
        web_notification_tray_->ShouldBlockShelfAutoHide()))
     return true;
 
-  if (!RootWindowController::ForShelf(GetNativeView())->shelf()->IsVisible())
+  if (!shelf_widget_->shelf()->IsVisible())
     return false;
 
   // If the shelf is currently visible, don't hide the shelf if the mouse

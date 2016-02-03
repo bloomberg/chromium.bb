@@ -33,7 +33,6 @@ namespace ash {
 class FocusCycler;
 class ShelfDelegate;
 class ShelfIconObserver;
-class ShelfLayoutManager;
 class ShelfModel;
 class ShelfView;
 class ShelfWidget;

@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/display/display_manager.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
@@ -32,7 +33,8 @@ class AshPopupAlignmentDelegateTest : public test::AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         keyboard::switches::kEnableVirtualKeyboard);
     test::AshTestBase::SetUp();
-    SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
+    SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+        ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
   }
 
   void TearDown() override {
@@ -266,10 +268,17 @@ TEST_F(AshPopupAlignmentDelegateTest, Extended) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("600x600,800x800");
-  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
+  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
 
-  AshPopupAlignmentDelegate for_2nd_display;
-  UpdateWorkArea(&for_2nd_display, ScreenUtil::GetSecondaryDisplay());
+  gfx::Display second_display = ScreenUtil::GetSecondaryDisplay();
+  aura::Window* second_root =
+      Shell::GetInstance()
+          ->window_tree_host_manager()
+          ->GetRootWindowForDisplayId(second_display.id());
+  AshPopupAlignmentDelegate for_2nd_display(
+      ShelfLayoutManager::ForShelf(second_root));
+  UpdateWorkArea(&for_2nd_display, second_display);
   // Make sure that the toast position on the secondary display is
   // positioned correctly.
   EXPECT_LT(1300, for_2nd_display.GetToastOriginX(gfx::Rect(0, 0, 10, 10)));
@@ -284,10 +293,11 @@ TEST_F(AshPopupAlignmentDelegateTest, Unified) {
 
   // Reset the delegate as the primary display's shelf will be destroyed during
   // transition.
-  SetAlignmentDelegate(scoped_ptr<AshPopupAlignmentDelegate>());
+  SetAlignmentDelegate(nullptr);
 
   UpdateDisplay("600x600,800x800");
-  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate()));
+  SetAlignmentDelegate(make_scoped_ptr(new AshPopupAlignmentDelegate(
+      ShelfLayoutManager::ForShelf(Shell::GetPrimaryRootWindow()))));
 
   EXPECT_GT(600,
             alignment_delegate()->GetToastOriginX(gfx::Rect(0, 0, 10, 10)));

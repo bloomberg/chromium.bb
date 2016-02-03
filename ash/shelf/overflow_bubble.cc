@@ -94,9 +94,8 @@ void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
   DCHECK(widget == bubble_->GetWidget());
   bubble_ = NULL;
   anchor_ = NULL;
+  shelf_view_->shelf_layout_manager()->shelf_widget()->shelf()->SchedulePaint();
   shelf_view_ = NULL;
-  ShelfLayoutManager::ForShelf(
-      widget->GetNativeView())->shelf_widget()->shelf()->SchedulePaint();
 }
 
 }  // namespace ash

@@ -627,19 +627,19 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   SetContentsView(delegate_view_);
   delegate_view_->SetParentLayer(GetLayer());
 
-  status_area_widget_ = new StatusAreaWidget(status_container);
+  shelf_layout_manager_ = new ShelfLayoutManager(this);
+  shelf_layout_manager_->AddObserver(this);
+  shelf_container->SetLayoutManager(shelf_layout_manager_);
+  shelf_layout_manager_->set_workspace_controller(workspace_controller);
+  workspace_controller->SetShelf(shelf_layout_manager_);
+
+  status_area_widget_ = new StatusAreaWidget(status_container, this);
   status_area_widget_->CreateTrayViews();
   if (Shell::GetInstance()->session_state_delegate()->
           IsActiveUserSessionStarted()) {
     status_area_widget_->Show();
   }
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
-
-  shelf_layout_manager_ = new ShelfLayoutManager(this);
-  shelf_layout_manager_->AddObserver(this);
-  shelf_container->SetLayoutManager(shelf_layout_manager_);
-  shelf_layout_manager_->set_workspace_controller(workspace_controller);
-  workspace_controller->SetShelf(shelf_layout_manager_);
 
   status_container->SetLayoutManager(
       new StatusAreaLayoutManager(status_container, this));

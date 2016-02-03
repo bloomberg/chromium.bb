@@ -426,8 +426,8 @@ DockedWindowLayoutManager::~DockedWindowLayoutManager() {
 
 void DockedWindowLayoutManager::Shutdown() {
   if (shelf_ && shelf_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForShelf(
-        shelf_->shelf_widget()->GetNativeWindow());
+    ShelfLayoutManager* shelf_layout_manager =
+        shelf_->shelf_widget()->shelf_layout_manager();
     shelf_layout_manager->RemoveObserver(this);
     shelf_observer_.reset();
   }
@@ -540,8 +540,8 @@ void DockedWindowLayoutManager::SetShelf(Shelf* shelf) {
   DCHECK(!shelf_);
   shelf_ = shelf;
   if (shelf_->shelf_widget()) {
-    ShelfLayoutManager* shelf_layout_manager = ShelfLayoutManager::ForShelf(
-        shelf_->shelf_widget()->GetNativeWindow());
+    ShelfLayoutManager* shelf_layout_manager =
+        shelf_->shelf_widget()->shelf_layout_manager();
     shelf_layout_manager->AddObserver(this);
     shelf_observer_.reset(new ShelfWindowObserver(this));
   }
@@ -756,7 +756,7 @@ void DockedWindowLayoutManager::SetChildBounds(
     return;
   // Whenever one of our windows is moved or resized enforce layout.
   ShelfLayoutManager* shelf_layout =
-      ShelfLayoutManager::ForShelf(dock_container_);
+      shelf_->shelf_widget()->shelf_layout_manager();
   if (shelf_layout)
     shelf_layout->UpdateVisibilityState();
 }

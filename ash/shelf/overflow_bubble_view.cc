@@ -41,8 +41,6 @@ OverflowBubbleView::~OverflowBubbleView() {
 
 void OverflowBubbleView::InitOverflowBubble(views::View* anchor,
                                             ShelfView* shelf_view) {
-  // set_anchor_view needs to be called before GetShelfLayoutManager() can be
-  // called.
   SetAnchorView(anchor);
   set_arrow(GetBubbleArrow());
   set_background(NULL);
@@ -108,6 +106,10 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
   scroll_offset_.set_y(y);
 }
 
+ShelfLayoutManager* OverflowBubbleView::GetShelfLayoutManager() const {
+  return shelf_view_ ? shelf_view_->shelf_layout_manager() : nullptr;
+}
+
 gfx::Size OverflowBubbleView::GetPreferredSize() const {
   gfx::Size preferred_size = GetContentsSize();
 
@@ -162,12 +164,6 @@ bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   Layout();
 
   return true;
-}
-
-ShelfLayoutManager* OverflowBubbleView::GetShelfLayoutManager() const {
-  return GetAnchorView() ? ShelfLayoutManager::ForShelf(
-                               GetAnchorView()->GetWidget()->GetNativeView())
-                         : NULL;
 }
 
 void OverflowBubbleView::OnScrollEvent(ui::ScrollEvent* event) {

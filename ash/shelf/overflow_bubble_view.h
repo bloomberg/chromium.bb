@@ -43,6 +43,8 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
   void ScrollByXOffset(int x_offset);
   void ScrollByYOffset(int y_offset);
 
+  ShelfLayoutManager* GetShelfLayoutManager() const;
+
   // views::View overrides:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
@@ -51,8 +53,6 @@ class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
 
   // ui::EventHandler overrides:
   void OnScrollEvent(ui::ScrollEvent* event) override;
-
-  ShelfLayoutManager* GetShelfLayoutManager() const;
 
   ShelfView* shelf_view_;  // Owned by views hierarchy.
   gfx::Vector2d scroll_offset_;

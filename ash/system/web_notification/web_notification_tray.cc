@@ -182,7 +182,8 @@ WebNotificationTray::WebNotificationTray(StatusAreaWidget* status_area_widget)
   message_center_tray_.reset(new message_center::MessageCenterTray(
       this,
       message_center::MessageCenter::Get()));
-  popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate());
+  popup_alignment_delegate_.reset(new AshPopupAlignmentDelegate(
+      status_area_widget->shelf_widget()->shelf_layout_manager()));
   popup_collection_.reset(new message_center::MessagePopupCollection(
       ash::Shell::GetContainer(
           status_area_widget->GetNativeView()->GetRootWindow(),

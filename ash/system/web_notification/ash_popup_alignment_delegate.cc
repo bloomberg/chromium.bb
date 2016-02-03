@@ -32,16 +32,16 @@ const int kNoToastMarginBorderAndShadowOffset = 2;
 
 }
 
-AshPopupAlignmentDelegate::AshPopupAlignmentDelegate()
-    : screen_(NULL), root_window_(NULL), shelf_(NULL), system_tray_height_(0) {
+AshPopupAlignmentDelegate::AshPopupAlignmentDelegate(ShelfLayoutManager* shelf)
+    : screen_(NULL), root_window_(NULL), shelf_(shelf), system_tray_height_(0) {
+  shelf_->AddObserver(this);
 }
 
 AshPopupAlignmentDelegate::~AshPopupAlignmentDelegate() {
   if (screen_)
     screen_->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
-  if (shelf_)
-    shelf_->RemoveObserver(this);
+  shelf_->RemoveObserver(this);
 }
 
 void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
@@ -51,7 +51,6 @@ void AshPopupAlignmentDelegate::StartObserving(gfx::Screen* screen,
   root_window_ = ash::Shell::GetInstance()
                      ->window_tree_host_manager()
                      ->GetRootWindowForDisplayId(display.id());
-  UpdateShelf();
   screen->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
   if (system_tray_height_ > 0)
@@ -63,7 +62,7 @@ void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
 
   // If the shelf is shown during auto-hide state, the distance from the edge
   // should be reduced by the height of shelf's shown height.
-  if (shelf_ && shelf_->visibility_state() == SHELF_AUTO_HIDE &&
+  if (shelf_->visibility_state() == SHELF_AUTO_HIDE &&
       shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
     system_tray_height_ -= kShelfSize - ShelfLayoutManager::kAutoHideSize;
   }
@@ -72,9 +71,6 @@ void AshPopupAlignmentDelegate::SetSystemTrayHeight(int height) {
     system_tray_height_ += message_center::kMarginBetweenItems;
   else
     system_tray_height_ = 0;
-
-  if (!shelf_)
-    return;
 
   DoUpdateIfPossible();
 }
@@ -117,16 +113,7 @@ void AshPopupAlignmentDelegate::RecomputeAlignment(
 }
 
 ShelfAlignment AshPopupAlignmentDelegate::GetAlignment() const {
-  return shelf_ ? shelf_->GetAlignment() : SHELF_ALIGNMENT_BOTTOM;
-}
-
-void AshPopupAlignmentDelegate::UpdateShelf() {
-  if (shelf_)
-    return;
-
-  shelf_ = ShelfLayoutManager::ForShelf(root_window_);
-  if (shelf_)
-    shelf_->AddObserver(this);
+  return shelf_->GetAlignment();
 }
 
 gfx::Display AshPopupAlignmentDelegate::GetCurrentDisplay() const {
@@ -140,7 +127,6 @@ void AshPopupAlignmentDelegate::UpdateWorkArea() {
 }
 
 void AshPopupAlignmentDelegate::OnDisplayWorkAreaInsetsChanged() {
-  UpdateShelf();
   UpdateWorkArea();
 }
 
@@ -165,8 +151,7 @@ void AshPopupAlignmentDelegate::OnDisplayRemoved(
 void AshPopupAlignmentDelegate::OnDisplayMetricsChanged(
     const gfx::Display& display,
     uint32_t metrics) {
-  UpdateShelf();
-  if (shelf_ && GetCurrentDisplay().id() == display.id())
+  if (GetCurrentDisplay().id() == display.id())
     UpdateWorkArea();
 }
 

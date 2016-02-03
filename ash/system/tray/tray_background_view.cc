@@ -390,7 +390,7 @@ void TrayBackgroundView::SetContentsBackground() {
 }
 
 ShelfLayoutManager* TrayBackgroundView::GetShelfLayoutManager() {
-  return ShelfLayoutManager::ForShelf(GetWidget()->GetNativeView());
+  return status_area_widget()->shelf_widget()->shelf_layout_manager();
 }
 
 void TrayBackgroundView::SetShelfAlignment(ShelfAlignment alignment) {

@@ -13,6 +13,7 @@
 
 namespace ash {
 class OverviewButtonTray;
+class ShelfWidget;
 class ShellDelegate;
 class StatusAreaWidgetDelegate;
 class SystemTray;
@@ -26,7 +27,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
   static const char kNativeViewName[];
 
-  explicit StatusAreaWidget(aura::Window* status_container);
+  StatusAreaWidget(aura::Window* status_container, ShelfWidget* shelf_widget);
   ~StatusAreaWidget() override;
 
   // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.
@@ -57,6 +58,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   OverviewButtonTray* overview_button_tray() {
     return overview_button_tray_;
   }
+  ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   user::LoginStatus login_status() const { return login_status_; }
 
@@ -94,6 +96,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   VirtualKeyboardTray* virtual_keyboard_tray_;
 #endif
   user::LoginStatus login_status_;
+
+  ShelfWidget* shelf_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);
 };

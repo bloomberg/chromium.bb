@@ -38,7 +38,7 @@ class ASH_EXPORT AshPopupAlignmentDelegate
       public ShellObserver,
       public gfx::DisplayObserver {
  public:
-  AshPopupAlignmentDelegate();
+  explicit AshPopupAlignmentDelegate(ShelfLayoutManager* shelf);
   ~AshPopupAlignmentDelegate() override;
 
   // Start observing the system.
@@ -62,11 +62,6 @@ class ASH_EXPORT AshPopupAlignmentDelegate
 
   // Get the current alignment of the shelf.
   ShelfAlignment GetAlignment() const;
-
-  // Update |shelf_| and start watching when it's first set. This should not
-  // be done in the constructor because the shelf might not be initialized at
-  // that point.
-  void UpdateShelf();
 
   // Utility function to get the display which should be care about.
   gfx::Display GetCurrentDisplay() const;

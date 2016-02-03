@@ -421,7 +421,7 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  overflow_button_ = new OverflowButton(this);
+  overflow_button_ = new OverflowButton(this, shelf_layout_manager());
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
   AddChildView(overflow_button_);
