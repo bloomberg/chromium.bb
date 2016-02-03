@@ -464,8 +464,12 @@ class BrowserView : public BrowserWindow,
 
   // ExclusiveAccessBubbleViewsContext overrides
   ExclusiveAccessManager* GetExclusiveAccessManager() override;
-  bool IsImmersiveModeEnabled() override;
   views::Widget* GetBubbleAssociatedWidget() override;
+  ui::AcceleratorProvider* GetAcceleratorProvider() override;
+  gfx::NativeView GetBubbleParentView() const override;
+  gfx::Point GetCursorPointInParent() const override;
+  gfx::Rect GetClientAreaBoundsInScreen() const override;
+  bool IsImmersiveModeEnabled() override;
   gfx::Rect GetTopContainerBoundsInScreen() override;
 
   // extension::ExtensionKeybindingRegistry::Delegate overrides

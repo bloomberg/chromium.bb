@@ -389,7 +389,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
       bubble_view_context_(context),
       popup_(nullptr),
       animation_(new gfx::SlideAnimation(this)),
-      animated_attribute_(ANIMATED_ATTRIBUTE_BOUNDS) {
+      animated_attribute_(ExpectedAnimationAttribute()) {
   // With the simplified fullscreen UI flag, initially hide the bubble;
   // otherwise, initially show it.
   double initial_value =
@@ -399,8 +399,8 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   // Create the contents view.
   ui::Accelerator accelerator(ui::VKEY_UNKNOWN, ui::EF_NONE);
   bool got_accelerator =
-      bubble_view_context_->GetBubbleAssociatedWidget()->GetAccelerator(
-          IDC_FULLSCREEN, &accelerator);
+      bubble_view_context_->GetAcceleratorProvider()
+          ->GetAcceleratorForCommandId(IDC_FULLSCREEN, &accelerator);
   DCHECK(got_accelerator);
   view_ = new ExclusiveAccessView(this, accelerator.GetShortcutText(), url,
                                   bubble_type_);
@@ -413,8 +413,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent =
-      bubble_view_context_->GetBubbleAssociatedWidget()->GetNativeView();
+  params.parent = bubble_view_context_->GetBubbleParentView();
   // The simplified UI just shows a notice; clicks should go through to the
   // underlying window.
   params.accept_events =
@@ -440,7 +439,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
                      bubble_view_context_->GetExclusiveAccessManager()
                          ->fullscreen_controller()));
 
-  UpdateForImmersiveState();
+  UpdateMouseWatcher();
 }
 
 ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
@@ -492,6 +491,14 @@ views::View* ExclusiveAccessBubbleViews::GetView() {
   return view_;
 }
 
+ExclusiveAccessBubbleViews::AnimatedAttribute
+ExclusiveAccessBubbleViews::ExpectedAnimationAttribute() {
+  return ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
+                 bubble_view_context_->IsImmersiveModeEnabled()
+             ? ANIMATED_ATTRIBUTE_OPACITY
+             : ANIMATED_ATTRIBUTE_BOUNDS;
+}
+
 void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
   bool should_watch_mouse = false;
   if (popup_->IsVisible())
@@ -510,11 +517,7 @@ void ExclusiveAccessBubbleViews::UpdateMouseWatcher() {
 }
 
 void ExclusiveAccessBubbleViews::UpdateForImmersiveState() {
-  AnimatedAttribute expected_animated_attribute =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() ||
-              bubble_view_context_->IsImmersiveModeEnabled()
-          ? ANIMATED_ATTRIBUTE_OPACITY
-          : ANIMATED_ATTRIBUTE_BOUNDS;
+  AnimatedAttribute expected_animated_attribute = ExpectedAnimationAttribute();
   if (animated_attribute_ != expected_animated_attribute) {
     // If an animation is currently in progress, skip to the end because
     // switching the animated attribute midway through the animation looks
@@ -575,8 +578,7 @@ void ExclusiveAccessBubbleViews::AnimationEnded(
 gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
     bool ignore_animation_state) const {
   gfx::Size size(view_->GetPreferredSize());
-  gfx::Rect widget_bounds = bubble_view_context_->GetBubbleAssociatedWidget()
-                                ->GetClientAreaBoundsInScreen();
+  gfx::Rect widget_bounds = bubble_view_context_->GetClientAreaBoundsInScreen();
   int x = widget_bounds.x() + (widget_bounds.width() - size.width()) / 2;
 
   int top_container_bottom = widget_bounds.y();
@@ -612,9 +614,7 @@ gfx::Rect ExclusiveAccessBubbleViews::GetPopupRect(
 }
 
 gfx::Point ExclusiveAccessBubbleViews::GetCursorScreenPoint() {
-  gfx::Point cursor_pos = gfx::Screen::GetScreen()->GetCursorScreenPoint();
-  views::View::ConvertPointFromScreen(GetBrowserRootView(), &cursor_pos);
-  return cursor_pos;
+  return bubble_view_context_->GetCursorPointInParent();
 }
 
 bool ExclusiveAccessBubbleViews::WindowContainsPoint(gfx::Point pos) {

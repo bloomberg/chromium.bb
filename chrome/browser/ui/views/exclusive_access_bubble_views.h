@@ -51,6 +51,9 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
     ANIMATED_ATTRIBUTE_OPACITY
   };
 
+  // Returns the expected animated attribute based on flags and bubble type.
+  AnimatedAttribute ExpectedAnimationAttribute();
+
   // Starts or stops polling the mouse location based on |popup_| and
   // |bubble_type_|.
   void UpdateMouseWatcher();

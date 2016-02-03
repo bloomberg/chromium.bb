@@ -2688,7 +2688,7 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, ExclusiveAccessContext overrides
+// BrowserView, ExclusiveAccessContext implementation:
 Profile* BrowserView::GetProfile() {
   return browser_->profile();
 }
@@ -2712,17 +2712,35 @@ void BrowserView::HideDownloadShelf() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// BrowserView, ExclusiveAccessBubbleViewsContext overrides
+// BrowserView, ExclusiveAccessBubbleViewsContext implementation:
 ExclusiveAccessManager* BrowserView::GetExclusiveAccessManager() {
   return browser_->exclusive_access_manager();
 }
 
-bool BrowserView::IsImmersiveModeEnabled() {
-  return immersive_mode_controller()->IsEnabled();
-}
-
 views::Widget* BrowserView::GetBubbleAssociatedWidget() {
   return GetWidget();
+}
+
+ui::AcceleratorProvider* BrowserView::GetAcceleratorProvider() {
+  return this;
+}
+
+gfx::NativeView BrowserView::GetBubbleParentView() const {
+  return GetWidget()->GetNativeView();
+}
+
+gfx::Point BrowserView::GetCursorPointInParent() const {
+  gfx::Point cursor_pos = gfx::Screen::GetScreen()->GetCursorScreenPoint();
+  views::View::ConvertPointFromScreen(GetWidget()->GetRootView(), &cursor_pos);
+  return cursor_pos;
+}
+
+gfx::Rect BrowserView::GetClientAreaBoundsInScreen() const {
+  return GetWidget()->GetClientAreaBoundsInScreen();
+}
+
+bool BrowserView::IsImmersiveModeEnabled() {
+  return immersive_mode_controller()->IsEnabled();
 }
 
 gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {

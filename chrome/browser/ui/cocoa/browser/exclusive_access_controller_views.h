@@ -12,18 +12,24 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
+#include "ui/base/accelerators/accelerator.h"
 
 class Browser;
 class BrowserWindow;
 @class BrowserWindowController;
+class ExclusiveAccessBubbleViews;
 @class ExclusiveAccessBubbleWindowController;
 class GURL;
 
 // Component placed into a browser window controller to manage communication
 // with the exclusive access bubble, which appears for events such as entering
 // fullscreen.
-class ExclusiveAccessController : public ExclusiveAccessContext {
+class ExclusiveAccessController : public ExclusiveAccessContext,
+                                  public ui::AcceleratorProvider,
+                                  public ExclusiveAccessBubbleViewsContext {
  public:
   ExclusiveAccessController(BrowserWindowController* controller,
                             Browser* browser);
@@ -63,6 +69,20 @@ class ExclusiveAccessController : public ExclusiveAccessContext {
   void UnhideDownloadShelf() override;
   void HideDownloadShelf() override;
 
+  // ui::AcceleratorProvider:
+  bool GetAcceleratorForCommandId(int command_id,
+                                  ui::Accelerator* accelerator) override;
+
+  // ExclusiveAccessBubbleViewsContext:
+  ExclusiveAccessManager* GetExclusiveAccessManager() override;
+  views::Widget* GetBubbleAssociatedWidget() override;
+  ui::AcceleratorProvider* GetAcceleratorProvider() override;
+  gfx::NativeView GetBubbleParentView() const override;
+  gfx::Point GetCursorPointInParent() const override;
+  gfx::Rect GetClientAreaBoundsInScreen() const override;
+  bool IsImmersiveModeEnabled() override;
+  gfx::Rect GetTopContainerBoundsInScreen() override;
+
  private:
   BrowserWindow* GetBrowserWindow() const;
 
@@ -75,6 +95,7 @@ class ExclusiveAccessController : public ExclusiveAccessContext {
   GURL url_;
   ExclusiveAccessBubbleType bubble_type_;
 
+  scoped_ptr<ExclusiveAccessBubbleViews> views_bubble_;
   base::scoped_nsobject<ExclusiveAccessBubbleWindowController> cocoa_bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessController);
