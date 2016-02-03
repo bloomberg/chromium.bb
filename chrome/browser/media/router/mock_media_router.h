@@ -23,7 +23,7 @@ namespace media_router {
 class MockMediaRouter : public MediaRouter {
  public:
   MockMediaRouter();
-  virtual ~MockMediaRouter();
+  ~MockMediaRouter() override;
 
   MOCK_METHOD5(CreateRoute,
                void(const MediaSource::Id& source,
@@ -63,8 +63,6 @@ class MockMediaRouter : public MediaRouter {
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD1(OnPresentationSessionDetached,
                void(const MediaRoute::Id& route_id));
-  MOCK_CONST_METHOD0(HasLocalDisplayRoute, bool());
-  MOCK_CONST_METHOD0(HasLocalRoute, bool());
   scoped_ptr<PresentationConnectionStateSubscription>
   AddPresentationConnectionStateChangedCallback(
       const MediaRoute::Id& route_id,
@@ -89,10 +87,6 @@ class MockMediaRouter : public MediaRouter {
                void(PresentationSessionMessagesObserver* observer));
   MOCK_METHOD1(UnregisterPresentationSessionMessagesObserver,
                void(PresentationSessionMessagesObserver* observer));
-  MOCK_METHOD1(RegisterLocalMediaRoutesObserver,
-               void(LocalMediaRoutesObserver* observer));
-  MOCK_METHOD1(UnregisterLocalMediaRoutesObserver,
-               void(LocalMediaRoutesObserver* observer));
 
  private:
   base::CallbackList<void(content::PresentationConnectionState)>

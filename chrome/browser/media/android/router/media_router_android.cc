@@ -229,11 +229,6 @@ void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
       env, java_media_router_.obj(), jroute_id.obj());
 }
 
-bool MediaRouterAndroid::HasLocalDisplayRoute() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool MediaRouterAndroid::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   const std::string& source_id = observer->source().id();
@@ -323,16 +318,6 @@ void MediaRouterAndroid::UnregisterPresentationSessionMessagesObserver(
   observer_list->RemoveObserver(observer);
   if (!observer_list->might_have_observers())
     messages_observers_.erase(route_id);
-}
-
-void MediaRouterAndroid::RegisterLocalMediaRoutesObserver(
-    LocalMediaRoutesObserver* observer) {
-  NOTIMPLEMENTED();
-}
-
-void MediaRouterAndroid::UnregisterLocalMediaRoutesObserver(
-    LocalMediaRoutesObserver* observer) {
-  NOTIMPLEMENTED();
 }
 
 void MediaRouterAndroid::OnSinksReceived(

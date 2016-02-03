@@ -14,8 +14,6 @@
       'issue_manager.h',
       'issues_observer.h',
       'issues_observer.cc',
-      'local_media_routes_observer.cc',
-      'local_media_routes_observer.h',
       'media_route.cc',
       'media_route.h',
       'media_router.h',

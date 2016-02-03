@@ -28,7 +28,6 @@ class WebContents;
 namespace media_router {
 
 class IssuesObserver;
-class LocalMediaRoutesObserver;
 class MediaRoutesObserver;
 class MediaSinksObserver;
 class PresentationConnectionStateObserver;
@@ -145,10 +144,6 @@ class MediaRouter : public KeyedService {
   // Clears the issue with the id |issue_id|.
   virtual void ClearIssue(const Issue::Id& issue_id) = 0;
 
-  // Returns whether or not there is currently an active local displayable
-  // route.
-  virtual bool HasLocalDisplayRoute() const = 0;
-
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.
   // |callback| will be invoked whenever there are state changes, until the
@@ -160,7 +155,6 @@ class MediaRouter : public KeyedService {
 
  private:
   friend class IssuesObserver;
-  friend class LocalMediaRoutesObserver;
   friend class MediaSinksObserver;
   friend class MediaRoutesObserver;
   friend class PresentationConnectionStateObserver;
@@ -219,15 +213,6 @@ class MediaRouter : public KeyedService {
   // |observer| will stop receiving further updates.
   virtual void UnregisterPresentationSessionMessagesObserver(
       PresentationSessionMessagesObserver* observer) = 0;
-
-  // Adds the LocalMediaRoutesObserver |observer| to listen for newly created
-  // MediaRoutes.
-  virtual void RegisterLocalMediaRoutesObserver(
-      LocalMediaRoutesObserver* observer) = 0;
-
-  // Removes the LocalMediaRoutesObserver |observer|.
-  virtual void UnregisterLocalMediaRoutesObserver(
-      LocalMediaRoutesObserver* observer) = 0;
 };
 
 }  // namespace media_router

@@ -15,7 +15,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/issues_observer.h"
-#include "chrome/browser/media/router/local_media_routes_observer.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/media/router/media_router_type_converters.h"
@@ -66,17 +65,6 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
 
 }  // namespace
 
-MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::
-MediaRouterMediaRoutesObserver(MediaRouterMojoImpl* router)
-    : MediaRoutesObserver(router),
-      router_(router) {
-  DCHECK(router);
-}
-
-MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::
-~MediaRouterMediaRoutesObserver() {
-}
-
 MediaRouterMojoImpl::MediaRoutesQuery::MediaRoutesQuery() = default;
 
 MediaRouterMojoImpl::MediaRoutesQuery::~MediaRoutesQuery() = default;
@@ -85,26 +73,10 @@ MediaRouterMojoImpl::MediaSinksQuery::MediaSinksQuery() = default;
 
 MediaRouterMojoImpl::MediaSinksQuery::~MediaSinksQuery() = default;
 
-void MediaRouterMojoImpl::MediaRouterMediaRoutesObserver::OnRoutesUpdated(
-    const std::vector<media_router::MediaRoute>& routes,
-    const std::vector<media_router::MediaRoute::Id>& joinable_route_ids) {
-  bool has_local_display_route =
-      std::find_if(routes.begin(), routes.end(),
-                   [](const media_router::MediaRoute& route) {
-                     return route.is_local() && route.for_display();
-                   }) != routes.end();
-
-  // |this| will be deleted in UpdateHasLocalDisplayRoute() if
-  // |has_local_display_route| is false. Note that ObserverList supports
-  // removing an observer while iterating through it.
-  router_->UpdateHasLocalDisplayRoute(has_local_display_route);
-}
-
 MediaRouterMojoImpl::MediaRouterMojoImpl(
     extensions::EventPageTracker* event_page_tracker)
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
-      has_local_display_route_(false),
       availability_(interfaces::MediaRouter::SinkAvailability::UNAVAILABLE),
       wakeup_attempt_count_(0),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
@@ -114,10 +86,6 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
 
 MediaRouterMojoImpl::~MediaRouterMojoImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Make sure |routes_observer_| is destroyed first, because it triggers
-  // additional cleanup logic in this class that depends on other fields.
-  routes_observer_.reset();
 }
 
 // static
@@ -266,31 +234,10 @@ void MediaRouterMojoImpl::RouteResponseReceived(
   } else {
     route = media_route.To<scoped_ptr<MediaRoute>>();
     actual_presentation_id = presentation_id;
-
-    if (route->is_local() && route->for_display()) {
-      UpdateHasLocalDisplayRoute(true);
-
-      if (!routes_observer_)
-        routes_observer_.reset(new MediaRouterMediaRoutesObserver(this));
-    }
   }
 
   for (const MediaRouteResponseCallback& callback : callbacks)
     callback.Run(route.get(), actual_presentation_id, error);
-}
-
-void MediaRouterMojoImpl::UpdateHasLocalDisplayRoute(
-    bool has_local_display_route) {
-  if (has_local_display_route_ == has_local_display_route)
-    return;
-
-  has_local_display_route_ = has_local_display_route;
-
-  if (!has_local_display_route_)
-    routes_observer_.reset();
-
-  FOR_EACH_OBSERVER(LocalMediaRoutesObserver, local_routes_observers_,
-                    OnHasLocalDisplayRouteUpdated(has_local_display_route_));
 }
 
 void MediaRouterMojoImpl::CreateRoute(
@@ -566,25 +513,6 @@ void MediaRouterMojoImpl::UnregisterPresentationSessionMessagesObserver(
   }
 }
 
-void MediaRouterMojoImpl::RegisterLocalMediaRoutesObserver(
-    LocalMediaRoutesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(observer);
-
-  DCHECK(!local_routes_observers_.HasObserver(observer));
-  local_routes_observers_.AddObserver(observer);
-}
-
-void MediaRouterMojoImpl::UnregisterLocalMediaRoutesObserver(
-    LocalMediaRoutesObserver* observer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(observer);
-
-  if (!local_routes_observers_.HasObserver(observer))
-    return;
-  local_routes_observers_.RemoveObserver(observer);
-}
-
 void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSource::Id& source_id,
     const MediaSink::Id& sink_id,
@@ -756,10 +684,6 @@ void MediaRouterMojoImpl::OnPresentationConnectionStateChanged(
     interfaces::MediaRouter::PresentationConnectionState state) {
   NotifyPresentationConnectionStateChange(
       route_id, mojo::PresentationConnectionStateFromMojo(state));
-}
-
-bool MediaRouterMojoImpl::HasLocalDisplayRoute() const {
-  return has_local_display_route_;
 }
 
 void MediaRouterMojoImpl::DoStartObservingMediaSinks(
