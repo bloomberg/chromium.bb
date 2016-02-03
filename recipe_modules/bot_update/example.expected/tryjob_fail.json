@@ -26,6 +26,9 @@
       "src@HEAD"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "bot_update",
     "~followup_annotations": [
       "step returned non-zero exit code: 1",

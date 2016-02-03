@@ -24,6 +24,9 @@
       "src@revision"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "bot_update",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
