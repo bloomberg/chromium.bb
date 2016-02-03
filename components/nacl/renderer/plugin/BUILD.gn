@@ -24,12 +24,4 @@ source_set("nacl_trusted_plugin") {
     "//ppapi/cpp/private:internal_module",
     "//ppapi/proxy:ipc",
   ]
-
-  if (is_linux) {
-    cflags = [ "-Wno-long-long" ]
-
-    ldflags = [ "-Wl,-z,defs" ]
-
-    libs = [ "dl" ]
-  }
 }
