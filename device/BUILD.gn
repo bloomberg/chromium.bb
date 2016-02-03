@@ -189,6 +189,13 @@ test("device_unittests") {
       ]
     }
   }
+
+  if (is_win) {
+    sources += [
+      "bluetooth/bluetooth_low_energy_win_fake.cc",
+      "bluetooth/bluetooth_low_energy_win_fake.h",
+    ]
+  }
 }
 
 if (is_android) {

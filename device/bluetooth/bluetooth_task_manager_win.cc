@@ -142,6 +142,7 @@ BluetoothTaskManagerWin::BluetoothTaskManagerWin(
 }
 
 BluetoothTaskManagerWin::~BluetoothTaskManagerWin() {
+  win::BluetoothLowEnergyWrapper::DeleteInstance();
 }
 
 void BluetoothTaskManagerWin::AddObserver(Observer* observer) {
@@ -480,7 +481,8 @@ bool BluetoothTaskManagerWin::SearchLowEnergyDevices(
   ScopedVector<win::BluetoothLowEnergyDeviceInfo> btle_devices;
   std::string error;
   bool success =
-      win::EnumerateKnownBluetoothLowEnergyDevices(&btle_devices, &error);
+      win::BluetoothLowEnergyWrapper::GetInstance()
+          ->EnumerateKnownBluetoothLowEnergyDevices(&btle_devices, &error);
   if (!success) {
     LogPollingError(error.c_str(), 0);
     return false;
@@ -637,8 +639,9 @@ bool BluetoothTaskManagerWin::DiscoverLowEnergyDeviceServices(
 
   std::string error;
   ScopedVector<win::BluetoothLowEnergyServiceInfo> services;
-  bool success = win::EnumerateKnownBluetoothLowEnergyServices(
-      device_path, &services, &error);
+  bool success = win::BluetoothLowEnergyWrapper::GetInstance()
+                     ->EnumerateKnownBluetoothLowEnergyServices(
+                         device_path, &services, &error);
   if (!success) {
     LogPollingError(error.c_str(), 0);
     return false;
@@ -669,8 +672,9 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
 
   // List all known GATT service devices on the machine.
   ScopedVector<win::BluetoothLowEnergyDeviceInfo> gatt_service_devices;
-  bool success = win::EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-      &gatt_service_devices, &error);
+  bool success = win::BluetoothLowEnergyWrapper::GetInstance()
+                     ->EnumerateKnownBluetoothLowEnergyGattServiceDevices(
+                         &gatt_service_devices, &error);
   if (!success) {
     LogPollingError(error.c_str(), 0);
     return false;
@@ -685,8 +689,9 @@ bool BluetoothTaskManagerWin::SearchForGattServiceDevicePaths(
 
     // Discover this service device's contained services.
     ScopedVector<win::BluetoothLowEnergyServiceInfo> gatt_services;
-    if (!win::EnumerateKnownBluetoothLowEnergyServices(
-            gatt_service_device->path, &gatt_services, &error)) {
+    if (!win::BluetoothLowEnergyWrapper::GetInstance()
+             ->EnumerateKnownBluetoothLowEnergyServices(
+                 gatt_service_device->path, &gatt_services, &error)) {
       LogPollingError(error.c_str(), 0);
       continue;
     }

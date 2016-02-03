@@ -175,6 +175,12 @@
             'battery/battery_status_manager_linux_unittest.cc',
           ],
         }],
+        ['OS=="win"', {
+          'sources': [
+            'bluetooth/bluetooth_low_energy_win_fake.h',
+            'bluetooth/bluetooth_low_energy_win_fake.cc',
+          ],
+        }],
       ],
     },
   ],

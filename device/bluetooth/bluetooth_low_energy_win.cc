@@ -652,7 +652,36 @@ bool IsBluetoothLowEnergySupported() {
   return base::win::GetVersion() >= base::win::VERSION_WIN8;
 }
 
-bool EnumerateKnownBluetoothLowEnergyDevices(
+bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
+    const std::string& instance_id,
+    BLUETOOTH_ADDRESS* btha,
+    std::string* error) {
+  return ExtractBluetoothAddressFromDeviceInstanceId(instance_id, btha, error);
+}
+
+static BluetoothLowEnergyWrapper* instance_ = nullptr;
+BluetoothLowEnergyWrapper* BluetoothLowEnergyWrapper::GetInstance() {
+  if (instance_ == nullptr) {
+    instance_ = new BluetoothLowEnergyWrapper();
+  }
+  return instance_;
+}
+
+void BluetoothLowEnergyWrapper::DeleteInstance() {
+  delete instance_;
+  instance_ = nullptr;
+}
+
+void BluetoothLowEnergyWrapper::SetInstanceForTest(
+    BluetoothLowEnergyWrapper* instance) {
+  delete instance_;
+  instance_ = instance;
+}
+
+BluetoothLowEnergyWrapper::BluetoothLowEnergyWrapper() {}
+BluetoothLowEnergyWrapper::~BluetoothLowEnergyWrapper() {}
+
+bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyDevices(
     ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
     std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
@@ -664,9 +693,10 @@ bool EnumerateKnownBluetoothLowEnergyDevices(
       GUID_BLUETOOTHLE_DEVICE_INTERFACE, devices, error);
 }
 
-bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
-    ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
-    std::string* error) {
+bool BluetoothLowEnergyWrapper::
+    EnumerateKnownBluetoothLowEnergyGattServiceDevices(
+        ScopedVector<BluetoothLowEnergyDeviceInfo>* devices,
+        std::string* error) {
   if (!IsBluetoothLowEnergySupported()) {
     *error = kPlatformNotSupported;
     return false;
@@ -676,7 +706,7 @@ bool EnumerateKnownBluetoothLowEnergyGattServiceDevices(
       GUID_BLUETOOTH_GATT_SERVICE_DEVICE_INTERFACE, devices, error);
 }
 
-bool EnumerateKnownBluetoothLowEnergyServices(
+bool BluetoothLowEnergyWrapper::EnumerateKnownBluetoothLowEnergyServices(
     const base::FilePath& device_path,
     ScopedVector<BluetoothLowEnergyServiceInfo>* services,
     std::string* error) {
@@ -686,13 +716,6 @@ bool EnumerateKnownBluetoothLowEnergyServices(
   }
 
   return CollectBluetoothLowEnergyDeviceServices(device_path, services, error);
-}
-
-bool ExtractBluetoothAddressFromDeviceInstanceIdForTesting(
-    const std::string& instance_id,
-    BLUETOOTH_ADDRESS* btha,
-    std::string* error) {
-  return ExtractBluetoothAddressFromDeviceInstanceId(instance_id, btha, error);
 }
 
 }  // namespace win
