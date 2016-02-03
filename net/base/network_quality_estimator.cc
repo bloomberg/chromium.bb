@@ -216,15 +216,15 @@ void NetworkQualityEstimator::ObtainOperatingParams(
 void NetworkQualityEstimator::AddDefaultEstimates() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (default_observations_[current_network_id_.type].rtt() != InvalidRTT()) {
-    Observation rtt_observation(
-        default_observations_[current_network_id_.type].rtt().InMilliseconds(),
+    RttObservation rtt_observation(
+        default_observations_[current_network_id_.type].rtt(),
         base::TimeTicks::Now(), DEFAULT_FROM_PLATFORM);
     rtt_msec_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
   if (default_observations_[current_network_id_.type]
           .downstream_throughput_kbps() != kInvalidThroughput) {
-    Observation throughput_observation(
+    ThroughputObservation throughput_observation(
         default_observations_[current_network_id_.type]
             .downstream_throughput_kbps(),
         base::TimeTicks::Now(), DEFAULT_FROM_PLATFORM);
@@ -278,8 +278,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
           observed_rtt, peak_network_quality_.downstream_throughput_kbps());
     }
 
-    Observation rtt_observation(observed_rtt.InMilliseconds(), now,
-                                URL_REQUEST);
+    RttObservation rtt_observation(observed_rtt, now, URL_REQUEST);
     rtt_msec_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
 
@@ -348,8 +347,8 @@ void NetworkQualityEstimator::NotifyRequestCompleted(
     peak_network_quality_ =
         NetworkQuality(peak_network_quality_.rtt(), downstream_kbps_as_integer);
 
-  Observation throughput_observation(downstream_kbps_as_integer, now,
-                                     URL_REQUEST);
+  ThroughputObservation throughput_observation(downstream_kbps_as_integer, now,
+                                               URL_REQUEST);
   downstream_throughput_kbps_observations_.AddObservation(
       throughput_observation);
   NotifyObserversOfThroughput(throughput_observation);
@@ -599,18 +598,8 @@ bool NetworkQualityEstimator::GetRecentMedianDownlinkThroughputKbps(
   return (*kbps != kInvalidThroughput);
 }
 
-NetworkQualityEstimator::Observation::Observation(int32_t value,
-                                                  base::TimeTicks timestamp,
-                                                  ObservationSource source)
-    : value(value), timestamp(timestamp), source(source) {
-  DCHECK_GE(value, 0);
-  DCHECK(!timestamp.is_null());
-}
-
-NetworkQualityEstimator::Observation::~Observation() {
-}
-
-NetworkQualityEstimator::ObservationBuffer::ObservationBuffer(
+template <typename ValueType>
+NetworkQualityEstimator::ObservationBuffer<ValueType>::ObservationBuffer(
     double weight_multiplier_per_second)
     : weight_multiplier_per_second_(weight_multiplier_per_second) {
   static_assert(kMaximumObservationsBufferSize > 0U,
@@ -619,30 +608,8 @@ NetworkQualityEstimator::ObservationBuffer::ObservationBuffer(
   DCHECK_LE(weight_multiplier_per_second_, 1.0);
 }
 
-NetworkQualityEstimator::ObservationBuffer::~ObservationBuffer() {
-}
-
-void NetworkQualityEstimator::ObservationBuffer::AddObservation(
-    const Observation& observation) {
-  DCHECK_LE(observations_.size(),
-            static_cast<size_t>(kMaximumObservationsBufferSize));
-  // Evict the oldest element if the buffer is already full.
-  if (observations_.size() == kMaximumObservationsBufferSize)
-    observations_.pop_front();
-
-  observations_.push_back(observation);
-  DCHECK_LE(observations_.size(),
-            static_cast<size_t>(kMaximumObservationsBufferSize));
-}
-
-size_t NetworkQualityEstimator::ObservationBuffer::Size() const {
-  return observations_.size();
-}
-
-void NetworkQualityEstimator::ObservationBuffer::Clear() {
-  observations_.clear();
-  DCHECK(observations_.empty());
-}
+template <typename ValueType>
+NetworkQualityEstimator::ObservationBuffer<ValueType>::~ObservationBuffer() {}
 
 base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
     const base::TimeTicks& begin_timestamp,
@@ -656,11 +623,7 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
   // RTT observations are sorted by duration from shortest to longest, thus
   // a higher percentile RTT will have a longer RTT than a lower percentile.
   base::TimeDelta rtt = InvalidRTT();
-  int32_t rtt_result = -1;
-  if (rtt_msec_observations_.GetPercentile(begin_timestamp, &rtt_result,
-                                           percentile)) {
-    rtt = base::TimeDelta::FromMilliseconds(rtt_result);
-  }
+  rtt_msec_observations_.GetPercentile(begin_timestamp, &rtt, percentile);
   return rtt;
 }
 
@@ -681,10 +644,12 @@ int32_t NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimateInternal(
   return kbps;
 }
 
-void NetworkQualityEstimator::ObservationBuffer::ComputeWeightedObservations(
-    const base::TimeTicks& begin_timestamp,
-    std::vector<WeightedObservation>& weighted_observations,
-    double* total_weight) const {
+template <typename ValueType>
+void NetworkQualityEstimator::ObservationBuffer<ValueType>::
+    ComputeWeightedObservations(
+        const base::TimeTicks& begin_timestamp,
+        std::vector<WeightedObservation<ValueType>>& weighted_observations,
+        double* total_weight) const {
   weighted_observations.clear();
   double total_weight_observations = 0.0;
   base::TimeTicks now = base::TimeTicks::Now();
@@ -698,7 +663,7 @@ void NetworkQualityEstimator::ObservationBuffer::ComputeWeightedObservations(
     weight = std::max(DBL_MIN, std::min(1.0, weight));
 
     weighted_observations.push_back(
-        WeightedObservation(observation.value, weight));
+        WeightedObservation<ValueType>(observation.value, weight));
     total_weight_observations += weight;
   }
 
@@ -707,13 +672,14 @@ void NetworkQualityEstimator::ObservationBuffer::ComputeWeightedObservations(
   *total_weight = total_weight_observations;
 }
 
-bool NetworkQualityEstimator::ObservationBuffer::GetPercentile(
+template <typename ValueType>
+bool NetworkQualityEstimator::ObservationBuffer<ValueType>::GetPercentile(
     const base::TimeTicks& begin_timestamp,
-    int32_t* result,
+    ValueType* result,
     int percentile) const {
   DCHECK(result);
   // Stores WeightedObservation in increasing order of value.
-  std::vector<WeightedObservation> weighted_observations;
+  std::vector<WeightedObservation<ValueType>> weighted_observations;
 
   // Total weight of all observations in |weighted_observations|.
   double total_weight = 0.0;
@@ -736,7 +702,6 @@ bool NetworkQualityEstimator::ObservationBuffer::GetPercentile(
   for (const auto& weighted_observation : weighted_observations) {
     cumulative_weight_seen_so_far += weighted_observation.weight;
 
-    // TODO(tbansal): Consider interpolating between observations.
     if (cumulative_weight_seen_so_far >= desired_weight) {
       *result = weighted_observation.value;
       return true;
@@ -817,15 +782,15 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
   DCHECK_NE(InvalidRTT(), network_quality.rtt());
   DCHECK_NE(kInvalidThroughput, network_quality.downstream_throughput_kbps());
 
-  Observation througphput_observation(
+  ThroughputObservation througphput_observation(
       network_quality.downstream_throughput_kbps(), base::TimeTicks::Now(),
       CACHED_ESTIMATE);
   downstream_throughput_kbps_observations_.AddObservation(
       througphput_observation);
   NotifyObserversOfThroughput(througphput_observation);
 
-  Observation rtt_observation(network_quality.rtt().InMilliseconds(),
-                              base::TimeTicks::Now(), CACHED_ESTIMATE);
+  RttObservation rtt_observation(network_quality.rtt(), base::TimeTicks::Now(),
+                                 CACHED_ESTIMATE);
   rtt_msec_observations_.AddObservation(rtt_observation);
   NotifyObserversOfRTT(rtt_observation);
 
@@ -869,15 +834,16 @@ void NetworkQualityEstimator::QueryExternalEstimateProvider() {
       EXTERNAL_ESTIMATE_PROVIDER_STATUS_QUERY_SUCCESSFUL);
   base::TimeDelta rtt;
   if (external_estimate_provider_->GetRTT(&rtt)) {
-    rtt_msec_observations_.AddObservation(Observation(
-        rtt.InMilliseconds(), base::TimeTicks::Now(), EXTERNAL_ESTIMATE));
+    rtt_msec_observations_.AddObservation(
+        RttObservation(rtt, base::TimeTicks::Now(), EXTERNAL_ESTIMATE));
   }
 
   int32_t downstream_throughput_kbps;
   if (external_estimate_provider_->GetDownstreamThroughputKbps(
           &downstream_throughput_kbps)) {
-    downstream_throughput_kbps_observations_.AddObservation(Observation(
-        downstream_throughput_kbps, base::TimeTicks::Now(), EXTERNAL_ESTIMATE));
+    downstream_throughput_kbps_observations_.AddObservation(
+        ThroughputObservation(downstream_throughput_kbps,
+                              base::TimeTicks::Now(), EXTERNAL_ESTIMATE));
   }
 }
 
@@ -936,12 +902,10 @@ void NetworkQualityEstimator::OnUpdatedRTTAvailable(
 
   switch (protocol) {
     case PROTOCOL_TCP:
-      NotifyObserversOfRTT(
-          Observation(rtt.InMilliseconds(), base::TimeTicks::Now(), TCP));
+      NotifyObserversOfRTT(RttObservation(rtt, base::TimeTicks::Now(), TCP));
       return;
     case PROTOCOL_QUIC:
-      NotifyObserversOfRTT(
-          Observation(rtt.InMilliseconds(), base::TimeTicks::Now(), QUIC));
+      NotifyObserversOfRTT(RttObservation(rtt, base::TimeTicks::Now(), QUIC));
       return;
     default:
       NOTREACHED();
@@ -949,14 +913,15 @@ void NetworkQualityEstimator::OnUpdatedRTTAvailable(
 }
 
 void NetworkQualityEstimator::NotifyObserversOfRTT(
-    const Observation& observation) {
-  FOR_EACH_OBSERVER(RTTObserver, rtt_observer_list_,
-                    OnRTTObservation(observation.value, observation.timestamp,
-                                     observation.source));
+    const RttObservation& observation) {
+  FOR_EACH_OBSERVER(
+      RTTObserver, rtt_observer_list_,
+      OnRTTObservation(observation.value.InMilliseconds(),
+                       observation.timestamp, observation.source));
 }
 
 void NetworkQualityEstimator::NotifyObserversOfThroughput(
-    const Observation& observation) {
+    const ThroughputObservation& observation) {
   FOR_EACH_OBSERVER(
       ThroughputObserver, throughput_observer_list_,
       OnThroughputObservation(observation.value, observation.timestamp,

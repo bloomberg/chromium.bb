@@ -135,7 +135,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   virtual bool GetRTTEstimate(base::TimeDelta* rtt) const;
 
   // Returns true if downlink throughput is available and sets |kbps| to
-  // estimated downlink throughput (in Kilobits per second).
+  // estimated downlink throughput (in kilobits per second).
   // Virtualized for testing. |kbps| should not be null.
   virtual bool GetDownlinkThroughputKbpsEstimate(int32_t* kbps) const;
 
@@ -154,8 +154,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
                                   base::TimeDelta* rtt) const;
 
   // Returns true if median downstream throughput is available and sets |kbps|
-  // to the median of downstream Kbps observations since |begin_timestamp|.
-  // Virtualized for testing. |kbps| should not be null.
+  // to the median of downstream throughput (in kilobits per second)
+  // observations since |begin_timestamp|. Virtualized for testing. |kbps|
+  // should not be null.
   virtual bool GetRecentMedianDownlinkThroughputKbps(
       const base::TimeTicks& begin_timestamp,
       int32_t* kbps) const;
@@ -258,7 +259,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     NetworkQuality();
     // |rtt| is the estimate of the round trip time.
     // |downstream_throughput_kbps| is the estimate of the downstream
-    // throughput.
+    // throughput in kilobits per second.
     NetworkQuality(const base::TimeDelta& rtt,
                    int32_t downstream_throughput_kbps);
     NetworkQuality(const NetworkQuality& other);
@@ -269,7 +270,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // Returns the estimate of the round trip time.
     const base::TimeDelta& rtt() const { return rtt_; }
 
-    // Returns the estimate of the downstream throughput in Kbps (Kilo bits per
+    // Returns the estimate of the downstream throughput in Kbps (Kilobits per
     // second).
     int32_t downstream_throughput_kbps() const {
       return downstream_throughput_kbps_;
@@ -279,7 +280,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // Estimated round trip time.
     base::TimeDelta rtt_;
 
-    // Estimated downstream throughput in Kbps.
+    // Estimated downstream throughput in kilobits per second.
     int32_t downstream_throughput_kbps_;
   };
 
@@ -307,20 +308,23 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     DISALLOW_ASSIGN(CachedNetworkQuality);
   };
 
-  // Records the round trip time or throughput observation, along with the time
-  // the observation was made. The units of value are type specific. For round
-  // trip time observations, the value is in milliseconds. For throughput,
-  // the value is in kilobits per second. Observations can be made at several
-  // places in the network stack, thus the observation source is provided as
-  // well.
+  // Records observations of network quality metrics (such as round trip time
+  // or throughput), along with the time the observation was made. Observations
+  // can be made at several places in the network stack, thus the observation
+  // source is provided as well. ValueType must be numerical so that statistics
+  // such as median, average can be computed.
+  template <typename ValueType>
   struct NET_EXPORT_PRIVATE Observation {
-    Observation(int32_t value,
+    Observation(const ValueType& value,
                 base::TimeTicks timestamp,
-                ObservationSource source);
-    ~Observation();
+                ObservationSource source)
+        : value(value), timestamp(timestamp), source(source) {
+      DCHECK(!timestamp.is_null());
+    }
+    ~Observation() {}
 
     // Value of the observation.
-    const int32_t value;
+    const ValueType value;
 
     // Time when the observation was taken.
     const base::TimeTicks timestamp;
@@ -330,8 +334,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   };
 
   // Holds an observation and its weight.
+  template <typename ValueType>
   struct NET_EXPORT_PRIVATE WeightedObservation {
-    WeightedObservation(int32_t value, double weight)
+    WeightedObservation(ValueType value, double weight)
         : value(value), weight(weight) {}
     WeightedObservation(const WeightedObservation& other)
         : WeightedObservation(other.value, other.weight) {}
@@ -348,7 +353,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     }
 
     // Value of the sample.
-    int32_t value;
+    ValueType value;
 
     // Weight of the sample. This is computed based on how much time has passed
     // since the sample was taken.
@@ -356,6 +361,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   };
 
   // Stores observations sorted by time.
+  template <typename ValueType>
   class NET_EXPORT_PRIVATE ObservationBuffer {
    public:
     explicit ObservationBuffer(double weight_multiplier_per_second);
@@ -363,13 +369,23 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
     // Adds |observation| to the buffer. The oldest observation in the buffer
     // will be evicted to make room if the buffer is already full.
-    void AddObservation(const Observation& observation);
+    void AddObservation(const Observation<ValueType>& observation) {
+      DCHECK_LE(observations_.size(),
+                static_cast<size_t>(kMaximumObservationsBufferSize));
+      // Evict the oldest element if the buffer is already full.
+      if (observations_.size() == kMaximumObservationsBufferSize)
+        observations_.pop_front();
+
+      observations_.push_back(observation);
+      DCHECK_LE(observations_.size(),
+                static_cast<size_t>(kMaximumObservationsBufferSize));
+    }
 
     // Returns the number of observations in this buffer.
-    size_t Size() const;
+    size_t Size() const { return observations_.size(); }
 
     // Clears the observations stored in this buffer.
-    void Clear();
+    void Clear() { observations_.clear(); }
 
     // Returns true iff the |percentile| value of the observations in this
     // buffer is available. Sets |result| to the computed |percentile|
@@ -379,7 +395,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // than |begin_timestamp|.
     // |result| must not be null.
     bool GetPercentile(const base::TimeTicks& begin_timestamp,
-                       int32_t* result,
+                       ValueType* result,
                        int percentile) const;
 
    private:
@@ -396,12 +412,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // observation in the buffer.
     void ComputeWeightedObservations(
         const base::TimeTicks& begin_timestamp,
-        std::vector<WeightedObservation>& weighted_observations,
+        std::vector<WeightedObservation<ValueType>>& weighted_observations,
         double* total_weight) const;
 
     // Holds observations sorted by time, with the oldest observation at the
     // front of the queue.
-    std::deque<Observation> observations_;
+    std::deque<Observation<ValueType>> observations_;
 
     // The factor by which the weight of an observation reduces every second.
     // For example, if an observation is 6 seconds old, its weight would be:
@@ -412,6 +428,18 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
     DISALLOW_COPY_AND_ASSIGN(ObservationBuffer);
   };
+
+  // Value of round trip time observations is in base::TimeDelta.
+  typedef net::NetworkQualityEstimator::Observation<base::TimeDelta>
+      RttObservation;
+  typedef net::NetworkQualityEstimator::ObservationBuffer<base::TimeDelta>
+      RttObservationBuffer;
+
+  // Value of throughput observations is in kilobits per second.
+  typedef net::NetworkQualityEstimator::Observation<int32_t>
+      ThroughputObservation;
+  typedef net::NetworkQualityEstimator::ObservationBuffer<int32_t>
+      ThroughputObservationBuffer;
 
   // This does not use a unordered_map or hash_map for code simplicity (key just
   // implements operator<, rather than hash and equality) and because the map is
@@ -436,7 +464,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   static const int kMinimumRTTVariationParameterMsec = 1;
 
   // Minimum valid value of the variation parameter that holds throughput (in
-  // kbps) values.
+  // kilobits per second) values.
   static const int kMinimumThroughputVariationParameterKbps = 1;
 
   // Maximum size of the cache that holds network quality estimates.
@@ -488,9 +516,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Writes the estimated quality of the current network to the cache.
   void CacheNetworkQualityEstimate();
 
-  void NotifyObserversOfRTT(const Observation& observation);
+  void NotifyObserversOfRTT(const RttObservation& observation);
 
-  void NotifyObserversOfThroughput(const Observation& observation);
+  void NotifyObserversOfThroughput(const ThroughputObservation& observation);
 
   // Records the UMA related to RTT.
   void RecordRTTUMA(int32_t estimated_value_msec,
@@ -543,11 +571,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Cache that stores quality of previously seen networks.
   CachedNetworkQualities cached_network_qualities_;
 
-  // Buffer that holds Kbps observations sorted by timestamp.
-  ObservationBuffer downstream_throughput_kbps_observations_;
+  // Buffer that holds throughput observations (in kilobits per second) sorted
+  // by timestamp.
+  ThroughputObservationBuffer downstream_throughput_kbps_observations_;
 
-  // Buffer that holds RTT (in milliseconds) observations sorted by timestamp.
-  ObservationBuffer rtt_msec_observations_;
+  // Buffer that holds RTT observations sorted by timestamp.
+  RttObservationBuffer rtt_msec_observations_;
 
   // Default network quality observations obtained from the network quality
   // estimator field trial parameters. The observations are indexed by
