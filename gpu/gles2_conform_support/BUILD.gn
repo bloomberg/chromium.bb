@@ -29,6 +29,10 @@ config("gles2_conform_test_warnings") {
       # GTFVecBase.h contains static no-inline functions in a header :-/
       "-Wno-unused-function",
       "-Wno-unused-variable",
+
+      # There are some implicit conversions from "int" to "char" in
+      # GTFExtensionTestSurfacelessContext.c.
+      "-Wno-constant-conversion",
     ]
   }
 }

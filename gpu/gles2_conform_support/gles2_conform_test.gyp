@@ -21,6 +21,9 @@
          '-Wno-sometimes-uninitialized',
          # GTFVecBase.h contains static no-inline functions in a header :-/
          '-Wno-unused-function',
+         # There are some implicit conversions from "int" to "char" in
+         # GTFExtensionTestSurfacelessContext.c.
+         '-Wno-constant-conversion',
        ],
      },
   },
