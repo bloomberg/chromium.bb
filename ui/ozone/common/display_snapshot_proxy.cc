@@ -18,13 +18,6 @@ bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
          lhs.refresh_rate == rhs.refresh_rate;
 }
 
-// Exclude 4K@60kHz becaseu this doesn't work in most devices/configuration now.
-// TODO(marcheu|oshima): Revisit this. crbug.com/39397
-bool IsModeBlackListed(const DisplayMode_Params& mode_params) {
-  return mode_params.size.width() >= 3840 &&
-         mode_params.size.height() >= 2160 && mode_params.refresh_rate >= 60.0f;
-}
-
 }  // namespace
 
 DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
@@ -41,10 +34,7 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
                       NULL),
       string_representation_(params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
-    const DisplayMode_Params& mode_params = params.modes[i];
-    if (IsModeBlackListed(mode_params))
-      continue;
-    modes_.push_back(new DisplayModeProxy(mode_params));
+    modes_.push_back(new DisplayModeProxy(params.modes[i]));
 
     if (params.has_current_mode &&
         SameModes(params.modes[i], params.current_mode))
