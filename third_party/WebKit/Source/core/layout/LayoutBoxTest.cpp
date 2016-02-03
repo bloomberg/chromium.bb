@@ -19,10 +19,9 @@ TEST_F(LayoutBoxTest, BackgroundObscuredInRect)
     setBodyInnerHTML("<style>.column { width: 295.4px; padding-left: 10.4px; } .white-background { background: red; position: relative; overflow: hidden; border-radius: 1px; }"
         ".black-background { height: 100px; background: black; color: white; } </style>"
         "<div class='column'> <div> <div id='target' class='white-background'> <div class='black-background'></div> </div> </div> </div>");
-    Element* element = document().getElementById("target");
-    ASSERT_TRUE(element);
-    ASSERT_TRUE(element->layoutObject());
-    ASSERT_TRUE(element->layoutObject()->boxDecorationBackgroundIsKnownToBeObscured());
+    LayoutObject* layoutObject = getLayoutObjectByElementId("target");
+    ASSERT_TRUE(layoutObject);
+    ASSERT_TRUE(layoutObject->boxDecorationBackgroundIsKnownToBeObscured());
 }
 
 } // namespace blink

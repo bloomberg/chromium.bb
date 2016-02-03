@@ -14,19 +14,19 @@ class PaginationStrutTest : public RenderingTest {
 public:
     int strutForBox(const char* blockId)
     {
-        Node* node = document().getElementById(blockId);
-        if (!node || !node->layoutObject() || !node->layoutObject()->isBox())
+        LayoutObject* layoutObject = getLayoutObjectByElementId(blockId);
+        if (!layoutObject || !layoutObject->isBox())
             return std::numeric_limits<int>::min();
-        LayoutBox* box = toLayoutBox(node->layoutObject());
+        LayoutBox* box = toLayoutBox(layoutObject);
         return box->paginationStrut().toInt();
     }
 
     int strutForLine(const char* containerId, int lineIndex)
     {
-        Node* node = document().getElementById(containerId);
-        if (!node || !node->layoutObject() || !node->layoutObject()->isLayoutBlockFlow())
+        LayoutObject* layoutObject = getLayoutObjectByElementId(containerId);
+        if (!layoutObject || !layoutObject->isLayoutBlockFlow())
             return std::numeric_limits<int>::min();
-        LayoutBlockFlow* block = toLayoutBlockFlow(node->layoutObject());
+        LayoutBlockFlow* block = toLayoutBlockFlow(layoutObject);
         if (block->multiColumnFlowThread())
             block = block->multiColumnFlowThread();
         for (RootInlineBox* line = block->firstRootBox(); line; line = line->nextRootBox(), lineIndex--) {

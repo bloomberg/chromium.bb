@@ -113,7 +113,7 @@ TEST_F(LayoutObjectTest, MapToVisibleRectInAncestorSpace)
         "  <span><img style='width: 20px; height: 100px'></span>"
         "  text text text text text text text"
         "</div>");
-    LayoutBlock* container = toLayoutBlock(document().getElementById("container")->layoutObject());
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
     LayoutText* text = toLayoutText(container->lastChild());
 
     container->setScrollTop(LayoutUnit(50));
