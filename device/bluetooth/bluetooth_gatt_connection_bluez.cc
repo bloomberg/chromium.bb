@@ -56,14 +56,8 @@ void BluetoothGattConnectionBlueZ::Disconnect() {
     return;
   }
 
-  // TODO(armansito): There isn't currently a good way to manage the ownership
-  // of a connection between Chrome and bluetoothd plugins/profiles. Until
-  // a proper reference count is kept by bluetoothd, we might unwittingly kill
-  // a connection that is managed by the daemon (e.g. HoG). For now, just return
-  // success to indicate that this BluetoothGattConnection is no longer active,
-  // even though the underlying connection won't actually be disconnected. This
-  // technically doesn't violate the contract put forth by this API.
   connected_ = false;
+  BluetoothGattConnection::Disconnect();
 }
 
 void BluetoothGattConnectionBlueZ::DeviceRemoved(

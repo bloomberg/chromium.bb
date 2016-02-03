@@ -216,7 +216,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
             gatt_conn_->GetDeviceAddress());
 
   gatt_conn_->Disconnect();
-  EXPECT_TRUE(device->IsConnected());
+  EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 
   device->CreateGattConnection(
@@ -238,6 +238,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
 
   EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
+  EXPECT_FALSE(device->IsConnected());
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 

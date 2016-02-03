@@ -207,9 +207,7 @@ void BluetoothDeviceBlueZ::CreateGattConnectionImpl() {
 }
 
 void BluetoothDeviceBlueZ::DisconnectGatt() {
-  // BlueZ implementation does not use the default CreateGattConnection
-  // implementation.
-  NOTIMPLEMENTED();
+  Disconnect(base::Bind(&base::DoNothing), base::Bind(&base::DoNothing));
 }
 
 std::string BluetoothDeviceBlueZ::GetAddress() const {
