@@ -50,6 +50,9 @@ ScopedPreferredScrollerStyleLegacy::ScopedPreferredScrollerStyleLegacy() {
 }
 
 ScopedPreferredScrollerStyleLegacy::~ScopedPreferredScrollerStyleLegacy() {
+  if (!swizzler_)
+    return;  // Handle 10.6, which wouldn't have swizzled anything.
+
   swizzler_.reset();
 
   if ([NSScroller preferredScrollerStyle] != NSScrollerStyleLegacy)
