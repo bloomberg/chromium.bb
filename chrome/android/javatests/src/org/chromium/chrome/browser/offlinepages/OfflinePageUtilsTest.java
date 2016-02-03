@@ -53,6 +53,9 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
+                // Ensure we start in an offline state.
+                NetworkChangeNotifier.forceConnectivityState(false);
+
                 Profile profile = Profile.getLastUsedProfile();
                 mOfflinePageBridge = new OfflinePageBridge(profile);
                 // Context context1 = getInstrumentation().getTargetContext();
@@ -140,8 +143,6 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         Log.d(TAG, "Starting test");
         final MockSnackbarController mockSnackbarController = new MockSnackbarController();
         Log.d(TAG, "mockSnackbarController " + mockSnackbarController);
-        // Ensure we start in an offline state (we should already be offline, just making sure).
-        NetworkChangeNotifier.forceConnectivityState(false);
 
         // Save an offline page.
         loadUrl(TEST_PAGE);
