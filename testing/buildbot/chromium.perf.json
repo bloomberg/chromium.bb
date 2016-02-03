@@ -292,6 +292,17 @@
       },
       {
         "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
+      },
+      {
+        "args": [
           "load_library_perf_tests",
           "--test-launcher-print-test-stdio=always"
         ],
@@ -389,6 +400,17 @@
   },
   "Win 7 Perf (3)": {
     "scripts": [
+      {
+        "args": [
+          "performance_browser_tests",
+          "--test-launcher-print-test-stdio=always",
+          "--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*",
+          "--test-launcher-jobs=1",
+          "--enable-gpu"
+        ],
+        "name": "performance_browser_tests",
+        "script": "gtest_perf_test.py"
+      },
       {
         "args": [
           "load_library_perf_tests",
