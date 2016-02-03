@@ -104,7 +104,7 @@ protected:
     {
     }
 
-    PassRefPtrWillBeRawPtr<MediaValues> createMediaValues()
+    PassRefPtrWillBeRawPtr<MediaValuesCached> createMediaValues()
     {
         MediaValuesCached::MediaValuesCachedData data;
         data.viewportWidth = 500;

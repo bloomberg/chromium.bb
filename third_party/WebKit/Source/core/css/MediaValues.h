@@ -26,7 +26,6 @@ public:
 
     static PassRefPtrWillBeRawPtr<MediaValues> createDynamicIfFrameExists(LocalFrame*);
     virtual PassRefPtrWillBeRawPtr<MediaValues> copy() const = 0;
-    virtual bool isSafeToSendToAnotherThread() const = 0;
 
     static bool computeLengthImpl(double value, CSSPrimitiveValue::UnitType, unsigned defaultFontSize, double viewportWidth, double viewportHeight, double& result);
     template<typename T>
@@ -58,8 +57,6 @@ public:
     virtual bool strictMode() const = 0;
     virtual Document* document() const = 0;
     virtual bool hasValues() const = 0;
-
-    virtual bool isCached() const { return false; }
 
 protected:
     double calculateViewportWidth(LocalFrame*) const;

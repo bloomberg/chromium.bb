@@ -11,22 +11,22 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create()
+PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create()
 {
     return adoptRefWillBeNoop(new MediaValuesCached());
 }
 
-PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(MediaValuesCachedData& data)
+PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create(MediaValuesCachedData& data)
 {
     return adoptRefWillBeNoop(new MediaValuesCached(data));
 }
 
-PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(Document& document)
+PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create(Document& document)
 {
     return MediaValuesCached::create(frameFrom(document));
 }
 
-PassRefPtrWillBeRawPtr<MediaValues> MediaValuesCached::create(LocalFrame* frame)
+PassRefPtrWillBeRawPtr<MediaValuesCached> MediaValuesCached::create(LocalFrame* frame)
 {
     // FIXME - Added an assert here so we can better understand when a frame is present without its view().
     ASSERT(!frame || frame->view());

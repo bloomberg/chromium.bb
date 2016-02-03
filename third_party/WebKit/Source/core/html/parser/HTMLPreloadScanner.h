@@ -28,7 +28,7 @@
 #define HTMLPreloadScanner_h
 
 #include "core/CoreExport.h"
-#include "core/css/MediaValues.h"
+#include "core/css/MediaValuesCached.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/CompactHTMLToken.h"
@@ -48,20 +48,20 @@ class SegmentedString;
 struct CORE_EXPORT CachedDocumentParameters {
     USING_FAST_MALLOC(CachedDocumentParameters);
 public:
-    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtrWillBeRawPtr<MediaValues> mediaValues = nullptr)
+    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtrWillBeRawPtr<MediaValuesCached> mediaValues = nullptr)
     {
         return adoptPtr(new CachedDocumentParameters(document, mediaValues));
     }
 
     bool doHtmlPreloadScanning;
-    RefPtrWillBeCrossThreadPersistent<MediaValues> mediaValues;
+    RefPtrWillBeCrossThreadPersistent<MediaValuesCached> mediaValues;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
     bool viewportMetaEnabled;
     ReferrerPolicy referrerPolicy;
 
 private:
-    CachedDocumentParameters(Document*, PassRefPtrWillBeRawPtr<MediaValues>);
+    CachedDocumentParameters(Document*, PassRefPtrWillBeRawPtr<MediaValuesCached>);
 };
 
 class TokenPreloadScanner {

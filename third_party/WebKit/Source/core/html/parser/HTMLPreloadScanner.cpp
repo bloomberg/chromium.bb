@@ -105,7 +105,7 @@ static String initiatorFor(const StringImpl* tagImpl)
     return emptyString();
 }
 
-static bool mediaAttributeMatches(const MediaValues& mediaValues, const String& attributeValue)
+static bool mediaAttributeMatches(const MediaValuesCached& mediaValues, const String& attributeValue)
 {
     RefPtrWillBeRawPtr<MediaQuerySet> mediaQueries = MediaQuerySet::createOffMainThread(attributeValue);
     MediaQueryEvaluator mediaQueryEvaluator(mediaValues);
@@ -115,7 +115,7 @@ static bool mediaAttributeMatches(const MediaValues& mediaValues, const String& 
 class TokenPreloadScanner::StartTagScanner {
     STACK_ALLOCATED();
 public:
-    StartTagScanner(const StringImpl* tagImpl, PassRefPtrWillBeRawPtr<MediaValues> mediaValues)
+    StartTagScanner(const StringImpl* tagImpl, PassRefPtrWillBeRawPtr<MediaValuesCached> mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkTypeIsMissingOrSupportedStyleSheet(true)
@@ -132,7 +132,6 @@ public:
         , m_referrerPolicySet(false)
         , m_referrerPolicy(ReferrerPolicyDefault)
     {
-        ASSERT(m_mediaValues->isCached());
         if (match(m_tagImpl, imgTag)
             || match(m_tagImpl, sourceTag)) {
             m_sourceSize = SizesAttributeParser(m_mediaValues, String()).length();
@@ -437,7 +436,7 @@ private:
     bool m_sourceSizeSet;
     FetchRequest::DeferOption m_defer;
     CrossOriginAttributeValue m_crossOrigin;
-    RefPtrWillBeMember<MediaValues> m_mediaValues;
+    RefPtrWillBeMember<MediaValuesCached> m_mediaValues;
     bool m_referrerPolicySet;
     ReferrerPolicy m_referrerPolicy;
     IntegrityMetadataSet m_integrityMetadata;
@@ -454,7 +453,6 @@ TokenPreloadScanner::TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<Cac
 {
     ASSERT(m_documentParameters.get());
     ASSERT(m_documentParameters->mediaValues.get());
-    ASSERT(m_documentParameters->mediaValues->isCached());
 }
 
 TokenPreloadScanner::~TokenPreloadScanner()
@@ -499,9 +497,8 @@ static void handleMetaViewport(const String& attributeValue, CachedDocumentParam
     HTMLMetaElement::getViewportDescriptionFromContentAttribute(attributeValue, description, nullptr, documentParameters->viewportMetaZeroValuesQuirk);
     FloatSize initialViewport(documentParameters->mediaValues->deviceWidth(), documentParameters->mediaValues->deviceHeight());
     PageScaleConstraints constraints = description.resolve(initialViewport, documentParameters->defaultViewportMinWidth);
-    MediaValuesCached* cachedMediaValues = static_cast<MediaValuesCached*>(documentParameters->mediaValues.get());
-    cachedMediaValues->setViewportHeight(constraints.layoutSize.height());
-    cachedMediaValues->setViewportWidth(constraints.layoutSize.width());
+    documentParameters->mediaValues->setViewportHeight(constraints.layoutSize.height());
+    documentParameters->mediaValues->setViewportWidth(constraints.layoutSize.width());
 }
 
 static void handleMetaReferrer(const String& attributeValue, CachedDocumentParameters* documentParameters, CSSPreloadScanner* cssScanner)
@@ -681,7 +678,7 @@ void HTMLPreloadScanner::scan(ResourcePreloader* preloader, const KURL& starting
     preloader->takeAndPreload(requests);
 }
 
-CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtrWillBeRawPtr<MediaValues> givenMediaValues)
+CachedDocumentParameters::CachedDocumentParameters(Document* document, PassRefPtrWillBeRawPtr<MediaValuesCached> givenMediaValues)
 {
     ASSERT(isMainThread());
     ASSERT(document);

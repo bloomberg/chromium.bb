@@ -16,7 +16,6 @@ public:
     static PassRefPtrWillBeRawPtr<MediaValues> create(Document&);
     static PassRefPtrWillBeRawPtr<MediaValues> create(LocalFrame*);
     PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
-    bool isSafeToSendToAnotherThread() const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 

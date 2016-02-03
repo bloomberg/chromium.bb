@@ -52,12 +52,12 @@ public:
         }
     };
 
-    static PassRefPtrWillBeRawPtr<MediaValues> create();
-    static PassRefPtrWillBeRawPtr<MediaValues> create(Document&);
-    static PassRefPtrWillBeRawPtr<MediaValues> create(LocalFrame*);
-    static PassRefPtrWillBeRawPtr<MediaValues> create(MediaValuesCachedData&);
+    static PassRefPtrWillBeRawPtr<MediaValuesCached> create();
+    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(Document&);
+    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(LocalFrame*);
+    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(MediaValuesCachedData&);
     PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
-    bool isSafeToSendToAnotherThread() const override;
+    bool isSafeToSendToAnotherThread() const;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 
@@ -82,7 +82,6 @@ public:
     void setViewportWidth(double);
     void setViewportHeight(double);
 
-    bool isCached() const override { return true; }
 protected:
     MediaValuesCached();
     MediaValuesCached(LocalFrame*);
