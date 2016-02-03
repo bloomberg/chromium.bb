@@ -22,5 +22,5 @@ def GetSafeUrls():
   """Returns a list of safe urls by loading them from a pre-generated file."""
   safe_url_dir = os.path.dirname(os.path.realpath(__file__))
   safe_url_path = os.path.join(safe_url_dir, "profile_safe_url_list.json")
-  with open(safe_url_path, 'r') as safe_url_file:
+  with open(safe_url_path, "r") as safe_url_file:
     return json.load(safe_url_file)

@@ -13,6 +13,7 @@ from page_sets import repaint_helpers
 
 
 class TestRepaintPage(page_module.Page):
+
   def __init__(self, page_set, base_dir):
     super(TestRepaintPage, self).__init__('file://blank.html',
                                           page_set, base_dir)

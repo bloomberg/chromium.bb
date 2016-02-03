@@ -18,6 +18,7 @@ from core import path_util
 path_util.AddTelemetryToPath()
 from telemetry.testing import unittest_runner
 
+
 def main():
   project_config = chromium_config.ChromiumConfig()
   return unittest_runner.Run(project_config)

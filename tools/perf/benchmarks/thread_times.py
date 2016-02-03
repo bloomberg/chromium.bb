@@ -9,7 +9,9 @@ from measurements import thread_times
 import page_sets
 from telemetry import benchmark
 
+
 class _ThreadTimes(perf_benchmark.PerfBenchmark):
+
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--report-silk-details', action='store_true',
@@ -56,7 +58,7 @@ class ThreadTimesFastPathMobileSites(_ThreadTimes):
   key mobile sites labeled with fast-path tag.
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.KeyMobileSitesSmoothPageSet
-  options = {'story_label_filter' : 'fastpath'}
+  options = {'story_label_filter': 'fastpath'}
 
   @classmethod
   def Name(cls):
@@ -74,13 +76,14 @@ class ThreadTimesSimpleMobileSites(_ThreadTimes):
     return 'thread_times.simple_mobile_sites'
 
 
-@benchmark.Disabled('win') # crbug.com/443781
+@benchmark.Disabled('win')  # crbug.com/443781
 class ThreadTimesCompositorCases(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on
   tough compositor cases, using software rasterization.
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.ToughCompositorCasesPageSet
+
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSoftwareRasterization(options)
 
@@ -88,11 +91,13 @@ class ThreadTimesCompositorCases(_ThreadTimes):
   def Name(cls):
     return 'thread_times.tough_compositor_cases'
 
+
 @benchmark.Enabled('android')
 class ThreadTimesPolymer(_ThreadTimes):
   """Measures timeline metrics while performing smoothness action on
   Polymer cases."""
   page_set = page_sets.PolymerPageSet
+
   @classmethod
   def Name(cls):
     return 'thread_times.polymer'
@@ -130,7 +135,7 @@ class ThreadTimesKeyNoOpCases(_ThreadTimes):
     return 'per_frame' not in value.name and 'mean_frame' not in value.name
 
 
-@benchmark.Disabled('win') # crbug.com/568175
+@benchmark.Disabled('win')  # crbug.com/568175
 class ThreadTimesToughScrollingCases(_ThreadTimes):
   """Measure timeline metrics while performing smoothness action on tough
   scrolling cases."""

@@ -76,7 +76,7 @@ class ProfileExtender(object):
     Returns:
         List of OS ('win', 'mac', or 'linux') that this extender can run on.
     """
-    return ["win", "mac", "linux"]
+    return ['win', 'mac', 'linux']
 
   def SetUpBrowser(self):
     """Finds and starts the browser.
@@ -92,11 +92,11 @@ class ProfileExtender(object):
     enabled_os_list = self.EnabledOSList()
     if self._os_name not in enabled_os_list:
       raise NotImplementedError(
-        'This profile extender on %s is not yet supported'
-        % self._os_name)
+          'This profile extender on %s is not yet supported'
+          % self._os_name)
     if possible_browser.IsRemote():
       raise NotImplementedError(
-        'Profile extenders are not yet supported on remote platforms.')
+          'Profile extenders are not yet supported on remote platforms.')
     assert possible_browser.supports_tab_control
 
     self._SetUpWebPageReplay(self.finder_options, possible_browser)
@@ -154,4 +154,3 @@ class ProfileExtender(object):
         possible_browser.browser_type)
 
     return possible_browser
-

@@ -12,12 +12,14 @@ from measurements import v8_detached_context_age_in_gc
 
 
 class FakePage(object):
+
   def __init__(self, url):
     self.url = url
     self.is_file = url.startswith('file://')
 
 
 class FakeTab(object):
+
   def __init__(self, histograms):
     self.histograms = histograms
     self.current_histogram_index = 0
@@ -33,15 +35,15 @@ class FakeTab(object):
 
 
 def _MeasureFakePage(histograms):
-    results = page_test_results.PageTestResults()
-    page = FakePage('file://blank.html')
-    tab = FakeTab(histograms)
-    metric = v8_detached_context_age_in_gc.V8DetachedContextAgeInGC()
-    results.WillRunPage(page)
-    metric.DidNavigateToPage(page, tab)
-    metric.ValidateAndMeasurePage(page, tab, results)
-    results.DidRunPage(page)
-    return results
+  results = page_test_results.PageTestResults()
+  page = FakePage('file://blank.html')
+  tab = FakeTab(histograms)
+  metric = v8_detached_context_age_in_gc.V8DetachedContextAgeInGC()
+  results.WillRunPage(page)
+  metric.DidNavigateToPage(page, tab)
+  metric.ValidateAndMeasurePage(page, tab, results)
+  results.DidRunPage(page)
+  return results
 
 
 def _ActualValues(results):
@@ -49,12 +51,14 @@ def _ActualValues(results):
 
 
 class SimplePage(page_module.Page):
-    def __init__(self, page_set):
-      super(SimplePage, self).__init__(
-          'file://host.html', page_set, page_set.base_dir)
-    def RunPageInteractions(self, action_runner):
-      # Reload the page to detach the previous context.
-      action_runner.ReloadPage()
+
+  def __init__(self, page_set):
+    super(SimplePage, self).__init__(
+        'file://host.html', page_set, page_set.base_dir)
+
+  def RunPageInteractions(self, action_runner):
+    # Reload the page to detach the previous context.
+    action_runner.ReloadPage()
 
 
 class V8DetachedContextAgeInGCTests(page_test_test_case.PageTestTestCase):

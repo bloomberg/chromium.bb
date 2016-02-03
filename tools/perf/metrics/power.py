@@ -39,16 +39,16 @@ class PowerMetric(Metric):
     self._MeasureQuiescentPower(quiescent_measurement_time_s)
     # TODO(yolandyan): Remove this and the following info loggings after
     # crbug/573302 is fixed
-    logging.info("PowerMetric created, not running")
+    logging.info('PowerMetric created, not running')
 
   def _StopInternal(self):
     """Stop monitoring power if measurement is running. This function is
     idempotent."""
     if not self._running:
-      logging.info("Attempting to stop non-running monitor")
+      logging.info('Attempting to stop non-running monitor')
       return
     self._running = False
-    logging.info("StopInternal: PowerMetric running")
+    logging.info('StopInternal: PowerMetric running')
     self._results = self._platform.StopMonitoringPower()
     if self._results:  # StopMonitoringPower() can return None.
       self._results['cpu_stats'] = (
@@ -90,7 +90,7 @@ class PowerMetric(Metric):
     self._platform.StartMonitoringPower(self._browser)
 
     self._running = True
-    logging.info("Start: PowerMetric running")
+    logging.info('Start: PowerMetric running')
 
   def Stop(self, _, tab):
     if (not self._platform.CanMonitorPower() or

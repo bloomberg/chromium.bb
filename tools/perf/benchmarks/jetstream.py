@@ -31,6 +31,7 @@ from telemetry.value import list_of_scalar_values
 
 
 class _JetstreamMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_JetstreamMeasurement, self).__init__()
 

@@ -9,53 +9,67 @@ import update_reference_build as update_ref_build
 # Disable for accessing private API of update_reference_build class.
 # pylint: disable=protected-access
 class UpdateReferenceBuildUnittest(unittest.TestCase):
+
   def testInit(self):
     @classmethod
     def EmptyVersions(_):
       return {}
+
     @classmethod
     def AllOmahaVersion1(_):
-      return {'mac':'1', 'linux':'1', 'win':'1'}
+      return {'mac': '1', 'linux': '1', 'win': '1'}
+
     @classmethod
     def AllCurrentVersion1(_):
-      return {'Mac64':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
+      return {'Mac64': '1', 'Linux': '1', 'Linux_x64': '1', 'Win': '1'}
+
     @classmethod
     def MixedOmahaVersion23(_):
-      return {'mac':'2', 'linux':'3', 'win':'2'}
+      return {'mac': '2', 'linux': '3', 'win': '2'}
+
     @classmethod
     def MissingOmahaVersion(_):
-      return {'mac':'2', 'win':'1'}
+      return {'mac': '2', 'win': '1'}
     old_stable = update_ref_build.BuildUpdater._OmahaVersionsMap
     old_current = update_ref_build.BuildUpdater._CurrentRefBuildsMap
     try:
       update_ref_build.BuildUpdater._CurrentRefBuildsMap = EmptyVersions
       update_ref_build.BuildUpdater._OmahaVersionsMap = AllOmahaVersion1
-      expected_versions = {'Mac64':'1', 'Linux':'1', 'Linux_x64':'1', 'Win':'1'}
+      expected_versions = {
+          'Mac64': '1',
+          'Linux': '1',
+          'Linux_x64': '1',
+          'Win': '1'
+      }
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._OmahaVersionsMap = MissingOmahaVersion
-      expected_versions = {'Mac64':'2', 'Win':'1'}
+      expected_versions = {'Mac64': '2', 'Win': '1'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._CurrentRefBuildsMap = AllCurrentVersion1
-      expected_versions = {'Mac64':'2'}
+      expected_versions = {'Mac64': '2'}
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
 
       update_ref_build.BuildUpdater._OmahaVersionsMap = MixedOmahaVersion23
-      expected_versions = {'Mac64':'2', 'Linux':'3', 'Linux_x64':'3', 'Win':'2'}
+      expected_versions = {
+          'Mac64': '2',
+          'Linux': '3',
+          'Linux_x64': '3',
+          'Win': '2'
+      }
       b = update_ref_build.BuildUpdater()
       self.assertEqual(expected_versions, b._platform_to_version_map)
     finally:
       update_ref_build.BuildUpdater._OmahaVersionsMap = old_stable
       update_ref_build.BuildUpdater._CurrentRefBuildsMap = old_current
 
-
   def testOmahaVersions(self):
-    #This is an example of valid output from the _OmahaReport function.
-    #Taken from processing the omaha report on 3/18/15
+    # This is an example of valid output from the _OmahaReport function.
+    # Taken from processing the omaha report on 3/18/15
     lines = [['os', 'channel', 'current_version', 'previous_version',
               'current_reldate', 'previous_reldate', 'branch_base_commit',
               'branch_base_position', 'branch_commit', 'base_webkit_position',
@@ -82,13 +96,14 @@ class UpdateReferenceBuildUnittest(unittest.TestCase):
               '4.1.0.21\n'],
              ['ios', 'stable', '41.0.2272.56', '40.0.2214.73', '03/16/15',
               '02/18/15', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A\n']]
+
     @classmethod
     def GetLines(_):
       return lines
     old_omaha_report = update_ref_build.BuildUpdater._OmahaReport
     update_ref_build.BuildUpdater._OmahaReport = GetLines
-    expected_versions = {'win':'41.0.2272.89', 'mac':'41.0.2272.89',
-                         'linux':'41.0.2272.89'}
+    expected_versions = {'win': '41.0.2272.89', 'mac': '41.0.2272.89',
+                         'linux': '41.0.2272.89'}
     b = update_ref_build.BuildUpdater()
     try:
       versions = b._OmahaVersionsMap()

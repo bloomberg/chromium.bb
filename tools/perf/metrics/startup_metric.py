@@ -14,7 +14,7 @@ from metrics import Metric
 
 
 class StartupMetric(Metric):
-  "A metric for browser startup time."
+  'A metric for browser startup time.'
 
   # Seconds to wait for page loading complete.
   DEFAULT_LOADING_TIMEOUT = 90
@@ -59,7 +59,7 @@ class StartupMetric(Metric):
       def EvaluateInt(exp):
         val = t.EvaluateJavaScript(exp)
         if not val:
-          logging.warn('%s undefined' % exp)
+          logging.warn('%s undefined', exp)
           return 0
         return int(val)
 
@@ -83,7 +83,7 @@ class StartupMetric(Metric):
         # Low memory Android devices may not be able to load more than
         # one tab at a time, so may timeout when the test attempts to
         # access a background tab. Ignore these tabs.
-        logging.error("Tab timed out on JavaScript access")
+        logging.error('Tab timed out on JavaScript access')
 
     # Only measure the foreground tab. We can't measure all tabs on Android
     # because on Android the data of the background tabs is loaded on demand,
@@ -125,6 +125,6 @@ class StartupMetric(Metric):
     # Get tab load times.
     browser_main_entry_time_ms = self._GetBrowserMainEntryTime(tab)
     if browser_main_entry_time_ms is None:
-      print "Outdated Chrome version, browser main entry time not supported."
+      print 'Outdated Chrome version, browser main entry time not supported.'
       return
     self._RecordTabLoadTimes(tab, browser_main_entry_time_ms, results)

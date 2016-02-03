@@ -16,6 +16,7 @@ from telemetry import benchmark
 class DrawPropertiesToughScrolling(perf_benchmark.PerfBenchmark):
   test = draw_properties.DrawProperties
   page_set = page_sets.ToughScrollingCasesPageSet
+
   @classmethod
   def Name(cls):
     return 'draw_properties.tough_scrolling'

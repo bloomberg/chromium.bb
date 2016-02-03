@@ -13,6 +13,7 @@ import page_sets
 
 from profile_creators import fast_navigation_profile_extender
 
+
 class CookieProfileExtender(
     fast_navigation_profile_extender.FastNavigationProfileExtender):
   """This extender fills in the cookie database.

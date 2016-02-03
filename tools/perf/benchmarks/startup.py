@@ -36,7 +36,7 @@ class _StartupWarm(perf_benchmark.PerfBenchmark):
     return startup.Startup(cold=False)
 
 
-@benchmark.Disabled('snowleopard') # crbug.com/336913
+@benchmark.Disabled('snowleopard')  # crbug.com/336913
 @benchmark.Disabled('android')
 class StartupColdBlankPage(_StartupCold):
   """Measures cold startup time with a clean profile."""

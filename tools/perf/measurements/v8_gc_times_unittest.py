@@ -77,8 +77,9 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     test_page_helper = V8GCTimesTestPageHelper(
         self.CreateEmptyPageSet())
 
-    test_page_helper.AddEvent('toplevel', 'PostMessage',
-        thread_start=0, thread_duration=14, wall_start=5, wall_duration=35)
+    test_page_helper.AddEvent(
+        'toplevel', 'PostMessage', thread_start=0, thread_duration=14,
+        wall_start=5, wall_duration=35)
 
     results = test_page_helper.MeasureFakePage()
     expected = _GetEmptyResults()
@@ -91,8 +92,9 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     test_page_helper = V8GCTimesTestPageHelper(
         self.CreateEmptyPageSet())
 
-    test_page_helper.AddEvent('toplevel', 'PostMessage',
-        thread_start=0, thread_duration=77, wall_start=5, wall_duration=88)
+    test_page_helper.AddEvent(
+        'toplevel', 'PostMessage', thread_start=0, thread_duration=77,
+        wall_start=5, wall_duration=88)
     test_page_helper.AddEvent('v8', 'V8.GCScavenger', 5, 4)
     test_page_helper.AddEvent('v8', 'V8.GCScavenger', 15, 3)
     test_page_helper.AddEvent('v8', 'V8.GCIncrementalMarking', 23, 4)
@@ -143,22 +145,26 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     test_page_helper = V8GCTimesTestPageHelper(
         self.CreateEmptyPageSet())
 
-    test_page_helper.AddEvent('toplevel', 'PostMessage',
-        thread_start=0, thread_duration=57, wall_start=5, wall_duration=68)
+    test_page_helper.AddEvent(
+        'toplevel', 'PostMessage', thread_start=0, thread_duration=57,
+        wall_start=5, wall_duration=68)
 
     test_page_helper.AddEvent('v8', 'V8.GCScavenger', 5, 4)
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 15, 4, {'allotted_time_ms': 12})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        15, 4, {'allotted_time_ms': 12})
     test_page_helper.AddEvent('v8', 'V8.GCScavenger', 15, 3)
 
     test_page_helper.AddEvent('v8', 'V8.GCIncrementalMarking', 23, 4)
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 34, 3, {'allotted_time_ms': 12})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        34, 3, {'allotted_time_ms': 12})
     test_page_helper.AddEvent('v8', 'V8.GCIncrementalMarking', 34, 2)
 
     test_page_helper.AddEvent('v8', 'V8.GCCompactor', 42, 4)
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 52, 6, {'allotted_time_ms': 12})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        52, 6, {'allotted_time_ms': 12})
     test_page_helper.AddEvent('v8', 'V8.GCCompactor', 52, 5)
 
     results = test_page_helper.MeasureFakePage()
@@ -194,19 +200,23 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     test_page_helper = V8GCTimesTestPageHelper(
         self.CreateEmptyPageSet())
 
-    test_page_helper.AddEvent('toplevel', 'PostMessage',
-        thread_start=0, thread_duration=80, wall_start=5, wall_duration=92)
+    test_page_helper.AddEvent(
+        'toplevel', 'PostMessage', thread_start=0, thread_duration=80,
+        wall_start=5, wall_duration=92)
 
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 15, 15, {'allotted_time_ms': 8})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        15, 15, {'allotted_time_ms': 8})
     test_page_helper.AddEvent('v8', 'V8.GCScavenger', 15, 14)
 
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 34, 15, {'allotted_time_ms': 6})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        34, 15, {'allotted_time_ms': 6})
     test_page_helper.AddEvent('v8', 'V8.GCIncrementalMarking', 34, 14)
 
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 52, 23, {'allotted_time_ms': 9})
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        52, 23, {'allotted_time_ms': 9})
     test_page_helper.AddEvent('v8', 'V8.GCCompactor', 52, 22)
 
     results = test_page_helper.MeasureFakePage()
@@ -246,13 +256,16 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     test_page_helper = V8GCTimesTestPageHelper(
         self.CreateEmptyPageSet())
 
-    test_page_helper.AddEvent('toplevel', 'PostMessage',
-        thread_start=0, thread_duration=80, wall_start=5, wall_duration=92)
+    test_page_helper.AddEvent(
+        'toplevel', 'PostMessage', thread_start=0, thread_duration=80,
+        wall_start=5, wall_duration=92)
 
-    test_page_helper.AddEvent('renderer.scheduler',
-        'SingleThreadIdleTaskRunner::RunTask', 15, 15, {'allotted_time_ms': 8})
-    test_page_helper.AddEvent('v8', 'V8.GCScavenger',
-        thread_start=15, thread_duration=4, wall_start=15, wall_duration=14)
+    test_page_helper.AddEvent(
+        'renderer.scheduler', 'SingleThreadIdleTaskRunner::RunTask',
+        15, 15, {'allotted_time_ms': 8})
+    test_page_helper.AddEvent(
+        'v8', 'V8.GCScavenger', thread_start=15, thread_duration=4,
+        wall_start=15, wall_duration=14)
 
     results = test_page_helper.MeasureFakePage()
     expected = _GetEmptyResults()
@@ -281,8 +294,8 @@ class V8GCTimesTests(page_test_test_case.PageTestTestCase):
     for key in expected.iterkeys():
       self.assertIn(key, actual.keys())
       self.assertEqual(expected[key], actual[key],
-          'Result for [' + key + '] - expected ' + str(expected[key]) +
-          ' but got ' + str(actual[key]))
+                       'Result for [' + key + '] - expected ' +
+                       str(expected[key]) + ' but got ' + str(actual[key]))
 
   @decorators.Disabled('win')  # crbug.com/416502
   def testCleanUpTrace(self):
@@ -293,7 +306,7 @@ def _ActualValues(results):
   return dict(list(
       (v.name, (v.units, v.value))
       for v in results.all_page_specific_values
-      ))
+  ))
 
 
 def _GetEmptyResults():

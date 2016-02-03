@@ -12,7 +12,7 @@ from metrics import timeline
 
 
 def _GetInteractionRecord(start, end):
-  return tir_module.TimelineInteractionRecord("test-record", start, end)
+  return tir_module.TimelineInteractionRecord('test-record', start, end)
 
 
 class LoadTimesTimelineMetric(unittest.TestCase):
@@ -144,7 +144,7 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
                               [_GetInteractionRecord(10, 30)])
 
     # Test for the results we expect.
-    main_thread = "renderer_main"
+    main_thread = 'renderer_main'
     cc_thread = 'renderer_compositor'
     assert_results = [
         (timeline.ThreadMeanFrameTimeResultName(cc_thread), 'ms', 10.0),
@@ -165,9 +165,9 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
         (timeline.ThreadDetailResultName(main_thread, 'second', 'cat2'),
          '%', 5.0),
         (timeline.ThreadDetailResultName(
-         main_thread, 'frame', 'idle'), 'ms', 0),
+            main_thread, 'frame', 'idle'), 'ms', 0),
         (timeline.ThreadDetailResultName(
-         main_thread, 'second', 'idle'), '%', 0)
+            main_thread, 'second', 'idle'), '%', 0)
     ]
     for name, unit, value in assert_results:
       results.AssertHasPageSpecificScalarValue(name, unit, value)
@@ -202,9 +202,9 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     # Test a couple specific results.
     assert_results = [
         (timeline.ThreadCpuTimeResultName(
-         'renderer_main', 'frame'), 'ms', 9.0),
+            'renderer_main', 'frame'), 'ms', 9.0),
         (timeline.ThreadCpuTimeResultName(
-         'renderer_main', 'second'), '%', 45.0),
+            'renderer_main', 'second'), '%', 45.0),
     ]
     for name, unit, value in assert_results:
       results.AssertHasPageSpecificScalarValue(name, unit, value)

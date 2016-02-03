@@ -14,8 +14,8 @@ from telemetry.testing import system_stub
 from core import trybot_command
 
 
-
 class FakeProcess(object):
+
   def __init__(self, expected_responses):
     self._communicate = expected_responses[1:]
     self._poll = expected_responses[0]
@@ -53,14 +53,15 @@ class TrybotCommandTest(unittest.TestCase):
 
   def _ExpectProcesses(self, expected_args_list):
     counter = [-1]
+
     def side_effect(args, **kwargs):
       del kwargs  # unused
       counter[0] += 1
       expected_args, expected_responses = expected_args_list[counter[0]]
       self.assertEquals(
-        expected_args, args,
-        'Popen() is called with unexpected args.\n Actual: %s.\n'
-        'Expecting (index %i): %s' % (args, counter[0], expected_args))
+          expected_args, args,
+          'Popen() is called with unexpected args.\n Actual: %s.\n'
+          'Expecting (index %i): %s' % (args, counter[0], expected_args))
       return FakeProcess(expected_responses)
     self._mock_subprocess.Popen.side_effect = side_effect
 
@@ -317,7 +318,7 @@ class TrybotCommandTest(unittest.TestCase):
         self.log_output.getvalue())
 
   def _GetConfigForTrybot(self, name, platform, branch, cfg_filename,
-                           is_blink=False):
+                          is_blink=False):
     bot = '%s_perf_bisect' % name.replace('', '').replace('-', '_')
     self._MockTryserverJson({bot: 'stuff'})
     first_processes = ()
@@ -339,7 +340,7 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: %s' % platform],
          (0, None, None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on %s' % platform],
+          'CL for perf tryjob on %s' % platform],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b', bot],
          (0, None, None)),
@@ -416,15 +417,16 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: android'],
          (128, 'None', 'commit failed')),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on android'],
+          'CL for perf tryjob on android'],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
           'android_nexus4_perf_bisect'], (0, None, None))))
     cfg_filename = 'tools/run-perf-test.cfg'
     cfg = StringIO.StringIO()
     self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(trybot_command.TrybotError,
-        command._UpdateConfigAndRunTryjob, 'android', cfg_filename, [])
+    self.assertRaises(
+        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
+        'android', cfg_filename, [])
 
   def testUpdateConfigGitUploadTrybotError(self):
     self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
@@ -434,15 +436,16 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: android'],
          (0, 'None', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on android'],
+          'CL for perf tryjob on android'],
          (128, None, 'error')),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
           'android_nexus4_perf_bisect'], (0, None, None))))
     cfg_filename = 'tools/run-perf-test.cfg'
     cfg = StringIO.StringIO()
     self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(trybot_command.TrybotError,
-        command._UpdateConfigAndRunTryjob, 'android', cfg_filename, [])
+    self.assertRaises(
+        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
+        'android', cfg_filename, [])
 
   def testUpdateConfigGitTryTrybotError(self):
     self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
@@ -452,15 +455,16 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: android'],
          (0, 'None', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on android'],
+          'CL for perf tryjob on android'],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
           'android_nexus4_perf_bisect'], (128, None, None))))
     cfg_filename = 'tools/run-perf-test.cfg'
     cfg = StringIO.StringIO()
     self._stubs.open.files = {cfg_filename: cfg}
-    self.assertRaises(trybot_command.TrybotError,
-        command._UpdateConfigAndRunTryjob, 'android', cfg_filename, [])
+    self.assertRaises(
+        trybot_command.TrybotError, command._UpdateConfigAndRunTryjob,
+        'android', cfg_filename, [])
 
   def testUpdateConfigGitTry(self):
     self._MockTryserverJson({'android_nexus4_perf_bisect': 'stuff'})
@@ -470,7 +474,7 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: android'],
          (0, 'None', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on android'],
+          'CL for perf tryjob on android'],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
           'android_nexus4_perf_bisect'], (0, None, None))))
@@ -478,8 +482,8 @@ class TrybotCommandTest(unittest.TestCase):
     cfg = StringIO.StringIO()
     self._stubs.open.files = {cfg_filename: cfg}
     self.assertEquals((0, 'https://codereview.chromium.org/12345'),
-        command._UpdateConfigAndRunTryjob(
-        'android', cfg_filename, []))
+                      command._UpdateConfigAndRunTryjob(
+                          'android', cfg_filename, []))
     cfg.seek(0)
     config = '''config = {
   "command": "./tools/perf/run_benchmark --browser=android-chromium",
@@ -513,22 +517,22 @@ class TrybotCommandTest(unittest.TestCase):
         (['git', 'commit', '-a', '-m', 'bisect config: win'],
          (0, 'None', None)),
         (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on win'],
+          'CL for perf tryjob on win'],
          (0, 'stuff2 https://codereview.chromium.org/12345 stuff2', None)),
         (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
           'win_8_perf_bisect'],
          (0, None, None)),
         (['git', 'commit', '-a', '-m', 'bisect config: android'],
          (0, 'None', None)),
-       (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
-         'CL for perf tryjob on android'],
+        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
+          'CL for perf tryjob on android'],
          (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
-      (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
-        'android_nexus4_perf_bisect'], (0, None, None)),
-      (['git', 'checkout', 'CURRENT-BRANCH'],
-       (0, '', None)),
-      (['git', 'branch', '-D', 'telemetry-tryjob'],
-       (0, '', None))))
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
+          'android_nexus4_perf_bisect'], (0, None, None)),
+        (['git', 'checkout', 'CURRENT-BRANCH'],
+         (0, '', None)),
+        (['git', 'branch', '-D', 'telemetry-tryjob'],
+         (0, '', None))))
     cfg_filename = 'tools/run-perf-test.cfg'
     cfg = StringIO.StringIO()
     self._stubs.open.files = {cfg_filename: cfg}

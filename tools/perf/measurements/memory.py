@@ -11,6 +11,7 @@ from metrics import power
 
 
 class Memory(page_test.PageTest):
+
   def __init__(self):
     super(Memory, self).__init__()
     self._memory_metric = None

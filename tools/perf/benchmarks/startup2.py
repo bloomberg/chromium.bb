@@ -33,7 +33,7 @@ class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
 # benchmarks produce the same results.
 
 
-@benchmark.Disabled('snowleopard') # crbug.com/336913
+@benchmark.Disabled('snowleopard')  # crbug.com/336913
 @benchmark.Disabled('android')
 class StartupColdBlankPage2(_StartupPerfBenchmark):
   """Measures cold startup time with a clean profile."""

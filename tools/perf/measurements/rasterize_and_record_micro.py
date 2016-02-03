@@ -10,6 +10,7 @@ from telemetry.value import scalar
 
 
 class RasterizeAndRecordMicro(page_test.PageTest):
+
   def __init__(self, start_wait_time=2, rasterize_repeat=100, record_repeat=100,
                timeout=120, report_detailed_results=False):
     super(RasterizeAndRecordMicro, self).__init__()

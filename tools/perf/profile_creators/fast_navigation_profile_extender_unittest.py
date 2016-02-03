@@ -15,6 +15,7 @@ class FakeTab(object):
 
 
 class FakeTabList(object):
+
   def __init__(self):
     self._tabs = []
 
@@ -28,6 +29,7 @@ class FakeTabList(object):
 
 
 class FakeBrowser(object):
+
   def __init__(self):
     self.tabs = FakeTabList()
 
@@ -35,6 +37,7 @@ class FakeBrowser(object):
 # Testing private method.
 # pylint: disable=protected-access
 class FastNavigationProfileExtenderTest(unittest.TestCase):
+
   def testPerformNavigations(self):
     maximum_batch_size = 15
     options = options_for_unittests.GetCopy()
@@ -57,6 +60,7 @@ class FastNavigationProfileExtenderTest(unittest.TestCase):
     # Set up a callback to record the tabs and urls in each navigation.
     callback_tabs_batch = []
     callback_urls_batch = []
+
     def SideEffect(*args, **_):
       batch = args[0]
       for tab, url in batch:
@@ -72,7 +76,7 @@ class FastNavigationProfileExtenderTest(unittest.TestCase):
 
     # The other urls should not have been navigated to.
     navigation_urls_remaining = (set(navigation_urls) -
-        set(navigation_urls_batch))
+                                 set(navigation_urls_batch))
     self.assertFalse(navigation_urls_remaining & set(callback_urls_batch))
 
     # The first couple of tabs should have been navigated once. The remaining

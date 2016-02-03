@@ -53,4 +53,3 @@ class StartWithExtWarm(_StartWithExt):
   @classmethod
   def Name(cls):
     return 'start_with_ext.warm.blank_page'
-

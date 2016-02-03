@@ -36,8 +36,8 @@ CHROME_GS_URL_FMT = ('gs://chrome-unsigned/desktop-*/%s/%s/%s')
 
 
 def _ReportValueError(error_string):
-  #TODO(aiolos): alert sheriffs via email when an error is seen.
-  #This should be added when alerts are added when updating the build.
+  # TODO(aiolos): alert sheriffs via email when an error is seen.
+  # This should be added when alerts are added when updating the build.
   raise ValueError(error_string)
 
 
@@ -55,23 +55,23 @@ class BuildUpdater(object):
   #   gs_build: name of the Chrome build platform used in cloud storage.
   #   destination: Name of the folder to download the reference build to.
   UpdateInfo = collections.namedtuple('UpdateInfo',
-      'omaha, gs_build, zip_name, destination')
-  _PLATFORM_MAP = { 'Mac64': UpdateInfo(omaha='mac',
-                                        gs_build='mac64',
-                                        zip_name='chrome-mac.zip',
-                                        destination='chrome_mac'),
-                    'Win': UpdateInfo(omaha='win',
-                                      gs_build='win',
-                                      zip_name='chrome-win.zip',
-                                      destination='chrome_win'),
-                    'Linux': UpdateInfo(omaha='linux',
-                                        gs_build='precise32',
-                                        zip_name='chrome-precise32.zip',
-                                        destination='chrome_linux'),
-                    'Linux_x64': UpdateInfo(omaha='linux',
-                                            gs_build='precise64',
-                                            zip_name='chrome-precise64.zip',
-                                            destination='chrome_linux64')}
+                                      'omaha, gs_build, zip_name, destination')
+  _PLATFORM_MAP = {'Mac64': UpdateInfo(omaha='mac',
+                                       gs_build='mac64',
+                                       zip_name='chrome-mac.zip',
+                                       destination='chrome_mac'),
+                   'Win': UpdateInfo(omaha='win',
+                                     gs_build='win',
+                                     zip_name='chrome-win.zip',
+                                     destination='chrome_win'),
+                   'Linux': UpdateInfo(omaha='linux',
+                                       gs_build='precise32',
+                                       zip_name='chrome-precise32.zip',
+                                       destination='chrome_linux'),
+                   'Linux_x64': UpdateInfo(omaha='linux',
+                                           gs_build='precise64',
+                                           zip_name='chrome-precise64.zip',
+                                           destination='chrome_linux64')}
 
   def __init__(self):
     stable_versions = self._StableVersionsMap()
@@ -94,7 +94,7 @@ class BuildUpdater(object):
 
   @classmethod
   def _OmahaReport(cls):
-    url ='https://omahaproxy.appspot.com/all?channel=stable'
+    url = 'https://omahaproxy.appspot.com/all?channel=stable'
     lines = urllib2.urlopen(url).readlines()
     return [l.split(',') for l in lines]
 
@@ -120,7 +120,7 @@ class BuildUpdater(object):
 
   @classmethod
   def _CurrentRefBuildsMap(cls):
-    #TODO(aiolos): Add logic for pulling the current reference build versions.
+    # TODO(aiolos): Add logic for pulling the current reference build versions.
     # Return an empty dictionary to force an update until we store the builds in
     # in cloud storage.
     return {}
@@ -252,7 +252,7 @@ class BuildUpdater(object):
     logging.info('Opening %s', dl_file)
     with zipfile.ZipFile(dl_file, 'r') as z:
       for content in z.namelist():
-        dest = os.path.join(dest_dir, content[content.find('/')+1:])
+        dest = os.path.join(dest_dir, content[content.find('/') + 1:])
         # Create dest parent dir if it does not exist.
         if not os.path.isdir(os.path.dirname(dest)):
           os.makedirs(os.path.dirname(dest))
@@ -323,7 +323,7 @@ class BuildUpdater(object):
 
 def main():
   logging.getLogger().setLevel(logging.DEBUG)
-  #TODO(aiolos): check that there are no options passed (argparse).
+  # TODO(aiolos): check that there are no options passed (argparse).
   b = BuildUpdater()
   b.DownloadAndUpdateBuilds()
   logging.info('Successfully updated reference builds. Move to '

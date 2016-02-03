@@ -26,6 +26,7 @@ from telemetry import project_config
 
 
 class ChromiumConfig(project_config.ProjectConfig):
+
   def __init__(self, top_level_dir=None, benchmark_dirs=None,
                client_config=CLIENT_CONFIG_PATH,
                default_chrome_root=GetChromiumSrcDir()):

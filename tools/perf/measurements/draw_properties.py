@@ -9,6 +9,7 @@ from telemetry.value import scalar
 
 
 class DrawProperties(page_test.PageTest):
+
   def __init__(self):
     super(DrawProperties, self).__init__()
 

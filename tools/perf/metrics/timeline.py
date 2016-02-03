@@ -17,11 +17,11 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
   def AddResults(self, model, renderer_thread, interaction_records, results):
     assert model
     assert len(interaction_records) == 1, (
-        'LoadTimesTimelineMetric cannot compute metrics for more than 1 time '
-        'range.')
+        "LoadTimesTimelineMetric cannot compute metrics for more than 1 time "
+        "range.")
     interaction_record = interaction_records[0]
     if self.report_main_thread_only:
-      thread_filter = 'CrRendererMain'
+      thread_filter = "CrRendererMain"
     else:
       thread_filter = None
 
@@ -33,7 +33,7 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
       if thread_filter and not thread.name in thread_filter:
         continue
 
-      thread_name = thread.name.replace('/', '_')
+      thread_name = thread.name.replace("/", "_")
       for e in thread.IterAllSlicesInRange(interaction_record.start,
                                            interaction_record.end):
         events_by_name[e.name].append(e)
@@ -45,26 +45,26 @@ class LoadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
 
         # Results objects cannot contain the '.' character, so remove that
         # here.
-        sanitized_event_name = event_name.replace('.', '_')
+        sanitized_event_name = event_name.replace(".", "_")
 
-        full_name = thread_name + '|' + sanitized_event_name
+        full_name = thread_name + "|" + sanitized_event_name
         results.AddValue(scalar.ScalarValue(
-            results.current_page, full_name, 'ms', total))
+            results.current_page, full_name, "ms", total))
         results.AddValue(scalar.ScalarValue(
-            results.current_page, full_name + '_max', 'ms', biggest_jank))
+            results.current_page, full_name + "_max", "ms", biggest_jank))
         results.AddValue(scalar.ScalarValue(
-            results.current_page, full_name + '_avg', 'ms', total / len(times)))
+            results.current_page, full_name + "_avg", "ms", total / len(times)))
 
     for counter_name, counter in renderer_process.counters.iteritems():
       total = sum(counter.totals)
 
       # Results objects cannot contain the '.' character, so remove that here.
-      sanitized_counter_name = counter_name.replace('.', '_')
+      sanitized_counter_name = counter_name.replace(".", "_")
 
       results.AddValue(scalar.ScalarValue(
-          results.current_page, sanitized_counter_name, 'count', total))
+          results.current_page, sanitized_counter_name, "count", total))
       results.AddValue(scalar.ScalarValue(
-          results.current_page, sanitized_counter_name + '_avg', 'count',
+          results.current_page, sanitized_counter_name + "_avg", "count",
           total / float(len(counter.totals))))
 
 # We want to generate a consistent picture of our thread usage, despite
@@ -112,7 +112,7 @@ def Rate(numerator, denominator):
 
 def ClockOverheadForEvent(event):
   if (event.category == OverheadTraceCategory and
-     event.name == OverheadTraceName):
+      event.name == OverheadTraceName):
     return event.duration
   else:
     return 0
@@ -120,7 +120,7 @@ def ClockOverheadForEvent(event):
 
 def CpuOverheadForEvent(event):
   if (event.category == OverheadTraceCategory and
-     event.thread_duration):
+      event.thread_duration):
     return event.thread_duration
   else:
     return 0
@@ -150,7 +150,7 @@ def ThreadMeanFrameTimeResultName(thread_category):
 
 
 def ThreadDetailResultName(thread_category, interval_name, detail):
-  detail_sanitized = detail.replace('.', '_')
+  detail_sanitized = detail.replace(".", "_")
   interval_sanitized = ""
   # Special-case per-frame detail names to preserve continuity.
   if interval_name == "frame":
@@ -233,7 +233,7 @@ class ResultsForThread(object):
     results.AddValue(scalar.ScalarValue(
         results.current_page,
         ThreadTasksResultName(self.name, interval_name),
-        'tasks', tasks_per_interval))
+        "tasks", tasks_per_interval))
 
   def AddDetailedResults(self, num_intervals, interval_name, results):
     slices_by_category = collections.defaultdict(list)
@@ -288,23 +288,23 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
 
     # Group all threads.
     for thread in model.GetAllThreads():
-      thread_category_results['total_all'].AppendThreadSlices(thread)
+      thread_category_results["total_all"].AppendThreadSlices(thread)
 
     # Also group fast-path threads.
     for thread in model.GetAllThreads():
       if ThreadCategoryName(thread.name) in FastPathThreads:
-        thread_category_results['total_fast_path'].AppendThreadSlices(thread)
+        thread_category_results["total_fast_path"].AppendThreadSlices(thread)
 
     # Calculate the interaction's number of frames.
     frame_rate_thread = thread_category_results[FrameTraceThreadName]
     num_frames = frame_rate_thread.CountTracesWithName(FrameTraceName)
 
     # Calculate the interaction's duration.
-    all_threads = thread_category_results['total_all']
+    all_threads = thread_category_results["total_all"]
     num_seconds = all_threads.all_action_time / 1000.0
 
     # Report the desired results and details for each interval type.
-    intervals = [('frame', num_frames), ('second', num_seconds)]
+    intervals = [("frame", num_frames), ("second", num_seconds)]
     for (interval_name, num_intervals) in intervals:
       for thread_results in thread_category_results.values():
         if thread_results.name in self.results_to_report:
@@ -321,4 +321,4 @@ class ThreadTimesTimelineMetric(timeline_based_metric.TimelineBasedMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page,
         ThreadMeanFrameTimeResultName(FrameTraceThreadName),
-        'ms', mean_frame_time))
+        "ms", mean_frame_time))

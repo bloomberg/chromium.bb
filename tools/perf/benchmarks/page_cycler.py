@@ -20,8 +20,8 @@ class _PageCycler(perf_benchmark.PerfBenchmark):
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--report-speed-index',
-        action='store_true',
-        help='Enable the speed index metric.')
+                      action='store_true',
+                      help='Enable the speed index metric.')
 
   @classmethod
   def ValueCanBeAddedPredicate(cls, _, is_first_result):
@@ -29,10 +29,10 @@ class _PageCycler(perf_benchmark.PerfBenchmark):
 
   def CreatePageTest(self, options):
     return page_cycler.PageCycler(
-        page_repeat = options.page_repeat,
-        pageset_repeat = options.pageset_repeat,
-        cold_load_percent = self.cold_load_percent,
-        report_speed_index = options.report_speed_index)
+        page_repeat=options.page_repeat,
+        pageset_repeat=options.pageset_repeat,
+        cold_load_percent=self.cold_load_percent,
+        report_speed_index=options.report_speed_index)
 
 
 # This is an old page set, we intend to remove it after more modern benchmarks
@@ -165,11 +165,12 @@ class PageCyclerNetsimTop10(_PageCycler):
 
   def CreatePageTest(self, options):
     return page_cycler.PageCycler(
-        page_repeat = options.page_repeat,
-        pageset_repeat = options.pageset_repeat,
-        cold_load_percent = self.cold_load_percent,
-        report_speed_index = options.report_speed_index,
-        clear_cache_before_each_run = True)
+        page_repeat=options.page_repeat,
+        pageset_repeat=options.pageset_repeat,
+        cold_load_percent=self.cold_load_percent,
+        report_speed_index=options.report_speed_index,
+        clear_cache_before_each_run=True)
+
 
 @benchmark.Enabled('android')
 class PageCyclerTop10Mobile(_PageCycler):
@@ -189,6 +190,7 @@ class PageCyclerTop10Mobile(_PageCycler):
     if found:
       stories.RemoveStory(found)
     return stories
+
 
 @benchmark.Disabled('all')
 class PageCyclerKeyMobileSites(_PageCycler):
@@ -259,6 +261,7 @@ class PageCyclerBasicOopif(_PageCycler):
 @benchmark.Disabled('all')  # crbug.com/443730
 class PageCyclerBigJs(_PageCycler):
   page_set = page_sets.BigJsPageSet
+
   @classmethod
   def Name(cls):
     return 'page_cycler.big_js'

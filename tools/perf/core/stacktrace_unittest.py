@@ -6,12 +6,13 @@ from telemetry.core import exceptions
 from telemetry import decorators
 from telemetry.testing import tab_test_case
 
+
 class TabStackTraceTest(tab_test_case.TabTestCase):
 
   # For now just work on a single platform (mac).
   @decorators.Enabled('mac')
-   # Stack traces do not currently work on 10.6, but they are also being
-   # disabled shortly so just disable it for now.
+  # Stack traces do not currently work on 10.6, but they are also being
+  # disabled shortly so just disable it for now.
   @decorators.Disabled('snowleopard')
   def testStackTrace(self):
     try:

@@ -11,6 +11,7 @@ from metrics import timeline
 
 
 class ThreadTimes(page_test.PageTest):
+
   def __init__(self, report_silk_details=False):
     super(ThreadTimes, self).__init__()
     self._timeline_controller = None

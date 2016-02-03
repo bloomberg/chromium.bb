@@ -13,6 +13,7 @@ from measurements import skpicture_printer
 
 
 class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):
+
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._skp_outdir = tempfile.mkdtemp('_skp_test')

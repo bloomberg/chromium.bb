@@ -17,6 +17,7 @@ from metrics import power
 
 
 class _DromaeoMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_DromaeoMeasurement, self).__init__()
     self._power_metric = None
@@ -74,7 +75,8 @@ class _DromaeoMeasurement(page_test.PageTest):
       container[key]['count'] += 1
       container[key]['sum'] += math.log(value)
 
-    suffix = page.url[page.url.index('?') + 1 :]
+    suffix = page.url[page.url.index('?') + 1:]
+
     def AddResult(name, value):
       important = False
       if name == suffix:
@@ -95,6 +97,7 @@ class _DromaeoMeasurement(page_test.PageTest):
 
     for key, value in aggregated.iteritems():
       AddResult(key, math.exp(value['sum'] / value['count']))
+
 
 class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
   """A base class for Dromaeo benchmarks."""

@@ -14,7 +14,7 @@ import urllib2
 import zipfile
 
 sys.path.insert(1, os.path.abspath(os.path.join(
-        __file__, '..', '..')))
+    __file__, '..', '..')))
 from core import path_util
 
 
@@ -92,10 +92,10 @@ def _UpdateExtensionsInCloud(local_extensions_dir, extensions_csv, remote_dir):
     # Extract info from CSV.
     for row in reader:
       extension_info = {
-        'extension_name': row[0],
-        'id': row[1],
-        'hash': row[2],
-        'version': row[3]
+          'extension_name': row[0],
+          'id': row[1],
+          'hash': row[2],
+          'version': row[3]
       }
 
       print 'Fetching extension %s...' % extension_info['id']
@@ -108,7 +108,7 @@ def _UpdateExtensionsInCloud(local_extensions_dir, extensions_csv, remote_dir):
       (new_hash, new_version) = _CrxHashIfChanged(crx_path, extension_info)
       if new_hash is not None:
         update_csv = True
-        extension_info['hash'] =  new_hash
+        extension_info['hash'] = new_hash
         extension_info['version'] = new_version
       extensions_info.append(extension_info)
       extension_zip.write(crx_path, arcname='%s.crx' % extension_info['id'])
@@ -153,6 +153,7 @@ def _CrxHashIfChanged(crx_path, extension_info):
     return (downloaded_hash, new_version)
   return (None, None)
 
+
 def _UpdateCsv(comments, extensions_csv, extensions_info):
   """Updates CSV with information in extensions_info.
 
@@ -175,15 +176,17 @@ def _UpdateCsv(comments, extensions_csv, extensions_info):
     writer.writeheader()
     writer.writerows(extensions_info)
 
+
 def _GetCsvFromArgs():
   """Parse options to retrieve name of CSV file."""
   parser = optparse.OptionParser()
   parser.add_option('-e', '--extension-csv', dest='extension_csv',
-                   help='CSV of extensions to load.')
+                    help='CSV of extensions to load.')
   (options, _) = parser.parse_args()
   if not options.extension_csv:
     parser.error('Must specify --extension-csv option.')
   return options.extension_csv
+
 
 def _GetVersionFromCrx(crx_path):
   """Retrieves extension version from CRX archive.
@@ -196,8 +199,10 @@ def _GetVersionFromCrx(crx_path):
     version = json.loads(manifest_contents)['version']
   return version
 
+
 def _Base64Hash(file_path):
   return base64.b64encode(cloud_storage.CalculateHash(file_path))
+
 
 def main():
   extension_csv = _GetCsvFromArgs()
@@ -210,4 +215,3 @@ def main():
 
 if __name__ == '__main__':
   main()
-

@@ -20,6 +20,7 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       with the number of batches, but does not scale with the size of the
       batch.
   """
+
   def __init__(self, finder_options, maximum_batch_size):
     """Initializer.
 
@@ -133,7 +134,7 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
         break
 
       current_url = self._RetrieveTabUrl(tab, seconds_to_wait)
-      if current_url != initial_url and current_url != "":
+      if current_url != initial_url and current_url != '':
         break
 
       # Retrieving the current url is a non-trivial operation. Add a small
@@ -198,7 +199,7 @@ class FastNavigationProfileExtender(profile_extender.ProfileExtender):
       to have already been sent a navigation command.
     """
     total_batch_timeout = (len(queued_tabs) *
-        self._BATCH_TIMEOUT_PER_PAGE_IN_SECONDS)
+                           self._BATCH_TIMEOUT_PER_PAGE_IN_SECONDS)
     end_time = time.time() + total_batch_timeout
     for tab, initial_url in queued_tabs:
       # Since we didn't wait any time for the tab url navigation to commit, it's

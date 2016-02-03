@@ -51,9 +51,10 @@ class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   tag = 'sync_scroll'
   test = oilpan_gc_times.OilpanGCTimesForSmoothness
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
+
   @classmethod
   def Name(cls):
     return 'oilpan_gc_times.sync_scroll.key_mobile_sites_smooth'
-

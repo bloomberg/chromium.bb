@@ -30,6 +30,7 @@ from metrics import speedindex
 
 
 class PageCycler(page_test.PageTest):
+
   def __init__(self, page_repeat, pageset_repeat, cold_load_percent=50,
                report_speed_index=False, clear_cache_before_each_run=False):
     super(PageCycler, self).__init__(
@@ -135,7 +136,7 @@ class PageCycler(page_test.PageTest):
       util.WaitFor(SpeedIndexIsFinished, 60)
       self._speedindex_metric.Stop(page, tab)
       self._speedindex_metric.AddResults(
-          tab, results, chart_name=chart_name_prefix+'speed_index')
+          tab, results, chart_name=chart_name_prefix + 'speed_index')
     keychain_metric.KeychainMetric().AddResults(tab, results)
 
   def IsRunCold(self, url):

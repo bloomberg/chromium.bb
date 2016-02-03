@@ -11,6 +11,7 @@ from telemetry import benchmark
 
 
 class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
+
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--start-wait-time', type='float',
@@ -58,7 +59,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
 
 
 @benchmark.Disabled('mac', 'win',
-                    'android') # http://crbug.com/531597
+                    'android')  # http://crbug.com/531597
 class RasterizeAndRecordMicroKeyMobileSites(_RasterizeAndRecordMicro):
   """Measures rasterize and record performance on the key mobile sites.
 

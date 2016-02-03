@@ -118,22 +118,32 @@ class V8GCTimes(page_test.PageTest):
           average_thread_duration,
           description=('Average thread duration spent in %s' %
                        v8_event_stat.result_description)))
-      results.AddValue(scalar.ScalarValue(results.current_page,
-          '%s_outside_idle' % v8_event_stat.result_name, 'ms',
+      results.AddValue(scalar.ScalarValue(
+          results.current_page,
+          '%s_outside_idle' %
+          v8_event_stat.result_name, 'ms',
           v8_event_stat.thread_duration_outside_idle,
           description=(
               'Total thread duration spent in %s outside of idle tasks' %
               v8_event_stat.result_description)))
-      results.AddValue(scalar.ScalarValue(results.current_page,
-          '%s_idle_deadline_overrun' % v8_event_stat.result_name, 'ms',
-          v8_event_stat.idle_task_overrun_duration,
-          description=('Total idle task deadline overrun for %s idle tasks'
-                       % v8_event_stat.result_description)))
-      results.AddValue(scalar.ScalarValue(results.current_page,
-          '%s_percentage_idle' % v8_event_stat.result_name, 'idle%',
+      results.AddValue(
+          scalar.ScalarValue(
+              results.current_page,
+              '%s_idle_deadline_overrun' %
+              v8_event_stat.result_name, 'ms',
+              v8_event_stat.idle_task_overrun_duration,
+              description=(
+                  'Total idle task deadline overrun for %s idle tasks' %
+                  v8_event_stat.result_description)))
+      results.AddValue(scalar.ScalarValue(
+          results.current_page,
+          '%s_percentage_idle' %
+          v8_event_stat.result_name,
+          'idle%',
           v8_event_stat.percentage_thread_duration_during_idle,
-          description=('Percentage of %s spent in idle time' %
-                       v8_event_stat.result_description)))
+          description=(
+              'Percentage of %s spent in idle time' %
+              v8_event_stat.result_description)))
 
     # Add total metrics.
     gc_total = sum(x.thread_duration for x in v8_event_stats)
@@ -144,25 +154,35 @@ class V8GCTimes(page_test.PageTest):
     gc_total_percentage_idle = statistics.DivideIfPossibleOrZero(
         100 * (gc_total - gc_total_outside_idle), gc_total)
 
-    results.AddValue(scalar.ScalarValue(results.current_page,
-        'v8_gc_total', 'ms', gc_total,
-        description='Total thread duration of all garbage collection events'))
-    results.AddValue(scalar.ScalarValue(results.current_page,
-        'v8_gc_total_outside_idle', 'ms', gc_total_outside_idle,
-        description=(
-            'Total thread duration of all garbage collection events outside of '
-            'idle tasks')))
-    results.AddValue(scalar.ScalarValue(results.current_page,
-        'v8_gc_total_idle_deadline_overrun', 'ms',
-        gc_total_idle_deadline_overrun,
-        description=(
-            'Total idle task deadline overrun for all idle tasks garbage '
-            'collection events')))
-    results.AddValue(scalar.ScalarValue(results.current_page,
-        'v8_gc_total_percentage_idle', 'idle%', gc_total_percentage_idle,
-        description=(
-            'Percentage of the thread duration of all garbage collection '
-            'events spent inside of idle tasks')))
+    results.AddValue(
+        scalar.ScalarValue(
+            results.current_page, 'v8_gc_total', 'ms',
+            gc_total,
+            description=('Total thread duration of all garbage '
+                         'collection events')))
+    results.AddValue(
+        scalar.ScalarValue(
+            results.current_page, 'v8_gc_total_outside_idle',
+            'ms', gc_total_outside_idle,
+            description=(
+                'Total thread duration of all garbage collection events '
+            'outside of idle tasks')))
+    results.AddValue(
+        scalar.ScalarValue(
+            results.current_page,
+            'v8_gc_total_idle_deadline_overrun', 'ms',
+            gc_total_idle_deadline_overrun,
+            description=(
+                'Total idle task deadline overrun for all idle tasks garbage '
+                'collection events')))
+    results.AddValue(
+        scalar.ScalarValue(
+            results.current_page,
+            'v8_gc_total_percentage_idle', 'idle%',
+            gc_total_percentage_idle,
+            description=(
+                'Percentage of the thread duration of all garbage collection '
+                'events spent inside of idle tasks')))
 
   def _AddCpuTimeStatsToResults(self, thread, results):
     if thread.toplevel_slices:

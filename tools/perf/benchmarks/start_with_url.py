@@ -24,8 +24,8 @@ class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
   options = {'pageset_repeat': 5}
 
   def SetExtraBrowserOptions(self, options):
-      options.clear_sytem_cache_for_browser_and_profile_on_start = True
-      super(StartWithUrlColdTBM, self).SetExtraBrowserOptions(options)
+    options.clear_sytem_cache_for_browser_and_profile_on_start = True
+    super(StartWithUrlColdTBM, self).SetExtraBrowserOptions(options)
 
   @classmethod
   def Name(cls):

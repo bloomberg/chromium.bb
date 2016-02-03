@@ -17,6 +17,7 @@ from telemetry.web_perf.metrics import memory_timeline
 
 
 class _OortOnlineMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_OortOnlineMeasurement, self).__init__()
 
@@ -29,6 +30,7 @@ class _OortOnlineMeasurement(page_test.PageTest):
         results.AddValue(scalar.ScalarValue(
             results.current_page, score['name'], 'score', score['score'],
             important=True, improvement_direction=improvement_direction.UP))
+
 
 @benchmark.Disabled('android')
 class OortOnline(perf_benchmark.PerfBenchmark):

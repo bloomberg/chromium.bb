@@ -18,6 +18,7 @@ from metrics import power
 
 
 class _RobohornetProMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_RobohornetProMeasurement, self).__init__()
     self._power_metric = None

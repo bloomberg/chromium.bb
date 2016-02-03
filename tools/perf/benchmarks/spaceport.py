@@ -50,6 +50,7 @@ DESCRIPTIONS = {
 
 
 class _SpaceportMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_SpaceportMeasurement, self).__init__()
 
@@ -78,15 +79,15 @@ class _SpaceportMeasurement(page_test.PageTest):
           'Object.keys(window.__results).length > %d' % num_results, 180)
       num_results = tab.EvaluateJavaScript(
           'Object.keys(window.__results).length')
-      logging.info('Completed test %d of %d' %
-                   (num_results, num_tests_in_spaceport))
+      logging.info('Completed test %d of %d',
+                   num_results, num_tests_in_spaceport)
 
     result_dict = eval(tab.EvaluateJavaScript(
         'JSON.stringify(window.__results)'))
     for key in result_dict:
       chart, trace = key.split('.', 1)
       results.AddValue(scalar.ScalarValue(
-          results.current_page, '%s.%s'% (chart, trace),
+          results.current_page, '%s.%s' % (chart, trace),
           'objects (bigger is better)', float(result_dict[key]),
           important=False, description=DESCRIPTIONS.get(chart)))
     results.AddValue(list_of_scalar_values.ListOfScalarValues(
@@ -97,7 +98,7 @@ class _SpaceportMeasurement(page_test.PageTest):
 
 # crbug.com/166703: This test frequently times out on Windows.
 @benchmark.Disabled('mac', 'win',
-                   'linux', 'android')  # crbug.com/525112
+                    'linux', 'android')  # crbug.com/525112
 class Spaceport(perf_benchmark.PerfBenchmark):
   """spaceport.io's PerfMarks benchmark.
 

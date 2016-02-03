@@ -18,6 +18,7 @@ from profile_creators.cookie_profile_extender import CookieProfileExtender
 # Testing private method.
 # pylint: disable=protected-access
 class CookieProfileExtenderTest(unittest.TestCase):
+
   def _CreateCookieTable(self, path):
     connection = sqlite3.connect(path)
     cursor = connection.cursor()
@@ -33,7 +34,7 @@ class CookieProfileExtenderTest(unittest.TestCase):
     connection.commit()
     connection.close()
 
-  @decorators.Disabled('chromeos')  # crbug.com/483212
+  @decorators.Disabled("chromeos")  # crbug.com/483212
   def testCookieCount(self):
     # Neither tempfile.TemporaryFile() nor tempfile.NamedTemporaryFile() work
     # well here. The former doesn't work at all, since it doesn't guarantee a

@@ -41,7 +41,8 @@ class Media(page_test.PageTest):
     self._media_metric.Start(page, tab)
 
     # Reset to false for every page.
-    self._add_browser_metrics = (page.add_browser_metrics
+    self._add_browser_metrics = (
+        page.add_browser_metrics
         if hasattr(page, 'add_browser_metrics') else False)
 
     if self._add_browser_metrics:

@@ -20,6 +20,7 @@ from metrics import keychain_metric
 class MockMemoryMetric(object):
   """Used instead of simple_mock.MockObject so that the precise order and
   number of calls need not be specified."""
+
   def __init__(self):
     pass
 
@@ -38,6 +39,7 @@ class MockMemoryMetric(object):
 
 class FakePage(object):
   """Used to mock loading a page."""
+
   def __init__(self, url):
     self.url = url
     self.is_file = url.startswith('file://')
@@ -45,12 +47,15 @@ class FakePage(object):
 
 class FakeTab(object):
   """Used to mock a browser tab."""
+
   def __init__(self):
     self.clear_cache_calls = 0
     self.navigated_urls = []
+
   def ClearCache(self, force=False):
     assert force
     self.clear_cache_calls += 1
+
   def EvaluateJavaScript(self, script):
     # If the page cycler invokes javascript to measure the number of keychain
     # accesses, return a valid JSON dictionary.
@@ -61,13 +66,17 @@ class FakeTab(object):
       return '{{ "{0}" : 0 }}'.format(keychain_histogram_name)
 
     return 1
+
   def Navigate(self, url):
     self.navigated_urls.append(url)
+
   def WaitForJavaScriptExpression(self, _, __):
     pass
+
   @property
   def browser(self):
     return FakeBrowser()
+
 
 class FakeBrowser(object):
   _iteration = 0
@@ -79,10 +88,11 @@ class FakeBrowser(object):
         'Browser': {'CpuProcessTime': FakeBrowser._iteration,
                     'TotalTime': FakeBrowser._iteration * 2},
         'Renderer': {'CpuProcessTime': FakeBrowser._iteration,
-                    'TotalTime': FakeBrowser._iteration * 3},
+                     'TotalTime': FakeBrowser._iteration * 3},
         'Gpu': {'CpuProcessTime': FakeBrowser._iteration,
-                 'TotalTime': FakeBrowser._iteration * 4}
+                'TotalTime': FakeBrowser._iteration * 4}
     }
+
   @property
   def platform(self):
     return FakePlatform()
@@ -101,14 +111,17 @@ class FakeBrowser(object):
 
 
 class FakePlatform(object):
+
   def GetOSName(self):
     return 'fake'
+
   def CanMonitorPower(self):
     return False
 
   @property
   def http_server(self):
     class FakeHttpServer(object):
+
       def UrlOf(self, url_path):
         return 'http://fakeserver:99999/%s' % url_path
     return FakeHttpServer()
@@ -119,10 +132,10 @@ class PageCyclerUnitTest(unittest.TestCase):
   def SetUpCycler(self, page_repeat=1, pageset_repeat=10, cold_load_percent=50,
                   report_speed_index=False, setup_memory_module=False):
     cycler = page_cycler.PageCycler(
-        page_repeat = page_repeat,
-        pageset_repeat = pageset_repeat,
-        cold_load_percent = cold_load_percent,
-        report_speed_index = report_speed_index)
+        page_repeat=page_repeat,
+        pageset_repeat=pageset_repeat,
+        cold_load_percent=cold_load_percent,
+        report_speed_index=report_speed_index)
     options = browser_options.BrowserFinderOptions()
     options.browser_options.platform = FakePlatform()
     parser = options.CreateParser()
@@ -139,8 +152,8 @@ class PageCyclerUnitTest(unittest.TestCase):
 
       mock_memory_module = simple_mock.MockObject()
       mock_memory_module.ExpectCall(
-        'MemoryMetric').WithArgs(simple_mock.DONT_CARE).WillReturn(
-        mock_memory_metric)
+          'MemoryMetric').WithArgs(simple_mock.DONT_CARE).WillReturn(
+              mock_memory_metric)
 
       real_memory_module = page_cycler.memory
       try:
@@ -251,7 +264,7 @@ class PageCyclerUnitTest(unittest.TestCase):
 
         expected_values = ['gpu', 'browser']
         for value, expected in zip(values[1:len(expected_values) + 1],
-            expected_values):
+                                   expected_values):
           self.assertEqual(value.page, page)
           self.assertEqual(value.name,
                            'cpu_utilization.cpu_utilization_%s' % expected)

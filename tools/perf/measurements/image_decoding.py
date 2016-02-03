@@ -11,6 +11,7 @@ from metrics import power
 
 
 class ImageDecoding(page_test.PageTest):
+
   def __init__(self):
     super(ImageDecoding, self).__init__()
     self._power_metric = None
@@ -41,7 +42,7 @@ class ImageDecoding(page_test.PageTest):
     # on everywhere.
     config.tracing_category_filter.AddDisabledByDefault(
         'disabled-by-default-devtools.timeline')
-    for c in [ 'blink', 'devtools.timeline', 'webkit.console', 'blink.console']:
+    for c in ['blink', 'devtools.timeline', 'webkit.console', 'blink.console']:
       config.tracing_category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.StartTracing(config)
@@ -70,8 +71,10 @@ class ImageDecoding(page_test.PageTest):
 
     # If it is a real image page, then store only the last-minIterations
     # decode tasks.
-    if (hasattr(page,
-               'image_decoding_measurement_limit_results_to_min_iterations') and
+    if (
+        hasattr(
+            page,
+            'image_decoding_measurement_limit_results_to_min_iterations') and
         page.image_decoding_measurement_limit_results_to_min_iterations):
       assert _IsDone()
       min_iterations = tab.EvaluateJavaScript('minIterations')

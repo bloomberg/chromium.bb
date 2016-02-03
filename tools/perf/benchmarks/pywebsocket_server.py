@@ -13,6 +13,7 @@ from telemetry.core import util
 
 # This invokes pywebsocket's standalone.py under third_party/pywebsocket
 class PywebsocketServerBackend(local_server.LocalServerBackend):
+
   def __init__(self):
     super(PywebsocketServerBackend, self).__init__()
     self.port = 8001
@@ -31,10 +32,12 @@ class PywebsocketServerBackend(local_server.LocalServerBackend):
         '--port', str(self.port),
         '--log-level', 'debug',
         '-d', 'example'
-        ]
+    ]
     os.execv(sys.executable, cmd)
 
+
 class PywebsocketServer(local_server.LocalServer):
+
   def __init__(self):
     super(PywebsocketServer, self).__init__(PywebsocketServerBackend)
 

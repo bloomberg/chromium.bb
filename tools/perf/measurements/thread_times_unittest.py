@@ -13,16 +13,18 @@ from metrics import timeline
 
 
 class AnimatedPage(page.Page):
+
   def __init__(self, page_set):
     super(AnimatedPage, self).__init__(
-      url='file://animated_page.html',
-      page_set=page_set, base_dir=page_set.base_dir)
+        url='file://animated_page.html',
+        page_set=page_set, base_dir=page_set.base_dir)
 
   def RunPageInteractions(self, action_runner):
     action_runner.Wait(.2)
 
 
 class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
+
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
@@ -32,7 +34,7 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes()
     timeline_options = self._options
-    results = self.RunMeasurement(measurement, ps, options = timeline_options)
+    results = self.RunMeasurement(measurement, ps, options=timeline_options)
     self.assertFalse(len(results.failures), results.failures)
 
     for interval in timeline.IntervalNames:
@@ -45,11 +47,11 @@ class ThreadTimesUnitTest(page_test_test_case.PageTestTestCase):
   def testWithSilkDetails(self):
     ps = self.CreateStorySetFromFileInUnittestDataDir('scrollable_page.html')
     measurement = thread_times.ThreadTimes(report_silk_details=True)
-    results = self.RunMeasurement(measurement, ps, options = self._options)
+    results = self.RunMeasurement(measurement, ps, options=self._options)
     self.assertEquals(0, len(results.failures))
 
-    main_thread = "renderer_main"
-    expected_trace_categories = ["blink", "cc", "idle"]
+    main_thread = 'renderer_main'
+    expected_trace_categories = ['blink', 'cc', 'idle']
     for interval in timeline.IntervalNames:
       for trace_category in expected_trace_categories:
         value_name = timeline.ThreadDetailResultName(

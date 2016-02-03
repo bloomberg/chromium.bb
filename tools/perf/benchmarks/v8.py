@@ -27,6 +27,7 @@ class V8Top25(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'v8.top_25_smooth'
 
+
 @benchmark.Enabled('android')
 class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down key mobile sites.
@@ -38,6 +39,7 @@ class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'v8.key_mobile_sites_smooth'
+
 
 class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
   """Measures the number of GCs needed to collect a detached context.

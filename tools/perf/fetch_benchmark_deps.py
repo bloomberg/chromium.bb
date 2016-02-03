@@ -18,6 +18,7 @@ from telemetry import benchmark_runner
 
 from chrome_telemetry_build import chromium_config
 
+
 def _FetchDependenciesIfNeeded(story_set):
   """ Download files needed by a user story set. """
   # Download files in serving_dirs.

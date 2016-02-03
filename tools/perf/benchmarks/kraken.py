@@ -70,6 +70,7 @@ def _Mean(l):
 
 
 class _KrakenMeasurement(page_test.PageTest):
+
   def __init__(self):
     super(_KrakenMeasurement, self).__init__()
     self._power_metric = None
@@ -127,9 +128,9 @@ class Kraken(perf_benchmark.PerfBenchmark):
 
   def CreateStorySet(self, options):
     ps = story.StorySet(
-      archive_data_file='../page_sets/data/kraken.json',
-      base_dir=os.path.dirname(os.path.abspath(__file__)),
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+        archive_data_file='../page_sets/data/kraken.json',
+        base_dir=os.path.dirname(os.path.abspath(__file__)),
+        cloud_storage_bucket=story.PARTNER_BUCKET)
     ps.AddStory(page_module.Page(
         'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html',
         ps, ps.base_dir))

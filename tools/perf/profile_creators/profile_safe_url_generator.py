@@ -10,6 +10,7 @@ import urlparse
 
 
 class _HRefParser(HTMLParser.HTMLParser):
+
   def __init__(self):
     HTMLParser.HTMLParser.__init__(self)
     self.hrefs = []
@@ -24,7 +25,7 @@ class _HRefParser(HTMLParser.HTMLParser):
 def _AbsoluteUrlHasSaneScheme(absolute_url):
   if len(absolute_url) < 4:
     return False
-  return absolute_url[0:4] == 'http'
+  return absolute_url[0:4] == "http"
 
 
 def GenerateSafeUrls():
@@ -37,26 +38,26 @@ def GenerateSafeUrls():
   # A list of websites whose hrefs are unlikely to link to sites that contain
   # malware.
   seed_urls = [
-    "http://www.cnn.com",
-    "https://www.youtube.com",
-    "https://www.facebook.com",
-    "https://www.twitter.com",
-    "https://www.yahoo.com",
-    "https://www.amazon.com",
-    "https://www.wikipedia.com",
-    "https://www.bing.com",
-    "https://www.dailymotion.com",
-    "https://www.stackoverflow.com",
-    "https://www.google.com/#q=dumpling",
-    "http://www.baidu.com/s?wd=rice",
-    "http://www.baidu.com/s?wd=cow",
-    "https://www.google.com/#q=fox",
-    "http://www.yahoo.co.jp/",
-    "http://www.yandex.ru/",
-    "https://www.imdb.com/",
-    "http://www.huffingtonpost.com/",
-    "https://www.deviantart.com/",
-    "http://www.wsj.com/",
+      "http://www.cnn.com",
+      "https://www.youtube.com",
+      "https://www.facebook.com",
+      "https://www.twitter.com",
+      "https://www.yahoo.com",
+      "https://www.amazon.com",
+      "https://www.wikipedia.com",
+      "https://www.bing.com",
+      "https://www.dailymotion.com",
+      "https://www.stackoverflow.com",
+      "https://www.google.com/#q=dumpling",
+      "http://www.baidu.com/s?wd=rice",
+      "http://www.baidu.com/s?wd=cow",
+      "https://www.google.com/#q=fox",
+      "http://www.yahoo.co.jp/",
+      "http://www.yandex.ru/",
+      "https://www.imdb.com/",
+      "http://www.huffingtonpost.com/",
+      "https://www.deviantart.com/",
+      "http://www.wsj.com/",
   ]
 
   safe_urls = set()
@@ -65,7 +66,7 @@ def GenerateSafeUrls():
     try:
       # Fetch and parse the HTML.
       response = urllib2.urlopen(url)
-      encoding = response.headers.getparam('charset')
+      encoding = response.headers.getparam("charset")
       html = response.read()
       if encoding:
         html = html.decode(encoding)

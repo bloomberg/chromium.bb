@@ -30,13 +30,13 @@ from metrics import keychain_metric
 
 class SpeedometerMeasurement(page_test.PageTest):
   enabled_suites = [
-    'VanillaJS-TodoMVC',
-    'EmberJS-TodoMVC',
-    'BackboneJS-TodoMVC',
-    'jQuery-TodoMVC',
-    'AngularJS-TodoMVC',
-    'React-TodoMVC',
-    'FlightJS-TodoMVC'
+      'VanillaJS-TodoMVC',
+      'EmberJS-TodoMVC',
+      'BackboneJS-TodoMVC',
+      'jQuery-TodoMVC',
+      'AngularJS-TodoMVC',
+      'React-TodoMVC',
+      'FlightJS-TodoMVC'
   ]
 
   def __init__(self):
@@ -82,6 +82,7 @@ class SpeedometerMeasurement(page_test.PageTest):
               suite_times;
               """ % suite_name), important=False))
     keychain_metric.KeychainMetric().AddResults(tab, results)
+
 
 class Speedometer(perf_benchmark.PerfBenchmark):
   test = SpeedometerMeasurement

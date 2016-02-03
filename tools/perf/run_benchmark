@@ -13,6 +13,7 @@ from telemetry import benchmark_runner
 
 from chrome_telemetry_build import chromium_config
 
+
 def main():
   config = chromium_config.ChromiumConfig()
   return benchmark_runner.main(config, [trybot_command.Trybot])

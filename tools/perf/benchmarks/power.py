@@ -86,6 +86,7 @@ class PowerTop10(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'power.top_10'
 
+
 @benchmark.Enabled('mac')
 class PowerGpuRasterizationTop10(perf_benchmark.PerfBenchmark):
   """Top 10 quiescent power test with GPU rasterization enabled."""
@@ -124,6 +125,7 @@ class PowerTop25(perf_benchmark.PerfBenchmark):
       stories.RemoveStory(found)
     return stories
 
+
 @benchmark.Enabled('mac')
 class PowerGpuRasterizationTop25(perf_benchmark.PerfBenchmark):
   """Top 25 quiescent power test with GPU rasterization enabled."""
@@ -147,6 +149,7 @@ class PowerGpuRasterizationTop25(perf_benchmark.PerfBenchmark):
     if found:
       stories.RemoveStory(found)
     return stories
+
 
 @benchmark.Enabled('linux', 'mac', 'win', 'chromeos')
 class PowerPPSControlDisabled(perf_benchmark.PerfBenchmark):

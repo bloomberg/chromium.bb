@@ -118,15 +118,15 @@ def PostUploadHook(cl, change, output_api):
   issue = cl.issue
   original_description = rietveld_obj.get_description(issue)
   if not benchmarks_modified or re.search(
-     r'^CQ_EXTRA_TRYBOTS=.*', original_description, re.M | re.I):
+      r'^CQ_EXTRA_TRYBOTS=.*', original_description, re.M | re.I):
     return []
 
   results = []
   bots = [
-    'linux_perf_bisect',
-    'mac_10_10_perf_bisect',
-    'win_perf_bisect',
-    'android_nexus5_perf_bisect'
+      'linux_perf_bisect',
+      'mac_10_10_perf_bisect',
+      'win_perf_bisect',
+      'android_nexus5_perf_bisect'
   ]
   bots = ['tryserver.chromium.perf:%s' % s for s in bots]
   bots_string = ';'.join(bots)
@@ -136,6 +136,6 @@ def PostUploadHook(cl, change, output_api):
       'Automatically added Perf trybots to run Telemetry benchmarks on CQ.'))
 
   if description != original_description:
-   rietveld_obj.update_description(issue, description)
+    rietveld_obj.update_description(issue, description)
 
   return results

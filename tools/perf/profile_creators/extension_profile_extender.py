@@ -12,7 +12,7 @@ import time
 import zipfile
 
 if sys.platform == 'win32':
-  import _winreg as winreg # pylint: disable=import-error
+  import _winreg as winreg  # pylint: disable=import-error
 
 from catapult_base import cloud_storage
 from profile_creators import profile_extender
@@ -123,13 +123,13 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
       (version, name) = self._GetExtensionInfoFromCrx(ext_path)
       ext_id = os.path.splitext(os.path.basename(ext_path))[0]
       extension_info = {
-        'extension_id': ext_id,
-        'external_crx': ext_path,
-        'external_version': version,
-        '_comment': name
+          'extension_id': ext_id,
+          'external_crx': ext_path,
+          'external_version': version,
+          '_comment': name
       }
       # Platform-specific external extension installation
-      if self.os_name == 'win': # Windows
+      if self.os_name == 'win':  # Windows
         key_path = 'Software\\Google\\Chrome\\Extensions\\%s' % ext_id
         self._WriteRegistryValue(key_path, 'Path', ext_path)
         self._WriteRegistryValue(key_path, 'Version', version)
@@ -142,12 +142,12 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
   def _WriteRegistryValue(self, key_path, name, value):
     """Writes (or overwrites) registry value specified to HKCU\\key_path."""
     with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
-      try: # Does registry value already exist?
+      try:  # Does registry value already exist?
         path_value = winreg.QueryValueEx(key, name)
         if path_value != value:
           logging.warning(
               'Overwriting registry value %s\\%s:'
-              '\n%s with %s' % (key_path, name, path_value, value))
+              '\n%s with %s', key_path, name, path_value, value)
       except OSError:
         pass
       winreg.SetValueEx(key, name, 0, winreg.REG_SZ, value)
@@ -157,7 +157,7 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
     if self.os_name == 'win':
       for ext_id in self._extensions:
         winreg.DeleteKey(winreg.HKEY_CURRENT_USER,
-            'Software\\Google\\Chrome\\Extensions\\%s' % ext_id)
+                         'Software\\Google\\Chrome\\Extensions\\%s' % ext_id)
     else:
       to_remove = os.path.join(self.profile_path, 'External Extensions')
       if os.path.exists(to_remove):
@@ -168,7 +168,7 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
     unloaded_extensions = set(self._extensions)
     while unloaded_extensions:
       loaded_extensions = set([key.extension_id for key in
-                              self.browser.extensions.keys()])
+                               self.browser.extensions.keys()])
       unloaded_extensions = unloaded_extensions - loaded_extensions
       # There's no event signalling when browser finishes installing
       # or loading an extension so re-check every 5 seconds.

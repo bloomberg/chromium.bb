@@ -14,7 +14,6 @@ def GetChromiumSrcDir():
   return chromium_config.GetChromiumSrcDir()
 
 
-
 def GetCatapultBaseDir():
   return os.path.join(
       GetChromiumSrcDir(), 'third_party', 'catapult', 'catapult_base')
@@ -22,7 +21,6 @@ def GetCatapultBaseDir():
 
 def GetTelemetryDir():
   return chromium_config.GetTelemetryDir()
-
 
 
 def GetPerfDir():

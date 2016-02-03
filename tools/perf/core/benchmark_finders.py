@@ -32,7 +32,7 @@ def GetBenchmarkNamesForFile(top_level_dir, benchmark_file_dir):
     benchmark_names = []
     for _, obj in inspect.getmembers(module):
       if (inspect.isclass(obj) and issubclass(obj, perf_benchmark.PerfBenchmark)
-         and GetClassFilePath(obj) == benchmark_file_dir):
+          and GetClassFilePath(obj) == benchmark_file_dir):
         benchmark_names.append(obj.Name())
     return sorted(benchmark_names)
   finally:

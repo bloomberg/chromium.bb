@@ -14,6 +14,7 @@ from metrics import memory
 
 
 class MemoryMultiTab(page_test.PageTest):
+
   def __init__(self):
     super(MemoryMultiTab, self).__init__()
     self._memory_metric = None

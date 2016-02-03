@@ -49,7 +49,7 @@ class MemoryLongRunningIdleGmail(perf_benchmark.PerfBenchmark):
     return 'memory.long_running_idle_gmail'
 
 
-@benchmark.Disabled('android') # crbug.com/542682
+@benchmark.Disabled('android')  # crbug.com/542682
 class MemoryLongRunningIdleGmailBackground(perf_benchmark.PerfBenchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page in background tab"""

@@ -22,6 +22,7 @@ from metrics import power
 
 # TODO: Revisit this test once multitab support is finalized.
 
+
 class TabSwitching(page_test.PageTest):
 
   # Amount of time to measure, in seconds.
@@ -83,6 +84,7 @@ class TabSwitching(page_test.PageTest):
 
     for t in tab.browser.tabs:
       t.Activate()
+
       def _IsDone():
         cur_histogram = histogram_util.GetHistogram(
             histogram_type, histogram_name, tab)
@@ -96,7 +98,7 @@ class TabSwitching(page_test.PageTest):
     last_histogram = histogram_util.GetHistogram(
         histogram_type, histogram_name, tab)
     diff_histogram = histogram_util.SubtractHistogram(last_histogram,
-        first_histogram)
+                                                      first_histogram)
 
     results.AddSummaryValue(
         histogram.HistogramValue(None, display_name, 'ms',

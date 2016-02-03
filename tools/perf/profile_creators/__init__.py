@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.insert(1, os.path.abspath(os.path.join(
-        __file__, '..', '..')))
+    __file__, '..', '..')))
 from core import path_util
 
 

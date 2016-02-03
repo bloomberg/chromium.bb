@@ -108,7 +108,7 @@ def _SubtractMemoryStats(end_memory_stats, start_memory_stats):
     # If a process has end stats without start stats then report the end stats.
     # For example, a GPU process that started just after media playback.
     if (process_type not in start_memory_stats or
-       not start_memory_stats[process_type]):
+        not start_memory_stats[process_type]):
       memory_stats[process_type] = end_process_memory
       continue
 

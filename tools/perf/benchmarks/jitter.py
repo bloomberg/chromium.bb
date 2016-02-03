@@ -14,6 +14,7 @@ import page_sets
 JITTER_CATEGORY = 'cdp.perf'
 TIMELINE_REQUIRED_CATEGORY = 'blink.console'
 
+
 class Jitter(perf_benchmark.PerfBenchmark):
   """Timeline based measurement benchmark for jitter."""
 

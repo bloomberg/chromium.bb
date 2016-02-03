@@ -34,7 +34,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     # Enable only memory-infra, to get memory dumps, and blink.console, to get
     # the timeline markers used for mapping threads to tabs.
     trace_memory = tracing_category_filter.TracingCategoryFilter(
-      filter_string='-*,blink.console,disabled-by-default-memory-infra')
+        filter_string='-*,blink.console,disabled-by-default-memory-infra')
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
     tbm_options.config.enable_android_graphics_memtrack = True

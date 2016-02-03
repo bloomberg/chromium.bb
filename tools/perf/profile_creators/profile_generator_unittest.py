@@ -12,6 +12,7 @@ from profile_creators import profile_generator
 
 
 class ProfileGeneratorUnitTest(unittest.TestCase):
+
   def setUp(self):
     self.test_directory = tempfile.mkdtemp()
     super(ProfileGeneratorUnitTest, self).setUp()
@@ -32,7 +33,7 @@ class ProfileGeneratorUnitTest(unittest.TestCase):
     directory_filename = os.path.join(sandbox_directory, 'directory')
     os.mkdir(directory_filename)
 
-    if getattr(os, 'symlink', None): # Symlinks not supported on Windows.
+    if getattr(os, 'symlink', None):  # Symlinks not supported on Windows.
       # Make a symlink.
       symlink_filename = os.path.join(sandbox_directory, 'symlink')
       os.symlink(plain_filename, symlink_filename)
@@ -40,24 +41,24 @@ class ProfileGeneratorUnitTest(unittest.TestCase):
       # Make a broken symlink.
       nonexistant_filename = os.path.join(sandbox_directory, 'i_dont_exist')
       broken_symlink_filename = os.path.join(sandbox_directory,
-          'broken_symlink')
+                                             'broken_symlink')
       os.symlink(nonexistant_filename, broken_symlink_filename)
 
     # Make a named socket.
-    if getattr(socket, 'AF_UNIX', None): # Windows doesn't support these.
+    if getattr(socket, 'AF_UNIX', None):  # Windows doesn't support these.
       socket_filename = os.path.join(sandbox_directory, 'named_socket')
       the_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
       the_socket.bind(socket_filename)
 
   def testIsPseudoFile(self):
-    sandbox_dir = os.path.join(self.test_directory, "sandbox")
+    sandbox_dir = os.path.join(self.test_directory, 'sandbox')
     self._CreateFunkyFilesAndOnePlainFile(sandbox_dir)
 
     # If we can copy the directory, we're golden!
-    sandbox_dir_copy = os.path.join(self.test_directory, "sandbox_copy")
+    sandbox_dir_copy = os.path.join(self.test_directory, 'sandbox_copy')
     # pylint: disable=protected-access
     shutil.copytree(sandbox_dir, sandbox_dir_copy,
-        ignore=profile_generator._IsPseudoFile)
+                    ignore=profile_generator._IsPseudoFile)
 
     # Check that only the directory and plain file got copied.
     dir_contents = os.listdir(sandbox_dir_copy)

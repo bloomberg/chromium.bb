@@ -26,6 +26,7 @@ def _GetAllPerfBenchmarks():
       _GetPerfDir('benchmarks'), _GetPerfDir(), benchmark_module.Benchmark,
       index_by_class_name=True).values()
 
+
 def _BenchmarkOptionsTestGenerator(benchmark):
   def testBenchmarkOptions(self):  # pylint: disable=unused-argument
     """Invalid options will raise benchmark.InvalidOptionsError."""
@@ -38,6 +39,7 @@ def _BenchmarkOptionsTestGenerator(benchmark):
 
 
 class TestNoBenchmarkNamesDuplication(unittest.TestCase):
+
   def runTest(self):
     all_benchmarks = _GetAllPerfBenchmarks()
     names_to_benchmarks = defaultdict(list)
@@ -50,17 +52,20 @@ class TestNoBenchmarkNamesDuplication(unittest.TestCase):
 
 
 class TestNoOverrideCustomizeBrowserOptions(unittest.TestCase):
+
   def runTest(self):
     all_benchmarks = _GetAllPerfBenchmarks()
     for benchmark in all_benchmarks:
       self.assertEquals(True, issubclass(benchmark,
-          perf_benchmark.PerfBenchmark),
-          'Benchmark %s needs to subclass from PerfBenchmark'
-          % benchmark.Name())
-      self.assertEquals(benchmark.CustomizeBrowserOptions,
+                                         perf_benchmark.PerfBenchmark),
+                        'Benchmark %s needs to subclass from PerfBenchmark'
+                        % benchmark.Name())
+      self.assertEquals(
+          benchmark.CustomizeBrowserOptions,
           perf_benchmark.PerfBenchmark.CustomizeBrowserOptions,
-          'Benchmark %s should not override CustomizeBrowserOptions'
-          % benchmark.Name())
+          'Benchmark %s should not override CustomizeBrowserOptions' %
+          benchmark.Name())
+
 
 def _AddBenchmarkOptionsTests(suite):
   # Using |index_by_class_name=True| allows returning multiple benchmarks
@@ -70,6 +75,7 @@ def _AddBenchmarkOptionsTests(suite):
     if not benchmark.options:
       # No need to test benchmarks that have not defined options.
       continue
+
     class BenchmarkOptionsTest(unittest.TestCase):
       pass
     setattr(BenchmarkOptionsTest, benchmark.Name(),

@@ -9,8 +9,8 @@ from telemetry import benchmark
 from telemetry.internal.browser import browser_finder
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..',
-    '..', 'variations'))
-import fieldtrial_util # pylint: disable=import-error
+                             '..', 'variations'))
+import fieldtrial_util  # pylint: disable=import-error
 
 
 class PerfBenchmark(benchmark.Benchmark):
@@ -53,15 +53,15 @@ class PerfBenchmark(benchmark.Benchmark):
 
   def _GetVariationsBrowserArgs(self, finder_options):
     variations_dir = os.path.join(os.path.dirname(__file__), '..',
-        '..', '..', 'testing', 'variations')
+                                  '..', '..', 'testing', 'variations')
     possible_browser = browser_finder.FindBrowser(finder_options)
     if not possible_browser:
       return []
 
     return fieldtrial_util.GenerateArgs(
         os.path.join(variations_dir,
-        'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(
-            possible_browser.target_os)))
+                     'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(
+                         possible_browser.target_os)))
 
   @staticmethod
   def IsSvelte(possible_browser):

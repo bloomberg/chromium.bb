@@ -7,7 +7,7 @@ import sys
 import unittest
 import StringIO
 
-import mock # pylint: disable=import-error
+import mock  # pylint: disable=import-error
 
 from core import path_util
 import fetch_benchmark_deps

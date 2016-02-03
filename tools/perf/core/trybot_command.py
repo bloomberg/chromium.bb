@@ -45,11 +45,11 @@ INCLUDE_BOTS = [
     'all-android'
 ]
 
+
 class TrybotError(Exception):
 
   def __str__(self):
     return '%s\nError running tryjob.' % self.args[0]
-
 
 
 def _GetTrybotList(builders):
@@ -74,8 +74,10 @@ def _GetBuilderNames(trybot_name, builders):
 
   # Special case for Windows x64, consider it as separate platform
   # config config should contain target_arch=x64 and --browser=release_x64.
-  win_x64_bots = [platform_and_bots['win'].pop(i)
-      for i, win_bot in enumerate(platform_and_bots['win']) if 'x64' in win_bot]
+  win_x64_bots = [
+      platform_and_bots['win'].pop(i)
+      for i, win_bot in enumerate(platform_and_bots['win'])
+      if 'x64' in win_bot]
   platform_and_bots['win-x64'] = win_x64_bots
 
   if 'all-win' in trybot_name:
@@ -143,7 +145,7 @@ class Trybot(command_line.ArgParseCommand):
     parser.add_argument(
         'trybot', choices=available_bots,
         help=('specify which bots to run telemetry benchmarks on. '
-              ' Allowed values are:\n'+'\n'.join(available_bots)),
+              ' Allowed values are:\n' + '\n'.join(available_bots)),
         metavar='<trybot name>')
     parser.add_argument(
         'benchmark_name', type=str,
@@ -337,7 +339,7 @@ class Trybot(command_line.ArgParseCommand):
         return ERROR
       for bot_platform in self._builder_names:
         if not self._builder_names[bot_platform]:
-          logging.warning('No builder is found for %s' % bot_platform)
+          logging.warning('No builder is found for %s', bot_platform)
           continue
         try:
           results, output = self._UpdateConfigAndRunTryjob(
@@ -360,14 +362,13 @@ class Trybot(command_line.ArgParseCommand):
         logging.error('Could not check out %s. Please check it out and '
                       'manually delete the telemetry-tryjob branch. '
                       ': %s', original_branchname, err)
-        return ERROR # pylint: disable=lost-exception
+        return ERROR  # pylint: disable=lost-exception
       logging.info('Checked out original branch: %s', original_branchname)
       returncode, out, err = _RunProcess(
           ['git', 'branch', '-D', 'telemetry-tryjob'])
       if returncode:
         logging.error('Could not delete telemetry-tryjob branch. '
                       'Please delete it manually: %s', err)
-        return ERROR # pylint: disable=lost-exception
+        return ERROR  # pylint: disable=lost-exception
       logging.info('Deleted temp branch: telemetry-tryjob')
     return SUCCESS
-

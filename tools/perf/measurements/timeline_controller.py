@@ -15,6 +15,7 @@ RUN_SMOOTH_ACTIONS = 'RunSmoothAllActions'
 
 
 class TimelineController(object):
+
   def __init__(self, enable_auto_issuing_record=True):
     super(TimelineController, self).__init__()
     self.trace_categories = None
@@ -68,13 +69,13 @@ class TimelineController(object):
       r = tir_module.TimelineInteractionRecord.FromAsyncEvent(event)
       if r.label == RUN_SMOOTH_ACTIONS:
         assert run_smooth_actions_record is None, (
-          'TimelineController cannot issue more than 1 %s record' %
-          RUN_SMOOTH_ACTIONS)
+            'TimelineController cannot issue more than 1 %s record' %
+            RUN_SMOOTH_ACTIONS)
         run_smooth_actions_record = r
       else:
         self._smooth_records.append(
-          smooth_gesture_util.GetAdjustedInteractionIfContainGesture(
-            self.model, r))
+            smooth_gesture_util.GetAdjustedInteractionIfContainGesture(
+                self.model, r))
 
     # If there is no other smooth records, we make measurements on time range
     # marked by timeline_controller itself.
@@ -85,7 +86,6 @@ class TimelineController(object):
 
     if len(self._smooth_records) == 0:
       raise page_test.Failure('No interaction record was created.')
-
 
   def CleanUp(self, platform):
     if platform.tracing_controller.is_tracing_running:

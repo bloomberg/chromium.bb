@@ -13,7 +13,7 @@ def AddBenchmarkCommandLineArgs(parser):
   parser.add_option('--urls-list',  action='store', type='string',
                     default=None,
                     help='This is a comma separated list of urls. '
-                         'Eg: http://www.google.com,http://www.gmail.com')
+                    'Eg: http://www.google.com,http://www.gmail.com')
 
 
 def ValidateCommandLineArgs(parser, args):

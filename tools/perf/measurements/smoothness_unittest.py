@@ -17,8 +17,10 @@ import mock
 
 
 class FakeTracingController(object):
+
   def __init__(self):
     self.config = None
+
   def StartTracing(self, config):
     self.config = config
 
@@ -27,16 +29,19 @@ class FakeTracingController(object):
 
 
 class FakePlatform(object):
+
   def __init__(self):
     self.tracing_controller = FakeTracingController()
 
 
 class FakeBrowser(object):
+
   def __init__(self):
     self.platform = FakePlatform()
 
 
 class FakeTab(object):
+
   def __init__(self):
     self.browser = FakeBrowser()
 
@@ -48,10 +53,11 @@ class FakeTab(object):
 
 
 class CustomResultsWrapperUnitTest(unittest.TestCase):
+
   def testOnlyOneInteractionRecordPerPage(self):
     test_page = page.Page('http://dummy', None)
 
-    #pylint: disable=protected-access
+    # pylint: disable=protected-access
     results_wrapper = smoothness._CustomResultsWrapper()
     results_wrapper.SetResults(mock.Mock())
 
@@ -70,6 +76,7 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
      that all metrics were added to the results. The test is purely functional,
      i.e. it only checks if the metrics are present and non-zero.
   """
+
   def setUp(self):
     self._options = options_for_unittests.GetCopy()
     self._options.browser_options.wpr_mode = wpr_modes.WPR_OFF
@@ -77,9 +84,9 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
   def testSyntheticDelayConfiguration(self):
     test_page = page.Page('http://dummy', None)
     test_page.synthetic_delays = {
-        'cc.BeginMainFrame': { 'target_duration': 0.012 },
-        'cc.DrawAndSwap': { 'target_duration': 0.012, 'mode': 'alternating' },
-        'gpu.PresentingFrame': { 'target_duration': 0.012 }
+        'cc.BeginMainFrame': {'target_duration': 0.012},
+        'cc.DrawAndSwap': {'target_duration': 0.012, 'mode': 'alternating'},
+        'gpu.PresentingFrame': {'target_duration': 0.012}
     }
 
     tab = FakeTab()
@@ -94,12 +101,12 @@ class SmoothnessUnitTest(page_test_test_case.PageTestTestCase):
     ])
     tracing_controller = tab.browser.platform.tracing_controller
     actual_synthetic_delay = (
-      tracing_controller.config.tracing_category_filter.synthetic_delays)
+        tracing_controller.config.tracing_category_filter.synthetic_delays)
 
     if expected_synthetic_delay != actual_synthetic_delay:
-      sys.stderr.write("Expected category filter: %s\n" %
+      sys.stderr.write('Expected category filter: %s\n' %
                        repr(expected_synthetic_delay))
-      sys.stderr.write("Actual category filter filter: %s\n" %
+      sys.stderr.write('Actual category filter filter: %s\n' %
                        repr(actual_synthetic_delay))
     self.assertEquals(expected_synthetic_delay, actual_synthetic_delay)
 

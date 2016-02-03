@@ -24,12 +24,14 @@ def _MatchPageSetName(story_set_name, story_set_base_dir):
 
 @benchmark.Disabled('all')
 class SkpicturePrinter(perf_benchmark.PerfBenchmark):
+
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
     parser.add_option('--page-set-name',  action='store', type='string')
     parser.add_option('--page-set-base-dir', action='store', type='string')
     parser.add_option('-s', '--skp-outdir',
                       help='Output directory for the SKP files')
+
   @classmethod
   def ProcessCommandLineArgs(cls, parser, args):
     if not args.page_set_name:

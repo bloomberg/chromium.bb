@@ -42,6 +42,7 @@ class TextSelectionDirection(_TextSelection):
   """Measure text selection metrics while dragging a touch selection handle on a
   subset of top ten mobile sites and using the 'direction' touch selection
   strategy."""
+
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--touch-selection-strategy=direction'])
 
@@ -56,6 +57,7 @@ class TextSelectionCharacter(_TextSelection):
   """Measure text selection metrics while dragging a touch selection handle on a
   subset of top ten mobile sites and using the 'character' touch selection
   strategy."""
+
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs(['--touch-selection-strategy=character'])
 

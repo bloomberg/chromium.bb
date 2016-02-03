@@ -35,11 +35,11 @@ def FindBootstrapDependencies(base_dir):
   deps_paths = bootstrap.ListAllDepsPaths(deps_file)
   return set(os.path.realpath(os.path.join(
       path_util.GetChromiumSrcDir(), '..', deps_path))
-      for deps_path in deps_paths)
+             for deps_path in deps_paths)
 
 
 def FindPythonDependencies(module_path):
-  logging.info('Finding Python dependencies of %s' % module_path)
+  logging.info('Finding Python dependencies of %s', module_path)
   if modulegraph is None:
     raise import_error
 
@@ -84,7 +84,7 @@ def FindPythonDependencies(module_path):
 
 
 def FindPageSetDependencies(base_dir):
-  logging.info('Finding page sets in %s' % base_dir)
+  logging.info('Finding page sets in %s', base_dir)
 
   # Add base_dir to path so our imports relative to base_dir will work.
   sys.path.append(base_dir)
@@ -119,10 +119,13 @@ def FindExcludedFiles(files, options):
       if pathname_component.startswith('.'):
         return True
     return False
+
   def IsPyc(path_string):
     return os.path.splitext(path_string)[1] == '.pyc'
+
   def IsInCloudStorage(path_string):
     return os.path.exists(path_string + '.sha1')
+
   def MatchesExcludeOptions(path_string):
     for pattern in options.exclude:
       if (fnmatch.fnmatch(path_string, pattern) or
@@ -156,11 +159,11 @@ def FindDependencies(target_paths, options):
   # and all its dependencies. If the user doesn't pass any arguments, we just
   # have Telemetry.
   dependencies |= FindPythonDependencies(os.path.realpath(
-    os.path.join(path_util.GetTelemetryDir(),
-                 'telemetry', 'benchmark_runner.py')))
+      os.path.join(path_util.GetTelemetryDir(),
+                   'telemetry', 'benchmark_runner.py')))
   dependencies |= FindPythonDependencies(os.path.realpath(
-    os.path.join(path_util.GetTelemetryDir(),
-                 'telemetry', 'testing', 'run_tests.py')))
+      os.path.join(path_util.GetTelemetryDir(),
+                   'telemetry', 'testing', 'run_tests.py')))
 
   # Add dependencies.
   for target_path in target_paths:
@@ -203,7 +206,7 @@ def ZipDependencies(target_paths, dependencies, options):
           'import sys\n\n\n'
           'script = os.path.join(os.path.dirname(__file__), \'%s\')\n'
           'os.execv(sys.executable, [sys.executable, script] + sys.argv[1:])'
-        % relative_path)
+          % relative_path)
 
       zip_file.writestr(link_info, link_script)
 

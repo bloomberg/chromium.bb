@@ -13,6 +13,7 @@ from benchmarks import skpicture_printer
 
 
 class MockErrorParser(object):
+
   def __init__(self):
     self.err_msg = None
 

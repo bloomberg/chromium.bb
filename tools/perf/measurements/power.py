@@ -39,6 +39,7 @@ class Power(page_test.PageTest):
 
 
 class LoadPower(Power):
+
   def WillNavigateToPage(self, page, tab):
     self._network_metric.Start(page, tab)
     self._power_metric.Start(page, tab)

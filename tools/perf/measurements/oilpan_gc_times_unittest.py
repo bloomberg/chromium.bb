@@ -15,6 +15,7 @@ import mock  # pylint: disable=import-error
 
 
 class TestOilpanGCTimesPage(page_module.Page):
+
   def __init__(self, page_set):
     super(TestOilpanGCTimesPage, self).__init__(
         'file://blank.html', page_set, page_set.base_dir)
@@ -25,6 +26,7 @@ class TestOilpanGCTimesPage(page_module.Page):
 
 
 class OilpanGCTimesTestData(object):
+
   def __init__(self, thread_name):
     self._model = model.TimelineModel()
     self._renderer_process = self._model.GetOrCreateProcess(1)
@@ -64,6 +66,7 @@ class OilpanGCTimesTestData(object):
 
   def ClearResults(self):
     self._results = page_test_results.PageTestResults()
+
 
 class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   """Smoke test for Oilpan GC pause time measurements.

@@ -12,6 +12,7 @@ _JS = 'chrome.gpuBenchmarking.printToSkPicture("{0}");'
 
 
 class SkpicturePrinter(page_test.PageTest):
+
   def __init__(self, skp_outdir):
     super(SkpicturePrinter, self).__init__()
     self._skp_outdir = skp_outdir

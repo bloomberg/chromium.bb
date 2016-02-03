@@ -382,7 +382,7 @@ class SmoothnessToughScrollingCases(_Smoothness):
     return 'smoothness.tough_scrolling_cases'
 
 
-@benchmark.Enabled('android', "mac")
+@benchmark.Enabled('android', 'mac')
 class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
@@ -478,6 +478,7 @@ class SmoothnessToughAdCases(_Smoothness):
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/555089
+
 
 # http://crbug.com/522619 (mac/win)
 @benchmark.Disabled('win', 'mac')

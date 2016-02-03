@@ -45,8 +45,8 @@ def _GetAllPossiblePageTestInstances():
       benchmark_module.AddCommandLineArgs(parser)
       benchmark_class.SetArgumentDefaults(parser)
     except Exception:
-      logging.error('Exception raised when processing benchmark %s'
-          % benchmark_class)
+      logging.error('Exception raised when processing benchmark %s',
+                    benchmark_class)
       raise
     options.MergeDefaultValues(parser.get_default_values())
     pt = benchmark_class().CreatePageTest(options)
@@ -58,5 +58,6 @@ def _GetAllPossiblePageTestInstances():
 
 class MeasurementSmokeTest(unittest.TestCase):
   # Simple smoke test to make sure that all page_test are constructible.
+
   def testAllMeasurementInstance(self):
     _GetAllPossiblePageTestInstances()
