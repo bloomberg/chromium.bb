@@ -623,16 +623,16 @@ void Heap::reportMemoryUsageForTracing()
 
     // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
     // They are capped to INT_MAX just in case.
-    TRACE_COUNTER1("blink_gc", "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedObjectSizeKB", std::min(Heap::allocatedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeKB", std::min(Heap::markedObjectSize() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::markedObjectSizeAtLastCompleteSweepKB", std::min(Heap::markedObjectSizeAtLastCompleteSweep() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::allocatedSpaceKB", std::min(Heap::allocatedSpace() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::objectSizeAtLastGCKB", std::min(Heap::objectSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::wrapperCount", std::min(Heap::wrapperCount(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::wrapperCountAtLastGC", std::min(Heap::wrapperCountAtLastGC(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::collectedWrapperCount", std::min(Heap::collectedWrapperCount(), static_cast<size_t>(INT_MAX)));
     TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Heap::partitionAllocSizeAtLastGCKB", std::min(Heap::partitionAllocSizeAtLastGC() / 1024, static_cast<size_t>(INT_MAX)));
-    TRACE_COUNTER1("blink_gc", "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
+    TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"), "Partitions::totalSizeOfCommittedPagesKB", std::min(WTF::Partitions::totalSizeOfCommittedPages() / 1024, static_cast<size_t>(INT_MAX)));
 }
 
 size_t Heap::objectPayloadSizeForTesting()
