@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Ensure correct behavior of drawImage with ImageBitmaps from video elements along with flipY option.");
+window.jsTestIsAsync = true;
+
+function jsWrapperClass(node)
+{
+    // returns the ClassName of node
+    if (!node)
+        return "[null]";
+    var string = Object.prototype.toString.apply(node);
+
+    // string will be of the form [object ClassName]
+    return string.substr(8, string.length - 9);
+}
+
+function shouldBeType(expression, className)
+{
+    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
+}
+
+function shouldBeOpaque(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[3] == 255) {
+        testPassed("This pixel is opaque");
+        return;
+    }
+    testFailed("This pixel is expected to be opaque, but it is actually: " + d);
+}
+
+function shouldBeClear(x, y) {
+    // should be transparent black pixels
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 0 && d[1] == 0 && d[2] == 0 && d[3] == 0) {
+        testPassed("This pixel is transparent black");
+        return;
+    }
+    testFailed("This pixel is expected to be transparent black, but it is actually: " + d);
+}
+
+function clearContext() {
+    ctx.clearRect(0, 0, 500, 500);
+}
+
+var bitmap;
+var video;
+var options = ["none", "flipY"];
+var optionIndex = 0;
+
+var canvas = document.createElement("canvas");
+canvas.setAttribute("width", "500");
+canvas.setAttribute("height", "500");
+var ctx = canvas.getContext("2d");
+
+video = document.createElement("video");
+video.addEventListener("canplaythrough", videoLoaded, false);
+video.src = "../../compositing/resources/video.ogv";
+
+function videoLoaded() {
+    if (optionIndex == options.length) {
+        finishJSTest();
+        return;
+    }
+     debug("Checking HTMLVideoElement with imageOrientation: " + options[optionIndex] + ".");
+    var imageBitmaps = {};
+    var p1 = createImageBitmap(video, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(video,  0, 0, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(video,  50, 50, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropRight = image });
+    var p4 = createImageBitmap(video,  100, 100, 100, 100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropCenter = image });
+    var p5 = createImageBitmap(video, -100, -100, 600, 600, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(video, 100, 100, 500, 500, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(video, 100, 100, -100, -100, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(video, -300, -300, 300, 300, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(video, 400, 300, 300, 300, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.emptyTwo = image });
+
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
+        checkNoCrop(imageBitmaps.noCrop);
+        checkCrop(imageBitmaps.crop);
+        checkCrop(imageBitmaps.cropRight);
+        checkCrop(imageBitmaps.cropCenter);
+        checkOverCrop(imageBitmaps.overCrop);
+        checkOverCropRight(imageBitmaps.overCropRight);
+        checkCrop(imageBitmaps.negativeCrop);
+        checkEmpty(imageBitmaps.empty);
+        checkEmpty(imageBitmaps.emptyTwo);
+        optionIndex++;
+        videoLoaded();
+    }, function() {
+        testFailed("Promise was rejected.");
+        finishJSTest();
+    });
+}
+
+function checkNoCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    // should be drawn to (0, 0), (352, 288)
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeOpaque(10, 10);
+    shouldBeOpaque(100, 100);
+    shouldBeOpaque(300, 50);
+    shouldBeOpaque(350, 280);
+    shouldBeClear(360, 40);
+    shouldBeClear(80, 290);
+
+    // shrunk to (0, 0), (100, 100)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 100, 100);
+    shouldBeOpaque(40, 40);
+    shouldBeOpaque(90, 90);
+    shouldBeClear(10, 110);
+    shouldBeClear(110, 10);
+    shouldBeClear(110, 110);
+
+    // shrunk to (100, 100), (250, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 100, 100, 150, 100);
+    shouldBeClear(90, 90);
+    shouldBeOpaque(110, 110);
+    shouldBeOpaque(240, 190);
+    shouldBeClear(110, 210);
+    shouldBeClear(260, 110);
+    shouldBeClear(260, 210);
+
+    // black should be drawn to (100, 100), (200, 200)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 100, 100, 100, 100, 100, 100, 100, 100);
+    shouldBeClear(90, 90);
+    shouldBeOpaque(110, 110);
+    shouldBeOpaque(190, 190);
+    shouldBeClear(10, 210);
+    shouldBeClear(210, 10);
+    shouldBeClear(210, 210);
+
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 400, 300, 200, 200, 100, 100, 100, 100);
+    shouldBeClear(10, 10);
+    shouldBeClear(80, 80);
+    shouldBeClear(150, 150);
+    shouldBeClear(210, 210);
+}
+
+function checkCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    // should be drawn to (0, 0), (100, 100)
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeOpaque(10, 10);
+    shouldBeOpaque(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(210, 210);
+}
+
+function checkOverCrop(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    // should be drawn to (100, 100), (452, 388)
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (options[optionIndex] == "none") {
+        shouldBeClear(10, 10);
+        shouldBeClear(90, 90);
+        shouldBeOpaque(110, 110);
+        shouldBeOpaque(300, 200);
+        shouldBeOpaque(450, 380);
+        shouldBeClear(500, 50);
+        shouldBeClear(50, 350);
+        shouldBeClear(460, 390);
+    } else {
+        shouldBeClear(10, 590);
+        shouldBeClear(90, 510);
+        shouldBeOpaque(110, 490);
+        shouldBeOpaque(300, 400);
+        shouldBeOpaque(450, 220);
+        shouldBeClear(500, 550);
+        shouldBeClear(50, 250);
+        shouldBeClear(460, 210);
+    }
+
+    // should be drawn to (50, 50), (226, 194)
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0, 300, 300);
+    if (options[optionIndex] == "none") {
+        shouldBeClear(10, 10);
+        shouldBeClear(40, 40);
+        shouldBeOpaque(60, 60);
+        shouldBeOpaque(220, 190);
+        shouldBeClear(230, 50);
+        shouldBeClear(50, 200);
+        shouldBeClear(230, 200);
+    } else {
+        shouldBeClear(10, 290);
+        shouldBeClear(40, 260);
+        shouldBeOpaque(60, 240);
+        shouldBeOpaque(220, 110);
+        shouldBeClear(230, 250);
+        shouldBeClear(50, 100);
+        shouldBeClear(230, 100);
+    }
+}
+
+function checkOverCropRight(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    // should be drawn to (0, 0), (252, 188)
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (options[optionIndex] == "none") {
+        shouldBeOpaque(10, 10);
+        shouldBeOpaque(100, 100);
+        shouldBeOpaque(200, 50);
+        shouldBeOpaque(50, 150);
+        shouldBeOpaque(250, 180);
+        shouldBeClear(360, 40);
+        shouldBeClear(80, 190);
+        shouldBeClear(260, 190);
+    } else {
+        shouldBeOpaque(10, 490);
+        shouldBeOpaque(100, 400);
+        shouldBeOpaque(200, 450);
+        shouldBeOpaque(50, 350);
+        shouldBeOpaque(250, 320);
+        shouldBeClear(360, 460);
+        shouldBeClear(80, 310);
+        shouldBeClear(260, 310);
+    }
+}
+
+function checkEmpty(imageBitmap) {
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+
+    // nothing should be drawn
+    clearContext();
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(10, 10);
+    shouldBeClear(90, 90);
+    shouldBeClear(110, 110);
+    shouldBeClear(210, 210);
+}
+
+</script>
+</body>
+</html>

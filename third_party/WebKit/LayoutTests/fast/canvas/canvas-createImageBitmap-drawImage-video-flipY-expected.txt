@@ -1,0 +1,177 @@
+Ensure correct behavior of drawImage with ImageBitmaps from video elements along with flipY option.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Checking HTMLVideoElement with imageOrientation: none.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+Checking HTMLVideoElement with imageOrientation: flipY.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is opaque
+PASS This pixel is opaque
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS This pixel is transparent black
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

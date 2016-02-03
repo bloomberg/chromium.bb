@@ -1,0 +1,3073 @@
+Ensure correct behavior of drawImage with ImageBitmaps along with flipY option.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS testBitmap.width is imageWidth
+PASS testBitmap.height is imageHeight
+PASS testBitmap.width is imageWidth
+PASS testBitmap.height is imageHeight
+Checking HTMLImageElement with imageOrientation: none.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLImageElement with imageOrientation: flipY.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLImageElement with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLImageElement with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLCanvasElement with imageOrientation: none.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLCanvasElement with imageOrientation: flipY.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLCanvasElement with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking HTMLCanvasElement with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageData with imageOrientation: none.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageData with imageOrientation: flipY.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageData with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageData with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageBitmap with imageOrientation: none.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageBitmap with imageOrientation: flipY.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageBitmap with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking ImageBitmap with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking Blob with imageOrientation: none.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking Blob with imageOrientation: flipY.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is blue.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is green.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking Blob with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Checking Blob with imageOrientation: undefined.
+Check no crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is imageWidth
+PASS bitmap.height is imageHeight
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop center.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop right.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 60
+PASS bitmap.height is 60
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is green.
+PASS This pixel is blue.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check over crop right.
+PASS bitmap.width is 50
+PASS bitmap.height is 50
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is black.
+PASS This pixel is black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check crop.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 10
+PASS bitmap.height is 10
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is red.
+PASS This pixel is red.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+Check empty.
+PASS jsWrapperClass(bitmap) is 'ImageBitmap'
+PASS bitmap.width is 30
+PASS bitmap.height is 30
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS This pixel is transparent black.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

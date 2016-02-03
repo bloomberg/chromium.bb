@@ -1,0 +1,553 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Ensure correct behavior of drawImage with ImageBitmaps along with flipY option.");
+window.jsTestIsAsync = true;
+
+function jsWrapperClass(node)
+{
+    // returns the ClassName of node
+    if (!node)
+        return "[null]";
+    var string = Object.prototype.toString.apply(node);
+
+    // string will be of the form [object ClassName]
+    return string.substr(8, string.length - 9);
+}
+
+function shouldBeType(expression, className)
+{
+    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
+}
+
+function shouldNotBeCalled() {
+    testFailed("createImageBitmap promise rejected.");
+    finishJSTest();
+}
+
+function shouldBeRed(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 255 && d[1] == 0 && d[2] == 0 && d[3] == 255) {
+        testPassed("This pixel is red.");
+        return;
+    }
+    testFailed("This pixel is expected to be red, but it is actually " + d);
+}
+
+function shouldBeGreen(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 0 && d[1] == 255 && d[2] == 0 && d[3] == 255) {
+        testPassed("This pixel is green.");
+        return;
+    }
+    testFailed("This pixel is expected to be green, but it is actually " + d);
+}
+
+function shouldBeBlue(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 0 && d[1] == 0 && d[2] == 255 && d[3] == 255) {
+        testPassed("This pixel is blue.");
+        return;
+    }
+    testFailed("This pixel is expected to be blue, but it is actually " + d);
+}
+
+function shouldBeBlack(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 0 && d[1] == 0 && d[2] == 0 && d[3] == 255) {
+        testPassed("This pixel is black.");
+        return;
+    }
+    testFailed("This pixel is expected to be black, but it is actually " + d);
+}
+
+function shouldBeClear(x, y) {
+    // should be transparent black pixels
+    d = ctx.getImageData(x, y, 1, 1).data;
+    if (d[0] == 0 && d[1] == 0 && d[2] == 0 && d[3] == 0) {
+        testPassed("This pixel is transparent black.");
+        return;
+    }
+    testFailed("This pixel is expected to be transparent black, but it is actually " + d);
+}
+
+function drawPattern(ctx) {
+    // Draw a four-color pattern
+    ctx.beginPath();
+    ctx.fillStyle = "rgb(255, 0, 0)";
+    ctx.fillRect(0, 0, 10, 10);
+    ctx.fillStyle = "rgb(0, 255, 0)";
+    ctx.fillRect(10, 0, 10, 10);
+    ctx.fillStyle = "rgb(0, 0, 255)";
+    ctx.fillRect(0, 10, 10, 10);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(10, 10, 10, 10);
+}
+
+function clearContext(context) {
+    context.clearRect(0, 0, 50, 50);
+}
+
+var bitmap;
+var image;
+var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
+var d;          // image.imageData
+var elements;
+var options;
+
+var imageWidth = 20;
+var imageHeight = 20;
+
+// Draw to an auxillary canvas.
+var aCanvas = document.createElement("canvas");
+aCanvas.width = imageWidth;
+aCanvas.height = imageHeight;
+var aCtx = aCanvas.getContext("2d");
+drawPattern(aCtx);
+
+var canvas = document.createElement("canvas");
+canvas.setAttribute("width", "50");
+canvas.setAttribute("height", "50");
+var ctx = canvas.getContext("2d");
+
+image = new Image();
+image.onload = imageLoaded;
+image.src = aCanvas.toDataURL();
+
+var imageLoaded = false;
+var imageBitmapLoaded = false;
+var blobLoaded = false;
+
+function imageLoaded() {
+    createImageBitmap(image).then(imageBitmapLoadedCallback, shouldNotBeCalled);
+    d = aCtx.getImageData(0, 0, 20, 20);
+    imageLoaded = true;
+    loaded();
+}
+
+function imageBitmapLoadedCallback(imageBitmap) {
+    testBitmap = imageBitmap;
+
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
+    // width and height are readonly
+    testBitmap.width = 42;
+    testBitmap.height = 42;
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
+    imageBitmapLoaded = true;
+    loaded();
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/pattern.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    blob = xhr.response;
+    blobLoaded = true;
+    loaded();
+}
+
+function loaded() {
+    if (imageLoaded && imageBitmapLoaded && blobLoaded) {
+        // check all elements and all options
+        elements = [image, aCanvas, d, testBitmap, blob];
+        options = ["none", "flipY"];
+        // elements = [image, aCanvas, d, testBitmap, blob];
+        // wait for callback to finish before each check to ensure synchronous behavior
+        nextCheck(0, 0);
+    }
+}
+
+function nextCheck(elementIndex, optionIndex) {
+    if (elementIndex == elements.length) {
+        finishJSTest();
+        return;
+    }
+    var element = elements[elementIndex];
+    imageBitmaps = {};
+    debug("Checking " + jsWrapperClass(element) + " with imageOrientation: " + options[optionIndex] + ".");
+    var p1 = createImageBitmap(element, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(element, 0, 0, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(element, 5, 5, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropCenter = image });
+    var p4 = createImageBitmap(element, 10, 10, 10, 10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.cropRight = image });
+    var p5 = createImageBitmap(element, -10, -10, 60, 60, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(element, 10, 10, 50, 50, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(element, 10, 10, -10, -10, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(element, -30, -30, 30, 30, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(element, 40, 30, 30, 30, {imageOrientation: options[optionIndex]}).then(function (image) { imageBitmaps.emptyTwo = image });
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
+        checkNoCrop(imageBitmaps.noCrop, options[optionIndex]);
+        checkCrop(imageBitmaps.crop, options[optionIndex]);
+        checkCropCenter(imageBitmaps.cropCenter, options[optionIndex]);
+        checkCropRight(imageBitmaps.cropRight, options[optionIndex]);
+        checkOverCrop(imageBitmaps.overCrop, options[optionIndex]);
+        checkOverCropRight(imageBitmaps.overCropRight, options[optionIndex]);
+        checkCrop(imageBitmaps.negativeCrop, options[optionIndex]);
+        checkEmpty(imageBitmaps.empty, options[optionIndex]);
+        checkEmpty(imageBitmaps.emptyTwo, options[optionIndex]);
+        if (optionIndex == 3)
+            nextCheck(elementIndex + 1, 0);
+        else
+            nextCheck(elementIndex, optionIndex + 1);
+    }, shouldNotBeCalled);
+}
+
+function checkNoCrop(imageBitmap, option) {
+    debug("Check no crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "imageWidth");
+    shouldBe("bitmap.height", "imageHeight");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlue(9, 9);
+        shouldBeBlack(11, 9);
+        shouldBeRed(9, 11);
+        shouldBeGreen(11, 11);
+        shouldBeGreen(19, 19);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+        shouldBeClear(21, 21);
+    } else {
+        shouldBeRed(9, 9);
+        shouldBeGreen(11, 9);
+        shouldBeBlue(9, 11);
+        shouldBeBlack(11, 11);
+        shouldBeBlack(19, 19);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+        shouldBeClear(21, 21);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 10, 10);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlue(4, 4);
+        shouldBeBlack(6, 4);
+        shouldBeRed(4, 6);
+        shouldBeGreen(6, 6);
+        shouldBeGreen(9, 9);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+        shouldBeClear(11, 11);
+    } else {
+        shouldBeRed(4, 4);
+        shouldBeGreen(6, 4);
+        shouldBeBlue(4, 6);
+        shouldBeBlack(6, 6);
+        shouldBeBlack(9, 9);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+        shouldBeClear(11, 11);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 10, 10);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlue(14, 14);
+        shouldBeBlack(16, 14);
+        shouldBeRed(14, 16);
+        shouldBeGreen(16, 16);
+        shouldBeGreen(19, 19);
+        shouldBeClear(11, 21);
+        shouldBeClear(21, 11);
+        shouldBeClear(21, 21);
+    } else {
+        shouldBeRed(14, 14);
+        shouldBeGreen(16, 14);
+        shouldBeBlue(14, 16);
+        shouldBeBlack(16, 16);
+        shouldBeBlack(19, 19);
+        shouldBeClear(11, 21);
+        shouldBeClear(21, 11);
+        shouldBeClear(21, 21);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 10, 10, 10, 10, 10, 10);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeClear(9, 9);
+        shouldBeGreen(11, 11);
+        shouldBeGreen(19, 19);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+        shouldBeClear(21, 21);
+    } else {
+        shouldBeClear(9, 9);
+        shouldBeBlack(11, 11);
+        shouldBeBlack(19, 19);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+        shouldBeClear(21, 21);
+    }
+}
+
+function checkCrop(imageBitmap, option) {
+    debug("Check crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeRed(1, 1);
+        shouldBeRed(9, 9);
+        shouldBeClear(12, 12);
+        shouldBeClear(1, 12);
+        shouldBeClear(12, 1);
+    } else {
+        shouldBeRed(1, 1);
+        shouldBeRed(9, 9);
+        shouldBeClear(12, 12);
+        shouldBeClear(1, 12);
+        shouldBeClear(12, 1);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeRed(1, 1);
+        shouldBeRed(18, 18);
+        shouldBeClear(22, 22);
+        shouldBeClear(1, 22);
+        shouldBeClear(22, 1);
+    } else {
+        shouldBeRed(1, 1);
+        shouldBeRed(18, 18);
+        shouldBeClear(22, 22);
+        shouldBeClear(1, 22);
+        shouldBeClear(22, 1);
+    }
+}
+
+function checkCropCenter(imageBitmap, option) {
+    debug("Check crop center.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlue(4, 4);
+        shouldBeBlack(6, 4);
+        shouldBeRed(4, 6);
+        shouldBeGreen(6, 6);
+        shouldBeGreen(9, 9);
+        shouldBeClear(11, 11);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+    } else {
+        shouldBeRed(4, 4);
+        shouldBeGreen(6, 4);
+        shouldBeBlue(4, 6);
+        shouldBeBlack(6, 6);
+        shouldBeBlack(9, 9);
+        shouldBeClear(11, 11);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlue(8, 8);
+        shouldBeBlack(11, 8);
+        shouldBeRed(8, 11);
+        shouldBeGreen(11, 11);
+        shouldBeGreen(18, 18);
+        shouldBeClear(22, 22);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+    } else {
+        shouldBeRed(8, 8);
+        shouldBeGreen(11, 8);
+        shouldBeBlue(8, 11);
+        shouldBeBlack(11, 11);
+        shouldBeBlack(18, 18);
+        shouldBeClear(22, 22);
+        shouldBeClear(1, 21);
+        shouldBeClear(21, 1);
+    }
+}
+
+function checkCropRight(imageBitmap, option) {
+    debug("Check crop right.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlack(1, 1);
+        shouldBeBlack(9, 9);
+        shouldBeClear(11, 11);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+    } else {
+        shouldBeBlack(1, 1);
+        shouldBeBlack(9, 9);
+        shouldBeClear(11, 11);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+    }
+}
+
+function checkOverCrop(imageBitmap, option) {
+    debug("Check over crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "60");
+    shouldBe("bitmap.height", "60");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeClear(1, 59);
+        shouldBeClear(9, 51);
+        shouldBeBlue(10, 30);
+        shouldBeBlue(19, 39);
+        shouldBeBlack(20, 30);
+        shouldBeBlack(29, 39);
+        shouldBeRed(10, 40);
+        shouldBeRed(19, 49);
+        shouldBeGreen(20, 40);
+        shouldBeGreen(29, 49);
+        shouldBeClear(31, 59);
+        shouldBeClear(1, 29);
+        shouldBeClear(30, 30);
+    } else {
+        shouldBeClear(1, 1);
+        shouldBeClear(9, 9);
+        shouldBeRed(11, 11);
+        shouldBeRed(19, 19);
+        shouldBeGreen(21, 19);
+        shouldBeBlue(19, 21);
+        shouldBeBlack(21, 21);
+        shouldBeBlack(29, 29);
+        shouldBeClear(32, 1);
+        shouldBeClear(1, 32);
+        shouldBeClear(32, 32);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 30, 30);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeClear(1, 29);
+        shouldBeClear(4, 25);
+        shouldBeBlue(5, 15);
+        shouldBeBlue(9, 19);
+        shouldBeBlack(10, 15);
+        shouldBeBlack(14, 19);
+        shouldBeRed(5, 21);
+        shouldBeRed(9, 24);
+        shouldBeGreen(11, 21);
+        shouldBeGreen(14, 24);
+        shouldBeClear(16, 29);
+        shouldBeClear(1, 14);
+        shouldBeClear(15, 15);
+    } else {
+        shouldBeClear(1, 1);
+        shouldBeClear(4, 4);
+        shouldBeRed(6, 6);
+        shouldBeRed(9, 9);
+        shouldBeGreen(11, 9);
+        shouldBeBlue(9, 11);
+        shouldBeBlack(11, 11);
+        shouldBeBlack(14, 14);
+        shouldBeClear(16, 1);
+        shouldBeClear(1, 16);
+        shouldBeClear(16, 16);
+    }
+}
+
+function checkOverCropRight(imageBitmap, option) {
+    debug("Check over crop right.");
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "50");
+    shouldBe("bitmap.height", "50");
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlack(1, 40);
+        shouldBeBlack(9, 49);
+        shouldBeClear(10, 49);
+        shouldBeClear(1, 39);
+        shouldBeClear(10, 40);
+    } else {
+        shouldBeBlack(1, 1);
+        shouldBeBlack(9, 9);
+        shouldBeClear(11, 11);
+        shouldBeClear(1, 11);
+        shouldBeClear(11, 1);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeBlack(0, 16);
+        shouldBeBlack(3, 19);
+        shouldBeClear(4, 19);
+        shouldBeClear(0, 15);
+        shouldBeClear(4, 15);
+    } else {
+        shouldBeBlack(1, 1);
+        shouldBeBlack(3, 3);
+        shouldBeClear(5, 5);
+        shouldBeClear(1, 5);
+        shouldBeClear(5, 1);
+    }
+
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 20, 20, 0, 0, 20, 20);
+    if (option == "flipY" || option == "bottomLeft") {
+        shouldBeClear(1, 1);
+        shouldBeClear(3, 3);
+        shouldBeClear(5, 5);
+        shouldBeClear(1, 5);
+        shouldBeClear(5, 1);
+    } else {
+        shouldBeClear(1, 1);
+        shouldBeClear(3, 3);
+        shouldBeClear(5, 5);
+        shouldBeClear(1, 5);
+        shouldBeClear(5, 1);
+    }
+}
+
+// For an empty image, the orientation doesn't matter
+function checkEmpty(imageBitmap, option) {
+    debug("Check empty.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "30");
+    shouldBe("bitmap.height", "30");
+
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(1, 1);
+    shouldBeClear(9, 9);
+    shouldBeClear(11, 11);
+    shouldBeClear(22, 22);
+}
+</script>
+</body>
+</html>

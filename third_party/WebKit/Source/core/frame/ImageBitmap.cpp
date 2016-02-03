@@ -12,6 +12,8 @@
 
 namespace blink {
 
+static const char* imageOrientationFlipY = "flipY";
+
 static inline IntRect normalizeRect(const IntRect& rect)
 {
     return IntRect(std::min(rect.x(), rect.maxX()),
@@ -20,15 +22,37 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
-static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect)
+// TODO(xidachen): this function needs to be changed later on when implementing premultiplyAlpha option
+static SkImage* flipSkImageVertically(SkImage* input)
+{
+    int width = input->width();
+    int height = input->height();
+    SkImageInfo info = SkImageInfo::MakeN32Premul(width, height);
+    OwnPtr<uint8_t[]> imagePixels = adoptArrayPtr(new uint8_t[width * height * info.bytesPerPixel()]);
+    int imageRowBytes = info.bytesPerPixel() * width;
+    input->readPixels(info, imagePixels.get(), imageRowBytes, 0, 0);
+
+    for (int i = 0; i < height / 2; i++) {
+        int topFirstElement = i * imageRowBytes;
+        int topLastElement = (i + 1) * imageRowBytes;
+        int bottomFirstElement = (height - 1 - i) * imageRowBytes;
+        std::swap_ranges(imagePixels.get() + topFirstElement, imagePixels.get() + topLastElement, imagePixels.get() + bottomFirstElement);
+    }
+    return SkImage::NewRasterCopy(info, imagePixels.get(), imageRowBytes);
+}
+
+static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& cropRect, bool flipYEnabled)
 {
     ASSERT(image);
 
     IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
     const IntRect srcRect = intersection(imgRect, cropRect);
 
-    if (cropRect == srcRect)
+    if (cropRect == srcRect) {
+        if (flipYEnabled)
+            return StaticBitmapImage::create(adoptRef(flipSkImageVertically(image->imageForCurrentFrame()->newSubset(srcRect))));
         return StaticBitmapImage::create(adoptRef(image->imageForCurrentFrame()->newSubset(srcRect)));
+    }
 
     RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRasterN32Premul(cropRect.width(), cropRect.height()));
 
@@ -42,12 +66,17 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     if (cropRect.y() < 0)
         dstTop = -cropRect.y();
     surface->getCanvas()->drawImage(image->imageForCurrentFrame().get(), dstLeft, dstTop);
+    if (flipYEnabled)
+        return StaticBitmapImage::create(adoptRef(flipSkImageVertically(surface->newImageSnapshot())));
     return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
-    m_image = cropImage(image->cachedImage()->image(), cropRect);
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = cropImage(image->cachedImage()->image(), cropRect, true);
+    else
+        m_image = cropImage(image->cachedImage()->image(), cropRect, false);
     m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
 }
 
@@ -65,14 +94,20 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
 
     IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
-    m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration).get())));
+    else
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
     m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     ASSERT(canvas->isPaintable());
-    m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect);
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, true);
+    else
+        m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, false);
     m_image->setOriginClean(canvas->originClean());
 }
 
@@ -95,18 +130,27 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
     if (cropRect.y() < 0)
         dstPoint.setY(-cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
-    m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration).get())));
+    else
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
-    m_image = cropImage(bitmap->bitmapImage(), cropRect);
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = cropImage(bitmap->bitmapImage(), cropRect, true);
+    else
+        m_image = cropImage(bitmap->bitmapImage(), cropRect, false);
     m_image->setOriginClean(bitmap->originClean());
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
-    m_image = cropImage(image.get(), cropRect);
+    if (options.imageOrientation() == imageOrientationFlipY)
+        m_image = cropImage(image.get(), cropRect, true);
+    else
+        m_image = cropImage(image.get(), cropRect, false);
     m_image->setOriginClean(image->originClean());
 }
 
