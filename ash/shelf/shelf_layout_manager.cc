@@ -705,12 +705,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
                         target_bounds.shelf_bounds_in_root.x());
     status_bounds.set_y(status_bounds.y() +
                         target_bounds.shelf_bounds_in_root.y());
-    LOG(ERROR) << "Status Area Widget Bounds:"
-               << ScreenUtil::ConvertRectToScreen(
-                      shelf_->status_area_widget()->GetNativeView()->parent(),
-                      status_bounds)
-                      .ToString();
-
     shelf_->status_area_widget()->SetBounds(
         ScreenUtil::ConvertRectToScreen(
             shelf_->status_area_widget()->GetNativeView()->parent(),
