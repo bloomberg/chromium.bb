@@ -717,6 +717,9 @@ class TestGitCl(TestCase):
         return '\n'.join(branch_deps)
     self.mock(git_cl, 'RunGit', mock_run_git)
 
+    git_cl.settings = git_cl.Settings()
+    self.mock(git_cl.settings, 'GetIsGerrit', lambda: False)
+
     class RecordCalls:
       times_called = 0
     record_calls = RecordCalls()

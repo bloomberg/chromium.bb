@@ -1627,8 +1627,10 @@ def upload_branch_deps(cl, args):
          '"git cl upload".')
   ask_for_data('[Press enter to continue or ctrl-C to quit]')
 
-  # Add a default patchset title to all upload calls.
-  args.extend(['-t', 'Updated patchset dependency'])
+  # Add a default patchset title to all upload calls in Rietveld.
+  if not settings.GetIsGerrit():
+    args.extend(['-t', 'Updated patchset dependency'])
+
   # Record all dependents that failed to upload.
   failures = {}
   # Go through all dependents, checkout the branch and upload.
@@ -2010,7 +2012,11 @@ def GerritUpload(options, args, cl, change):
   change_desc = ChangeDescription(
       options.message or CreateDescriptionFromLog(args))
   if not change_desc.description:
-    print "Description is empty; aborting."
+    print "\nDescription is empty. Aborting..."
+    return 1
+
+  if options.title:
+    print "\nPatch titles (-t) are not supported in Gerrit. Aborting..."
     return 1
 
   if options.squash:
@@ -2351,7 +2357,8 @@ def CMDupload(parser, args):
   parser.add_option('-f', action='store_true', dest='force',
                     help="force yes to questions (don't prompt)")
   parser.add_option('-m', dest='message', help='message for patchset')
-  parser.add_option('-t', dest='title', help='title for patchset')
+  parser.add_option('-t', dest='title',
+                    help='title for patchset (Rietveld only)')
   parser.add_option('-r', '--reviewers',
                     action='append', default=[],
                     help='reviewer email addresses')
