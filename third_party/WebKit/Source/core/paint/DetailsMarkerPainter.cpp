@@ -32,9 +32,6 @@ void DetailsMarkerPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     LayoutObjectDrawingRecorder layoutDrawingRecorder(paintInfo.context, m_layoutDetailsMarker, paintInfo.phase, overflowRect, paintOffset);
     const Color color(m_layoutDetailsMarker.resolveColor(CSSPropertyColor));
-    paintInfo.context.setStrokeColor(color);
-    paintInfo.context.setStrokeStyle(SolidStroke);
-    paintInfo.context.setStrokeThickness(1.0f);
     paintInfo.context.setFillColor(color);
 
     boxOrigin.move(m_layoutDetailsMarker.borderLeft() + m_layoutDetailsMarker.paddingLeft(), m_layoutDetailsMarker.borderTop() + m_layoutDetailsMarker.paddingTop());
