@@ -143,15 +143,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  int DeleteAll(CookieMonster* cm) {
-    DCHECK(cm);
-    ResultSavingCookieCallback<int> callback;
-    cm->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<int>::Run,
-                                  base::Unretained(&callback)));
-    callback.WaitUntilDone();
-    return callback.result();
-  }
-
   int DeleteAllCreatedBetween(CookieMonster* cm,
                               const base::Time& delete_begin,
                               const base::Time& delete_end) {
@@ -179,16 +170,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  int DeleteAllForHost(CookieMonster* cm, const GURL& url) {
-    DCHECK(cm);
-    ResultSavingCookieCallback<int> callback;
-    cm->DeleteAllForHostAsync(url,
-                              base::Bind(&ResultSavingCookieCallback<int>::Run,
-                                         base::Unretained(&callback)));
-    callback.WaitUntilDone();
-    return callback.result();
-  }
-
   bool DeleteCanonicalCookie(CookieMonster* cm, const CanonicalCookie& cookie) {
     DCHECK(cm);
     ResultSavingCookieCallback<bool> callback;
@@ -208,7 +189,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     GURL url_top_level_domain_plus_3(kTopLevelDomainPlus3);
     GURL url_other(kOtherDomain);
 
-    DeleteAll(cm.get());
+    this->DeleteAll(cm.get());
 
     // Static population for probe:
     //    * Three levels of domain cookie (.b.a, .c.b.a, .d.c.b.a)
@@ -396,7 +377,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                               size_t expected_low_count,
                               size_t expected_medium_count,
                               size_t expected_high_count) {
-    DeleteAll(cm);
+    this->DeleteAll(cm);
     int next_cookie_id = 0;
     std::vector<CookiePriority> priority_list;
     std::vector<int> id_list[3];  // Indexed by CookiePriority.
@@ -707,8 +688,14 @@ ACTION_P2(GetAllCookiesAction, cookie_monster, callback) {
   cookie_monster->GetAllCookiesAsync(callback->AsCallback());
 }
 
-ACTION_P3(DeleteAllForHostAction, cookie_monster, url, callback) {
-  cookie_monster->DeleteAllForHostAsync(url, callback->AsCallback());
+ACTION_P5(DeleteAllCreatedBetweenForHostAction,
+          cookie_monster,
+          delete_begin,
+          delete_end,
+          url,
+          callback) {
+  cookie_monster->DeleteAllCreatedBetweenForHostAsync(
+      delete_begin, delete_end, url, callback->AsCallback());
 }
 
 ACTION_P3(DeleteCanonicalCookieAction, cookie_monster, cookie, callback) {
@@ -1084,19 +1071,20 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteAllCreatedBetweenCookies) {
   loop.Run();
 }
 
-TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCookies) {
+TEST_F(DeferredCookieTaskTest, DeferredDeleteAllForHostCreatedBetweenCookies) {
   MockDeleteCallback delete_callback;
 
-  BeginWithForDomainKey(
-      http_www_google_.domain(),
-      DeleteAllForHostAction(&cookie_monster(), http_www_google_.url(),
-                             &delete_callback));
+  BeginWithForDomainKey(http_www_google_.domain(),
+                        DeleteAllCreatedBetweenForHostAction(
+                            &cookie_monster(), base::Time(), base::Time::Now(),
+                            http_www_google_.url(), &delete_callback));
 
   WaitForLoadCall();
 
   EXPECT_CALL(delete_callback, Invoke(false))
-      .WillOnce(DeleteAllForHostAction(
-          &cookie_monster(), http_www_google_.url(), &delete_callback));
+      .WillOnce(DeleteAllCreatedBetweenForHostAction(
+          &cookie_monster(), base::Time(), base::Time::Now(),
+          http_www_google_.url(), &delete_callback));
   base::RunLoop loop;
   EXPECT_CALL(delete_callback, Invoke(false)).WillOnce(QuitRunLoop(&loop));
 
@@ -1731,7 +1719,9 @@ TEST_F(CookieMonsterTest, DeleteAllForHost) {
       GetCookies(cm.get(), GURL(kTopLevelDomainPlus2Secure +
                                 std::string("/dir1/dir2/xxx"))));
 
-  EXPECT_EQ(6, DeleteAllForHost(cm.get(), GURL(kTopLevelDomainPlus2)));
+  EXPECT_EQ(6, DeleteAllCreatedBetweenForHost(cm.get(), base::Time(),
+                                              base::Time::Now(),
+                                              GURL(kTopLevelDomainPlus2)));
   EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
 
   EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
@@ -1745,7 +1735,9 @@ TEST_F(CookieMonsterTest, DeleteAllForHost) {
                                       std::string("/dir1/dir2/xxx"))));
 
   PopulateCmForDeleteAllForHost(cm);
-  EXPECT_EQ(6, DeleteAllForHost(cm.get(), GURL(kTopLevelDomainPlus2Secure)));
+  EXPECT_EQ(6, DeleteAllCreatedBetweenForHost(
+                   cm.get(), base::Time(), base::Time::Now(),
+                   GURL(kTopLevelDomainPlus2Secure)));
   EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
 
   EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
@@ -1759,8 +1751,10 @@ TEST_F(CookieMonsterTest, DeleteAllForHost) {
                                       std::string("/dir1/dir2/xxx"))));
 
   PopulateCmForDeleteAllForHost(cm);
-  EXPECT_EQ(6, DeleteAllForHost(cm.get(), GURL(kTopLevelDomainPlus2Secure +
-                                               std::string("/dir1/xxx"))));
+  EXPECT_EQ(6,
+            DeleteAllCreatedBetweenForHost(
+                cm.get(), base::Time(), base::Time::Now(),
+                GURL(kTopLevelDomainPlus2Secure + std::string("/dir1/xxx"))));
   EXPECT_EQ(8U, GetAllCookies(cm.get()).size());
 
   EXPECT_EQ("dom_1=X; dom_2=X; dom_3=X; host_3=X",
@@ -2465,14 +2459,6 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
                    base::Unretained(callback)));
   }
 
-  void DeleteAllForHostTask(CookieMonster* cm,
-                            const GURL& url,
-                            ResultSavingCookieCallback<int>* callback) {
-    cm->DeleteAllForHostAsync(url,
-                              base::Bind(&ResultSavingCookieCallback<int>::Run,
-                                         base::Unretained(callback)));
-  }
-
   void DeleteAllCreatedBetweenForHostTask(
       CookieMonster* cm,
       const base::Time delete_begin,
@@ -2603,23 +2589,6 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllCreatedBetween) {
       base::Bind(&MultiThreadedCookieMonsterTest::DeleteAllCreatedBetweenTask,
                  base::Unretained(this), cm, now - TimeDelta::FromDays(99),
                  Time(), &callback);
-  RunOnOtherThread(task);
-  callback.WaitUntilDone();
-  EXPECT_EQ(1, callback.result());
-}
-
-TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteAllForHost) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-  CookieOptions options;
-  EXPECT_TRUE(
-      SetCookieWithOptions(cm.get(), http_www_google_.url(), "A=B", options));
-  EXPECT_EQ(1, DeleteAllForHost(cm.get(), http_www_google_.url()));
-  EXPECT_TRUE(
-      SetCookieWithOptions(cm.get(), http_www_google_.url(), "A=B", options));
-  ResultSavingCookieCallback<int> callback(&other_thread_);
-  base::Closure task =
-      base::Bind(&MultiThreadedCookieMonsterTest::DeleteAllForHostTask,
-                 base::Unretained(this), cm, http_www_google_.url(), &callback);
   RunOnOtherThread(task);
   callback.WaitUntilDone();
   EXPECT_EQ(1, callback.result());

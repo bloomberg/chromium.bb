@@ -254,6 +254,15 @@ class CookieStoreTest : public testing::Test {
     return callback.result();
   }
 
+  int DeleteAll(CookieStore* cs) {
+    DCHECK(cs);
+    ResultSavingCookieCallback<int> callback;
+    cs->DeleteAllAsync(base::Bind(&ResultSavingCookieCallback<int>::Run,
+                                  base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.result();
+  }
+
   scoped_refptr<CookieStore> GetCookieStore() {
     return CookieStoreTestTraits::Create();
   }
@@ -972,6 +981,25 @@ TYPED_TEST_P(CookieStoreTest, TestCookieDeletion) {
       std::string(), this->GetCookies(cs.get(), this->http_www_google_.url()));
 }
 
+TYPED_TEST_P(CookieStoreTest, TestDeleteAll) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+
+  // Set a session cookie.
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              kValidCookieLine));
+  EXPECT_EQ("A=B", this->GetCookies(cs.get(), this->http_www_google_.url()));
+
+  // Set a persistent cookie.
+  EXPECT_TRUE(this->SetCookie(cs.get(), this->http_www_google_.url(),
+                              "C=D; expires=Mon, 18-Apr-22 22:50:13 GMT"));
+
+  EXPECT_EQ(2u, this->GetAllCookies(cs.get()).size());
+
+  // Delete both, and make sure it works
+  EXPECT_EQ(2, this->DeleteAll(cs.get()));
+  EXPECT_EQ(0u, this->GetAllCookies(cs.get()).size());
+}
+
 TYPED_TEST_P(CookieStoreTest, TestDeleteAllCreatedBetween) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   const base::Time last_month = base::Time::Now() -
@@ -1256,6 +1284,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            EmptyExpires,
                            HttpOnlyTest,
                            TestCookieDeletion,
+                           TestDeleteAll,
                            TestDeleteAllCreatedBetween,
                            TestDeleteAllCreatedBetweenForHost,
                            TestSecure,

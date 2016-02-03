@@ -12,4 +12,8 @@ CookieStore::CookieStore() {}
 
 CookieStore::~CookieStore() {}
 
+void CookieStore::DeleteAllAsync(const DeleteCallback& callback) {
+  DeleteAllCreatedBetweenAsync(base::Time(), base::Time::Max(), callback);
+}
+
 }  // namespace net

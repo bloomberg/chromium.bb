@@ -133,6 +133,9 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
 
   virtual void DeleteSessionCookiesAsync(const DeleteCallback&) = 0;
 
+  // Deletes all cookies in the store.
+  void DeleteAllAsync(const DeleteCallback& callback);
+
   // Flush the backing store (if any) to disk and post the given callback when
   // done.
   // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.

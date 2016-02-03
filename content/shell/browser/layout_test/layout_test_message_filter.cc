@@ -21,7 +21,7 @@
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "net/base/net_errors.h"
-#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/database/database_tracker.h"
@@ -127,8 +127,7 @@ void LayoutTestMessageFilter::OnAcceptAllCookies(bool accept) {
 
 void LayoutTestMessageFilter::OnDeleteAllCookies() {
   request_context_getter_->GetURLRequestContext()->cookie_store()
-      ->GetCookieMonster()
-      ->DeleteAllAsync(net::CookieMonster::DeleteCallback());
+      ->DeleteAllAsync(net::CookieStore::DeleteCallback());
 }
 
 void LayoutTestMessageFilter::OnSetPermission(const std::string& name,

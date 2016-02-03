@@ -163,15 +163,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const CookieOptions& options,
       const GetCookieListCallback& callback);
 
-  // Deletes all of the cookies.
-  void DeleteAllAsync(const DeleteCallback& callback);
-
-  // Deletes all cookies that match the host of the given URL
-  // regardless of path.  This includes all http_only and secure cookies,
-  // but does not include any domain cookies that may apply to this host.
-  // Returns the number of cookies deleted.
-  void DeleteAllForHostAsync(const GURL& url, const DeleteCallback& callback);
-
   // Deletes one specific cookie.
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
@@ -258,8 +249,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   class DeleteTask;
   class DeleteAllCreatedBetweenTask;
   class DeleteAllCreatedBetweenForHostTask;
-  class DeleteAllForHostTask;
-  class DeleteAllTask;
   class DeleteCookieTask;
   class DeleteCanonicalCookieTask;
   class GetAllCookiesForURLWithOptionsTask;
@@ -442,12 +431,8 @@ class NET_EXPORT CookieMonster : public CookieStore {
   CookieList GetAllCookiesForURLWithOptions(const GURL& url,
                                             const CookieOptions& options);
 
-  int DeleteAll(bool sync_to_store);
-
   int DeleteAllCreatedBetween(const base::Time& delete_begin,
                               const base::Time& delete_end);
-
-  int DeleteAllForHost(const GURL& url);
 
   int DeleteAllCreatedBetweenForHost(const base::Time delete_begin,
                                      const base::Time delete_end,

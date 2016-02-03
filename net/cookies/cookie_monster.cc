@@ -650,26 +650,6 @@ void CookieMonster::DeleteTask<Result>::FlushDone(
   }
 }
 
-// Task class for DeleteAll call.
-class CookieMonster::DeleteAllTask : public DeleteTask<int> {
- public:
-  DeleteAllTask(CookieMonster* cookie_monster, const DeleteCallback& callback)
-      : DeleteTask<int>(cookie_monster, callback) {}
-
-  // DeleteTask:
-  int RunDeleteTask() override;
-
- protected:
-  ~DeleteAllTask() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DeleteAllTask);
-};
-
-int CookieMonster::DeleteAllTask::RunDeleteTask() {
-  return this->cookie_monster()->DeleteAll(true);
-}
-
 // Task class for DeleteAllCreatedBetween call.
 class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
  public:
@@ -697,30 +677,6 @@ class CookieMonster::DeleteAllCreatedBetweenTask : public DeleteTask<int> {
 int CookieMonster::DeleteAllCreatedBetweenTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteAllCreatedBetween(delete_begin_,
                                                          delete_end_);
-}
-
-// Task class for DeleteAllForHost call.
-class CookieMonster::DeleteAllForHostTask : public DeleteTask<int> {
- public:
-  DeleteAllForHostTask(CookieMonster* cookie_monster,
-                       const GURL& url,
-                       const DeleteCallback& callback)
-      : DeleteTask<int>(cookie_monster, callback), url_(url) {}
-
-  // DeleteTask:
-  int RunDeleteTask() override;
-
- protected:
-  ~DeleteAllForHostTask() override {}
-
- private:
-  GURL url_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteAllForHostTask);
-};
-
-int CookieMonster::DeleteAllForHostTask::RunDeleteTask() {
-  return this->cookie_monster()->DeleteAllForHost(url_);
 }
 
 // Task class for DeleteAllCreatedBetweenForHost call.
@@ -981,20 +937,6 @@ void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::DeleteAllAsync(const DeleteCallback& callback) {
-  scoped_refptr<DeleteAllTask> task = new DeleteAllTask(this, callback);
-
-  DoCookieTask(task);
-}
-
-void CookieMonster::DeleteAllForHostAsync(const GURL& url,
-                                          const DeleteCallback& callback) {
-  scoped_refptr<DeleteAllForHostTask> task =
-      new DeleteAllForHostTask(this, url, callback);
-
-  DoCookieTaskForURL(task, url);
-}
-
 void CookieMonster::DeleteCanonicalCookieAsync(
     const CanonicalCookie& cookie,
     const DeleteCookieCallback& callback) {
@@ -1154,7 +1096,18 @@ CookieMonster::AddCallbackForCookie(const GURL& gurl,
 }
 
 CookieMonster::~CookieMonster() {
-  DeleteAll(false);
+  // Clean up cookies
+
+  // InternalDeleteCookie expects the lock to be held, even though there can be
+  // no contention here.
+  base::AutoLock autolock(lock_);
+  for (CookieMap::iterator cookie_it = cookies_.begin();
+       cookie_it != cookies_.end();) {
+    CookieMap::iterator current_cookie_it = cookie_it;
+    ++cookie_it;
+    InternalDeleteCookie(current_cookie_it, false /* sync_to_store */,
+                         DELETE_COOKIE_DONT_RECORD);
+  }
 }
 
 bool CookieMonster::SetCookieWithDetails(const GURL& url,
@@ -1248,23 +1201,6 @@ CookieList CookieMonster::GetAllCookiesForURLWithOptions(
   return cookies;
 }
 
-int CookieMonster::DeleteAll(bool sync_to_store) {
-  base::AutoLock autolock(lock_);
-
-  int num_deleted = 0;
-  for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end();) {
-    CookieMap::iterator curit = it;
-    ++it;
-    InternalDeleteCookie(curit, sync_to_store,
-                         sync_to_store
-                             ? DELETE_COOKIE_EXPLICIT
-                             : DELETE_COOKIE_DONT_RECORD /* Destruction. */);
-    ++num_deleted;
-  }
-
-  return num_deleted;
-}
-
 int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
                                            const Time& delete_end) {
   base::AutoLock autolock(lock_);
@@ -1284,10 +1220,6 @@ int CookieMonster::DeleteAllCreatedBetween(const Time& delete_begin,
   }
 
   return num_deleted;
-}
-
-int CookieMonster::DeleteAllForHost(const GURL& url) {
-  return DeleteAllCreatedBetweenForHost(Time(), Time::Max(), url);
 }
 
 int CookieMonster::DeleteAllCreatedBetweenForHost(const Time delete_begin,
