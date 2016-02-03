@@ -10,11 +10,10 @@
       'werror%': '-Werror',
       # 1 to use goma.
       'use_goma%': 0,
-      # Use nacl-clang rather than old/deprecated gcc newlib toolchain.
-      # TODO(sbc): Remove this completely. The last attempt to do so
-      # resulted on chrome failure on windows:
-      # https://codereview.chromium.org/1581193006/
-      'use_nacl_clang%': 1,
+      # Set to 1 to use nacl-clang rather than gcc newlib toolchain.
+      # This is designed to be set globally by GYP_DEFINES and currently
+      # only affects x86-32 and x86-64 newlib builds.
+      'use_nacl_clang%': 0,
     },
     'common_args': [
       'python',
