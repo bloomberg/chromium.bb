@@ -267,11 +267,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-svg-image-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=560555)
 
-    # Windows Server 2008
-    # TODO(geofflang): no specific supression for this OS yet, temporarily
-    # supress on all windows versions.
-    self.Fail('conformance2/state/gl-get-calls.html', ['win'], bug=483282)
-
     # Windows Debug. Causing assertions in the GPU process which raise
     # a dialog box, so have to skip them rather than mark them as
     # failing.
