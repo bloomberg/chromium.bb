@@ -41,7 +41,8 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
             GetManageAddressesUrl(1).spec());
 }
 
-TEST(WalletServiceUrl, DefaultsToProd) {
+// Disabling, see http://crbug.com/581880.
+TEST(WalletServiceUrl, DISABLED_DefaultsToProd) {
 #if defined(ENABLE_PROD_WALLET_SERVICE)
   EXPECT_TRUE(IsUsingProd());
 #else
