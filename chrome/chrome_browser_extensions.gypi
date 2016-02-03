@@ -986,6 +986,7 @@
         '../components/components.gyp:proximity_auth',
         '../components/components.gyp:update_client',
         '../components/components.gyp:url_matcher',
+	'../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/content.gyp:content_browser',

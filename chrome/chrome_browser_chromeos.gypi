@@ -1149,6 +1149,7 @@
         '../components/components.gyp:variations_net',
         '../components/components.gyp:wallpaper',
         '../components/components.gyp:wifi_sync',
+        '../components/components_resources.gyp:components_resources',
         '../components/components_strings.gyp:components_strings',
         '../content/app/resources/content_resources.gyp:content_resources',
         '../content/content.gyp:content_browser',

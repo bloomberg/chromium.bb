@@ -48,6 +48,7 @@ source_set("extensions") {
     "//components/dom_distiller/core",
     "//components/onc",
     "//components/proximity_auth",
+    "//components/resources",
     "//components/strings",
     "//components/update_client",
     "//components/url_matcher",

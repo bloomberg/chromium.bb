@@ -31,7 +31,6 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/ssl_status.h"
 #include "grit/components_scaled_resources.h"
-#include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"

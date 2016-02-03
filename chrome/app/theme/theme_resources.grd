@@ -482,9 +482,6 @@
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_LEFT" file="common/omnibox_ev_bubble_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EV_BUBBLE_TOP_RIGHT" file="common/omnibox_ev_bubble_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_EXTENSION_APP_SELECTED" file="common/omnibox_extension_app_selected.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_INVALID" file="common/omnibox_https_invalid.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_POLICY_WARNING" file="common/controlled_setting_mandatory.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTPS_VALID" file="common/omnibox_https_valid.png" />
       <structure type="chrome_scaled_image" name="IDR_OMNIBOX_HTTP_SELECTED" file="common/omnibox_http_selected.png" />
       <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_KEYWORD_HINT_TAB" file="mac/omnibox_keyword_hint_tab.png" />

@@ -27,6 +27,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/user_manager/user.h"
+#include "grit/components_scaled_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
