@@ -941,8 +941,8 @@ void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& 
     v8::HandleScope handles(injectedScript->isolate());
     v8::Context::Scope scope(injectedScript->context());
     v8::TryCatch tryCatch(m_isolate);
-    v8::Local<v8::Script> script;
-    if (!m_debugger->client()->compileScript(injectedScript->context(), toV8String(m_isolate, expression), sourceURL).ToLocal(&script)) {
+    v8::Local<v8::Script> script = m_debugger->compileInternalScript(injectedScript->context(), toV8String(m_isolate, expression), sourceURL);
+    if (script.IsEmpty()) {
         v8::Local<v8::Message> message = tryCatch.Message();
         if (!message.IsEmpty())
             exceptionDetails = createExceptionDetails(m_isolate, message);

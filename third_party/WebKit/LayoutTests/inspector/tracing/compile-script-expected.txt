@@ -18,18 +18,6 @@ v8.compile Properties:
     data : {
         columnNumber : <number>
         lineNumber : <number>
-        url : 
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "v8.compile"
-}
-Text details for v8.compile: undefined
-v8.compile Properties:
-{
-    data : {
-        columnNumber : <number>
-        lineNumber : <number>
         url : .../inspector/tracing/timeline-script-tag-2.js
     }
     endTime : <number>

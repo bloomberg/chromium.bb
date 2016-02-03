@@ -1,6 +1,6 @@
 CONSOLE MESSAGE: line 1: 42
 Tests that injected script has isInternalScript flag.
 
-Not internal script
+Internal script
 Internal script
 

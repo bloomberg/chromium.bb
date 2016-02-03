@@ -789,4 +789,24 @@ bool V8DebuggerImpl::isPaused()
     return !m_pausedContext.IsEmpty();
 }
 
+v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String> code, const String& fileName)
+{
+    // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
+    // 1, whereas v8 starts at 0.
+    v8::ScriptOrigin origin(
+        toV8String(m_isolate, fileName),
+        v8::Integer::New(m_isolate, 0),
+        v8::Integer::New(m_isolate, 0),
+        v8::False(m_isolate), // sharable
+        v8::Local<v8::Integer>(),
+        v8::True(m_isolate), // internal
+        toV8String(m_isolate, String()), // sourceMap
+        v8::True(m_isolate)); // opaqueresource
+    v8::ScriptCompiler::Source source(code, origin);
+    v8::Local<v8::Script> script;
+    if (!v8::ScriptCompiler::Compile(m_isolate->GetCurrentContext(), &source, v8::ScriptCompiler::kNoCompileOptions).ToLocal(&script))
+        return  v8::Local<v8::Script>();
+    return script;
+}
+
 } // namespace blink

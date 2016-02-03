@@ -14,7 +14,7 @@ InspectorTest.dumpSearchResults = function(searchResults)
 
     InspectorTest.addResult("Search results: ");
     for (var i = 0; i < searchResults.length; i++)
-        InspectorTest.addResult("url: " + searchResults[i].url + ", matchesCount: " + searchResults[i].matchesCount);
+        InspectorTest.addResult("url: " + searchResults[i].url.replace(/VM\d+/, "VMXX") + ", matchesCount: " + searchResults[i].matchesCount);
     InspectorTest.addResult("");
 };
 
@@ -53,7 +53,7 @@ InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI,
 
             if (!searchMatches.length)
                 continue;
-            InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.url = " + uiSourceCode.url());
+            InspectorTest.addResult("Search result #" + (i + 1) + ": uiSourceCode.url = " + uiSourceCode.url().replace(/VM\d+/, "VMXX"));
             for (var j = 0; j < searchMatches.length; ++j) {
                 var lineNumber = searchMatches[j].lineNumber;
                 var lineContent = searchMatches[j].lineContent;

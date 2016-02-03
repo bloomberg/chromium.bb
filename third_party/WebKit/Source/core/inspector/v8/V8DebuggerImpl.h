@@ -96,6 +96,8 @@ public:
     v8::Isolate* isolate() const { return m_isolate; }
     V8DebuggerClient* client() { return m_client; }
 
+    v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String& fileName);
+
 private:
     void enable();
     void disable();

@@ -25,7 +25,6 @@ public:
     // V8DebuggerClient implementation.
     void eventListeners(v8::Local<v8::Value>, EventListenerInfoMap&) override;
     v8::MaybeLocal<v8::Object> instantiateObject(v8::Local<v8::Function>) override;
-    v8::MaybeLocal<v8::Script> compileScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String& fileName) override;
     v8::MaybeLocal<v8::Value> runCompiledScript(v8::Local<v8::Context>, v8::Local<v8::Script>) override;
     v8::MaybeLocal<v8::Value> compileAndRunInternalScript(v8::Local<v8::String>) override;
     v8::MaybeLocal<v8::Value> callFunction(v8::Local<v8::Function>, v8::Local<v8::Context>, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> info[]) override;

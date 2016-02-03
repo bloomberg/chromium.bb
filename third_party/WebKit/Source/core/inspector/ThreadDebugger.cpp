@@ -36,12 +36,6 @@ v8::MaybeLocal<v8::Object> ThreadDebugger::instantiateObject(v8::Local<v8::Funct
     return V8ScriptRunner::instantiateObject(m_isolate, function);
 }
 
-v8::MaybeLocal<v8::Script> ThreadDebugger::compileScript(v8::Local<v8::Context> context, v8::Local<v8::String> script, const String& fileName)
-{
-    v8::Context::Scope scope(context);
-    return V8ScriptRunner::compileScript(script, fileName, "", TextPosition(), m_isolate);
-}
-
 v8::MaybeLocal<v8::Value> ThreadDebugger::runCompiledScript(v8::Local<v8::Context> context, v8::Local<v8::Script> script)
 {
     return V8ScriptRunner::runCompiledScript(m_isolate, script, toExecutionContext(context));

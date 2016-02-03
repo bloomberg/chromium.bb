@@ -321,8 +321,8 @@ void V8InjectedScriptHost::evaluateWithExceptionDetailsCallback(const v8::Functi
     v8::Local<v8::Context> context = isolate->GetCurrentContext();
     InjectedScriptHost* host = V8InjectedScriptHost::unwrap(context, info.Holder());
 
-    v8::Local<v8::Script> script;
-    if (!host->debugger().client()->compileScript(context, expression, String()).ToLocal(&script)) {
+    v8::Local<v8::Script> script = host->debugger().compileInternalScript(context, expression, String());
+    if (script.IsEmpty()) {
         setExceptionAsReturnValue(info, wrappedResult, tryCatch);
         return;
     }
