@@ -428,7 +428,7 @@ void PaintLayerCompositor::updateIfNeeded()
 
         if (childList.isEmpty())
             destroyRootLayer();
-        else
+        else if (m_rootContentLayer)
             m_rootContentLayer->setChildren(childList);
 
         applyOverlayFullscreenVideoAdjustmentIfNeeded();
