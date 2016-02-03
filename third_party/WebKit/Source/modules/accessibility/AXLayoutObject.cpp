@@ -65,6 +65,7 @@
 #include "core/layout/LayoutTextControlSingleLine.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
@@ -994,7 +995,7 @@ AXObject* AXLayoutObject::nextOnLine() const
 
     AXObject* result = 0;
     for (InlineBox* next = inlineBox->nextOnLine(); next; next = next->nextOnLine()) {
-        LayoutObject* layoutObject = &next->layoutObject();
+        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(next->lineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
         if (result)
             break;
@@ -1023,7 +1024,7 @@ AXObject* AXLayoutObject::previousOnLine() const
 
     AXObject* result = 0;
     for (InlineBox* prev = inlineBox->prevOnLine(); prev; prev = prev->prevOnLine()) {
-        LayoutObject* layoutObject = &prev->layoutObject();
+        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(prev->lineLayoutItem());
         result = axObjectCache().getOrCreate(layoutObject);
         if (result)
             break;
