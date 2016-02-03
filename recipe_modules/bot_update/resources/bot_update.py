@@ -55,6 +55,18 @@ SCRIPTS_DIR = check_dir(
     'scripts', [
         path.dirname(THIS_DIR),
         path.join(SLAVE_DIR, '..', 'scripts'),
+        path.join(THIS_DIR,  # resources
+                  '..',      # bot_update
+                  '..',      # recipe_modules
+                  '..',      # depot_tools
+                  '..',      # .recipe_deps
+                  '..',      # slave
+                  '..',      # scripts
+                  '..',      # build_internal
+                  '..',      # ROOT_DIR
+                  'build',
+                  'scripts'),
+        path.join(SLAVE_DIR, '..', 'build', 'scripts'),
     ], default=path.dirname(THIS_DIR))
 BUILD_DIR = path.dirname(SCRIPTS_DIR)
 ROOT_DIR = path.dirname(BUILD_DIR)
