@@ -24,24 +24,16 @@ enum TokenBindingType {
 };
 
 bool BuildTokenBindingID(crypto::ECPrivateKey* key, CBB* out) {
-  CBB ec_point;
-  if (!CBB_add_u8(out, TB_PARAM_ECDSAP256) ||
-      !CBB_add_u8_length_prefixed(out, &ec_point)) {
-    return false;
-  }
+  EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(key->key());
+  DCHECK(ec_key);
 
-  EVP_PKEY* pkey = key->key();
-  static const int kExpectedKeyLength = 65;
-  uint8_t* buf;
-  // TODO(nharper): Replace i2o_ECPublicKey with EC_POINT_point2cbb.
-  if (pkey->type != EVP_PKEY_EC ||
-      i2o_ECPublicKey(pkey->pkey.ec, nullptr) != kExpectedKeyLength ||
-      !CBB_add_space(&ec_point, &buf, kExpectedKeyLength) ||
-      i2o_ECPublicKey(pkey->pkey.ec, &buf) != kExpectedKeyLength ||
-      !CBB_flush(out)) {
-    return false;
-  }
-  return true;
+  CBB ec_point;
+  return CBB_add_u8(out, TB_PARAM_ECDSAP256) &&
+         CBB_add_u8_length_prefixed(out, &ec_point) &&
+         EC_POINT_point2cbb(&ec_point, EC_KEY_get0_group(ec_key),
+                            EC_KEY_get0_public_key(ec_key),
+                            POINT_CONVERSION_UNCOMPRESSED, nullptr) &&
+         CBB_flush(out);
 }
 
 Error BuildTokenBinding(TokenBindingType type,
