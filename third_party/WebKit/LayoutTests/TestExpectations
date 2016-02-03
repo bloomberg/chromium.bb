@@ -1389,4 +1389,11 @@ crbug.com/581038 fast/text/first-letter-bad-line-boxes-crash.html [ Crash Pass ]
 # No baselines, but this js test is also showing FAIL
 crbug.com/583675 fast/dom/shadow/scoped-events-by-ua-stopped.html [ Failure ]
 
+crbug.com/583651 [ Win7 ] svg/W3C-SVG-1.1/pservers-grad-06-b.svg [ NeedsRebaseline ]
+crbug.com/583651 [ Win7 ] svg/custom/nested-pattern-boundingBoxModeContent.svg [ NeedsRebaseline ]
+crbug.com/583651 [ Win7 ] svg/custom/non-scaling-stroke.svg [ NeedsRebaseline ]
+crbug.com/583651 [ Win7 ] svg/custom/pattern-skew-transformed.svg [ NeedsRebaseline ]
+crbug.com/583651 [ Win7 ] svg/custom/pattern-with-transformation.svg [ NeedsRebaseline ]
+crbug.com/583651 [ Win7 ] svg/transforms/text-with-pattern-inside-transformed-html.xhtml [ NeedsRebaseline ]
+
 crbug.com/581203 [ Linux ] web-animations-api/player-finish-sample-only.html [ Failure Pass ]
