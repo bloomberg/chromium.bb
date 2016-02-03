@@ -92,8 +92,8 @@ public class PopupTouchHandleDrawable extends View {
     private PopupTouchHandleDrawable(ContentViewCore contentViewCore) {
         super(contentViewCore.getContainerView().getContext());
         mContentViewCore = contentViewCore;
-        mContainer =
-                new PopupWindow(getContext(), null, android.R.attr.textSelectHandleWindowStyle);
+        mContainer = new PopupWindow(mContentViewCore.getWindowAndroid().getContext().get(),
+                null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
 
@@ -427,8 +427,12 @@ public class PopupTouchHandleDrawable extends View {
                 mParentPositionObserver.getPositionY());
         mParentPositionObserver.addListener(mParentPositionListener);
         mContainer.setContentView(this);
-        mContainer.showAtLocation(mContentViewCore.getContainerView(), 0,
-                getContainerPositionX(), getContainerPositionY());
+        try {
+            mContainer.showAtLocation(mContentViewCore.getContainerView(), 0,
+                    getContainerPositionX(), getContainerPositionY());
+        } catch (WindowManager.BadTokenException e) {
+            hide();
+        }
     }
 
     @CalledByNative
