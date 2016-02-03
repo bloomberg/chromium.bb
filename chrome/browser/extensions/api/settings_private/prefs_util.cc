@@ -225,6 +225,11 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_STRING;
 #endif
 
+#if defined(GOOGLE_CHROME_BUILD)
+  (*s_whitelist)["media_router.cloudservices.enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
   return *s_whitelist;
 }
 
