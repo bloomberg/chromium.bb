@@ -35,7 +35,8 @@ const char* valid_xml_with_hash =
     "     </urls>"
     "     <manifest version='1.2.3.4' prodversionmin='2.0.143.0'>"
     "       <packages>"
-    "         <package name='extension_1_2_3_4.crx' hash_sha256='1234'/>"
+    "         <package name='extension_1_2_3_4.crx' hash_sha256='1234'"
+    "             hashdiff_sha256='5678'/>"
     "       </packages>"
     "     </manifest>"
     "   </updatecheck>"
@@ -276,6 +277,7 @@ TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
   firstResult = &parser.results().list[0];
   EXPECT_FALSE(firstResult->manifest.packages.empty());
   EXPECT_EQ("1234", firstResult->manifest.packages[0].hash_sha256);
+  EXPECT_EQ("5678", firstResult->manifest.packages[0].hashdiff_sha256);
 
   // Parse xml with package size value
   EXPECT_TRUE(parser.Parse(valid_xml_with_invalid_sizes));

@@ -14,13 +14,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/update_client.h"
+#include "components/update_client/utils.h"
 #include "courgette/courgette.h"
 #include "courgette/third_party/bsdiff.h"
-#include "crypto/secure_hash.h"
-#include "crypto/sha2.h"
-#include "crypto/signature_verifier.h"
-
-using crypto::SecureHash;
 
 namespace update_client {
 
@@ -109,23 +105,9 @@ void DeltaUpdateOp::DoneRunning(ComponentUnpacker::Error error,
 // Uses the hash as a checksum to confirm that the file now residing in the
 // output directory probably has the contents it should.
 ComponentUnpacker::Error DeltaUpdateOp::CheckHash() {
-  std::vector<uint8_t> expected_hash;
-  if (!base::HexStringToBytes(output_sha256_, &expected_hash) ||
-      expected_hash.size() != crypto::kSHA256Length)
-    return ComponentUnpacker::kDeltaVerificationFailure;
-
-  base::MemoryMappedFile output_file_mmapped;
-  if (!output_file_mmapped.Initialize(output_abs_path_))
-    return ComponentUnpacker::kDeltaVerificationFailure;
-
-  uint8_t actual_hash[crypto::kSHA256Length] = {0};
-  const scoped_ptr<SecureHash> hasher(SecureHash::Create(SecureHash::SHA256));
-  hasher->Update(output_file_mmapped.data(), output_file_mmapped.length());
-  hasher->Finish(actual_hash, sizeof(actual_hash));
-  if (memcmp(actual_hash, &expected_hash[0], sizeof(actual_hash)))
-    return ComponentUnpacker::kDeltaVerificationFailure;
-
-  return ComponentUnpacker::kNone;
+  return VerifyFileHash256(output_abs_path_, output_sha256_)
+             ? ComponentUnpacker::kNone
+             : ComponentUnpacker::kDeltaVerificationFailure;
 }
 
 scoped_refptr<base::SequencedTaskRunner> DeltaUpdateOp::GetTaskRunner() {

@@ -90,6 +90,11 @@ bool DeleteFileAndEmptyParentDirectory(const base::FilePath& filepath);
 // format similar with the format of an extension id.
 std::string GetCrxComponentID(const CrxComponent& component);
 
+// Returns true if the actual SHA-256 hash of the |filepath| matches the
+// |expected_hash|.
+bool VerifyFileHash256(const base::FilePath& filepath,
+                       const std::string& expected_hash);
+
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_UTILS_H_

@@ -7,16 +7,18 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/update_client/url_fetcher_downloader.h"
-
 #if defined(OS_WIN)
 #include "components/update_client/background_downloader_win.h"
 #endif
+#include "components/update_client/url_fetcher_downloader.h"
+#include "components/update_client/utils.h"
 
 namespace update_client {
 
@@ -44,18 +46,21 @@ scoped_ptr<CrxDownloader> CrxDownloader::Create(
 #if defined(OS_WIN)
   if (is_background_download) {
     return scoped_ptr<CrxDownloader>(new BackgroundDownloader(
-        url_fetcher_downloader.Pass(), context_getter, task_runner));
+        std::move(url_fetcher_downloader), context_getter, task_runner));
   }
 #endif
 
   return url_fetcher_downloader;
 }
 
-CrxDownloader::CrxDownloader(scoped_ptr<CrxDownloader> successor)
-    : successor_(std::move(successor)) {}
+CrxDownloader::CrxDownloader(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    scoped_ptr<CrxDownloader> successor)
+    : task_runner_(task_runner),
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      successor_(std::move(successor)) {}
 
-CrxDownloader::~CrxDownloader() {
-}
+CrxDownloader::~CrxDownloader() {}
 
 void CrxDownloader::set_progress_callback(
     const ProgressCallback& progress_callback) {
@@ -79,29 +84,35 @@ CrxDownloader::download_metrics() const {
 
 void CrxDownloader::StartDownloadFromUrl(
     const GURL& url,
+    const std::string& expected_hash,
     const DownloadCallback& download_callback) {
   std::vector<GURL> urls;
   urls.push_back(url);
-  StartDownload(urls, download_callback);
+  StartDownload(urls, expected_hash, download_callback);
 }
 
 void CrxDownloader::StartDownload(const std::vector<GURL>& urls,
+                                  const std::string& expected_hash,
                                   const DownloadCallback& download_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  auto error = Error::SUCCESS;
   if (urls.empty()) {
-    // Make a result and complete the download with a generic error for now.
+    error = Error::NO_URL;
+  } else if (expected_hash.empty()) {
+    error = Error::NO_HASH;
+  }
+
+  if (error != Error::SUCCESS) {
     Result result;
-    result.error = -1;
-    download_callback.Run(result);
+    result.error = error;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(download_callback, result));
     return;
   }
 
-  // If the urls are mutated while this downloader is active, then the
-  // behavior is undefined in the sense that the outcome of the download could
-  // be inconsistent for the list of urls. At any rate, the |current_url_| is
-  // reset at this point, and the iterator will be valid in all conditions.
   urls_ = urls;
+  expected_hash_ = expected_hash;
   current_url_ = urls_.begin();
   download_callback_ = download_callback;
 
@@ -114,39 +125,16 @@ void CrxDownloader::OnDownloadComplete(
     const DownloadMetrics& download_metrics) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  download_metrics_.push_back(download_metrics);
-
-  if (result.error) {
-    // If an error has occured, in general try the next url if there is any,
-    // then move on to the successor in the chain if there is any successor.
-    // If this downloader has received a 5xx error for the current url,
-    // as indicated by the |is_handled| flag, remove that url from the list of
-    // urls so the url is never retried. In both cases, move on to the
-    // next url.
-    if (!is_handled) {
-      ++current_url_;
-    } else {
-      current_url_ = urls_.erase(current_url_);
-    }
-
-    // Try downloading from another url from the list.
-    if (current_url_ != urls_.end()) {
-      DoStartDownload(*current_url_);
-      return;
-    }
-
-    // If there is another downloader that can accept this request, then hand
-    // the request over to it so that the successor can try the pruned list
-    // of urls. Otherwise, the request ends here since the current downloader
-    // has tried all urls and it can't fall back on any other downloader.
-    if (successor_ && !urls_.empty()) {
-      successor_->StartDownload(urls_, download_callback_);
-      return;
-    }
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(download_callback_, result));
+  if (result.error == Error::SUCCESS)
+    task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CrxDownloader::VerifyResponse, base::Unretained(this),
+                   is_handled, result, download_metrics));
+  else
+    main_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&CrxDownloader::HandleDownloadError, base::Unretained(this),
+                   is_handled, result, download_metrics));
 }
 
 void CrxDownloader::OnDownloadProgress(const Result& result) {
@@ -156,6 +144,76 @@ void CrxDownloader::OnDownloadProgress(const Result& result) {
     return;
 
   progress_callback_.Run(result);
+}
+
+// The function mutates the values of the parameters |result| and
+// |download_metrics|.
+void CrxDownloader::VerifyResponse(bool is_handled,
+                                   Result result,
+                                   DownloadMetrics download_metrics) {
+  DCHECK(task_runner()->RunsTasksOnCurrentThread());
+  DCHECK_EQ(Error::SUCCESS, result.error);
+  DCHECK_EQ(Error::SUCCESS, download_metrics.error);
+  DCHECK(is_handled);
+
+  if (VerifyFileHash256(result.response, expected_hash_)) {
+    download_metrics_.push_back(download_metrics);
+    main_task_runner()->PostTask(FROM_HERE,
+                                 base::Bind(download_callback_, result));
+    return;
+  }
+
+  // The download was successful but the response is not trusted. Clean up
+  // the download, mutate the result, and try the remaining fallbacks when
+  // handling the error.
+  result.error = Error::BAD_HASH;
+  download_metrics.error = result.error;
+  DeleteFileAndEmptyParentDirectory(result.response);
+  result.response.clear();
+
+  main_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&CrxDownloader::HandleDownloadError, base::Unretained(this),
+                 is_handled, result, download_metrics));
+}
+
+void CrxDownloader::HandleDownloadError(
+    bool is_handled,
+    const Result& result,
+    const DownloadMetrics& download_metrics) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(Error::SUCCESS, result.error);
+  DCHECK_NE(Error::SUCCESS, download_metrics.error);
+
+  download_metrics_.push_back(download_metrics);
+
+  // If an error has occured, try the next url if there is any,
+  // or try the successor in the chain if there is any successor.
+  // If this downloader has received a 5xx error for the current url,
+  // as indicated by the |is_handled| flag, remove that url from the list of
+  // urls so the url is never tried again down the chain.
+  if (is_handled) {
+    current_url_ = urls_.erase(current_url_);
+  } else {
+    ++current_url_;
+  }
+
+  // Try downloading from another url from the list.
+  if (current_url_ != urls_.end()) {
+    DoStartDownload(*current_url_);
+    return;
+  }
+
+  // Try downloading using the next downloader.
+  if (successor_ && !urls_.empty()) {
+    successor_->StartDownload(urls_, expected_hash_, download_callback_);
+    return;
+  }
+
+  // The download ends here since there is no url nor downloader to handle this
+  // download request further.
+  main_task_runner()->PostTask(FROM_HERE,
+                               base::Bind(download_callback_, result));
 }
 
 }  // namespace update_client

@@ -175,6 +175,9 @@ void ActionUpdateCheck::OnUpdateCheckSucceeded(
         crx->crx_diffurls.push_back(url);
     }
 
+    crx->hash_sha256 = package.hash_sha256;
+    crx->hashdiff_sha256 = package.hashdiff_sha256;
+
     ChangeItemState(crx, CrxUpdateItem::State::kCanUpdate);
 
     update_context_->queue.push(crx->id);

@@ -7,9 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <cmath>
+#include <cstring>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -23,6 +26,8 @@
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_query_params.h"
+#include "crypto/secure_hash.h"
+#include "crypto/sha2.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -196,6 +201,27 @@ std::string GetCrxComponentID(const CrxComponent& component) {
   CHECK_GE(component.pk_hash.size(), kCrxIdSize);
   return HexStringToID(base::ToLowerASCII(
       base::HexEncode(&component.pk_hash[0], kCrxIdSize)));
+}
+
+bool VerifyFileHash256(const base::FilePath& filepath,
+                       const std::string& expected_hash_str) {
+  std::vector<uint8_t> expected_hash;
+  if (!base::HexStringToBytes(expected_hash_str, &expected_hash) ||
+      expected_hash.size() != crypto::kSHA256Length) {
+    return false;
+  }
+
+  base::MemoryMappedFile mmfile;
+  if (!mmfile.Initialize(filepath))
+    return false;
+
+  uint8_t actual_hash[crypto::kSHA256Length] = {0};
+  scoped_ptr<crypto::SecureHash> hasher(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  hasher->Update(mmfile.data(), mmfile.length());
+  hasher->Finish(actual_hash, sizeof(actual_hash));
+
+  return memcmp(actual_hash, &expected_hash[0], sizeof(actual_hash)) == 0;
 }
 
 }  // namespace update_client

@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "components/update_client/utils.h"
@@ -19,10 +22,9 @@ namespace update_client {
 UrlFetcherDownloader::UrlFetcherDownloader(
     scoped_ptr<CrxDownloader> successor,
     net::URLRequestContextGetter* context_getter,
-    scoped_refptr<base::SequencedTaskRunner> task_runner)
-    : CrxDownloader(std::move(successor)),
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : CrxDownloader(task_runner, std::move(successor)),
       context_getter_(context_getter),
-      task_runner_(task_runner),
       downloaded_bytes_(-1),
       total_bytes_(-1) {}
 
@@ -39,7 +41,7 @@ void UrlFetcherDownloader::DoStartDownload(const GURL& url) {
                              net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DISABLE_CACHE);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher_->SaveResponseToTemporaryFile(task_runner_);
+  url_fetcher_->SaveResponseToTemporaryFile(task_runner());
 
   VLOG(1) << "Starting background download: " << url.spec();
   url_fetcher_->Start();
@@ -86,7 +88,11 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
   VLOG(1) << "Downloaded " << downloaded_bytes_ << " bytes in "
           << download_time.InMilliseconds() << "ms from "
           << source->GetURL().spec() << " to " << local_path_.value();
-  CrxDownloader::OnDownloadComplete(is_handled, result, download_metrics);
+
+  main_task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&UrlFetcherDownloader::OnDownloadComplete,
+                 base::Unretained(this), is_handled, result, download_metrics));
 }
 
 void UrlFetcherDownloader::OnURLFetchDownloadProgress(

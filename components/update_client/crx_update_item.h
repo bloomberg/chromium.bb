@@ -85,6 +85,10 @@ struct CrxUpdateItem {
   std::vector<GURL> crx_urls;
   std::vector<GURL> crx_diffurls;
 
+  // The cryptographic hash values for the component payload.
+  std::string hash_sha256;
+  std::string hashdiff_sha256;
+
   // The from/to version and fingerprint values.
   Version previous_version;
   Version next_version;

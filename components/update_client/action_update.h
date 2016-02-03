@@ -42,6 +42,7 @@ class ActionUpdate : public Action, protected ActionImpl {
  private:
   virtual bool IsBackgroundDownload(const CrxUpdateItem* item) = 0;
   virtual std::vector<GURL> GetUrls(const CrxUpdateItem* item) = 0;
+  virtual std::string GetHash(const CrxUpdateItem* item) = 0;
   virtual void OnDownloadStart(CrxUpdateItem* item) = 0;
   virtual void OnDownloadSuccess(
       CrxUpdateItem* item,
@@ -105,6 +106,7 @@ class ActionUpdateDiff : public ActionUpdate {
   // ActionUpdate overrides.
   bool IsBackgroundDownload(const CrxUpdateItem* item) override;
   std::vector<GURL> GetUrls(const CrxUpdateItem* item) override;
+  std::string GetHash(const CrxUpdateItem* item) override;
   void OnDownloadStart(CrxUpdateItem* item) override;
   void OnDownloadSuccess(CrxUpdateItem* item,
                          const CrxDownloader::Result& download_result) override;
@@ -130,6 +132,7 @@ class ActionUpdateFull : public ActionUpdate {
   // ActionUpdate overrides.
   bool IsBackgroundDownload(const CrxUpdateItem* item) override;
   std::vector<GURL> GetUrls(const CrxUpdateItem* item) override;
+  std::string GetHash(const CrxUpdateItem* item) override;
   void OnDownloadStart(CrxUpdateItem* item) override;
   void OnDownloadSuccess(CrxUpdateItem* item,
                          const CrxDownloader::Result& download_result) override;
