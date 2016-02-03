@@ -91,6 +91,7 @@
               'sources': [
                 'src/tests/qcms_test_tetra_clut_rgba.c',
                 'src/tests/qcms_test_main.c',
+                'src/tests/qcms_test_internal_srgb.c',
                 'src/tests/qcms_test_munsell.c',
               ],
             }],

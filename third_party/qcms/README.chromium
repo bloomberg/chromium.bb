@@ -135,6 +135,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=577155
  - Fix para curve tag interval paramater use
    - https://code.google.com/p/chromium/issues/detail?id=580920
+ - Verify internal sRGB profile tristimulus match the standard sRGB profile
+   - https://code.google.com/p/chromium/issues/detail?id=580917
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

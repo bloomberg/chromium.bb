@@ -52,6 +52,7 @@ if (!disable_qcms && (current_cpu == "x86" || current_cpu == "x64")) {
   executable("qcms_tests") {
     defines = [ "SSE2_ENABLE" ]
     sources = [
+      "src/tests/qcms_test_internal_srgb.c",
       "src/tests/qcms_test_main.c",
       "src/tests/qcms_test_munsell.c",
       "src/tests/qcms_test_tetra_clut_rgba.c",
