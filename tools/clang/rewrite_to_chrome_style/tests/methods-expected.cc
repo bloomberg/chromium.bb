@@ -55,8 +55,6 @@ void Task::DoTheWork() {
 
 }  // namespace blink
 
-namespace Moo {
-
 // Test that overrides from outside the Blink namespace are also updated.
 class BovineTask : public blink::Task {
  public:
@@ -82,5 +80,3 @@ void F() {
   void (blink::Task::*p3)() = &blink::Task::ReallyDoTheWork;
   void (BovineTask::*p4)() = &BovineTask::ReallyDoTheWork;
 }
-
-}  // namespace Moo

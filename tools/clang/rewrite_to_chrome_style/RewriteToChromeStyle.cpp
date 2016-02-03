@@ -48,6 +48,18 @@ using llvm::StringRef;
 
 namespace {
 
+// Hack: prevent the custom isDefaulted() from conflicting with the one defined
+// in newer revisions of Clang.
+namespace internal_hack {
+
+// This is available in newer clang revisions... but alas, Chrome has not rolled
+// that far yet.
+AST_MATCHER(clang::FunctionDecl, isDefaulted) {
+  return Node.isDefaulted();
+}
+
+}  // namespace internal_hack
+
 const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 
@@ -58,7 +70,7 @@ AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
 // A method is from Blink if it is from the Blink namespace or overrides a
 // method from the Blink namespace.
 bool IsBlinkMethod(const clang::CXXMethodDecl& decl) {
-  auto* namespace_decl = clang::cast_or_null<clang::NamespaceDecl>(
+  auto* namespace_decl = clang::dyn_cast_or_null<clang::NamespaceDecl>(
       decl.getParent()->getEnclosingNamespaceContext());
   if (namespace_decl && namespace_decl->getParent()->isTranslationUnit() &&
       (namespace_decl->getName() == "blink" ||
@@ -415,7 +427,7 @@ int main(int argc, const char* argv[]) {
           // compiler, such as a synthesized copy constructor.
           // This skips explicitly defaulted functions as well, but that's OK:
           // there's nothing interesting to rewrite in those either.
-          unless(hasAncestor(functionDecl(isDefaulted())))));
+          unless(hasAncestor(functionDecl(internal_hack::isDefaulted())))));
   auto decl_ref_matcher = id("expr", declRefExpr(to(var_decl_matcher)));
 
   MemberRewriter member_rewriter(&replacements);
