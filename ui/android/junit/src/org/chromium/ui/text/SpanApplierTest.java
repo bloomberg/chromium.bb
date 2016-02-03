@@ -4,23 +4,26 @@
 
 package org.chromium.ui.text;
 
-import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.text.SpannableString;
 import android.text.style.BulletSpan;
 import android.text.style.QuoteSpan;
 import android.text.style.ScaleXSpan;
 
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 
 /**
  * Tests public methods in SpanApplier.
- *
- * TODO(twellington): Replace with Roboelectric test when available.
  */
-public class SpanApplierTest extends InstrumentationTestCase {
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
+public class SpanApplierTest {
 
-    @SmallTest
+    @Test
     public void testApplySpan() {
         String input = "Lorem ipsum <span>dolor</span> sit amet.";
         String output = "Lorem ipsum dolor sit amet.";
@@ -33,7 +36,7 @@ public class SpanApplierTest extends InstrumentationTestCase {
         assertSpannableStringEquality(expectedOutput, actualOutput);
     }
 
-    @SmallTest
+    @Test
     public void testApplyMultipleSpans() {
         String input = "Lorem <link>ipsum</link> dolor sit amet, "
                 + "<cons>consectetur adipiscing</cons> <elit>elit. Proin<endElit> consectetur.";
@@ -52,33 +55,33 @@ public class SpanApplierTest extends InstrumentationTestCase {
         assertSpannableStringEquality(expectedOutput, actualOutput);
     }
 
-    @SmallTest
+    @Test
     public void testEndTagMissingInInput() {
         String input = "Lorem ipsum <span>dolor</> sit amet.";
         SpanInfo span = new SpanInfo("<span>", "</span>", new QuoteSpan());
 
         try {
             SpanApplier.applySpans(input, span);
-            fail("Expected IllegalArgumentException to be thrown.");
+            Assert.fail("Expected IllegalArgumentException to be thrown.");
         } catch (IllegalArgumentException e) {
             // success
         }
     }
 
-    @SmallTest
+    @Test
     public void testStartTagMissingInInput() {
         String input = "Lorem ipsum <>dolor</span> sit amet.";
         SpanInfo span = new SpanInfo("<span>", "</span>", new QuoteSpan());
 
         try {
             SpanApplier.applySpans(input, span);
-            fail("Expected IllegalArgumentException to be thrown.");
+            Assert.fail("Expected IllegalArgumentException to be thrown.");
         } catch (IllegalArgumentException e) {
             // success
         }
     }
 
-    @SmallTest
+    @Test
     public void testNestedTagsInInput() {
         String input = "Lorem ipsum <span>dolor<span2> sit </span2> </span> amet.";
         SpanInfo span = new SpanInfo("<span>", "</span>", new QuoteSpan());
@@ -86,13 +89,13 @@ public class SpanApplierTest extends InstrumentationTestCase {
 
         try {
             SpanApplier.applySpans(input, span, span2);
-            fail("Expected IllegalArgumentException to be thrown.");
+            Assert.fail("Expected IllegalArgumentException to be thrown.");
         } catch (IllegalArgumentException e) {
             // success
         }
     }
 
-    @SmallTest
+    @Test
     public void testDuplicateTagsInInput() {
         String input = "Lorem ipsum <span>dolor</span> <span>sit </span> amet.";
         SpanInfo span = new SpanInfo("<span>", "</span>", new QuoteSpan());
@@ -100,7 +103,7 @@ public class SpanApplierTest extends InstrumentationTestCase {
 
         try {
             SpanApplier.applySpans(input, span, span2);
-            fail("Expected IllegalArgumentException to be thrown.");
+            Assert.fail("Expected IllegalArgumentException to be thrown.");
         } catch (IllegalArgumentException e) {
             // success
         }
@@ -115,7 +118,7 @@ public class SpanApplierTest extends InstrumentationTestCase {
     private void assertSpannableStringEquality(
             SpannableString expected, SpannableString actual) {
         if (!areSpannableStringsEqual(expected, actual)) {
-            fail("Expected string is " + getSpannableStringDescription(expected)
+            Assert.fail("Expected string is " + getSpannableStringDescription(expected)
                     + " Actual string is " + getSpannableStringDescription(actual));
         }
     }
