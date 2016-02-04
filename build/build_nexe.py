@@ -371,7 +371,7 @@ class Builder(CommandRunner):
 
   def GetObjectName(self, src):
     if self.strip:
-      src = src.replace(self.strip, '')
+      src = src.replace(self.strip,'')
     # Hash the full path of the source file and add 32 bits of that hash onto
     # the end of the object file name.  This helps disambiguate files with the
     # same name, because all of the object files are placed into the same
@@ -382,7 +382,8 @@ class Builder(CommandRunner):
     h = hashlib.sha1()
     h.update(src)
     wart = h.hexdigest()[:8]
-    filename, _ = os.path.splitext(os.path.basename(src))
+    _, filename = os.path.split(src)
+    filename, _ = os.path.splitext(filename)
     return os.path.join(self.outdir, filename + '_' + wart + '.o')
 
   def FixWindowsPath(self, path):
@@ -397,7 +398,7 @@ class Builder(CommandRunner):
     # Assume they are all /cygdrive/ relative and convert to a
     # drive letter.
     cygdrive = '/cygdrive/'
-    if path.startswith(cygdrive):
+    if path.startswith('/cygdrive/'):
       path = os.path.normpath(
           path[len(cygdrive)] + ':' + path[len(cygdrive)+1:])
     elif path.startswith('/libexec/'):
@@ -538,18 +539,6 @@ class Builder(CommandRunner):
 
     out = self.GetObjectName(src)
     outd = out + '.d'
-
-    # The pnacl and nacl-clang toolchains is not able to handle output paths
-    # where the PWD + filename is greater than 255, even if the normalised
-    # path would be < 255.  This change also exists in the pnacl python driver
-    # but is duplicated here so we get meaning full error messages from
-    # nacl-clang too.
-    if pynacl.platform.IsWindows() and (self.is_pnacl_toolchain or
-        self.is_nacl_clang):
-      full_outd = os.path.join(os.getcwd(), outd)
-      if len(full_outd) > 255:
-        raise Error('Output path too long (%s): %s' %
-                    (len(full_outd), full_outd))
 
     # Don't rebuild unneeded.
     if not self.NeedsRebuild(outd, out, src):
