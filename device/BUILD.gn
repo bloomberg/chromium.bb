@@ -63,6 +63,7 @@ test("device_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/mojo/src/mojo/edk/system",
+    "//tools/usb_gadget",
     "//url",
   ]
 
