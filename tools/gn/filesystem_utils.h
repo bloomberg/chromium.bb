@@ -163,6 +163,18 @@ SourceDir SourceDirForCurrentDirectory(const base::FilePath& source_root);
 // go in the root build directory. Otherwise, the result will end in a slash.
 std::string GetOutputSubdirName(const Label& toolchain_label, bool is_default);
 
+// Returns true if the contents of the file and stream given are equal, false
+// otherwise.
+bool ContentsEqual(const base::FilePath& file_path, const std::string& data);
+
+// Writes given stream contents to the given file if it differs from existing
+// file contents. Returns true if new contents was successfully written or
+// existing file contents doesn't need updating, false on write error. |err| is
+// set on write error if not nullptr.
+bool WriteFileIfChanged(const base::FilePath& file_path,
+                        const std::string& data,
+                        Err* err);
+
 // -----------------------------------------------------------------------------
 
 // These functions return the various flavors of output and gen directories.

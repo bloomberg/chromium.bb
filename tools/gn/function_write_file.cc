@@ -19,55 +19,6 @@
 
 namespace functions {
 
-namespace {
-
-// On Windows, provide a custom implementation of base::WriteFile. Sometimes
-// the base version fails, especially on the bots. The guess is that Windows
-// Defender or other antivirus programs still have the file open (after
-// checking for the read) when the write happens immediately after. This
-// version opens with FILE_SHARE_READ (normally not what you want when
-// replacing the entire contents of the file) which lets us continue even if
-// another program has the file open for reading. See http://crbug.com/468437
-#if defined(OS_WIN)
-int DoWriteFile(const base::FilePath& filename, const char* data, int size) {
-  base::win::ScopedHandle file(::CreateFile(
-      filename.value().c_str(),
-      GENERIC_WRITE,
-      FILE_SHARE_READ,
-      NULL,
-      CREATE_ALWAYS,
-      0,
-      NULL));
-  if (!file.IsValid()) {
-    PLOG(ERROR) << "CreateFile failed for path "
-                  << base::UTF16ToUTF8(filename.value());
-    return -1;
-  }
-
-  DWORD written;
-  BOOL result = ::WriteFile(file.Get(), data, size, &written, NULL);
-  if (result && static_cast<int>(written) == size)
-    return written;
-
-  if (!result) {
-    // WriteFile failed.
-    PLOG(ERROR) << "writing file " << base::UTF16ToUTF8(filename.value())
-                << " failed";
-  } else {
-    // Didn't write all the bytes.
-    LOG(ERROR) << "wrote" << written << " bytes to "
-               << base::UTF16ToUTF8(filename.value()) << " expected " << size;
-  }
-  return -1;
-}
-#else
-int DoWriteFile(const base::FilePath& filename, const char* data, int size) {
-  return base::WriteFile(filename, data, size);
-}
-#endif
-
-}  // namespace
-
 const char kWriteFile[] = "write_file";
 const char kWriteFile_HelpShort[] =
     "write_file: Write a file to disk.";
@@ -138,30 +89,14 @@ Value RunWriteFile(Scope* scope,
   } else {
     contents << args[1].ToString(false);
   }
-  const std::string& new_contents = contents.str();
+
   base::FilePath file_path =
       scope->settings()->build_settings()->GetFullPath(source_file);
 
   // Make sure we're not replacing the same contents.
-  std::string existing_contents;
-  if (base::ReadFileToString(file_path, &existing_contents) &&
-      existing_contents == new_contents)
-    return Value();  // Nothing to do.
+  if (!WriteFileIfChanged(file_path, contents.str(), err))
+    *err = Err(function->function(), err->message(), err->help_text());
 
-  // Write file, creating the directory if necessary.
-  if (!base::CreateDirectory(file_path.DirName())) {
-    *err = Err(function->function(), "Unable to create directory.",
-               "I was using \"" + FilePathToUTF8(file_path.DirName()) + "\".");
-    return Value();
-  }
-
-  int int_size = static_cast<int>(new_contents.size());
-  if (DoWriteFile(file_path, new_contents.c_str(), int_size)
-      != int_size) {
-    *err = Err(function->function(), "Unable to write file.",
-               "I was writing \"" + FilePathToUTF8(file_path) + "\".");
-    return Value();
-  }
   return Value();
 }
 

@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/filesystem_utils.h"
@@ -552,6 +555,59 @@ TEST(FilesystemUtils, SourceDirForPath) {
   EXPECT_EQ("/source/foo/",
             SourceDirForPath(empty, base::FilePath("/source/foo")).value());
 #endif
+}
+
+TEST(FilesystemUtils, ContentsEqual) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::string data = "foo";
+
+  base::FilePath file_path = temp_dir.path().AppendASCII("foo.txt");
+  base::WriteFile(file_path, data.c_str(), static_cast<int>(data.size()));
+
+  EXPECT_TRUE(ContentsEqual(file_path, data));
+
+  // Different length and contents.
+  data += "bar";
+  EXPECT_FALSE(ContentsEqual(file_path, data));
+
+  // The same length, different contents.
+  EXPECT_FALSE(ContentsEqual(file_path, "bar"));
+}
+
+TEST(FilesystemUtils, WriteFileIfChanged) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  std::string data = "foo";
+
+  // Write if file doesn't exist. Create also directory.
+  base::FilePath file_path =
+      temp_dir.path().AppendASCII("bar").AppendASCII("foo.txt");
+  EXPECT_TRUE(WriteFileIfChanged(file_path, data, nullptr));
+
+  base::File::Info file_info;
+  ASSERT_TRUE(base::GetFileInfo(file_path, &file_info));
+  base::Time last_modified = file_info.last_modified;
+
+#if defined(OS_MACOSX)
+  // Modification times are in seconds in HFS on Mac.
+  base::TimeDelta sleep_time = base::TimeDelta::FromSeconds(1);
+#else
+  base::TimeDelta sleep_time = base::TimeDelta::FromMilliseconds(1);
+#endif
+  base::PlatformThread::Sleep(sleep_time);
+
+  // Don't write if contents is the same.
+  EXPECT_TRUE(WriteFileIfChanged(file_path, data, nullptr));
+  ASSERT_TRUE(base::GetFileInfo(file_path, &file_info));
+  EXPECT_EQ(last_modified, file_info.last_modified);
+
+  // Write if contents changed.
+  EXPECT_TRUE(WriteFileIfChanged(file_path, "bar", nullptr));
+  ASSERT_TRUE(base::GetFileInfo(file_path, &file_info));
+  EXPECT_NE(last_modified, file_info.last_modified);
 }
 
 TEST(FilesystemUtils, GetToolchainDirs) {
