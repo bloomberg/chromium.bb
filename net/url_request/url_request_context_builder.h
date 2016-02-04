@@ -96,6 +96,8 @@ class NET_EXPORT URLRequestContextBuilder {
     float quic_packet_loss_threshold;
     int quic_idle_connection_timeout_seconds;
     QuicTagVector quic_connection_options;
+    bool quic_close_sessions_on_ip_change;
+    bool quic_migrate_sessions_on_network_change;
   };
 
   URLRequestContextBuilder();
@@ -228,6 +230,18 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_quic_host_whitelist(
       const std::unordered_set<std::string>& quic_host_whitelist) {
     http_network_session_params_.quic_host_whitelist = quic_host_whitelist;
+  }
+
+  void set_quic_close_sessions_on_ip_change(
+      bool quic_close_sessions_on_ip_change) {
+    http_network_session_params_.quic_close_sessions_on_ip_change =
+        quic_close_sessions_on_ip_change;
+  }
+
+  void set_quic_migrate_sessions_on_network_change(
+      bool quic_migrate_sessions_on_network_change) {
+    http_network_session_params_.quic_migrate_sessions_on_network_change =
+        quic_migrate_sessions_on_network_change;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {

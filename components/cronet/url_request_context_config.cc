@@ -38,6 +38,9 @@ const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
 const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
 const char kQuicHostWhitelist[] = "host_whitelist";
+const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
+const char kQuicMigrateSessionsOnNetworkChange[] =
+    "migrate_sessions_on_network_change";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -130,6 +133,20 @@ void ParseAndSetExperimentalOptions(
         hosts.insert(host);
       }
       context_builder->set_quic_host_whitelist(hosts);
+    }
+
+    bool quic_close_sessions_on_ip_change = false;
+    if (quic_args->GetBoolean(kQuicCloseSessionsOnIpChange,
+                              &quic_close_sessions_on_ip_change)) {
+      context_builder->set_quic_close_sessions_on_ip_change(
+          quic_close_sessions_on_ip_change);
+    }
+
+    bool quic_migrate_sessions_on_network_change = false;
+    if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChange,
+                              &quic_migrate_sessions_on_network_change)) {
+      context_builder->set_quic_migrate_sessions_on_network_change(
+          quic_migrate_sessions_on_network_change);
     }
   }
 

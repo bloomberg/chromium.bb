@@ -40,6 +40,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       "\"max_number_of_lossy_connections\":10,"
       "\"packet_loss_threshold\":0.5,"
       "\"idle_connection_timeout_seconds\":300,"
+      "\"close_sessions_on_ip_change\":true,"
+      "\"migrate_sessions_on_nework_change\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true}}",
       // Data reduction proxy key.
@@ -81,6 +83,9 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
 
   // Check idle_connection_timeout_seconds.
   EXPECT_EQ(300, params->quic_idle_connection_timeout_seconds);
+
+  EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
+  EXPECT_TRUE(params->quic_migrate_sessions_on_network_change);
 
   // Check AsyncDNS resolver is enabled.
   EXPECT_TRUE(context->host_resolver()->GetDnsConfigAsValue());
