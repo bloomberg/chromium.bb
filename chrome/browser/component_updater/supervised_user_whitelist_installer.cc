@@ -339,9 +339,7 @@ SupervisedUserWhitelistInstallerImpl::SupervisedUserWhitelistInstallerImpl(
       weak_ptr_factory_(this) {
   DCHECK(cus);
   DCHECK(local_state);
-  // In unit tests, the profile info cache can be null.
-  if (profile_info_cache)
-    observer_.Add(profile_info_cache);
+  observer_.Add(profile_info_cache);
 }
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponent(
@@ -515,14 +513,20 @@ void SupervisedUserWhitelistInstallerImpl::OnProfileWillBeRemoved(
   std::string client_id = ClientIdForProfilePath(profile_path);
 
   // Go through all registered whitelists and possibly unregister them for this
-  // client.
+  // client. Because unregistering a whitelist might completely uninstall it, we
+  // need to make a copy of all the IDs before iterating over them.
   DictionaryPrefUpdate update(local_state_,
                               prefs::kRegisteredSupervisedUserWhitelists);
   base::DictionaryValue* pref_dict = update.Get();
+
+  std::vector<std::string> crx_ids;
   for (base::DictionaryValue::Iterator it(*pref_dict); !it.IsAtEnd();
        it.Advance()) {
-    UnregisterWhitelistInternal(pref_dict, client_id, it.key());
+    crx_ids.push_back(it.key());
   }
+
+  for (const std::string& crx_id : crx_ids)
+    UnregisterWhitelistInternal(pref_dict, client_id, crx_id);
 }
 
 }  // namespace

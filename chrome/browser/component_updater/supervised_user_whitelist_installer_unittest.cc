@@ -17,12 +17,16 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/component_updater/supervised_user_whitelist_installer.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/crx_file/id_util.h"
@@ -183,19 +187,26 @@ class WhitelistLoadObserver {
 class SupervisedUserWhitelistInstallerTest : public testing::Test {
  public:
   SupervisedUserWhitelistInstallerTest()
-      : raw_whitelists_path_override_(DIR_SUPERVISED_USER_WHITELISTS),
-        installed_whitelists_path_override_(
-            chrome::DIR_SUPERVISED_USER_INSTALLED_WHITELISTS),
-        component_update_service_(base::ThreadTaskRunnerHandle::Get()),
-        installer_(
-            SupervisedUserWhitelistInstaller::Create(&component_update_service_,
-                                                     nullptr,
-                                                     &local_state_)) {}
+      : testing_profile_manager_(TestingBrowserProcess::GetGlobal()),
+        user_data_dir_override_(chrome::DIR_USER_DATA),
+        component_update_service_(base::ThreadTaskRunnerHandle::Get()) {}
 
   ~SupervisedUserWhitelistInstallerTest() override {}
 
   void SetUp() override {
     SupervisedUserWhitelistInstaller::RegisterPrefs(local_state_.registry());
+
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
+
+    profile_info_cache()->AddProfileToCache(
+        GetProfilePath(kClientId), base::ASCIIToUTF16("A Profile"),
+        std::string(), base::string16(), 0, std::string());
+    profile_info_cache()->AddProfileToCache(
+        GetProfilePath(kOtherClientId), base::ASCIIToUTF16("Another Profile"),
+        std::string(), base::string16(), 0, std::string());
+
+    installer_ = SupervisedUserWhitelistInstaller::Create(
+        &component_update_service_, profile_info_cache(), &local_state_);
 
     ASSERT_TRUE(PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
                                  &whitelist_base_directory_));
@@ -225,6 +236,14 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   }
 
  protected:
+  ProfileInfoCache* profile_info_cache() {
+    return testing_profile_manager_.profile_info_cache();
+  }
+
+  base::FilePath GetProfilePath(const std::string& profile_name) {
+    return profile_info_cache()->GetUserDataDir().AppendASCII(profile_name);
+  }
+
   void PrepareWhitelistFile(const base::FilePath& whitelist_path) {
     size_t whitelist_contents_length = sizeof(kWhitelistContents) - 1;
     ASSERT_EQ(static_cast<int>(whitelist_contents_length),
@@ -255,8 +274,8 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  base::ScopedPathOverride raw_whitelists_path_override_;
-  base::ScopedPathOverride installed_whitelists_path_override_;
+  TestingProfileManager testing_profile_manager_;
+  base::ScopedPathOverride user_data_dir_override_;
   safe_json::TestingJsonParser::ScopedFactoryOverride json_parser_override_;
   MockComponentUpdateService component_update_service_;
   TestingPrefServiceSimple local_state_;
@@ -335,6 +354,7 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
   ASSERT_TRUE(base::CreateDirectory(whitelist_version_directory_));
   ASSERT_NO_FATAL_FAILURE(
       PrepareWhitelistDirectory(whitelist_version_directory_));
+  ASSERT_TRUE(base::CreateDirectory(installed_whitelist_directory_));
   ASSERT_NO_FATAL_FAILURE(PrepareWhitelistFile(whitelist_path_));
 
   // Create another whitelist directory, with an ID that is not registered.
@@ -376,7 +396,11 @@ TEST_F(SupervisedUserWhitelistInstallerTest,
   // Unregistering for the second client should uninstall the whitelist.
   {
     base::RunLoop run_loop;
-    installer_->UnregisterWhitelist(kOtherClientId, kCrxId);
+
+    // This does the same thing in our case as calling UnregisterWhitelist(),
+    // but it exercises a different code path.
+    profile_info_cache()->DeleteProfileFromCache(
+        GetProfilePath(kOtherClientId));
     run_loop.RunUntilIdle();
   }
   EXPECT_FALSE(component_update_service_.registered_component());
