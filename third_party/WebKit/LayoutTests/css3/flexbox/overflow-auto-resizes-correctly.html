@@ -9,7 +9,7 @@
 }
 .hflex {
   display: flex;
-  flex-direction: box;
+  flex-direction: row;
   max-height: 200px;
   margin: 10px 0 10px 0;
 }
@@ -51,6 +51,12 @@
   </div>
 </div>
 
+<div style="display: flex; width: 100px; height: 100px;">
+  <div id="inner" style="flex: none; height: 100px; overflow: auto;">
+    <div style="width: 100px; height: 150px; background-color: green;"></div>
+  </div>
+</div>
+
 <!-- This div is only for measuring scrollbar size -->
 <div id="measure" style="height: 100px; width: 100px; display: inline-box; overflow: auto;">
   <div style="min-height: 300px;"></div>
@@ -68,6 +74,10 @@
   var measure = document.getElementById('measure');
   var scrollbarSize = measure.offsetWidth - measure.clientWidth;
   shouldNotBe("scrollbarSize", "0");
+
+  var inner = document.getElementById('inner');
+  shouldBe("inner.clientWidth", "100");
+  shouldBe("inner.offsetWidth", "100 + scrollbarSize");
 
   var vbox = document.querySelector('.vbox');
   shouldBe("vbox.clientWidth", "100 - scrollbarSize");

@@ -707,6 +707,21 @@ bool LayoutFlexibleBox::childFlexBaseSizeRequiresLayout(const LayoutBox& child) 
         hasOrthogonalFlow(child) || crossAxisOverflowForChild(child) == OAUTO);
 }
 
+void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
+{
+    ASSERT(!child.needsLayout());
+    LayoutUnit mainSize;
+    if (hasOrthogonalFlow(child)) {
+        mainSize = child.logicalHeight();
+    } else {
+        // The max preferred logical width includes the intrinsic scrollbar logical width, which is only set for
+        // overflow: scroll. To handle overflow: auto, we have to take scrollbarLogicalWidth() into account, and then
+        // subtract the intrinsic width again so as to not double-count overflow: scroll scrollbars.
+        mainSize = child.maxPreferredLogicalWidth() + child.scrollbarLogicalWidth() - child.intrinsicScrollbarLogicalWidth();
+    }
+    m_intrinsicSizeAlongMainAxis.set(&child, mainSize);
+}
+
 LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child, ChildLayoutType childLayoutType)
 {
     child.clearOverrideSize();
@@ -725,7 +740,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
 
         if (child.needsLayout() || childLayoutType == ForceLayout || !m_intrinsicSizeAlongMainAxis.contains(&child)) {
             child.forceChildLayout();
-            m_intrinsicSizeAlongMainAxis.set(&child, hasOrthogonalFlow(child) ? child.logicalHeight() : child.logicalWidth());
+            cacheChildMainSize(child);
         }
         mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
     } else {
@@ -1040,8 +1055,7 @@ bool LayoutFlexibleBox::computeNextFlexLine(OrderedFlexItemList& orderedChildren
         if (childHasIntrinsicMainAxisSize(*child) && child->needsLayout()) {
             child->clearOverrideSize();
             child->layoutIfNeeded();
-            // Keep our cache up-to-date
-            m_intrinsicSizeAlongMainAxis.set(child, hasOrthogonalFlow(*child) ? child->logicalHeight() : child->logicalWidth());
+            cacheChildMainSize(*child);
         }
 
         LayoutUnit childInnerFlexBaseSize = computeInnerFlexBaseSizeForChild(*child, relayoutChildren ? ForceLayout : LayoutIfNeeded);

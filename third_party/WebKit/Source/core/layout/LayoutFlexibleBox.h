@@ -141,6 +141,7 @@ private:
     bool childHasIntrinsicMainAxisSize(const LayoutBox& child) const;
     EOverflow mainAxisOverflowForChild(const LayoutBox& child) const;
     EOverflow crossAxisOverflowForChild(const LayoutBox& child) const;
+    void cacheChildMainSize(const LayoutBox& child);
 
     void layoutFlexItems(bool relayoutChildren, SubtreeLayoutScope&);
     LayoutUnit autoMarginOffsetInMainAxis(const OrderedFlexItemList&, LayoutUnit& availableFreeSpace);
