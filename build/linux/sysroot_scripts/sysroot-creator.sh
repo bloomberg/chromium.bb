@@ -56,14 +56,15 @@ readonly REQUIRED_TOOLS="wget"
 # Package Config
 ######################################################################
 
+PACKAGES_EXT=${PACKAGES_EXT:-bz2}
 readonly RELEASE_FILE="Release"
 readonly RELEASE_FILE_GPG="Release.gpg"
 readonly RELEASE_LIST="${REPO_BASEDIR}/${RELEASE_FILE}"
 readonly RELEASE_LIST_GPG="${REPO_BASEDIR}/${RELEASE_FILE_GPG}"
-readonly PACKAGE_FILE_AMD64="main/binary-amd64/Packages.bz2"
-readonly PACKAGE_FILE_I386="main/binary-i386/Packages.bz2"
-readonly PACKAGE_FILE_ARM="main/binary-armhf/Packages.bz2"
-readonly PACKAGE_FILE_MIPS="main/binary-mipsel/Packages.bz2"
+readonly PACKAGE_FILE_AMD64="main/binary-amd64/Packages.${PACKAGES_EXT}"
+readonly PACKAGE_FILE_I386="main/binary-i386/Packages.${PACKAGES_EXT}"
+readonly PACKAGE_FILE_ARM="main/binary-armhf/Packages.${PACKAGES_EXT}"
+readonly PACKAGE_FILE_MIPS="main/binary-mipsel/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_LIST_AMD64="${REPO_BASEDIR}/${PACKAGE_FILE_AMD64}"
 readonly PACKAGE_LIST_I386="${REPO_BASEDIR}/${PACKAGE_FILE_I386}"
 readonly PACKAGE_LIST_ARM="${REPO_BASEDIR}/${PACKAGE_FILE_ARM}"
@@ -183,23 +184,27 @@ CreateTarBall() {
 }
 
 ExtractPackageBz2() {
-  bzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
+  if [ "${PACKAGES_EXT}" == "bz2" ]; then
+    bzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
+  else
+    xzcat "$1" | egrep '^(Package:|Filename:|SHA256:) ' > "$2"
+  fi
 }
 
 GeneratePackageListAmd64() {
   local output_file="$1"
-  local package_list="${BUILD_DIR}/Packages.${DIST}_amd64.bz2"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_amd64.${PACKAGES_EXT}"
   local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_amd64"
   DownloadOrCopy "${PACKAGE_LIST_AMD64}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_AMD64}" "${package_list}"
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
-    ${DEBIAN_PACKAGES_X86}"
+    ${DEBIAN_PACKAGES_X86} ${DEBIAN_PACKAGES_AMD64}"
 }
 
 GeneratePackageListI386() {
   local output_file="$1"
-  local package_list="${BUILD_DIR}/Packages.${DIST}_i386.bz2"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_i386.${PACKAGES_EXT}"
   local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_amd64"
   DownloadOrCopy "${PACKAGE_LIST_I386}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_I386}" "${package_list}"
@@ -210,7 +215,7 @@ GeneratePackageListI386() {
 
 GeneratePackageListARM() {
   local output_file="$1"
-  local package_list="${BUILD_DIR}/Packages.${DIST}_arm.bz2"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_arm.${PACKAGES_EXT}"
   local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_arm"
   DownloadOrCopy "${PACKAGE_LIST_ARM}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_ARM}" "${package_list}"
@@ -221,7 +226,7 @@ GeneratePackageListARM() {
 
 GeneratePackageListMips() {
   local output_file="$1"
-  local package_list="${BUILD_DIR}/Packages.${DIST}_mips.bz2"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_mips.${PACKAGES_EXT}"
   local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_mips"
   DownloadOrCopy "${PACKAGE_LIST_MIPS}" "${package_list}"
   VerifyPackageListing "${PACKAGE_FILE_MIPS}" "${package_list}"
@@ -387,14 +392,11 @@ CleanupJailSymlinks() {
     echo "${target}" | grep -qs ^/ || continue
     echo "${link}: ${target}"
     case "${link}" in
-      usr/lib/gcc/x86_64-linux-gnu/4.*/* | usr/lib/gcc/i486-linux-gnu/4.*/* | \
-      usr/lib/gcc/arm-linux-gnueabihf/4.*/* | \
-      usr/lib/gcc/mipsel-linux-gnu/4.*/*)
+      usr/lib/gcc/*-linux-gnu/4.*/* | usr/lib/gcc/arm-linux-gnueabihf/4.*/*)
         # Relativize the symlink.
         ln -snfv "../../../../..${target}" "${link}"
         ;;
-      usr/lib/x86_64-linux-gnu/* | usr/lib/i386-linux-gnu/* | \
-      usr/lib/arm-linux-gnueabihf/* | usr/lib/mipsel-linux-gnu/* )
+      usr/lib/*-linux-gnu/* | usr/lib/arm-linux-gnueabihf/*)
         # Relativize the symlink.
         ln -snfv "../../..${target}" "${link}"
         ;;
@@ -574,21 +576,15 @@ VerifyPackageListing() {
   local output_file=$2
   local release_file="${BUILD_DIR}/${RELEASE_FILE}"
   local release_file_gpg="${BUILD_DIR}/${RELEASE_FILE_GPG}"
-  local local_keyring_file="${BUILD_DIR}/keyring.gpg"
 
   CheckForDebianGPGKeyring
 
   DownloadOrCopy ${RELEASE_LIST} ${release_file}
   DownloadOrCopy ${RELEASE_LIST_GPG} ${release_file_gpg}
-  if [ ! -f "${local_keyring_file}" ]; then
-    echo "Generating keyring: ${local_keyring_file}"
-    set -x
-    cp "${KEYRING_FILE}" "${local_keyring_file}"
-    gpg --primary-keyring "${local_keyring_file}" --recv-keys 2B90D010
-    set +x
-  fi
   echo "Verifying: ${release_file} with ${release_file_gpg}"
-  gpgv --keyring "${local_keyring_file}" "${release_file_gpg}" "${release_file}"
+  set -x
+  gpgv --keyring "${KEYRING_FILE}" "${release_file_gpg}" "${release_file}"
+  set +x
 
   echo "Verifying: ${output_file}"
   local checksums=$(grep ${file_path} ${release_file} | cut -d " " -f 2)
