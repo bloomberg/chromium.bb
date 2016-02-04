@@ -147,11 +147,17 @@ class UsbDeviceHandleImpl::InterfaceClaimer
     : public base::RefCountedThreadSafe<UsbDeviceHandleImpl::InterfaceClaimer> {
  public:
   InterfaceClaimer(scoped_refptr<UsbDeviceHandleImpl> handle,
-                   int interface_number);
+                   int interface_number,
+                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+  int interface_number() const { return interface_number_; }
   int alternate_setting() const { return alternate_setting_; }
   void set_alternate_setting(const int alternate_setting) {
     alternate_setting_ = alternate_setting;
+  }
+
+  void set_release_callback(const ResultCallback& callback) {
+    release_callback_ = callback;
   }
 
  private:
@@ -161,19 +167,33 @@ class UsbDeviceHandleImpl::InterfaceClaimer
   const scoped_refptr<UsbDeviceHandleImpl> handle_;
   const int interface_number_;
   int alternate_setting_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  ResultCallback release_callback_;
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceClaimer);
 };
 
 UsbDeviceHandleImpl::InterfaceClaimer::InterfaceClaimer(
     scoped_refptr<UsbDeviceHandleImpl> handle,
-    int interface_number)
+    int interface_number,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : handle_(handle),
       interface_number_(interface_number),
-      alternate_setting_(0) {}
+      alternate_setting_(0),
+      task_runner_(task_runner) {}
 
 UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
-  libusb_release_interface(handle_->handle(), interface_number_);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  int rc = libusb_release_interface(handle_->handle(), interface_number_);
+  if (rc != LIBUSB_SUCCESS) {
+    USB_LOG(DEBUG) << "Failed to release interface: "
+                   << ConvertPlatformUsbErrorToString(rc);
+  }
+  if (!release_callback_.is_null()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(release_callback_, rc == LIBUSB_SUCCESS));
+  }
 }
 
 // This inner class owns the underlying libusb_transfer and may outlast
@@ -581,12 +601,13 @@ void UsbDeviceHandleImpl::ClaimInterface(int interface_number,
                  interface_number, callback));
 }
 
-bool UsbDeviceHandleImpl::ReleaseInterface(int interface_number) {
+void UsbDeviceHandleImpl::ReleaseInterface(int interface_number,
+                                           const ResultCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!device_)
-    return false;
-  if (!ContainsKey(claimed_interfaces_, interface_number))
-    return false;
+  if (!device_ || !ContainsKey(claimed_interfaces_, interface_number)) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback, false));
+    return;
+  }
 
   // Cancel all the transfers on that interface.
   InterfaceClaimer* interface_claimer =
@@ -596,10 +617,12 @@ bool UsbDeviceHandleImpl::ReleaseInterface(int interface_number) {
       transfer->Cancel();
     }
   }
+  interface_claimer->AddRef();
+  interface_claimer->set_release_callback(callback);
+  blocking_task_runner_->ReleaseSoon(FROM_HERE, interface_claimer);
   claimed_interfaces_.erase(interface_number);
 
   RefreshEndpointMap();
-  return true;
 }
 
 void UsbDeviceHandleImpl::SetInterfaceAlternateSetting(
@@ -790,25 +813,28 @@ void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
     int interface_number,
     const ResultCallback& callback) {
   int rv = libusb_claim_interface(handle_, interface_number);
-  if (rv != LIBUSB_SUCCESS) {
+  scoped_refptr<InterfaceClaimer> interface_claimer;
+  if (rv == LIBUSB_SUCCESS) {
+    interface_claimer =
+        new InterfaceClaimer(this, interface_number, task_runner_);
+  } else {
     USB_LOG(EVENT) << "Failed to claim interface: "
                    << ConvertPlatformUsbErrorToString(rv);
   }
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceHandleImpl::ClaimInterfaceComplete, this,
-                            interface_number, rv == LIBUSB_SUCCESS, callback));
+                            interface_claimer, callback));
 }
 
 void UsbDeviceHandleImpl::ClaimInterfaceComplete(
-    int interface_number,
-    bool success,
+    scoped_refptr<InterfaceClaimer> interface_claimer,
     const ResultCallback& callback) {
-  if (success) {
-    claimed_interfaces_[interface_number] =
-        new InterfaceClaimer(this, interface_number);
+  if (interface_claimer) {
+    claimed_interfaces_[interface_claimer->interface_number()] =
+        interface_claimer;
     RefreshEndpointMap();
   }
-  callback.Run(success);
+  callback.Run(interface_claimer);
 }
 
 void UsbDeviceHandleImpl::SetInterfaceAlternateSettingOnBlockingThread(

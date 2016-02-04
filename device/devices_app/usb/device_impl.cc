@@ -303,7 +303,8 @@ void DeviceImpl::ReleaseInterface(uint8_t interface_number,
     return;
   }
 
-  callback.Run(device_handle_->ReleaseInterface(interface_number));
+  device_handle_->ReleaseInterface(interface_number,
+                                   WrapMojoCallback(callback));
 }
 
 void DeviceImpl::SetInterfaceAlternateSetting(

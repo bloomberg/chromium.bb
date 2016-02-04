@@ -26,7 +26,8 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
                void(int configuration_value, const ResultCallback& callback));
   MOCK_METHOD2(ClaimInterface,
                void(int interface_number, const ResultCallback& callback));
-  MOCK_METHOD1(ReleaseInterface, bool(int interface_number));
+  MOCK_METHOD2(ReleaseInterface,
+               void(int interface_number, const ResultCallback& callback));
   MOCK_METHOD3(SetInterfaceAlternateSetting,
                void(int interface_number,
                     int alternate_setting,

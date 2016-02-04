@@ -70,7 +70,8 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                 const ResultCallback& callback) = 0;
   virtual void ClaimInterface(int interface_number,
                               const ResultCallback& callback) = 0;
-  virtual bool ReleaseInterface(int interface_number) = 0;
+  virtual void ReleaseInterface(int interface_number,
+                                const ResultCallback& callback) = 0;
   virtual void SetInterfaceAlternateSetting(int interface_number,
                                             int alternate_setting,
                                             const ResultCallback& callback) = 0;

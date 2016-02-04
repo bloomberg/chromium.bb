@@ -268,6 +268,8 @@ class UsbReleaseInterfaceFunction : public UsbConnectionFunction {
   // ExtensionFunction:
   ResponseAction Run() override;
 
+  void OnComplete(bool success);
+
   DISALLOW_COPY_AND_ASSIGN(UsbReleaseInterfaceFunction);
 };
 

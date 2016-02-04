@@ -153,13 +153,16 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
         FROM_HERE, base::Bind(callback, success));
   }
 
-  bool ReleaseInterface(int interface_number) override {
+  void ReleaseInterface(int interface_number,
+                        const ResultCallback& callback) override {
+    bool success = false;
     if (device_->claimed_interfaces_.find(interface_number) ==
         device_->claimed_interfaces_.end())
-      return false;
+      success = false;
 
     device_->claimed_interfaces_.erase(interface_number);
-    return true;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, success));
   }
 
   void SetInterfaceAlternateSetting(int interface_number,

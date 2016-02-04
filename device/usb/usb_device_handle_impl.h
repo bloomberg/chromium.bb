@@ -53,7 +53,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                         const ResultCallback& callback) override;
   void ClaimInterface(int interface_number,
                       const ResultCallback& callback) override;
-  bool ReleaseInterface(int interface_number) override;
+  void ReleaseInterface(int interface_number,
+                        const ResultCallback& callback) override;
   void SetInterfaceAlternateSetting(int interface_number,
                                     int alternate_setting,
                                     const ResultCallback& callback) override;
@@ -116,8 +117,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   void SetConfigurationComplete(bool success, const ResultCallback& callback);
   void ClaimInterfaceOnBlockingThread(int interface_number,
                                       const ResultCallback& callback);
-  void ClaimInterfaceComplete(int interface_number,
-                              bool success,
+  void ClaimInterfaceComplete(scoped_refptr<InterfaceClaimer> interface_claimer,
                               const ResultCallback& callback);
   void SetInterfaceAlternateSettingOnBlockingThread(
       int interface_number,

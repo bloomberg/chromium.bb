@@ -192,7 +192,7 @@ class USBDeviceImplTest : public testing::Test {
         .WillByDefault(Invoke(this, &USBDeviceImplTest::SetConfiguration));
     ON_CALL(mock_handle(), ClaimInterface(_, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ClaimInterface));
-    ON_CALL(mock_handle(), ReleaseInterface(_))
+    ON_CALL(mock_handle(), ReleaseInterface(_, _))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::ReleaseInterface));
     ON_CALL(mock_handle(), SetInterfaceAlternateSetting(_, _, _))
         .WillByDefault(
@@ -290,12 +290,14 @@ class USBDeviceImplTest : public testing::Test {
     callback.Run(false);
   }
 
-  bool ReleaseInterface(uint8_t interface_number) {
+  void ReleaseInterface(uint8_t interface_number,
+                        const UsbDeviceHandle::ResultCallback& callback) {
     if (ContainsKey(claimed_interfaces_, interface_number)) {
       claimed_interfaces_.erase(interface_number);
-      return true;
+      callback.Run(true);
+    } else {
+      callback.Run(false);
     }
-    return false;
   }
 
   void SetInterfaceAlternateSetting(
@@ -638,7 +640,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ReleaseInterface(2));
+  EXPECT_CALL(mock_handle(), ReleaseInterface(2, _));
 
   {
     // Releasing a non-existent interface should fail.
@@ -648,7 +650,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
-  EXPECT_CALL(mock_handle(), ReleaseInterface(1));
+  EXPECT_CALL(mock_handle(), ReleaseInterface(1, _));
 
   {
     // Now this should release the claimed interface and close the handle.

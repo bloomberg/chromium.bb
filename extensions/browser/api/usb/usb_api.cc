@@ -925,11 +925,17 @@ ExtensionFunction::ResponseAction UsbReleaseInterfaceFunction::Run() {
     return RespondNow(Error(kErrorNoConnection));
   }
 
-  if (device_handle->ReleaseInterface(parameters->interface_number)) {
-    return RespondNow(NoArguments());
-  } else {
-    return RespondNow(Error(kErrorCannotReleaseInterface));
-  }
+  device_handle->ReleaseInterface(
+      parameters->interface_number,
+      base::Bind(&UsbReleaseInterfaceFunction::OnComplete, this));
+  return RespondLater();
+}
+
+void UsbReleaseInterfaceFunction::OnComplete(bool success) {
+  if (success)
+    Respond(NoArguments());
+  else
+    Respond(Error(kErrorCannotReleaseInterface));
 }
 
 UsbSetInterfaceAlternateSettingFunction::

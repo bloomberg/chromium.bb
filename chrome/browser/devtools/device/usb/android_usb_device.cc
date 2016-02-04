@@ -128,10 +128,15 @@ void DumpMessage(bool outgoing, const char* data, size_t length) {
 #endif  // 0
 }
 
+void CloseDevice(scoped_refptr<UsbDeviceHandle> usb_device,
+                 bool release_successful) {
+  usb_device->Close();
+}
+
 void ReleaseInterface(scoped_refptr<UsbDeviceHandle> usb_device,
                       int interface_id) {
-  usb_device->ReleaseInterface(interface_id);
-  usb_device->Close();
+  usb_device->ReleaseInterface(interface_id,
+                               base::Bind(&CloseDevice, usb_device));
 }
 
 void RespondOnCallerThread(const AndroidUsbDevicesCallback& callback,

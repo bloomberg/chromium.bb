@@ -164,6 +164,10 @@ TEST_F(UsbDeviceHandleTest, InterruptTransfer) {
         << "Mismatch at index " << i << ".";
   }
 
+  TestResultCallback release_interface;
+  handle->ReleaseInterface(0, release_interface.callback());
+  ASSERT_TRUE(release_interface.WaitForResult());
+
   handle->Close();
 }
 
@@ -219,6 +223,10 @@ TEST_F(UsbDeviceHandleTest, BulkTransfer) {
         << "Mismatch at index " << i << ".";
   }
 
+  TestResultCallback release_interface;
+  handle->ReleaseInterface(1, release_interface.callback());
+  ASSERT_TRUE(release_interface.WaitForResult());
+
   handle->Close();
 }
 
@@ -244,6 +252,10 @@ TEST_F(UsbDeviceHandleTest, SetInterfaceAlternateSetting) {
   TestResultCallback set_interface;
   handle->SetInterfaceAlternateSetting(2, 1, set_interface.callback());
   ASSERT_TRUE(set_interface.WaitForResult());
+
+  TestResultCallback release_interface;
+  handle->ReleaseInterface(2, release_interface.callback());
+  ASSERT_TRUE(release_interface.WaitForResult());
 
   handle->Close();
 }
