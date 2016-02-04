@@ -14,15 +14,19 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
+#include "chrome/browser/chromeos/extensions/ime_menu_event_router.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/extensions/api/input_method_private.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/prefs/pref_service.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -41,6 +45,8 @@ namespace OnDictionaryChanged =
     extensions::api::input_method_private::OnDictionaryChanged;
 namespace OnDictionaryLoaded =
     extensions::api::input_method_private::OnDictionaryLoaded;
+namespace OnImeMenuActivationChanged =
+    extensions::api::input_method_private::OnImeMenuActivationChanged;
 
 namespace {
 
@@ -61,6 +67,11 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
       "isPhysicalKeyboardAutocorrectEnabled",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
+  output->SetBoolean(
+      "isImeMenuActivated",
+      chromeos::switches::IsImeMenuEnabled() &&
+          Profile::FromBrowserContext(browser_context())->GetPrefs()
+          ->GetBoolean(prefs::kLanguageImeMenuActivated));
   return RespondNow(OneArgument(output));
 #endif
 }
@@ -219,6 +230,8 @@ InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
       ->RegisterObserver(this, OnDictionaryChanged::kEventName);
   EventRouter::Get(context_)
       ->RegisterObserver(this, OnDictionaryLoaded::kEventName);
+  EventRouter::Get(context_)
+      ->RegisterObserver(this, OnImeMenuActivationChanged::kEventName);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
@@ -262,6 +275,10 @@ void InputMethodAPI::OnListenerAdded(
     if (details.event_name == OnDictionaryLoaded::kEventName) {
       dictionary_event_router_->DispatchLoadedEventIfLoaded();
     }
+  } else if (details.event_name == OnImeMenuActivationChanged::kEventName &&
+             !ime_menu_event_router_.get()) {
+    ime_menu_event_router_.reset(
+        new chromeos::ExtensionImeMenuEventRouter(context_));
   }
 }
 

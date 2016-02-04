@@ -26,7 +26,8 @@
                 "type": "object",
                 "description": "The input method config object.",
                 "properties": {
-                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"}
+                  "isPhysicalKeyboardAutocorrectEnabled": {"type": "boolean"},
+                  "isImeMenuActivated": {"type": "boolean"}
                 }
               }
             ]
@@ -244,6 +245,17 @@
             "items": {
               "type": "string"
             }
+          }
+        ]
+      }, {
+        "name": "onImeMenuActivationChanged",
+        "type": "function",
+        "description": "Fired when the IME menu is activated or deactivated.",
+        "parameters": [
+          {
+            "name": "activation",
+            "type": "boolean",
+            "description": "Whether the IME menu is currently active."
           }
         ]
       }

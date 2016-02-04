@@ -11,12 +11,16 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/extensions/input_method_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/common/switches.h"
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -72,6 +76,7 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ilanclmaeigfpnmdlgelmhkpkegdioip");
+    command_line->AppendSwitch(chromeos::switches::kEnableImeMenu);
   }
 };
 
@@ -81,5 +86,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
   // Listener for extension's background ready.
   TestListener listener;
 
-  ASSERT_TRUE(RunExtensionTest("input_method")) << message_;
+  ASSERT_TRUE(RunExtensionTest("input_method/basic")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, ImeMenuActivation) {
+  // Listener for IME menu initial state ready.
+  ExtensionTestMessageListener config_listener("config_ready", false);
+  // Listener for IME menu event ready.
+  ExtensionTestMessageListener event_listener("event_ready", false);
+
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLanguageImeMenuActivated,
+                                               true);
+
+  // Test the initial state and add listener for IME menu activation change.
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("input_method/ime_menu")));
+  ASSERT_TRUE(config_listener.WaitUntilSatisfied()) << message_;
+
+  // Trigger chrome.inputMethodPrivate.onImeMenuActivationChanged() event.
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLanguageImeMenuActivated,
+                                               false);
+  // Test that the extension gets the IME activation change event properly.
+  ASSERT_TRUE(event_listener.WaitUntilSatisfied()) << message_;
 }

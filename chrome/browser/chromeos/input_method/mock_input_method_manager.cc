@@ -41,6 +41,9 @@ void MockInputMethodManager::AddCandidateWindowObserver(
     InputMethodManager::CandidateWindowObserver* observer) {
 }
 
+void MockInputMethodManager::AddImeMenuObserver(
+    InputMethodManager::ImeMenuObserver* observer) {}
+
 void MockInputMethodManager::RemoveObserver(
     InputMethodManager::Observer* observer) {
   ++remove_observer_count_;
@@ -49,6 +52,9 @@ void MockInputMethodManager::RemoveObserver(
 void MockInputMethodManager::RemoveCandidateWindowObserver(
     InputMethodManager::CandidateWindowObserver* observer) {
 }
+
+void MockInputMethodManager::RemoveImeMenuObserver(
+    InputMethodManager::ImeMenuObserver* observer) {}
 
 scoped_ptr<InputMethodDescriptors>
 MockInputMethodManager::GetSupportedInputMethods() const {
@@ -240,6 +246,8 @@ void MockInputMethodManager::SetCurrentInputMethodId(
     const std::string& input_method_id) {
   state_->current_input_method_id = input_method_id;
 }
+
+void MockInputMethodManager::ImeMenuActivationChanged(bool is_active) {}
 
 }  // namespace input_method
 }  // namespace chromeos

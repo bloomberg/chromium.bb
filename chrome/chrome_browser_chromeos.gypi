@@ -170,6 +170,8 @@
         'browser/chromeos/extensions/extension_system_event_observer.h',
         'browser/chromeos/extensions/external_cache.cc',
         'browser/chromeos/extensions/external_cache.h',
+        'browser/chromeos/extensions/ime_menu_event_router.cc',
+        'browser/chromeos/extensions/ime_menu_event_router.h',
         'browser/chromeos/extensions/info_private_api.cc',
         'browser/chromeos/extensions/info_private_api.h',
         'browser/chromeos/extensions/input_method_event_router.cc',

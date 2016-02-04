@@ -69,6 +69,18 @@ class UI_BASE_IME_EXPORT InputMethodManager {
     virtual void CandidateWindowClosed(InputMethodManager* manager) = 0;
   };
 
+  // ImeMenuObserver is notified of events related to the IME menu on the shelf
+  // bar.
+  class ImeMenuObserver {
+   public:
+    virtual ~ImeMenuObserver() {}
+
+    // Called when the IME menu is activated or deactivated.
+    virtual void ImeMenuActivationChanged(bool is_active) = 0;
+
+    DISALLOW_ASSIGN(ImeMenuObserver);
+  };
+
   class State : public base::RefCounted<InputMethodManager::State> {
    public:
     // Returns a copy of state.
@@ -203,9 +215,11 @@ class UI_BASE_IME_EXPORT InputMethodManager {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void AddCandidateWindowObserver(
       CandidateWindowObserver* observer) = 0;
+  virtual void AddImeMenuObserver(ImeMenuObserver* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   virtual void RemoveCandidateWindowObserver(
       CandidateWindowObserver* observer) = 0;
+  virtual void RemoveImeMenuObserver(ImeMenuObserver* observer) = 0;
 
   // Returns all input methods that are supported, including ones not active.
   // This function never returns NULL. Note that input method extensions are NOT
@@ -245,6 +259,9 @@ class UI_BASE_IME_EXPORT InputMethodManager {
 
   // Replaces active state.
   virtual void SetState(scoped_refptr<State> state) = 0;
+
+  // Activates or deactivates the IME Menu.
+  virtual void ImeMenuActivationChanged(bool is_active) = 0;
 };
 
 }  // namespace input_method

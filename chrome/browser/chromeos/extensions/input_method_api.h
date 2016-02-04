@@ -16,6 +16,7 @@
 namespace chromeos {
 class ExtensionDictionaryEventRouter;
 class ExtensionInputMethodEventRouter;
+class ExtensionImeMenuEventRouter;
 }
 
 namespace extensions {
@@ -191,6 +192,7 @@ class InputMethodAPI : public BrowserContextKeyedAPI,
       input_method_event_router_;
   scoped_ptr<chromeos::ExtensionDictionaryEventRouter>
       dictionary_event_router_;
+  scoped_ptr<chromeos::ExtensionImeMenuEventRouter> ime_menu_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodAPI);
 };

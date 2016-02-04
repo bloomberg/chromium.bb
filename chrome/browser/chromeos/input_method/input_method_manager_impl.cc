@@ -889,6 +889,11 @@ void InputMethodManagerImpl::AddCandidateWindowObserver(
   candidate_window_observers_.AddObserver(observer);
 }
 
+void InputMethodManagerImpl::AddImeMenuObserver(
+    InputMethodManager::ImeMenuObserver* observer) {
+  ime_menu_observers_.AddObserver(observer);
+}
+
 void InputMethodManagerImpl::RemoveObserver(
     InputMethodManager::Observer* observer) {
   observers_.RemoveObserver(observer);
@@ -897,6 +902,11 @@ void InputMethodManagerImpl::RemoveObserver(
 void InputMethodManagerImpl::RemoveCandidateWindowObserver(
     InputMethodManager::CandidateWindowObserver* observer) {
   candidate_window_observers_.RemoveObserver(observer);
+}
+
+void InputMethodManagerImpl::RemoveImeMenuObserver(
+    InputMethodManager::ImeMenuObserver* observer) {
+  ime_menu_observers_.RemoveObserver(observer);
 }
 
 InputMethodManager::UISessionState InputMethodManagerImpl::GetUISessionState() {
@@ -1151,6 +1161,11 @@ void InputMethodManagerImpl::CandidateWindowClosed() {
   FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
                     candidate_window_observers_,
                     CandidateWindowClosed(this));
+}
+
+void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
+  FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
+                    ImeMenuActivationChanged(is_active));
 }
 
 void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
