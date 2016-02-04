@@ -1853,6 +1853,55 @@ TEST_F(DataPipeTest, SendConsumerAndCloseProducer) {
   END_CHILD()
 }
 
+DEFINE_TEST_CLIENT_TEST_WITH_PIPE(CreateAndWrite, DataPipeTest, h) {
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      1,                                        // |element_num_bytes|.
+      kMultiprocessCapacity                     // |capacity_num_bytes|.
+  };
+
+  MojoHandle p, c;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoCreateDataPipe(&options, &p, &c));
+
+  const std::string kMessage = "Hello, world!";
+  WriteMessageWithHandles(h, kMessage, &c, 1);
+
+  // Write some data to the producer and close it.
+  uint32_t num_bytes = static_cast<uint32_t>(kMessage.size());
+  EXPECT_EQ(MOJO_RESULT_OK, MojoWriteData(p, kMessage.data(), &num_bytes,
+                                          MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(num_bytes, static_cast<uint32_t>(kMessage.size()));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(p));
+
+  // Wait for a quit message.
+  EXPECT_EQ("quit", ReadMessage(h));
+}
+
+TEST_F(DataPipeTest, CreateInChild) {
+  RUN_CHILD_ON_PIPE(CreateAndWrite, child)
+    MojoHandle c;
+    std::string expected_message = ReadMessageWithHandles(child, &c, 1);
+
+    // Wait for the consumer to become readable.
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(c, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE, nullptr));
+
+    // Drain the consumer and expect to find the given message.
+    uint32_t num_bytes = static_cast<uint32_t>(expected_message.size());
+    std::vector<char> bytes(expected_message.size());
+    EXPECT_EQ(MOJO_RESULT_OK, MojoReadData(c, bytes.data(), &num_bytes,
+                                           MOJO_READ_DATA_FLAG_NONE));
+    EXPECT_EQ(num_bytes, static_cast<uint32_t>(bytes.size()));
+
+    std::string message(bytes.data(), bytes.size());
+    EXPECT_EQ(expected_message, message);
+
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(c));
+    WriteMessage(child, "quit");
+  END_CHILD()
+}
+
 }  // namespace
 }  // namespace edk
 }  // namespace mojo
