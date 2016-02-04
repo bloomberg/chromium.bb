@@ -123,7 +123,7 @@ def CalculateHash(root, expected_hash):
     return timestamps_data['sha1']
 
   # Make long hangs when updating the toolchain less mysterious.
-  print 'Calculating hash of toolchain in %s. Please wait...' % root
+  print 'Calculating hash of toolchain in %s. Please wait...' % full_root_path
   sys.stdout.flush()
   digest = hashlib.sha1()
   for path in file_list:
