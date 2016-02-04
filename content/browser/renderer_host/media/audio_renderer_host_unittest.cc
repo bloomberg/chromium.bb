@@ -217,7 +217,9 @@ class AudioRendererHostTest : public testing::Test {
   }
 
  protected:
-  void Create() { Create(false, kDefaultDeviceId, url::Origin()); }
+  void Create() {
+    Create(false, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)));
+  }
 
   void Create(bool unified_stream,
               const std::string& device_id,
@@ -389,7 +391,7 @@ TEST_F(AudioRendererHostTest, SimulateErrorAndClose) {
 }
 
 TEST_F(AudioRendererHostTest, CreateUnifiedStreamAndClose) {
-  Create(true, kDefaultDeviceId, url::Origin());
+  Create(true, kDefaultDeviceId, url::Origin(GURL(kSecurityOrigin)));
   Close();
 }
 

@@ -761,11 +761,7 @@ void AudioRendererHost::CheckOutputDeviceAccess(
     const OutputDeviceAccessCB& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Skip origin check in requests for the default device with an empty
-  // security origin.
-  bool skip_origin_check = gurl_security_origin.is_empty() && device_id.empty();
-  if (!skip_origin_check &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanRequestURL(
           render_process_id_, gurl_security_origin)) {
     content::bad_message::ReceivedBadMessage(this,
                                              bad_message::ARH_UNAUTHORIZED_URL);

@@ -15,6 +15,7 @@
 #include "media/base/audio_renderer_sink.h"
 #include "third_party/WebKit/public/platform/WebAudioDevice.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "url/origin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -33,7 +34,8 @@ class RendererWebAudioDeviceImpl
  public:
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
                              blink::WebAudioDevice::RenderCallback* callback,
-                             int session_id);
+                             int session_id,
+                             const url::Origin& security_origin);
   ~RendererWebAudioDeviceImpl() override;
 
   // blink::WebAudioDevice implementation.
@@ -87,6 +89,9 @@ class RendererWebAudioDeviceImpl
   // A cancelable task that is posted to start the |null_audio_sink_| after a
   // period of silence. We do this on android to save battery consumption.
   base::CancelableClosure start_null_audio_sink_callback_;
+
+  // Security origin, used to check permissions for |output_device_|.
+  url::Origin security_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };

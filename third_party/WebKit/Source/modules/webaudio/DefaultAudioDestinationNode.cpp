@@ -26,6 +26,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AbstractAudioContext.h"
 #include "platform/Logging.h"
 #include "wtf/MainThread.h"
 
@@ -84,7 +85,7 @@ void DefaultAudioDestinationHandler::createDestination()
     float hardwareSampleRate = AudioDestination::hardwareSampleRate();
     WTF_LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
 
-    m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate);
+    m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate, context()->securityOrigin());
 }
 
 void DefaultAudioDestinationHandler::startRendering()

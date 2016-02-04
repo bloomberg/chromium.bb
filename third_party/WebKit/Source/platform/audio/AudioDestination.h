@@ -42,6 +42,7 @@ namespace blink {
 
 class AudioFIFO;
 class AudioPullFIFO;
+class SecurityOrigin;
 
 // An AudioDestination using Chromium's audio system
 
@@ -49,12 +50,12 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback, 
     USING_FAST_MALLOC(AudioDestination);
     WTF_MAKE_NONCOPYABLE(AudioDestination);
 public:
-    AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
+    AudioDestination(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
     ~AudioDestination() override;
 
     // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
     // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
-    static PassOwnPtr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate);
+    static PassOwnPtr<AudioDestination> create(AudioIOCallback&, const String& inputDeviceId, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, float sampleRate, const PassRefPtr<SecurityOrigin>&);
 
     virtual void start();
     virtual void stop();

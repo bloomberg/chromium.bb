@@ -36,7 +36,8 @@ static const int kSilenceInSecondsToEnterIdleMode = 30;
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
     WebAudioDevice::RenderCallback* callback,
-    int session_id)
+    int session_id,
+    const url::Origin& security_origin)
     : params_(params),
       client_callback_(callback),
       session_id_(session_id),
@@ -44,7 +45,8 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       null_audio_sink_(new media::NullAudioSink(task_runner_)),
       is_using_null_audio_sink_(false),
       first_buffer_after_silence_(media::AudioBus::Create(params_)),
-      is_first_buffer_after_silence_(false) {
+      is_first_buffer_after_silence_(false),
+      security_origin_(security_origin) {
   DCHECK(client_callback_);
   null_audio_sink_->Initialize(params_, this);
 }
@@ -71,7 +73,7 @@ void RendererWebAudioDeviceImpl::start() {
       web_frame ? RenderFrame::FromWebFrame(web_frame) : NULL;
   output_device_ = AudioDeviceFactory::NewOutputDevice(
       render_frame ? render_frame->GetRoutingID() : MSG_ROUTING_NONE,
-      session_id_, std::string(), url::Origin());
+      session_id_, std::string(), security_origin_);
   output_device_->Initialize(params_, this);
   output_device_->Start();
   start_null_audio_sink_callback_.Reset(
