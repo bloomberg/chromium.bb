@@ -48,6 +48,8 @@ enum class SVGParseStatus {
     ExpectedMoveToCommand,
     ExpectedNumber,
     ExpectedPathCommand,
+    ExpectedStartOfArguments,
+    ExpectedTransformFunction,
 
     // Semantic errors
     NegativeValue,

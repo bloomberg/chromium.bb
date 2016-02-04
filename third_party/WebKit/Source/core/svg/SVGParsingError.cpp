@@ -46,6 +46,10 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
         return std::make_pair("Expected number, ", ".");
     case SVGParseStatus::ExpectedPathCommand:
         return std::make_pair("Expected path command, ", ".");
+    case SVGParseStatus::ExpectedStartOfArguments:
+        return std::make_pair("Expected '(', ", ".");
+    case SVGParseStatus::ExpectedTransformFunction:
+        return std::make_pair("Expected transform function, ", ".");
     case SVGParseStatus::NegativeValue:
         return std::make_pair("A negative value is not valid. (", ")");
     case SVGParseStatus::ZeroValue:

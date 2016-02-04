@@ -207,10 +207,10 @@ SVGParsingError SVGTransformList::parseInternal(const CharType*& ptr, const Char
 
         SVGTransformType transformType = parseAndSkipTransformType(ptr, end);
         if (transformType == SVG_TRANSFORM_UNKNOWN)
-            return SVGParsingError(SVGParseStatus::ParsingFailed, ptr - start);
+            return SVGParsingError(SVGParseStatus::ExpectedTransformFunction, ptr - start);
 
         if (!skipOptionalSVGSpaces(ptr, end) || *ptr != '(')
-            return SVGParsingError(SVGParseStatus::ParsingFailed, ptr - start);
+            return SVGParsingError(SVGParseStatus::ExpectedStartOfArguments, ptr - start);
         ptr++;
 
         TransformArguments arguments;
