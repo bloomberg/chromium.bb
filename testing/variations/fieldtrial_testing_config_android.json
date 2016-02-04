@@ -208,6 +208,11 @@
             }
         }
     ],
+    "OfflinePages": [
+        {
+            "group_name": "EnabledAsBookmarks"
+        }
+    ],
     "PageRevisitInstrumentation": [
         {
             "group_name": "Enabled"
