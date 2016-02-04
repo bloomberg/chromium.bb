@@ -182,6 +182,18 @@ VisualStudioWriter::SolutionEntry::SolutionEntry(const std::string& _name,
 
 VisualStudioWriter::SolutionEntry::~SolutionEntry() = default;
 
+VisualStudioWriter::SolutionProject::SolutionProject(
+    const std::string& _name,
+    const std::string& _path,
+    const std::string& _guid,
+    const std::string& _label_dir_path,
+    const std::string& _config_platform)
+    : SolutionEntry(_name, _path, _guid),
+      label_dir_path(_label_dir_path),
+      config_platform(_config_platform) {}
+
+VisualStudioWriter::SolutionProject::~SolutionProject() = default;
+
 VisualStudioWriter::VisualStudioWriter(const BuildSettings* build_settings)
     : build_settings_(build_settings) {
   const Value* value = build_settings->build_args().GetArgOverride("is_debug");
@@ -209,14 +221,7 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   writer.projects_.reserve(targets.size());
   writer.folders_.reserve(targets.size());
 
-  std::set<std::string> processed_targets;
   for (const Target* target : targets) {
-    // Skip targets which are duplicated in vector.
-    std::string target_path =
-        target->label().dir().value() + target->label().name();
-    if (processed_targets.find(target_path) != processed_targets.end())
-      continue;
-
     // Skip actions and groups.
     if (target->output_type() == Target::GROUP ||
         target->output_type() == Target::COPY_FILES ||
@@ -227,8 +232,6 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
 
     if (!writer.WriteProjectFiles(target, err))
       return false;
-
-    processed_targets.insert(target_path);
   }
 
   if (writer.projects_.empty()) {
@@ -248,19 +251,33 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
 }
 
 bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
+  std::string project_name = target->label().name();
+  std::string project_config_platform = config_platform_;
+  if (!target->settings()->is_default()) {
+    project_name += "_" + target->toolchain()->label().name();
+    project_config_platform = target->toolchain()
+                                  ->settings()
+                                  ->build_settings()
+                                  ->build_args()
+                                  .GetArgOverride(variables::kCurrentCpu)
+                                  ->string_value();
+    if (project_config_platform == "x86")
+      project_config_platform = "Win32";
+  }
+
   SourceFile target_file = GetTargetOutputDir(target).ResolveRelativeFile(
-      Value(nullptr, target->label().name() + ".vcxproj"), err);
+      Value(nullptr, project_name + ".vcxproj"), err);
   if (target_file.is_null())
     return false;
 
   base::FilePath vcxproj_path = build_settings_->GetFullPath(target_file);
   std::string vcxproj_path_str = FilePathToUTF8(vcxproj_path);
 
-  projects_.push_back(
-      new SolutionEntry(target->label().name(), vcxproj_path_str,
-                        MakeGuid(vcxproj_path_str, kGuidSeedProject)));
-  projects_.back()->label_dir_path =
-      FilePathToUTF8(build_settings_->GetFullPath(target->label().dir()));
+  projects_.push_back(new SolutionProject(
+      project_name, vcxproj_path_str,
+      MakeGuid(vcxproj_path_str, kGuidSeedProject),
+      FilePathToUTF8(build_settings_->GetFullPath(target->label().dir())),
+      project_config_platform));
 
   std::stringstream vcxproj_string_out;
   if (!WriteProjectFileContents(vcxproj_string_out, *projects_.back(), target,
@@ -302,7 +319,7 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
 
 bool VisualStudioWriter::WriteProjectFileContents(
     std::ostream& out,
-    const SolutionEntry& solution_project,
+    const SolutionProject& solution_project,
     const Target* target,
     Err* err) {
   PathOutput path_output(GetTargetOutputDir(target),
@@ -322,9 +339,11 @@ bool VisualStudioWriter::WriteProjectFileContents(
     std::string config_name = is_debug_config_ ? "Debug" : "Release";
     scoped_ptr<XmlElementWriter> project_config = configurations->SubElement(
         "ProjectConfiguration",
-        XmlAttributes("Include", config_name + '|' + config_platform_));
+        XmlAttributes("Include",
+                      config_name + '|' + solution_project.config_platform));
     project_config->SubElement("Configuration")->Text(config_name);
-    project_config->SubElement("Platform")->Text(config_platform_);
+    project_config->SubElement("Platform")
+        ->Text(solution_project.config_platform);
   }
 
   {
@@ -632,19 +651,21 @@ void VisualStudioWriter::WriteSolutionFileContents(
 
   out << "\tGlobalSection(SolutionConfigurationPlatforms) = preSolution"
       << std::endl;
-  const std::string config_mode =
-      std::string(is_debug_config_ ? "Debug" : "Release") + '|' +
-      config_platform_;
+  const std::string config_mode_prefix =
+      std::string(is_debug_config_ ? "Debug" : "Release") + '|';
+  const std::string config_mode = config_mode_prefix + config_platform_;
   out << "\t\t" << config_mode << " = " << config_mode << std::endl;
   out << "\tEndGlobalSection" << std::endl;
 
   out << "\tGlobalSection(ProjectConfigurationPlatforms) = postSolution"
       << std::endl;
-  for (const SolutionEntry* project : projects_) {
+  for (const SolutionProject* project : projects_) {
+    const std::string project_config_mode =
+        config_mode_prefix + project->config_platform;
     out << "\t\t" << project->guid << '.' << config_mode
-        << ".ActiveCfg = " << config_mode << std::endl;
+        << ".ActiveCfg = " << project_config_mode << std::endl;
     out << "\t\t" << project->guid << '.' << config_mode
-        << ".Build.0 = " << config_mode << std::endl;
+        << ".Build.0 = " << project_config_mode << std::endl;
   }
   out << "\tEndGlobalSection" << std::endl;
 
@@ -673,7 +694,7 @@ void VisualStudioWriter::ResolveSolutionFolders() {
 
   // Get all project directories. Create solution folder for each directory.
   std::map<base::StringPiece, SolutionEntry*> processed_paths;
-  for (SolutionEntry* project : projects_) {
+  for (SolutionProject* project : projects_) {
     base::StringPiece folder_path = project->label_dir_path;
     if (IsSlash(folder_path[folder_path.size() - 1]))
       folder_path = folder_path.substr(0, folder_path.size() - 1);
@@ -714,7 +735,7 @@ void VisualStudioWriter::ResolveSolutionFolders() {
   }
 
   // Create also all parent folders up to |root_folder_path_|.
-  SolutionEntries additional_folders;
+  SolutionFolders additional_folders;
   for (SolutionEntry* folder : folders_) {
     if (folder->path == root_folder_path_)
       continue;
@@ -745,7 +766,7 @@ void VisualStudioWriter::ResolveSolutionFolders() {
 
   // Match subfolders with their parents. Since |folders_| are sorted by path we
   // know that parent folder always precedes its children in vector.
-  SolutionEntries parents;
+  SolutionFolders parents;
   for (SolutionEntry* folder : folders_) {
     while (!parents.empty()) {
       if (base::StartsWith(folder->path, parents.back()->path,

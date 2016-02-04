@@ -38,29 +38,41 @@ class VisualStudioWriter {
     SolutionEntry(const std::string& name,
                   const std::string& path,
                   const std::string& guid);
-
-    ~SolutionEntry();
+    virtual ~SolutionEntry();
 
     // Entry name. For projects must be unique in the solution.
     std::string name;
     // Absolute project file or folder directory path.
     std::string path;
-    // Absolute label dir path (only for projects).
-    std::string label_dir_path;
     // GUID-like string.
     std::string guid;
     // Pointer to parent folder. nullptr if entry has no parent.
     SolutionEntry* parent_folder;
   };
 
-  using SolutionEntries = std::vector<SolutionEntry*>;
+  struct SolutionProject : public SolutionEntry {
+    SolutionProject(const std::string& name,
+                    const std::string& path,
+                    const std::string& guid,
+                    const std::string& label_dir_path,
+                    const std::string& config_platform);
+    ~SolutionProject() override;
+
+    // Absolute label dir path.
+    std::string label_dir_path;
+    // Configuration platform. May be different than solution config platform.
+    std::string config_platform;
+  };
+
+  using SolutionProjects = std::vector<SolutionProject*>;
+  using SolutionFolders = std::vector<SolutionEntry*>;
 
   explicit VisualStudioWriter(const BuildSettings* build_settings);
   ~VisualStudioWriter();
 
   bool WriteProjectFiles(const Target* target, Err* err);
   bool WriteProjectFileContents(std::ostream& out,
-                                const SolutionEntry& solution_project,
+                                const SolutionProject& solution_project,
                                 const Target* target,
                                 Err* err);
   void WriteFiltersFileContents(std::ostream& out, const Target* target);
@@ -77,17 +89,18 @@ class VisualStudioWriter {
   // Indicates if project files are generated for Debug mode configuration.
   bool is_debug_config_;
 
-  // Platform for projects configuration (Win32, x64).
+  // Platform for solution configuration (Win32, x64). Some projects may be
+  // configured for different platform.
   std::string config_platform_;
 
   // All projects contained by solution.
-  SolutionEntries projects_;
+  SolutionProjects projects_;
 
   // Absolute root solution folder path.
   std::string root_folder_path_;
 
   // Folders for all solution projects.
-  SolutionEntries folders_;
+  SolutionFolders folders_;
 
   // Semicolon-separated Windows SDK include directories.
   std::string windows_kits_include_dirs_;
