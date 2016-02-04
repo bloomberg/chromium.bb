@@ -255,6 +255,13 @@ public final class OfflinePageBridge {
         assert mIsNativeOfflinePageModelLoaded;
         assert webContents != null;
 
+        if (webContents.isDestroyed()) {
+            callback.onSavePageDone(SavePageResult.CONTENT_UNAVAILABLE, null);
+            RecordHistogram.recordEnumeratedHistogram("OfflinePages.SavePageResult",
+                    SavePageResult.CONTENT_UNAVAILABLE, SavePageResult.RESULT_COUNT);
+            return;
+        }
+
         SavePageCallback callbackWrapper = new SavePageCallback() {
             @Override
             public void onSavePageDone(int savePageResult, String url) {
