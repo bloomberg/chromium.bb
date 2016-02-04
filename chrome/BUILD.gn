@@ -320,10 +320,12 @@ if (is_mac || is_win) {
         #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
       }
 
-      # This is a large module that can't do incremental linking in some cases.
-      configs -= [ "//build/config/win:default_incremental_linking" ]
-      configs +=
-          [ "//build/config/win:default_large_module_incremental_linking" ]
+      if (!is_component_build) {
+        # This is a large module that can't do incremental linking in some cases.
+        configs -= [ "//build/config/win:default_incremental_linking" ]
+        configs +=
+            [ "//build/config/win:default_large_module_incremental_linking" ]
+      }
     }
 
     if (use_aura) {
