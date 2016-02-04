@@ -70,6 +70,9 @@ group("all_blink") {
 
 config("blink_headers_config") {
   include_dirs = [ ".." ]
+
+  # Allow :blink_headers to include v8.h without linking to it.
+  configs = [ "//v8:external_config" ]
 }
 
 config("debug_devtools") {

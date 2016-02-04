@@ -113,7 +113,7 @@ source_set("child") {
       "//content/app/strings",
       "//crypto:platform",
       "//storage/common",
-      "//third_party/WebKit/public:blink",
+      "//third_party/WebKit/public:blink_headers",
       "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
       "//third_party/npapi",

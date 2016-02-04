@@ -26,7 +26,7 @@ source_set("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//ipc",
-    "//third_party/WebKit/public:blink",
+    "//url",
   ]
 }
 

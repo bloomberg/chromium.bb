@@ -58,7 +58,7 @@ source_set("webcrypto") {
     "//base",
     "//crypto",
     "//crypto:platform",
-    "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
 

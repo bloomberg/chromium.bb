@@ -41,7 +41,6 @@ source_set("copresence") {
     "//components/audio_modem",
     "//components/copresence/proto",
     "//components/gcm_driver",
-    "//content",
     "//google_apis",
     "//media",
     "//media:shared_memory_support",

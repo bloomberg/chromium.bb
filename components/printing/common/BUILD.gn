@@ -13,7 +13,7 @@ source_set("common") {
     "//base",
     "//ipc",
     "//printing",
-    "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",

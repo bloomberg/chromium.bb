@@ -14,7 +14,6 @@ static_library("packed_ct_ev_whitelist") {
 
   deps = [
     "//base",
-    "//content",
     "//content/public/browser",
     "//net",
   ]

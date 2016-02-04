@@ -135,6 +135,11 @@ source_set("browser") {
       "//skia/public",
       "//storage/browser",
       "//storage/common",
+
+      # TODO(brettw) bug 582206: Blink should not be used in the browser
+      # process. This is required by devtools' input_handler.cc which calls
+      # WebKeyboardEvent::setKeyIdentifierFromWindowsKeyCode
+      "//third_party/WebKit/public:blink",
       "//third_party/WebKit/public:image_resources",
       "//third_party/WebKit/public:resources",
       "//third_party/angle:commit_id",
@@ -202,6 +207,7 @@ source_set("browser") {
     deps += [
       "//jingle:jingle_glue",
       "//third_party/libjingle:libjingle_webrtc",
+      "//third_party/libjingle:libpeerconnection",
     ]
     if (is_linux || is_mac || is_win) {
       sources += [

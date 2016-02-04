@@ -15,7 +15,7 @@ source_set("browser") {
     "//components/prefs",
     "//components/web_cache/common",
     "//content/public/browser",
-    "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
 

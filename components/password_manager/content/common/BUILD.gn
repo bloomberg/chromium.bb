@@ -16,7 +16,7 @@ static_library("common") {
     "//components/password_manager/core/common",
     "//content/public/common",
     "//ipc",
-    "//third_party/WebKit/public:blink",
+    "//third_party/WebKit/public:blink_headers",
     "//url",
   ]
 }
