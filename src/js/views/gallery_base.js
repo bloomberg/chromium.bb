@@ -266,7 +266,7 @@ camera.views.GalleryBase.prototype.deleteSelection = function() {
 };
 
 /**
- * Returns the last selected index from the current selections.
+ * Returns the last selected picture index from the current selections.
  * @return {?number}
  * @protected
  */
