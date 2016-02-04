@@ -92,10 +92,12 @@ if config.target_os != config.OS_ANDROID:
       'test': 'mojo:media_pipeline_integration_apptests',
       'type': 'gtest_isolated',
     },
-    {
-      'test': 'mojo:mojo_shell_apptests',
-      'type': 'gtest_isolated',
-    },
+    # TODO(rockot): Flaky. Re-enable when brokering is sorted out.
+    # http://crbug.com/569367.
+#    {
+#      'test': 'mojo:mojo_shell_apptests',
+#      'type': 'gtest_isolated',
+#    },
     # TODO(crbug.com/560626): Fix and enable mus_apptests on Android.
     mus_apptests,
     {
