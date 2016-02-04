@@ -1092,7 +1092,10 @@ if (is_win) {
   common_optimize_on_ldflags = []
 
   if (is_android) {
-    if (!using_sanitizer) {
+    # We don't omit frame pointers on arm64 since they are required
+    # to correctly unwind stackframes which contain system library
+    # function frames (crbug.com/391706).
+    if (!using_sanitizer && target_cpu != "arm64") {
       common_optimize_on_cflags += [ "-fomit-frame-pointer" ]
     }
 
@@ -1163,7 +1166,11 @@ config("no_optimize") {
       "-fdata-sections",
       "-ffunction-sections",
     ]
-    if (!using_sanitizer) {
+
+    # We don't omit frame pointers on arm64 since they are required
+    # to correctly unwind stackframes which contain system library
+    # function frames (crbug.com/391706).
+    if (!using_sanitizer && target_cpu != "arm64") {
       cflags += [ "-fomit-frame-pointer" ]
     }
 
