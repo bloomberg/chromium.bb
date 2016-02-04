@@ -106,6 +106,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     serialized_packet_ = *serialized_packet;
     serialized_packet_.packet = serialized_packet->packet->Clone();
     delete serialized_packet->packet;
+    serialized_packet->retransmittable_frames.clear();
   }
 
  protected:
@@ -140,8 +141,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
   ~QuicPacketCreatorTest() override {}
 
   SerializedPacket SerializeAllFrames(const QuicFrames& frames) {
-    SerializedPacket packet =
-        creator_.SerializeAllFrames(frames, buffer_, kMaxPacketSize);
+    SerializedPacket packet = QuicPacketCreatorPeer::SerializeAllFrames(
+        &creator_, frames, buffer_, kMaxPacketSize);
     EXPECT_EQ(QuicPacketCreatorPeer::GetEncryptionLevel(&creator_),
               packet.encryption_level);
     return packet;
@@ -1207,11 +1208,11 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
 
   // Ensure the packet is successfully created.
   ASSERT_TRUE(serialized_packet_.packet);
-  ASSERT_TRUE(serialized_packet_.retransmittable_frames);
-  QuicFrames* retransmittable = serialized_packet_.retransmittable_frames;
-  ASSERT_EQ(1u, retransmittable->size());
-  EXPECT_EQ(STREAM_FRAME, (*retransmittable)[0].type);
-  ASSERT_TRUE((*retransmittable)[0].stream_frame);
+  ASSERT_FALSE(serialized_packet_.retransmittable_frames.empty());
+  const QuicFrames& retransmittable = serialized_packet_.retransmittable_frames;
+  ASSERT_EQ(1u, retransmittable.size());
+  EXPECT_EQ(STREAM_FRAME, retransmittable[0].type);
+  ASSERT_TRUE(retransmittable[0].stream_frame);
   ClearSerializedPacket(&serialized_packet_);
 
   EXPECT_FALSE(creator_.HasPendingFrames());

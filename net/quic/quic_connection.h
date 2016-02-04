@@ -663,18 +663,16 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicConnectionHelperInterface* helper() { return helper_; }
 
  protected:
-  // Do any work which logically would be done in OnPacket but can not be
-  // safely done until the packet is validated.  Returns true if the packet
-  // can be handled, false otherwise. Also migrates the connection if the packet
-  // can be handled and peer address changes.
-  virtual bool ProcessValidatedPacket(const QuicPacketHeader& header);
-
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
   virtual void SendOrQueuePacket(SerializedPacket* packet);
 
-  // On peer address changes, determine and return the change type.
-  virtual PeerAddressChangeType DeterminePeerAddressChangeType();
+  // On peer address changes, determine and return peer address change type.
+  PeerAddressChangeType DeterminePeerAddressChangeType();
+
+  // Migrate the connection if peer address changes. This function should only
+  // be called after the packet is validated.
+  virtual void MaybeMigrateConnectionToNewPeerAddress();
 
   // Selects and updates the version of the protocol being used by selecting a
   // version from |available_versions| which is also supported. Returns true if
@@ -820,6 +818,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // TODO(fayang): complete OnPathClosed once QuicMultipathSentPacketManager and
   // QuicMultipathReceivedPacketManager are landed in QuicConnection.
   void OnPathClosed(QuicPathId path_id);
+
+  // Do any work which logically would be done in OnPacket but can not be
+  // safely done until the packet is validated. Returns true if packet can be
+  // handled, false otherwise.
+  bool ProcessValidatedPacket(const QuicPacketHeader& header);
 
   QuicFramer framer_;
   QuicConnectionHelperInterface* helper_;  // Not owned.
@@ -996,6 +999,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Set to true if the UDP packet headers are addressed to a different port.
   // We do not support connection migration when the self port changed.
   bool self_port_changed_;
+
+  // Destination address of the last received packet.
+  IPEndPoint last_packet_destination_address_;
+
+  // Source address of the last received packet.
+  IPEndPoint last_packet_source_address_;
 
   // Set to false if the connection should not send truncated connection IDs to
   // the peer, even if the peer supports it.

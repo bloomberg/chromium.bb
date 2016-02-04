@@ -114,6 +114,12 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // Deletes and clears all the frames and the packet from serialized packet.
   static void ClearSerializedPacket(SerializedPacket* serialized_packet);
 
+  // Returns a packed representation of |path_id| and |packet_number| in which
+  // the highest byte is set to |path_id| and the lower 7 bytes are the lower
+  // 7 bytes of |packet_number|.
+  static uint64_t PackPathIdAndPacketNumber(QuicPathId path_id,
+                                            QuicPacketNumber packet_number);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

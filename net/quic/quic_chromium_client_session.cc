@@ -890,8 +890,7 @@ scoped_ptr<base::Value> QuicChromiumClientSession::GetInfoAsValue(
   dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenOutgoingStreams());
   scoped_ptr<base::ListValue> stream_list(new base::ListValue());
-  for (base::hash_map<QuicStreamId, ReliableQuicStream*>::const_iterator it =
-           dynamic_streams().begin();
+  for (StreamMap::const_iterator it = dynamic_streams().begin();
        it != dynamic_streams().end(); ++it) {
     stream_list->Append(
         new base::StringValue(base::UintToString(it->second->id())));

@@ -137,4 +137,4 @@ TEST(SpdyUtilsTest, UrlIsValid) {
 }
 
 }  // namespace test
-}  // namespace net_quic
+}  // namespace net

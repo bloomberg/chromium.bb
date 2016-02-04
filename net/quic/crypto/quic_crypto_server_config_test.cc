@@ -221,8 +221,37 @@ TEST(QuicCryptoServerConfigTest, ServerConfig) {
                                 CryptoTestUtils::ProofSourceForTesting());
   MockClock clock;
 
-  scoped_ptr<CryptoHandshakeMessage>(server.AddDefaultConfig(
+  scoped_ptr<CryptoHandshakeMessage> message(server.AddDefaultConfig(
       rand, &clock, QuicCryptoServerConfig::ConfigOptions()));
+
+  // The default configuration should have AES-GCM and at least one ChaCha20
+  // cipher.
+  const QuicTag* aead_tags;
+  size_t aead_len;
+  ASSERT_EQ(QUIC_NO_ERROR, message->GetTaglist(kAEAD, &aead_tags, &aead_len));
+  vector<QuicTag> aead(aead_tags, aead_tags + aead_len);
+  EXPECT_THAT(aead, ::testing::Contains(kAESG));
+  EXPECT_LE(2u, aead.size());
+}
+
+TEST(QuicCryptoServerConfigTest, ServerConfigDisableChaCha) {
+  ValueRestore<bool> old_flag(
+      &FLAGS_quic_crypto_server_config_default_has_chacha20, false);
+  QuicRandom* rand = QuicRandom::GetInstance();
+  QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
+                                CryptoTestUtils::ProofSourceForTesting());
+  MockClock clock;
+
+  scoped_ptr<CryptoHandshakeMessage> message(server.AddDefaultConfig(
+      rand, &clock, QuicCryptoServerConfig::ConfigOptions()));
+
+  // The default configuration should only contain AES-GCM when ChaCha20 has
+  // been disabled.
+  const QuicTag* aead_tags;
+  size_t aead_len;
+  ASSERT_EQ(QUIC_NO_ERROR, message->GetTaglist(kAEAD, &aead_tags, &aead_len));
+  vector<QuicTag> aead(aead_tags, aead_tags + aead_len);
+  EXPECT_THAT(aead, ::testing::ElementsAre(kAESG));
 }
 
 TEST(QuicCryptoServerConfigTest, GetOrbitIsCalledWithoutTheStrikeRegisterLock) {

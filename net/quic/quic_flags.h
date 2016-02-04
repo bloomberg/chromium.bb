@@ -25,7 +25,6 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_require_handshake_confirmation;
 NET_EXPORT_PRIVATE extern bool FLAGS_shift_quic_cubic_epoch_when_app_limited;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
-NET_EXPORT_PRIVATE extern bool FLAGS_quic_general_loss_algorithm;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_idle_timeout;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_stream_sequencer_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_send_alarm2;
@@ -53,4 +52,8 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_include_path_id_in_iv;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_cede_correctly;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_crypto_proof_use_ref;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_different_max_num_open_streams;
+NET_EXPORT_PRIVATE extern bool
+    FLAGS_quic_crypto_server_config_default_has_chacha20;
+NET_EXPORT_PRIVATE extern bool FLAGS_check_peer_address_change_after_decryption;
+
 #endif  // NET_QUIC_QUIC_FLAGS_H_

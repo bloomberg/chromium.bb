@@ -18,6 +18,7 @@
 
 using std::max;
 using std::min;
+using std::pair;
 
 namespace net {
 
@@ -96,8 +97,7 @@ QuicSentPacketManager::QuicSentPacketManager(
       enable_half_rtt_tail_loss_probe_(false),
       using_pacing_(false),
       use_new_rto_(false),
-      handshake_confirmed_(false),
-      use_general_loss_algorithm_(FLAGS_quic_general_loss_algorithm) {}
+      handshake_confirmed_(false) {}
 
 QuicSentPacketManager::~QuicSentPacketManager() {}
 
@@ -583,9 +583,6 @@ bool QuicSentPacketManager::OnPacketSent(
   unacked_packets_.AddSentPacket(serialized_packet, original_packet_number,
                                  transmission_type, sent_time, bytes,
                                  in_flight);
-
-  // Take ownership of the retransmittable frames before exiting.
-  serialized_packet->retransmittable_frames = nullptr;
   // Reset the retransmission timer anytime a pending packet is sent.
   return in_flight;
 }
@@ -720,52 +717,23 @@ QuicSentPacketManager::GetRetransmissionMode() const {
 }
 
 void QuicSentPacketManager::InvokeLossDetection(QuicTime time) {
-  if (use_general_loss_algorithm_) {
-    loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
-                                  &packets_lost_);
-    for (const std::pair<QuicPacketNumber, QuicByteCount>& pair :
-         packets_lost_) {
-      ++stats_->packets_lost;
-      if (FLAGS_quic_log_loss_event && debug_delegate_ != nullptr) {
-        debug_delegate_->OnPacketLoss(pair.first, LOSS_RETRANSMISSION, time);
-      }
-
-      // TODO(ianswett): This could be optimized.
-      if (unacked_packets_.HasRetransmittableFrames(pair.first)) {
-        MarkForRetransmission(pair.first, LOSS_RETRANSMISSION);
-      } else {
-        // Since we will not retransmit this, we need to remove it from
-        // unacked_packets_.   This is either the current transmission of
-        // a packet whose previous transmission has been acked, a packet that
-        // has been TLP retransmitted, or an FEC packet.
-        unacked_packets_.RemoveFromInFlight(pair.first);
-      }
-    }
-    return;
-  }
-  PacketNumberSet lost_packets = loss_algorithm_->DetectLostPackets(
-      unacked_packets_, time, unacked_packets_.largest_observed(), rtt_stats_);
-  for (PacketNumberSet::const_iterator it = lost_packets.begin();
-       it != lost_packets.end(); ++it) {
-    QuicPacketNumber packet_number = *it;
-    const TransmissionInfo& transmission_info =
-        unacked_packets_.GetTransmissionInfo(packet_number);
-    // TODO(ianswett): If it's expected the FEC packet may repair the loss, it
-    // should be recorded as a loss to the send algorithm, but not retransmitted
-    // until it's known whether the FEC packet arrived.
+  loss_algorithm_->DetectLosses(unacked_packets_, time, rtt_stats_,
+                                &packets_lost_);
+  for (const pair<QuicPacketNumber, QuicByteCount>& pair : packets_lost_) {
     ++stats_->packets_lost;
-    packets_lost_.push_back(
-        std::make_pair(packet_number, transmission_info.bytes_sent));
-    DVLOG(1) << ENDPOINT << "Lost packet " << packet_number;
+    if (FLAGS_quic_log_loss_event && debug_delegate_ != nullptr) {
+      debug_delegate_->OnPacketLoss(pair.first, LOSS_RETRANSMISSION, time);
+    }
 
-    if (!transmission_info.retransmittable_frames.empty()) {
-      MarkForRetransmission(packet_number, LOSS_RETRANSMISSION);
+    // TODO(ianswett): This could be optimized.
+    if (unacked_packets_.HasRetransmittableFrames(pair.first)) {
+      MarkForRetransmission(pair.first, LOSS_RETRANSMISSION);
     } else {
       // Since we will not retransmit this, we need to remove it from
       // unacked_packets_.   This is either the current transmission of
-      // a packet whose previous transmission has been acked, a packet that has
-      // been TLP retransmitted, or an FEC packet.
-      unacked_packets_.RemoveFromInFlight(packet_number);
+      // a packet whose previous transmission has been acked, a packet that
+      // has been TLP retransmitted, or an FEC packet.
+      unacked_packets_.RemoveFromInFlight(pair.first);
     }
   }
 }

@@ -133,6 +133,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
     ASSERT_FALSE(packet->packet->owns_buffer());
     scoped_ptr<QuicEncryptedPacket> encrypted_deleter(packets_.back().packet);
     packets_.back().packet = packets_.back().packet->Clone();
+    packet->retransmittable_frames.clear();
   }
 
  protected:
@@ -157,11 +158,11 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
         contents.num_mtu_discovery_frames + num_retransmittable_frames;
 
     if (num_retransmittable_frames == 0) {
-      ASSERT_TRUE(packet.retransmittable_frames == nullptr);
+      ASSERT_TRUE(packet.retransmittable_frames.empty());
     } else {
-      ASSERT_TRUE(packet.retransmittable_frames != nullptr);
+      ASSERT_FALSE(packet.retransmittable_frames.empty());
       EXPECT_EQ(num_retransmittable_frames,
-                packet.retransmittable_frames->size());
+                packet.retransmittable_frames.size());
     }
 
     ASSERT_TRUE(packet.packet != nullptr);
@@ -188,8 +189,8 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
   void CheckPacketHasSingleStreamFrame(size_t packet_index) {
     ASSERT_GT(packets_.size(), packet_index);
     const SerializedPacket& packet = packets_[packet_index];
-    ASSERT_TRUE(packet.retransmittable_frames != nullptr);
-    EXPECT_EQ(1u, packet.retransmittable_frames->size());
+    ASSERT_FALSE(packet.retransmittable_frames.empty());
+    EXPECT_EQ(1u, packet.retransmittable_frames.size());
     ASSERT_TRUE(packet.packet != nullptr);
     ASSERT_TRUE(simple_framer_.ProcessPacket(*packet.packet));
     EXPECT_EQ(1u, simple_framer_.num_frames());
@@ -205,7 +206,7 @@ class QuicPacketGeneratorTest : public ::testing::TestWithParam<FecSendPolicy> {
   void CheckPacketIsFec(size_t packet_index, QuicPacketNumber fec_group) {
     ASSERT_GT(packets_.size(), packet_index);
     const SerializedPacket& packet = packets_[packet_index];
-    ASSERT_TRUE(packet.retransmittable_frames == nullptr);
+    ASSERT_TRUE(packet.retransmittable_frames.empty());
     ASSERT_TRUE(packet.packet != nullptr);
     ASSERT_TRUE(simple_framer_.ProcessPacket(*packet.packet));
     EXPECT_TRUE(simple_framer_.header().fec_flag);

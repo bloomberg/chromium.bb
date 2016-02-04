@@ -36,7 +36,7 @@ void QuicPacketCreatorPeer::SetSendPathIdInPacket(QuicPacketCreator* creator,
 void QuicPacketCreatorPeer::SetPacketNumberLength(
     QuicPacketCreator* creator,
     QuicPacketNumberLength packet_number_length) {
-  creator->packet_number_length_ = packet_number_length;
+  creator->packet_.packet_number_length = packet_number_length;
 }
 
 // static
@@ -55,12 +55,12 @@ QuicPacketNumberLength QuicPacketCreatorPeer::NextPacketNumberLength(
 // static
 QuicPacketNumberLength QuicPacketCreatorPeer::GetPacketNumberLength(
     QuicPacketCreator* creator) {
-  return creator->packet_number_length_;
+  return creator->packet_.packet_number_length;
 }
 
 void QuicPacketCreatorPeer::SetPacketNumber(QuicPacketCreator* creator,
                                             QuicPacketNumber s) {
-  creator->packet_number_ = s;
+  creator->packet_.packet_number = s;
 }
 
 // static
@@ -105,10 +105,30 @@ void QuicPacketCreatorPeer::StopFecProtectingPackets(
 }
 
 // static
-SerializedPacket QuicPacketCreatorPeer::SerializeFec(QuicPacketCreator* creator,
-                                                     char* buffer,
-                                                     size_t buffer_len) {
-  return creator->SerializeFec(buffer, buffer_len);
+void QuicPacketCreatorPeer::SerializeFec(QuicPacketCreator* creator,
+                                         char* buffer,
+                                         size_t buffer_len) {
+  creator->SerializeFec(buffer, buffer_len);
+}
+
+// static
+SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
+    QuicPacketCreator* creator,
+    const QuicFrames& frames,
+    char* buffer,
+    size_t buffer_len) {
+  DCHECK(creator->queued_frames_.empty());
+  DCHECK(!frames.empty());
+  for (const QuicFrame& frame : frames) {
+    bool success = creator->AddFrame(frame, false);
+    DCHECK(success);
+  }
+  creator->SerializePacket(buffer, buffer_len);
+  SerializedPacket packet = creator->packet_;
+  // The caller takes ownership of the QuicEncryptedPacket.
+  creator->packet_.packet = nullptr;
+  DCHECK(packet.retransmittable_frames.empty());
+  return packet;
 }
 
 // static
@@ -131,12 +151,12 @@ float QuicPacketCreatorPeer::GetRttMultiplierForFecTimeout(
 // static
 EncryptionLevel QuicPacketCreatorPeer::GetEncryptionLevel(
     QuicPacketCreator* creator) {
-  return creator->encryption_level_;
+  return creator->packet_.encryption_level;
 }
 
 // static
 QuicPathId QuicPacketCreatorPeer::GetCurrentPath(QuicPacketCreator* creator) {
-  return creator->current_path_;
+  return creator->packet_.path_id;
 }
 
 }  // namespace test

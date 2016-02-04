@@ -5,7 +5,7 @@
 #include "net/quic/quic_multipath_transmissions_map.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net_quic {
+namespace net {
 namespace test {
 namespace {
 
@@ -111,4 +111,4 @@ TEST(QuicAcrossPathsTransmissionMapTest, OnPacketHandled) {
 
 }  // namespace
 }  // namespace test
-}  // namespace net_quic
+}  // namespace net

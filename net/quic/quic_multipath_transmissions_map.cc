@@ -4,7 +4,7 @@
 
 #include "net/quic/quic_multipath_transmissions_map.h"
 
-namespace net_quic {
+namespace net {
 
 QuicMultipathTransmissionsMap::QuicMultipathTransmissionsMap() {}
 
@@ -67,4 +67,4 @@ void QuicMultipathTransmissionsMap::OnPacketHandled(
   delete transmission_list;
 }
 
-}  // namespace net_quic
+}  // namespace net

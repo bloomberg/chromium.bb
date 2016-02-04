@@ -62,18 +62,15 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
     info.in_flight = true;
   }
   unacked_packets_.push_back(info);
-  // Swap the ack listeners after to avoid an extra list allocation.
+  // Swap the ack listeners and retransmittable frames to avoid allocations.
   // TODO(ianswett): Could use emplace_back when Chromium can.
   if (old_packet_number == 0) {
     if (has_crypto_handshake) {
       ++pending_crypto_packet_count_;
     }
-    if (packet->retransmittable_frames != nullptr) {
-      packet->retransmittable_frames->swap(
-          unacked_packets_.back().retransmittable_frames);
-      delete packet->retransmittable_frames;
-      packet->retransmittable_frames = nullptr;
-    }
+
+    packet->retransmittable_frames.swap(
+        unacked_packets_.back().retransmittable_frames);
     unacked_packets_.back().ack_listeners.swap(packet->listeners);
   }
 }

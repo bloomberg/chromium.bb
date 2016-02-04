@@ -13,20 +13,30 @@
 #define NET_QUIC_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_
 
 #include <deque>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_utils.h"
 
-namespace net_quic {
+namespace net {
 
 typedef std::pair<net::QuicPathId, net::QuicPacketNumber>
     QuicPathIdPacketNumber;
 
 class NET_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
  public:
+  struct QuicPathIdPacketNumberHash {
+    size_t operator()(std::pair<QuicPathId, QuicPacketNumber> value) const {
+      return QuicUtils::PackPathIdAndPacketNumber(value.first, value.second);
+    }
+  };
+
   typedef std::deque<QuicPathIdPacketNumber> MultipathTransmissionsList;
-  typedef base::hash_map<QuicPathIdPacketNumber, MultipathTransmissionsList*>
+  typedef std::unordered_map<QuicPathIdPacketNumber,
+                             MultipathTransmissionsList*,
+                             QuicPathIdPacketNumberHash>
       MultipathTransmissionsMap;
 
   QuicMultipathTransmissionsMap();
@@ -60,6 +70,6 @@ class NET_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
   MultipathTransmissionsMap transmission_map_;
 };
 
-}  // namespace net_quic
+}  // namespace net
 
 #endif  // NET_QUIC_QUIC_MULTIPATH_TRANSMISSIONS_MAP_H_

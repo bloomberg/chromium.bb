@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
@@ -106,11 +107,11 @@ class QuicInMemoryCache {
   // path) associated with it.
   // Push resource implicitly come from the same host.
   void AddSimpleResponseWithServerPushResources(
-      StringPiece host,
-      StringPiece path,
+      base::StringPiece host,
+      base::StringPiece path,
       int response_code,
-      StringPiece body,
-      list<ServerPushInfo> push_resources);
+      base::StringPiece body,
+      std::list<ServerPushInfo> push_resources);
 
   // Add a response to the cache.
   void AddResponse(base::StringPiece host,
@@ -141,7 +142,7 @@ class QuicInMemoryCache {
   list<ServerPushInfo> GetServerPushResources(string request_url);
 
  private:
-  typedef base::hash_map<string, Response*> ResponseMap;
+  typedef std::unordered_map<std::string, Response*> ResponseMap;
 
   friend struct base::DefaultSingletonTraits<QuicInMemoryCache>;
   friend class test::QuicInMemoryCachePeer;
@@ -162,9 +163,9 @@ class QuicInMemoryCache {
 
   // Add some server push urls with given responses for specified
   // request if these push resources are not associated with this request yet.
-  void MaybeAddServerPushResources(StringPiece request_host,
-                                   StringPiece request_path,
-                                   list<ServerPushInfo> push_resources);
+  void MaybeAddServerPushResources(base::StringPiece request_host,
+                                   base::StringPiece request_path,
+                                   std::list<ServerPushInfo> push_resources);
 
   // Check if push resource(push_host/push_path) associated with given request
   // url already exists in server push map.

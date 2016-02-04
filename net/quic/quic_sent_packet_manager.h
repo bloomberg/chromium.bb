@@ -438,9 +438,6 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // retransmittable frames.
   bool handshake_confirmed_;
 
-  // Latched value of FLAGS_gfe2_reloadable_flag_quic_general_loss_algorithm.
-  const bool use_general_loss_algorithm_;
-
   // Records bandwidth from server to client in normal operation, over periods
   // of time with no loss events.
   QuicSustainedBandwidthRecorder sustained_bandwidth_recorder_;

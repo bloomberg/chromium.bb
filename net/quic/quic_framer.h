@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "base/logging.h"
@@ -523,10 +525,10 @@ class NET_EXPORT_PRIVATE QuicFramer {
   // has been sent/received.
   // TODO(fayang): this set is never cleaned up. A possible improvement is to
   // use intervals.
-  base::hash_set<QuicPathId> closed_paths_;
+  std::unordered_set<QuicPathId> closed_paths_;
   // Map mapping path id to packet number of last successfully decrypted/revived
   // received packet.
-  base::hash_map<QuicPathId, QuicPacketNumber> last_packet_numbers_;
+  std::unordered_map<QuicPathId, QuicPacketNumber> last_packet_numbers_;
   // Updated by ProcessPacketHeader when it succeeds.
   QuicPacketNumber last_packet_number_;
   // The path on which last successfully decrypted/revived packet was received.

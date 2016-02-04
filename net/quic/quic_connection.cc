@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "net/base/address_family.h"
 #include "net/base/net_errors.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
@@ -77,6 +78,11 @@ const QuicPacketCount kMaxRetransmittablePacketsBeforeAck = 10;
 bool Near(QuicPacketNumber a, QuicPacketNumber b) {
   QuicPacketNumber delta = (a > b) ? a - b : b - a;
   return delta <= kMaxPacketGap;
+}
+
+bool IsInitializedIPEndPoint(const IPEndPoint& address) {
+  return net::GetAddressFamily(address.address().bytes()) !=
+         net::ADDRESS_FAMILY_UNSPECIFIED;
 }
 
 // An alarm that is scheduled to send an ack if a timeout occurs.
@@ -665,6 +671,8 @@ bool QuicConnection::OnPacketHeader(const QuicPacketHeader& header) {
     return false;
   }
 
+  MaybeMigrateConnectionToNewPeerAddress();
+
   --stats_.packets_dropped;
   DVLOG(1) << ENDPOINT << "Received packet header: " << header;
   last_header_ = header;
@@ -1188,8 +1196,8 @@ void QuicConnection::SendRstStream(QuicStreamId id,
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end()) {
     QuicFrames* retransmittable_frames =
-        packet_iterator->retransmittable_frames;
-    if (retransmittable_frames == nullptr) {
+        &packet_iterator->retransmittable_frames;
+    if (retransmittable_frames->empty()) {
       ++packet_iterator;
       continue;
     }
@@ -1259,7 +1267,18 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   }
   last_size_ = packet.length();
 
-  CheckForAddressMigration(self_address, peer_address);
+  if (FLAGS_check_peer_address_change_after_decryption) {
+    last_packet_destination_address_ = self_address;
+    last_packet_source_address_ = peer_address;
+    if (!IsInitializedIPEndPoint(self_address_)) {
+      self_address_ = last_packet_destination_address_;
+    }
+    if (!IsInitializedIPEndPoint(peer_address_)) {
+      peer_address_ = last_packet_source_address_;
+    }
+  } else {
+    CheckForAddressMigration(self_address, peer_address);
+  }
 
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
@@ -1314,14 +1333,6 @@ void QuicConnection::CheckForAddressMigration(const IPEndPoint& self_address,
     self_ip_changed_ = (self_address.address() != self_address_.address());
     self_port_changed_ = (self_address.port() != self_address_.port());
   }
-
-  // TODO(vasilvv): reset maximum packet size on connection migration. Whenever
-  // the connection is migrated, it usually ends up being on a different path,
-  // with possibly smaller MTU.  This means the max packet size has to be reset
-  // and MTU discovery mechanism re-initialized.  The main reason the code does
-  // not do it now is that the retransmission code currently cannot deal with
-  // the case when it needs to resend a packet created with larger MTU (see
-  // b/22172803).
 }
 
 void QuicConnection::OnCanWrite() {
@@ -1362,10 +1373,22 @@ void QuicConnection::WriteIfNotBlocked() {
 }
 
 bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
-  if (self_ip_changed_ || self_port_changed_) {
-    SendConnectionCloseWithDetails(QUIC_ERROR_MIGRATING_ADDRESS,
-                                   "Self address migration is not supported.");
-    return false;
+  if (FLAGS_check_peer_address_change_after_decryption) {
+    if (IsInitializedIPEndPoint(self_address_) &&
+        IsInitializedIPEndPoint(last_packet_destination_address_) &&
+        (!(self_address_ == last_packet_destination_address_))) {
+      SendConnectionCloseWithDetails(
+          QUIC_ERROR_MIGRATING_ADDRESS,
+          "Self address migration is not supported.");
+      return false;
+    }
+  } else {
+    if (self_ip_changed_ || self_port_changed_) {
+      SendConnectionCloseWithDetails(
+          QUIC_ERROR_MIGRATING_ADDRESS,
+          "Self address migration is not supported.");
+      return false;
+    }
   }
 
   if (!Near(header.packet_number, last_header_.packet_number)) {
@@ -1420,22 +1443,6 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
   }
 
   DCHECK_EQ(NEGOTIATED_VERSION, version_negotiation_state_);
-
-  if (peer_ip_changed_ || peer_port_changed_) {
-    PeerAddressChangeType type = DeterminePeerAddressChangeType();
-    IPEndPoint old_peer_address = peer_address_;
-    peer_address_ = IPEndPoint(
-        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address().bytes(),
-        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
-
-    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
-             << old_peer_address.ToString() << " to "
-             << peer_address_.ToString() << ", migrating connection.";
-
-    visitor_->OnConnectionMigration();
-    DCHECK_NE(type, NO_CHANGE);
-    sent_packet_manager_.OnConnectionMigration(type);
-  }
 
   time_of_last_received_packet_ = clock_->Now();
   DVLOG(1) << ENDPOINT << "time of last received packet: "
@@ -1825,6 +1832,7 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
       packet->packet = packet->packet->Clone();
     }
     queued_packets_.push_back(*packet);
+    packet->retransmittable_frames.clear();
   }
 
   // If a forward-secure encrypter is available but is not being used and the
@@ -1835,10 +1843,6 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
       packet->packet_number >= first_required_forward_secure_packet_ - 1) {
     SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   }
-}
-
-PeerAddressChangeType QuicConnection::DeterminePeerAddressChangeType() {
-  return UNSPECIFIED_CHANGE;
 }
 
 void QuicConnection::OnPingTimeout() {
@@ -2359,7 +2363,7 @@ HasRetransmittableData QuicConnection::IsRetransmittable(
   // Retransmitted packets retransmittable frames are owned by the unacked
   // packet map, but are not present in the serialized packet.
   if (packet.transmission_type != NOT_RETRANSMISSION ||
-      packet.retransmittable_frames != nullptr) {
+      !packet.retransmittable_frames.empty()) {
     return HAS_RETRANSMITTABLE_DATA;
   } else {
     return NO_RETRANSMITTABLE_DATA;
@@ -2367,10 +2371,10 @@ HasRetransmittableData QuicConnection::IsRetransmittable(
 }
 
 bool QuicConnection::IsTerminationPacket(const SerializedPacket& packet) {
-  if (packet.retransmittable_frames == nullptr) {
+  if (packet.retransmittable_frames.empty()) {
     return false;
   }
-  for (const QuicFrame& frame : *packet.retransmittable_frames) {
+  for (const QuicFrame& frame : packet.retransmittable_frames) {
     if (frame.type == CONNECTION_CLOSE_FRAME) {
       return true;
     }
@@ -2443,6 +2447,90 @@ void QuicConnection::DiscoverMtu() {
   SendMtuDiscoveryPacket(mtu_discovery_target_);
 
   DCHECK(!mtu_discovery_alarm_->IsSet());
+}
+
+PeerAddressChangeType QuicConnection::DeterminePeerAddressChangeType() {
+  IPEndPoint last_peer_address;
+  if (FLAGS_check_peer_address_change_after_decryption) {
+    last_peer_address = last_packet_source_address_;
+  } else {
+    last_peer_address = IPEndPoint(
+        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address().bytes(),
+        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
+  }
+
+  if (!IsInitializedIPEndPoint(peer_address_) ||
+      !IsInitializedIPEndPoint(last_peer_address) ||
+      peer_address_ == last_peer_address) {
+    return NO_CHANGE;
+  }
+
+  if (peer_address_.address() == last_peer_address.address()) {
+    return PORT_CHANGE;
+  }
+
+  bool old_ip_is_ipv4 = peer_address_.address().IsIPv4();
+  bool migrating_ip_is_ipv4 = last_peer_address.address().IsIPv4();
+  if (old_ip_is_ipv4 && !migrating_ip_is_ipv4) {
+    return IPV4_TO_IPV6_CHANGE;
+  }
+
+  if (!old_ip_is_ipv4) {
+    return migrating_ip_is_ipv4 ? IPV6_TO_IPV4_CHANGE : IPV6_TO_IPV6_CHANGE;
+  }
+
+  // TODO(rtenneti): Implement better way to test SubnetMask length of 24 bits.
+  IPAddressNumber peer_address_bytes = peer_address_.address().bytes();
+  IPAddressNumber last_peer_address_bytes = last_peer_address.address().bytes();
+  if (peer_address_bytes[0] == last_peer_address_bytes[0] &&
+      peer_address_bytes[1] == last_peer_address_bytes[1] &&
+      peer_address_bytes[2] == last_peer_address_bytes[2]) {
+    // Subnet part does not change (here, we use /24), which is considered to be
+    // caused by NATs.
+    return IPV4_SUBNET_CHANGE;
+  }
+
+  return UNSPECIFIED_CHANGE;
+}
+
+void QuicConnection::MaybeMigrateConnectionToNewPeerAddress() {
+  PeerAddressChangeType peer_address_change_type =
+      DeterminePeerAddressChangeType();
+  // TODO(fayang): Currently, all peer address change type are allowed. Need to
+  // add a method ShouldAllowPeerAddressChange(PeerAddressChangeType type) to
+  // determine whehter |type| is allowed.
+  if (FLAGS_check_peer_address_change_after_decryption) {
+    if (peer_address_change_type == NO_CHANGE) {
+      return;
+    }
+
+    IPEndPoint old_peer_address = peer_address_;
+    peer_address_ = last_packet_source_address_;
+
+    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
+             << old_peer_address.ToString() << " to "
+             << peer_address_.ToString() << ", migrating connection.";
+
+    visitor_->OnConnectionMigration();
+    sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
+
+    return;
+  }
+
+  if (peer_ip_changed_ || peer_port_changed_) {
+    IPEndPoint old_peer_address = peer_address_;
+    peer_address_ = IPEndPoint(
+        peer_ip_changed_ ? migrating_peer_ip_ : peer_address_.address().bytes(),
+        peer_port_changed_ ? migrating_peer_port_ : peer_address_.port());
+
+    DVLOG(1) << ENDPOINT << "Peer's ip:port changed from "
+             << old_peer_address.ToString() << " to "
+             << peer_address_.ToString() << ", migrating connection.";
+
+    visitor_->OnConnectionMigration();
+    DCHECK_NE(peer_address_change_type, NO_CHANGE);
+    sent_packet_manager_.OnConnectionMigration(peer_address_change_type);
+  }
 }
 
 void QuicConnection::OnPathClosed(QuicPathId path_id) {

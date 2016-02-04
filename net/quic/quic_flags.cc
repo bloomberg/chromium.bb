@@ -70,10 +70,6 @@ bool FLAGS_quic_measure_headers_hol_blocking_time = true;
 // Disable QUIC's userspace pacing.
 bool FLAGS_quic_disable_pacing = false;
 
-// If true, Use QUIC's GeneralLossAlgorithm implementation instead of
-// TcpLossAlgorithm or TimeLossAlgorithm.
-bool FLAGS_quic_general_loss_algorithm = true;
-
 // If true, QUIC connections will timeout when packets are not being recieved,
 // even if they are being sent.
 bool FLAGS_quic_use_new_idle_timeout = true;
@@ -168,3 +164,13 @@ bool FLAGS_quic_crypto_proof_use_ref = true;
 // If on, max number of incoming and outgoing streams will be different.
 // Incoming will be a little higher than outgoing to tolerate race condition.
 bool FLAGS_quic_different_max_num_open_streams = true;
+
+// If true, QUIC should correctly report if it supports ChaCha20. Otherwise,
+// QUIC will lie and claim that it does not support ChaCha20. The primary use
+// case for this is places where ChaCha20 is prohibitively expensive compared to
+// AES-GCM.
+bool FLAGS_quic_crypto_server_config_default_has_chacha20 = true;
+
+// If true, checking for peer address change is postponed after the packet gets
+// decrypted.
+bool FLAGS_check_peer_address_change_after_decryption = true;

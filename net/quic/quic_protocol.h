@@ -1295,26 +1295,12 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
                    QuicPacketNumberLength packet_number_length,
                    QuicEncryptedPacket* packet,
                    QuicPacketEntropyHash entropy_hash,
-                   QuicFrames* retransmittable_frames,
                    bool has_ack,
                    bool has_stop_waiting);
-  SerializedPacket(QuicPathId path_id,
-                   QuicPacketNumber packet_number,
-                   QuicPacketNumberLength packet_number_length,
-                   char* encrypted_buffer,
-                   size_t encrypted_length,
-                   bool owns_buffer,
-                   QuicPacketEntropyHash entropy_hash,
-                   QuicFrames* retransmittable_frames,
-                   bool needs_padding,
-                   IsHandshake is_handshake,
-                   bool has_ack,
-                   bool has_stop_waiting,
-                   EncryptionLevel level);
   ~SerializedPacket();
 
   QuicEncryptedPacket* packet;
-  QuicFrames* retransmittable_frames;
+  QuicFrames retransmittable_frames;
   IsHandshake has_crypto_handshake;
   bool needs_padding;
   QuicPathId path_id;

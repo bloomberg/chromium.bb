@@ -71,7 +71,7 @@ QuicSession::StreamMap& QuicSessionPeer::dynamic_streams(QuicSession* session) {
 }
 
 // static
-base::hash_set<QuicStreamId>* QuicSessionPeer::GetDrainingStreams(
+std::unordered_set<QuicStreamId>* QuicSessionPeer::GetDrainingStreams(
     QuicSession* session) {
   return &session->draining_streams_;
 }
