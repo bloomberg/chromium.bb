@@ -68,9 +68,10 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   // Returns an id guaranteed to be unique for the map. The id is randomly
   // generated so that an origin can't guess the id used in another origin.
   std::string GenerateDeviceId();
-  std::set<std::string> UnionOfServices(
+  void AddUnionOfServicesTo(
       const std::vector<BluetoothScanFilter>& filters,
-      const std::vector<device::BluetoothUUID>& optional_services);
+      const std::vector<device::BluetoothUUID>& optional_services,
+      std::set<std::string>* unionOfServices);
 
   std::map<url::Origin, DeviceAddressToIdMap>
       origin_to_device_address_to_id_map_;

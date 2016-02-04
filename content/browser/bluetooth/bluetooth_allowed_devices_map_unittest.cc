@@ -350,6 +350,45 @@ TEST(BluetoothAllowedDevicesMapTest, AllowedServices_TwoOriginsOneDevice) {
       kTestOrigin2, device_id1, kBloodPressureUUIDString));
 }
 
+TEST(BluetoothAllowedDevicesMapTest, MergeServices) {
+  BluetoothAllowedDevicesMap allowed_devices_map;
+
+  // Setup first request.
+  BluetoothScanFilter scanFilter1;
+  scanFilter1.services.push_back(kGlucoseUUID);
+  std::vector<BluetoothScanFilter> filters1;
+  filters1.push_back(scanFilter1);
+  std::vector<BluetoothUUID> optional_services1;
+  optional_services1.push_back(kBatteryServiceUUID);
+
+  // Add to map.
+  const std::string device_id1 = allowed_devices_map.AddDevice(
+      kTestOrigin1, kDeviceAddress1, filters1, optional_services1);
+
+  // Setup second request.
+  BluetoothScanFilter scanFilter2;
+  scanFilter2.services.push_back(kHeartRateUUID);
+  std::vector<BluetoothScanFilter> filters2;
+  filters2.push_back(scanFilter2);
+  std::vector<BluetoothUUID> optional_services2;
+  optional_services2.push_back(kBloodPressureUUID);
+
+  // Add to map again.
+  const std::string device_id2 = allowed_devices_map.AddDevice(
+      kTestOrigin1, kDeviceAddress1, filters2, optional_services2);
+
+  EXPECT_EQ(device_id1, device_id2);
+
+  EXPECT_TRUE(allowed_devices_map.IsOriginAllowedToAccessService(
+      kTestOrigin1, device_id1, kGlucoseUUIDString));
+  EXPECT_TRUE(allowed_devices_map.IsOriginAllowedToAccessService(
+      kTestOrigin1, device_id1, kBatteryServiceUUIDString));
+  EXPECT_TRUE(allowed_devices_map.IsOriginAllowedToAccessService(
+      kTestOrigin1, device_id1, kHeartRateUUIDString));
+  EXPECT_TRUE(allowed_devices_map.IsOriginAllowedToAccessService(
+      kTestOrigin1, device_id1, kBloodPressureUUIDString));
+}
+
 TEST(BluetoothAllowedDevicesMapTest, CorrectIdFormat) {
   BluetoothAllowedDevicesMap allowed_devices_map;
 
