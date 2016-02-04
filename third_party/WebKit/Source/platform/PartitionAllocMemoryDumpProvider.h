@@ -7,7 +7,6 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebMemoryDumpProvider.h"
-#include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -23,7 +22,8 @@ class AllocationRegister;
 namespace blink {
 
 class BLINK_PLATFORM_EXPORT PartitionAllocMemoryDumpProvider final : public WebMemoryDumpProvider {
-    USING_FAST_MALLOC(PartitionAllocMemoryDumpProvider);
+    // TODO(tasak): PartitionAllocMemoryDumpProvider should be
+    // USING_FAST_MALLOC. c.f. crbug.com/584196
     WTF_MAKE_NONCOPYABLE(PartitionAllocMemoryDumpProvider);
 public:
     static PartitionAllocMemoryDumpProvider* instance();
