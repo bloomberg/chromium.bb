@@ -26,7 +26,10 @@ for this is that in order to make the performance tests as realistic as
 possible, the chromium.perf waterfall runs release official builds of Chrome.
 But the logs from release official builds may leak info from our partners that
 we do not have permission to share outside of Google. So the logs are available
-to Googlers only.
+to Googlers only. To avoid manually rewriting the URL when switching between
+the upstream and downstream views of the waterfall and bots, you can install the
+[Chromium Waterfall View Switcher extension](https://chrome.google.com/webstore/a/google.com/detail/chromium-waterfall-view-s/hnnplblfkmfaadpjdpkepbkdjhjpjbdp),
+which adds a switching button to Chrome's URL bar.
 
 Note that there are four different views:
 
