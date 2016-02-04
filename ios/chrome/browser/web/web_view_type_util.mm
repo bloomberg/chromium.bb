@@ -4,13 +4,10 @@
 
 #include "ios/chrome/browser/web/web_view_type_util.h"
 
-#include "ios/chrome/browser/experimental_flags.h"
-
 namespace web_view_type_util {
 
 web::WebViewType GetWebViewType() {
-  return experimental_flags::IsWKWebViewEnabled() ? web::WK_WEB_VIEW_TYPE
-                                                  : web::UI_WEB_VIEW_TYPE;
+  return web::WK_WEB_VIEW_TYPE;
 }
 
 }  // namespace web_view_type_util
