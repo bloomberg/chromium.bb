@@ -188,7 +188,7 @@ for opt; do
     --symbol-dir=*)
       SYMBOL_DIR=$optarg
       ;;
-    --output-dir=*)
+    --output-directory=*)
       CHROMIUM_OUTPUT_DIR=$optarg
       ;;
     --out-dir=*)
@@ -270,7 +270,7 @@ shared libraries under one of the following directories:
   \$CHROMIUM_SRC/<out>/lib.unstripped/     (used by GN builds)
 
 Where <out> is 'out' is determined by CHROMIUM_OUT_DIR, CHROMIUM_OUTPUT_DIR, or
-the --out-dir, --output-dir flags.
+the --out-dir, --output-directory flags.
 
 You can restrict this search by using --release or --debug to specify the
 build type, or simply use --symbol-dir=<path> to specify the file manually.
@@ -315,7 +315,7 @@ Valid options:
   --sandboxed=<num>     Debug specific sandboxed process.
   --symbol-dir=<path>   Specify directory with symbol shared libraries.
   --out-dir=<path>      Specify the out directory (e.g. "out").
-  --output-dir=<path>   Specify the output directory (e.g. "out/Debug").
+  --output-directory=<path> Specify the output directory (e.g. "out/Debug").
   --package-name=<name> Specify package name (alternative to 1st argument).
   --privileged          Debug first privileged process we find.
   --privileged=<num>    Debug specific privileged process.
@@ -355,6 +355,20 @@ fi
 
 if [ -z "$PACKAGE_NAME" ]; then
   panic "Please specify a package name on the command line. See --help."
+fi
+
+if [[ -z "$CHROMIUM_OUTPUT_DIR" && -z "$CHROMIUM_OUT_DIR" ]]; then
+  if [[ -e "build.ninja" ]]; then
+    CHROMIUM_OUTPUT_DIR=$PWD
+  else
+    panic "Please specify an output directory by using one of:
+       --output-directory=out/Debug
+       --out-dir=out/
+       CHROMIUM_OUTPUT_DIR=out/Debug
+       CHROMIUM_OUT_DIR=out
+       Setting working directory to an output directory.
+       See --help."
+   fi
 fi
 
 if [ -z "$NDK_DIR" ]; then
