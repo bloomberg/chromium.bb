@@ -76,6 +76,8 @@ LANG_SOURCE =\
  zh_Hant.txt zh_Hant_TW.txt zh_Hant_HK.txt\
  af.txt\
  ak.txt\
+ an.txt\
+ ast.txt\
  az.txt\
  be.txt\
  bem.txt\
@@ -129,5 +131,6 @@ LANG_SOURCE =\
  to.txt\
  ur.txt\
  uz.txt\
+ wa.txt\
  yo.txt\
  zu.txt

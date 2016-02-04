@@ -188,7 +188,7 @@ them when updating ICU.
 4. source/data/trnslit/css3transform.txt
   - Handle Greek case conversion with a transliterator
 
-5. Add tg.txt, ckb.txt, and ku.txt to source/data/{locale,lang}
+5. Add {an,ast,ckb,ku,tg,wa}.txt to source/data/{locale,lang}
    with the minimal locale data necessary for spellchecker and
    and language menus. Also change the English display name
    for ckb to 'Kurdish (Arabic)'.
