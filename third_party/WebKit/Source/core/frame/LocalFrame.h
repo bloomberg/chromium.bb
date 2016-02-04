@@ -232,10 +232,6 @@ private:
     bool m_inViewSourceMode;
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-
-    // TODO(dcheng): Temporary to try to debug https://crbug.com/531291
-    enum class SupplementStatus { Uncleared, Clearing, Cleared };
-    SupplementStatus m_supplementStatus = SupplementStatus::Uncleared;
 };
 
 inline void LocalFrame::init()
