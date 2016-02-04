@@ -236,6 +236,13 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
     return false;
   }
 
+  // Sort projects so they appear always in the same order in solution file.
+  // Otherwise solution file is rewritten and reloaded by Visual Studio.
+  std::sort(writer.projects_.begin(), writer.projects_.end(),
+            [](const SolutionEntry* a, const SolutionEntry* b) {
+              return a->path < b->path;
+            });
+
   writer.ResolveSolutionFolders();
   return writer.WriteSolutionFile(err);
 }
