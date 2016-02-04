@@ -14574,6 +14574,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DATA_USE_TRACKING_STARTED_SNACKBAR_MESSAGE" desc="Message shown when data use tracking starts." formatter_data="android_java">
         Data use is being measured
       </message>
+      <message name="IDS_DATA_USE_TRACKING_SNACKBAR_ACTION" desc="Button to learn more when data use tracking starts or ends." formatter_data="android_java">
+        More
+      </message>
       <message name="IDS_DATA_USE_TRACKING_ENDED_SNACKBAR_MESSAGE" desc="Message shown when data use tracking has ended." formatter_data="android_java">
         Data use measuring has ended
       </message>
@@ -14582,6 +14585,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_DATA_USE_TRACKING_ENDED_MESSAGE" desc="Message shown on the dialog when data use tracking has ended." formatter_data="android_java">
         Your data use will no longer be measured.
+      </message>
+      <message name="IDS_DATA_USE_TRACKING_ENDED_CHECKBOX_MESSAGE" desc="Message shown to opt out of seeing dialogs when data use tracking has ended." formatter_data="android_java">
+        Don’t show this again
+      </message>
+      <message name="IDS_DATA_USE_TRACKING_ENDED_CONTINUE" desc="Continue button for the dialog shown when data use tracking has ended. When clicked, the page resumes loading." formatter_data="android_java">
+        Continue
       </message>
       <message name="IDS_DATA_USE_LEARN_MORE_TITLE" desc="Title for the 'Learn more' link in the the dialog shown when data use tracking has ended." formatter_data="android_java">
         Learn more

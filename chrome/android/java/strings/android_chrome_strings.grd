@@ -791,17 +791,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Data Saver is on. Manage it in Settings.
       </message>
 
-      <!-- Data Use -->
-      <message name="IDS_DATA_USE_TRACKING_SNACKBAR_ACTION" desc="Button to learn more when data use tracking starts or ends.">
-        More
-      </message>
-      <message name="IDS_DATA_USE_TRACKING_ENDED_CHECKBOX_MESSAGE" desc="Message shown to opt out of seeing dialogs when data use tracking has ended.">
-        Don’t show this again
-      </message>
-      <message name="IDS_DATA_USE_TRACKING_ENDED_CONTINUE" desc="Continue button for the dialog shown when data use tracking has ended. When clicked, the page resumes loading.">
-        Continue
-      </message>
-
       <!-- About Chrome preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Chrome page. [CHAR-LIMIT=32]">
         About Chrome
