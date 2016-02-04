@@ -98,9 +98,9 @@ class PermissionBubbleManager
 
  private:
   // TODO(felt): Update testing so that it doesn't involve a lot of friends.
-  friend class DownloadRequestLimiterTest;
   friend class GeolocationBrowserTest;
   friend class GeolocationPermissionContextTests;
+  friend class MockPermissionBubbleFactory;
   friend class MockPermissionBubbleView;
   friend class PermissionBubbleManagerTest;
   friend class PermissionContextBaseTests;

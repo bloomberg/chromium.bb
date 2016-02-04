@@ -519,6 +519,8 @@
       'browser/ui/toolbar/component_toolbar_actions_browsertest.cc',
       'browser/ui/toolbar/mock_component_toolbar_actions_factory.cc',
       'browser/ui/toolbar/mock_component_toolbar_actions_factory.h',
+      'browser/ui/website_settings/mock_permission_bubble_factory.cc',
+      'browser/ui/website_settings/mock_permission_bubble_factory.h',
       'browser/ui/website_settings/mock_permission_bubble_view.cc',
       'browser/ui/website_settings/mock_permission_bubble_view.h',
       'browser/ui/website_settings/permission_bubble_browser_test_util.cc',

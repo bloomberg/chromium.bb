@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/website_settings/mock_permission_bubble_view.h"
+#include "chrome/browser/ui/website_settings/mock_permission_bubble_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -22,10 +22,16 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   ~PermissionBubbleManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    PermissionBubbleManager* manager = GetPermissionBubbleManager();
-    MockPermissionBubbleView::SetFactory(manager, true);
-    manager->DisplayPendingRequests();
     InProcessBrowserTest::SetUpOnMainThread();
+    PermissionBubbleManager* manager = GetPermissionBubbleManager();
+    mock_permission_bubble_factory_.reset(
+        new MockPermissionBubbleFactory(true, manager));
+    manager->DisplayPendingRequests();
+  }
+
+  void TearDownOnMainThread() override {
+    mock_permission_bubble_factory_.reset();
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   PermissionBubbleManager* GetPermissionBubbleManager() {
@@ -34,14 +40,17 @@ class PermissionBubbleManagerBrowserTest : public InProcessBrowserTest {
   }
 
   void WaitForPermissionBubble() {
-    if (bubble_view()->IsVisible())
+    if (bubble_factory()->is_visible())
       return;
     content::RunMessageLoop();
   }
 
-  MockPermissionBubbleView* bubble_view() {
-    return MockPermissionBubbleView::GetFrom(GetPermissionBubbleManager());
+  MockPermissionBubbleFactory* bubble_factory() {
+    return mock_permission_bubble_factory_.get();
   }
+
+ private:
+  scoped_ptr<MockPermissionBubbleFactory> mock_permission_bubble_factory_;
 };
 
 // Requests before the load event should be bundled into one bubble.
@@ -56,8 +65,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view()->show_count());
-  EXPECT_EQ(2, bubble_view()->requests_count());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(2, bubble_factory()->total_request_count());
 }
 
 // Requests before the load should not be bundled with a request after the load.
@@ -72,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view()->show_count());
-  EXPECT_EQ(1, bubble_view()->requests_count());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(1, bubble_factory()->total_request_count());
 }
 
 // Navigating twice to the same URL should be equivalent to refresh. This means
@@ -99,8 +108,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, MAYBE_NavTwice) {
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(2, bubble_view()->show_count());
-  EXPECT_EQ(4, bubble_view()->requests_count());
+  EXPECT_EQ(2, bubble_factory()->show_count());
+  EXPECT_EQ(4, bubble_factory()->total_request_count());
 }
 
 // Navigating twice to the same URL with a hash should be navigation within the
@@ -128,8 +137,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest,
       1);
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view()->show_count());
-  EXPECT_EQ(2, bubble_view()->requests_count());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(2, bubble_factory()->total_request_count());
 }
 
 // Bubble requests should be shown after in-page navigation.
@@ -152,8 +161,8 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleManagerBrowserTest, InPageNavigation) {
       "navigator.geolocation.getCurrentPosition(function(){});");
   WaitForPermissionBubble();
 
-  EXPECT_EQ(1, bubble_view()->show_count());
-  EXPECT_EQ(1, bubble_view()->requests_count());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(1, bubble_factory()->total_request_count());
 }
 
 }  // anonymous namespace
