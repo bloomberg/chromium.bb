@@ -49,6 +49,7 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
       security_origin_(security_origin) {
   DCHECK(client_callback_);
   null_audio_sink_->Initialize(params_, this);
+  null_audio_sink_->Start();
 }
 
 RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
@@ -128,13 +129,17 @@ int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
     first_silence_time_ = base::TimeTicks();
     if (is_using_null_audio_sink_) {
       // This is called on the main render thread when audio is detected.
-      output_device_->Play();
+      DCHECK(thread_checker_.CalledOnValidThread());
       is_using_null_audio_sink_ = false;
       is_first_buffer_after_silence_ = true;
       dest->CopyTo(first_buffer_after_silence_.get());
       task_runner_->PostTask(
           FROM_HERE,
-          base::Bind(&media::NullAudioSink::Stop, null_audio_sink_));
+          base::Bind(&media::NullAudioSink::Pause, null_audio_sink_));
+      // Calling output_device_->Play() may trigger reentrancy into this
+      // function, so this should be called at the end.
+      output_device_->Play();
+      return dest->frames();
     }
   } else if (!is_using_null_audio_sink_) {
     // Called on the audio device thread.
