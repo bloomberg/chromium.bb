@@ -34,6 +34,7 @@
 #include "components/sync_driver/local_device_info_provider_impl.h"
 #include "components/sync_driver/proxy_data_type_controller.h"
 #include "components/sync_driver/sync_client.h"
+#include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/ui_data_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -139,9 +140,18 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       base::Bind(&ChromeReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
-  sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
-      ui_thread_, error_callback, sync_client_,
-      sync_service->GetLocalDeviceInfoProvider()));
+  if (channel_ == version_info::Channel::UNKNOWN &&
+      command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
+    // TODO(pavely): crbug.com/547087: Register USS DataTypeController for
+    // DeviceInfo here instead of DeviceInfoDataTypeController.
+    sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
+        ui_thread_, error_callback, sync_client_,
+        sync_service->GetLocalDeviceInfoProvider()));
+  } else {
+    sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
+        ui_thread_, error_callback, sync_client_,
+        sync_service->GetLocalDeviceInfoProvider()));
+  }
 
   // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.

@@ -15,7 +15,7 @@ const char kSyncDisableBackup[] = "disable-sync-backup";
 
 // Enables deferring sync backend initialization until user initiated changes
 // occur.
-const char kSyncDisableDeferredStartup[]     = "sync-disable-deferred-startup";
+const char kSyncDisableDeferredStartup[] = "sync-disable-deferred-startup";
 
 // Disable sync rollback.
 const char kSyncDisableRollback[] = "disable-sync-rollback";
@@ -25,8 +25,13 @@ const char kSyncEnableClearDataOnPassphraseEncryption[] =
     "enable-clear-sync-data-on-passphrase-encryption";
 
 // Enables feature to avoid unnecessary GetUpdate requests.
-const char kSyncEnableGetUpdateAvoidance[]   =
+const char kSyncEnableGetUpdateAvoidance[] =
     "sync-enable-get-update-avoidance";
+
+// Enables USS implementation of DeviceInfo datatype. This flag controls whether
+// SyncableService based or ModelTypeService based implementation is used for
+// DeviceInfo type.
+const char kSyncEnableUSSDeviceInfo[] = "sync-enable-uss-device-info";
 
 // Overrides the default server used for profile sync.
 const char kSyncServiceURL[] = "sync-url";

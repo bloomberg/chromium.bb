@@ -17,6 +17,7 @@ extern const char kSyncDisableDeferredStartup[];
 extern const char kSyncDisableRollback[];
 extern const char kSyncEnableClearDataOnPassphraseEncryption[];
 extern const char kSyncEnableGetUpdateAvoidance[];
+extern const char kSyncEnableUSSDeviceInfo[];
 extern const char kSyncServiceURL[];
 extern const char kSyncShortInitialRetryOverride[];
 
