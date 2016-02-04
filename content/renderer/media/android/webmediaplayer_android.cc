@@ -1235,8 +1235,10 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,
         base::TimeDelta());
-    new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
-                                      enable_texture_copy_);
+    if (new_frame.get()) {
+      new_frame->metadata()->SetBoolean(
+          media::VideoFrameMetadata::COPY_REQUIRED, enable_texture_copy_);
+    }
     SetCurrentFrameInternal(new_frame);
   }
 }
