@@ -99,6 +99,9 @@ class SpellcheckService : public KeyedService,
   // Returns the instance of the custom dictionary.
   SpellcheckCustomDictionary* GetCustomDictionary();
 
+  // Starts the process of loading the Hunspell dictionaries.
+  void LoadHunspellDictionaries();
+
   // Returns the instance of the vector of Hunspell dictionaries.
   const ScopedVector<SpellcheckHunspellDictionary>& GetHunspellDictionaries();
 
