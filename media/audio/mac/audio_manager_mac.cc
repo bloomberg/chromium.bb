@@ -790,13 +790,15 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             AudioUnit audio_unit,
                                             AudioUnitElement element,
                                             size_t desired_buffer_size,
-                                            bool* size_was_changed) {
+                                            bool* size_was_changed,
+                                            size_t* io_buffer_frame_size) {
   const bool is_input = (element == 1);
   DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
            << ", is_input=" << is_input << ", desired_buffer_size=" << std::dec
            << desired_buffer_size << ")";
 
   *size_was_changed = false;
+  *io_buffer_frame_size = 0;
 
   // Log the device name (and id) for debugging purposes.
   std::string device_name = GetAudioDeviceNameFromDeviceId(device_id, is_input);
@@ -816,6 +818,9 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
         << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
     return false;
   }
+  // Store the currently used (not changed yet) I/O buffer frame size.
+  *io_buffer_frame_size = buffer_size;
+
   DVLOG(1) << "current IO buffer size: " << buffer_size;
   DVLOG(1) << "#output streams: " << output_streams_.size();
   DVLOG(1) << "#input streams: " << low_latency_input_streams_.size();
@@ -883,16 +888,8 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
       << "Size:: " << buffer_size;
   *size_was_changed = (result == noErr);
   DVLOG_IF(1, result == noErr) << "IO buffer size changed to: " << buffer_size;
-
-  // Ensure that value specified by the kAudioUnitProperty_MaximumFramesPerSlice
-  // property is modified when the default IO buffer size is modified. Failure
-  // to update the this property will cause audio units to not perform any
-  // processing (this includes not pulling on any inputs). This property ensures
-  // that the audio unit is prepared to produce a sufficient number of frames
-  // of audio data in response to a render call.
-  result = AudioUnitSetProperty(
-      audio_unit, kAudioUnitProperty_MaximumFramesPerSlice,
-      kAudioUnitScope_Global, 0, &buffer_size, sizeof(buffer_size));
+  // Store the currently used (after a change) I/O buffer frame size.
+  *io_buffer_frame_size = buffer_size;
 
   return (result == noErr);
 }

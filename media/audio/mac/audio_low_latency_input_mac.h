@@ -60,7 +60,8 @@ class AudioBus;
 class AudioManagerMac;
 class DataBuffer;
 
-class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
+class MEDIA_EXPORT AUAudioInputStream
+    : public AgcAudioStream<AudioInputStream> {
  public:
   // The ctor takes all the usual parameters, plus |manager| which is the
   // the audio manager who is creating this object.
@@ -82,22 +83,29 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   bool IsMuted() override;
 
   // Returns the current hardware sample rate for the default input device.
-  MEDIA_EXPORT static int HardwareSampleRate();
+  static int HardwareSampleRate();
 
-  bool started() const { return started_; }
-  AudioUnit audio_unit() const { return audio_unit_; }
-  AudioBufferList* audio_buffer_list() { return &audio_buffer_list_; }
+  // Returns true if the audio unit is active/running.
+  // The result is based on the kAudioOutputUnitProperty_IsRunning property
+  // which exists for output units.
+  bool IsRunning();
+
   AudioDeviceID device_id() const { return input_device_id_; }
   size_t requested_buffer_size() const { return number_of_frames_; }
 
  private:
-  // AudioOutputUnit callback.
-  static OSStatus InputProc(void* user_data,
-                            AudioUnitRenderActionFlags* flags,
-                            const AudioTimeStamp* time_stamp,
-                            UInt32 bus_number,
-                            UInt32 number_of_frames,
-                            AudioBufferList* io_data);
+  // Callback functions called on a real-time priority I/O thread from the audio
+  // unit. These methods are called when recorded audio is available.
+  static OSStatus DataIsAvailable(void* context,
+                                  AudioUnitRenderActionFlags* flags,
+                                  const AudioTimeStamp* time_stamp,
+                                  UInt32 bus_number,
+                                  UInt32 number_of_frames,
+                                  AudioBufferList* io_data);
+  OSStatus OnDataIsAvailable(AudioUnitRenderActionFlags* flags,
+                             const AudioTimeStamp* time_stamp,
+                             UInt32 bus_number,
+                             UInt32 number_of_frames);
 
   // Pushes recorded data to consumer of the input audio stream.
   OSStatus Provide(UInt32 number_of_frames, AudioBufferList* io_data,
@@ -166,9 +174,6 @@ class AUAudioInputStream : public AgcAudioStream<AudioInputStream> {
   // Temporary storage for recorded data. The InputProc() renders into this
   // array as soon as a frame of the desired buffer size has been recorded.
   scoped_ptr<uint8_t[]> audio_data_buffer_;
-
-  // True after successful Start(), false after successful Stop().
-  bool started_;
 
   // Fixed capture hardware latency in frames.
   double hardware_latency_frames_;

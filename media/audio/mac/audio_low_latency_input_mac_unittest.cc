@@ -199,15 +199,15 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamMiscCallingSequences) {
 
   // Start(), Start() is a valid calling sequence (second call does nothing).
   ais->Start(&sink);
-  EXPECT_TRUE(auais->started());
+  EXPECT_TRUE(auais->IsRunning());
   ais->Start(&sink);
-  EXPECT_TRUE(auais->started());
+  EXPECT_TRUE(auais->IsRunning());
 
   // Stop(), Stop() is a valid calling sequence (second call does nothing).
   ais->Stop();
-  EXPECT_FALSE(auais->started());
+  EXPECT_FALSE(auais->IsRunning());
   ais->Stop();
-  EXPECT_FALSE(auais->started());
+  EXPECT_FALSE(auais->IsRunning());
 
   ais->Close();
 }

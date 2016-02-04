@@ -63,7 +63,7 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   static int HardwareSampleRateForDevice(AudioDeviceID device_id);
   static int HardwareSampleRate();
 
-  // OSX has issues with starting streams as the sytem goes into suspend and
+  // OSX has issues with starting streams as the system goes into suspend and
   // immediately after it wakes up from resume.  See http://crbug.com/160920.
   // As a workaround we delay Start() when it occurs after suspend and for a
   // small amount of time after resume.
@@ -74,18 +74,19 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   enum { kStartDelayInSecsForPowerEvents = 2 };
   bool ShouldDeferStreamStart();
 
-  // Changes the buffer size for |device_id| if there are no active input or
-  // output streams on the device or |desired_buffer_size| is lower than the
-  // current device buffer size.
-  //
-  // Returns false if an error occurred. There is no indication if the buffer
-  // size was changed or not.
-  // |element| is 0 for output streams and 1 for input streams.
+  // Changes the I/O buffer size for |device_id| if |desired_buffer_size| is
+  // lower than the current device buffer size. The buffer size can also be
+  // modified under other conditions. See comments in the corresponding cc-file
+  // for more details.
+  // |size_was_changed| is set to true if the device's buffer size was changed
+  // and |io_buffer_frame_size| contains the new buffer size.
+  // Returns false if an error occurred.
   bool MaybeChangeBufferSize(AudioDeviceID device_id,
                              AudioUnit audio_unit,
                              AudioUnitElement element,
                              size_t desired_buffer_size,
-                             bool* size_was_changed);
+                             bool* size_was_changed,
+                             size_t* io_buffer_frame_size);
 
   // Number of constructed output and input streams.
   size_t output_streams() const { return output_streams_.size(); }
