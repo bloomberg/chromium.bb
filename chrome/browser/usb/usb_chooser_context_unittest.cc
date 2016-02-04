@@ -172,3 +172,49 @@ TEST_F(UsbChooserContextTest, DisconnectDeviceWithEphemeralPermission) {
   all_origin_objects = store->GetAllGrantedObjects();
   EXPECT_EQ(0u, all_origin_objects.size());
 }
+
+TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
+  GURL origin("https://www.google.com");
+  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  UsbChooserContext* incognito_store = UsbChooserContextFactory::GetForProfile(
+      profile()->GetOffTheRecordProfile());
+
+  scoped_refptr<MockUsbDevice> device1 =
+      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  scoped_refptr<MockUsbDevice> device2 =
+      new MockUsbDevice(0, 0, "Google", "Gizmo", "");
+  device_client_.usb_service()->AddDevice(device1);
+  device_client_.usb_service()->AddDevice(device2);
+
+  store->GrantDevicePermission(origin, origin, device1->guid());
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device1->guid()));
+  EXPECT_FALSE(
+      incognito_store->HasDevicePermission(origin, origin, device1->guid()));
+
+  incognito_store->GrantDevicePermission(origin, origin, device2->guid());
+  EXPECT_TRUE(store->HasDevicePermission(origin, origin, device1->guid()));
+  EXPECT_FALSE(store->HasDevicePermission(origin, origin, device2->guid()));
+  EXPECT_FALSE(
+      incognito_store->HasDevicePermission(origin, origin, device1->guid()));
+  EXPECT_TRUE(
+      incognito_store->HasDevicePermission(origin, origin, device2->guid()));
+
+  {
+    std::vector<scoped_ptr<base::DictionaryValue>> objects =
+        store->GetGrantedObjects(origin, origin);
+    EXPECT_EQ(1u, objects.size());
+    std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+        store->GetAllGrantedObjects();
+    ASSERT_EQ(1u, all_origin_objects.size());
+    EXPECT_FALSE(all_origin_objects[0]->incognito);
+  }
+  {
+    std::vector<scoped_ptr<base::DictionaryValue>> objects =
+        incognito_store->GetGrantedObjects(origin, origin);
+    EXPECT_EQ(1u, objects.size());
+    std::vector<scoped_ptr<ChooserContextBase::Object>> all_origin_objects =
+        incognito_store->GetAllGrantedObjects();
+    ASSERT_EQ(1u, all_origin_objects.size());
+    EXPECT_TRUE(all_origin_objects[0]->incognito);
+  }
+}

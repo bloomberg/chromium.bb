@@ -849,6 +849,44 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordPartialInheritDefault) {
           host, host, CONTENT_SETTINGS_TYPE_NOTIFICATIONS, std::string()));
 }
 
+TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
+  // Website settings marked DONT_INHERIT_IN_INCOGNITO in
+  // WebsiteSettingsRegistry (e.g. usb chooser data) don't inherit any values
+  // from from regular to incognito.
+  TestingProfile profile;
+  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+  HostContentSettingsMap* otr_map =
+      HostContentSettingsMapFactory::GetForProfile(otr_profile);
+
+  GURL host("http://example.com/");
+
+  // USB chooser data defaults to |nullptr|.
+  EXPECT_EQ(nullptr, host_content_settings_map->GetWebsiteSetting(
+                         host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                         std::string(), nullptr));
+  EXPECT_EQ(nullptr, otr_map->GetWebsiteSetting(
+                         host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                         std::string(), nullptr));
+
+  base::DictionaryValue test_value;
+  test_value.SetString("test", "value");
+  host_content_settings_map->SetWebsiteSettingDefaultScope(
+      host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
+      test_value.DeepCopy());
+
+  // The setting is not inherted by |otr_map|.
+  scoped_ptr<base::Value> stored_value =
+      host_content_settings_map->GetWebsiteSetting(
+          host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA, std::string(),
+          nullptr);
+  EXPECT_TRUE(stored_value && stored_value->Equals(&test_value));
+  EXPECT_EQ(nullptr, otr_map->GetWebsiteSetting(
+                         host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
+                         std::string(), nullptr));
+}
+
 // For a single Unicode encoded pattern, check if it gets converted to punycode
 // and old pattern gets deleted.
 TEST_F(HostContentSettingsMapTest, CanonicalizeExceptionsUnicodeOnly) {

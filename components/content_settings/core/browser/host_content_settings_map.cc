@@ -71,24 +71,39 @@ bool SchemeCanBeWhitelisted(const std::string& scheme) {
          scheme == content_settings::kChromeUIScheme;
 }
 
-// Prevents content settings marked INHERIT_IN_INCOGNITO_EXCEPT_ALLOW from
-// inheriting CONTENT_SETTING_ALLOW settings from regular to incognito.
-scoped_ptr<base::Value> CoerceSettingInheritedToIncognito(
+// Handles inheritance of settings from the regular profile into the incognito
+// profile.
+scoped_ptr<base::Value> ProcessIncognitoInheritanceBehavior(
     ContentSettingsType content_type,
     scoped_ptr<base::Value> value) {
-  const content_settings::ContentSettingsInfo* info =
+  // Website setting inheritance can be completely disallowed.
+  const content_settings::WebsiteSettingsInfo* website_settings_info =
+      content_settings::WebsiteSettingsRegistry::GetInstance()->Get(
+          content_type);
+  if (website_settings_info &&
+      website_settings_info->incognito_behavior() ==
+          content_settings::WebsiteSettingsInfo::DONT_INHERIT_IN_INCOGNITO) {
+    return nullptr;
+  }
+
+  // Content setting inheritance can be disabled for CONTENT_SETTING_ALLOW.
+  const content_settings::ContentSettingsInfo* content_settings_info =
       content_settings::ContentSettingsRegistry::GetInstance()->Get(
           content_type);
-  if (!info)
-    return value;
-  if (info->incognito_behavior() !=
-      content_settings::ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW)
-    return value;
-  ContentSetting setting = content_settings::ValueToContentSetting(value.get());
-  if (setting != CONTENT_SETTING_ALLOW)
-    return value;
-  DCHECK(info->IsSettingValid(CONTENT_SETTING_ASK));
-  return content_settings::ContentSettingToValue(CONTENT_SETTING_ASK);
+  if (content_settings_info) {
+    if (content_settings_info->incognito_behavior() !=
+        content_settings::ContentSettingsInfo::
+            INHERIT_IN_INCOGNITO_EXCEPT_ALLOW)
+      return value;
+    ContentSetting setting =
+        content_settings::ValueToContentSetting(value.get());
+    if (setting != CONTENT_SETTING_ALLOW)
+      return value;
+    DCHECK(content_settings_info->IsSettingValid(CONTENT_SETTING_ASK));
+    return content_settings::ContentSettingToValue(CONTENT_SETTING_ASK);
+  }
+
+  return value;
 }
 
 }  // namespace
@@ -189,9 +204,10 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
         GetDefaultContentSettingFromProvider(content_type, provider->second);
     if (is_off_the_record_) {
       default_setting = content_settings::ValueToContentSetting(
-          CoerceSettingInheritedToIncognito(
+          ProcessIncognitoInheritanceBehavior(
               content_type,
-              content_settings::ContentSettingToValue(default_setting)).get());
+              content_settings::ContentSettingToValue(default_setting))
+              .get());
     }
     if (default_setting != CONTENT_SETTING_DEFAULT) {
       if (provider_id)
@@ -735,7 +751,7 @@ HostContentSettingsMap::GetContentSettingValueAndPatterns(
       rule_iterator.get(), primary_url, secondary_url, primary_pattern,
       secondary_pattern);
   if (value && include_incognito)
-    value = CoerceSettingInheritedToIncognito(content_type, std::move(value));
+    value = ProcessIncognitoInheritanceBehavior(content_type, std::move(value));
   return value;
 }
 

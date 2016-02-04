@@ -42,12 +42,21 @@ class WebsiteSettingsInfo {
     REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE
   };
 
+  enum IncognitoBehavior {
+    // Settings will be inherited from regular to incognito profiles as usual.
+    INHERIT_IN_INCOGNITO,
+
+    // Settings will not be inherited from regular to incognito profiles.
+    DONT_INHERIT_IN_INCOGNITO,
+  };
+
   WebsiteSettingsInfo(ContentSettingsType type,
                       const std::string& name,
                       scoped_ptr<base::Value> initial_default_value,
                       SyncStatus sync_status,
                       LossyStatus lossy_status,
-                      ScopingType scoping_type);
+                      ScopingType scoping_type,
+                      IncognitoBehavior incognito_behavior);
   ~WebsiteSettingsInfo();
 
   ContentSettingsType type() const { return type_; }
@@ -64,6 +73,7 @@ class WebsiteSettingsInfo {
   uint32_t GetPrefRegistrationFlags() const;
 
   ScopingType scoping_type() const { return scoping_type_; }
+  IncognitoBehavior incognito_behavior() const { return incognito_behavior_; }
 
  private:
   const ContentSettingsType type_;
@@ -75,6 +85,7 @@ class WebsiteSettingsInfo {
   const SyncStatus sync_status_;
   const LossyStatus lossy_status_;
   const ScopingType scoping_type_;
+  const IncognitoBehavior incognito_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsInfo);
 };

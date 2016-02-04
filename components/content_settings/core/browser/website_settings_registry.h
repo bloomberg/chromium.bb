@@ -46,7 +46,8 @@ class WebsiteSettingsRegistry {
       scoped_ptr<base::Value> initial_default_value,
       WebsiteSettingsInfo::SyncStatus sync_status,
       WebsiteSettingsInfo::LossyStatus lossy_status,
-      WebsiteSettingsInfo::ScopingType scoping_type);
+      WebsiteSettingsInfo::ScopingType scoping_type,
+      WebsiteSettingsInfo::IncognitoBehavior incognito_behavior);
 
   const_iterator begin() const;
   const_iterator end() const;
