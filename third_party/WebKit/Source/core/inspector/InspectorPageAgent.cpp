@@ -77,6 +77,7 @@ namespace PageAgentState {
 static const char pageAgentEnabled[] = "pageAgentEnabled";
 static const char pageAgentScriptsToEvaluateOnLoad[] = "pageAgentScriptsToEvaluateOnLoad";
 static const char screencastEnabled[] = "screencastEnabled";
+static const char autoAttachToCreatedPages[] = "autoAttachToCreatedPages";
 }
 
 namespace {
@@ -410,6 +411,11 @@ void InspectorPageAgent::removeScriptToEvaluateOnLoad(ErrorString* error, const 
     scripts->remove(identifier);
 }
 
+void InspectorPageAgent::setAutoAttachToCreatedPages(ErrorString*, bool autoAttach)
+{
+    m_state->setBoolean(PageAgentState::autoAttachToCreatedPages, autoAttach);
+}
+
 void InspectorPageAgent::reload(ErrorString*, const bool* const optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad)
 {
     m_pendingScriptToEvaluateOnLoadOnce = optionalScriptToEvaluateOnLoad ? *optionalScriptToEvaluateOnLoad : "";
@@ -688,6 +694,12 @@ void InspectorPageAgent::didRecalculateStyle(int)
 {
     if (m_enabled && m_client)
         m_client->pageLayoutInvalidated();
+}
+
+void InspectorPageAgent::windowCreated(LocalFrame* created)
+{
+    if (m_enabled && m_state->booleanProperty(PageAgentState::autoAttachToCreatedPages, false))
+        m_client->waitForCreateWindow(created);
 }
 
 PassRefPtr<TypeBuilder::Page::Frame> InspectorPageAgent::buildObjectForFrame(LocalFrame* frame)

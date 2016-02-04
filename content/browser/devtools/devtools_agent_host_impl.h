@@ -35,7 +35,7 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   virtual void Detach() = 0;
 
   // Opens the inspector for this host.
-  void Inspect(BrowserContext* browser_context);
+  bool Inspect(BrowserContext* browser_context);
 
   // DevToolsAgentHost implementation.
   void AttachClient(DevToolsAgentHostClient* client) override;

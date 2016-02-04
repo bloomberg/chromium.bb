@@ -235,10 +235,13 @@ void DevToolsAgentHostImpl::NotifyCallbacks(
      (*it)->Run(agent_host, attached);
 }
 
-void DevToolsAgentHostImpl::Inspect(BrowserContext* browser_context) {
+bool DevToolsAgentHostImpl::Inspect(BrowserContext* browser_context) {
   DevToolsManager* manager = DevToolsManager::GetInstance();
-  if (manager->delegate())
+  if (manager->delegate()) {
     manager->delegate()->Inspect(browser_context, this);
+    return true;
+  }
+  return false;
 }
 
 // DevToolsMessageChunkProcessor -----------------------------------------------

@@ -152,3 +152,35 @@ void DevToolsWindowTesting::CloseDevToolsWindowSync(
   CloseDevToolsWindow(window);
   runner->Run();
 }
+
+// DevToolsWindowCreationObserver ---------------------------------------------
+
+DevToolsWindowCreationObserver::DevToolsWindowCreationObserver()
+    : devtools_window_(nullptr) {
+  DevToolsWindow::AddCreationCallbackForTest(base::Bind(
+      &DevToolsWindowCreationObserver::DevToolsWindowCreated,
+      base::Unretained(this)));
+}
+
+DevToolsWindowCreationObserver::~DevToolsWindowCreationObserver() {
+}
+
+void DevToolsWindowCreationObserver::Wait() {
+  if (devtools_window_)
+    return;
+  runner_ = new content::MessageLoopRunner();
+  runner_->Run();
+}
+
+void DevToolsWindowCreationObserver::WaitForLoad() {
+  Wait();
+  if (devtools_window_)
+    DevToolsWindowTesting::WaitForDevToolsWindowLoad(devtools_window_);
+}
+
+void DevToolsWindowCreationObserver::DevToolsWindowCreated(
+    DevToolsWindow* devtools_window) {
+  devtools_window_ = devtools_window;
+  if (runner_.get())
+      runner_->QuitClosure().Run();
+}

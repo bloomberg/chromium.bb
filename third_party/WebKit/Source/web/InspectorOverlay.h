@@ -32,7 +32,6 @@
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
-#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
@@ -63,7 +62,6 @@ class WebViewImpl;
 class InspectorOverlay final
     : public NoBaseWillBeGarbageCollectedFinalized<InspectorOverlay>
     , public InspectorDOMAgent::Client
-    , public InspectorPageAgent::Client
     , public InspectorProfilerAgent::Client
     , public InspectorOverlayHost::Listener {
     USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorOverlay);
@@ -81,6 +79,8 @@ public:
 
     void clear();
     bool handleInputEvent(const WebInputEvent&);
+    void pageLayoutInvalidated();
+    void setPausedInDebuggerMessage(const String*);
 
     // Does not yet include paint.
     void updateAllLifecyclePhases();
@@ -106,10 +106,6 @@ private:
     // InspectorProfilerAgent::Client implementation.
     void profilingStarted() override;
     void profilingStopped() override;
-
-    // InspectorPageAgent::Client implementation.
-    void pageLayoutInvalidated() override;
-    void setPausedInDebuggerMessage(const String*) override;
 
     // InspectorDOMAgent::Client implementation.
     void hideHighlight() override;

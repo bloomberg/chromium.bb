@@ -24,14 +24,20 @@ void ChromeDevToolsManagerDelegate::Inspect(
     content::BrowserContext* browser_context,
     content::DevToolsAgentHost* agent_host) {
 #if !defined(OS_ANDROID)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  if (!profile)
+    return;
   content::DevToolsAgentHost::Type type = agent_host->GetType();
-  if (type != content::DevToolsAgentHost::TYPE_SHARED_WORKER &&
-      type != content::DevToolsAgentHost::TYPE_SERVICE_WORKER) {
-    // TODO(horo): Support other types of DevToolsAgentHost when necessary.
-    NOTREACHED() << "Inspect() only supports workers.";
-  }
-  if (Profile* profile = Profile::FromBrowserContext(browser_context))
+  if (type == content::DevToolsAgentHost::TYPE_SHARED_WORKER ||
+      type == content::DevToolsAgentHost::TYPE_SERVICE_WORKER) {
     DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
+    return;
+  }
+  if (type == content::DevToolsAgentHost::TYPE_WEB_CONTENTS) {
+    content::WebContents* web_contents = agent_host->GetWebContents();
+    DCHECK(web_contents);
+    DevToolsWindow::OpenDevToolsWindow(web_contents);
+  }
 #endif  // !defined(OS_ANDROID)
 }
 

@@ -418,6 +418,9 @@ interface InspectorInstrumentation {
 
     [Animation, Inline=FastReturn]
     void animationPlayStateChanged(Document*, Animation*, Animation::AnimationPlayState oldPlayState, Animation::AnimationPlayState newPlayState);
+
+    [Page, Inline=FastReturn]
+    void windowCreated(LocalFrame* opener, LocalFrame* created);
 }
 
 interface InspectorConsoleInstrumentation {

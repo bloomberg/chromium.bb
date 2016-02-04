@@ -63,6 +63,7 @@ public:
         virtual ~Client() { }
         virtual void pageLayoutInvalidated() { }
         virtual void setPausedInDebuggerMessage(const String*) { }
+        virtual void waitForCreateWindow(LocalFrame*) { }
     };
 
     enum ResourceType {
@@ -98,6 +99,7 @@ public:
     void enable(ErrorString*) override;
     void addScriptToEvaluateOnLoad(ErrorString*, const String& source, String* result) override;
     void removeScriptToEvaluateOnLoad(ErrorString*, const String& identifier) override;
+    void setAutoAttachToCreatedPages(ErrorString*, bool autoAttach) override;
     void reload(ErrorString*, const bool* optionalIgnoreCache, const String* optionalScriptToEvaluateOnLoad) override;
     void navigate(ErrorString*, const String& url, String* frameId) override;
     void getResourceTree(ErrorString*, RefPtr<TypeBuilder::Page::FrameResourceTree>&) override;
@@ -124,6 +126,7 @@ public:
     void didUpdateLayout();
     void didResizeMainFrame();
     void didRecalculateStyle(int);
+    void windowCreated(LocalFrame*);
 
     // Inspector Controller API
     void disable(ErrorString*) override;

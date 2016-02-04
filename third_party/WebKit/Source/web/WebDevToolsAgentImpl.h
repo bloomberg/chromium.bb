@@ -32,6 +32,7 @@
 #define WebDevToolsAgentImpl_h
 
 #include "core/inspector/InspectorFrontendChannel.h"
+#include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorRuntimeAgent.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "platform/heap/Handle.h"
@@ -50,7 +51,6 @@ class GraphicsLayer;
 class InspectedFrames;
 class InspectorInspectorAgent;
 class InspectorOverlay;
-class InspectorPageAgent;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
@@ -72,6 +72,7 @@ class WebDevToolsAgentImpl final
     , public WebDevToolsAgent
     , public InspectorEmulationAgent::Client
     , public InspectorTracingAgent::Client
+    , public InspectorPageAgent::Client
     , public InspectorRuntimeAgent::Client
     , public InspectorFrontendChannel
     , private WebThread::TaskObserver {
@@ -104,6 +105,7 @@ public:
     void continueProgram() override;
     void dispatchOnInspectorBackend(int sessionId, const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
+    void failedToRequestDevTools() override;
     void evaluateInWebInspector(long callId, const WebString& script) override;
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 
@@ -119,6 +121,11 @@ private:
 
     // InspectorRuntimeAgent::Client implementation.
     void resumeStartup() override;
+
+    // InspectorPageAgent::Client implementation.
+    void pageLayoutInvalidated() override;
+    void setPausedInDebuggerMessage(const String*) override;
+    void waitForCreateWindow(LocalFrame*) override;
 
     // InspectorFrontendChannel implementation.
     void sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message) override;

@@ -131,6 +131,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
+  void OnDispatchOnInspectorFrontend(
+      RenderFrameHost* sender,
+      const DevToolsMessageChunk& message);
+  void OnRequestNewWindow(RenderFrameHost* sender, int new_routing_id);
   void DestroyOnRenderFrameGone();
 
   bool MatchesMyTreeNode(NavigationHandle* navigation_handle);

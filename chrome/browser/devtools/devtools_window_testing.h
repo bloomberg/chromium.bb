@@ -15,6 +15,7 @@ class Profile;
 
 namespace content {
 class DevToolsAgentHost;
+class MessageLoopRunner;
 class WebContents;
 }
 
@@ -46,6 +47,7 @@ class DevToolsWindowTesting {
 
  private:
   friend class DevToolsWindow;
+  friend class DevToolsWindowCreationObserver;
 
   explicit DevToolsWindowTesting(DevToolsWindow* window);
   static void WaitForDevToolsWindowLoad(DevToolsWindow* window);
@@ -56,6 +58,26 @@ class DevToolsWindowTesting {
   base::Closure close_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindowTesting);
+};
+
+class DevToolsWindowCreationObserver {
+ public:
+  DevToolsWindowCreationObserver();
+  ~DevToolsWindowCreationObserver();
+
+  DevToolsWindow* devtools_window() { return devtools_window_; }
+  void Wait();
+  void WaitForLoad();
+
+ private:
+  friend class DevToolsWindow;
+
+  void DevToolsWindowCreated(DevToolsWindow* devtools_window);
+
+  DevToolsWindow* devtools_window_;
+  scoped_refptr<content::MessageLoopRunner> runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsWindowCreationObserver);
 };
 
 #endif  // CHROME_BROWSER_DEVTOOLS_DEVTOOLS_WINDOW_TESTING_H_

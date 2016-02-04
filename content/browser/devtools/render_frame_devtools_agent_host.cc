@@ -671,24 +671,18 @@ bool RenderFrameDevToolsAgentHost::OnMessageReceived(
 bool RenderFrameDevToolsAgentHost::OnMessageReceived(
     const IPC::Message& message,
     RenderFrameHost* render_frame_host) {
-  if (message.type() != DevToolsClientMsg_DispatchOnInspectorFrontend::ID)
-    return false;
   if (!IsAttached())
     return false;
-
-  FrameHostHolder* holder = nullptr;
-  if (current_ && current_->host() == render_frame_host)
-    holder = current_.get();
-  if (pending_ && pending_->host() == render_frame_host)
-    holder = pending_.get();
-  if (!holder)
-    return false;
-
-  DevToolsClientMsg_DispatchOnInspectorFrontend::Param param;
-  if (!DevToolsClientMsg_DispatchOnInspectorFrontend::Read(&message, &param))
-    return false;
-  holder->ProcessChunkedMessageFromAgent(base::get<0>(param));
-  return true;
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(RenderFrameDevToolsAgentHost, message,
+                                   render_frame_host)
+    IPC_MESSAGE_HANDLER(DevToolsClientMsg_DispatchOnInspectorFrontend,
+                        OnDispatchOnInspectorFrontend)
+    IPC_MESSAGE_HANDLER(DevToolsAgentHostMsg_RequestNewWindow,
+                        OnRequestNewWindow)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
@@ -854,6 +848,33 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
         current_ ? current_->host() : nullptr,
         frame_metadata);
   }
+}
+
+void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
+    RenderFrameHost* sender,
+    const DevToolsMessageChunk& message) {
+  if (current_ && current_->host() == sender)
+    current_->ProcessChunkedMessageFromAgent(message);
+  else if (pending_ && pending_->host() == sender)
+    pending_->ProcessChunkedMessageFromAgent(message);
+}
+
+void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
+    RenderFrameHost* sender,
+    int new_routing_id) {
+  RenderFrameHostImpl* frame_host = RenderFrameHostImpl::FromID(
+      sender->GetProcess()->GetID(), new_routing_id);
+
+  bool success = false;
+  if (IsAttached() && sender->GetRoutingID() != new_routing_id && frame_host) {
+    scoped_refptr<DevToolsAgentHost> agent =
+        DevToolsAgentHost::GetOrCreateFor(frame_host);
+    success = static_cast<DevToolsAgentHostImpl*>(agent.get())->
+        Inspect(agent->GetBrowserContext());
+  }
+
+  sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(
+      sender->GetRoutingID(), success));
 }
 
 bool RenderFrameDevToolsAgentHost::HasRenderFrameHost(

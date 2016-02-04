@@ -67,6 +67,8 @@ class CONTENT_EXPORT DevToolsAgent
   void willEnterDebugLoop() override;
   void didExitDebugLoop() override;
 
+  bool requestDevToolsForFrame(blink::WebLocalFrame* frame) override;
+
   void enableTracing(const blink::WebString& category_filter) override;
   void disableTracing() override;
 
@@ -79,6 +81,7 @@ class CONTENT_EXPORT DevToolsAgent
   void OnDetach();
   void OnDispatchOnInspectorBackend(int session_id, const std::string& message);
   void OnInspectElement(int x, int y);
+  void OnRequestNewWindowACK(bool success);
   void ContinueProgram();
   void OnSetupDevToolsClient(const std::string& compatibility_script);
 

@@ -67,6 +67,9 @@ typedef std::vector<DevToolsWindow*> DevToolsWindows;
 base::LazyInstance<DevToolsWindows>::Leaky g_instances =
     LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<std::vector<base::Callback<void(DevToolsWindow*)>>>::Leaky
+    g_creation_callbacks = LAZY_INSTANCE_INITIALIZER;
+
 static const char kKeyUpEventName[] = "keyup";
 static const char kKeyDownEventName[] = "keydown";
 
@@ -302,6 +305,12 @@ DevToolsWindow::ObserverWithAccessor::~ObserverWithAccessor() {
 // DevToolsWindow -------------------------------------------------------------
 
 const char DevToolsWindow::kDevToolsApp[] = "DevToolsApp";
+
+// static
+void DevToolsWindow::AddCreationCallbackForTest(
+    const CreationCallback& callback) {
+  g_creation_callbacks.Get().push_back(callback);
+}
 
 DevToolsWindow::~DevToolsWindow() {
   life_stage_ = kClosing;
@@ -741,6 +750,11 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   // so that it shows up in the task manager.
   task_management::WebContentsTags::CreateForDevToolsContents(
       main_web_contents_);
+
+  std::vector<base::Callback<void(DevToolsWindow*)>> copy;
+  g_creation_callbacks.Get().swap(copy);
+  for (const auto& callback : copy)
+    callback.Run(this);
 }
 
 // static

@@ -88,6 +88,7 @@ const char kPageWithContentScript[] =
     "files/devtools/page_with_content_script.html";
 const char kNavigateBackTestPage[] =
     "files/devtools/navigate_back.html";
+const char kWindowOpenTestPage[] = "files/devtools/window_open.html";
 const char kChunkedTestPage[] = "chunked";
 const char kSlowTestPage[] =
     "chunked?waitBeforeHeaders=100&waitBetweenChunks=100&chunksNumber=2";
@@ -1021,6 +1022,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
 IN_PROC_BROWSER_TEST_F(DevToolsReattachAfterCrashTest,
                        TestReattachAfterCrashOnNetwork) {
   RunTestWithPanel("network");
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, AutoAttachToWindowOpen) {
+  OpenDevToolsWindow(kWindowOpenTestPage, false);
+  DispatchOnTestSuite(window_, "enableAutoAttachToCreatedPages");
+  DevToolsWindowCreationObserver observer;
+  ASSERT_TRUE(content::ExecuteScript(
+      GetInspectedTab(), "window.open('window_open.html', '_blank');"));
+  observer.WaitForLoad();
+  DispatchOnTestSuite(observer.devtools_window(), "waitForDebuggerPaused");
+  DevToolsWindowTesting::CloseDevToolsWindowSync(observer.devtools_window());
+  CloseDevToolsWindow();
 }
 
 IN_PROC_BROWSER_TEST_F(WorkerDevToolsSanityTest, InspectSharedWorker) {

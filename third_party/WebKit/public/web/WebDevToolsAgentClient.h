@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class WebLocalFrame;
 class WebString;
 struct WebDeviceEmulationParams;
 
@@ -64,6 +65,8 @@ public:
     virtual WebKitClientMessageLoop* createClientMessageLoop() { return 0; }
     virtual void willEnterDebugLoop() { }
     virtual void didExitDebugLoop() { }
+
+    virtual bool requestDevToolsForFrame(WebLocalFrame*) { return false; }
 
     virtual void enableTracing(const WebString& categoryFilter) { }
     virtual void disableTracing() { }

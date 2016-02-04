@@ -138,24 +138,51 @@ public:
     static void continueProgram()
     {
         // Release render thread if necessary.
-        if (s_instance && s_instance->m_running)
+        if (s_instance)
             s_instance->quitNow();
+    }
+
+    static void pauseForCreateWindow(WebLocalFrameImpl* frame)
+    {
+        if (s_instance)
+            s_instance->runForCreateWindow(frame);
+    }
+
+    static bool resumeForCreateWindow()
+    {
+        return s_instance ? s_instance->quitForCreateWindow() : false;
     }
 
 private:
     ClientMessageLoopAdapter(PassOwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> messageLoop)
-        : m_running(false)
+        : m_runningForDebugBreak(false)
+        , m_runningForCreateWindow(false)
         , m_messageLoop(messageLoop) { }
 
     void run(LocalFrame* frame) override
     {
-        if (m_running)
+        if (m_runningForDebugBreak)
             return;
-        m_running = true;
 
+        m_runningForDebugBreak = true;
+        if (!m_runningForCreateWindow)
+            runLoop(WebLocalFrameImpl::fromFrame(frame));
+    }
+
+    void runForCreateWindow(WebLocalFrameImpl* frame)
+    {
+        if (m_runningForCreateWindow)
+            return;
+
+        m_runningForCreateWindow = true;
+        if (!m_runningForDebugBreak)
+            runLoop(frame);
+    }
+
+    void runLoop(WebLocalFrameImpl* frame)
+    {
         // 0. Flush pending frontend messages.
-        WebLocalFrameImpl* frameImpl = WebLocalFrameImpl::fromFrame(frame);
-        WebDevToolsAgentImpl* agent = frameImpl->devToolsAgentImpl();
+        WebDevToolsAgentImpl* agent = frame->devToolsAgentImpl();
         agent->flushPendingProtocolNotifications();
 
         Vector<WebViewImpl*> views;
@@ -212,16 +239,30 @@ private:
         // 8. All views have been resumed, clear the set.
         m_frozenViews.clear();
         m_frozenWidgets.clear();
-
-        m_running = false;
     }
 
     void quitNow() override
     {
-        m_messageLoop->quitNow();
+        if (m_runningForDebugBreak) {
+            m_runningForDebugBreak = false;
+            if (!m_runningForCreateWindow)
+                m_messageLoop->quitNow();
+        }
     }
 
-    bool m_running;
+    bool quitForCreateWindow()
+    {
+        if (m_runningForCreateWindow) {
+            m_runningForCreateWindow = false;
+            if (!m_runningForDebugBreak)
+                m_messageLoop->quitNow();
+            return true;
+        }
+        return false;
+    }
+
+    bool m_runningForDebugBreak;
+    bool m_runningForCreateWindow;
     OwnPtr<WebDevToolsAgentClient::WebKitClientMessageLoop> m_messageLoop;
     typedef HashSet<WebViewImpl*> FrozenViewsSet;
     FrozenViewsSet m_frozenViews;
@@ -474,7 +515,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_inspectedFrames.get(), m_overlay.get(), m_resourceContentLoader.get(), debuggerAgent));
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent));
     m_pageAgent = pageAgentPtr.get();
     m_agents.append(pageAgentPtr.release());
 
@@ -635,6 +676,11 @@ void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
     m_domAgent->inspect(node);
 }
 
+void WebDevToolsAgentImpl::failedToRequestDevTools()
+{
+    ClientMessageLoopAdapter::resumeForCreateWindow();
+}
+
 void WebDevToolsAgentImpl::sendProtocolResponse(int sessionId, int callId, PassRefPtr<JSONObject> message)
 {
     if (!m_attached)
@@ -665,7 +711,31 @@ void WebDevToolsAgentImpl::flush()
 
 void WebDevToolsAgentImpl::resumeStartup()
 {
+    // If we've paused for createWindow, handle it ourselves.
+    if (ClientMessageLoopAdapter::resumeForCreateWindow())
+        return;
+    // Otherwise, pass to the client (embedded workers do it differently).
     m_client->resumeStartup();
+}
+
+void WebDevToolsAgentImpl::pageLayoutInvalidated()
+{
+    if (m_overlay)
+        m_overlay->pageLayoutInvalidated();
+}
+
+void WebDevToolsAgentImpl::setPausedInDebuggerMessage(const String* message)
+{
+    if (m_overlay)
+        m_overlay->setPausedInDebuggerMessage(message);
+}
+
+void WebDevToolsAgentImpl::waitForCreateWindow(LocalFrame* frame)
+{
+    if (!m_attached)
+        return;
+    if (m_client->requestDevToolsForFrame(WebLocalFrameImpl::fromFrame(frame)))
+        ClientMessageLoopAdapter::pauseForCreateWindow(m_webLocalFrameImpl);
 }
 
 void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)

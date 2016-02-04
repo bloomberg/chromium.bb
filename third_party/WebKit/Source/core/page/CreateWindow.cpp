@@ -32,6 +32,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
@@ -117,6 +118,8 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
         frame.loader().forceSandboxFlags(openerFrame.securityContext()->sandboxFlags());
 
+    // This call may suspend the execution by running nested message loop.
+    InspectorInstrumentation::windowCreated(&openerFrame, &frame);
     created = true;
     return &frame;
 }

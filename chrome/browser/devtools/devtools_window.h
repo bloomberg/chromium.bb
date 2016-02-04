@@ -213,6 +213,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
  private:
   friend class DevToolsWindowTesting;
+  friend class DevToolsWindowCreationObserver;
+
+  using CreationCallback = base::Callback<void(DevToolsWindow*)>;
+  static void AddCreationCallbackForTest(const CreationCallback& callback);
 
   // DevTools lifecycle typically follows this way:
   // - Toggle/Open: client call;
