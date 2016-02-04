@@ -113,7 +113,6 @@
       'browser/history/android/sqlite_cursor_unittest.cc',
       'browser/history/android/urls_sql_handler_unittest.cc',
       'browser/history/android/visit_sql_handler_unittest.cc',
-      'browser/history/web_history_service_unittest.cc',
       'browser/image_holder_unittest.cc',
       'browser/install_verification/win/loaded_module_verification_unittest.cc',
       'browser/install_verification/win/module_ids_unittest.cc',

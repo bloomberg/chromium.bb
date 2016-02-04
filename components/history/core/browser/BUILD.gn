@@ -156,6 +156,7 @@ source_set("unit_tests") {
     "visit_database_unittest.cc",
     "visit_filter_unittest.cc",
     "visit_tracker_unittest.cc",
+    "web_history_service_unittest.cc",
   ]
   deps = [
     ":browser",
@@ -165,6 +166,8 @@ source_set("unit_tests") {
     "//components/history/core/common",
     "//components/history/core/test",
     "//components/prefs:test_support",
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:test_support",
     "//components/sync_driver:test_support",
     "//sql",
     "//sql:test_support",

@@ -10,23 +10,18 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "chrome/browser/history/web_history_service_factory.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
-#include "chrome/test/base/testing_profile.h"
-#include "components/browser_sync/browser/profile_sync_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using history::WebHistoryService;
 using ::testing::Return;
+
+namespace history {
 
 namespace {
 
@@ -199,15 +194,6 @@ std::string TestingWebHistoryService::GetExpectedAudioHistoryValue() {
   return "false";
 }
 
-static scoped_ptr<KeyedService> BuildWebHistoryService(
-    content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  return make_scoped_ptr(new TestingWebHistoryService(
-      ProfileOAuth2TokenServiceFactory::GetForProfile(profile),
-      SigninManagerFactory::GetForProfile(profile),
-      profile->GetRequestContext()));
-}
-
 }  // namespace
 
 // A test class used for testing the WebHistoryService class.
@@ -218,133 +204,104 @@ static scoped_ptr<KeyedService> BuildWebHistoryService(
 class WebHistoryServiceTest : public testing::Test {
  public:
   WebHistoryServiceTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_DB_THREAD) {}
+      : signin_client_(nullptr),
+        signin_manager_(&signin_client_, &account_tracker_),
+        url_request_context_(new net::TestURLRequestContextGetter(
+            base::ThreadTaskRunnerHandle::Get())),
+        web_history_service_(&token_service_,
+                             &signin_manager_,
+                             url_request_context_) {}
+
   ~WebHistoryServiceTest() override {}
 
-  void SetUp() override {
-    ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        &profile_, &BuildMockProfileSyncService);
-    // Use SetTestingFactoryAndUse to force creation and initialization.
-    WebHistoryServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      &profile_, &BuildWebHistoryService);
-
-    ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
-    EXPECT_CALL(*sync_service,
-                IsSyncActive()).WillRepeatedly(Return(true));
-    syncer::ModelTypeSet result;
-    result.Put(syncer::HISTORY_DELETE_DIRECTIVES);
-    EXPECT_CALL(*sync_service,
-                GetActiveDataTypes()).WillRepeatedly(Return(result));
-  }
   void TearDown() override {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   run_loop.QuitClosure());
     run_loop.Run();
   }
-  Profile* profile() { return &profile_; }
 
-  ProfileSyncServiceMock* mock_sync_service() {
-    return static_cast<ProfileSyncServiceMock*>(
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
+  TestingWebHistoryService* web_history_service() {
+    return &web_history_service_;
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  base::MessageLoop message_loop_;
+  FakeProfileOAuth2TokenService token_service_;
+  AccountTrackerService account_tracker_;
+  TestSigninClient signin_client_;
+  FakeSigninManagerBase signin_manager_;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_;
+  TestingWebHistoryService web_history_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebHistoryServiceTest);
 };
 
 TEST_F(WebHistoryServiceTest, GetAudioHistoryEnabled) {
-  TestingWebHistoryService* web_history_service =
-    static_cast<TestingWebHistoryService*>(
-    WebHistoryServiceFactory::GetForProfile(profile()));
-  EXPECT_TRUE(web_history_service);
-
-  web_history_service->SetExpectedURL(
-    GURL("https://history.google.com/history/api/lookup?client=audio"));
-  web_history_service->SetExpectedAudioHistoryValue(true);
-  web_history_service->GetAudioHistoryEnabled(
-    base::Bind(&TestingWebHistoryService::GetAudioHistoryCallback,
-    base::Unretained(web_history_service)));
+  web_history_service()->SetExpectedURL(
+      GURL("https://history.google.com/history/api/lookup?client=audio"));
+  web_history_service()->SetExpectedAudioHistoryValue(true);
+  web_history_service()->GetAudioHistoryEnabled(
+      base::Bind(&TestingWebHistoryService::GetAudioHistoryCallback,
+                 base::Unretained(web_history_service())));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service)));
+                 base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledTrue) {
-  TestingWebHistoryService* web_history_service =
-      static_cast<TestingWebHistoryService*>(
-          WebHistoryServiceFactory::GetForProfile(profile()));
-  EXPECT_TRUE(web_history_service);
-
-  web_history_service->SetExpectedURL(
+  web_history_service()->SetExpectedURL(
       GURL("https://history.google.com/history/api/change"));
-  web_history_service->SetExpectedAudioHistoryValue(true);
-  web_history_service->SetExpectedPostData(
-    "{\"client\":\"audio\",\"enable_history_recording\":true}");
-  web_history_service->SetAudioHistoryEnabled(
-      true,
-      base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
-                 base::Unretained(web_history_service)));
+  web_history_service()->SetExpectedAudioHistoryValue(true);
+  web_history_service()->SetExpectedPostData(
+      "{\"client\":\"audio\",\"enable_history_recording\":true}");
+  web_history_service()->SetAudioHistoryEnabled(
+      true, base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
+                       base::Unretained(web_history_service())));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service)));
+                 base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, SetAudioHistoryEnabledFalse) {
-  TestingWebHistoryService* web_history_service =
-    static_cast<TestingWebHistoryService*>(
-    WebHistoryServiceFactory::GetForProfile(profile()));
-  EXPECT_TRUE(web_history_service);
-
-  web_history_service->SetExpectedURL(
-    GURL("https://history.google.com/history/api/change"));
-  web_history_service->SetExpectedAudioHistoryValue(false);
-  web_history_service->SetExpectedPostData(
-    "{\"client\":\"audio\",\"enable_history_recording\":false}");
-  web_history_service->SetAudioHistoryEnabled(
-    false,
-    base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
-    base::Unretained(web_history_service)));
+  web_history_service()->SetExpectedURL(
+      GURL("https://history.google.com/history/api/change"));
+  web_history_service()->SetExpectedAudioHistoryValue(false);
+  web_history_service()->SetExpectedPostData(
+      "{\"client\":\"audio\",\"enable_history_recording\":false}");
+  web_history_service()->SetAudioHistoryEnabled(
+      false, base::Bind(&TestingWebHistoryService::SetAudioHistoryCallback,
+                        base::Unretained(web_history_service())));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service)));
+                 base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, MultipleRequests) {
-  TestingWebHistoryService* web_history_service =
-    static_cast<TestingWebHistoryService*>(
-    WebHistoryServiceFactory::GetForProfile(profile()));
-  EXPECT_TRUE(web_history_service);
+  web_history_service()->SetExpectedURL(
+      GURL("https://history.google.com/history/api/change"));
+  web_history_service()->SetExpectedAudioHistoryValue(false);
+  web_history_service()->SetExpectedPostData(
+      "{\"client\":\"audio\",\"enable_history_recording\":false}");
+  web_history_service()->SetAudioHistoryEnabled(
+      false, base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
+                        base::Unretained(web_history_service())));
 
-  web_history_service->SetExpectedURL(
-    GURL("https://history.google.com/history/api/change"));
-  web_history_service->SetExpectedAudioHistoryValue(false);
-  web_history_service->SetExpectedPostData(
-    "{\"client\":\"audio\",\"enable_history_recording\":false}");
-  web_history_service->SetAudioHistoryEnabled(
-    false,
-    base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
-    base::Unretained(web_history_service)));
-
-  web_history_service->SetExpectedURL(
-    GURL("https://history.google.com/history/api/lookup?client=audio"));
-  web_history_service->SetExpectedPostData("");
-  web_history_service->GetAudioHistoryEnabled(
-    base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
-    base::Unretained(web_history_service)));
+  web_history_service()->SetExpectedURL(
+      GURL("https://history.google.com/history/api/lookup?client=audio"));
+  web_history_service()->SetExpectedPostData("");
+  web_history_service()->GetAudioHistoryEnabled(
+      base::Bind(&TestingWebHistoryService::MultipleRequestsCallback,
+                 base::Unretained(web_history_service())));
 
   // Check that both requests are no longer pending.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&TestingWebHistoryService::EnsureNoPendingRequestsRemain,
-                 base::Unretained(web_history_service)));
+                 base::Unretained(web_history_service())));
 }
 
 TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
@@ -431,3 +388,5 @@ TEST_F(WebHistoryServiceTest, VerifyReadResponse) {
                                            &enabled_value));
   EXPECT_TRUE(enabled_value);
 }
+
+}  // namespace history

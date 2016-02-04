@@ -292,6 +292,7 @@
       'history/core/browser/visit_database_unittest.cc',
       'history/core/browser/visit_filter_unittest.cc',
       'history/core/browser/visit_tracker_unittest.cc',
+      'history/core/browser/web_history_service_unittest.cc',
       'history/core/common/thumbnail_score_unittest.cc',
     ],
     'instance_id_unittest_sources': [
