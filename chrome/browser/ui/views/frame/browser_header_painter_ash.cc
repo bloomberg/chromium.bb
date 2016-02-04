@@ -148,6 +148,9 @@ void BrowserHeaderPainterAsh::Init(
   view_ = header_view;
   window_icon_ = window_icon;
   caption_button_container_ = caption_button_container;
+  // Use light images in otr, even when a custom theme is installed. The
+  // otr window with a custom theme is still darker than a normal window.
+  caption_button_container_->SetUseLightImages(is_incognito_);
 }
 
 int BrowserHeaderPainterAsh::GetMinimumHeaderWidth() const {
