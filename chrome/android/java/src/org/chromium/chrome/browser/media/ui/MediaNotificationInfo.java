@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.chromium.chrome.browser.tab.Tab;
@@ -48,6 +50,8 @@ public class MediaNotificationInfo {
         private int mIcon = -1;
         private int mActions = ACTION_PLAY_PAUSE | ACTION_SWIPEAWAY;
         private int mId = INVALID_ID;
+        private Intent mContentIntent = null;
+        private Bitmap mImage = null;
         private MediaNotificationListener mListener = null;
 
         /**
@@ -60,6 +64,7 @@ public class MediaNotificationInfo {
             assert mTitle != null;
             assert mOrigin != null;
             assert mListener != null;
+            assert mContentIntent != null;
 
             return new MediaNotificationInfo(
                     mTitle,
@@ -70,6 +75,8 @@ public class MediaNotificationInfo {
                     mIcon,
                     mActions,
                     mId,
+                    mImage,
+                    mContentIntent,
                     mListener);
         }
 
@@ -110,6 +117,16 @@ public class MediaNotificationInfo {
 
         public Builder setId(int id) {
             mId = id;
+            return this;
+        }
+
+        public Builder setImage(Bitmap image) {
+            mImage = image;
+            return this;
+        }
+
+        public Builder setContentIntent(Intent intent) {
+            mContentIntent = intent;
             return this;
         }
 
@@ -160,6 +177,16 @@ public class MediaNotificationInfo {
     public final int id;
 
     /**
+     * The bitmap of the image, if any.
+     */
+    public final Bitmap image;
+
+    /**
+     * The intent to send when the notification is selected.
+     */
+    public final Intent contentIntent;
+
+    /**
      * The listener for the control events.
      */
     public final MediaNotificationListener listener;
@@ -192,6 +219,8 @@ public class MediaNotificationInfo {
      * @param origin The origin of the tab containing the media.
      * @param tabId The id of the tab containing the media.
      * @param isPrivate Whether the media notification should be considered as private.
+     * @param image An image associated with the media, displayed in icons etc..
+     * @param contentIntent the intent to send when the notification is selected.
      * @param listener The listener for the control events.
      */
     private MediaNotificationInfo(
@@ -203,6 +232,8 @@ public class MediaNotificationInfo {
             int icon,
             int actions,
             int id,
+            Bitmap image,
+            Intent contentIntent,
             MediaNotificationListener listener) {
         this.title = title;
         this.isPaused = isPaused;
@@ -212,6 +243,8 @@ public class MediaNotificationInfo {
         this.icon = icon;
         this.mActions = actions;
         this.id = id;
+        this.contentIntent = contentIntent;
+        this.image = image;
         this.listener = listener;
     }
 
@@ -229,6 +262,8 @@ public class MediaNotificationInfo {
                 && id == other.id
                 && TextUtils.equals(title, other.title)
                 && TextUtils.equals(origin, other.origin)
+                && image == other.image || (image != null && image.sameAs(other.image))
+                && contentIntent.equals(other.contentIntent)
                 && listener.equals(other.listener);
     }
 
@@ -238,6 +273,8 @@ public class MediaNotificationInfo {
         result = 31 * result + (isPrivate ? 1 : 0);
         result = 31 * result + (title == null ? 0 : title.hashCode());
         result = 31 * result + (origin == null ? 0 : origin.hashCode());
+        result = 31 * result + (image == null ? 0 : image.hashCode());
+        result = 31 * result + (contentIntent == null ? 0 : contentIntent.hashCode());
         result = 31 * result + tabId;
         result = 31 * result + icon;
         result = 31 * result + mActions;

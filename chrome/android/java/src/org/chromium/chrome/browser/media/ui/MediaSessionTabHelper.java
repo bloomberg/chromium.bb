@@ -106,6 +106,7 @@ public class MediaSessionTabHelper {
                         .setIcon(R.drawable.audio_playing)
                         .setActions(MediaNotificationInfo.ACTION_PLAY_PAUSE
                                 | MediaNotificationInfo.ACTION_SWIPEAWAY)
+                        .setContentIntent(Tab.createBringTabToFrontIntent(mTab.getId()))
                         .setId(R.id.media_playback_notification)
                         .setListener(mControlsListener);
 

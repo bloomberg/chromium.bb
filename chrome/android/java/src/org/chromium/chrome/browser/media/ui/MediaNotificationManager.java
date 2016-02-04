@@ -31,7 +31,6 @@ import android.widget.RemoteViews;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.tab.Tab;
 
 import javax.annotation.Nullable;
 
@@ -201,7 +200,20 @@ public class MediaNotificationManager {
         }
     }
 
-    // Two classes to specify the right notification id in the intent.
+    /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class CastListenerService extends ListenerService {
+        private static final int NOTIFICATION_ID = R.id.remote_notification;
+
+        @Override
+        @Nullable
+        protected MediaNotificationManager getManager() {
+            return MediaNotificationManager.getManager(NOTIFICATION_ID);
+        }
+    }
+
+    // Three classes to specify the right notification id in the intent.
 
     /**
      * This class is used internally but have to be public to be able to launch the service.
@@ -223,12 +235,24 @@ public class MediaNotificationManager {
         }
     }
 
+    /**
+     * This class is used internally but have to be public to be able to launch the service.
+     */
+    public static final class CastMediaButtonReceiver extends MediaButtonReceiver {
+        @Override
+        public String getServiceClassName() {
+            return CastListenerService.class.getName();
+        }
+    }
+
     private Intent createIntent(Context context) {
         Intent intent = null;
         if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
             intent = new Intent(context, PlaybackListenerService.class);
         } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
             intent = new Intent(context, PresentationListenerService.class);
+        }  else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
+            intent = new Intent(context, CastListenerService.class);
         }
         return intent;
     }
@@ -246,6 +270,10 @@ public class MediaNotificationManager {
 
         if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
             return PresentationMediaButtonReceiver.class.getName();
+        }
+
+        if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
+            return CastMediaButtonReceiver.class.getName();
         }
 
         assert false;
@@ -348,7 +376,7 @@ public class MediaNotificationManager {
 
     private Bitmap mNotificationIcon;
 
-    private final Bitmap mMediaSessionIcon;
+    private final Bitmap mDefaultMediaSessionImage;
 
     // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
     private MediaNotificationInfo mMediaNotificationInfo;
@@ -383,8 +411,8 @@ public class MediaNotificationManager {
 
         // The MediaSession icon is a plain color.
         int size = context.getResources().getDimensionPixelSize(R.dimen.media_session_icon_size);
-        mMediaSessionIcon = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-        mMediaSessionIcon.eraseColor(ApiCompatibilityUtils.getColor(
+        mDefaultMediaSessionImage = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        mDefaultMediaSessionImage.eraseColor(ApiCompatibilityUtils.getColor(
                 context.getResources(), R.color.media_session_icon_color));
     }
 
@@ -506,19 +534,29 @@ public class MediaNotificationManager {
     private MediaMetadataCompat createMetadata() {
         MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
 
+        // Choose the image to use as the icon.
+        Bitmap mediaSessionImage = mMediaNotificationInfo.image == null ? mDefaultMediaSessionImage
+                : mMediaNotificationInfo.image;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE,
                     mMediaNotificationInfo.title);
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE,
                     mMediaNotificationInfo.origin);
             metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_DISPLAY_ICON,
-                    mMediaSessionIcon);
+                    mediaSessionImage);
+            // METADATA_KEY_ART is optional and should only be used if we can provide something
+            // better than the default image.
+            if (mMediaNotificationInfo.image != null) {
+                metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART,
+                        mMediaNotificationInfo.image);
+            }
         } else {
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE,
                     mMediaNotificationInfo.title);
             metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,
                     mMediaNotificationInfo.origin);
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, mMediaSessionIcon);
+            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, mediaSessionImage);
         }
 
         return metadataBuilder.build();
@@ -549,12 +587,8 @@ public class MediaNotificationManager {
             mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
         }
 
-        int tabId = mMediaNotificationInfo.tabId;
-        Intent tabIntent = Tab.createBringTabToFrontIntent(tabId);
-        if (tabIntent != null) {
-            mNotificationBuilder
-                    .setContentIntent(PendingIntent.getActivity(mContext, tabId, tabIntent, 0));
-        }
+        mNotificationBuilder.setContentIntent(
+                PendingIntent.getActivity(mContext, 0, mMediaNotificationInfo.contentIntent, 0));
 
         mNotificationBuilder.setContent(createContentView());
         mNotificationBuilder.setVisibility(

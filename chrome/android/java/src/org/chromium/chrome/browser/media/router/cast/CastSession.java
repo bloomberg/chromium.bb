@@ -24,6 +24,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -243,6 +244,7 @@ public class CastSession implements MediaNotificationListener {
                 .setPrivate(false)
                 .setIcon(R.drawable.ic_notification_media_route)
                 .setActions(MediaNotificationInfo.ACTION_STOP)
+                .setContentIntent(Tab.createBringTabToFrontIntent(tabId))
                 .setId(R.id.presentation_notification)
                 .setListener(this);
         MediaNotificationManager.show(context, mNotificationBuilder.build());
