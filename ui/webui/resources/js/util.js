@@ -11,9 +11,19 @@
  */
 function $(id) {
   var el = document.getElementById(id);
-  var message =
-      'Element ' + el + ' with id "' + id + '" is not an HTMLElement.';
-  return el ? assertInstanceof(el, HTMLElement, message) : null;
+  return el ? assertInstanceof(el, HTMLElement) : null;
+}
+
+// TODO(devlin): This should return SVGElement, but closure compiler is missing
+// those externs.
+/**
+ * Alias for document.getElementById. Found elements must be SVGElements.
+ * @param {string} id The ID of the element to find.
+ * @return {Element} The found element or null if not found.
+ */
+function getSVGElement(id) {
+  var el = document.getElementById(id);
+  return el ? assertInstanceof(el, Element) : null;
 }
 
 /**

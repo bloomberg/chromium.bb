@@ -85,12 +85,11 @@ cr.define('cr.FirstRun', function() {
 
       // Note: we don't use $() here because these are SVGElements, not
       // HTMLElements.
-      var getAnyElement = document.getElementById.bind(document);
-      this.background_ = getAnyElement('background');
-      this.mask_ = getAnyElement('mask');
-      this.rectangularHolePattern_ = getAnyElement('rectangular-hole-pattern');
+      this.background_ = getSVGElement('background');
+      this.mask_ = getSVGElement('mask');
+      this.rectangularHolePattern_ = getSVGElement('rectangular-hole-pattern');
       this.rectangularHolePattern_.removeAttribute('id');
-      this.roundHolePattern_ = getAnyElement('round-hole-pattern');
+      this.roundHolePattern_ = getSVGElement('round-hole-pattern');
       this.roundHolePattern_.removeAttribute('id');
 
       this.backgroundContainer_ = $('background-container');
