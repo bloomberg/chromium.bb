@@ -7774,10 +7774,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 I don't think this site should be blocked!
       </message>
 
-      <message name="IDS_SECURE_CONNECTION_EV" desc="Short text shown in the location bar when the connection is secure with an EV cert.">
-        <ph name="ORGANIZATION">$1<ex>Paypal Inc.</ex></ph> [<ph name="COUNTRY">$2<ex>US</ex></ph>]
-      </message>
-
       <!-- Content Settings dialog data -->
       <message name="IDS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog">
         Content settings
