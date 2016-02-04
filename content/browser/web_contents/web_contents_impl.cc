@@ -2341,6 +2341,10 @@ void WebContentsImpl::ReloadFocusedFrame(bool ignore_cache) {
       focused_frame->GetRoutingID(), ignore_cache));
 }
 
+void WebContentsImpl::ReloadLoFiImages() {
+  SendToAllFrames(new FrameMsg_ReloadLoFiImages(MSG_ROUTING_NONE));
+}
+
 void WebContentsImpl::Undo() {
   RenderFrameHost* focused_frame = GetFocusedFrame();
   if (!focused_frame)

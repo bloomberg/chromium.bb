@@ -132,6 +132,7 @@ public:
     void reload(bool ignoreCache) override;
     void reloadWithOverrideURL(const WebURL& overrideUrl, bool ignoreCache) override;
     void reloadImage(const WebNode&) override;
+    void reloadLoFiImages() override;
     void loadRequest(const WebURLRequest&) override;
     void loadHistoryItem(const WebHistoryItem&, WebHistoryLoadType, WebURLRequest::CachePolicy) override;
     void loadData(

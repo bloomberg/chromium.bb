@@ -682,6 +682,11 @@ void WebContentsAndroid::OnContextMenuClosed(JNIEnv* env,
       ->NotifyContextMenuClosed(CustomContextMenuContext());
 }
 
+void WebContentsAndroid::ReloadLoFiImages(JNIEnv* env,
+                                          const JavaParamRef<jobject>& obj) {
+  static_cast<WebContentsImpl*>(web_contents_)->ReloadLoFiImages();
+}
+
 void WebContentsAndroid::OnFinishGetContentBitmap(
     ScopedJavaGlobalRef<jobject>* obj,
     ScopedJavaGlobalRef<jobject>* callback,

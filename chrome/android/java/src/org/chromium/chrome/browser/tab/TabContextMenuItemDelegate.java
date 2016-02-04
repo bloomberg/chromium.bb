@@ -73,8 +73,8 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
-    public void onReloadDisableLoFi() {
-        mTab.reloadDisableLoFi();
+    public void onReloadLoFiImages() {
+        mTab.reloadLoFiImages();
     }
 
     @Override

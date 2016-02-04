@@ -30,6 +30,7 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
@@ -1062,6 +1063,17 @@ void ResourceFetcher::updateAllImageResourcePriorities()
         resource->didChangePriority(resourceLoadPriority, resourcePriority.intraPriorityValue);
         TRACE_EVENT_ASYNC_STEP_INTO1("blink.net", "Resource", resource, "ChangePriority", "priority", resourceLoadPriority);
         context().dispatchDidChangeResourcePriority(resource->identifier(), resourceLoadPriority, resourcePriority.intraPriorityValue);
+    }
+}
+
+void ResourceFetcher::reloadLoFiImages()
+{
+    for (const auto& documentResource : m_documentResources) {
+        Resource* resource = documentResource.value.get();
+        if (resource && resource->isImage()) {
+            ImageResource* imageResource = toImageResource(resource);
+            imageResource->reloadIfLoFi(this);
+        }
     }
 }
 

@@ -429,6 +429,16 @@ void ImageResource::updateImageAnimationPolicy()
     }
 }
 
+void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
+{
+    if (!m_response.httpHeaderField("chrome-proxy").contains("q=low"))
+        return;
+    m_resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
+    m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
+    error(Resource::LoadError);
+    load(fetcher, fetcher->defaultResourceOptions());
+}
+
 void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect)
 {
     if (!image || image != m_image)

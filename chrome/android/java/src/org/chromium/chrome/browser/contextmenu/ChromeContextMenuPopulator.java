@@ -283,7 +283,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_IMAGES);
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                     DataReductionProxyUma.ACTION_LOAD_IMAGES_CONTEXT_MENU_CLICKED);
-            mDelegate.onReloadDisableLoFi();
+            mDelegate.onReloadLoFiImages();
         } else if (itemId == R.id.contextmenu_load_original_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_LOAD_ORIGINAL_IMAGE);
             DataReductionProxyUma.dataReductionProxyLoFiUIAction(

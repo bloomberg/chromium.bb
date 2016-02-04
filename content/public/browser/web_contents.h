@@ -420,6 +420,10 @@ class WebContents : public PageNavigator,
   // Reloads the focused frame.
   virtual void ReloadFocusedFrame(bool ignore_cache) = 0;
 
+  // Reloads all the Lo-Fi images in this WebContents. Ignores the cache and
+  // reloads from the network.
+  virtual void ReloadLoFiImages() = 0;
+
   // Editing commands ----------------------------------------------------------
 
   virtual void Undo() = 0;

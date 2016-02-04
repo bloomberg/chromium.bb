@@ -178,6 +178,9 @@ class CONTENT_EXPORT WebContentsAndroid
   void OnContextMenuClosed(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj);
 
+  void ReloadLoFiImages(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+
   void set_synchronous_compositor_client(SynchronousCompositorClient* client) {
     synchronous_compositor_client_ = client;
   }

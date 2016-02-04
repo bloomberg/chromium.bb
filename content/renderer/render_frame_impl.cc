@@ -1393,6 +1393,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetEditableSelectionOffsets,
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
+    IPC_MESSAGE_HANDLER(FrameMsg_ReloadLoFiImages, OnReloadLoFiImages)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
@@ -2128,6 +2129,11 @@ void RenderFrameImpl::OnPostMessageEvent(
 
 void RenderFrameImpl::OnReload(bool ignore_cache) {
   frame_->reload(ignore_cache);
+}
+
+void RenderFrameImpl::OnReloadLoFiImages() {
+  is_using_lofi_ = false;
+  GetWebFrame()->reloadLoFiImages();
 }
 
 void RenderFrameImpl::OnTextSurroundingSelectionRequest(size_t max_length) {
@@ -3133,9 +3139,13 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       DocumentState::FromDataSource(frame->dataSource());
   NavigationStateImpl* navigation_state =
       static_cast<NavigationStateImpl*>(document_state->navigation_state());
-  WebURLResponseExtraDataImpl* extra_data = GetExtraDataFromResponse(
-      frame->dataSource()->response());
-  is_using_lofi_ = extra_data && extra_data->is_using_lofi();
+  WebURLResponseExtraDataImpl* extra_data =
+      GetExtraDataFromResponse(frame->dataSource()->response());
+  // Only update LoFi state for new main frame documents. Subframes inherit from
+  // the main frame and should not change at commit time.
+  if (is_main_frame_ && !navigation_state->WasWithinSamePage()) {
+    is_using_lofi_ = extra_data && extra_data->is_using_lofi();
+  }
 
   if (proxy_routing_id_ != MSG_ROUTING_NONE) {
     RenderFrameProxy* proxy =

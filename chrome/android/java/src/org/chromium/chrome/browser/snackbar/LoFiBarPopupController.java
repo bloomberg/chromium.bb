@@ -23,6 +23,10 @@ import org.chromium.chrome.browser.tab.TabObserver;
  * When the load images button is clicked, it will reload the page without Lo-Fi.
  */
 public class LoFiBarPopupController implements SnackbarManager.SnackbarController {
+    /** Snackbar types */
+    private static final int LOFI_SNACKBAR = 0;
+    private static final int PREVIEW_SNACKBAR = 1;
+
     private static final int DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS = 6000;
     private final SnackbarManager mSnackbarManager;
     private final Context mContext;
@@ -95,8 +99,9 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
         String buttonText = mContext
                 .getString(isPreview ? R.string.data_reduction_lo_fi_preview_snackbar_action
                         : R.string.data_reduction_lo_fi_snackbar_action);
+
         mSnackbarManager.showSnackbar(Snackbar.make(message, this, Snackbar.TYPE_NOTIFICATION)
-                .setAction(buttonText, tab.getId())
+                .setAction(buttonText, isPreview ? PREVIEW_SNACKBAR : LOFI_SNACKBAR)
                 .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
         DataReductionProxySettings.getInstance().incrementLoFiSnackbarShown();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
@@ -116,7 +121,21 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
     @Override
     public void onAction(Object actionData) {
         mSnackbarManager.dismissSnackbars(this);
-        mTab.reloadDisableLoFi();
+
+        if (actionData == null) return;
+        int snackbarType = (int) actionData;
+        switch (snackbarType) {
+            case PREVIEW_SNACKBAR:
+                mTab.reloadDisableLoFi();
+                break;
+            case LOFI_SNACKBAR:
+                mTab.reloadLoFiImages();
+                break;
+            default:
+                assert false;
+                break;
+        }
+
         DataReductionProxySettings.getInstance().incrementLoFiUserRequestsForImages();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_CLICKED);

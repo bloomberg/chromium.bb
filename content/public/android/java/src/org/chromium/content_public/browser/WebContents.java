@@ -349,4 +349,8 @@ public interface WebContents extends Parcelable {
 
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback);
+    /**
+     * Reloads all the Lo-Fi images in this WebContents.
+     */
+    public void reloadLoFiImages();
 }

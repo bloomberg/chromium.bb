@@ -966,6 +966,11 @@ void WebLocalFrameImpl::reloadImage(const WebNode& webNode)
     }
 }
 
+void WebLocalFrameImpl::reloadLoFiImages()
+{
+    frame()->document()->fetcher()->reloadLoFiImages();
+}
+
 void WebLocalFrameImpl::loadRequest(const WebURLRequest& request)
 {
     // TODO(clamy): Remove this function once RenderFrame calls load for all

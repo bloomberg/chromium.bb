@@ -317,6 +317,7 @@ class CONTENT_EXPORT WebContentsImpl
   void ReplaceMisspelling(const base::string16& word) override;
   void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) override;
+  void ReloadLoFiImages() override;
   void ExecuteCustomContextMenuCommand(
       int action,
       const CustomContextMenuContext& context) override;

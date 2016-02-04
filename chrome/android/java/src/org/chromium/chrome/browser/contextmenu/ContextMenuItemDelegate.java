@@ -63,9 +63,9 @@ public interface ContextMenuItemDelegate {
     void onOpenImageUrl(String url, Referrer referrer);
 
     /**
-     * Called when the page should be reloaded with Lo-Fi disabled.
+     *  Reloads all the Lo-Fi images in a Tab.
      */
-    void onReloadDisableLoFi();
+    void onReloadLoFiImages();
 
     /**
      * Called when the original image should be loaded.

@@ -151,6 +151,8 @@ public:
 
     void updateAllImageResourcePriorities();
 
+    void reloadLoFiImages();
+
     // This is only exposed for testing purposes.
     WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>* preloads() { return m_preloads.get(); }
 

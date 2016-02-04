@@ -189,6 +189,10 @@ public:
     // If the provided node is an image, reload the image disabling Lo-Fi.
     virtual void reloadImage(const WebNode&) = 0;
 
+    // Reloads all the Lo-Fi images in this WebLocalFrame. Ignores the cache and
+    // reloads from the network.
+    virtual void reloadLoFiImages() = 0;
+
     // Feature usage logging --------------------------------------------------
 
     virtual void didCallAddSearchProvider() = 0;

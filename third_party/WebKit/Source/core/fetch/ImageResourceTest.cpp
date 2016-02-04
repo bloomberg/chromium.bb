@@ -220,4 +220,45 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ASSERT_TRUE(cachedImage->image()->isBitmapImage());
 }
 
+TEST(ImageResourceTest, ReloadIfLoFi)
+{
+    KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
+    URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL), nullptr);
+    cachedImage->setLoading(true);
+
+    MockImageResourceClient client(cachedImage);
+    ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
+
+    // Send the image response.
+    Vector<unsigned char> jpeg = jpegImage();
+    ResourceResponse resourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String());
+    resourceResponse.addHTTPHeaderField("chrome-proxy", "q=low");
+
+    cachedImage->responseReceived(resourceResponse, nullptr);
+    cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
+    cachedImage->finish();
+    ASSERT_FALSE(cachedImage->errorOccurred());
+    ASSERT_TRUE(cachedImage->hasImage());
+    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_EQ(client.imageChangedCount(), 2);
+    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_TRUE(cachedImage->image()->isBitmapImage());
+
+    cachedImage->reloadIfLoFi(fetcher);
+    ASSERT_FALSE(cachedImage->errorOccurred());
+    ASSERT_FALSE(cachedImage->resourceBuffer());
+    ASSERT_FALSE(cachedImage->hasImage());
+    ASSERT_EQ(client.imageChangedCount(), 3);
+
+    cachedImage->responseReceived(resourceResponse, nullptr);
+    cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
+    cachedImage->finish();
+    ASSERT_FALSE(cachedImage->errorOccurred());
+    ASSERT_TRUE(cachedImage->hasImage());
+    ASSERT_FALSE(cachedImage->image()->isNull());
+    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_TRUE(cachedImage->image()->isBitmapImage());
+}
+
 } // namespace blink
