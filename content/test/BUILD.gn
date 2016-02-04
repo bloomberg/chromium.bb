@@ -346,16 +346,14 @@ test("content_browsertests") {
 
   if (is_android || is_linux || is_mac || is_win) {
     data = [
+      "$root_out_dir/content_shell.pak",
       "data/",
       "//net/data/",
       "//media/test/data/",
     ]
 
-    if (is_android) {
-      data += [ "$root_out_dir/content_shell_assets/content_shell.pak" ]
-    } else {
+    if (!is_android) {
       data += [
-        "$root_out_dir/content_shell.pak",
         "//net/tools/testserver/",
         "//ppapi/tests/test_case.html",
         "//ppapi/tests/test_page.css",
@@ -559,16 +557,11 @@ test("content_unittests") {
 
   if (is_android || is_linux || is_mac || is_win) {
     data = [
+      "$root_out_dir/content_shell.pak",
       "data/",
       "//net/data/ssl/certificates/",
       "//media/test/data/",
     ]
-
-    if (is_android) {
-      data += [ "$root_out_dir/content_shell_assets/content_shell.pak" ]
-    } else {
-      data += [ "$root_out_dir/content_shell.pak" ]
-    }
   }
 
   configs += [ "//build/config:precompiled_headers" ]
