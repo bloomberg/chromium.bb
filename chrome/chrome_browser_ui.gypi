@@ -2813,9 +2813,6 @@
     'chrome_browser_ui_toolbar_model_sources': [
       'browser/ui/toolbar/chrome_toolbar_model_delegate.cc',
       'browser/ui/toolbar/chrome_toolbar_model_delegate.h',
-      'browser/ui/toolbar/toolbar_model_delegate.h',
-      'browser/ui/toolbar/toolbar_model_impl.cc',
-      'browser/ui/toolbar/toolbar_model_impl.h',
     ],
     'chrome_browser_ui_webrtc_sources': [
       'browser/ui/webui/media/webrtc_logs_ui.cc',

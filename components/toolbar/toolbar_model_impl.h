@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
-#define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
+#ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
+#define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
 
 #include <stddef.h>
 
@@ -16,11 +16,6 @@
 #include "url/gurl.h"
 
 class ToolbarModelDelegate;
-
-namespace content {
-class NavigationController;
-class WebContents;
-}
 
 namespace net {
 class X509Certificate;
@@ -61,4 +56,4 @@ class ToolbarModelImpl : public ToolbarModel {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarModelImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_IMPL_H_
+#endif  // COMPONENTS_TOOLBAR_TOOLBAR_MODEL_IMPL_H_

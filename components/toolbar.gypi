@@ -10,8 +10,16 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        '../ui/base/ui_base.gyp:ui_base',
+        '../ui/gfx/gfx.gyp:gfx',
         '../url/url.gyp:url_lib',
+        'components_resources.gyp:components_resources',
+        'components_strings.gyp:components_strings',
+        'google_core_browser',
+        'prefs/prefs.gyp:prefs',
         'security_state',
+        'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
         '..',
@@ -20,6 +28,9 @@
         # Note: sources list duplicated in GN build.
         'toolbar/toolbar_model.cc',
         'toolbar/toolbar_model.h',
+        'toolbar/toolbar_model_delegate.h',
+        'toolbar/toolbar_model_impl.cc',
+        'toolbar/toolbar_model_impl.h',
       ],
     },
     {

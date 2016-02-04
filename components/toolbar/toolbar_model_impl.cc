@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
+#include "components/toolbar/toolbar_model_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/security_state_model.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/toolbar/toolbar_model_delegate.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
-#include "grit/components_scaled_resources.h"
-#include "grit/components_strings.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -74,7 +74,7 @@ base::string16 ToolbarModelImpl::GetCorpusNameForMobile() const {
   // otherwise look for the corpus name in the query parameters.
   const std::string& query_str(google_util::HasGoogleSearchQueryParam(
       url.ref_piece()) ? url.ref() : url.query());
-  url::Component query(0, query_str.length()), key, value;
+  url::Component query(0, static_cast<int>(query_str.length())), key, value;
   const char kChipKey[] = "sboxchip";
   while (url::ExtractQueryKeyValue(query_str.c_str(), &query, &key, &value)) {
     if (key.is_nonempty() && query_str.substr(key.begin, key.len) == kChipKey) {

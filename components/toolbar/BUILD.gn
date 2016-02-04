@@ -8,11 +8,22 @@ source_set("toolbar") {
   sources = [
     "toolbar_model.cc",
     "toolbar_model.h",
+    "toolbar_model_delegate.h",
+    "toolbar_model_impl.cc",
+    "toolbar_model_impl.h",
   ]
 
   deps = [
     "//base",
+    "//components/google/core/browser",
+    "//components/prefs",
+    "//components/resources",
     "//components/security_state",
+    "//components/strings",
+    "//components/url_formatter",
+    "//net",
+    "//ui/base",
+    "//ui/gfx",
     "//url",
   ]
 }

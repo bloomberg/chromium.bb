@@ -6,13 +6,14 @@
 #define CHROME_BROWSER_UI_TOOLBAR_CHROME_TOOLBAR_MODEL_DELEGATE_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/toolbar/toolbar_model_delegate.h"
+#include "components/toolbar/toolbar_model_delegate.h"
 
 class Profile;
 
 namespace content {
 class NavigationEntry;
 class NavigationController;
+class WebContents;
 }
 
 // Implementation of ToolbarModelDelegate for the Chrome embedder. It leaves out

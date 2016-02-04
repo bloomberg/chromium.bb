@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
-#define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
+#ifndef COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
+#define COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
 
 #include <string>
 
@@ -12,10 +12,6 @@
 #include "components/security_state/security_state_model.h"
 
 class GURL;
-
-namespace content {
-class WebContents;
-}
 
 namespace net {
 class X509Certificate;
@@ -61,4 +57,4 @@ class ToolbarModelDelegate {
   virtual ~ToolbarModelDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
+#endif  // COMPONENTS_TOOLBAR_TOOLBAR_MODEL_DELEGATE_H_
