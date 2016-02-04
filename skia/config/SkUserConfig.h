@@ -246,6 +246,9 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_INSERT_NEW_EDGES
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_NEG_SCALE_HQ
+#   define SK_SUPPORT_LEGACY_NEG_SCALE_HQ
+#endif
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
