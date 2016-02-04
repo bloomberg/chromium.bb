@@ -13,12 +13,16 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/file_descriptor_info_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/child_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "jni/ChildProcessLauncher_jni.h"
 #include "media/base/android/media_player_android.h"
@@ -84,6 +88,21 @@ static void SetSurfacePeer(
   }
 }
 
+void LaunchDownloadProcess(base::CommandLine* cmd_line) {
+  scoped_ptr<base::CommandLine> cmd_line_deleter(cmd_line);
+
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+
+  // Create the Command line String[]
+  ScopedJavaLocalRef<jobjectArray> j_argv =
+      ToJavaArrayOfStrings(env, cmd_line->argv());
+
+  // TODO(qinmin): pass download parameters here.
+  Java_ChildProcessLauncher_startDownloadProcessIfNecessary(
+      env, base::android::GetApplicationContext(), j_argv.obj());
+}
+
 }  // anonymous namespace
 
 // Called from ChildProcessLauncher.java when the ChildProcess was
@@ -101,6 +120,32 @@ static void OnChildProcessStarted(JNIEnv*,
   if (handle)
     callback->Run(static_cast<base::ProcessHandle>(handle));
   delete callback;
+}
+
+void StartDownloadProcessIfNecessary() {
+  base::FilePath exe_path = content::ChildProcessHost::GetChildPath(
+      content::ChildProcessHost::CHILD_NORMAL);
+  if (exe_path.empty()) {
+    NOTREACHED() << "Unable to get download process binary name.";
+    return;
+  }
+  base::CommandLine* cmd_line = new base::CommandLine(exe_path);
+  cmd_line->AppendSwitchASCII(switches::kProcessType,
+                              switches::kDownloadProcess);
+  cmd_line->AppendSwitch(switches::kNoSandbox);
+
+  const base::CommandLine browser_command_line =
+      *base::CommandLine::ForCurrentProcess();
+  static const char* kForwardSwitches[] = {
+      switches::kDisableLogging,
+      switches::kEnableLogging,
+      switches::kLoggingLevel,
+  };
+  cmd_line->CopySwitchesFrom(browser_command_line, kForwardSwitches,
+                             arraysize(kForwardSwitches));
+  CHECK(!cmd_line->HasSwitch(switches::kSingleProcess));
+  BrowserThread::PostTask(BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
+                          base::Bind(&LaunchDownloadProcess, cmd_line));
 }
 
 void StartChildProcess(

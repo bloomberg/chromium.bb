@@ -19,4 +19,11 @@ public class ChildProcessConstants {
     // Used to pass the CPU features mask to child processes.
     public static final String EXTRA_CPU_FEATURES =
             "com.google.android.apps.chrome.extra.cpu_features";
+
+    // Used to pass the IChildProcessCallback to a child process. For a started service,
+    // file descriptors cannot be passed in the intent that starts the service. As a result,
+    // a Binder object needs to be passed through which the child process can retrieve the file
+    // descriptors.
+    public static final String EXTRA_CHILD_PROCESS_CALLBACK =
+            "com.google.android.apps.chrome.extra.child_process_callback";
 }

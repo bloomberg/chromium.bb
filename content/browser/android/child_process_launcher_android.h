@@ -29,6 +29,10 @@ void StartChildProcess(
     const std::map<int, base::MemoryMappedFile::Region>& regions,
     const StartChildProcessCallback& callback);
 
+// Starts the background download process if it hasn't been started.
+// TODO(qinmin): pass the download parameters here and pass it to java side.
+void StartDownloadProcessIfNecessary();
+
 // Stops a child process based on the handle returned form
 // StartChildProcess.
 void StopChildProcess(base::ProcessHandle handle);

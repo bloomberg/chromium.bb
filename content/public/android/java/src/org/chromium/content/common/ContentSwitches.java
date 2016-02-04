@@ -72,6 +72,35 @@ public abstract class ContentSwitches {
     // Native switch kIPCSyncCompositing
     public static final String IPC_SYNC_COMPOSITING = "ipc-sync-compositing";
 
+    // Native switch kProcessType
+    public static final String SWITCH_PROCESS_TYPE = "type";
+
+    // Native switch kRendererProcess
+    public static final String SWITCH_RENDERER_PROCESS = "renderer";
+
+    // Native switch kUtilityProcess
+    public static final String SWITCH_UTILITY_PROCESS = "utility";
+
+    // Native switch kGPUProcess
+    public static final String SWITCH_GPU_PROCESS = "gpu-process";
+
+    // Native switch kDownloadProcess
+    public static final String SWITCH_DOWNLOAD_PROCESS = "download";
+
     // Prevent instantiation.
     private ContentSwitches() {}
+
+    public static String getSwitchValue(final String[] commandLine, String switchKey) {
+        if (commandLine == null || switchKey == null) {
+            return null;
+        }
+        // This format should be matched with the one defined in command_line.h.
+        final String switchKeyPrefix = "--" + switchKey + "=";
+        for (String command : commandLine) {
+            if (command != null && command.startsWith(switchKeyPrefix)) {
+                return command.substring(switchKeyPrefix.length());
+            }
+        }
+        return null;
+    }
 }

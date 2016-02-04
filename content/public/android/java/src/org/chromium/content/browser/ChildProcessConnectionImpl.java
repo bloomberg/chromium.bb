@@ -13,12 +13,10 @@ import android.os.DeadObjectException;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.common.IChildProcessCallback;
@@ -331,16 +329,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             assert mServiceConnectComplete && mService != null;
             assert mConnectionParams != null;
 
-            Bundle bundle = new Bundle();
-            bundle.putStringArray(
-                    ChildProcessConstants.EXTRA_COMMAND_LINE, mConnectionParams.mCommandLine);
-            bundle.putParcelableArray(
-                    ChildProcessConstants.EXTRA_FILES, mConnectionParams.mFilesToBeMapped);
-            // Add the CPU properties now.
-            bundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
-            bundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-            bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS,
-                             mConnectionParams.mSharedRelros);
+            Bundle bundle =
+                    ChildProcessLauncher.createsServiceBundle(mConnectionParams.mCommandLine,
+                            mConnectionParams.mFilesToBeMapped, mConnectionParams.mSharedRelros);
             try {
                 mPid = mService.setupConnection(bundle, mConnectionParams.mCallback);
                 assert mPid != 0 : "Child service claims to be run by a process of pid=0.";

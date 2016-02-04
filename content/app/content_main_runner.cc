@@ -121,6 +121,9 @@ extern int PpapiBrokerMain(const MainFunctionParams&);
 #endif
 extern int RendererMain(const content::MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
+#if defined(OS_ANDROID)
+extern int DownloadMain(const MainFunctionParams&);
+#endif
 }  // namespace content
 
 namespace content {
@@ -343,6 +346,9 @@ int RunNamedProcessTypeMain(
     { switches::kUtilityProcess,     UtilityMain },
     { switches::kRendererProcess,    RendererMain },
     { switches::kGpuProcess,         GpuMain },
+#if defined(OS_ANDROID)
+    { switches::kDownloadProcess,    DownloadMain},
+#endif
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
   };
 

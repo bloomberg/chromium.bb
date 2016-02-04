@@ -25,6 +25,7 @@
     'app/android/content_jni_onload.cc',
     'app/android/content_main.cc',
     'app/android/content_main.h',
+    'app/android/download_main.cc',
     'app/android/library_loader_hooks.cc',
     'app/android/library_loader_hooks.h',
     'app/content_main.cc',

@@ -27,8 +27,8 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ChildProcessConstants;
-import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.content.browser.FileDescriptorInfo;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 import org.chromium.content.common.SurfaceWrapper;
@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChildProcessService extends Service {
     private static final String MAIN_THREAD_NAME = "ChildProcessMain";
     private static final String TAG = "ChildProcessService";
+    protected static final FileDescriptorInfo[] EMPTY_FILE_DESCRIPTOR_INFO = {};
     private IChildProcessCallback mCallback;
 
     // This is the native "Main" thread for the renderer / utility process.
@@ -289,10 +290,10 @@ public class ChildProcessService extends Service {
                 mFdInfos = new FileDescriptorInfo[fdInfosAsParcelable.length];
                 System.arraycopy(fdInfosAsParcelable, 0, mFdInfos, 0, fdInfosAsParcelable.length);
             } else {
-                // TODO(qinmin): On earlier androird versions, a started service running in another
-                // process can get killed after Chrome is killed. To work around this issue, client
-                // will never bind to the service. As a result, the file descriptors needs to be
-                // passed through an intent when starting the service.
+                String processType = ContentSwitches.getSwitchValue(
+                        mCommandLineParams, ContentSwitches.SWITCH_PROCESS_TYPE);
+                assert ContentSwitches.SWITCH_DOWNLOAD_PROCESS.equals(processType);
+                mFdInfos = EMPTY_FILE_DESCRIPTOR_INFO;
             }
             Bundle sharedRelros = bundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
             if (sharedRelros != null) {

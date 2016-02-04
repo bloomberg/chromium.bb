@@ -643,6 +643,17 @@ android:value="true" />
             android:exported="false" />
         {% endfor %}
 
+        <!-- Background download process, it may outlive chrome if download does not finish
+             when user kills chrome. Once created, the process will manage its own lifecycle.
+             To work around an issue in earlier android versions that a bound service will
+             get killed when chrome goes away, this service will only communicate with the
+             browser process through callbacks. -->
+        <service android:name="org.chromium.content.app.DownloadProcessService"
+            android:process=":download"
+            android:permission="{{ manifest_package }}.permission.CHILD_SERVICE"
+            android:isolatedProcess="false"
+            android:exported="false"/>
+
         <receiver android:name="org.chromium.chrome.browser.download.DownloadBroadcastReceiver"
             android:exported="false">
             <intent-filter>

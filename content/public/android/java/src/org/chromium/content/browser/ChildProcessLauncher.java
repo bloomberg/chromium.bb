@@ -4,10 +4,14 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
+import android.os.Build;
+import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.text.TextUtils;
@@ -15,6 +19,7 @@ import android.util.Pair;
 import android.view.Surface;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -24,8 +29,10 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.app.ChromiumLinkerParams;
+import org.chromium.content.app.DownloadProcessService;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 
@@ -47,11 +54,7 @@ public class ChildProcessLauncher {
     static final int CALLBACK_FOR_GPU_PROCESS = 1;
     static final int CALLBACK_FOR_RENDERER_PROCESS = 2;
     static final int CALLBACK_FOR_UTILITY_PROCESS = 3;
-
-    private static final String SWITCH_PROCESS_TYPE = "type";
-    private static final String SWITCH_RENDERER_PROCESS = "renderer";
-    private static final String SWITCH_UTILITY_PROCESS = "utility";
-    private static final String SWITCH_GPU_PROCESS = "gpu-process";
+    static final int CALLBACK_FOR_DOWNLOAD_PROCESS = 4;
 
     /**
      * Allows specifying the package name for looking up child services
@@ -110,7 +113,7 @@ public class ChildProcessLauncher {
                 mFreeConnectionIndices.add(i);
             }
             mChildClass =
-                inSandbox ? SandboxedProcessService.class : PrivilegedProcessService.class;
+                    inSandbox ? SandboxedProcessService.class : PrivilegedProcessService.class;
             mInSandbox = inSandbox;
         }
 
@@ -567,20 +570,6 @@ public class ChildProcessLauncher {
         }
     }
 
-    private static String getSwitchValue(final String[] commandLine, String switchKey) {
-        if (commandLine == null || switchKey == null) {
-            return null;
-        }
-        // This format should be matched with the one defined in command_line.h.
-        final String switchKeyPrefix = "--" + switchKey + "=";
-        for (String command : commandLine) {
-            if (command != null && command.startsWith(switchKeyPrefix)) {
-                return command.substring(switchKeyPrefix.length());
-            }
-        }
-        return null;
-    }
-
     @CalledByNative
     private static FileDescriptorInfo makeFdInfo(
             int id, int fd, boolean autoClose, long offset, long size) {
@@ -617,13 +606,14 @@ public class ChildProcessLauncher {
 
         int callbackType = CALLBACK_FOR_UNKNOWN_PROCESS;
         boolean inSandbox = true;
-        String processType = getSwitchValue(commandLine, SWITCH_PROCESS_TYPE);
-        if (SWITCH_RENDERER_PROCESS.equals(processType)) {
+        String processType =
+                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+        if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(processType)) {
             callbackType = CALLBACK_FOR_RENDERER_PROCESS;
-        } else if (SWITCH_GPU_PROCESS.equals(processType)) {
+        } else if (ContentSwitches.SWITCH_GPU_PROCESS.equals(processType)) {
             callbackType = CALLBACK_FOR_GPU_PROCESS;
             inSandbox = false;
-        } else if (SWITCH_UTILITY_PROCESS.equals(processType)) {
+        } else if (ContentSwitches.SWITCH_UTILITY_PROCESS.equals(processType)) {
             // We only support sandboxed right now.
             callbackType = CALLBACK_FOR_UTILITY_PROCESS;
         } else {
@@ -632,6 +622,39 @@ public class ChildProcessLauncher {
 
         startInternal(context, commandLine, childProcessId, filesToBeMapped, clientContext,
                 callbackType, inSandbox);
+    }
+
+    /**
+     * Spawns a background download process if it hasn't been started. The download process will
+     * manage its own lifecyle and can outlive chrome.
+     *
+     * @param context Context used to obtain the application context.
+     * @param commandLine The child process command line argv.
+     */
+    @SuppressLint("NewApi")
+    @CalledByNative
+    private static void startDownloadProcessIfNecessary(
+            Context context, final String[] commandLine) {
+        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+        String processType =
+                ContentSwitches.getSwitchValue(commandLine, ContentSwitches.SWITCH_PROCESS_TYPE);
+        assert ContentSwitches.SWITCH_DOWNLOAD_PROCESS.equals(processType);
+
+        Intent intent = new Intent();
+        intent.setClass(context, DownloadProcessService.class);
+        intent.setPackage(context.getPackageName());
+        intent.putExtra(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
+        Bundle bundle =
+                createsServiceBundle(commandLine, null, Linker.getInstance().getSharedRelros());
+        // Pid doesn't matter for download process.
+        bundle.putBinder(ChildProcessConstants.EXTRA_CHILD_PROCESS_CALLBACK,
+                createCallback(0, CALLBACK_FOR_DOWNLOAD_PROCESS).asBinder());
+        intent.putExtras(bundle);
+        ChromiumLinkerParams linkerParams = getLinkerParamsForNewConnection();
+        if (linkerParams != null) {
+            linkerParams.addIntentExtras(intent);
+        }
+        context.startService(intent);
     }
 
     private static void startInternal(
@@ -673,6 +696,23 @@ public class ChildProcessLauncher {
         } finally {
             TraceEvent.end("ChildProcessLauncher.startInternal");
         }
+    }
+
+    /**
+     * Create the common bundle to be passed to child processes.
+     * @param context Application context.
+     * @param commandLine Command line params to be passed to the service.
+     * @param linkerParams Linker params to start the service.
+     */
+    protected static Bundle createsServiceBundle(
+            String[] commandLine, FileDescriptorInfo[] filesToBeMapped, Bundle sharedRelros) {
+        Bundle bundle = new Bundle();
+        bundle.putStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
+        bundle.putParcelableArray(ChildProcessConstants.EXTRA_FILES, filesToBeMapped);
+        bundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
+        bundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
+        bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS, sharedRelros);
+        return bundle;
     }
 
     @VisibleForTesting
@@ -805,6 +845,15 @@ public class ChildProcessLauncher {
 
                 return ChildProcessLauncher.getSurfaceTextureSurface(surfaceTextureId,
                         childProcessId);
+            }
+
+            @Override
+            public void onDownloadStarted(boolean started, int downloadId) {
+                // TODO(qinmin): call native to cancel or proceed with the download.
+                if (callbackType != CALLBACK_FOR_DOWNLOAD_PROCESS) {
+                    Log.e(TAG, "Illegal callback for non-download process.");
+                    return;
+                }
             }
         };
     }
