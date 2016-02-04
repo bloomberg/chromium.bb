@@ -68,15 +68,14 @@ DisplayConfigurationController::~DisplayConfigurationController() {
 }
 
 void DisplayConfigurationController::SetDisplayLayout(
-    int64_t display_id,
     const DisplayLayout& layout,
     bool user_action) {
   if (user_action && display_animator_) {
     display_animator_->StartFadeOutAnimation(
         base::Bind(&DisplayConfigurationController::SetDisplayLayoutImpl,
-                   weak_ptr_factory_.GetWeakPtr(), display_id, layout));
+                   weak_ptr_factory_.GetWeakPtr(), layout));
   } else {
-    SetDisplayLayoutImpl(display_id, layout);
+    SetDisplayLayoutImpl(layout);
   }
 }
 
@@ -142,7 +141,6 @@ bool DisplayConfigurationController::IsLimited() {
 }
 
 void DisplayConfigurationController::SetDisplayLayoutImpl(
-    int64_t display_id,
     const DisplayLayout& layout) {
   // TODO(oshima/stevenjb): Add support for 3+ displays.
   display_manager_->SetLayoutForCurrentDisplays(layout);

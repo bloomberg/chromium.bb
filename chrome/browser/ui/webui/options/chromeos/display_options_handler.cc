@@ -380,7 +380,6 @@ void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
 
 void DisplayOptionsHandler::HandleSetDisplayLayout(
     const base::ListValue* args) {
-  int64_t display_id = GetDisplayId(args);
   int layout, offset;
   if (!args->GetInteger(1, &layout))
     NOTREACHED();
@@ -390,8 +389,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
     NOTREACHED();
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
   GetDisplayConfigurationController()->SetDisplayLayout(
-      display_id, ash::DisplayLayout::FromInts(layout, offset),
-      true /* user_action */);
+      ash::DisplayLayout::FromInts(layout, offset), true /* user_action */);
 }
 
 void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {

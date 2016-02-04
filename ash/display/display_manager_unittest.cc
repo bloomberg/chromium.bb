@@ -1606,7 +1606,7 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   DisplayLayout layout =
       display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
   layout.mirrored = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(1, 2,
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(list,
                                                                     layout);
 
   // Exit from hardware mirroring.
@@ -1630,8 +1630,8 @@ TEST_F(DisplayManagerTest, UnifiedDesktopEnabledWithExtended) {
   DisplayLayout layout =
       display_manager()->layout_store()->GetRegisteredDisplayLayout(list);
   layout.default_unified = false;
-  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
-      list[0], list[1], layout);
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(list,
+                                                                    layout);
   display_manager()->SetUnifiedDesktopEnabled(true);
   EXPECT_FALSE(display_manager()->IsInUnifiedMode());
 }
@@ -2025,13 +2025,16 @@ TEST_F(DisplayManagerTest, RejectInvalidLayoutData) {
   ASSERT_TRUE(CompareDisplayIds(id1, id2));
   DisplayLayout good(DisplayLayout(DisplayLayout::LEFT, 0));
   good.primary_id = id1;
-
-  layout_store->RegisterLayoutForDisplayIdList(id1, id2, good);
+  DisplayIdList list(2);
+  list[0] = id1;
+  list[1] = id2;
+  layout_store->RegisterLayoutForDisplayIdList(list, good);
 
   DisplayLayout bad(DisplayLayout(DisplayLayout::BOTTOM, 0));
   good.primary_id = id2;
-
-  layout_store->RegisterLayoutForDisplayIdList(id2, id1, bad);
+  list[0] = id2;
+  list[1] = id1;
+  layout_store->RegisterLayoutForDisplayIdList(list, bad);
 
   EXPECT_EQ(
       good.ToString(),

@@ -167,7 +167,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
   layout.primary_id = primary_display_id;
   ash::Shell::GetInstance()
       ->display_configuration_controller()
-      ->SetDisplayLayout(target_display_id, layout, false /* user_action */);
+      ->SetDisplayLayout(layout, false /* user_action */);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the

@@ -46,16 +46,15 @@ void DisplayLayoutStore::SetDefaultDisplayLayout(const DisplayLayout& layout) {
 }
 
 void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
-    int64_t id1,
-    int64_t id2,
+    const DisplayIdList& list,
     const DisplayLayout& layout) {
-  auto key = CreateDisplayIdList(id1, id2);
+  DCHECK_EQ(2u, list.size());
 
   // Do not overwrite the valid data with old invalid date.
-  if (layouts_.count(key) && !CompareDisplayIds(id1, id2))
+  if (layouts_.count(list) && !CompareDisplayIds(list[0], list[1]))
     return;
 
-  layouts_[key] = layout;
+  layouts_[list] = layout;
 }
 
 DisplayLayout DisplayLayoutStore::GetRegisteredDisplayLayout(

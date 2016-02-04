@@ -26,8 +26,7 @@ class ASH_EXPORT DisplayLayoutStore {
   void SetDefaultDisplayLayout(const DisplayLayout& layout);
 
   // Registeres the display layout info for the specified display(s).
-  void RegisterLayoutForDisplayIdList(int64_t id1,
-                                      int64_t id2,
+  void RegisterLayoutForDisplayIdList(const DisplayIdList& list,
                                       const DisplayLayout& layout);
 
   // If no layout is registered, it creatas new layout using

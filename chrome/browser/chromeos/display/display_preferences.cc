@@ -134,7 +134,8 @@ void LoadDisplayLayouts() {
           id2 == gfx::Display::kInvalidDisplayID) {
         continue;
       }
-      layout_store->RegisterLayoutForDisplayIdList(id1, id2, layout);
+      ash::DisplayIdList list = ash::CreateDisplayIdList(id1, id2);
+      layout_store->RegisterLayoutForDisplayIdList(list, layout);
     }
   }
 }

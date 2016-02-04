@@ -259,7 +259,7 @@ void DisplayManager::SetLayoutForCurrentDisplays(
   if (to_set.position != current_layout.position ||
       to_set.offset != current_layout.offset) {
     to_set.primary_id = primary.id();
-    layout_store_->RegisterLayoutForDisplayIdList(list[0], list[1], to_set);
+    layout_store_->RegisterLayoutForDisplayIdList(list, to_set);
     if (delegate_)
       delegate_->PreDisplayConfigurationChange(false);
     // PreDisplayConfigurationChange(false);
