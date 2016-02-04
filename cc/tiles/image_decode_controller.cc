@@ -278,6 +278,20 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
   if (!decoded_image)
     return;
 
+  // At this point, it could have been the case that this image was decoded in
+  // place by an already running raster task from a previous schedule. If that's
+  // the case, then it would have already been placed into the cache (possibly
+  // locked). Remove it if that was the case.
+  image_it = FindImage(&decoded_images_, key);
+  if (image_it != decoded_images_.end()) {
+    if (image_it->second->is_locked() || image_it->second->Lock()) {
+      // Make sure to unlock the decode we did in this function.
+      decoded_image->Unlock();
+      return;
+    }
+    decoded_images_.erase(image_it);
+  }
+
   // We could have finished all of the raster tasks (cancelled) while this image
   // decode task was running, which means that we now have a locked image but no
   // ref counts. Unlock it immediately in this case.
@@ -286,18 +300,6 @@ void ImageDecodeController::DecodeImage(const ImageKey& key,
     decoded_image->Unlock();
   }
 
-  // At this point, it could have been the case that this image was decoded in
-  // place by an already running raster task from a previous schedule. If that's
-  // the case, then it would have already been placed into the cache (possibly
-  // locked). Remove it if that was the case.
-  image_it = FindImage(&decoded_images_, key);
-  if (image_it != decoded_images_.end()) {
-    if (image_it->second->is_locked() || image_it->second->Lock()) {
-      pending_image_tasks_.erase(key);
-      return;
-    }
-    decoded_images_.erase(image_it);
-  }
   decoded_images_.push_back(AnnotatedDecodedImage(key, decoded_image));
   SanityCheckState(__LINE__, true);
 }
@@ -715,7 +717,9 @@ ImageDecodeController::DecodedImage::DecodedImage(
       [](const void* pixels, void* context) {}, nullptr));
 }
 
-ImageDecodeController::DecodedImage::~DecodedImage() {}
+ImageDecodeController::DecodedImage::~DecodedImage() {
+  DCHECK(!locked_);
+}
 
 bool ImageDecodeController::DecodedImage::Lock() {
   DCHECK(!locked_);
