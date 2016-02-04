@@ -10,6 +10,7 @@ import android.os.SystemClock;
 import android.text.Editable;
 import android.text.Selection;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.CharacterStyle;
 import android.text.style.UnderlineSpan;
@@ -463,7 +464,7 @@ public class ImeAdapter {
         if (mNativeImeAdapterAndroid == 0) return false;
 
         // One WebView app detects Enter in JS by looking at KeyDown (http://crbug/577967).
-        if (text.equals("\n")) {
+        if (TextUtils.equals(text, "\n")) {
             sendSyntheticKeyPress(KeyEvent.KEYCODE_ENTER,
                     KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);
             return true;
