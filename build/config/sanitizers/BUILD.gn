@@ -10,7 +10,14 @@ import("//build/config/sanitizers/sanitizers.gni")
 # |is_asan|, |is_lsan|, |is_tsan|, |is_msan| and |use_custom_libcxx| are false.
 group("deps") {
   if (using_sanitizer) {
-    public_configs = [ ":sanitizer_options_link_helper" ]
+    public_configs = [
+      ":sanitizer_options_link_helper",
+
+      # Even when a target removes default_sanitizer_flags, it may be depending
+      # on a library that did not remove default_sanitizer_flags. Thus, we need
+      # to add the ldflags here as well as in default_sanitizer_flags.
+      ":default_sanitizer_ldflags",
+    ]
     deps = [
       ":options_sources",
     ]
@@ -26,24 +33,6 @@ group("deps") {
 
 config("sanitizer_options_link_helper") {
   ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
-  if (is_asan) {
-    ldflags += [ "-fsanitize=address" ]
-  }
-  if (is_lsan) {
-    ldflags += [ "-fsanitize=leak" ]
-  }
-  if (is_tsan) {
-    ldflags += [ "-fsanitize=thread" ]
-  }
-  if (is_msan) {
-    ldflags += [ "-fsanitize=memory" ]
-  }
-  if (is_ubsan) {
-    ldflags += [ "-fsanitize=undefined" ]
-  }
-  if (is_ubsan_vptr) {
-    ldflags += [ "-fsanitize=vptr" ]
-  }
 }
 
 source_set("options_sources") {
@@ -74,16 +63,83 @@ source_set("options_sources") {
   }
 }
 
+# Applies linker flags necessary when either :deps or :default_sanitizer_flags
+# are used.
+config("default_sanitizer_ldflags") {
+  visibility = [
+    ":default_sanitizer_flags",
+    ":deps",
+  ]
+
+  if (is_posix) {
+    ldflags = []
+    if (is_asan) {
+      ldflags += [ "-fsanitize=address" ]
+    }
+    if (is_lsan) {
+      ldflags += [ "-fsanitize=leak" ]
+    }
+    if (is_tsan) {
+      ldflags += [ "-fsanitize=thread" ]
+    }
+    if (is_msan) {
+      ldflags += [ "-fsanitize=memory" ]
+    }
+    if (is_ubsan) {
+      ldflags += [ "-fsanitize=undefined" ]
+    }
+    if (is_ubsan_vptr) {
+      ldflags += [ "-fsanitize=vptr" ]
+    }
+    if (is_cfi && !is_nacl) {
+      ldflags += [
+        "-flto",
+        "-fsanitize=cfi-vcall",
+        "-fsanitize=cfi-derived-cast",
+        "-fsanitize=cfi-unrelated-cast",
+      ]
+
+      # Apply a lower LTO optimization level as the default is too slow.
+      if (is_linux) {
+        ldflags += [ "-Wl,-plugin-opt,O1" ]
+      } else if (is_mac) {
+        ldflags += [ "-Wl,-mllvm,-O1" ]
+      }
+
+      # Work-around for http://openradar.appspot.com/20356002
+      if (is_mac) {
+        ldflags += [ "-Wl,-all_load" ]
+      }
+
+      # Without this flag, LTO produces a .text section that is larger
+      # than the maximum call displacement, preventing the linker from
+      # relocating calls (http://llvm.org/PR22999).
+      if (current_cpu == "arm") {
+        ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
+      }
+
+      if (use_cfi_diag) {
+        ldflags += [
+          "-fno-sanitize-trap=cfi",
+          "-fsanitize-recover=cfi",
+        ]
+      }
+    }
+  }
+}
+
 # This config is applied by default to all targets. It sets the compiler flags
 # for sanitizer usage, or, if no sanitizer is set, does nothing.
 #
 # This needs to be in a separate config so that targets can opt out of
-# sanitizers if they desire.
+# sanitizers (by removing the config) if they desire. Even if a target
+# removes this config, executables & shared libraries should still depend on
+# :deps if any of their dependencies have not opted out of sanitizers.
 config("default_sanitizer_flags") {
   cflags = []
   cflags_cc = []
-  ldflags = []
   defines = []
+  configs = [ ":default_sanitizer_ldflags" ]
 
   # Only works on Posix-like platforms.
   # FIXME: this is not true, remove the conditional.
@@ -190,38 +246,9 @@ config("default_sanitizer_flags") {
         "-fsanitize=cfi-unrelated-cast",
         "-fsanitize-blacklist=$cfi_blacklist_path",
       ]
-      ldflags += [
-        "-flto",
-        "-fsanitize=cfi-vcall",
-        "-fsanitize=cfi-derived-cast",
-        "-fsanitize=cfi-unrelated-cast",
-      ]
-
-      # Apply a lower LTO optimization level as the default is too slow.
-      if (is_linux) {
-        ldflags += [ "-Wl,-plugin-opt,O1" ]
-      } else if (is_mac) {
-        ldflags += [ "-Wl,-mllvm,-O1" ]
-      }
-
-      # Work-around for http://openradar.appspot.com/20356002
-      if (is_mac) {
-        ldflags += [ "-Wl,-all_load" ]
-      }
-
-      # Without this flag, LTO produces a .text section that is larger
-      # than the maximum call displacement, preventing the linker from
-      # relocating calls (http://llvm.org/PR22999).
-      if (current_cpu == "arm") {
-        ldflags += [ "-Wl,-plugin-opt,-function-sections" ]
-      }
 
       if (use_cfi_diag) {
         cflags += [
-          "-fno-sanitize-trap=cfi",
-          "-fsanitize-recover=cfi",
-        ]
-        ldflags += [
           "-fno-sanitize-trap=cfi",
           "-fsanitize-recover=cfi",
         ]

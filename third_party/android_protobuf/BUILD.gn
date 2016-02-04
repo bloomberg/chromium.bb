@@ -14,7 +14,14 @@ if (current_toolchain == host_toolchain) {
 
   # GYP: //third_party/android_protobuf/android_protobuf.gyp:android_protoc
   executable("android_protoc") {
-    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs -= [
+      "//build/config/compiler:chromium_code",
+
+      # Does not compile with sanitizers.
+      "//build/config/sanitizers:default_sanitizer_flags",
+      "//build/config/sanitizers:default_sanitizer_coverage_flags",
+    ]
+
     configs += [
       "//build/config/compiler:no_chromium_code",
 
