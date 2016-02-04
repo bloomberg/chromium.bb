@@ -42,6 +42,21 @@ public:
 
 #if ENABLE(ASSERT)
     inline static bool isEnabled() { return s_isEnabled; }
+    inline static bool isAcceptableStackUse()
+    {
+        // ASan adds extra stack usage leading to too noisy asserts.
+#if defined(ADDRESS_SANITIZER)
+        return true;
+#else
+        // If a conservative fallback stack size is in effect, use
+        // a larger stack limit so as to avoid false positives.
+        if (!s_isEnabled || isSafeToRecurse())
+            return true;
+        if (s_isUsingFallbackStackSize)
+            return (s_stackFrameLimit - currentStackFrame()) < 3 * kSafeStackFrameSize;
+        return false;
+#endif
+    }
 #endif
 
     static size_t getUnderestimatedStackSize();
@@ -76,6 +91,7 @@ private:
     static uintptr_t s_stackFrameLimit;
 #if ENABLE(ASSERT)
     static bool s_isEnabled;
+    static bool s_isUsingFallbackStackSize;
 #endif
 };
 

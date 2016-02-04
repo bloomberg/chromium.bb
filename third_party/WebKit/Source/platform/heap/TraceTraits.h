@@ -57,12 +57,7 @@ public:
             // but test and appropriately handle them should they occur
             // in release builds.
             //
-            // ASan adds extra stack usage, so disable the assert when it is
-            // enabled so as to avoid testing against a much lower & too low,
-            // stack depth threshold.
-#if !defined(ADDRESS_SANITIZER)
-            ASSERT(!StackFrameDepth::isEnabled() || StackFrameDepth::isSafeToRecurse());
-#endif
+            ASSERT(StackFrameDepth::isAcceptableStackUse());
             if (LIKELY(StackFrameDepth::isSafeToRecurse())) {
                 if (visitor->ensureMarked(t)) {
                     TraceTrait<T>::trace(visitor, const_cast<T*>(t));

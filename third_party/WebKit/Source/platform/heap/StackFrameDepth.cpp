@@ -21,6 +21,7 @@ static const char* s_avoidOptimization = nullptr;
 uintptr_t StackFrameDepth::s_stackFrameLimit = 0;
 #if ENABLE(ASSERT)
 bool StackFrameDepth::s_isEnabled = false;
+bool StackFrameDepth::s_isUsingFallbackStackSize = false;
 #endif
 
 // NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
@@ -35,6 +36,7 @@ void StackFrameDepth::enableStackLimit()
 {
 #if ENABLE(ASSERT)
     s_isEnabled = true;
+    s_isUsingFallbackStackSize = false;
 #endif
 
     static const int kStackRoomSize = 1024;
@@ -56,6 +58,12 @@ void StackFrameDepth::enableStackLimit()
 
     // Assert that the stack frame can be used.
     dummy[sizeof(dummy) - 1] = 0;
+#if ENABLE(ASSERT)
+    // Use a larger stack limit for what's acceptable if the platform
+    // thread ends up using the fallback size to decide if switching to
+    // lazy marking is in order.
+    s_isUsingFallbackStackSize = true;
+#endif
 }
 
 size_t StackFrameDepth::getUnderestimatedStackSize()
