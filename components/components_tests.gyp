@@ -409,6 +409,7 @@
       'omnibox/browser/autocomplete_result_unittest.cc',
       'omnibox/browser/base_search_provider_unittest.cc',
       'omnibox/browser/bookmark_provider_unittest.cc',
+      'omnibox/browser/builtin_provider_unittest.cc',
       'omnibox/browser/clipboard_url_provider_unittest.cc',
       'omnibox/browser/history_quick_provider_unittest.cc',
       'omnibox/browser/history_url_provider_unittest.cc',
