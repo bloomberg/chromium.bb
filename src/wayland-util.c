@@ -123,7 +123,7 @@ wl_array_add(struct wl_array *array, size_t size)
 	if (array->alloc < alloc) {
 		if (array->alloc > 0)
 			data = realloc(array->data, alloc);
-	        else
+		else
 			data = malloc(alloc);
 
 		if (data == NULL)
