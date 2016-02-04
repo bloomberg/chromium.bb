@@ -94,16 +94,16 @@ void QuicSpdyClientStream::OnPromiseHeadersComplete(QuicStreamId promised_id,
                                                     size_t frame_len) {
   header_bytes_read_ += frame_len;
   int content_length = -1;
-  std::unique_ptr<SpdyHeaderBlock> promise_headers(new SpdyHeaderBlock);
+  SpdyHeaderBlock promise_headers;
   if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
                                decompressed_headers().length(), &content_length,
-                               promise_headers.get())) {
+                               &promise_headers)) {
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
   MarkHeadersConsumed(decompressed_headers().length());
 
-  session_->HandlePromised(promised_id, std::move(promise_headers));
+  session_->HandlePromised(promised_id, promise_headers);
 }
 
 void QuicSpdyClientStream::OnDataAvailable() {

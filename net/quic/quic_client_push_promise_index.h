@@ -11,8 +11,6 @@
 
 namespace net {
 
-class QuicDataToResend;
-
 // QuicClientPushPromiseIndex is the interface to support rendezvous
 // between client requests and resources delivered via server push.
 // The same index can be shared across multiple sessions (e.g. for the
@@ -36,11 +34,15 @@ class NET_EXPORT_PRIVATE QuicClientPushPromiseIndex {
                            const SpdyHeaderBlock& promise_request,
                            const SpdyHeaderBlock& promise_response) = 0;
 
-    // Provides the stream that has the promised response.  Returns
-    // nullptr if the promise has been removed (due failing validation
-    // or other stream error), the client should retry.  Callee does
-    // not inherit ownership of |stream|.
-    virtual void OnResponse(QuicSpdyStream* stream) = 0;
+    // On rendezvous success, provides the promised |stream|.  Callee
+    // does not inherit ownership of |stream|.  On rendezvous failure,
+    // |stream| is |nullptr| and the client should retry the request.
+    // Rendezvous can fail due to promise validation failure or RST on
+    // promised stream.  |url| will have been removed from the index
+    // before |OnRendezvousResult()| is invoked, so a recursive call to
+    // |Try()| will return |QUIC_FAILURE|, which may be convenient for
+    // retry purposes.
+    virtual void OnRendezvousResult(QuicSpdyStream* stream) = 0;
   };
 
   class NET_EXPORT_PRIVATE TryHandle {
@@ -63,20 +65,19 @@ class NET_EXPORT_PRIVATE QuicClientPushPromiseIndex {
   // and a server push stream.  If |request|'s url is in the index,
   // rendezvous will be attempted and may complete immediately or
   // asynchronously.  If the matching promise and response headers
-  // have already arrived, the delegates methods will fired when |Try|
-  // returns and the rendezvous is complete.  Returns |QUIC_SUCCESS|
-  // if the rendezvous was a success. Returns |QUIC_FAILURE| if there
-  // was no matching promise, or if there was but the rendezvous has
-  // failed.  Returns QUIC_PENDING if a matching promise was found,
-  // but the rendezvous needs to complete asynchronously because the
-  // promised response headers are not yet available.  If result is
+  // have already arrived, the delegate's methods will fire
+  // recursively from within |Try()|.  Returns |QUIC_SUCCESS| if the
+  // rendezvous was a success. Returns |QUIC_FAILURE| if there was no
+  // matching promise, or if there was but the rendezvous has failed.
+  // Returns QUIC_PENDING if a matching promise was found, but the
+  // rendezvous needs to complete asynchronously because the promised
+  // response headers are not yet available.  If result is
   // QUIC_PENDING, then |*handle| will set so that the caller may
   // cancel the request if need be.  The caller does not inherit
-  // ownership of |*handle|, and it will not be valid once
-  // |delegate->OnReponse()| has fired.
-  QuicAsyncStatus Try(std::unique_ptr<SpdyHeaderBlock> request,
+  // ownership of |*handle|, and it ceases to be valid if the caller
+  // invokes |handle->Cancel()| or if |delegate->OnReponse()| fires.
+  QuicAsyncStatus Try(const SpdyHeaderBlock& request,
                       Delegate* delegate,
-                      QuicSpdyStream::Visitor* visitor,
                       TryHandle** handle);
 
   QuicPromisedByUrlMap* promised_by_url() { return &promised_by_url_; }

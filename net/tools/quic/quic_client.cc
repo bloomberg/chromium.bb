@@ -299,13 +299,9 @@ void QuicClient::CleanUpUDPSocketImpl(int fd) {
 void QuicClient::SendRequest(const BalsaHeaders& headers,
                              StringPiece body,
                              bool fin) {
-  auto spdy_headers =
-      new SpdyHeaderBlock(SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers));
-
   QuicClientPushPromiseIndex::TryHandle* handle;
-
   QuicAsyncStatus rv = push_promise_index_.Try(
-      std::unique_ptr<SpdyHeaderBlock>(spdy_headers), this, this, &handle);
+      SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers), this, &handle);
   if (rv == QUIC_SUCCESS)
     return;
 
@@ -313,7 +309,6 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     // May need to retry request if asynchronous rendezvous fails.
     auto new_headers = new BalsaHeaders;
     new_headers->CopyFrom(headers);
-
     push_promise_data_to_resend_.reset(
         new ClientQuicDataToResend(new_headers, body, fin, this));
     return;
@@ -464,10 +459,13 @@ bool QuicClient::CheckVary(const SpdyHeaderBlock& client_request,
   return true;
 }
 
-void QuicClient::OnResponse(QuicSpdyStream* stream) {
+void QuicClient::OnRendezvousResult(QuicSpdyStream* stream) {
   std::unique_ptr<ClientQuicDataToResend> data_to_resend =
       std::move(push_promise_data_to_resend_);
-  if (!stream && data_to_resend.get()) {
+  if (stream) {
+    stream->set_visitor(this);
+    stream->OnDataAvailable();
+  } else if (data_to_resend.get()) {
     data_to_resend->Resend();
   }
 }

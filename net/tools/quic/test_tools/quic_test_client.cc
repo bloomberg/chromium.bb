@@ -181,8 +181,7 @@ QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                      config,
                                      supported_versions,
                                      &epoll_server_)),
-      allow_bidirectional_data_(false),
-      push_promise_pending_(false) {
+      allow_bidirectional_data_(false) {
   Initialize();
 }
 
@@ -235,15 +234,11 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     bool fin,
     QuicAckListenerInterface* delegate) {
   if (headers) {
-    std::unique_ptr<SpdyHeaderBlock> spdy_headers(new SpdyHeaderBlock(
-        SpdyBalsaUtils::RequestHeadersToSpdyHeaders(*headers)));
-
     QuicClientPushPromiseIndex::TryHandle* handle;
     QuicAsyncStatus rv = client()->push_promise_index()->Try(
-        std::move(spdy_headers), this, this, &handle);
+        SpdyBalsaUtils::RequestHeadersToSpdyHeaders(*headers), this, &handle);
     if (rv == QUIC_SUCCESS)
       return 1;
-
     if (rv == QUIC_PENDING) {
       // May need to retry request if asynchronous rendezvous fails.
       auto new_headers = new BalsaHeaders;
@@ -589,12 +584,14 @@ bool QuicTestClient::CheckVary(const SpdyHeaderBlock& client_request,
   return true;
 }
 
-void QuicTestClient::OnResponse(QuicSpdyStream* stream) {
+void QuicTestClient::OnRendezvousResult(QuicSpdyStream* stream) {
   std::unique_ptr<TestClientDataToResend> data_to_resend =
       std::move(push_promise_data_to_resend_);
-  push_promise_pending_ = false;
   stream_ = static_cast<QuicSpdyClientStream*>(stream);
-  if (!stream && data_to_resend.get()) {
+  if (stream) {
+    stream->set_visitor(this);
+    stream->OnDataAvailable();
+  } else if (data_to_resend.get()) {
     data_to_resend->Resend();
   }
 }

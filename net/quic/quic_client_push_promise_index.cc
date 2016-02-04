@@ -18,16 +18,14 @@ QuicClientPushPromiseIndex::~QuicClientPushPromiseIndex() {}
 QuicClientPushPromiseIndex::TryHandle::~TryHandle() {}
 
 QuicAsyncStatus QuicClientPushPromiseIndex::Try(
-    std::unique_ptr<SpdyHeaderBlock> request,
+    const SpdyHeaderBlock& request,
     QuicClientPushPromiseIndex::Delegate* delegate,
-    QuicSpdyStream::Visitor* stream_visitor,
     TryHandle** handle) {
-  string url(SpdyUtils::GetUrlFromHeaderBlock(*request));
+  string url(SpdyUtils::GetUrlFromHeaderBlock(request));
   QuicPromisedByUrlMap::iterator it = promised_by_url_.find(url);
   if (it != promised_by_url_.end()) {
     QuicClientPromisedInfo* promised = it->second;
-    QuicAsyncStatus rv = promised->HandleClientRequest(
-        std::move(request), delegate, stream_visitor);
+    QuicAsyncStatus rv = promised->HandleClientRequest(request, delegate);
     if (rv == QUIC_PENDING) {
       *handle = promised;
     }

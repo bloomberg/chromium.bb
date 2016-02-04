@@ -62,8 +62,7 @@ void QuicClientSessionBase::OnInitialHeadersComplete(
   if (!promised)
     return;
 
-  promised->OnResponseHeaders(
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(response_headers)));
+  promised->OnResponseHeaders(response_headers);
 }
 
 void QuicClientSessionBase::OnPromiseHeadersComplete(
@@ -87,9 +86,8 @@ void QuicClientSessionBase::OnPromiseHeadersComplete(
   stream->OnPromiseHeadersComplete(promised_stream_id, frame_len);
 }
 
-void QuicClientSessionBase::HandlePromised(
-    QuicStreamId id,
-    std::unique_ptr<SpdyHeaderBlock> headers) {
+void QuicClientSessionBase::HandlePromised(QuicStreamId id,
+                                           const SpdyHeaderBlock& headers) {
   // Due to pathalogical packet re-ordering, it is possible that
   // frames for the promised stream have already arrived, and the
   // promised stream could be active or closed.
@@ -107,7 +105,7 @@ void QuicClientSessionBase::HandlePromised(
     return;
   }
 
-  const string url = SpdyUtils::GetUrlFromHeaderBlock(*headers);
+  const string url = SpdyUtils::GetUrlFromHeaderBlock(headers);
   QuicClientPromisedInfo* old_promised = GetPromisedByUrl(url);
   if (old_promised) {
     DVLOG(1) << "Promise for stream " << id << " is duplicate URL " << url
@@ -129,7 +127,7 @@ void QuicClientSessionBase::HandlePromised(
   DVLOG(1) << "stream " << id << " emplace url " << url;
   (*push_promise_index_->promised_by_url())[url] = promised;
   promised_by_id_[id] = std::move(promised_owner);
-  promised->OnPromiseHeaders(std::move(headers));
+  promised->OnPromiseHeaders(headers);
 }
 
 QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedByUrl(
@@ -153,11 +151,14 @@ QuicClientPromisedInfo* QuicClientSessionBase::GetPromisedById(
 
 QuicSpdyStream* QuicClientSessionBase::GetPromisedStream(
     const QuicStreamId id) {
-  DCHECK(IsOpenStream(id));
+  if (IsClosedStream(id)) {
+    return nullptr;
+  }
   StreamMap::iterator it = dynamic_streams().find(id);
   if (it != dynamic_streams().end()) {
     return static_cast<QuicSpdyStream*>(it->second);
   }
+  QUIC_BUG << "Open promised stream " << id << " is missing!";
   return nullptr;
 }
 

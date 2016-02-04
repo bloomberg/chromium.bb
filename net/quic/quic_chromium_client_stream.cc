@@ -43,17 +43,17 @@ void QuicChromiumClientStream::OnPromiseHeadersComplete(
     QuicStreamId promised_id,
     size_t frame_len) {
   size_t headers_len = decompressed_headers().length();
-  std::unique_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  SpdyHeaderBlock headers;
   SpdyFramer framer(HTTP2);
   if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
-                                       headers_len, headers.get())) {
+                                       headers_len, &headers)) {
     DLOG(WARNING) << "Invalid headers";
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
   }
   MarkHeadersConsumed(headers_len);
 
-  session_->HandlePromised(promised_id, std::move(headers));
+  session_->HandlePromised(promised_id, headers);
 }
 
 void QuicChromiumClientStream::OnDataAvailable() {

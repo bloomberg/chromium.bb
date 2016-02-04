@@ -375,9 +375,7 @@ TEST_P(QuicClientSessionTest, PushPromiseHandlePromise) {
 
   session_->CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_->HandlePromised(
-      promised_stream_id_,
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(promised_stream_id_, push_promise_);
 
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -394,8 +392,8 @@ TEST_P(QuicClientSessionTest, PushPromiseAlreadyClosed) {
               SendRstStream(promised_stream_id_, QUIC_REFUSED_STREAM, 0));
 
   session_->ResetPromised(promised_stream_id_, QUIC_REFUSED_STREAM);
-  session_->HandlePromised(promised_stream_id_,
-                           std::unique_ptr<SpdyHeaderBlock>());
+  SpdyHeaderBlock promise_headers;
+  session_->HandlePromised(promised_stream_id_, promise_headers);
 
   // Verify that the promise was not created.
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
@@ -408,9 +406,7 @@ TEST_P(QuicClientSessionTest, PushPromiseDuplicateUrl) {
 
   session_->CreateOutgoingDynamicStream(kDefaultPriority);
 
-  session_->HandlePromised(
-      promised_stream_id_,
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(promised_stream_id_, push_promise_);
 
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -419,9 +415,7 @@ TEST_P(QuicClientSessionTest, PushPromiseDuplicateUrl) {
   EXPECT_CALL(*connection_, SendRstStream(promised_stream_id_,
                                           QUIC_DUPLICATE_PROMISE_URL, 0));
 
-  session_->HandlePromised(
-      promised_stream_id_,
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(promised_stream_id_, push_promise_);
 
   // Verify that the promise was not created.
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
@@ -433,8 +427,7 @@ TEST_P(QuicClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
 
     QuicStreamId id = promised_stream_id_ + i * 2;
 
-    session_->HandlePromised(id, std::unique_ptr<SpdyHeaderBlock>(
-                                     new SpdyHeaderBlock(push_promise_)));
+    session_->HandlePromised(id, push_promise_);
 
     // Verify that the promise is in the unclaimed streams map.
     string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise_));
@@ -448,8 +441,7 @@ TEST_P(QuicClientSessionTest, ReceivingPromiseEnhanceYourCalm) {
 
   QuicStreamId id = promised_stream_id_ + i * 2;
   EXPECT_CALL(*connection_, SendRstStream(id, QUIC_REFUSED_STREAM, 0));
-  session_->HandlePromised(
-      id, std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(id, push_promise_);
 
   // Verify that the promise was not created.
   string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise_));
@@ -478,9 +470,7 @@ TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetStream(promised_stream_id_);
-  session_->HandlePromised(
-      promised_stream_id_,
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(promised_stream_id_, push_promise_);
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedStream(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
@@ -499,9 +489,7 @@ TEST_P(QuicClientSessionTest, DeletePromised) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->GetStream(promised_stream_id_);
-  session_->HandlePromised(
-      promised_stream_id_,
-      std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
+  session_->HandlePromised(promised_stream_id_, push_promise_);
   QuicClientPromisedInfo* promised =
       session_->GetPromisedById(promised_stream_id_);
   EXPECT_NE(promised, nullptr);
@@ -511,6 +499,21 @@ TEST_P(QuicClientSessionTest, DeletePromised) {
   session_->DeletePromised(promised);
   EXPECT_EQ(session_->GetPromisedById(promised_stream_id_), nullptr);
   EXPECT_EQ(session_->GetPromisedByUrl(promise_url_), nullptr);
+}
+
+TEST_P(QuicClientSessionTest, ResetPromised) {
+  // Initialize crypto before the client session will create a stream.
+  CompleteCryptoHandshake();
+  session_->GetStream(promised_stream_id_);
+  session_->HandlePromised(promised_stream_id_, push_promise_);
+  EXPECT_CALL(*connection_, SendRstStream(promised_stream_id_,
+                                          QUIC_STREAM_PEER_GOING_AWAY, 0));
+  session_->SendRstStream(promised_stream_id_, QUIC_STREAM_PEER_GOING_AWAY, 0);
+  QuicClientPromisedInfo* promised =
+      session_->GetPromisedById(promised_stream_id_);
+  EXPECT_NE(promised, nullptr);
+  EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
+  EXPECT_EQ(session_->GetPromisedStream(promised_stream_id_), nullptr);
 }
 
 }  // namespace

@@ -144,7 +144,7 @@ class QuicTestClient : public test::SimpleClient,
   bool CheckVary(const SpdyHeaderBlock& client_request,
                  const SpdyHeaderBlock& promise_request,
                  const SpdyHeaderBlock& promise_response) override;
-  void OnResponse(QuicSpdyStream*) override;
+  void OnRendezvousResult(QuicSpdyStream*) override;
 
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
@@ -265,8 +265,8 @@ class QuicTestClient : public test::SimpleClient,
   // When true allows the sending of a request to continue while the response is
   // arriving.
   bool allow_bidirectional_data_;
-  // A request matched a PUSH_PROMISE
-  bool push_promise_pending_;
+  // For async push promise rendezvous, validation may fail in which
+  // case the request should be retried.
   std::unique_ptr<TestClientDataToResend> push_promise_data_to_resend_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestClient);

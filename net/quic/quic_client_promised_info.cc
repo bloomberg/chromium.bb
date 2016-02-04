@@ -5,7 +5,6 @@
 #include "net/quic/quic_client_promised_info.h"
 
 #include "base/logging.h"
-#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/spdy_utils.h"
 
 using net::SpdyHeaderBlock;
@@ -20,7 +19,6 @@ QuicClientPromisedInfo::QuicClientPromisedInfo(QuicClientSessionBase* session,
       helper_(session->connection()->helper()),
       id_(id),
       url_(url),
-      stream_visitor_(nullptr),
       client_request_delegate_(nullptr) {}
 
 QuicClientPromisedInfo::~QuicClientPromisedInfo() {}
@@ -38,24 +36,21 @@ void QuicClientPromisedInfo::Init() {
       QuicTime::Delta::FromSeconds(kPushPromiseTimeoutSecs)));
 }
 
-void QuicClientPromisedInfo::OnPromiseHeaders(
-    std::unique_ptr<SpdyHeaderBlock> headers) {
-  if (!SpdyUtils::UrlIsValid(*headers)) {
+void QuicClientPromisedInfo::OnPromiseHeaders(const SpdyHeaderBlock& headers) {
+  if (!SpdyUtils::UrlIsValid(headers)) {
     DVLOG(1) << "Promise for stream " << id_ << " has invalid URL " << url_;
     Reset(QUIC_INVALID_PROMISE_URL);
     return;
   }
-  if (!session_->IsAuthorized(
-          SpdyUtils::GetHostNameFromHeaderBlock(*headers))) {
+  if (!session_->IsAuthorized(SpdyUtils::GetHostNameFromHeaderBlock(headers))) {
     Reset(QUIC_UNAUTHORIZED_PROMISE_URL);
     return;
   }
-  request_headers_ = std::move(headers);
+  request_headers_.reset(new SpdyHeaderBlock(headers));
 }
 
-void QuicClientPromisedInfo::OnResponseHeaders(
-    std::unique_ptr<SpdyHeaderBlock> headers) {
-  response_headers_ = std::move(headers);
+void QuicClientPromisedInfo::OnResponseHeaders(const SpdyHeaderBlock& headers) {
+  response_headers_.reset(new SpdyHeaderBlock(headers));
   if (client_request_delegate_) {
     // We already have a client request waiting.
     FinalValidation();
@@ -67,27 +62,8 @@ void QuicClientPromisedInfo::Reset(QuicRstStreamErrorCode error_code) {
   session_->ResetPromised(id_, error_code);
   session_->DeletePromised(this);
   if (delegate) {
-    delegate->OnResponse(nullptr);
+    delegate->OnRendezvousResult(nullptr);
   }
-}
-
-QuicAsyncStatus QuicClientPromisedInfo::AcceptMatchingRequest(
-    QuicSpdyStream::Visitor* visitor) {
-  QuicSpdyStream* stream = session_->GetPromisedStream(id_);
-  QuicClientPushPromiseIndex::Delegate* delegate = client_request_delegate_;
-  // Stream can start draining now
-  if (delegate) {
-    delegate->OnResponse(stream);
-  }
-  if (stream) {
-    stream->set_visitor(stream_visitor_);
-    stream->OnDataAvailable();
-  }
-  session_->DeletePromised(this);
-  if (stream) {
-    return QUIC_SUCCESS;
-  }
-  return QUIC_FAILURE;
 }
 
 QuicAsyncStatus QuicClientPromisedInfo::FinalValidation() {
@@ -96,24 +72,40 @@ QuicAsyncStatus QuicClientPromisedInfo::FinalValidation() {
     Reset(QUIC_PROMISE_VARY_MISMATCH);
     return QUIC_FAILURE;
   }
-  return AcceptMatchingRequest(stream_visitor_);
+  QuicSpdyStream* stream = session_->GetPromisedStream(id_);
+  if (!stream) {
+    // This shouldn't be possible, as |ClientRequest| guards against
+    // closed stream for the synchronous case.  And in the
+    // asynchronous case, a RST can only be caught by |OnAlarm()|.
+    QUIC_BUG << "missing promised stream" << id_;
+  }
+  QuicClientPushPromiseIndex::Delegate* delegate = client_request_delegate_;
+  session_->DeletePromised(this);
+  // Stream can start draining now
+  if (delegate) {
+    delegate->OnRendezvousResult(stream);
+  }
+  return QUIC_SUCCESS;
 }
 
 QuicAsyncStatus QuicClientPromisedInfo::HandleClientRequest(
-    std::unique_ptr<SpdyHeaderBlock> request_headers,
-    QuicClientPushPromiseIndex::Delegate* delegate,
-    QuicSpdyStream::Visitor* visitor) {
-  client_request_delegate_ = delegate;
-  stream_visitor_ = visitor;
-  client_request_headers_ = std::move(request_headers);
-  if (response_headers_.get()) {
-    return FinalValidation();
+    const SpdyHeaderBlock& request_headers,
+    QuicClientPushPromiseIndex::Delegate* delegate) {
+  if (session_->IsClosedStream(id_)) {
+    // There was a RST on the response stream.
+    session_->DeletePromised(this);
+    return QUIC_FAILURE;
   }
-  return QUIC_PENDING;
+  client_request_delegate_ = delegate;
+  client_request_headers_.reset(new SpdyHeaderBlock(request_headers));
+  if (!response_headers_) {
+    return QUIC_PENDING;
+  }
+  return FinalValidation();
 }
 
 void QuicClientPromisedInfo::Cancel() {
-  // Don't fire OnResponse() for client initiated cancel.
+  // Don't fire OnRendezvousResult() for client initiated cancel.
   client_request_delegate_ = nullptr;
   Reset(QUIC_STREAM_CANCELLED);
 }

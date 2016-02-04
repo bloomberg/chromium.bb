@@ -21,7 +21,6 @@
 using SpdyHeaderBlock;
 using BalsaHeaders;
 using testing::StrictMock;
-using testing::TestWithParam;
 
 namespace net {
 namespace test {
@@ -99,7 +98,7 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
     serialized_push_promise_ =
         SpdyUtils::SerializeUncompressedHeaders(push_promise_);
 
-    client_request_.reset(new SpdyHeaderBlock(push_promise_));
+    client_request_ = SpdyHeaderBlock(push_promise_);
   }
 
   class StreamVisitor : public QuicSpdyClientStream::Visitor {
@@ -110,7 +109,10 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
 
   class PushPromiseDelegate : public QuicClientPushPromiseIndex::Delegate {
    public:
-    explicit PushPromiseDelegate(bool match) : match_(match) {}
+    explicit PushPromiseDelegate(bool match)
+        : match_(match),
+          rendezvous_fired_(false),
+          rendezvous_stream_(nullptr) {}
 
     bool CheckVary(const SpdyHeaderBlock& client_request,
                    const SpdyHeaderBlock& promise_request,
@@ -119,28 +121,18 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
       return match_;
     }
 
-    void OnResponse(QuicSpdyClientStream*) override {}
+    void OnRendezvousResult(QuicSpdyClientStream* stream) override {
+      rendezvous_fired_ = true;
+      rendezvous_stream_ = stream;
+    }
+
+    QuicSpdyClientStream* rendezvous_stream() { return rendezvous_stream_; }
+    bool rendezvous_fired() { return rendezvous_fired_; }
 
    private:
     bool match_;
-  };
-
-  class DataToResend : public QuicClient::QuicDataToResend {
-   public:
-    DataToResend(QuicStreamId id,
-                 BalsaHeaders* headers,
-                 StringPiece body,
-                 bool fin)
-        : QuicClient::QuicDataToResend(headers, body, fin), id_(id) {}
-
-    ~DataToResend() override {}
-
-    void Resend() override {
-      DVLOG(1) << "promise rejected: resend data for id " << id_;
-    }
-
-   private:
-    QuicStreamId id_;
+    bool rendezvous_fired_;
+    QuicSpdyClientStream* rendezvous_stream_;
   };
 
   void ReceivePromise(QuicStreamId id) {
@@ -164,7 +156,7 @@ class QuicClientPromisedInfoTest : public ::testing::Test {
   QuicStreamId promise_id_;
   string promise_url_;
   string serialized_push_promise_;
-  std::unique_ptr<SpdyHeaderBlock> client_request_;
+  SpdyHeaderBlock client_request_;
 };
 
 TEST_F(QuicClientPromisedInfoTest, PushPromise) {
@@ -235,8 +227,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseMismatch) {
   EXPECT_CALL(*connection_,
               SendRstStream(promise_id_, QUIC_PROMISE_VARY_MISMATCH, 0));
   EXPECT_CALL(session_, CloseStream(promise_id_));
-  promised->HandleClientRequest(std::move(client_request_), &delegate,
-                                stream_visitor_.get());
+
+  promised->HandleClientRequest(client_request_, &delegate);
 }
 
 TEST_F(QuicClientPromisedInfoTest, PushPromiseVaryWaits) {
@@ -247,8 +239,7 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseVaryWaits) {
 
   // Now initiate rendezvous.
   PushPromiseDelegate delegate(/*match=*/true);
-  promised->HandleClientRequest(std::move(client_request_), &delegate,
-                                stream_visitor_.get());
+  promised->HandleClientRequest(std::move(client_request_), &delegate);
 
   // Promise is still there, waiting for response.
   EXPECT_NE(session_.GetPromisedById(promise_id_), nullptr);
@@ -280,11 +271,14 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseVaryNoWait) {
 
   // Now initiate rendezvous.
   PushPromiseDelegate delegate(/*match=*/true);
-  promised->HandleClientRequest(std::move(client_request_), &delegate,
-                                stream_visitor_.get());
+  promised->HandleClientRequest(std::move(client_request_), &delegate);
 
   // Promise is gone
   EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);
+  // Have a push stream
+  EXPECT_TRUE(delegate.rendezvous_fired());
+
+  EXPECT_NE(delegate.rendezvous_stream(), nullptr);
 }
 
 TEST_F(QuicClientPromisedInfoTest, PushPromiseWaitCancels) {
@@ -295,8 +289,7 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseWaitCancels) {
 
   // Now initiate rendezvous.
   PushPromiseDelegate delegate(/*match=*/true);
-  promised->HandleClientRequest(std::move(client_request_), &delegate,
-                                stream_visitor_.get());
+  promised->HandleClientRequest(std::move(client_request_), &delegate);
 
   // Promise is still there, waiting for response.
   EXPECT_NE(session_.GetPromisedById(promise_id_), nullptr);
@@ -305,9 +298,44 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseWaitCancels) {
   session_.GetStream(promise_id_);
 
   // Fire the alarm that will cancel the promised stream.
+  EXPECT_CALL(session_, CloseStream(promise_id_));
   EXPECT_CALL(*connection_,
               SendRstStream(promise_id_, QUIC_STREAM_CANCELLED, 0));
   promised->Cancel();
+
+  // Promise is gone
+  EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);
+}
+
+TEST_F(QuicClientPromisedInfoTest, PushPromiseDataClosed) {
+  ReceivePromise(promise_id_);
+
+  QuicClientPromisedInfo* promised = session_.GetPromisedById(promise_id_);
+  ASSERT_NE(promised, nullptr);
+
+  QuicSpdyClientStream* promise_stream =
+      static_cast<QuicSpdyClientStream*>(session_.GetStream(promise_id_));
+  ASSERT_NE(promise_stream, nullptr);
+
+  // Send response, rendezvous will be able to finish synchronously.
+  promise_stream->OnStreamHeaders(headers_string_);
+  promise_stream->OnStreamHeadersComplete(false, headers_string_.size());
+
+  EXPECT_CALL(session_, CloseStream(promise_id_));
+  EXPECT_CALL(*connection_,
+              SendRstStream(promise_id_, QUIC_STREAM_PEER_GOING_AWAY, 0));
+  session_.SendRstStream(promise_id_, QUIC_STREAM_PEER_GOING_AWAY, 0);
+
+  // Now initiate rendezvous.
+  PushPromiseDelegate delegate(/*match=*/true);
+  EXPECT_EQ(
+      promised->HandleClientRequest(std::move(client_request_), &delegate),
+      QUIC_FAILURE);
+
+  // Got an indication of the stream failure, client should retry
+  // request.
+  EXPECT_FALSE(delegate.rendezvous_fired());
+  EXPECT_EQ(delegate.rendezvous_stream(), nullptr);
 
   // Promise is gone
   EXPECT_EQ(session_.GetPromisedById(promise_id_), nullptr);

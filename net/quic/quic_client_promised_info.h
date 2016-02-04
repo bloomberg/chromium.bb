@@ -41,17 +41,16 @@ class NET_EXPORT_PRIVATE QuicClientPromisedInfo
   void Init();
 
   // Validate promise headers etc.
-  void OnPromiseHeaders(std::unique_ptr<SpdyHeaderBlock> request_headers);
+  void OnPromiseHeaders(const SpdyHeaderBlock& request_headers);
 
   // Store response, possibly proceed with final validation.
-  void OnResponseHeaders(std::unique_ptr<SpdyHeaderBlock> response_headers);
+  void OnResponseHeaders(const SpdyHeaderBlock& response_headers);
 
   // Rendezvous between this promised stream and a client request that
   // has a matching URL.
-  QuicAsyncStatus HandleClientRequest(
-      std::unique_ptr<SpdyHeaderBlock> headers,
-      QuicClientPushPromiseIndex::Delegate* delegate,
-      QuicSpdyStream::Visitor* visitor);
+  virtual QuicAsyncStatus HandleClientRequest(
+      const SpdyHeaderBlock& headers,
+      QuicClientPushPromiseIndex::Delegate* delegate);
 
   void Cancel() override;
 
@@ -89,8 +88,6 @@ class NET_EXPORT_PRIVATE QuicClientPromisedInfo
     QuicClientPromisedInfo* promised_;
   };
 
-  QuicAsyncStatus AcceptMatchingRequest(QuicSpdyStream::Visitor* visitor);
-
   void Reset(QuicRstStreamErrorCode error_code);
 
   QuicAsyncStatus FinalValidation();
@@ -102,7 +99,6 @@ class NET_EXPORT_PRIVATE QuicClientPromisedInfo
   std::unique_ptr<SpdyHeaderBlock> request_headers_;
   std::unique_ptr<SpdyHeaderBlock> response_headers_;
   std::unique_ptr<SpdyHeaderBlock> client_request_headers_;
-  QuicSpdyStream::Visitor* stream_visitor_;
   QuicClientPushPromiseIndex::Delegate* client_request_delegate_;
 
   // The promise will commit suicide eventually if it is not claimed

@@ -145,7 +145,7 @@ class QuicClient : public QuicClientBase,
   bool CheckVary(const SpdyHeaderBlock& client_request,
                  const SpdyHeaderBlock& promise_request,
                  const SpdyHeaderBlock& promise_response) override;
-  void OnResponse(QuicSpdyStream*) override;
+  void OnRendezvousResult(QuicSpdyStream*) override;
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.
