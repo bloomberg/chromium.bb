@@ -428,8 +428,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::VOLUME_UP));
   EXPECT_TRUE(
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "* percent*"));
-  EXPECT_EQ("Volume,", speech_monitor_.GetNextUtterance());
-  EXPECT_EQ("slider", speech_monitor_.GetNextUtterance());
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {

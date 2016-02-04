@@ -32,6 +32,13 @@ DesktopAutomationHandler = function(node) {
    */
   this.textEditHandler_ = null;
 
+  /**
+   * The last time we handled a value changed event.
+   * @type {!Date}
+   * @private
+   */
+  this.lastValueChanged_ = new Date(0);
+
   // The focused state gets set on the containing webView node.
   var webView = node.find({role: RoleType.webView, state: {focused: true}});
   if (webView) {
@@ -231,8 +238,15 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
-    var range = cursors.Range.fromNode(evt.target);
-    new Output().withSpeechAndBraille(range, range, evt.type)
+    if (!evt.target.state.focused && evt.target.root.role != RoleType.desktop)
+      return;
+
+    if (new Date() - this.lastValueChanged_ <= 500)
+      return;
+
+    this.lastValueChanged_ = new Date();
+
+    new Output().format('$value', evt.target)
         .go();
   },
 

@@ -529,3 +529,30 @@ TEST_F('BackgroundTest', 'FocusIframe', function() {
     assertFalse(didFocus);
   }.bind(this));
 });
+
+TEST_F('BackgroundTest', 'NoisySlider', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(  function() {/*!
+    <button id="go">go</button>
+    <div id="slider" tabindex=0 role="slider"></div>
+    <script>
+      function update() {
+        var s = document.getElementById('slider');
+        s.setAttribute('aria-valuetext', 'noisy');
+        setTimeout(update, 500);
+      }
+      update();
+    </script>
+  */}, function(root) {
+    var go = root.find({role: 'button'});
+    var slider = root.find({role: 'slider'});
+    var focusButton = go.focus.bind(go);
+    var focusSlider = slider.focus.bind(slider);
+    mockFeedback.call(focusButton)
+        .expectNextSpeechUtteranceIsNot('noisy')
+        .call(focusSlider)
+        .expectSpeech('noisy')
+        .expectSpeech('noisy')
+        .replay();
+  }.bind(this));
+});
