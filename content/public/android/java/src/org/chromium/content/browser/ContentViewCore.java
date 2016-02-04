@@ -1250,6 +1250,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onSingleTap(consumed, x, y);
         }
+        hidePastePopup();
     }
 
     @SuppressWarnings("unused")
@@ -2241,6 +2242,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 } else {
                     showPastePopup(xAnchor, yAnchor);
                 }
+                mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_CLEARED:
@@ -2255,6 +2257,11 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
+                if (mWasPastePopupShowingOnInsertionDragStart) {
+                    showPastePopup(xAnchor, yAnchor);
+                }
+                mWasPastePopupShowingOnInsertionDragStart = false;
+                break;
             case SelectionEventType.SELECTION_ESTABLISHED:
             case SelectionEventType.SELECTION_DISSOLVED:
                 break;

@@ -304,14 +304,12 @@ void SelectionController::selectClosestWordFromHitTestResult(const HitTestResult
     }
 
 #if OS(ANDROID)
-    // If node is not editable and doesn't have text except space, tab or
-    // line break, do not select that 'empty' area.
-    if (!innerNode->hasEditableStyle()) {
-        EphemeralRangeTemplate<Strategy> range = EphemeralRangeTemplate<Strategy>(newSelection.start(), newSelection.end());
-        String str = plainText(range, TextIteratorDefaultBehavior);
-        if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
-            return;
-    }
+    // If node doesn't have text except space, tab or line break, do not
+    // select that 'empty' area.
+    EphemeralRangeTemplate<Strategy> range = EphemeralRangeTemplate<Strategy>(newSelection.start(), newSelection.end());
+    const String& str = plainText(range, TextIteratorDefaultBehavior);
+    if (str.isEmpty() || str.simplifyWhiteSpace().containsOnlyWhitespace())
+        return;
 #endif
 
     if (appendTrailingWhitespace == AppendTrailingWhitespace::ShouldAppend && newSelection.isRange())

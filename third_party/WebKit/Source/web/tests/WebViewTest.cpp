@@ -1617,6 +1617,22 @@ TEST_F(WebViewTest, LongPressSelection)
     EXPECT_EQ("testword", std::string(frame->selectionAsText().utf8().data()));
 }
 
+TEST_F(WebViewTest, LongPressEmptyTextarea)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_textarea.html"));
+
+    WebView* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "longpress_textarea.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebString blanklinestextbox = WebString::fromUTF8("blanklinestextbox");
+    WebLocalFrameImpl* frame = toWebLocalFrameImpl(webView->mainFrame());
+
+    EXPECT_TRUE(tapElementById(webView, WebInputEvent::GestureLongPress, blanklinestextbox));
+    EXPECT_EQ("", std::string(frame->selectionAsText().utf8().data()));
+}
+
 TEST_F(WebViewTest, BlinkCaretOnTypingAfterLongPress)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("blink_caret_on_typing_after_long_press.html"));
