@@ -95,6 +95,7 @@ private:
     public:
         explicit CancellableTimerTask(TimerBase* timer) : m_timer(timer) { }
 
+        NO_LAZY_SWEEP_SANITIZE_ADDRESS
         ~CancellableTimerTask() override
         {
             if (m_timer)
