@@ -1076,27 +1076,36 @@ bool LocalSafeBrowsingDatabaseManager::HandleOneCheck(
   // which are called from this code.  Refactoring that across the checks could
   // interact well with batching the checks here.
 
-  // TODO(gab): Fix the fact that Get(Url|Hash)SeverestThreatType() may return a
-  // threat for which IsExpectedThreat() returns false even if |full_hashes|
-  // actually contains an expected threat.
+  std::vector<SBFullHashResult> expected_full_hashes;
+  for (const auto& full_hash : full_hashes) {
+    ListType type = static_cast<ListType>(full_hash.list_id);
+    if (IsExpectedThreat(GetThreatTypeFromListType(type),
+                         check->expected_threats)) {
+      expected_full_hashes.push_back(full_hash);
+    }
+  }
+
+  if (expected_full_hashes.empty()) {
+    SafeBrowsingCheckDone(check);
+    return false;
+  }
 
   for (size_t i = 0; i < check->urls.size(); ++i) {
     size_t threat_index;
-    SBThreatType threat =
-        GetUrlSeverestThreatType(check->urls[i], full_hashes, &threat_index);
-    if (threat != SB_THREAT_TYPE_SAFE &&
-        IsExpectedThreat(threat, check->expected_threats)) {
+    SBThreatType threat = GetUrlSeverestThreatType(check->urls[i],
+                                                   expected_full_hashes,
+                                                   &threat_index);
+    if (threat != SB_THREAT_TYPE_SAFE) {
       check->url_results[i] = threat;
-      check->url_metadata[i] = full_hashes[threat_index].metadata;
+      check->url_metadata[i] = expected_full_hashes[threat_index].metadata;
       is_threat = true;
     }
   }
 
   for (size_t i = 0; i < check->full_hashes.size(); ++i) {
     SBThreatType threat =
-        GetHashSeverestThreatType(check->full_hashes[i], full_hashes);
-    if (threat != SB_THREAT_TYPE_SAFE &&
-        IsExpectedThreat(threat, check->expected_threats)) {
+        GetHashSeverestThreatType(check->full_hashes[i], expected_full_hashes);
+    if (threat != SB_THREAT_TYPE_SAFE) {
       check->full_hash_results[i] = threat;
       is_threat = true;
     }
