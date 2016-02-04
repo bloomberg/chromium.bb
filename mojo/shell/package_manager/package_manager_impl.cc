@@ -83,6 +83,8 @@ void SerializeEntry(const ApplicationInfo& entry,
 ApplicationInfo::ApplicationInfo() {}
 ApplicationInfo::~ApplicationInfo() {}
 
+ApplicationCatalogStore::~ApplicationCatalogStore() {}
+
 PackageManagerImpl::PackageManagerImpl(
     const base::FilePath& shell_file_root,
     base::TaskRunner* task_runner,
