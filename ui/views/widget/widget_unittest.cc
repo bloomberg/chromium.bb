@@ -29,6 +29,7 @@
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget_deletion_observer.h"
+#include "ui/views/widget/widget_removals_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
@@ -3442,6 +3443,79 @@ TEST_F(WidgetTest, OnDeviceScaleFactorChanged) {
   scale_factor *= 2.0f;
   widget->GetLayer()->OnDeviceScaleFactorChanged(scale_factor);
   EXPECT_EQ(scale_factor, view->last_scale_factor());
+}
+
+namespace {
+
+class TestWidgetRemovalsObserver : public WidgetRemovalsObserver {
+ public:
+  TestWidgetRemovalsObserver() {}
+  ~TestWidgetRemovalsObserver() override {}
+
+  void OnWillRemoveView(Widget* widget, View* view) override {
+    removed_views_.insert(view);
+  }
+
+  bool DidRemoveView(View* view) {
+    return removed_views_.find(view) != removed_views_.end();
+  }
+
+ private:
+  std::set<View*> removed_views_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWidgetRemovalsObserver);
+};
+
+}
+
+// Test that WidgetRemovalsObserver::OnWillRemoveView is called when deleting
+// a view.
+TEST_F(WidgetTest, WidgetRemovalsObserverCalled) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  TestWidgetRemovalsObserver removals_observer;
+  widget->AddRemovalsObserver(&removals_observer);
+
+  View* parent = new View();
+  widget->client_view()->AddChildView(parent);
+
+  View* child = new View();
+  parent->AddChildView(child);
+
+  widget->client_view()->RemoveChildView(parent);
+  EXPECT_TRUE(removals_observer.DidRemoveView(parent));
+  EXPECT_FALSE(removals_observer.DidRemoveView(child));
+
+  // Calling RemoveChildView() doesn't delete the view, but deleting
+  // |parent| will automatically delete |child|.
+  delete parent;
+
+  widget->RemoveRemovalsObserver(&removals_observer);
+}
+
+// Test that WidgetRemovalsObserver::OnWillRemoveView is called when moving
+// a view from one widget to another, but not when moving a view within
+// the same widget.
+TEST_F(WidgetTest, WidgetRemovalsObserverCalledWhenMovingBetweenWidgets) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  TestWidgetRemovalsObserver removals_observer;
+  widget->AddRemovalsObserver(&removals_observer);
+
+  View* parent = new View();
+  widget->client_view()->AddChildView(parent);
+
+  View* child = new View();
+  widget->client_view()->AddChildView(child);
+
+  // Reparenting the child shouldn't call the removals observer.
+  parent->AddChildView(child);
+  EXPECT_FALSE(removals_observer.DidRemoveView(child));
+
+  // Moving the child to a different widget should call the removals observer.
+  WidgetAutoclosePtr widget2(CreateTopLevelPlatformWidget());
+  widget2->client_view()->AddChildView(child);
+  EXPECT_TRUE(removals_observer.DidRemoveView(child));
+
+  widget->RemoveRemovalsObserver(&removals_observer);
 }
 
 }  // namespace test
