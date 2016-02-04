@@ -327,6 +327,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/renderbuffers/readbuffer.html',
+        ['mac'], bug=570453)
     self.Fail('conformance2/textures/misc/compressed-tex-image.html',
         ['mac'], bug=565438)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
