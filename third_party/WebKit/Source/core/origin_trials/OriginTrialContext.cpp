@@ -66,9 +66,8 @@ bool hasValidToken(ExecutionContext* executionContext, const String& featureName
 bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
 {
     if (!RuntimeEnabledFeatures::experimentalFrameworkEnabled()) {
-        if (errorMessage) {
-            *errorMessage = "Experimental Framework is not enabled.";
-        }
+        // TODO(iclelland): Set an error message here, the first time the
+        // context is accessed in this renderer.
         return false;
     }
 
@@ -88,9 +87,8 @@ bool OriginTrialContext::isFeatureEnabled(ExecutionContext* executionContext, co
     if (!validator) {
         validator = Platform::current()->trialTokenValidator();
         if (!validator) {
-            if (errorMessage) {
-                *errorMessage = "Experimental Framework is not enabled.";
-            }
+            // TODO(iclelland): Set an error message here, the first time the
+            // context is accessed in this renderer.
             return false;
         }
     }
