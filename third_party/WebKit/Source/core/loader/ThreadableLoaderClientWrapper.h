@@ -32,6 +32,8 @@
 #define ThreadableLoaderClientWrapper_h
 
 #include "core/loader/ThreadableLoaderClient.h"
+#include "platform/network/ResourceResponse.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -81,14 +83,18 @@ public:
             m_client->didSendData(bytesSent, totalBytesToBeSent);
     }
 
-    void didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
+    void didReceiveResponse(unsigned long identifier, PassOwnPtr<CrossThreadResourceResponseData> responseData, PassOwnPtr<WebDataConsumerHandle> handle)
     {
+        ResourceResponse response(responseData.get());
+
         if (m_client)
             m_client->didReceiveResponse(identifier, response, handle);
     }
 
     void didReceiveData(PassOwnPtr<Vector<char>> data)
     {
+        RELEASE_ASSERT(data->size() <= std::numeric_limits<unsigned>::max());
+
         if (m_client)
             m_client->didReceiveData(data->data(), data->size());
     }
@@ -127,22 +133,18 @@ public:
             m_client->didFailRedirectCheck();
     }
 
-    void didReceiveAuthenticationCancellation(unsigned long identifier, const ResourceResponse& response)
-    {
-        if (m_client)
-            m_client->didReceiveResponse(identifier, response, nullptr);
-    }
-
     void didDownloadData(int dataLength)
     {
         if (m_client)
             m_client->didDownloadData(dataLength);
     }
 
-    void didReceiveResourceTiming(const ResourceTimingInfo& info)
+    void didReceiveResourceTiming(PassOwnPtr<CrossThreadResourceTimingInfoData> timingData)
     {
+        OwnPtr<ResourceTimingInfo> info(ResourceTimingInfo::adopt(timingData));
+
         if (m_resourceTimingClient)
-            m_resourceTimingClient->didReceiveResourceTiming(info);
+            m_resourceTimingClient->didReceiveResourceTiming(*info);
     }
 
 protected:

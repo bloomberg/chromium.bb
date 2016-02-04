@@ -36,16 +36,23 @@
 #include "core/loader/ThreadableLoaderClientWrapper.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/Referrer.h"
+#include "wtf/Functional.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
+#include "wtf/ThreadingPrimitives.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
+class ExecutionContextTask;
 class ResourceError;
 class ResourceRequest;
+class ResourceResponse;
+class WebWaitableEvent;
 class WorkerGlobalScope;
 class WorkerLoaderProxy;
 struct CrossThreadResourceRequestData;
@@ -54,9 +61,9 @@ class WorkerThreadableLoader final : public ThreadableLoader, private Threadable
     USING_FAST_MALLOC(WorkerThreadableLoader);
 public:
     static void loadResourceSynchronously(WorkerGlobalScope&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
-    static PassRefPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, PassRefPtr<ThreadableLoaderClientWrapper> clientWrapper, PassOwnPtr<ThreadableLoaderClient> clientBridge, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
+    static PassRefPtr<WorkerThreadableLoader> create(WorkerGlobalScope& workerGlobalScope, ThreadableLoaderClient* client, const ResourceRequest& request, const ThreadableLoaderOptions& options, const ResourceLoaderOptions& resourceLoaderOptions)
     {
-        return adoptRef(new WorkerThreadableLoader(workerGlobalScope, clientWrapper, clientBridge, request, options, resourceLoaderOptions));
+        return adoptRef(new WorkerThreadableLoader(workerGlobalScope, client, request, options, resourceLoaderOptions, LoadAsynchronously));
     }
 
     ~WorkerThreadableLoader() override;
@@ -66,6 +73,11 @@ public:
     void cancel() override;
 
 private:
+    enum BlockingBehavior {
+        LoadSynchronously,
+        LoadAsynchronously
+    };
+
     // Creates a loader on the main thread and bridges communication between
     // the main thread and the worker context's thread where WorkerThreadableLoader runs.
     //
@@ -85,55 +97,107 @@ private:
     //    thread do "ThreadableLoaderClientWrapper::ref" (automatically inside of the cross thread copy
     //    done in createCrossThreadTask), so the ThreadableLoaderClientWrapper instance is there until all
     //    tasks are executed.
-    class MainThreadBridge final : public ThreadableLoaderClient {
+    class MainThreadBridgeBase : public ThreadableLoaderClient {
     public:
         // All executed on the worker context's thread.
-        MainThreadBridge(PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, PassRefPtr<WorkerLoaderProxy>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy, const String& outgoingReferrer);
+        MainThreadBridgeBase(PassRefPtr<ThreadableLoaderClientWrapper>, PassRefPtr<WorkerLoaderProxy>);
         void overrideTimeout(unsigned long timeoutMilliseconds);
         void cancel();
         void destroy();
 
+        // All executed on the main thread.
+        void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) final;
+        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) final;
+        void didReceiveData(const char*, unsigned dataLength) final;
+        void didDownloadData(int dataLength) final;
+        void didReceiveCachedMetadata(const char*, int dataLength) final;
+        void didFinishLoading(unsigned long identifier, double finishTime) final;
+        void didFail(const ResourceError&) final;
+        void didFailAccessControlCheck(const ResourceError&) final;
+        void didFailRedirectCheck() final;
+        void didReceiveResourceTiming(const ResourceTimingInfo&) final;
+
+    protected:
+        ~MainThreadBridgeBase() override;
+
+        // Posts a task to the main thread to run mainThreadCreateLoader().
+        void createLoader(const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy&, const String&);
+
+        WorkerLoaderProxy* loaderProxy()
+        {
+            return m_loaderProxy.get();
+        }
+
+        PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper()
+        {
+            return m_workerClientWrapper;
+        }
+
     private:
-        // Executed on the worker context's thread.
-        void clearClientWrapper();
+        // The following methods are overridden by the subclasses to implement
+        // code to forward did.* method invocations to the worker context's
+        // thread which is specialized for sync and async case respectively.
+        virtual void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) = 0;
+        virtual void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) = 0;
 
         // All executed on the main thread.
-        void mainThreadDestroy(ExecutionContext*);
-        ~MainThreadBridge() override;
-
         void mainThreadCreateLoader(PassOwnPtr<CrossThreadResourceRequestData>, ThreadableLoaderOptions, ResourceLoaderOptions, const ReferrerPolicy, const String& outgoingReferrer, ExecutionContext*);
+        void mainThreadDestroy(ExecutionContext*);
         void mainThreadOverrideTimeout(unsigned long timeoutMilliseconds, ExecutionContext*);
         void mainThreadCancel(ExecutionContext*);
-        void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-        void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-        void didReceiveData(const char*, unsigned dataLength) override;
-        void didDownloadData(int dataLength) override;
-        void didReceiveCachedMetadata(const char*, int dataLength) override;
-        void didFinishLoading(unsigned long identifier, double finishTime) override;
-        void didFail(const ResourceError&) override;
-        void didFailAccessControlCheck(const ResourceError&) override;
-        void didFailRedirectCheck() override;
-        void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
         // Only to be used on the main thread.
         RefPtr<ThreadableLoader> m_mainThreadLoader;
-        OwnPtr<ThreadableLoaderClient> m_clientBridge;
 
         // ThreadableLoaderClientWrapper is to be used on the worker context thread.
-        // The ref counting is done on either thread.
+        // The ref counting is done on either thread:
+        // - worker context's thread: held by the tasks
+        // - main thread: held by MainThreadBridgeBase
+        // Therefore, this must be a ThreadSafeRefCounted.
         RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
 
         // Used on the worker context thread.
         RefPtr<WorkerLoaderProxy> m_loaderProxy;
     };
 
-    WorkerThreadableLoader(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, PassOwnPtr<ThreadableLoaderClient>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
+    class MainThreadAsyncBridge final : public MainThreadBridgeBase {
+    public:
+        MainThreadAsyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy, const String& outgoingReferrer);
+
+    private:
+        ~MainThreadAsyncBridge() override;
+
+        void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) override;
+    };
+
+    class MainThreadSyncBridge final : public MainThreadBridgeBase {
+    public:
+        MainThreadSyncBridge(WorkerGlobalScope&, PassRefPtr<ThreadableLoaderClientWrapper>, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, const ReferrerPolicy, const String& outgoingReferrer);
+
+    private:
+        ~MainThreadSyncBridge() override;
+
+        void forwardTaskToWorker(PassOwnPtr<ExecutionContextTask>) override;
+        void forwardTaskToWorkerOnLoaderDone(PassOwnPtr<ExecutionContextTask>) override;
+
+        bool m_done;
+        OwnPtr<WebWaitableEvent> m_loaderDoneEvent;
+        // Thread-safety: |m_clientTasks| can be written (i.e. Closures are added)
+        // on the main thread only before |m_loaderDoneEvent| is signaled and can be read
+        // on the worker context thread only after |m_loaderDoneEvent| is signaled.
+        Vector<OwnPtr<ExecutionContextTask>> m_clientTasks;
+        Mutex m_lock;
+    };
+
+    WorkerThreadableLoader(WorkerGlobalScope&, ThreadableLoaderClient*, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&, BlockingBehavior);
 
     void didReceiveResourceTiming(const ResourceTimingInfo&) override;
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
     RefPtr<ThreadableLoaderClientWrapper> m_workerClientWrapper;
-    MainThreadBridge& m_bridge;
+
+    MainThreadBridgeBase* m_bridge;
 };
 
 } // namespace blink
