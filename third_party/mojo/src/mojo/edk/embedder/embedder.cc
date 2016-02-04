@@ -212,18 +212,20 @@ void InitIPCSupport(ProcessType process_type,
                     ProcessDelegate* process_delegate,
                     scoped_refptr<base::TaskRunner> io_thread_task_runner,
                     ScopedPlatformHandle platform_handle) {
-  // |Init()| must have already been called.
-  DCHECK(internal::g_core);
-  // And not |InitIPCSupport()| (without |ShutdownIPCSupport()|).
-  DCHECK(!internal::g_ipc_support);
+  if (!UseNewEDK()) {
+    // |Init()| must have already been called.
+    DCHECK(internal::g_core);
+    // And not |InitIPCSupport()| (without |ShutdownIPCSupport()|).
+    DCHECK(!internal::g_ipc_support);
 
-  internal::g_ipc_support = new system::IPCSupport(
-      internal::g_platform_support, process_type, process_delegate,
-      io_thread_task_runner, std::move(platform_handle));
+    internal::g_ipc_support = new system::IPCSupport(
+        internal::g_platform_support, process_type, process_delegate,
+        io_thread_task_runner, std::move(platform_handle));
 
-  // TODO(use_chrome_edk) at this point the command line to switch to the new
-  // EDK might not be set yet. There's no harm in always intializing the new EDK
-  // though.
+    // TODO(use_chrome_edk) at this point the command line to switch to the new
+    // EDK might not be set yet. There's no harm in always intializing the new
+    // EDK though.
+  }
   g_wrapper_process_delegate = new NewEDKProcessDelegate(process_delegate);
   mojo::edk::InitIPCSupport(g_wrapper_process_delegate, io_thread_task_runner);
 }
