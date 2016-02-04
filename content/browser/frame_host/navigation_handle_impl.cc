@@ -148,14 +148,23 @@ bool NavigationHandleImpl::IsErrorPage() {
 }
 
 void NavigationHandleImpl::Resume() {
-  if (state_ != DEFERRING_START && state_ != DEFERRING_REDIRECT)
+  if (state_ != DEFERRING_START && state_ != DEFERRING_REDIRECT &&
+      state_ != DEFERRING_RESPONSE) {
     return;
+  }
 
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   if (state_ == DEFERRING_START) {
     result = CheckWillStartRequest();
-  } else {
+  } else if (state_ == DEFERRING_REDIRECT) {
     result = CheckWillRedirectRequest();
+  } else {
+    result = CheckWillProcessResponse();
+
+    // If the navigation is about to proceed after processing the response, then
+    // it's ready to commit.
+    if (result == NavigationThrottle::PROCEED)
+      ReadyToCommitNavigation(render_frame_host_, response_headers_);
   }
 
   if (result != NavigationThrottle::DEFER)
@@ -280,6 +289,28 @@ void NavigationHandleImpl::WillRedirectRequest(
     RunCompleteCallback(result);
 }
 
+void NavigationHandleImpl::WillProcessResponse(
+    RenderFrameHostImpl* render_frame_host,
+    scoped_refptr<net::HttpResponseHeaders> response_headers,
+    const ThrottleChecksFinishedCallback& callback) {
+  DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
+  render_frame_host_ = render_frame_host;
+  response_headers_ = response_headers;
+  state_ = WILL_PROCESS_RESPONSE;
+  complete_callback_ = callback;
+
+  // Notify each throttle of the response.
+  NavigationThrottle::ThrottleCheckResult result = CheckWillProcessResponse();
+
+  // If the navigation is about to proceed, then it's ready to commit.
+  if (result == NavigationThrottle::PROCEED)
+    ReadyToCommitNavigation(render_frame_host, response_headers);
+
+  // If the navigation is not deferred, run the callback.
+  if (result != NavigationThrottle::DEFER)
+    RunCompleteCallback(result);
+}
+
 void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
   url_ = new_url;
   GetDelegate()->DidRedirectNavigation(this);
@@ -378,13 +409,46 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
   return NavigationThrottle::PROCEED;
 }
 
+NavigationThrottle::ThrottleCheckResult
+NavigationHandleImpl::CheckWillProcessResponse() {
+  DCHECK(state_ == WILL_PROCESS_RESPONSE || state_ == DEFERRING_RESPONSE);
+  DCHECK(state_ != WILL_PROCESS_RESPONSE || next_index_ == 0);
+  DCHECK(state_ != DEFERRING_RESPONSE || next_index_ != 0);
+  for (size_t i = next_index_; i < throttles_.size(); ++i) {
+    NavigationThrottle::ThrottleCheckResult result =
+        throttles_[i]->WillProcessResponse();
+    switch (result) {
+      case NavigationThrottle::PROCEED:
+        continue;
+
+      case NavigationThrottle::CANCEL:
+      case NavigationThrottle::CANCEL_AND_IGNORE:
+        state_ = CANCELING;
+        return result;
+
+      case NavigationThrottle::DEFER:
+        state_ = DEFERRING_RESPONSE;
+        next_index_ = i + 1;
+        return result;
+    }
+  }
+  next_index_ = 0;
+  state_ = WILL_PROCESS_RESPONSE;
+  return NavigationThrottle::PROCEED;
+}
+
 void NavigationHandleImpl::RunCompleteCallback(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result != NavigationThrottle::DEFER);
-  if (!complete_callback_.is_null())
-    complete_callback_.Run(result);
 
+  ThrottleChecksFinishedCallback callback = complete_callback_;
   complete_callback_.Reset();
+
+  if (!callback.is_null())
+    callback.Run(result);
+
+  // No code after running the callback, as it might have resulted in our
+  // destruction.
 }
 
 }  // namespace content

@@ -162,6 +162,18 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const ThrottleChecksFinishedCallback& callback);
 
+  // Called when the URLRequest has delivered response headers and metadata.
+  // |callback| will be called when all throttle checks have completed,
+  // allowing the caller to cancel the navigation or let it proceed.
+  // NavigationHandle will not call |callback| with a result of DEFER.
+  // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
+  // with |render_frame_host| and |response_headers| just before calling
+  // |callback|.
+  void WillProcessResponse(
+      RenderFrameHostImpl* render_frame_host,
+      scoped_refptr<net::HttpResponseHeaders> response_headers,
+      const ThrottleChecksFinishedCallback& callback);
+
   // Returns the FrameTreeNode this navigation is happening in.
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
@@ -194,6 +206,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     WILL_REDIRECT_REQUEST,
     DEFERRING_REDIRECT,
     CANCELING,
+    WILL_PROCESS_RESPONSE,
+    DEFERRING_RESPONSE,
     READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
@@ -205,6 +219,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
+  NavigationThrottle::ThrottleCheckResult CheckWillProcessResponse();
 
   // Helper function to run and reset the |complete_callback_|. This marks the
   // end of a round of NavigationThrottleChecks.
