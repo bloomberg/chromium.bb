@@ -2189,7 +2189,7 @@ void Document::attach(const AttachContext& context)
 void Document::detach(const AttachContext& context)
 {
     TRACE_EVENT0("blink", "Document::detach");
-    ASSERT(!m_frame || m_frame->tree().childCount() == 0);
+    RELEASE_ASSERT(!m_frame || m_frame->tree().childCount() == 0);
     if (!isActive())
         return;
 
