@@ -93,6 +93,8 @@ class SuggestionView extends ViewGroup {
     private final int mPhoneUrlBarLeftOffsetPx;
     private final int mPhoneUrlBarLeftOffsetRtlPx;
 
+    private boolean mIsTablet;
+
     /**
      * Constructs a new omnibox suggestion view.
      *
@@ -177,6 +179,8 @@ class SuggestionView extends ViewGroup {
                 TypedValue.COMPLEX_UNIT_DIP,
                 PHONE_URL_BAR_LEFT_OFFSET_RTL_DP,
                 getContext().getResources().getDisplayMetrics()));
+
+        mIsTablet = DeviceFormFactor.isTablet(context);
     }
 
     @Override
@@ -485,7 +489,7 @@ class SuggestionView extends ViewGroup {
                 }
                 classifications.add(0, new MatchClassification(0, MatchClassificationStyle.NONE));
 
-                if (DeviceFormFactor.isTablet(getContext())) {
+                if (mIsTablet) {
                     TextPaint tp = mContentsView.mTextLine1.getPaint();
                     mContentsView.mRequiredWidth =
                             tp.measureText(fillIntoEdit, 0, fillIntoEdit.length());
@@ -688,7 +692,7 @@ class SuggestionView extends ViewGroup {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            if (DeviceFormFactor.isTablet(getContext())) {
+            if (mIsTablet) {
                 // Use the same image transform matrix as the navigation icon to ensure the same
                 // scaling, which requires centering vertically based on the height of the
                 // navigation icon view and not the image itself.
@@ -768,7 +772,7 @@ class SuggestionView extends ViewGroup {
             mTextLeft = getSuggestionTextLeftPosition();
             mTextRight = getSuggestionTextRightPosition();
             boolean isRTL = ApiCompatibilityUtils.isLayoutRtl(this);
-            if (DeviceFormFactor.isTablet(getContext())) {
+            if (mIsTablet) {
                 int textWidth = isRTL ? mTextRight : (r - l - mTextLeft);
                 final float maxRequiredWidth = mSuggestionDelegate.getMaxRequiredWidth();
                 final float maxMatchContentsWidth = mSuggestionDelegate.getMaxMatchContentsWidth();
@@ -806,7 +810,7 @@ class SuggestionView extends ViewGroup {
         }
 
         private int getUrlBarLeftOffset() {
-            if (DeviceFormFactor.isTablet(getContext())) {
+            if (mIsTablet) {
                 mUrlBar.getLocationOnScreen(mViewPositionHolder);
                 return mViewPositionHolder[0];
             } else {

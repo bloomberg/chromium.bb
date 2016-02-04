@@ -21,12 +21,14 @@ public class RecentTabsExpandableListView extends ExpandableListView {
     private int mMaxListViewWidth;
     private int mSavedListPosition = 0;
     private int mSavedListTop = 0;
+    private boolean mIsTablet;
 
     /**
      * Constructor for inflating from XML.
      */
     public RecentTabsExpandableListView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mIsTablet = DeviceFormFactor.isTablet(context);
     }
 
     @Override
@@ -38,7 +40,7 @@ public class RecentTabsExpandableListView extends ExpandableListView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        if (!DeviceFormFactor.isTablet(getContext())) {
+        if (!mIsTablet) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             return;
         }

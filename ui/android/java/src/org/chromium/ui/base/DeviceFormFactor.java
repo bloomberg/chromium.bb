@@ -19,42 +19,21 @@ public class DeviceFormFactor {
     private static final int MINIMUM_TABLET_WIDTH_DP = 600;
     private static final int MINIMUM_LARGE_TABLET_WIDTH_DP = 720;
 
-    private static Boolean sIsTablet = null;
-    private static Boolean sIsLargeTablet = null;
-
     /**
      * @param context Android's context.
-     * @return        Whether the app is should treat the device as a tablet for layout.
+     * @return        Whether the app should treat the device as a tablet for layout.
      */
     @CalledByNative
     public static boolean isTablet(Context context) {
-        if (sIsTablet == null) {
-            int minimumScreenWidthDp = context.getResources().getConfiguration()
-                    .smallestScreenWidthDp;
-            sIsTablet = minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
-        }
-        return sIsTablet;
+        int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
+        return minimumScreenWidthDp >= MINIMUM_TABLET_WIDTH_DP;
     }
 
     /**
-     * @return True if the current device's minimum dimension is larger than 720dp.
+     * @return True if the current screen's minimum dimension is larger than 720dp.
      */
     public static boolean isLargeTablet(Context context) {
-        if (sIsLargeTablet == null) {
-            int minimumScreenWidthDp = context.getResources().getConfiguration()
-                    .smallestScreenWidthDp;
-            sIsLargeTablet = minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
-        }
-        return sIsLargeTablet;
+        int minimumScreenWidthDp = context.getResources().getConfiguration().smallestScreenWidthDp;
+        return minimumScreenWidthDp >= MINIMUM_LARGE_TABLET_WIDTH_DP;
     }
-
-    /**
-     * Resets form factor information. This method should be called due to a smallestScreenWidthDp
-     * change in the {@link android.content.res.Configuration}.
-     */
-    public static void onConfigurationChanged() {
-        sIsTablet = null;
-        sIsLargeTablet = null;
-    }
-
 }

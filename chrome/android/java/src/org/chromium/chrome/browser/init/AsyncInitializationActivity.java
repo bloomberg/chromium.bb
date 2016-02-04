@@ -175,10 +175,6 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
             return;
         }
 
-        // TODO(twellington): Move this call to #onConfigurationChanged() after we start handling
-        //                    activity resizes. See crbug.com/583117 for context.
-        DeviceFormFactor.onConfigurationChanged();
-
         super.onCreate(savedInstanceState);
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
         mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
