@@ -196,6 +196,9 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(const LayoutObject* contain
         if (current->isSVGShape() && toLayoutSVGShape(current)->isShapeEmpty())
             continue;
 
+        if (current->isSVGText() && !toLayoutSVGText(current)->isObjectBoundingBoxValid())
+            continue;
+
         const AffineTransform& transform = current->localToParentTransform();
         updateObjectBoundingBox(objectBoundingBox, objectBoundingBoxValid, current,
             transform.mapRect(current->objectBoundingBox()));

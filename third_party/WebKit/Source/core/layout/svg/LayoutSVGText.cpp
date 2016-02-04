@@ -497,6 +497,12 @@ FloatRect LayoutSVGText::paintInvalidationRectInLocalCoordinates() const
     return paintInvalidationRect;
 }
 
+bool LayoutSVGText::isObjectBoundingBoxValid() const
+{
+    // If we don't have any line boxes, then consider the bbox invalid.
+    return firstLineBox();
+}
+
 void LayoutSVGText::addChild(LayoutObject* child, LayoutObject* beforeChild)
 {
     LayoutSVGBlock::addChild(child, beforeChild);

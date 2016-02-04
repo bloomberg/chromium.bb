@@ -44,6 +44,7 @@ public:
     FloatRect paintInvalidationRectInLocalCoordinates() const override;
     FloatRect objectBoundingBox() const override { return FloatRect(frameRect()); }
     FloatRect strokeBoundingBox() const override;
+    bool isObjectBoundingBoxValid() const;
 
     static LayoutSVGText* locateLayoutSVGTextAncestor(LayoutObject*);
     static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);
