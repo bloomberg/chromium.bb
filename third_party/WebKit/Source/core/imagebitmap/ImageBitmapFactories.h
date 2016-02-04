@@ -49,6 +49,8 @@ class ExceptionState;
 class ExecutionContext;
 class ImageBitmapSource;
 class ImageBitmapOptions;
+class ImageSource;
+class WebTaskRunner;
 
 typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap ImageBitmapSourceUnion;
 
@@ -89,6 +91,10 @@ private:
         ImageBitmapLoader(ImageBitmapFactories&, const IntRect&, ScriptState*, const ImageBitmapOptions&);
 
         void rejectPromise();
+
+        void scheduleAsyncImageBitmapDecoding();
+        void decodeImageOnDecoderThread(WebTaskRunner*);
+        void resolvePromiseOnOriginalThread(PassOwnPtr<ImageSource>);
 
         // FileReaderLoaderClient
         void didStartLoading() override { }

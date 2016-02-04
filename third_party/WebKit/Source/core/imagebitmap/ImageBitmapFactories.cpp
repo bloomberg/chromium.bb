@@ -42,7 +42,13 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/SharedBuffer.h"
+#include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/ImageSource.h"
+#include "platform/threading/BackgroundTaskRunner.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
+#include "public/platform/WebTraceLocation.h"
 #include <v8.h>
 
 namespace blink {
@@ -185,11 +191,38 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
         rejectPromise();
         return;
     }
+    scheduleAsyncImageBitmapDecoding();
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
+{
+    rejectPromise();
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding()
+{
+    // For a 4000*4000 png image where each 10*10 tile is filled in by a random RGBA value,
+    // the byteLength is around 2M, and it typically takes around 4.5ms to decode on a
+    // current model of Linux desktop.
+    const int longTaskByteLengthThreshold = 2000000;
+    BackgroundTaskRunner::TaskSize taskSize = (m_loader.arrayBufferResult()->byteLength() >= longTaskByteLengthThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
+    WebTaskRunner* taskRunner = Platform::current()->currentThread()->taskRunner();
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(taskRunner)), taskSize);
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(WebTaskRunner* taskRunner)
+{
+    ASSERT(!isMainThread());
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create((char*)m_loader.arrayBufferResult()->data(), static_cast<size_t>(m_loader.arrayBufferResult()->byteLength()));
 
     OwnPtr<ImageSource> source = adoptPtr(new ImageSource());
     source->setData(*sharedBuffer, true);
 
+    taskRunner->postTask(BLINK_FROM_HERE, threadSafeBind(&ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread, AllowCrossThreadAccess(this), source.release()));
+}
+
+void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(PassOwnPtr<ImageSource> source)
+{
     RefPtr<SkImage> frame = source->createFrameAtIndex(0);
     ASSERT(!frame || (frame->width() && frame->height()));
     if (!frame) {
@@ -207,11 +240,6 @@ void ImageBitmapFactories::ImageBitmapLoader::didFinishLoading()
     RefPtrWillBeRawPtr<ImageBitmap> imageBitmap = ImageBitmap::create(image, m_cropRect, m_options);
     m_resolver->resolve(imageBitmap.release());
     m_factory->didFinishLoading(this);
-}
-
-void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode)
-{
-    rejectPromise();
 }
 
 DEFINE_TRACE(ImageBitmapFactories::ImageBitmapLoader)
