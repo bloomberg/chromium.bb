@@ -9,12 +9,17 @@
 
     <style>
       :host {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
-        background: #3f5566;
+        background: rgb(63, 85, 102);
         color: #fff;
         height: 56px;
         transition: background-color 150ms;
+      }
+
+      :host,
+      #items,
+      #main-content {
+        @apply(--layout-center);
+        @apply(--layout-horizontal);
         width: 100%;
       }
 
@@ -30,11 +35,8 @@
       }
 
       #items {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
         margin: 0 auto;
         max-width: 960px;
-        width: 100%;
       }
 
       #number-selected {
@@ -47,28 +49,26 @@
         min-width: 36px;
         width: 36px;
       }
+
+      [hidden] {
+        display: none !important;
+      }
     </style>
 
-    <template is="dom-if" if="{{!itemsSelected_}}">
+    <div id="main-content" hidden$="{{itemsSelected_}}">
       <h1 i18n-content="title" id="title"></h1>
       <cr-search-field id="search-input"
           i18n-values="label:search;clear-label:clearSearch"></cr-search-field>
-    </template>
+    </div>
 
-    <template is="dom-if" if="{{itemsSelected_}}">
-      <div id="items">
-        <paper-icon-button icon="clear" id="cancel-icon-button"
-            on-tap="onClearSelectionTap_">
-        </paper-icon-button>
-        <!-- TODO: change "selected" and number to an i18n (or equivalent)
-              string -->
-        <div id="number-selected">{{count}} selected</div>
-        <paper-button id="cancel-button" on-tap="onClearSelectionTap_">
-          CANCEL
-        </paper-button>
-        <paper-button id="delete-button">DELETE</paper-button>
-      </div>
-    </template>
+    <div id="items" hidden$="{{!itemsSelected_}}">
+      <paper-icon-button icon="clear" id="cancel-icon-button"
+          on-tap="onClearSelectionTap_"></paper-icon-button>
+      <div id="number-selected">{{numberOfItemsSelected_(count)}}</div>
+      <paper-button id="cancel-button" on-tap="onClearSelectionTap_"
+          i18n-content="cancel"></paper-button>
+      <paper-button id="delete-button" i18n-content="delete"></paper-button>
+    </div>
 
   </template>
   <script src="chrome://history/history_toolbar.js"></script>

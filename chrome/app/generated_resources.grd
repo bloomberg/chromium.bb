@@ -467,6 +467,12 @@ are declared in build/common.gypi.
       <message name="IDS_MD_HISTORY_CLEAR_SEARCH" desc="Tooltip text for the button that clears the search term on the history page">
         Clear search
       </message>
+      <message name="IDS_MD_HISTORY_DELETE" desc="Text for delete button contained in the history page toolbar">
+        Delete
+      </message>
+      <message name="IDS_MD_HISTORY_ITEMS_SELECTED" desc="Label displayed in history toolbar telling the user how many items they have selected.">
+        <ph name="NUMBER_OF_ITEMS_SELECTED">$1</ph> selected
+      </message>
 
       <!-- Generic terms -->
       <message name="IDS_ADD" desc="Used for Add on buttons">

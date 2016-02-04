@@ -26,10 +26,14 @@ Polymer({
    * @private
    */
   changeToolbarView_: function() {
-    this.itemsSelected_ = this.count != 0;
+    this.itemsSelected_ = this.count > 0;
   },
 
   onClearSelectionTap_: function() {
     this.fire('unselect-all');
+  },
+
+  numberOfItemsSelected_: function(count) {
+    return count > 0 ? loadTimeData.getStringF('itemsSelected', count) : '';
   }
 });

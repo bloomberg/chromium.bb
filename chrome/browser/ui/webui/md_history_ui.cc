@@ -32,6 +32,9 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource() {
 
   // Localized strings (alphabetical order).
   source->AddLocalizedString("clearSearch", IDS_MD_HISTORY_CLEAR_SEARCH);
+  source->AddLocalizedString("cancel", IDS_CANCEL);
+  source->AddLocalizedString("delete", IDS_MD_HISTORY_DELETE);
+  source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
   source->AddLocalizedString("search", IDS_MD_HISTORY_SEARCH);

@@ -10,9 +10,10 @@
 
       'variables': {
         'depends': [
+          '../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
           '../../../../ui/webui/resources/js/cr.js',
-          '../../../../ui/webui/resources/js/util.js',
           '../../../../ui/webui/resources/js/cr/ui/position_util.js',
+          '../../../../ui/webui/resources/js/util.js',
           'history_card_manager.js',
           'history_card.js',
           'history_item.js',
