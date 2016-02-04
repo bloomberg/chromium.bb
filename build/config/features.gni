@@ -30,10 +30,9 @@ declare_args() {
   enable_pdf = !is_android && !is_ios && !is_chromecast
 
   # Enables Native Client support.
-  # TODO(GYP): Get NaCl linking on other platforms.
-  # Eventually we want this to be just the first line.
-  enable_nacl = !is_ios && !is_android && !is_chromecast &&
-                current_cpu != "mipsel" && !(is_win && current_cpu != "x64")
+  # TODO(mcgrathr): When mipsel-nacl-clang is available, drop the exclusion.
+  enable_nacl =
+      !is_ios && !is_android && !is_chromecast && current_cpu != "mipsel"
 
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in
