@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -68,16 +69,21 @@ if (is_android) {
     sources = [
       "main.cc",
     ]
-    manifest = [ "manifest.json" ]
 
     deps = [
       ":lib",
+      ":manifest",
       "//base",
       "//components/resource_provider/public/interfaces",
       "//mojo/environment:chromium",
       "//mojo/shell/public/cpp",
       "//url",
     ]
+  }
+
+  mojo_application_manifest("manifest") {
+    application_name = "resource_provider"
+    source = "manifest.json"
   }
 }
 

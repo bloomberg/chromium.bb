@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -132,9 +133,9 @@ mojo_native_application("apptests") {
   sources = [
     "application_manager_apptest.cc",
   ]
-  manifest = [ "application_manager_apptest_manifest.json" ]
 
   deps = [
+    ":apptests_manifest",
     ":test_bindings",
     "//base",
     "//base/test:test_config",
@@ -149,6 +150,11 @@ mojo_native_application("apptests") {
     ":application_manager_apptest_driver",
     ":application_manager_apptest_target",
   ]
+}
+
+mojo_application_manifest("apptests_manifest") {
+  application_name = "mojo_shell_apptests"
+  source = "application_manager_apptest_manifest.json"
 }
 
 executable("application_manager_apptest_driver") {

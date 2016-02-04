@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -93,7 +94,6 @@ source_set("lib") {
 
 mojo_native_application("wm") {
   output_name = "desktop_wm"
-  manifest = [ "manifest.json" ]
 
   sources = [
     "main.cc",
@@ -101,6 +101,7 @@ mojo_native_application("wm") {
 
   deps = [
     ":lib",
+    ":manifest",
     ":resources",
     "//mojo/shell/public/cpp",
   ]
@@ -112,6 +113,11 @@ mojo_native_application("wm") {
   ]
 
   resources = [ "$root_out_dir/mash_wm_resources.pak" ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "desktop_wm"
+  source = "manifest.json"
 }
 
 repack("resources") {

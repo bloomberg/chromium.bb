@@ -4,12 +4,12 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
 mojo_native_application("shell") {
   output_name = "mash_shell"
-  manifest = [ "manifest.json" ]
 
   sources = [
     "main.cc",
@@ -18,6 +18,7 @@ mojo_native_application("shell") {
   ]
 
   deps = [
+    ":manifest",
     "//base",
     "//mash/shell/public/interfaces",
     "//mojo/common",
@@ -33,4 +34,9 @@ mojo_native_application("shell") {
     "//mash/wallpaper",
     "//mash/wm",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "mash_shell"
+  source = "manifest.json"
 }

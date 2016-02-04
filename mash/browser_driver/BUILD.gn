@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -13,9 +14,9 @@ mojo_native_application("browser_driver") {
     "browser_driver_application_delegate.h",
     "main.cc",
   ]
-  manifest = [ "manifest.json" ]
 
   deps = [
+    ":manifest",
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
@@ -23,4 +24,9 @@ mojo_native_application("browser_driver") {
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "browser_driver"
+  source = "manifest.json"
 }

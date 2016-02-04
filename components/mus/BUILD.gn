@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -30,16 +31,21 @@ if (is_android) {
     sources = [
       "main.cc",
     ]
-    manifest = [ "manifest.json" ]
 
     deps = [
       ":lib",
+      ":manifest",
       "//mojo/shell/public/cpp:sources",
     ]
 
     if (is_win) {
       deps += [ ":copy_gl_libraries" ]
     }
+  }
+
+  mojo_application_manifest("manifest") {
+    application_name = "mus"
+    source = "manifest.json"
   }
 }
 

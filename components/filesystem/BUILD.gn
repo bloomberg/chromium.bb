@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
@@ -35,10 +36,9 @@ mojo_native_application("filesystem") {
     "main.cc",
   ]
 
-  manifest = [ "manifest.json" ]
-
   deps = [
     ":lib",
+    ":manifest",
     "//base",
     "//mojo/common",
     "//mojo/environment:chromium",
@@ -47,6 +47,11 @@ mojo_native_application("filesystem") {
     "//mojo/public/cpp/system",
     "//mojo/shell/public/cpp",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "filesystem"
+  source = "manifest.json"
 }
 
 mojo_native_application("apptests") {

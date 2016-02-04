@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/mojo_application.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 # TODO(msw): Port unit/app tests: model, view, tooltip_manager, etc.
@@ -28,9 +29,9 @@ mojo_native_application("shelf") {
     "shelf_view.cc",
     "shelf_view.h",
   ]
-  manifest = [ "manifest.json" ]
 
   deps = [
+    ":manifest",
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
@@ -52,4 +53,9 @@ mojo_native_application("shelf") {
   data_deps = [
     "//components/mus",
   ]
+}
+
+mojo_application_manifest("manifest") {
+  application_name = "shelf"
+  source = "manifest.json"
 }
