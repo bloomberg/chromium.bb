@@ -1493,7 +1493,8 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
       LayerProtoConverter::DeserializeLayerHierarchy(root_layer_,
                                                      proto.root_layer());
   if (root_layer_ != new_root_layer) {
-    root_layer_->SetLayerTreeHost(nullptr);
+    if (root_layer_)
+      root_layer_->SetLayerTreeHost(nullptr);
     root_layer_ = new_root_layer;
     root_layer_->SetLayerTreeHost(this);
   }

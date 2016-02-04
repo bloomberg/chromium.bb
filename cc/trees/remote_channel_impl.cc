@@ -10,6 +10,7 @@
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/proto/compositor_message_to_main.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 
@@ -65,17 +66,76 @@ void RemoteChannelImpl::OnProtoReceived(
 void RemoteChannelImpl::HandleProto(
     const proto::CompositorMessageToImpl& proto) {
   DCHECK(task_runner_provider_->IsMainThread());
+  DCHECK(proto.has_message_type());
 
   switch (proto.message_type()) {
+    case proto::CompositorMessageToImpl::UNKNOWN:
+      NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
+      break;
+    case proto::CompositorMessageToImpl::INITIALIZE_IMPL:
+      NOTREACHED() << "Should be handled by the embedder";
+      break;
+    case proto::CompositorMessageToImpl::CLOSE_IMPL:
+      NOTREACHED() << "Should be handled by the embedder";
+      break;
     case proto::CompositorMessageToImpl::
         MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL:
       ImplThreadTaskRunner()->PostTask(
           FROM_HERE, base::Bind(&ProxyImpl::MainThreadHasStoppedFlingingOnImpl,
                                 proxy_impl_weak_ptr_));
       break;
-    default:
-      // TODO(khushalsagar): Add more types here.
-      NOTIMPLEMENTED();
+    case proto::CompositorMessageToImpl::SET_NEEDS_COMMIT:
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ProxyImpl::SetNeedsCommitOnImpl, proxy_impl_weak_ptr_));
+      break;
+    case proto::CompositorMessageToImpl::SET_DEFER_COMMITS: {
+      const proto::SetDeferCommits& defer_commits_message =
+          proto.defer_commits_message();
+      bool defer_commits = defer_commits_message.defer_commits();
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&ProxyImpl::SetDeferCommitsOnImpl,
+                                proxy_impl_weak_ptr_, defer_commits));
+    } break;
+    case proto::CompositorMessageToImpl::START_COMMIT: {
+      base::TimeTicks main_thread_start_time = base::TimeTicks::Now();
+      const proto::StartCommit& start_commit_message =
+          proto.start_commit_message();
+
+      main().layer_tree_host->FromProtobufForCommit(
+          start_commit_message.layer_tree_host());
+      {
+        DebugScopedSetMainThreadBlocked main_thread_blocked(
+            task_runner_provider_);
+        CompletionEvent completion;
+        ImplThreadTaskRunner()->PostTask(
+            FROM_HERE,
+            base::Bind(&ProxyImpl::StartCommitOnImpl, proxy_impl_weak_ptr_,
+                       &completion, main().layer_tree_host,
+                       main_thread_start_time, false));
+        completion.Wait();
+      }
+    } break;
+    case proto::CompositorMessageToImpl::BEGIN_MAIN_FRAME_ABORTED: {
+      base::TimeTicks main_thread_start_time = base::TimeTicks::Now();
+      const proto::BeginMainFrameAborted& begin_main_frame_aborted_message =
+          proto.begin_main_frame_aborted_message();
+      CommitEarlyOutReason reason = CommitEarlyOutReasonFromProtobuf(
+          begin_main_frame_aborted_message.reason());
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE,
+          base::Bind(&ProxyImpl::BeginMainFrameAbortedOnImpl,
+                     proxy_impl_weak_ptr_, reason, main_thread_start_time));
+    } break;
+    case proto::CompositorMessageToImpl::SET_NEEDS_REDRAW: {
+      const proto::SetNeedsRedraw& set_needs_redraw_message =
+          proto.set_needs_redraw_message();
+      gfx::Rect damaged_rect =
+          ProtoToRect(set_needs_redraw_message.damaged_rect());
+      ImplThreadTaskRunner()->PostTask(
+          FROM_HERE, base::Bind(&ProxyImpl::SetNeedsRedrawOnImpl,
+                                proxy_impl_weak_ptr_, damaged_rect));
+    } break;
   }
 }
 
@@ -136,7 +196,12 @@ void RemoteChannelImpl::SetNeedsUpdateLayers() {
 }
 
 void RemoteChannelImpl::SetNeedsCommit() {
-  NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
+  // Ideally commits should be requested only on the server. But we have to
+  // allow this call since the LayerTreeHost will currently ask for a commit in
+  // 2 cases:
+  // 1) When it is being initialized from a protobuf for a commit.
+  // 2) When it loses the output surface.
+  NOTIMPLEMENTED() << "Commits should not be requested on the client";
 }
 
 void RemoteChannelImpl::SetNeedsRedraw(const gfx::Rect& damage_rect) {
@@ -292,7 +357,30 @@ void RemoteChannelImpl::PostFrameTimingEventsOnMain(
     scoped_ptr<FrameTimingTracker::MainFrameTimingSet> main_frame_events) {}
 
 void RemoteChannelImpl::BeginMainFrame(
-    scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {}
+    scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) {
+  scoped_ptr<proto::CompositorMessage> proto;
+  proto.reset(new proto::CompositorMessage);
+  proto::CompositorMessageToMain* to_main_proto = proto->mutable_to_main();
+
+  to_main_proto->set_message_type(
+      proto::CompositorMessageToMain::BEGIN_MAIN_FRAME);
+  proto::BeginMainFrame* begin_main_frame_message =
+      to_main_proto->mutable_begin_main_frame_message();
+  begin_main_frame_state->ToProtobuf(
+      begin_main_frame_message->mutable_begin_main_frame_state());
+
+  SendMessageProto(std::move(proto));
+}
+
+void RemoteChannelImpl::SendMessageProto(
+    scoped_ptr<proto::CompositorMessage> proto) {
+  DCHECK(task_runner_provider_->IsImplThread());
+
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&RemoteChannelImpl::SendMessageProtoOnMain,
+                 impl().remote_channel_weak_ptr, base::Passed(&proto)));
+}
 
 void RemoteChannelImpl::DidLoseOutputSurfaceOnMain() {
   DCHECK(task_runner_provider_->IsMainThread());
@@ -318,6 +406,13 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
 
   main().renderer_capabilities = capabilities;
   main().layer_tree_host->DidInitializeOutputSurface();
+}
+
+void RemoteChannelImpl::SendMessageProtoOnMain(
+    scoped_ptr<proto::CompositorMessage> proto) {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  main().remote_proto_channel->SendCompositorProto(*proto);
 }
 
 void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,

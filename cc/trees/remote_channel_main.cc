@@ -5,10 +5,13 @@
 #include "cc/trees/remote_channel_main.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/proto/base_conversions.h"
 #include "cc/proto/compositor_message.pb.h"
 #include "cc/proto/compositor_message_to_impl.pb.h"
 #include "cc/proto/compositor_message_to_main.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/proxy_main.h"
 
 namespace cc {
 
@@ -26,7 +29,8 @@ RemoteChannelMain::RemoteChannelMain(RemoteProtoChannel* remote_proto_channel,
     : remote_proto_channel_(remote_proto_channel),
       proxy_main_(proxy_main),
       task_runner_provider_(task_runner_provider),
-      initialized_(false) {
+      initialized_(false),
+      weak_factory_(this) {
   DCHECK(remote_proto_channel_);
   DCHECK(proxy_main_);
   DCHECK(task_runner_provider_);
@@ -42,7 +46,12 @@ RemoteChannelMain::~RemoteChannelMain() {
 }
 
 void RemoteChannelMain::OnProtoReceived(
-    scoped_ptr<proto::CompositorMessage> proto) {}
+    scoped_ptr<proto::CompositorMessage> proto) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  DCHECK(proto->has_to_main());
+
+  HandleProto(proto->to_main());
+}
 
 void RemoteChannelMain::SetThrottleFrameProductionOnImpl(bool throttle) {}
 
@@ -67,7 +76,17 @@ void RemoteChannelMain::MainThreadHasStoppedFlingingOnImpl() {
 
 void RemoteChannelMain::SetInputThrottledUntilCommitOnImpl(bool is_throttled) {}
 
-void RemoteChannelMain::SetDeferCommitsOnImpl(bool defer_commits) {}
+void RemoteChannelMain::SetDeferCommitsOnImpl(bool defer_commits) {
+  proto::CompositorMessage proto;
+  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
+  to_impl_proto->set_message_type(
+      proto::CompositorMessageToImpl::SET_DEFER_COMMITS);
+  proto::SetDeferCommits* defer_commits_message =
+      to_impl_proto->mutable_defer_commits_message();
+  defer_commits_message->set_defer_commits(defer_commits);
+
+  SendMessageProto(proto);
+}
 
 void RemoteChannelMain::FinishAllRenderingOnImpl(CompletionEvent* completion) {
   completion->Signal();
@@ -92,19 +111,76 @@ void RemoteChannelMain::MainFrameWillHappenOnImplForTesting(
   NOTREACHED();
 }
 
-void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {}
+void RemoteChannelMain::SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) {
+  proto::CompositorMessage proto;
+  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
+  to_impl_proto->set_message_type(
+      proto::CompositorMessageToImpl::SET_NEEDS_REDRAW);
+  proto::SetNeedsRedraw* set_needs_redraw_message =
+      to_impl_proto->mutable_set_needs_redraw_message();
+  RectToProto(damage_rect, set_needs_redraw_message->mutable_damaged_rect());
 
-void RemoteChannelMain::SetNeedsCommitOnImpl() {}
+  SendMessageProto(proto);
+
+  // The client will not inform us when the frame buffers are swapped.
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RemoteChannelMain::DidCompleteSwapBuffers,
+                            weak_factory_.GetWeakPtr()));
+}
+
+void RemoteChannelMain::SetNeedsCommitOnImpl() {
+  proto::CompositorMessage proto;
+  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
+  to_impl_proto->set_message_type(
+      proto::CompositorMessageToImpl::SET_NEEDS_COMMIT);
+
+  SendMessageProto(proto);
+}
 
 void RemoteChannelMain::BeginMainFrameAbortedOnImpl(
     CommitEarlyOutReason reason,
-    base::TimeTicks main_thread_start_time) {}
+    base::TimeTicks main_thread_start_time) {
+  proto::CompositorMessage proto;
+  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
+  to_impl_proto->set_message_type(
+      proto::CompositorMessageToImpl::BEGIN_MAIN_FRAME_ABORTED);
+  proto::BeginMainFrameAborted* begin_main_frame_aborted_message =
+      to_impl_proto->mutable_begin_main_frame_aborted_message();
+  CommitEarlyOutReasonToProtobuf(
+      reason, begin_main_frame_aborted_message->mutable_reason());
+
+  SendMessageProto(proto);
+}
 
 void RemoteChannelMain::StartCommitOnImpl(
     CompletionEvent* completion,
     LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
     bool hold_commit_for_activation) {
+  proto::CompositorMessage proto;
+  proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();
+  to_impl_proto->set_message_type(proto::CompositorMessageToImpl::START_COMMIT);
+  proto::StartCommit* start_commit_message =
+      to_impl_proto->mutable_start_commit_message();
+  layer_tree_host->ToProtobufForCommit(
+      start_commit_message->mutable_layer_tree_host());
+
+  SendMessageProto(proto);
+
+  // In order to avoid incurring the overhead for the client to send us a
+  // message for when a frame to be committed is drawn we inform the embedder
+  // that the draw was successful immediately after sending the commit message.
+  // Since the compositing state may be used by the embedder to throttle
+  // commit/draw requests, it is better to allow them to propagate rather than
+  // incurring a round-trip to get Acks for draw from the client for each frame.
+
+  // This is done as a separate PostTask to ensure that these calls run after
+  // LayerTreeHostClient::DidCommit and stay consistent with the
+  // behaviour in the threaded compositor.
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&RemoteChannelMain::DidCommitAndDrawFrame,
+                            weak_factory_.GetWeakPtr()));
+
   completion->Signal();
 }
 
@@ -140,6 +216,39 @@ void RemoteChannelMain::SynchronouslyCloseImpl() {
 void RemoteChannelMain::SendMessageProto(
     const proto::CompositorMessage& proto) {
   remote_proto_channel_->SendCompositorProto(proto);
+}
+
+void RemoteChannelMain::HandleProto(
+    const proto::CompositorMessageToMain& proto) {
+  DCHECK(proto.has_message_type());
+
+  switch (proto.message_type()) {
+    case proto::CompositorMessageToMain::UNKNOWN:
+      NOTIMPLEMENTED() << "Ignoring message proto of unknown type";
+      break;
+    case proto::CompositorMessageToMain::BEGIN_MAIN_FRAME: {
+      const proto::BeginMainFrame& begin_main_frame_message =
+          proto.begin_main_frame_message();
+      scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state;
+      begin_main_frame_state.reset(new BeginMainFrameAndCommitState);
+      begin_main_frame_state->FromProtobuf(
+          begin_main_frame_message.begin_main_frame_state());
+      proxy_main_->BeginMainFrame(std::move(begin_main_frame_state));
+    } break;
+  }
+}
+
+void RemoteChannelMain::DidCommitAndDrawFrame() {
+  proxy_main_->DidCommitAndDrawFrame();
+  DidCompleteSwapBuffers();
+}
+
+void RemoteChannelMain::DidCompleteSwapBuffers() {
+  proxy_main_->DidCompleteSwapBuffers();
+}
+
+base::SingleThreadTaskRunner* RemoteChannelMain::MainThreadTaskRunner() const {
+  return task_runner_provider_->MainThreadTaskRunner();
 }
 
 }  // namespace cc

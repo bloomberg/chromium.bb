@@ -6,7 +6,10 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "commit_earlyout_reason.proto";
+import "layer_tree_host.proto";
 import "layer_tree_settings.proto";
+import "rect.proto";
 
 package cc.proto;
 
@@ -14,6 +17,27 @@ package cc.proto;
 // main side of the compositor (server).
 // Note: Unless specified in a comment, all fields in a message are required,
 // even if listed as optional.
+
+// Commit Flow: The commit flow defines the protocol for data exchange between
+//              the client and the server. The commit flow is characterized by
+//              the following messages.
+//
+//              1) The commit will always be started by the client. The server
+//                 may request a commit from the client by sending a
+//                 CompositorMessageToImpl of type SET_NEEDS_COMMIT. Note that
+//                 if the server needs to push any updates to the client, this
+//                 message will only be sent once, and the client must respond
+//                 with CompositorMessageToMain of type BEGIN_MAIN_FRAME to
+//                 start the commit.
+//                 The client can spontaneously initiate a commit when it needs
+//                 to request new data from the server by sending the
+//                 BEGIN_MAIN_FRAME message.
+//
+//              2) On receiving BEGIN_MAIN_FRAME message, the server can respond
+//                 with either CompositorMessageToImpl of type START_COMMIT, if
+//                 it needs to push an update to the client, or of type
+//                 BEGIN_MAIN_FRAME_ABORTED if the commit was aborted.
+
 message CompositorMessageToImpl {
   enum Type {
     // The enum values which are unknown get mapped to the default value, which
@@ -41,14 +65,45 @@ message CompositorMessageToImpl {
 
     // Informs the client that a fling animation on the server has stopped.
     MAIN_THREAD_HAS_STOPPED_FLINGING_ON_IMPL = 3;
+
+    // Sent to the client to request a commit. The client will respond with
+    // CompositorMessageToMain of type BEGIN_MAIN_FRAME.
+    SET_NEEDS_COMMIT = 4;
+
+    // Informs the client to start/stop commit requests. The message can be sent
+    // any time to the client.
+    SET_DEFER_COMMITS = 5;
+
+    // Sent in response to a CompositorMessageToMain of type BEGIN_MAIN_FRAME
+    // from the client, with the updated state of the LayerTreeHost.
+    START_COMMIT = 6;
+
+    // Sent in response to a CompositorMessageToMain of type BEGIN_MAIN_FRAME
+    // from the client, if the commit was aborted.
+    BEGIN_MAIN_FRAME_ABORTED = 7;
+
+    // Sent when a redraw is requested for the given damaged rect.
+    SET_NEEDS_REDRAW = 8;
   }
 
   optional Type message_type = 1;
 
   // Only one of the following fields will be set per CompositorMessageToImpl.
 
-  // Set for message Type::InitializeImpl.
+  // Set for message Type::INITIALIZE_IMPL.
   optional InitializeImpl initialize_impl_message = 2;
+
+  // Set for message Type::SET_DEFER_COMMITS.
+  optional SetDeferCommits defer_commits_message = 3;
+
+  // Set for message Type::START_COMMIT.
+  optional StartCommit start_commit_message = 4;
+
+  // Set for message Type::BEGIN_MAIN_FRAME_ABORTED.
+  optional BeginMainFrameAborted begin_main_frame_aborted_message = 5;
+
+  // Set for message Type::SET_NEEDS_REDRAW.
+  optional SetNeedsRedraw set_needs_redraw_message = 6;
 }
 
 // The embedder of the remote client compositor should process the
@@ -56,4 +111,26 @@ message CompositorMessageToImpl {
 // server. The settings sent from the server may be modified by the embedder.
 message InitializeImpl {
   optional LayerTreeSettings layer_tree_settings = 1;
+}
+
+message SetDeferCommits {
+  // If set to true, the client will defer sending any BEGIN_MAIN_FRAME messages
+  // to start a commit. The server must send a message with defer_commits set to
+  // false to allow the client to start commits.
+  // Note: If a pending commit request from the server was throttled if the
+  // client was defering commits, it will be honoured after the server informs
+  // the client to start commits.
+  optional bool defer_commits = 1;
+}
+
+message StartCommit {
+  optional LayerTreeHost layer_tree_host = 1;
+}
+
+message BeginMainFrameAborted {
+  optional CommitEarlyOutReason reason = 1;
+}
+
+message SetNeedsRedraw {
+  optional Rect damaged_rect = 1;
 }

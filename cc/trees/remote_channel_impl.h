@@ -177,6 +177,8 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void BeginMainFrame(
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state) override;
 
+  void SendMessageProto(scoped_ptr<proto::CompositorMessage> proto);
+
   // called on main thread.
   void HandleProto(const proto::CompositorMessageToImpl& proto);
   void DidLoseOutputSurfaceOnMain();
@@ -184,6 +186,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
   void DidInitializeOutputSurfaceOnMain(
       bool success,
       const RendererCapabilities& capabilities);
+  void SendMessageProtoOnMain(scoped_ptr<proto::CompositorMessage> proto);
 
   void InitializeImplOnImpl(CompletionEvent* completion,
                             LayerTreeHost* layer_tree_host);

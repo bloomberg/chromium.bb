@@ -16,6 +16,7 @@ class ProxyMain;
 
 namespace proto {
 class CompositorMessage;
+class CompositorMessageToMain;
 }
 
 class CC_EXPORT RemoteChannelMain : public ChannelMain,
@@ -67,12 +68,19 @@ class CC_EXPORT RemoteChannelMain : public ChannelMain,
 
  private:
   void SendMessageProto(const proto::CompositorMessage& proto);
+  void HandleProto(const proto::CompositorMessageToMain& proto);
+  void DidCommitAndDrawFrame();
+  void DidCompleteSwapBuffers();
+
+  base::SingleThreadTaskRunner* MainThreadTaskRunner() const;
 
   RemoteProtoChannel* remote_proto_channel_;
   ProxyMain* proxy_main_;
   TaskRunnerProvider* task_runner_provider_;
 
   bool initialized_;
+
+  base::WeakPtrFactory<RemoteChannelMain> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteChannelMain);
 };
