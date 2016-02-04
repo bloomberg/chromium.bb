@@ -5756,14 +5756,14 @@
       },
       {
         "args": [
-          "--site-per-process",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/site-per-process.content_browsertests.filter"
+          "--isolate-sites-for-testing=*.is",
+          "--test-launcher-filter-file=src/testing/buildbot/filters/isolate-extensions.content_browsertests.filter"
         ],
         "test": "content_browsertests"
       },
       {
         "args": [
-          "--site-per-process"
+          "--isolate-sites-for-testing=*.is"
         ],
         "test": "content_unittests"
       },
