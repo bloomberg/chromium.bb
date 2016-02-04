@@ -312,6 +312,10 @@ const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2f, 0.35f };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3f, 0.6f };
 const color_utils::HSL kDefaultTintBackgroundTab = { -1, 0.5, 0.75 };
 
+#if GTK_MAJOR_VERSION == 3
+const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75f };
+#endif
+
 // Picks a button tint from a set of background colors. While
 // |accent_color| will usually be the same color through a theme, this
 // function will get called with the normal GtkLabel |text_color|/GtkWindow
