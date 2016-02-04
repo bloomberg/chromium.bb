@@ -36,7 +36,7 @@ template("remoting_android_client_java_tmpl") {
       "//remoting/android/java/src/org/chromium/chromoting/DesktopView.java",
       "//remoting/android/java/src/org/chromium/chromoting/DummyActivityLifecycleListener.java",
       "//remoting/android/java/src/org/chromium/chromoting/DummyClientExtension.java",
-      "//remoting/android/java/src/org/chromium/chromoting/HelpActivity.java",
+      "//remoting/android/java/src/org/chromium/chromoting/help/HelpActivity.java",
       "//remoting/android/java/src/org/chromium/chromoting/help/HelpAndFeedbackBasic.java",
       "//remoting/android/java/src/org/chromium/chromoting/help/HelpAndFeedback.java",
       "//remoting/android/java/src/org/chromium/chromoting/help/HelpContext.java",

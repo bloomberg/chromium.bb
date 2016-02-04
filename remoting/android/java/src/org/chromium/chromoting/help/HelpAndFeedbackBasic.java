@@ -6,8 +6,6 @@ package org.chromium.chromoting.help;
 
 import android.app.Activity;
 
-import org.chromium.chromoting.HelpActivity;
-
 /**
  * This class implements a basic UI for help-and-feedback.
  */
