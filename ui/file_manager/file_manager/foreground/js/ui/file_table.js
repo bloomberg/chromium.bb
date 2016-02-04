@@ -684,7 +684,7 @@ FileTable.prototype.renderName_ = function(entry, columnId, table) {
       ['contentMimeType'])[0].contentMimeType;
   var icon = filelist.renderFileTypeIcon(this.ownerDocument, entry, mimeType);
   if (FileType.isImage(entry, mimeType) || FileType.isVideo(entry, mimeType) ||
-      FileType.isRaw(entry, mimeType)) {
+      FileType.isAudio(entry, mimeType) || FileType.isRaw(entry, mimeType)) {
     icon.appendChild(this.renderThumbnail_(entry));
   }
   icon.appendChild(this.renderCheckmark_());
