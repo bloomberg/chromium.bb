@@ -383,6 +383,14 @@ std::end</a></td>
 </tr>
 
 <tr>
+<td>Emplacement methods for containers</td>
+<td><code>emplace()</code>, <code>emplace_back()</code>, <code>emplace_front()</code>, <code>emplace_hint()</code></td>
+<td>Constructs elements directly within a container without a copy or a move.  Less verbose than <code>push_back()</code> due to not naming the type being constructed.</td>
+<td>E.g. <a href="http://en.cppreference.com/w/cpp/container/vector/emplace_back">std::vector::emplace_back</a></td>
+<td><code>std::map::emplace()</code> is not yet available on all libstdc++ versions we support.  When using emplacement for performance reasons, your type should probably be movable (since e.g. a vector of it might be resized); given a movable type, then, consider whether you really need to avoid the move done by <code>push_back()</code>.  For readability concerns, treat like <code>auto</code>; sometimes the brevity over <code>push_back()</code> is a win, sometimes a loss.  <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/m3cblzEta7A">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Forwarding references</td>
 <td><code>std::forward()</code></td>
 <td>Perfectly forwards arguments (including rvalues)</td>
@@ -832,17 +840,6 @@ the <code>&lt;complex&gt;</code> library.</td>
 <td>Enforces iteration methods that don't change container contents</td>
 <td><a href="http://en.cppreference.com/w/cpp/container/vector/begin">std::vector::cbegin<a></td>
 <td>This applies to all containers, std::vector is just an example. <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/cS83F_buqLM/discussion">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Construct Elements in Containers</td>
-<td><code>emplace()</code>,<code>emplace_back()</code>,
-<code>emplace_front()</code>, <code>emplace_hint()</code></td>
-<td>Constructs elements directly within a container without a copy
-or a move</td>
-<td>TODO: documentation link</td>
-<td>Use where element construction within a container
-is needed.</td>
 </tr>
 
 <tr>
