@@ -798,7 +798,7 @@ int SSLServerSocketNSS::DoHandshake() {
 
 void SSLServerSocketNSS::DoHandshakeCallback(int rv) {
   DCHECK_NE(rv, ERR_IO_PENDING);
-  ResetAndReturn(&user_handshake_callback_).Run(rv > OK ? OK : rv);
+  base::ResetAndReturn(&user_handshake_callback_).Run(rv > OK ? OK : rv);
 }
 
 void SSLServerSocketNSS::DoReadCallback(int rv) {
@@ -807,7 +807,7 @@ void SSLServerSocketNSS::DoReadCallback(int rv) {
 
   user_read_buf_ = NULL;
   user_read_buf_len_ = 0;
-  ResetAndReturn(&user_read_callback_).Run(rv);
+  base::ResetAndReturn(&user_read_callback_).Run(rv);
 }
 
 void SSLServerSocketNSS::DoWriteCallback(int rv) {
@@ -816,7 +816,7 @@ void SSLServerSocketNSS::DoWriteCallback(int rv) {
 
   user_write_buf_ = NULL;
   user_write_buf_len_ = 0;
-  ResetAndReturn(&user_write_callback_).Run(rv);
+  base::ResetAndReturn(&user_write_callback_).Run(rv);
 }
 
 // static

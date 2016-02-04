@@ -94,7 +94,7 @@ void QuicHttpStream::OnStreamReady(int rv) {
     rv = ERR_QUIC_HANDSHAKE_FAILED;
   }
 
-  ResetAndReturn(&callback_).Run(rv);
+  base::ResetAndReturn(&callback_).Run(rv);
 }
 
 int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,

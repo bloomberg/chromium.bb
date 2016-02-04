@@ -153,13 +153,13 @@ void QuicChromiumClientSession::StreamRequest::OnRequestCompleteSuccess(
     QuicChromiumClientStream* stream) {
   session_.reset();
   *stream_ = stream;
-  ResetAndReturn(&callback_).Run(OK);
+  base::ResetAndReturn(&callback_).Run(OK);
 }
 
 void QuicChromiumClientSession::StreamRequest::OnRequestCompleteFailure(
     int rv) {
   session_.reset();
-  ResetAndReturn(&callback_).Run(rv);
+  base::ResetAndReturn(&callback_).Run(rv);
 }
 
 QuicChromiumClientSession::QuicChromiumClientSession(

@@ -496,7 +496,7 @@ void SpdyProxyClientSocket::OnDataSent()  {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SpdyProxyClientSocket::RunCallback,
                             write_callback_weak_factory_.GetWeakPtr(),
-                            ResetAndReturn(&write_callback_), rv));
+                            base::ResetAndReturn(&write_callback_), rv));
 }
 
 void SpdyProxyClientSocket::OnTrailers(const SpdyHeaderBlock& trailers) {

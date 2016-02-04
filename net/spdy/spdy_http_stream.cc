@@ -537,7 +537,7 @@ void SpdyHttpStream::DoRequestCallback(int rv) {
 
   // Since Run may result in being called back, reset request_callback_ in
   // advance.
-  ResetAndReturn(&request_callback_).Run(rv);
+  base::ResetAndReturn(&request_callback_).Run(rv);
 }
 
 void SpdyHttpStream::DoResponseCallback(int rv) {
@@ -546,7 +546,7 @@ void SpdyHttpStream::DoResponseCallback(int rv) {
 
   // Since Run may result in being called back, reset response_callback_ in
   // advance.
-  ResetAndReturn(&response_callback_).Run(rv);
+  base::ResetAndReturn(&response_callback_).Run(rv);
 }
 
 void SpdyHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
