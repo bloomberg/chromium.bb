@@ -31,11 +31,14 @@ class TestSiteEngagementScoreProvider : public SiteEngagementScoreProvider {
 
   virtual ~TestSiteEngagementScoreProvider() {}
 
-  double GetScore(const GURL& url) override {
-    return engagement_score_map_[url];
+  double GetScore(const GURL& url) const override {
+    const auto& it = engagement_score_map_.find(url);
+    if (it != engagement_score_map_.end())
+      return it->second;
+    return 0.0;
   }
 
-  double GetTotalEngagementPoints() override {
+  double GetTotalEngagementPoints() const override {
     double total = 0;
     for (const auto& site : engagement_score_map_)
       total += site.second;
