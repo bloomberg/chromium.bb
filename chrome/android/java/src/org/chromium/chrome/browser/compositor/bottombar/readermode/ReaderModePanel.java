@@ -302,9 +302,21 @@ public class ReaderModePanel extends OverlayPanel {
 
     @Override
     protected float calculateBasePageTargetY(PanelState state) {
-        // TODO(mdjones): Remove this method when this panel behaves like the toolbar. In the case
-        // of reader mode the base page will always need to move the same amount.
+        // In the case of reader mode the base page will always need to move the same amount.
         return -getToolbarHeight();
+    }
+
+    @Override
+    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
+        super.onSizeChanged(width, height, isToolbarShowing);
+        if (mManagerDelegate != null) {
+            mManagerDelegate.onSizeChanged();
+        }
+        // If the panel is not closed, make sure it is in the appropriate place when the viewport
+        // size changes.
+        if (getPanelState() != PanelState.UNDEFINED && getPanelState() != PanelState.CLOSED) {
+            resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
+        }
     }
 
     // ============================================================================================

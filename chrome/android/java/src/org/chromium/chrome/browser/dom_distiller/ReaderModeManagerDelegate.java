@@ -63,4 +63,9 @@ public interface ReaderModeManagerDelegate {
      * @param timeInMs The amount of time spent in ms.
      */
     void recordTimeSpentInReader(long timeInMs);
+
+    /**
+     * Notification that the size of the view has changed.
+     */
+    void onSizeChanged();
 }

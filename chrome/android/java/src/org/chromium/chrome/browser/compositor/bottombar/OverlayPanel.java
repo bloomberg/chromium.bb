@@ -74,7 +74,9 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         FULLSCREEN_EXITED,
         INFOBAR_SHOWN,
         INFOBAR_HIDDEN,
-        CONTENT_CHANGED;
+        CONTENT_CHANGED,
+        KEYBOARD_SHOWN,
+        KEYBOARD_HIDDEN;
     }
 
     /**

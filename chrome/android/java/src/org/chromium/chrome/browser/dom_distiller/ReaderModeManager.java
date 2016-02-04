@@ -32,6 +32,7 @@ import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -87,6 +88,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     private boolean mIsFullscreenModeEntered;
     private boolean mIsInfoBarContainerShown;
     private boolean mIsFindToolbarShowing;
+    private boolean mIsKeyboardShowing;
 
     public ReaderModeManager(TabModelSelector selector, ChromeActivity activity) {
         super(selector);
@@ -314,8 +316,10 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         RecordHistogram.recordBooleanHistogram("DomDistiller.BarCloseButtonUsage",
                 mReaderModePanel.getPanelState() == PanelState.EXPANDED
                 || mReaderModePanel.getPanelState() == PanelState.MAXIMIZED);
-        // TODO(mdjones): If it is decided that Reader Mode cannot be permanently dismissed for a
-        // tab, remove that remaining logic from this class.
+
+        int currentTabId = mTabModelSelector.getCurrentTabId();
+        if (!mTabStatusMap.containsKey(currentTabId)) return;
+        mTabStatusMap.get(currentTabId).setIsDismissed(true);
     }
 
     @Override
@@ -338,6 +342,26 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 timeMs, TimeUnit.MILLISECONDS);
     }
 
+    @Override
+    public void onSizeChanged() {
+        if (isKeyboardShowing()) {
+            mIsKeyboardShowing = true;
+            closeReaderPanel(StateChangeReason.KEYBOARD_SHOWN, false);
+        } else if (mIsKeyboardShowing) {
+            mIsKeyboardShowing = false;
+            requestReaderPanelShow(StateChangeReason.KEYBOARD_HIDDEN);
+        }
+    }
+
+    /**
+     * @return True if the keyboard might be showing. This is not 100% accurate; see
+     *         UiUtils.isKeyboardShowing(...).
+     */
+    protected boolean isKeyboardShowing() {
+        return mChromeActivity != null && UiUtils.isKeyboardShowing(mChromeActivity,
+                mChromeActivity.findViewById(android.R.id.content));
+    }
+
     protected WebContentsObserver createWebContentsObserver(WebContents webContents) {
         final int readerTabId = mTabModelSelector.getCurrentTabId();
         if (readerTabId == Tab.INVALID_TAB_ID) return null;
@@ -352,6 +376,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 // Make sure the tab was not destroyed.
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
+                // Reset closed state of reader mode in this tab.
+                tabInfo.setIsDismissed(false);
 
                 tabInfo.setUrl(validatedUrl);
                 if (DomDistillerUrlUtils.isDistilledPage(validatedUrl)) {
@@ -373,6 +399,8 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 // Make sure the tab was not destroyed.
                 ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
                 if (tabInfo == null) return;
+                // Reset closed state of reader mode in this tab.
+                tabInfo.setIsDismissed(false);
 
                 tabInfo.setStatus(POSSIBLE);
                 if (!TextUtils.equals(url,
@@ -388,6 +416,14 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 } else {
                     requestReaderPanelShow(StateChangeReason.UNKNOWN);
                 }
+            }
+
+            @Override
+            public void didStartLoading(String url) {
+                ReaderModeTabInfo tabInfo = mTabStatusMap.get(readerTabId);
+                if (tabInfo == null) return;
+                // Reset closed state of reader mode in this tab.
+                tabInfo.setIsDismissed(false);
             }
         };
     }
@@ -407,6 +443,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
                 || mIsInfoBarContainerShown
                 || mIsFindToolbarShowing
                 || mIsFullscreenModeEntered
+                || mIsKeyboardShowing
                 || DeviceClassManager.isAccessibilityModeEnabled(mChromeActivity)) {
             return;
         }
