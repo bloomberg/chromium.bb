@@ -464,7 +464,6 @@
       "web/WebScriptExecutionCallback.h",
       "web/WebScriptSource.h",
       "web/WebSearchableFormData.h",
-      "web/WebSecurityOrigin.h",
       "web/WebSecurityPolicy.h",
       "web/WebSelectElement.h",
       "web/WebSelection.h",

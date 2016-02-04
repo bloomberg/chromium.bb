@@ -25,10 +25,10 @@
 #include "gin/public/context_holder.h"
 #include "gin/try_catch.h"
 #include "mojo/public/js/constants.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 
 using v8::Context;
 using v8::HandleScope;

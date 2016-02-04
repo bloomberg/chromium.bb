@@ -11,7 +11,7 @@
 #include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 #include "third_party/WebKit/public/platform/WebFrameScheduler.h"
-#include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 
 namespace base {
 class SingleThreadTaskRunner;
