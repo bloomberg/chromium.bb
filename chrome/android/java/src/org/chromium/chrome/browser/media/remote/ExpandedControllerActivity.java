@@ -31,7 +31,7 @@ import org.chromium.third_party.android.media.MediaController;
 /**
  * The activity that's opened by clicking the video flinging (casting) notification.
  *
- * TODO(cimamoglu): Refactor to merge some common logic with {@link TransportControl}.
+ * TODO(aberent): Refactor to merge some common logic with {@link CastNotificationControl}.
  */
 public class ExpandedControllerActivity
         extends FragmentActivity implements MediaRouteController.UiListener {

@@ -270,7 +270,6 @@ junit_binary("chrome_junit_tests") {
     "junit/src/org/chromium/chrome/browser/media/remote/AbstractMediaRouteControllerTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/MediaUrlResolverTest.java",
     "junit/src/org/chromium/chrome/browser/media/remote/RemoteVideoInfoTest.java",
-    "junit/src/org/chromium/chrome/browser/media/remote/TransportControlTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterRouteTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterSinkObservationTest.java",
     "junit/src/org/chromium/chrome/browser/media/router/ChromeMediaRouterTestBase.java",

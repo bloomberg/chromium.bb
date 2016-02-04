@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import android.app.PendingIntent.CanceledException;
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.media.remote.NotificationTransportControl.ListenerService;
+import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.util.concurrent.TimeoutException;
@@ -54,19 +54,15 @@ public class CastStartStopTest extends CastTestBase {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 
         // Get the notification
-        NotificationTransportControl notificationTransportControl = waitForCastNotification();
+        final CastNotificationControl notificationControl = waitForCastNotification();
 
-        // We can't actually click the notification's stop button, since it is owned by a different
-        // process and hence is not accessible through instrumentation, so send the stop event
-        // instead.
-        NotificationTransportControl.ListenerService service =
-                waitForCastNotificationService(notificationTransportControl);
-
-        try {
-            service.getPendingIntent(ListenerService.ACTION_ID_STOP).send();
-        } catch (CanceledException e) {
-            fail();
-        }
+        // Send play
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                notificationControl.onStop(MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+            }
+        });
         checkDisconnected();
     }
 

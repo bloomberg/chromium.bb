@@ -352,16 +352,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
                 && currentRouteSupportsRemotePlayback();
     }
 
-    @Override
-    public void onPause() {
-        pause();
-    }
-
-    @Override
-    public void onPlay() {
-        resume();
-    }
-
     protected void onRouteAddedEvent(MediaRouter router, RouteInfo route) {
     };
 
@@ -378,16 +368,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     }
 
     protected abstract void onRouteUnselectedEvent(MediaRouter router, RouteInfo route);
-
-    @Override
-    public void onSeek(long position) {
-        seekTo(position);
-    }
-
-    @Override
-    public void onStop() {
-        release();
-    }
 
     @Override
     public void prepareMediaRoute() {

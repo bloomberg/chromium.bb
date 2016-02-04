@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
  * with simple http source URLs). The MediaRouteController is responsible for configuring
  * and controlling remote playback of the media elements it supports.
  */
-public interface MediaRouteController extends TransportControl.Listener {
+public interface MediaRouteController {
     /**
      * Listener for events that are relevant to the state of the media and the media controls
      */

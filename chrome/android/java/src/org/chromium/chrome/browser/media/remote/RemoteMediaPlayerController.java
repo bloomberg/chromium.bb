@@ -43,8 +43,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
 
     private static final String DEFAULT_CASTING_MESSAGE = "Casting to Chromecast";
 
-    private TransportControl mNotificationControl;
-    private TransportControl mLockScreenControl;
+    private CastNotificationControl mNotificationControl;
 
     private Context mCastContextApplicationContext;
     // The Activity that was in the foreground when the video was cast.
@@ -163,9 +162,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         if (mNotificationControl != null) {
             mNotificationControl.setRouteController(controller);
         }
-        if (mLockScreenControl != null) {
-            mLockScreenControl.setRouteController(controller);
-        }
         controller.prepareMediaRoute();
 
         controller.addUiListener(this);
@@ -255,14 +251,12 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
      * @param initialState the initial state of the notification
      * @param mediaRouteController the mediaRouteController for which these are needed
      */
-    public void startNotificationAndLockScreen(PlayerState initialState,
+    public void startNotification(PlayerState initialState,
             MediaRouteController mediaRouteController) {
         mCurrentRouteController = mediaRouteController;
         createNotificationControl();
-        getNotification().show(initialState);
-        createLockScreen();
-        TransportControl lockScreen = getLockScreen();
-        if (lockScreen != null) lockScreen.show(initialState);
+        CastNotificationControl notificationControl = getNotificationControl();
+        if (notificationControl != null) notificationControl.show(initialState);
     }
 
     /**
@@ -280,48 +274,28 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         mCurrentRouteController = controller;
     }
 
-    private TransportControl getNotification() {
+    private CastNotificationControl getNotificationControl() {
         return mNotificationControl;
     }
 
-    /**
-     *
-     */
     private void createNotificationControl() {
-        mNotificationControl = NotificationTransportControl.getOrCreate(
+        mNotificationControl = CastNotificationControl.getOrCreate(
                 mChromeVideoActivity.get(), mCurrentRouteController);
-        mNotificationControl.setError(null);
-        mNotificationControl.setScreenName(mCurrentRouteController.getRouteName());
-        mNotificationControl.addListener(mCurrentRouteController);
-    }
-
-    private TransportControl getLockScreen() {
-        return mLockScreenControl;
-    }
-
-    private void createLockScreen() {
-        mLockScreenControl = LockScreenTransportControl.getOrCreate(
-                mChromeVideoActivity.get(), mCurrentRouteController);
-        mLockScreenControl.setError(null);
-        mLockScreenControl.setScreenName(mCurrentRouteController.getRouteName());
-        mLockScreenControl.addListener(mCurrentRouteController);
-        mLockScreenControl.setPosterBitmap(getPoster());
+        mNotificationControl.setPosterBitmap(getPoster());
     }
 
     @Override
     public void onPrepared(MediaRouteController mediaRouteController) {
 
-        startNotificationAndLockScreen(PlayerState.PLAYING, mediaRouteController);
+        startNotification(PlayerState.PLAYING, mediaRouteController);
     }
 
     @Override
     public void onPlaybackStateChanged(PlayerState oldState, PlayerState newState) {
         if (newState == PlayerState.PLAYING || newState == PlayerState.LOADING
                 || newState == PlayerState.PAUSED) {
-            TransportControl notificationControl = getNotification();
+            CastNotificationControl notificationControl = getNotificationControl();
             if (notificationControl != null) notificationControl.show(newState);
-            TransportControl lockScreen = getLockScreen();
-            if (lockScreen != null) lockScreen.show(newState);
         }
     }
 
@@ -381,9 +355,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     private void resetPlayingVideo() {
         if (mNotificationControl != null) {
             mNotificationControl.setRouteController(mCurrentRouteController);
-        }
-        if (mLockScreenControl != null) {
-            mLockScreenControl.setRouteController(mCurrentRouteController);
         }
     }
 

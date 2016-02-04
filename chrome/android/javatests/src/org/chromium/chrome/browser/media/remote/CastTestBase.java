@@ -32,7 +32,11 @@ import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -58,12 +62,17 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         }
 
         @Override
-        public void onPlaybackStateChanged(PlayerState oldState, PlayerState newState) {
-            if (newState == PlayerState.PLAYING) {
-                mPlaying = true;
-            } else if (newState != PlayerState.PLAYING) {
-                mPlaying = false;
-            }
+        public void onPlaybackStateChanged(PlayerState oldState, final PlayerState newState) {
+            // Use postOnUiThread to handling the latch until the current UI task has completed,
+            // this makes sure that Cast has finished handling the event.
+            ThreadUtils.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if ((mAwaitedStates.contains(newState))) {
+                        mLatch.countDown();
+                    }
+                }
+            });
         }
 
         @Override
@@ -77,6 +86,9 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         }
 
     }
+
+    private Set<PlayerState> mAwaitedStates;
+    private CountDownLatch mLatch;
 
     // The name of the route provided by the dummy cast device.
     protected static final String CAST_TEST_ROUTE = "Cast Test Route";
@@ -108,8 +120,6 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     protected static final String TWO_VIDEO_PAGE = "chrome/test/data/android/media/two_videos.html";
 
     private static final String TAG = "CastTestBase";
-
-    private boolean mPlaying = false;
 
     private MediaRouteController mMediaRouteController;
 
@@ -149,6 +159,42 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         startMainActivityOnBlankPage();
     }
 
+    /**
+     * Wait for cast to reach a state we are interested in.
+     * Will deadlock if called on the target's UI thread.
+     * @param states
+     */
+    protected boolean waitForStates(final Set<PlayerState> states, int waitTimeMs) {
+        mAwaitedStates = states;
+        mLatch = new CountDownLatch(1);
+        // Deal with the case where Chrome is already in the desired state
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mMediaRouteController != null
+                        && states.contains(mMediaRouteController.getPlayerState())) {
+                    mLatch.countDown();
+                }
+            }
+        });
+        try {
+            return mLatch.await(waitTimeMs, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Wait for cast to reach a state we are interested in.
+     * Will deadlock if called on the target's UI thread.
+     * @param states
+     */
+    protected boolean waitForState(final PlayerState state, int waitTimeMs) {
+        Set<PlayerState> states = new HashSet<PlayerState>();
+        states.add(state);
+        return waitForStates(states, waitTimeMs);
+    }
+
     protected void castAndPauseDefaultVideoFromPage(String pagePath) throws InterruptedException,
             TimeoutException {
         Rect videoRect = castDefaultVideoFromPage(pagePath);
@@ -161,7 +207,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         Thread.sleep(RUN_TIME_MS);
 
         tapButton(tab, pauseButton);
-        assertTrue("Not paused", waitForState(PlayerState.PAUSED));
+        assertTrue("Not paused", waitForState(PlayerState.PAUSED, MAX_VIEW_TIME_MS));
     }
 
     private boolean videoReady(String videoElement, WebContents webContents) {
@@ -289,15 +335,15 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     protected void checkDisconnected() {
-        for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            if (isDisconnected()) break;
-            sleepNoThrow(VIEW_RETRY_MS);
-        }
+        HashSet<PlayerState> disconnectedStates = new HashSet<PlayerState>();
+        disconnectedStates.add(PlayerState.FINISHED);
+        disconnectedStates.add(PlayerState.INVALIDATED);
+        waitForStates(disconnectedStates, MAX_VIEW_TIME_MS);
         // Could use assertTrue(isDisconnected()) here, but retesting the individual aspects of
         // disconnection gives more specific error messages.
-        NotificationTransportControl notificationTransportControl =
-                NotificationTransportControl.getIfExists();
-        if (notificationTransportControl != null && notificationTransportControl.isShowing()) {
+        CastNotificationControl notificationControl =
+                CastNotificationControl.getForTests();
+        if (notificationControl != null && notificationControl.isShowingForTests()) {
             fail("Failed to close notification");
         }
         assertEquals("Video still playing?", null, getUriPlaying());
@@ -339,10 +385,9 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
      */
     protected void checkVideoStarted(String testVideo) {
         // Check we have a notification
-        NotificationTransportControl notificationTransportControl = waitForCastNotification();
-        assertNotNull("No notification controller", notificationTransportControl);
-        waitForCastNotificationService(notificationTransportControl);
-        assertTrue("No notification", notificationTransportControl.isShowing());
+        CastNotificationControl notificationControl = waitForCastNotification();
+        assertNotNull("No notification controller", notificationControl);
+        assertTrue("No notification", notificationControl.isShowingForTests());
         // Check that we are playing the right video
         waitUntilVideoCurrent(testVideo);
         assertEquals(
@@ -417,13 +462,13 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return null;
     }
 
-    protected NotificationTransportControl waitForCastNotification() {
+    protected CastNotificationControl waitForCastNotification() {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            NotificationTransportControl result = ThreadUtils.runOnUiThreadBlockingNoException(
-                    new Callable<NotificationTransportControl>() {
+            CastNotificationControl result = ThreadUtils.runOnUiThreadBlockingNoException(
+                    new Callable<CastNotificationControl>() {
                         @Override
-                        public NotificationTransportControl call() {
-                            return NotificationTransportControl.getIfExists();
+                        public CastNotificationControl call() {
+                            return CastNotificationControl.getForTests();
                         }
                     });
             if (result != null) {
@@ -434,67 +479,16 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return null;
     }
 
-    protected NotificationTransportControl.ListenerService waitForCastNotificationService(
-            final NotificationTransportControl notification) {
-        for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            NotificationTransportControl.ListenerService service =
-                    ThreadUtils.runOnUiThreadBlockingNoException(
-                            new Callable<NotificationTransportControl.ListenerService>() {
-                                @Override
-                                public NotificationTransportControl.ListenerService call() {
-                                    return notification.getService();
-                                }
-                            });
-            if (service != null) {
-                return service;
-            }
-            sleepNoThrow(VIEW_RETRY_MS);
-        }
-        return null;
-    }
-
-    protected boolean waitForState(final RemoteVideoInfo.PlayerState state) {
-        for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            boolean result = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    RemoteMediaPlayerController playerController =
-                            RemoteMediaPlayerController.getIfExists();
-                    return playerController != null
-                            && playerController.getCurrentlyPlayingMediaRouteController() != null
-                            && playerController.getCurrentlyPlayingMediaRouteController()
-                                       .getPlayerState()
-                            == state;
-                }
-            });
-            if (result) return true;
-            sleepNoThrow(VIEW_RETRY_MS);
-        }
-        return false;
-    }
-
     protected boolean waitUntilPlaying() {
-        for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            boolean playing = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
-                @Override
-                public Boolean call() {
-                    return mPlaying;
-                }
-            });
-            if (playing) return true;
-            sleepNoThrow(VIEW_RETRY_MS);
-        }
-        return false;
+        return waitForState(PlayerState.PLAYING, MAX_VIEW_TIME_MS);
     }
 
     private boolean isDisconnected() {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                NotificationTransportControl notificationTransportControl =
-                        NotificationTransportControl.getIfExists();
-                if (notificationTransportControl != null
-                        && notificationTransportControl.isShowing()) {
+                CastNotificationControl notificationControl = CastNotificationControl.getForTests();
+                if (notificationControl != null && notificationControl.isShowingForTests()) {
                     return false;
                 }
                 if (getUriPlaying() != null) return false;
