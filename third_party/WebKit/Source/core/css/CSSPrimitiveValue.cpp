@@ -30,8 +30,6 @@
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontMetrics.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -158,33 +156,11 @@ bool CSSPrimitiveValue::colorIsDerivedFromElement() const
 
 using CSSTextCache = WillBePersistentHeapHashMap<RawPtrWillBeWeakMember<const CSSPrimitiveValue>, String>;
 
-#if ENABLE(OILPAN) && defined(LEAK_SANITIZER)
-
-namespace {
-// With LSan, wrap the persistent cache so that the registration of the
-// (per-thread) static reference can be done.
-class CSSTextCacheWrapper {
-public:
-    CSSTextCacheWrapper()
-    {
-        m_cache.registerAsStaticReference();
-    }
-
-    operator CSSTextCache&() { return m_cache; }
-
-private:
-    CSSTextCache m_cache;
-};
-
-}
-#else
-using CSSTextCacheWrapper = CSSTextCache;
-#endif
-
 static CSSTextCache& cssTextCache()
 {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<CSSTextCacheWrapper>, cache, new ThreadSpecific<CSSTextCacheWrapper>);
-    return *cache;
+    RELEASE_ASSERT(isMainThread());
+    DEFINE_STATIC_LOCAL(CSSTextCache, cache, ());
+    return cache;
 }
 
 CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const
