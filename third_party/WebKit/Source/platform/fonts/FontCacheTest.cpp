@@ -35,4 +35,53 @@ TEST(FontCache, getLastResortFallbackFont)
     EXPECT_TRUE(fontData);
 }
 
+class FontCacheAvailabilityTest : public ::testing::Test {
+protected:
+    void SetUp() override
+    {
+        m_fontCache = FontCache::fontCache();
+        ASSERT_TRUE(m_fontCache);
+        m_fontDescription.setGenericFamily(FontDescription::StandardFamily);
+    }
+
+    void TearDown() override
+    {
+        EXPECT_TRUE(m_availableFonts);
+        EXPECT_GE(m_availableFonts->size(), 1u);
+    }
+
+    FontCache* m_fontCache;
+    EmptyPlatform m_emptyPlatform;
+    FontDescription m_fontDescription;
+    const Vector<AtomicString>* m_availableFonts;
+};
+
+TEST_F(FontCacheAvailabilityTest, availableSymbolsFonts)
+{
+    m_availableFonts = m_fontCache->fontListForFallbackPriority(
+        m_fontDescription,
+        FontFallbackPriority::Symbols);
+}
+
+TEST_F(FontCacheAvailabilityTest, availableMathFonts)
+{
+    m_availableFonts = m_fontCache->fontListForFallbackPriority(
+        m_fontDescription,
+        FontFallbackPriority::Math);
+}
+
+TEST_F(FontCacheAvailabilityTest, availableEmojiTextFonts)
+{
+    m_availableFonts = m_fontCache->fontListForFallbackPriority(
+        m_fontDescription,
+        FontFallbackPriority::EmojiText);
+}
+
+TEST_F(FontCacheAvailabilityTest, availableEmojiEmojiFonts)
+{
+    m_availableFonts = m_fontCache->fontListForFallbackPriority(
+        m_fontDescription,
+        FontFallbackPriority::EmojiEmoji);
+}
+
 } // namespace blink

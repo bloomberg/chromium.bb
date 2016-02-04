@@ -53,6 +53,15 @@
 
 namespace blink {
 
+// Unfortunately, these chosen font names require a bit of experimentation and
+// researching on the respective platforms as to what works best and is widely
+// available. They may require further tuning after OS updates. Mozilla's
+// choices in the gfxPlatformMac::GetCommonFallbackFonts method collects some of
+// the outcome of this experimentation.
+const char* kColorEmojiFontsMac[] = { "Apple Color Emoji" };
+const char* kTextEmojiFontsMac[] = { "Hiragino Kaku Gothic ProN", "Zapf Dingbats", "Apple Symbols" };
+const char* kSymbolsAndMathFontsMac[] = { "Menlo", "Arial Unicode MS" };
+
 static void invalidateFontCache()
 {
     if (!isMainThread()) {
@@ -214,6 +223,29 @@ PassOwnPtr<FontPlatformData> FontCache::createFontPlatformData(const FontDescrip
         return nullptr;
     }
     return platformData.release();
+}
+
+const Vector<AtomicString> FontCache::platformFontListForFallbackPriority(FontFallbackPriority fallbackPriority) const
+{
+    Vector<AtomicString> returnVector;
+    switch (fallbackPriority) {
+    case FontFallbackPriority::EmojiEmoji:
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(kColorEmojiFontsMac); ++i)
+            returnVector.append(kColorEmojiFontsMac[i]);
+        break;
+    case FontFallbackPriority::EmojiText:
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(kTextEmojiFontsMac); ++i)
+            returnVector.append(kTextEmojiFontsMac[i]);
+        break;
+    case FontFallbackPriority::Math:
+    case FontFallbackPriority::Symbols:
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(kSymbolsAndMathFontsMac); ++i)
+            returnVector.append(kSymbolsAndMathFontsMac[i]);
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return returnVector;
 }
 
 } // namespace blink

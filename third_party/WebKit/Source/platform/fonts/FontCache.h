@@ -34,6 +34,7 @@
 #include "platform/fonts/FallbackListCompositeKey.h"
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontFaceCreationParams.h"
+#include "platform/fonts/FontFallbackPriority.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -85,6 +86,12 @@ public:
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
     bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
+
+    // Returns the list of available emoji and symbol fonts.  Does not return a
+    // null pointer and should return at least one available font for each
+    // category. The returned list is lazy initialized by checking a list of
+    // font candidates for local availability.
+    const Vector<AtomicString>* fontListForFallbackPriority(const FontDescription&, FontFallbackPriority);
 
     // Returns the ShapeCache instance associated with the given cache key.
     // Creates a new instance as needed and as such is guaranteed not to return
@@ -171,6 +178,11 @@ private:
     PassRefPtr<SkTypeface> createTypeface(const FontDescription&, const FontFaceCreationParams&, CString& name);
 
     PassRefPtr<SimpleFontData> fallbackOnStandardFontStyle(const FontDescription&, UChar32);
+
+    template <FontFallbackPriority fallbackPriority>
+    const Vector<AtomicString>* initAndGetFontListForFallbackPriority(const FontDescription&);
+
+    const Vector<AtomicString> platformFontListForFallbackPriority(FontFallbackPriority) const;
 
     // Don't purge if this count is > 0;
     int m_purgePreventCount;
