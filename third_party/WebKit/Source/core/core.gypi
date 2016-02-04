@@ -3908,6 +3908,7 @@
             'css/MediaValuesTest.cpp',
             'css/RuleFeatureSetTest.cpp',
             'css/RuleSetTest.cpp',
+            'css/StyleSheetContentsTest.cpp',
             'css/invalidation/InvalidationSetTest.cpp',
             'css/parser/CSSParserValuesTest.cpp',
             'css/parser/CSSPropertyParserTest.cpp',

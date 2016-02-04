@@ -237,9 +237,6 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase>
     if (rule->isImportRule())
         return false;
 
-    if (rule->isMediaRule())
-        setHasMediaQueries();
-
     index -= m_importRules.size();
 
     if (index < m_namespaceRules.size() || (index == m_namespaceRules.size() && rule->isNamespaceRule())) {
@@ -266,8 +263,11 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtrWillBeRawPtr<StyleRuleBase>
 
     index -= m_namespaceRules.size();
 
-    if (rule->isFontFaceRule())
+    if (rule->isMediaRule())
+        setHasMediaQueries();
+    else if (rule->isFontFaceRule())
         setHasFontFaceRule(true);
+
     m_childRules.insert(index, rule);
     return true;
 }
