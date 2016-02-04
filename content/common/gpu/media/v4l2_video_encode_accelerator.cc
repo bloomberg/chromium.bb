@@ -1031,6 +1031,23 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
     ctrls.push_back(ctrl);
   }
 
+  // Enable macroblock-level bitrate control.
+  memset(&ctrl, 0, sizeof(ctrl));
+  ctrl.id = V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE;
+  ctrl.value = 1;
+  ctrls.push_back(ctrl);
+
+  // Disable periodic key frames.
+  memset(&ctrl, 0, sizeof(ctrl));
+  ctrl.id = V4L2_CID_MPEG_VIDEO_GOP_SIZE;
+  ctrl.value = 0;
+  ctrls.push_back(ctrl);
+
+  // Ignore return value as these controls are optional.
+  SetExtCtrls(ctrls);
+
+  // Optional Exynos specific controls.
+  ctrls.clear();
   // Enable "tight" bitrate mode. For this to work properly, frame- and mb-level
   // bitrate controls have to be enabled as well.
   memset(&ctrl, 0, sizeof(ctrl));
@@ -1043,18 +1060,6 @@ bool V4L2VideoEncodeAccelerator::InitControls() {
   memset(&ctrl, 0, sizeof(ctrl));
   ctrl.id = V4L2_CID_MPEG_MFC51_VIDEO_RC_FIXED_TARGET_BIT;
   ctrl.value = 1;
-  ctrls.push_back(ctrl);
-
-  // Enable macroblock-level bitrate control.
-  memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CID_MPEG_VIDEO_MB_RC_ENABLE;
-  ctrl.value = 1;
-  ctrls.push_back(ctrl);
-
-  // Disable periodic key frames.
-  memset(&ctrl, 0, sizeof(ctrl));
-  ctrl.id = V4L2_CID_MPEG_VIDEO_GOP_SIZE;
-  ctrl.value = 0;
   ctrls.push_back(ctrl);
 
   // Ignore return value as these controls are optional.
