@@ -135,21 +135,6 @@ static SVGSVGElement* svgRootElement(Page* page)
     return frame->document()->accessSVGExtensions().rootElement();
 }
 
-void SVGImage::setContainerSize(const IntSize& size)
-{
-    SVGSVGElement* rootElement = svgRootElement(m_page.get());
-    if (!rootElement)
-        return;
-
-    FrameView* view = frameView();
-    view->resize(this->containerSize());
-
-    LayoutSVGRoot* layoutObject = toLayoutSVGRoot(rootElement->layoutObject());
-    if (!layoutObject)
-        return;
-    layoutObject->setContainerSize(size);
-}
-
 IntSize SVGImage::containerSize() const
 {
     SVGSVGElement* rootElement = svgRootElement(m_page.get());
@@ -203,7 +188,11 @@ void SVGImage::drawForContainer(SkCanvas* canvas, const SkPaint& paint, const Fl
     ImageObserverDisabler imageObserverDisabler(this);
 
     IntSize roundedContainerSize = roundedIntSize(containerSize);
-    setContainerSize(roundedContainerSize);
+
+    if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {
+        if (LayoutSVGRoot* layoutObject = toLayoutSVGRoot(rootElement->layoutObject()))
+            layoutObject->setContainerSize(roundedContainerSize);
+    }
 
     FloatRect scaledSrc = srcRect;
     scaledSrc.scale(1 / zoom);
