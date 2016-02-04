@@ -190,6 +190,10 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		return -EINVAL;
 	if (ibs_request->number_of_ibs > AMDGPU_CS_MAX_IBS_PER_SUBMIT)
 		return -EINVAL;
+	if (ibs_request->number_of_ibs == 0) {
+		ibs_request->seq_no = AMDGPU_NULL_SUBMIT_SEQ;
+		return 0;
+	}
 	user_fence = (ibs_request->fence_info.handle != NULL);
 
 	size = ibs_request->number_of_ibs + (user_fence ? 2 : 1) + 1;
@@ -422,6 +426,10 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 		return -EINVAL;
 	if (fence->ring >= AMDGPU_CS_MAX_RINGS)
 		return -EINVAL;
+	if (fence->fence == AMDGPU_NULL_SUBMIT_SEQ) {
+		*expired = true;
+		return 0;
+	}
 
 	*expired = false;
 

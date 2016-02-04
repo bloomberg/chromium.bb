@@ -44,6 +44,7 @@
 #define ROUND_DOWN(x, y) ((x) & ~__round_mask(x, y))
 
 #define AMDGPU_INVALID_VA_ADDRESS	0xffffffffffffffff
+#define AMDGPU_NULL_SUBMIT_SEQ		0
 
 struct amdgpu_bo_va_hole {
 	struct list_head list;
