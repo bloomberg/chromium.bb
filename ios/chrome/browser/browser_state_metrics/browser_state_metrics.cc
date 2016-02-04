@@ -8,7 +8,7 @@
 
 #include "components/profile_metrics/counts.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 bool CountBrowserStateInformation(ios::ChromeBrowserStateManager* manager,
                                   profile_metrics::Counts* counts) {

@@ -55,7 +55,6 @@ namespace ios {
 
 class ChromeBrowserProvider;
 class ChromeBrowserState;
-class ChromeBrowserStateManager;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class SigninResourcesProvider;
@@ -84,9 +83,6 @@ class ChromeBrowserProvider {
   GetProfileOAuth2TokenServiceIOSProvider();
   // Returns an UpdatableResourceProvider instance.
   virtual UpdatableResourceProvider* GetUpdatableResourceProvider();
-  // Creates a new ChromeBrowserStateManager instance.
-  virtual scoped_ptr<ChromeBrowserStateManager>
-  CreateChromeBrowserStateManager();
   // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
   // object is retained.
   virtual InfoBarViewPlaceholder CreateInfoBarView(

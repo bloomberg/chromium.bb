@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "ios/chrome/browser/browser_state/browser_state_info_cache.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 namespace ios {
 class ChromeBrowserState;

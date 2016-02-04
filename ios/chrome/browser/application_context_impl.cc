@@ -35,6 +35,7 @@
 #include "components/web_resource/promo_resource_service.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
@@ -49,8 +50,6 @@
 #include "ios/chrome/browser/update_client/ios_chrome_update_query_params_delegate.h"
 #include "ios/chrome/browser/web_resource/web_resource_util.h"
 #include "ios/chrome/common/channel_info.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/web_thread.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -236,11 +235,8 @@ const std::string& ApplicationContextImpl::GetApplicationLocale() {
 ios::ChromeBrowserStateManager*
 ApplicationContextImpl::GetChromeBrowserStateManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!chrome_browser_state_manager_) {
-    chrome_browser_state_manager_ =
-        ios::GetChromeBrowserProvider()->CreateChromeBrowserStateManager();
-    DCHECK(chrome_browser_state_manager_.get());
-  }
+  if (!chrome_browser_state_manager_)
+    chrome_browser_state_manager_.reset(new ChromeBrowserStateManagerImpl());
   return chrome_browser_state_manager_.get();
 }
 

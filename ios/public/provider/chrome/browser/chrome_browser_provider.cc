@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/sync_sessions/synced_window_delegates_getter.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 namespace ios {
 
@@ -44,11 +43,6 @@ ChromeBrowserProvider::GetProfileOAuth2TokenServiceIOSProvider() {
 UpdatableResourceProvider*
 ChromeBrowserProvider::GetUpdatableResourceProvider() {
   return nullptr;
-}
-
-scoped_ptr<ChromeBrowserStateManager>
-ChromeBrowserProvider::CreateChromeBrowserStateManager() {
-  return scoped_ptr<ChromeBrowserStateManager>();
 }
 
 InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(

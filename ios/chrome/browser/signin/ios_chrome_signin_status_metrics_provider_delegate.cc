@@ -8,8 +8,8 @@
 #include "components/signin/core/browser/signin_status_metrics_provider.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_manager.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state_manager.h"
 
 IOSChromeSigninStatusMetricsProviderDelegate::
     IOSChromeSigninStatusMetricsProviderDelegate() {}
