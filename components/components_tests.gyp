@@ -928,7 +928,6 @@
         '<@(bubble_unittest_sources)',
         '<@(captive_portal_unittest_sources)',
         '<@(certificate_reporting_unittest_sources)',
-        '<@(child_trace_message_filter_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
         '<@(content_settings_unittest_sources)',
@@ -1115,7 +1114,6 @@
         'components.gyp:translate_core_browser',
         'components.gyp:translate_core_common',
         'components.gyp:translate_core_language_detection',
-        'components.gyp:ui_zoom',
         'components.gyp:undo_component',
         'components.gyp:update_client',
         'components.gyp:update_client_test_support',
@@ -1185,6 +1183,7 @@
         ['OS != "ios"', {
           'sources': [
             '<@(certificate_transparency_unittest_sources)',
+            '<@(child_trace_message_filter_unittest_sources)',
             '<@(devtools_http_handler_unittest_sources)',
             '<@(error_page_unittest_sources)',
             '<@(guest_view_unittest_sources)',
@@ -1241,6 +1240,7 @@
             'components.gyp:sessions_content',
             'components.gyp:storage_monitor',
             'components.gyp:storage_monitor_test_support',
+            'components.gyp:ui_zoom',
             'components.gyp:url_matcher',
             'components.gyp:visitedlink_browser',
             'components.gyp:visitedlink_renderer',

@@ -5,50 +5,6 @@
 {
   'targets': [
     {
-      # GN version: //components/dom_distiller/content/common
-      'target_name': 'dom_distiller_content_common',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../content/content.gyp:content_common',
-        '../ipc/ipc.gyp:ipc',
-        '../url/url.gyp:url_lib',
-      ],
-      'sources': [
-        'dom_distiller/content/common/distiller_messages.cc',
-        'dom_distiller/content/common/distiller_messages.h',
-      ],
-    },
-    {
-      # GN version: //components/dom_distiller/webui
-      'target_name': 'dom_distiller_webui',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../content/content.gyp:content_browser',
-        '../net/net.gyp:net',
-        '../skia/skia.gyp:skia',
-        '../sync/sync.gyp:sync',
-        '../url/url.gyp:url_lib',
-        'components_resources.gyp:components_resources',
-        'components_strings.gyp:components_strings',
-        'dom_distiller_core',
-        'dom_distiller_protos',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'dom_distiller/webui/dom_distiller_handler.cc',
-        'dom_distiller/webui/dom_distiller_handler.h',
-        'dom_distiller/webui/dom_distiller_ui.cc',
-        'dom_distiller/webui/dom_distiller_ui.h',
-      ],
-    },
-    {
       # GN version: //components/dom_distiller/core
       'target_name': 'dom_distiller_core',
       'type': 'static_library',
@@ -278,7 +234,50 @@
             'dom_distiller/content/renderer/distiller_page_notifier_service_impl.h',
           ],
         },
-
+        {
+          # GN version: //components/dom_distiller/content/common
+          'target_name': 'dom_distiller_content_common',
+          'type': 'static_library',
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../url/url.gyp:url_lib',
+          ],
+          'sources': [
+            'dom_distiller/content/common/distiller_messages.cc',
+            'dom_distiller/content/common/distiller_messages.h',
+          ],
+        },
+        {
+          # GN version: //components/dom_distiller/webui
+          'target_name': 'dom_distiller_webui',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+            '../net/net.gyp:net',
+            '../skia/skia.gyp:skia',
+            '../sync/sync.gyp:sync',
+            '../url/url.gyp:url_lib',
+            'components_resources.gyp:components_resources',
+            'components_strings.gyp:components_strings',
+            'dom_distiller_core',
+            'dom_distiller_protos',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'dom_distiller/webui/dom_distiller_handler.cc',
+            'dom_distiller/webui/dom_distiller_handler.h',
+            'dom_distiller/webui/dom_distiller_ui.cc',
+            'dom_distiller/webui/dom_distiller_ui.h',
+          ],
+        },
       ],
     }],
     ['OS=="ios"', {

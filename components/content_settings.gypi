@@ -117,26 +117,32 @@
         'content_settings/core/test/content_settings_test_utils.h',
       ],
     },
-    {
-      # GN version: //components/content_settings/content/common
-      'target_name': 'content_settings_content_common',
-      'type': 'static_library',
-      'dependencies': [
-        'content_settings_core_common',
-        '../base/base.gyp:base',
-        '../content/content.gyp:content_common',
-        '../ipc/ipc.gyp:ipc',
-        '../url/url.gyp:url_lib',
+  ],
+  'conditions': [
+    ['OS!="ios"', {
+      'targets': [
+        {
+          # GN version: //components/content_settings/content/common
+          'target_name': 'content_settings_content_common',
+          'type': 'static_library',
+          'dependencies': [
+            'content_settings_core_common',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
+            '../ipc/ipc.gyp:ipc',
+            '../url/url.gyp:url_lib',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            # Note: sources list duplicated in GN build.
+            'content_settings/content/common/content_settings_message_generator.cc',
+            'content_settings/content/common/content_settings_message_generator.h',
+            'content_settings/content/common/content_settings_messages.h',
+          ],
+        },
       ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        # Note: sources list duplicated in GN build.
-        'content_settings/content/common/content_settings_message_generator.cc',
-        'content_settings/content/common/content_settings_message_generator.h',
-        'content_settings/content/common/content_settings_messages.h',
-      ],
-    },
+    }]
   ],
 }

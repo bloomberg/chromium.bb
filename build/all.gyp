@@ -24,7 +24,6 @@
         '../base/base.gyp:*',
         '../components/components.gyp:*',
         '../components/components_tests.gyp:*',
-        '../content/content.gyp:*',
         '../crypto/crypto.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',
@@ -49,14 +48,13 @@
         }],
         ['OS=="ios"', {
           'dependencies': [
-            '../chrome/chrome.gyp:browser',
-            '../chrome/chrome.gyp:browser_ui',
             '../ios/ios.gyp:*',
             # NOTE: This list of targets is present because
             # mojo_base.gyp:mojo_base cannot be built on iOS, as
             # javascript-related targets cause v8 to be built.
             '../mojo/mojo_base.gyp:mojo_common_lib',
             '../mojo/mojo_base.gyp:mojo_common_unittests',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../google_apis/google_apis.gyp:google_apis_unittests',
             '../skia/skia_tests.gyp:skia_unittests',
             '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
@@ -73,6 +71,7 @@
           ],
         }, { # 'OS!="ios"
           'dependencies': [
+            '../content/content.gyp:*',
             '../device/bluetooth/bluetooth.gyp:*',
             '../device/device_tests.gyp:*',
           ],
@@ -111,9 +110,15 @@
           ],
         }, {
           'dependencies': [
-            '../content/content_shell_and_tests.gyp:*',
             # TODO: This should build on Android and the target should move to the list above.
             '../sync/sync.gyp:*',
+          ],
+          'conditions': [
+            ['OS!="ios"', {
+              'dependencies': [
+                '../content/content_shell_and_tests.gyp:*',
+              ],
+            }],
           ],
         }],
         ['OS!="ios" and OS!="android" and chromecast==0', {
