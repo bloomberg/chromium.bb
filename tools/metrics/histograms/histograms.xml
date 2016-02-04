@@ -26019,6 +26019,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.CloseAllSessionsError" enum="NetErrorCodes">
+  <owner>rch@chromium.org</owner>
+  <summary>
+    The network error code which resulted in all sessions being closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.ClosedDuringInitializeSession" enum="Boolean">
   <owner>rch@chromium.org</owner>
   <summary>
@@ -76212,7 +76219,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="22" label="INVALID_HEADER_ID"/>
   <int value="23" label="INVALID_NEGOTIATED_VALUE"/>
   <int value="24" label="DECOMPRESSION_FAILURE"/>
-  <int value="25" label="CONNECTION_TIMED_OUT"/>
+  <int value="25" label="NETWORK_IDLE_TIMEOUT"/>
   <int value="26" label="ERROR_MIGRATING_ADDRESS"/>
   <int value="27" label="PACKET_WRITE_ERROR"/>
   <int value="28" label="HANDSHAKE_FAILED"/>
@@ -76254,11 +76261,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="64" label="FLOW_CONTROL_INVALID_WINDOW"/>
   <int value="65" label="CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE"/>
   <int value="66" label="TOO_MANY_UNFINISHED_STREAMS"/>
-  <int value="67" label="CONNECTION_OVERALL_TIMED_OUT"/>
-  <int value="68" label="QUIC_TOO_MANY_OUTSTANDING_SENT_PACKETS"/>
-  <int value="69" label="QUIC_TOO_MANY_OUTSTANDING_RECEIVED_PACKETS"/>
-  <int value="70" label="QUIC_CONNECTION_CANCELLED"/>
-  <int value="71" label="QUIC_BAD_PACKET_LOSS_RATE"/>
+  <int value="67" label="HANDSHAKE_TIMEOUT"/>
+  <int value="68" label="TOO_MANY_OUTSTANDING_SENT_PACKETS"/>
+  <int value="69" label="TOO_MANY_OUTSTANDING_RECEIVED_PACKETS"/>
+  <int value="70" label="CONNECTION_CANCELLED"/>
+  <int value="71" label="BAD_PACKET_LOSS_RATE"/>
+  <int value="72" label="CRYPTO_HANDSHAKE_STATELESS_REJECT"/>
+  <int value="73" label="PUBLIC_RESETS_POST_HANDSHAKE"/>
+  <int value="74" label="TIMEOUTS_WITH_OPEN_STREAMS"/>
+  <int value="75" label="FAILED_TO_SERIALIZE_PACKET"/>
+  <int value="76" label="TOO_MANY_AVAILABLE_STREAMS"/>
+  <int value="77" label="UNENCRYPTED_FEC_DATA"/>
+  <int value="78" label="INVALID_PATH_CLOSE_DATA"/>
+  <int value="79" label="BAD_MULTIPATH_FLAG"/>
+  <int value="80" label="IP_ADDRESS_CHANGED"/>
+  <int value="81" label="CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS"/>
+  <int value="82" label="CONNECTION_MIGRATION_TOO_MANY_CHANGES"/>
+  <int value="83" label="CONNECTION_MIGRATION_NO_NEW_NETWORK"/>
 </enum>
 
 <enum name="QuicHandshakeFailureReason" type="int">
