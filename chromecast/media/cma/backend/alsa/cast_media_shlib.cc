@@ -33,7 +33,7 @@ namespace {
 
 const char kDefaultPcmDevice[] = "hw:0";
 const int kSoundControlBlockingMode = 0;
-const char kRateOffsetInterfaceName[] =  "PCM Playback Rate Offset";
+const char kRateOffsetInterfaceName[] = "PCM Playback Rate Offset";
 
 // 1 MHz reference allows easy translation between frequency and PPM.
 const double kOneMhzReference = 1e6;
