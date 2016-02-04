@@ -65,7 +65,4 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // Persistent histograms must be enabled as soon as possible.
   InstantiatePersistentHistograms();
-  // The following trials are used from renderer process.
-  // Mark here so they will be sync-ed.
-  base::FieldTrialList::FindValue("DisplayList2dCanvas");
 }
