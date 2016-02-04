@@ -17,7 +17,7 @@ namespace client {
 class BlimpInputManager;
 
 // The BlimpInputHandlerWrapper isolates all input handling processing done on
-// the compositor thread from the BlimpInputManager. It takes web input events
+// the compositor thread from the BlimpInputManager. It takes web gesture events
 // from the BlimpInputManager and sends them to the ui::InputHandlerProxy.
 // The class is created and lives on the compositor thread.
 class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
@@ -29,10 +29,10 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
 
   ~BlimpInputHandlerWrapper() override;
 
-  // Called by the BlimpInputManager to process a web input event. This will
-  // call BlimpInputManager::HandleWebInputEvent with the result on the main
+  // Called by the BlimpInputManager to process a web gesture event. This will
+  // call BlimpInputManager::HandleWebGestureEvent with the result on the main
   // thread.
-  void HandleWebInputEvent(scoped_ptr<blink::WebInputEvent> input_event);
+  void HandleWebGestureEvent(const blink::WebGestureEvent& gesture_event);
 
  private:
   // InputHandlerProxyClient implementation.

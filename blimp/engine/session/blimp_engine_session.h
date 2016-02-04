@@ -110,7 +110,7 @@ class BlimpEngineSession
 
   // RenderWidgetMessage handler methods.
   // RenderWidgetMessageDelegate implementation.
-  void OnWebInputEvent(scoped_ptr<blink::WebInputEvent> event) override;
+  void OnWebGestureEvent(scoped_ptr<blink::WebGestureEvent> event) override;
   void OnCompositorMessageReceived(
       const std::vector<uint8_t>& message) override;
 

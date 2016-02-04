@@ -30,8 +30,8 @@ class MockHostRenderWidgetMessageDelegate
     : public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
   // EngineRenderWidgetFeature implementation.
-  void OnWebInputEvent(scoped_ptr<blink::WebInputEvent> event) override {
-    MockableOnWebInputEvent();
+  void OnWebGestureEvent(scoped_ptr<blink::WebGestureEvent> event) override {
+    MockableOnWebGestureEvent();
   }
 
   void OnCompositorMessageReceived(
@@ -39,7 +39,7 @@ class MockHostRenderWidgetMessageDelegate
     MockableOnCompositorMessageReceived(message);
   }
 
-  MOCK_METHOD0(MockableOnWebInputEvent, void());
+  MOCK_METHOD0(MockableOnWebGestureEvent, void());
   MOCK_METHOD1(MockableOnCompositorMessageReceived,
                void(const std::vector<uint8_t>& message));
 };
@@ -74,7 +74,7 @@ void SendInputMessage(BlimpMessageProcessor* processor,
                              int tab_id,
                              uint32_t rw_id) {
   blink::WebGestureEvent input_event;
-  input_event.type = blink::WebInputEvent::Type::GestureTap;
+  input_event.type = blink::WebGestureEvent::Type::GestureTap;
 
   InputMessageGenerator generator;
   scoped_ptr<BlimpMessage> message = generator.GenerateMessage(input_event);
@@ -133,11 +133,11 @@ TEST_F(EngineRenderWidgetFeatureTest, DelegateCallsOK) {
   EXPECT_CALL(delegate1_,
               MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
       .Times(1);
-  EXPECT_CALL(delegate1_, MockableOnWebInputEvent()).Times(1);
+  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent()).Times(1);
   EXPECT_CALL(delegate2_,
               MockableOnCompositorMessageReceived(CompMsgEquals(payload)))
       .Times(1);
-  EXPECT_CALL(delegate2_, MockableOnWebInputEvent()).Times(0);
+  EXPECT_CALL(delegate2_, MockableOnWebGestureEvent()).Times(0);
 
   feature_.OnRenderWidgetInitialized(1);
   feature_.OnRenderWidgetInitialized(2);
@@ -159,7 +159,7 @@ TEST_F(EngineRenderWidgetFeatureTest, DropsStaleMessages) {
               MockableProcessMessage(BlimpRWMsgEquals(1, 2U), _));
   EXPECT_CALL(delegate1_,
               MockableOnCompositorMessageReceived(CompMsgEquals(new_payload)));
-  EXPECT_CALL(delegate1_, MockableOnWebInputEvent());
+  EXPECT_CALL(delegate1_, MockableOnWebGestureEvent());
 
   feature_.OnRenderWidgetInitialized(1);
   SendCompositorMessage(&feature_, 1, 1U, payload);

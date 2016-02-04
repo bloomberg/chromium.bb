@@ -17,7 +17,7 @@
 #include "blimp/net/input_message_converter.h"
 
 namespace blink {
-class WebInputEvent;
+class WebGestureEvent;
 }
 
 namespace blimp {
@@ -33,8 +33,9 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   // A delegate to be notified of specific RenderWidget related incoming events.
   class RenderWidgetMessageDelegate {
    public:
-    // Called when the client is sending a WebInputEvent to the engine.
-    virtual void OnWebInputEvent(scoped_ptr<blink::WebInputEvent> event) = 0;
+    // Called when the client is sending a WebGestureEvent to the engine.
+    virtual void OnWebGestureEvent(
+        scoped_ptr<blink::WebGestureEvent> event) = 0;
 
     // Called when the client sent a CompositorMessage.  These messages should
     // be sent to the engine's render process so they can be processed by the

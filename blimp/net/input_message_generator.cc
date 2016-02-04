@@ -113,52 +113,37 @@ InputMessageGenerator::InputMessageGenerator() {}
 InputMessageGenerator::~InputMessageGenerator() {}
 
 scoped_ptr<BlimpMessage> InputMessageGenerator::GenerateMessage(
-    const blink::WebInputEvent& event) {
+    const blink::WebGestureEvent& event) {
   InputMessage* details;
   scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
 
   switch (event.type) {
     case blink::WebInputEvent::Type::GestureScrollBegin:
-      GestureScrollBeginToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GestureScrollBeginToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GestureScrollEnd:
-      GestureScrollEndToProto(static_cast<const blink::WebGestureEvent&>(event),
-                              details);
+      GestureScrollEndToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GestureScrollUpdate:
-      GestureScrollUpdateToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GestureScrollUpdateToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GestureFlingStart:
-      GestureFlingStartToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GestureFlingStartToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GestureFlingCancel:
-      GestureFlingCancelToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GestureFlingCancelToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GestureTap:
-      GestureTapToProto(static_cast<const blink::WebGestureEvent&>(event),
-                        details);
+      GestureTapToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GesturePinchBegin:
-      GesturePinchBeginToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GesturePinchBeginToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GesturePinchEnd:
-      GesturePinchEndToProto(static_cast<const blink::WebGestureEvent&>(event),
-                             details);
+      GesturePinchEndToProto(event, details);
       break;
     case blink::WebInputEvent::Type::GesturePinchUpdate:
-      GesturePinchUpdateToProto(
-          static_cast<const blink::WebGestureEvent&>(event),
-          details);
+      GesturePinchUpdateToProto(event, details);
       break;
     // Unsupported types:
     case blink::WebInputEvent::Type::Undefined:

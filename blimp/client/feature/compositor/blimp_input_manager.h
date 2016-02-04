@@ -19,12 +19,12 @@ namespace client {
 
 class BlimpInputManagerClient {
  public:
-  virtual void SendWebInputEvent(
-      const blink::WebInputEvent& input_event) = 0;
+  virtual void SendWebGestureEvent(
+      const blink::WebGestureEvent& gesture_event) = 0;
 };
 
 // The BlimpInputManager handles input events for a specific web widget. The
-// class processes ui::events to generate web input events which are forwarded
+// class processes ui::events to generate web gesture events which are forwarded
 // to the compositor to be handled on the compositor thread. If the event can
 // not be handled locally by the compositor, it is given to the
 // BlimpInputManagerClient to be sent to the engine.
@@ -59,8 +59,8 @@ class BlimpInputManager : public ui::GestureProviderClient {
   // the compositor thread.
   // |consumed| is false if the event was not handled by the compositor and
   // should be sent to the engine.
-  void DidHandleWebInputEvent(scoped_ptr<blink::WebInputEvent> input_event,
-                              bool consumed);
+  void DidHandleWebGestureEvent(const blink::WebGestureEvent& gesture_event,
+                                bool consumed);
 
  private:
   BlimpInputManager(
@@ -76,8 +76,8 @@ class BlimpInputManager : public ui::GestureProviderClient {
   void CreateInputHandlerWrapperOnCompositorThread(
       base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
       const base::WeakPtr<cc::InputHandler>& input_handler);
-  void HandleWebInputEventOnCompositorThread(
-      scoped_ptr<blink::WebInputEvent> input_event);
+  void HandleWebGestureEventOnCompositorThread(
+      const blink::WebGestureEvent& gesture_event);
   void ShutdownOnCompositorThread(base::WaitableEvent* shutdown_event);
 
   bool IsMainThread() const;

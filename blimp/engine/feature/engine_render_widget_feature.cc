@@ -100,10 +100,10 @@ void EngineRenderWidgetFeature::ProcessMessage(
   switch (message->type()) {
     case BlimpMessage::INPUT:
       if (message->input().render_widget_id() == render_widget_id) {
-        scoped_ptr<blink::WebInputEvent> event =
+        scoped_ptr<blink::WebGestureEvent> event =
             input_message_converter_.ProcessMessage(message->input());
         if (event)
-          delegate->OnWebInputEvent(std::move(event));
+          delegate->OnWebGestureEvent(std::move(event));
       }
       break;
     case BlimpMessage::COMPOSITOR:

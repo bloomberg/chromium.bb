@@ -97,15 +97,10 @@ void BlimpInputManager::OnGestureEvent(const ui::GestureEventData& gesture) {
     web_gesture.modifiers = 0;
   }
 
-  scoped_ptr<blink::WebGestureEvent> gesture_event;
-  gesture_event.reset(new blink::WebGestureEvent);
-  memcpy(gesture_event.get(), &web_gesture, sizeof(blink::WebGestureEvent));
-
   compositor_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          &BlimpInputManager::HandleWebInputEventOnCompositorThread,
-          base::Unretained(this), base::Passed(&gesture_event)));
+      base::Bind(&BlimpInputManager::HandleWebGestureEventOnCompositorThread,
+                 base::Unretained(this), web_gesture));
 }
 
 void BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread(
@@ -124,12 +119,12 @@ void BlimpInputManager::CreateInputHandlerWrapperOnCompositorThread(
                                    input_handler.get()));
 }
 
-void BlimpInputManager::HandleWebInputEventOnCompositorThread(
-    scoped_ptr<blink::WebInputEvent> input_event) {
+void BlimpInputManager::HandleWebGestureEventOnCompositorThread(
+    const blink::WebGestureEvent& gesture_event) {
   DCHECK(IsCompositorThread());
 
   if (input_handler_wrapper_)
-    input_handler_wrapper_->HandleWebInputEvent(std::move(input_event));
+    input_handler_wrapper_->HandleWebGestureEvent(gesture_event);
 }
 
 void BlimpInputManager::ShutdownOnCompositorThread(
@@ -141,12 +136,13 @@ void BlimpInputManager::ShutdownOnCompositorThread(
   shutdown_event->Signal();
 }
 
-void BlimpInputManager::DidHandleWebInputEvent(
-    scoped_ptr<blink::WebInputEvent> input_event, bool consumed) {
+void BlimpInputManager::DidHandleWebGestureEvent(
+    const blink::WebGestureEvent& gesture_event,
+    bool consumed) {
   DCHECK(IsMainThread());
 
   if (!consumed)
-    client_->SendWebInputEvent(*input_event);
+    client_->SendWebGestureEvent(gesture_event);
 }
 
 bool BlimpInputManager::IsMainThread() const {

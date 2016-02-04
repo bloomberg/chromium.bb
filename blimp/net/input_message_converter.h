@@ -10,14 +10,14 @@
 #include "blimp/net/blimp_net_export.h"
 
 namespace blink {
-class WebInputEvent;
+class WebGestureEvent;
 }
 
 namespace blimp {
 
 class InputMessage;
 
-// Handles creating WebInputEvents from a stream of InputMessage protos.  This
+// Handles creating WebGestureEvents from a stream of InputMessage protos.  This
 // class may be stateful to optimize the size of the serialized transmission
 // data.  See InputMessageConverter for the deserialize code.
 class BLIMP_NET_EXPORT InputMessageConverter {
@@ -25,9 +25,10 @@ class BLIMP_NET_EXPORT InputMessageConverter {
   InputMessageConverter();
   ~InputMessageConverter();
 
-  // Process an InputMessage and create a WebInputEvent from it.  This might
+  // Process an InputMessage and create a WebGestureEvent from it.  This might
   // make use of state from previous messages.
-  scoped_ptr<blink::WebInputEvent> ProcessMessage(const InputMessage& message);
+  scoped_ptr<blink::WebGestureEvent> ProcessMessage(
+      const InputMessage& message);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMessageConverter);

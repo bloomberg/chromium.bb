@@ -124,7 +124,8 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
       scoped_ptr<cc::proto::CompositorMessage> message) override;
 
   // BlimpInputManagerClient implementation.
-  void SendWebInputEvent(const blink::WebInputEvent& input_event) override;
+  void SendWebGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override;
 
   // Internal method to correctly set the visibility on the |host_|. It will
   // make the |host_| visible if |visible| is true and we have a valid |window_|

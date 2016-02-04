@@ -196,9 +196,9 @@ void BlimpCompositor::GenerateLayerTreeSettings(
   PopulateCommonLayerTreeSettings(settings);
 }
 
-void BlimpCompositor::SendWebInputEvent(
-    const blink::WebInputEvent& input_event) {
-  render_widget_feature_->SendInputEvent(kDummyTabId, input_event);
+void BlimpCompositor::SendWebGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  render_widget_feature_->SendInputEvent(kDummyTabId, gesture_event);
 }
 
 void BlimpCompositor::SetVisibleInternal(bool visible) {

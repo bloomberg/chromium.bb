@@ -31,11 +31,11 @@ void RenderWidgetFeature::set_outgoing_compositor_message_processor(
 }
 
 void RenderWidgetFeature::SendInputEvent(const int tab_id,
-                                         const blink::WebInputEvent& event) {
+                                         const blink::WebGestureEvent& event) {
   scoped_ptr<BlimpMessage> blimp_message =
       input_message_generator_.GenerateMessage(event);
 
-  // Don't send unsupported WebInputEvents.
+  // Don't send unsupported WebGestureEvents.
   if (!blimp_message)
     return;
 

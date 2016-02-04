@@ -4,8 +4,8 @@
 //
 // Message definitions for the input subprotocol.
 //
-// The InputMessage protobuf generally carries web input events.  Currently we
-// just serialize the blink::WebInputEvent POD struct.
+// The InputMessage protobuf generally carries web gesture events.  Currently we
+// just serialize the blink::WebGestureEvent POD struct.
 
 syntax = "proto2";
 
@@ -96,4 +96,3 @@ message InputMessage {
   optional GestureTap gesture_tap = 8;
   optional GesturePinchUpdate gesture_pinch_update = 9;
 }
-

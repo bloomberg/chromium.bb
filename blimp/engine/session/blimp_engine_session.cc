@@ -326,8 +326,8 @@ void BlimpEngineSession::Reload(const int target_tab_id) {
   web_contents_->GetController().Reload(true);
 }
 
-void BlimpEngineSession::OnWebInputEvent(
-    scoped_ptr<blink::WebInputEvent> event) {
+void BlimpEngineSession::OnWebGestureEvent(
+    scoped_ptr<blink::WebGestureEvent> event) {
   if (!web_contents_ || !web_contents_->GetRenderViewHost())
     return;
 
@@ -337,13 +337,7 @@ void BlimpEngineSession::OnWebInputEvent(
   if (!host)
     return;
 
-  if (blink::WebInputEvent::isGestureEventType(event->type)) {
-    const blink::WebGestureEvent& gesture_event =
-            *static_cast<const blink::WebGestureEvent*>(event.get());
-    host->ForwardGestureEvent(gesture_event);
-  } else {
-    NOTIMPLEMENTED() << "Dropping event of type " << event->type;
-  }
+  host->ForwardGestureEvent(*event);
 }
 
 void BlimpEngineSession::OnCompositorMessageReceived(

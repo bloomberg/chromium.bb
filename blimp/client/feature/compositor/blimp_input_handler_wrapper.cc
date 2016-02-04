@@ -33,8 +33,8 @@ BlimpInputHandlerWrapper::~BlimpInputHandlerWrapper() {
   DCHECK(!input_handler_proxy_);
 }
 
-void BlimpInputHandlerWrapper::HandleWebInputEvent(
-      scoped_ptr<blink::WebInputEvent> input_event) {
+void BlimpInputHandlerWrapper::HandleWebGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
   DCHECK(compositor_thread_checker_.CalledOnValidThread());
 
   // We might not have the input handler proxy anymore.
@@ -42,7 +42,7 @@ void BlimpInputHandlerWrapper::HandleWebInputEvent(
     return;
 
   ui::InputHandlerProxy::EventDisposition disposition =
-      input_handler_proxy_->HandleInputEvent(*input_event);
+      input_handler_proxy_->HandleInputEvent(gesture_event);
 
   bool consumed = false;
 
@@ -57,10 +57,8 @@ void BlimpInputHandlerWrapper::HandleWebInputEvent(
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&BlimpInputManager::DidHandleWebInputEvent,
-                 input_manager_weak_ptr_,
-                 base::Passed(&input_event), consumed));
+      FROM_HERE, base::Bind(&BlimpInputManager::DidHandleWebGestureEvent,
+                            input_manager_weak_ptr_, gesture_event, consumed));
 }
 
 void BlimpInputHandlerWrapper::WillShutdown() {
