@@ -1113,7 +1113,7 @@ void ReplaceSelectionCommand::doApply()
 
     Element* blockStart = enclosingBlock(insertionPos.anchorNode());
     if ((isHTMLListElement(refNode.get()) || (isLegacyAppleHTMLSpanElement(refNode.get()) && isHTMLListElement(refNode->firstChild())))
-        && blockStart && blockStart->layoutObject()->isListItem()) {
+        && blockStart && blockStart->layoutObject()->isListItem() && blockStart->parentNode()->hasEditableStyle()) {
         refNode = insertAsListItems(toHTMLElement(refNode), blockStart, insertionPos, insertedNodes);
     } else {
         insertNodeAt(refNode, insertionPos);
