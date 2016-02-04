@@ -1,25 +1,27 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_OVERLAY_MANAGER_H_
 
+#include <stdint.h>
+
+#include <vector>
+
+#include "base/containers/mru_cache.h"
 #include "base/macros.h"
-#include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
-#include "ui/ozone/platform/drm/host/drm_overlay_manager_core.h"
-#include "ui/ozone/public/gpu_platform_support_host.h"
+#include "base/memory/scoped_vector.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
+#include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 
 namespace ui {
-
 class DrmWindowHostManager;
-class DrmGpuPlatformSupportHost;
 
-class DrmOverlayManager : public OverlayManagerOzone,
-                          public GpuPlatformSupportHost {
+class DrmOverlayManager : public OverlayManagerOzone {
  public:
-  DrmOverlayManager(DrmGpuPlatformSupportHost* platform_support_host,
+  DrmOverlayManager(GpuThreadAdapter* proxy,
                     DrmWindowHostManager* window_manager);
   ~DrmOverlayManager() override;
 
@@ -27,42 +29,36 @@ class DrmOverlayManager : public OverlayManagerOzone,
   scoped_ptr<OverlayCandidatesOzone> CreateOverlayCandidates(
       gfx::AcceleratedWidget w) override;
 
-  // GpuPlatformSupportHost:
-  void OnChannelEstablished(
-      int host_id,
-      scoped_refptr<base::SingleThreadTaskRunner> send_runner,
-      const base::Callback<void(IPC::Message*)>& sender) override;
-  void OnChannelDestroyed(int host_id) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   void ResetCache();
 
+  // Communication-free implementations of actions performed in response to
+  // messages from the GPU thread.
+  void GpuSentOverlayResult(gfx::AcceleratedWidget widget,
+                            const std::vector<OverlayCheck_Params>& params);
+
+  // Service method for DrmOverlayCandidatesHost
+  void CheckOverlaySupport(
+      OverlayCandidatesOzone::OverlaySurfaceCandidateList* candidates,
+      gfx::AcceleratedWidget widget);
+
  private:
-  // IPC handler.
-  class OverlayCandidatesIPC : public DrmOverlayManagerProxy {
-   public:
-    OverlayCandidatesIPC(DrmGpuPlatformSupportHost* platform_support,
-                         DrmOverlayManager* parent);
-    ~OverlayCandidatesIPC() override;
-    void RegisterHandler() override;
-    bool IsConnected() override;
-    void UnregisterHandler() override;
-    bool CheckOverlayCapabilities(
-        gfx::AcceleratedWidget widget,
-        const std::vector<OverlayCheck_Params>& new_params) override;
+  void SendOverlayValidationRequest(
+      const std::vector<OverlayCheck_Params>& new_params,
+      gfx::AcceleratedWidget widget) const;
+  bool CanHandleCandidate(
+      const OverlayCandidatesOzone::OverlaySurfaceCandidate& candidate,
+      gfx::AcceleratedWidget widget) const;
 
-   private:
-    DrmGpuPlatformSupportHost* platform_support_;
-    DrmOverlayManager* parent_;
-    DISALLOW_COPY_AND_ASSIGN(OverlayCandidatesIPC);
-  };
+  bool is_supported_;
+  GpuThreadAdapter* proxy_;               // Not owned.
+  DrmWindowHostManager* window_manager_;  // Not owned.
 
-  // Entry point for incoming IPC.
-  void OnOverlayResult(gfx::AcceleratedWidget widget,
-                       const std::vector<OverlayCheck_Params>& params);
-
-  scoped_ptr<OverlayCandidatesIPC> sender_;
-  scoped_ptr<DrmOverlayManagerCore> core_;
+  // List of all OverlayCheck_Params which have been validated in GPU side.
+  // Value is set to true if we are waiting for validation results from GPU.
+  base::MRUCacheBase<std::vector<OverlayCheck_Params>,
+                     bool,
+                     base::MRUCacheNullDeletor<bool>>
+      cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
 };

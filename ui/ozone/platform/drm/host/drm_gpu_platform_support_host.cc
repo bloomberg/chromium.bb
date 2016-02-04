@@ -10,6 +10,9 @@
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
+#include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_candidates_host.h"
+#include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_observer.h"
 
 namespace ui {
@@ -76,27 +79,9 @@ void CursorIPC::Send(IPC::Message* message) {
 }  // namespace
 
 DrmGpuPlatformSupportHost::DrmGpuPlatformSupportHost(DrmCursor* cursor)
-    : cursor_(cursor) {
-}
+    : cursor_(cursor) {}
 
-DrmGpuPlatformSupportHost::~DrmGpuPlatformSupportHost() {
-}
-
-void DrmGpuPlatformSupportHost::RegisterHandler(
-    GpuPlatformSupportHost* handler) {
-  handlers_.push_back(handler);
-
-  if (IsConnected())
-    handler->OnChannelEstablished(host_id_, send_runner_, send_callback_);
-}
-
-void DrmGpuPlatformSupportHost::UnregisterHandler(
-    GpuPlatformSupportHost* handler) {
-  std::vector<GpuPlatformSupportHost*>::iterator it =
-      std::find(handlers_.begin(), handlers_.end(), handler);
-  if (it != handlers_.end())
-    handlers_.erase(it);
-}
+DrmGpuPlatformSupportHost::~DrmGpuPlatformSupportHost() {}
 
 void DrmGpuPlatformSupportHost::AddGpuThreadObserver(
     GpuThreadObserver* observer) {
@@ -125,9 +110,6 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished(
   send_runner_ = send_runner;
   send_callback_ = send_callback;
 
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->OnChannelEstablished(host_id, send_runner_, send_callback_);
-
   FOR_EACH_OBSERVER(GpuThreadObserver, gpu_thread_observers_,
                     OnGpuThreadReady());
 
@@ -152,14 +134,13 @@ void DrmGpuPlatformSupportHost::OnChannelDestroyed(int host_id) {
                       OnGpuThreadRetired());
   }
 
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    handlers_[i]->OnChannelDestroyed(host_id);
 }
 
 bool DrmGpuPlatformSupportHost::OnMessageReceived(const IPC::Message& message) {
-  for (size_t i = 0; i < handlers_.size(); ++i)
-    if (handlers_[i]->OnMessageReceived(message))
-      return true;
+  if (OnMessageReceivedForDrmDisplayHostManager(message))
+    return true;
+  if (OnMessageReceivedForDrmOverlayManager(message))
+    return true;
 
   return false;
 }
@@ -171,6 +152,162 @@ bool DrmGpuPlatformSupportHost::Send(IPC::Message* message) {
 
   delete message;
   return false;
+}
+
+// DisplayHost
+void DrmGpuPlatformSupportHost::RegisterHandlerForDrmDisplayHostManager(
+    DrmDisplayHostManager* handler) {
+  display_manager_ = handler;
+}
+
+void DrmGpuPlatformSupportHost::UnRegisterHandlerForDrmDisplayHostManager() {
+  display_manager_ = nullptr;
+}
+
+bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmDisplayHostManager(
+    const IPC::Message& message) {
+  bool handled = true;
+
+  IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupportHost, message)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_UpdateNativeDisplays,
+                        OnUpdateNativeDisplays)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayConfigured, OnDisplayConfigured)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateReceived, OnHDCPStateReceived)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_HDCPStateUpdated, OnHDCPStateUpdated)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlTaken, OnTakeDisplayControl)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_DisplayControlRelinquished,
+                        OnRelinquishDisplayControl)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+void DrmGpuPlatformSupportHost::OnUpdateNativeDisplays(
+    const std::vector<DisplaySnapshot_Params>& params) {
+  display_manager_->GpuHasUpdatedNativeDisplays(params);
+}
+
+void DrmGpuPlatformSupportHost::OnDisplayConfigured(int64_t display_id,
+                                                    bool status) {
+  display_manager_->GpuConfiguredDisplay(display_id, status);
+}
+
+void DrmGpuPlatformSupportHost::OnHDCPStateReceived(int64_t display_id,
+                                                    bool status,
+                                                    HDCPState state) {
+  display_manager_->GpuReceivedHDCPState(display_id, status, state);
+}
+
+void DrmGpuPlatformSupportHost::OnHDCPStateUpdated(int64_t display_id,
+                                                   bool status) {
+  display_manager_->GpuUpdatedHDCPState(display_id, status);
+}
+
+void DrmGpuPlatformSupportHost::OnTakeDisplayControl(bool status) {
+  display_manager_->GpuTookDisplayControl(status);
+}
+
+void DrmGpuPlatformSupportHost::OnRelinquishDisplayControl(bool status) {
+  display_manager_->GpuRelinquishedDisplayControl(status);
+}
+
+bool DrmGpuPlatformSupportHost::GpuRefreshNativeDisplays() {
+  return Send(new OzoneGpuMsg_RefreshNativeDisplays());
+}
+
+bool DrmGpuPlatformSupportHost::GpuTakeDisplayControl() {
+  return Send(new OzoneGpuMsg_TakeDisplayControl());
+}
+
+bool DrmGpuPlatformSupportHost::GpuRelinquishDisplayControl() {
+  return Send(new OzoneGpuMsg_RelinquishDisplayControl());
+}
+
+bool DrmGpuPlatformSupportHost::GpuAddGraphicsDevice(const base::FilePath& path,
+                                                     base::FileDescriptor fd) {
+  return Send(new OzoneGpuMsg_AddGraphicsDevice(path, fd));
+}
+
+bool DrmGpuPlatformSupportHost::GpuRemoveGraphicsDevice(
+    const base::FilePath& path) {
+  return Send(new OzoneGpuMsg_RemoveGraphicsDevice(path));
+}
+
+// Overlays
+void DrmGpuPlatformSupportHost::RegisterHandlerForDrmOverlayManager(
+    DrmOverlayManager* handler) {
+  overlay_manager_ = handler;
+}
+
+void DrmGpuPlatformSupportHost::UnRegisterHandlerForDrmOverlayManager() {
+  overlay_manager_ = nullptr;
+}
+
+bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmOverlayManager(
+    const IPC::Message& message) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(DrmGpuPlatformSupportHost, message)
+    IPC_MESSAGE_HANDLER(OzoneHostMsg_OverlayCapabilitiesReceived,
+                        OnOverlayResult)
+  // TODO(rjk): insert the extra
+  IPC_END_MESSAGE_MAP()
+  return handled;
+}
+
+void DrmGpuPlatformSupportHost::OnOverlayResult(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlayCheck_Params>& params) {
+  overlay_manager_->GpuSentOverlayResult(widget, params);
+}
+
+bool DrmGpuPlatformSupportHost::GpuCheckOverlayCapabilities(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlayCheck_Params>& new_params) {
+  return Send(new OzoneGpuMsg_CheckOverlayCapabilities(widget, new_params));
+}
+
+// DrmDisplayHost
+bool DrmGpuPlatformSupportHost::GpuConfigureNativeDisplay(
+    int64_t display_id,
+    ui::DisplayMode_Params display_mode,
+    gfx::Point point) {
+  return Send(
+      new OzoneGpuMsg_ConfigureNativeDisplay(display_id, display_mode, point));
+}
+
+bool DrmGpuPlatformSupportHost::GpuDisableNativeDisplay(int64_t display_id) {
+  return Send(new OzoneGpuMsg_DisableNativeDisplay(display_id));
+}
+
+bool DrmGpuPlatformSupportHost::GpuGetHDCPState(int64_t display_id) {
+  return Send(new OzoneGpuMsg_GetHDCPState(display_id));
+}
+
+bool DrmGpuPlatformSupportHost::GpuSetHDCPState(int64_t display_id,
+                                                ui::HDCPState state) {
+  return Send(new OzoneGpuMsg_SetHDCPState(display_id, state));
+}
+
+bool DrmGpuPlatformSupportHost::GpuSetGammaRamp(
+    int64_t display_id,
+    const std::vector<GammaRampRGBEntry>& lut) {
+  return Send(new OzoneGpuMsg_SetGammaRamp(display_id, lut));
+}
+
+bool DrmGpuPlatformSupportHost::GpuDestroyWindow(
+    gfx::AcceleratedWidget widget) {
+  return Send(new OzoneGpuMsg_DestroyWindow(widget));
+}
+
+bool DrmGpuPlatformSupportHost::GpuCreateWindow(gfx::AcceleratedWidget widget) {
+  return Send(new OzoneGpuMsg_CreateWindow(widget));
+}
+
+bool DrmGpuPlatformSupportHost::GpuWindowBoundsChanged(
+    gfx::AcceleratedWidget widget,
+    gfx::Rect bounds) {
+  return Send(new OzoneGpuMsg_WindowBoundsChanged(widget, bounds));
 }
 
 }  // namespace ui

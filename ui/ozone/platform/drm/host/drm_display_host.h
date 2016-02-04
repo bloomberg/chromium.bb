@@ -15,11 +15,11 @@ namespace ui {
 
 struct DisplaySnapshot_Params;
 class DisplaySnapshot;
-class DrmGpuPlatformSupportHost;
+class GpuThreadAdapter;
 
 class DrmDisplayHost : public GpuThreadObserver {
  public:
-  DrmDisplayHost(DrmGpuPlatformSupportHost* sender,
+  DrmDisplayHost(GpuThreadAdapter* sender,
                  const DisplaySnapshot_Params& params,
                  bool is_dummy);
   ~DrmDisplayHost() override;
@@ -48,7 +48,7 @@ class DrmDisplayHost : public GpuThreadObserver {
   // Calls all the callbacks with failure.
   void ClearCallbacks();
 
-  DrmGpuPlatformSupportHost* sender_;  // Not owned.
+  GpuThreadAdapter* sender_;  // Not owned.
 
   scoped_ptr<DisplaySnapshot> snapshot_;
 

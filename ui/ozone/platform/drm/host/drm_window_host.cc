@@ -11,11 +11,9 @@
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/display.h"
-#include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
-#include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
 #include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -24,7 +22,7 @@ namespace ui {
 
 DrmWindowHost::DrmWindowHost(PlatformWindowDelegate* delegate,
                              const gfx::Rect& bounds,
-                             DrmGpuPlatformSupportHost* sender,
+                             GpuThreadAdapter* sender,
                              EventFactoryEvdev* event_factory,
                              DrmCursor* cursor,
                              DrmWindowHostManager* window_manager,
@@ -48,7 +46,7 @@ DrmWindowHost::~DrmWindowHost() {
   cursor_->OnWindowRemoved(widget_);
 
   sender_->RemoveGpuThreadObserver(this);
-  sender_->Send(new OzoneGpuMsg_DestroyWindow(widget_));
+  sender_->GpuDestroyWindow(widget_);
 }
 
 void DrmWindowHost::Initialize() {
@@ -189,7 +187,7 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
 }
 
 void DrmWindowHost::OnGpuThreadReady() {
-  sender_->Send(new OzoneGpuMsg_CreateWindow(widget_));
+  sender_->GpuCreateWindow(widget_);
   SendBoundsChange();
 }
 
@@ -199,7 +197,7 @@ void DrmWindowHost::SendBoundsChange() {
   // Update the cursor before the window so that the cursor stays within the
   // window bounds when the window size shrinks.
   cursor_->CommitBoundsChange(widget_, bounds_, GetCursorConfinedBounds());
-  sender_->Send(new OzoneGpuMsg_WindowBoundsChanged(widget_, bounds_));
+  sender_->GpuWindowBoundsChanged(widget_, bounds_);
 
   overlay_manager_->ResetCache();
 }

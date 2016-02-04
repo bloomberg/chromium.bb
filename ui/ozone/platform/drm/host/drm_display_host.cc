@@ -4,15 +4,15 @@
 
 #include "ui/ozone/platform/drm/host/drm_display_host.h"
 
+#include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
-#include "ui/ozone/common/gpu/ozone_gpu_messages.h"
-#include "ui/ozone/platform/drm/host/drm_gpu_platform_support_host.h"
+#include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
 
 namespace ui {
 
-DrmDisplayHost::DrmDisplayHost(DrmGpuPlatformSupportHost* sender,
+DrmDisplayHost::DrmDisplayHost(GpuThreadAdapter* sender,
                                const DisplaySnapshot_Params& params,
                                bool is_dummy)
     : sender_(sender),
@@ -42,11 +42,10 @@ void DrmDisplayHost::Configure(const DisplayMode* mode,
   configure_callback_ = callback;
   bool status = false;
   if (mode) {
-    status = sender_->Send(new OzoneGpuMsg_ConfigureNativeDisplay(
-        snapshot_->display_id(), GetDisplayModeParams(*mode), origin));
+    status = sender_->GpuConfigureNativeDisplay(
+        snapshot_->display_id(), GetDisplayModeParams(*mode), origin);
   } else {
-    status = sender_->Send(
-        new OzoneGpuMsg_DisableNativeDisplay(snapshot_->display_id()));
+    status = sender_->GpuDisableNativeDisplay(snapshot_->display_id());
   }
 
   if (!status)
@@ -67,7 +66,7 @@ void DrmDisplayHost::OnDisplayConfigured(bool status) {
 
 void DrmDisplayHost::GetHDCPState(const GetHDCPStateCallback& callback) {
   get_hdcp_callback_ = callback;
-  if (!sender_->Send(new OzoneGpuMsg_GetHDCPState(snapshot_->display_id())))
+  if (!sender_->GpuGetHDCPState(snapshot_->display_id()))
     OnHDCPStateReceived(false, HDCP_STATE_UNDESIRED);
 }
 
@@ -86,8 +85,7 @@ void DrmDisplayHost::OnHDCPStateReceived(bool status, HDCPState state) {
 void DrmDisplayHost::SetHDCPState(HDCPState state,
                                   const SetHDCPStateCallback& callback) {
   set_hdcp_callback_ = callback;
-  if (!sender_->Send(
-          new OzoneGpuMsg_SetHDCPState(snapshot_->display_id(), state)))
+  if (!sender_->GpuSetHDCPState(snapshot_->display_id(), state))
     OnHDCPStateUpdated(false);
 }
 
@@ -104,7 +102,7 @@ void DrmDisplayHost::OnHDCPStateUpdated(bool status) {
 }
 
 void DrmDisplayHost::SetGammaRamp(const std::vector<GammaRampRGBEntry>& lut) {
-  sender_->Send(new OzoneGpuMsg_SetGammaRamp(snapshot_->display_id(), lut));
+  sender_->GpuSetGammaRamp(snapshot_->display_id(), lut);
 }
 
 void DrmDisplayHost::OnGpuThreadReady() {

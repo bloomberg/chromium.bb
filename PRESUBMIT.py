@@ -179,7 +179,7 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
         r"^remoting[\\\/]host[\\\/]gnubby_auth_handler_posix\.cc$",
         r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
-            "drm_display_host_manager_core\.cc$",
+            "drm_display_host_manager\.cc$",
       ),
     ),
     (
