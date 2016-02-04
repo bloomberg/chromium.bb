@@ -1480,10 +1480,6 @@ test("unit_tests") {
     "//third_party/zlib/google/test/data/",
     "//tools/metrics/histograms/histograms.xml",
     "$root_out_dir/pyproto/google/",
-    "$root_out_dir/test_data/chrome/browser/resources/google_now/",
-    "$root_out_dir/test_data/chrome/browser/resources/print_preview/",
-    "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
-    "$root_out_dir/test_data/ui/webui/",
     "$root_out_dir/resources.pak",
   ]
   if (is_android || is_linux || is_win) {
@@ -1612,6 +1608,12 @@ test("unit_tests") {
             chrome_tests_unit_gypi_values.chrome_unit_tests_non_mobile_sources,
             ".",
             "//chrome")
+    data += [
+      "$root_out_dir/test_data/chrome/browser/resources/google_now/",
+      "$root_out_dir/test_data/chrome/browser/resources/print_preview/",
+      "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
+      "$root_out_dir/test_data/ui/webui/",
+    ]
   }
 
   if (is_ios || is_chromeos) {
