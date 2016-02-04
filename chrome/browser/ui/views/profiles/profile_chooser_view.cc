@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -42,6 +43,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -1430,6 +1432,8 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
                                   views::kRelatedControlVerticalSpacing);
       layout->StartRow(1, 0);
       layout->AddView(signin_current_profile_link_);
+      content::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
     }
   }
 

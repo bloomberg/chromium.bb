@@ -10,6 +10,7 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,6 +58,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "grit/theme_resources.h"
@@ -1858,6 +1860,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container setFrameSize:NSMakeSize(
         rect.size.width,
         NSMaxY([promo frame]) + 4)];  // Adds a small vertical padding.
+    content::RecordAction(
+        base::UserMetricsAction("Signin_Impression_FromAvatarBubbleSignin"));
   }
 
   return container.autorelease();
