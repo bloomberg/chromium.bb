@@ -220,19 +220,16 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
         size = LayoutSize(m_image->size());
 
     if (sizeType == IntrinsicCorrectedToDPR && m_hasDevicePixelRatioHeaderValue && m_devicePixelRatioHeaderValue > 0)
-        multiplier = 1.0 / m_devicePixelRatioHeaderValue;
+        multiplier = 1 / m_devicePixelRatioHeaderValue;
 
-    if (multiplier == 1.0f)
+    if (multiplier == 1 || m_image->hasRelativeSize())
         return size;
 
     // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-    float widthScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
-    float heightScale = m_image->hasRelativeSize() ? 1.0f : multiplier;
     LayoutSize minimumSize(size.width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
         LayoutUnit(size.height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit()));
-    size.scale(widthScale, heightScale);
+    size.scale(multiplier);
     size.clampToMinimumSize(minimumSize);
-    ASSERT(multiplier != 1.0f || (size.width().fraction() == 0.0f && size.height().fraction() == 0.0f));
     return size;
 }
 
