@@ -2082,6 +2082,7 @@ template("test_runner_script") {
       # development.
       test_runner_args += [
         "--enable-device-cache",
+        "--extract-test-list-from-filter",
         "--num_retries=0",
       ]
     }

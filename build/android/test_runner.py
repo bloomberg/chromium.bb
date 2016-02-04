@@ -257,6 +257,13 @@ def AddGTestOptions(parser):
   group.add_argument('--break-on-failure', '--break_on_failure',
                      dest='break_on_failure', action='store_true',
                      help='Whether to break on failure.')
+  group.add_argument('--extract-test-list-from-filter',
+                     action='store_true',
+                     help='When a test filter is specified, and the list of '
+                          'tests can be determined from it, skip querying the '
+                          'device for the list of all tests. Speeds up local '
+                          'development, but is not safe to use on bots ('
+                          'http://crbug.com/549214')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',

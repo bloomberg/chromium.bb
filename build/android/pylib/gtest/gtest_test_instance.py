@@ -133,9 +133,9 @@ class GtestTestInstance(test_instance.TestInstance):
     # TODO(jbudorick): Support multiple test suites.
     if len(args.suite_name) > 1:
       raise ValueError('Platform mode currently supports only 1 gtest suite')
-    self._suite = args.suite_name[0]
-
+    self._extract_test_list_from_filter = args.extract_test_list_from_filter
     self._shard_timeout = args.shard_timeout
+    self._suite = args.suite_name[0]
 
     incremental_part = '_incremental' if args.incremental_install else ''
     apk_path = os.path.join(
@@ -254,6 +254,10 @@ class GtestTestInstance(test_instance.TestInstance):
   @property
   def test_arguments(self):
     return self._test_arguments
+
+  @property
+  def extract_test_list_from_filter(self):
+    return self._extract_test_list_from_filter
 
   #override
   def TestType(self):

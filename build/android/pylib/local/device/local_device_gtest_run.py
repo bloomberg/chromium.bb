@@ -70,6 +70,31 @@ def PullAppFilesImpl(device, package, files, directory):
     device.PullFile(device_file, host_file)
 
 
+def _ExtractTestsFromFilter(gtest_filter):
+  """Returns the list of tests specified by the given filter.
+
+  Returns:
+    None if the device should be queried for the test list instead.
+  """
+  # Empty means all tests, - means exclude filter.
+  if not gtest_filter or '-' in gtest_filter:
+    return None
+
+  patterns = gtest_filter.split(':')
+  # For a single pattern, allow it even if it has a wildcard so long as the
+  # wildcard comes at the end and there is at least one . to prove the scope is
+  # not too large.
+  # This heuristic is not necessarily faster, but normally is.
+  if len(patterns) == 1 and patterns[0].endswith('*'):
+    no_suffix = patterns[0].rstrip('*')
+    if '*' not in no_suffix and '.' in no_suffix:
+      return patterns
+
+  if '*' in gtest_filter:
+    return None
+  return patterns
+
+
 class _ApkDelegate(object):
   def __init__(self, test_instance):
     self._activity = test_instance.activity
@@ -281,6 +306,14 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
   #override
   def _GetTests(self):
+    if self._test_instance.extract_test_list_from_filter:
+      # When the exact list of tests to run is given via command-line (e.g. when
+      # locally iterating on a specific test), skip querying the device (which
+      # takes ~3 seconds).
+      tests = _ExtractTestsFromFilter(self._test_instance.gtest_filter)
+      if tests:
+        return tests
+
     # Even when there's only one device, it still makes sense to retrieve the
     # test list so that tests can be split up and run in batches rather than all
     # at once (since test output is not streamed).
