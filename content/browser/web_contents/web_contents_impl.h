@@ -245,6 +245,7 @@ class CONTENT_EXPORT WebContentsImpl
       int frame_tree_node_id) override;
   void ForEachFrame(
       const base::Callback<void(RenderFrameHost*)>& on_frame) override;
+  std::vector<RenderFrameHost*> GetAllFrames() override;
   int SendToAllFrames(IPC::Message* message) override;
   RenderViewHostImpl* GetRenderViewHost() const override;
   int GetRoutingID() const override;

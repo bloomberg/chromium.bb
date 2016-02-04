@@ -26,9 +26,9 @@ using content::WebContents;
 namespace {
 
 bool ShouldIsolate(BrowserContext* browser_context,
-                   const IsolationScenario* scenario,
+                   const IsolationScenario& scenario,
                    const GURL& site) {
-  switch (scenario->policy) {
+  switch (scenario.policy) {
     case ISOLATE_NOTHING:
       return false;
     case ISOLATE_ALL_SITES:
@@ -57,52 +57,6 @@ bool ShouldIsolate(BrowserContext* browser_context,
   return true;
 }
 
-// Walk the frame tree and update |scenario|'s data for the given frame. Memoize
-// each frame's computed URL in |frame_urls| so it can be reused when visiting
-// its children.
-void CollectForScenario(std::map<RenderFrameHost*, GURL>* frame_urls,
-                        SiteInstance* primary,
-                        IsolationScenario* scenario,
-                        RenderFrameHost* frame) {
-  BrowserContext* context = primary->GetBrowserContext();
-
-  // Determine the site from the frame's origin, with a fallback to the
-  // frame's URL.  In cases like <iframe sandbox>, we can wind up with an http
-  // URL but a unique origin.  The origin of the resource will still determine
-  // process placement.
-  url::Origin origin = frame->GetLastCommittedOrigin();
-  GURL site = SiteInstance::GetSiteForURL(
-      context, origin.unique() ? frame->GetLastCommittedURL()
-                               : GURL(origin.Serialize()));
-
-  bool should_isolate = ShouldIsolate(context, scenario, site);
-
-  // Treat a subframe as part of its parent site if neither needs isolation.
-  if (!should_isolate && frame->GetParent()) {
-    GURL parent_site = (*frame_urls)[frame->GetParent()];
-    if (!ShouldIsolate(context, scenario, parent_site))
-      site = parent_site;
-  }
-
-  bool process_per_site =
-      site.is_valid() &&
-      RenderProcessHost::ShouldUseProcessPerSite(context, site);
-
-  // If we don't need a dedicated process, and aren't living in a process-
-  // per-site process, we are nothing special: collapse our URL to a dummy
-  // site.
-  if (!process_per_site && !should_isolate)
-    site = GURL("http://");
-
-  // We model process-per-site by only inserting those sites into the first
-  // browsing instance in which they appear.
-  if (scenario->sites.insert(site).second || !process_per_site)
-    scenario->browsing_instance_site_map[primary->GetId()].insert(site);
-
-  // Record our result in |frame_urls| for use by children.
-  (*frame_urls)[frame] = site;
-}
-
 content::SiteInstance* DeterminePrimarySiteInstance(
     content::SiteInstance* instance,
     SiteData* site_data) {
@@ -120,15 +74,6 @@ content::SiteInstance* DeterminePrimarySiteInstance(
   site_data->instances[instance].insert(instance);
 
   return instance;
-}
-
-void CollectCurrentSnapshot(SiteData* site_data, RenderFrameHost* frame) {
-  if (frame->GetParent()) {
-    if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
-      site_data->out_of_process_frames++;
-  }
-
-  DeterminePrimarySiteInstance(frame->GetSiteInstance(), site_data);
 }
 
 }  // namespace
@@ -153,18 +98,58 @@ void SiteDetails::CollectSiteInfo(WebContents* contents,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SiteInstance* primary =
       DeterminePrimarySiteInstance(contents->GetSiteInstance(), site_data);
+  BrowserContext* context = primary->GetBrowserContext();
 
   // Now keep track of how many sites we have in this BrowsingInstance (and
   // overall), including sites in iframes.
   for (IsolationScenario& scenario : site_data->scenarios) {
-    std::map<RenderFrameHost*, GURL> memo;
-    contents->ForEachFrame(
-        base::Bind(&CollectForScenario, base::Unretained(&memo),
-                   base::Unretained(primary), base::Unretained(&scenario)));
+    std::map<RenderFrameHost*, GURL> frame_urls;
+    for (RenderFrameHost* frame : contents->GetAllFrames()) {
+      // Determine the site from the frame's origin, with a fallback to the
+      // frame's URL.  In cases like <iframe sandbox>, we can wind up with an
+      // http URL but a unique origin.  The origin of the resource will still
+      // determine process placement.
+      url::Origin origin = frame->GetLastCommittedOrigin();
+      GURL site = SiteInstance::GetSiteForURL(
+          context, origin.unique() ? frame->GetLastCommittedURL()
+                                   : GURL(origin.Serialize()));
+
+      bool should_isolate = ShouldIsolate(context, scenario, site);
+
+      // Treat a subframe as part of its parent site if neither needs isolation.
+      if (!should_isolate && frame->GetParent()) {
+        GURL parent_site = frame_urls[frame->GetParent()];
+        if (!ShouldIsolate(context, scenario, parent_site))
+          site = parent_site;
+      }
+
+      bool process_per_site =
+          site.is_valid() &&
+          RenderProcessHost::ShouldUseProcessPerSite(context, site);
+
+      // If we don't need a dedicated process, and aren't living in a process-
+      // per-site process, we are nothing special: collapse our URL to a dummy
+      // site.
+      if (!process_per_site && !should_isolate)
+        site = GURL("http://");
+
+      // We model process-per-site by only inserting those sites into the first
+      // browsing instance in which they appear.
+      if (scenario.sites.insert(site).second || !process_per_site)
+        scenario.browsing_instance_site_map[primary->GetId()].insert(site);
+
+      // Record our result in |frame_urls| for use by children.
+      frame_urls[frame] = site;
+    }
   }
 
-  contents->ForEachFrame(
-      base::Bind(&CollectCurrentSnapshot, base::Unretained(site_data)));
+  for (RenderFrameHost* frame : contents->GetAllFrames()) {
+    if (frame->GetParent()) {
+      if (frame->GetSiteInstance() != frame->GetParent()->GetSiteInstance())
+        site_data->out_of_process_frames++;
+    }
+    DeterminePrimarySiteInstance(frame->GetSiteInstance(), site_data);
+  }
 }
 
 void SiteDetails::UpdateHistograms(

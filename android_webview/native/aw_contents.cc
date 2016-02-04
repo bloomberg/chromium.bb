@@ -137,13 +137,6 @@ class AwContentsUserData : public base::SupportsUserData::Data {
 
 base::subtle::Atomic32 g_instance_count = 0;
 
-void OnIoThreadClientReady(content::RenderFrameHost* rfh) {
-  int render_process_id = rfh->GetProcess()->GetID();
-  int render_frame_id = rfh->GetRoutingID();
-  AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
-      render_process_id, render_frame_id);
-}
-
 }  // namespace
 
 // static
@@ -245,7 +238,12 @@ void AwContents::SetJavaPeers(
           env, intercept_navigation_delegate)));
 
   // Finally, having setup the associations, release any deferred requests
-  web_contents_->ForEachFrame(base::Bind(&OnIoThreadClientReady));
+  for (content::RenderFrameHost* rfh : web_contents_->GetAllFrames()) {
+    int render_process_id = rfh->GetProcess()->GetID();
+    int render_frame_id = rfh->GetRoutingID();
+    AwResourceDispatcherHostDelegate::OnIoThreadClientReady(render_process_id,
+                                                            render_frame_id);
+  }
 }
 
 void AwContents::SetSaveFormData(bool enabled) {

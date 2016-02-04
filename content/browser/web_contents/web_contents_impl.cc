@@ -185,24 +185,6 @@ bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
   return false;
 }
 
-void SendToAllFramesInternal(int* number_of_messages,
-                             IPC::Message* message,
-                             RenderFrameHost* rfh) {
-  *number_of_messages = *number_of_messages + 1;
-  IPC::Message* message_copy = new IPC::Message(*message);
-  message_copy->set_routing_id(rfh->GetRoutingID());
-  rfh->Send(message_copy);
-}
-
-void AddRenderWidgetHostViewToSet(std::set<RenderWidgetHostView*>* set,
-                                  RenderFrameHost* rfh) {
-  RenderWidgetHostView* rwhv = static_cast<RenderFrameHostImpl*>(rfh)
-                                   ->frame_tree_node()
-                                   ->render_manager()
-                                   ->GetRenderWidgetHostView();
-  set->insert(rwhv);
-}
-
 void SetAccessibilityModeOnFrame(AccessibilityMode mode,
                                  RenderFrameHost* frame_host) {
   static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
@@ -789,10 +771,21 @@ void WebContentsImpl::ForEachFrame(
   }
 }
 
+std::vector<RenderFrameHost*> WebContentsImpl::GetAllFrames() {
+  std::vector<RenderFrameHost*> frame_hosts;
+  for (FrameTreeNode* node : frame_tree_.Nodes())
+    frame_hosts.push_back(node->current_frame_host());
+  return frame_hosts;
+}
+
 int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
   int number_of_messages = 0;
-  ForEachFrame(
-      base::Bind(&SendToAllFramesInternal, &number_of_messages, message));
+  for (RenderFrameHost* rfh : GetAllFrames()) {
+    ++number_of_messages;
+    IPC::Message* message_copy = new IPC::Message(*message);
+    message_copy->set_routing_id(rfh->GetRoutingID());
+    rfh->Send(message_copy);
+  }
   delete message;
   return number_of_messages;
 }
@@ -915,10 +908,12 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
 }
 
 void WebContentsImpl::EnableTreeOnlyAccessibilityMode() {
-  if (GetAccessibilityMode() != AccessibilityModeOff)
-    ForEachFrame(base::Bind(&ResetAccessibility));
-  else
+  if (GetAccessibilityMode() != AccessibilityModeOff) {
+    for (RenderFrameHost* rfh : GetAllFrames())
+      ResetAccessibility(rfh);
+  } else {
     AddAccessibilityMode(AccessibilityModeTreeOnly);
+  }
 }
 
 bool WebContentsImpl::IsTreeOnlyAccessibilityModeForTesting() const {
@@ -1507,8 +1502,13 @@ WebContentsImpl::GetRenderWidgetHostViewsInTree() {
   if (ShowingInterstitialPage()) {
     set.insert(GetRenderWidgetHostView());
   } else {
-    ForEachFrame(
-        base::Bind(&AddRenderWidgetHostViewToSet, base::Unretained(&set)));
+    for (RenderFrameHost* rfh : GetAllFrames()) {
+      RenderWidgetHostView* rwhv = static_cast<RenderFrameHostImpl*>(rfh)
+                                       ->frame_tree_node()
+                                       ->render_manager()
+                                       ->GetRenderWidgetHostView();
+      set.insert(rwhv);
+    }
   }
   return set;
 }
