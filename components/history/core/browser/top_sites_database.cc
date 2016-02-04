@@ -277,9 +277,8 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     return;
   }
 
-  // The |1| is because v2 [thumbnails] has one less column than v3 did.  In the
-  // v2 case the column will get default values.
-  if (!recovery->AutoRecoverTable("thumbnails", 1, &thumbnails_recovered)) {
+  // In the v2 case the missing column will get default values.
+  if (!recovery->AutoRecoverTable("thumbnails", &thumbnails_recovered)) {
     sql::Recovery::Rollback(std::move(recovery));
     RecordRecoveryEvent(RECOVERY_EVENT_FAILED_AUTORECOVER_THUMBNAILS);
     return;

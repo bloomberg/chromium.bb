@@ -349,7 +349,6 @@ void Recovery::Shutdown(Recovery::Disposition raze) {
 }
 
 bool Recovery::AutoRecoverTable(const char* table_name,
-                                size_t extend_columns,
                                 size_t* rows_recovered) {
   // Query the info for the recovered table in database [main].
   std::string query(
@@ -458,14 +457,6 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   // If the PRIMARY KEY was a single INTEGER column, convert it to ROWID.
   if (pk_column_count == 1 && !rowid_decl.empty())
     create_column_decls[rowid_ofs] = rowid_decl;
-
-  // Additional columns accept anything.
-  // TODO(shess): ignoreN isn't well namespaced.  But it will fail to
-  // execute in case of conflicts.
-  for (size_t i = 0; i < extend_columns; ++i) {
-    create_column_decls.push_back(
-        base::StringPrintf("ignore%" PRIuS " ANY", i));
-  }
 
   std::string recover_create(base::StringPrintf(
       "CREATE VIRTUAL TABLE temp.recover_%s USING recover(corrupt.%s, %s)",

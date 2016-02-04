@@ -429,7 +429,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTable) {
         ExecuteWithResults(recovery->db(), kTempSchemaSql, "|", "\n"));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(2u, rows);
 
     // Test that any additional temp tables were cleaned up.
@@ -452,7 +452,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTable) {
 
     // TODO(shess): Should this failure implicitly lead to Raze()?
     size_t rows = 0;
-    EXPECT_FALSE(recovery->AutoRecoverTable("y", 0, &rows));
+    EXPECT_FALSE(recovery->AutoRecoverTable("y", &rows));
 
     sql::Recovery::Unrecoverable(std::move(recovery));
   }
@@ -509,7 +509,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithDefault) {
     ASSERT_TRUE(recovery->db()->Execute(final_schema.c_str()));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(4u, rows);
 
     ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
@@ -545,7 +545,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableNullFilter) {
     ASSERT_TRUE(recovery->db()->Execute(kFinalSchema));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(1u, rows);
 
     ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
@@ -584,7 +584,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithRowid) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(2u, rows);
 
     ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
@@ -629,7 +629,7 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithCompoundKey) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(3u, rows);
 
     ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
@@ -642,29 +642,40 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableWithCompoundKey) {
   ASSERT_EQ(orig_data, ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
-// Test |extend_columns| support.
-TEST_F(SQLRecoveryTest, AutoRecoverTableExtendColumns) {
+// Test recovering from a table with fewer columns than the target.
+TEST_F(SQLRecoveryTest, AutoRecoverTableMissingColumns) {
   const char kCreateSql[] = "CREATE TABLE x (id INTEGER PRIMARY KEY, t0 TEXT)";
+  const char kAlterSql[] = "ALTER TABLE x ADD COLUMN t1 TEXT DEFAULT 't'";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (1, 'This is')"));
   ASSERT_TRUE(db().Execute("INSERT INTO x VALUES (2, 'That was')"));
 
-  // Save aside a copy of the original schema and data.
+  // Generate the expected info by faking a table to match what recovery will
+  // create.
   const std::string orig_schema(GetSchema(&db()));
   const char kXSql[] = "SELECT * FROM x ORDER BY 1";
-  const std::string orig_data(ExecuteWithResults(&db(), kXSql, "|", "\n"));
+  std::string expected_schema;
+  std::string expected_data;
+  {
+    ASSERT_TRUE(db().BeginTransaction());
+    ASSERT_TRUE(db().Execute(kAlterSql));
 
-  // Modify the table to add a column, and add data to that column.
-  ASSERT_TRUE(db().Execute("ALTER TABLE x ADD COLUMN t1 TEXT"));
-  ASSERT_TRUE(db().Execute("UPDATE x SET t1 = 'a test'"));
-  ASSERT_NE(orig_schema, GetSchema(&db()));
-  ASSERT_NE(orig_data, ExecuteWithResults(&db(), kXSql, "|", "\n"));
+    expected_schema = GetSchema(&db());
+    expected_data = ExecuteWithResults(&db(), kXSql, "|", "\n");
 
+    db().RollbackTransaction();
+  }
+
+  // Following tests are pointless if the rollback didn't work.
+  ASSERT_EQ(orig_schema, GetSchema(&db()));
+
+  // Recover the previous version of the table into the altered version.
   {
     scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
+    ASSERT_TRUE(recovery->db()->Execute(kAlterSql));
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 1, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(2u, rows);
     ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
   }
@@ -672,8 +683,8 @@ TEST_F(SQLRecoveryTest, AutoRecoverTableExtendColumns) {
   // Since the database was not corrupt, the entire schema and all
   // data should be recovered.
   ASSERT_TRUE(Reopen());
-  ASSERT_EQ(orig_schema, GetSchema(&db()));
-  ASSERT_EQ(orig_data, ExecuteWithResults(&db(), kXSql, "|", "\n"));
+  ASSERT_EQ(expected_schema, GetSchema(&db()));
+  ASSERT_EQ(expected_data, ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
 // Recover a golden file where an interior page has been manually modified so
@@ -697,7 +708,7 @@ TEST_F(SQLRecoveryTest, Bug387868) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     size_t rows = 0;
-    EXPECT_TRUE(recovery->AutoRecoverTable("x", 0, &rows));
+    EXPECT_TRUE(recovery->AutoRecoverTable("x", &rows));
     EXPECT_EQ(43u, rows);
 
     // Successfully recovered.
