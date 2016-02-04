@@ -1016,10 +1016,14 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
       if not pre_build_passed:
         logging.PrintBuildbotStepText('Pre-patch build failed.')
 
-    # Make sure the chroot version is valid.
     lkgm_version = self._GetLGKMVersionFromManifest(next_manifest)
     chroot_manager = chroot_lib.ChrootManager(self._build_root)
-    chroot_manager.EnsureChrootAtVersion(lkgm_version)
+    # Make sure the chroot version is valid only on non-incremental builders.
+    # What was happening was by ensuring the chroot was at a specific version,
+    # on incremental builders it was actually clearing the chroot, hence we
+    # check for that now.
+    if not self._run.config.build_before_patching:
+      chroot_manager.EnsureChrootAtVersion(lkgm_version)
 
     # Clear the chroot version as we are in the middle of building it.
     chroot_manager.ClearChrootVersion()
