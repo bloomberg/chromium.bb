@@ -635,16 +635,6 @@ For Chromium, processes used to display diagnostics information (such as this "a
         </message>
       </if>
 
-      <!-- iOS Upgrade available info bar-->
-      <if expr="is_ios">
-        <message name="IDS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
-          Chromium just got better! A new version is available.
-        </message>
-        <message name="IDS_UPGRADE_AVAILABLE_BUTTON" desc="Diplayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
-          Update
-        </message>
-      </if>
-
       <!-- Extension/App install prompt -->
       <message name="IDS_EXTENSION_INLINE_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension or app inline installation prompt window">
         Add to Chromium
