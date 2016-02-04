@@ -321,7 +321,16 @@ void DownloadTargetDeterminer::ReserveVirtualPathDone(
   DVLOG(20) << "Reserved path: " << path.AsUTF8Unsafe()
             << " Verified:" << verified;
   DCHECK_EQ(STATE_PROMPT_USER_FOR_DOWNLOAD_PATH, next_state_);
-
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  // If we cannot reserve the path and the WebContent is already gone, there is
+  // no way to prompt user for an infobar. This could happen when user try to
+  // resume a download after another process has overwritten the same file.
+  // TODO(qinmin): show an error toast to the user. http://crbug.com/581106.
+  if (!verified && !download_->GetWebContents()) {
+    CancelOnFailureAndDeleteSelf();
+    return;
+  }
+#endif
   should_prompt_ = (should_prompt_ || !verified);
   virtual_path_ = path;
   DoLoop();
@@ -771,6 +780,14 @@ Profile* DownloadTargetDeterminer::GetProfile() const {
 bool DownloadTargetDeterminer::ShouldPromptForDownload(
     const base::FilePath& filename) const {
   if (is_resumption_) {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    // In case of file error, prompting user with the overwritten infobar
+    // won't solve the issue. Return false so that resumption will fail again
+    // if user hasn't performed any action to resolve file errors.
+    // TODO(qinmin): show an error toast to warn user that resume cannot
+    // continue due to file errors. http://crbug.com/581106.
+    return false;
+#else
     // For resumed downloads, if the target disposition or prefs require
     // prompting, the user has already been prompted. Try to respect the user's
     // selection, unless we've discovered that the target path cannot be used
@@ -779,6 +796,7 @@ bool DownloadTargetDeterminer::ShouldPromptForDownload(
     return (reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED ||
             reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE ||
             reason == content::DOWNLOAD_INTERRUPT_REASON_FILE_TOO_LARGE);
+#endif
   }
 
   // If the download path is forced, don't prompt.

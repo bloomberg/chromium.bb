@@ -1481,8 +1481,12 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
        download_util::NOT_DANGEROUS, "http://example.com/foo.txt", "text/plain",
        FILE_PATH_LITERAL(""),
 
-       FILE_PATH_LITERAL("foo.txt"), DownloadItem::TARGET_DISPOSITION_PROMPT,
-
+       FILE_PATH_LITERAL("foo.txt"),
+#if BUILDFLAG(ANDROID_JAVA_UI)
+       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+#else
+       DownloadItem::TARGET_DISPOSITION_PROMPT,
+#endif
        EXPECT_CRDOWNLOAD},
 
       {// 1: Save_As Safe
@@ -1490,18 +1494,34 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
        download_util::NOT_DANGEROUS, "http://example.com/foo.txt", "text/plain",
        FILE_PATH_LITERAL(""),
 
-       kInitialPath, DownloadItem::TARGET_DISPOSITION_PROMPT,
+       kInitialPath,
+       DownloadItem::TARGET_DISPOSITION_PROMPT,
 
        EXPECT_CRDOWNLOAD},
 
       {// 2: Automatic Dangerous
-       AUTOMATIC, content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-       download_util::NOT_DANGEROUS, "http://example.com/foo.crx", "",
+       AUTOMATIC,
+#if BUILDFLAG(ANDROID_JAVA_UI)
+       // If we don't prompt user, the file will be treated as dangerous.
+       content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+       download_util::ALLOW_ON_USER_GESTURE,
+#else
+       content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+       download_util::NOT_DANGEROUS,
+#endif
+       "http://example.com/foo.crx", "",
        FILE_PATH_LITERAL(""),
 
-       FILE_PATH_LITERAL("foo.crx"), DownloadItem::TARGET_DISPOSITION_PROMPT,
-
-       EXPECT_CRDOWNLOAD},
+       FILE_PATH_LITERAL("foo.crx"),
+#if BUILDFLAG(ANDROID_JAVA_UI)
+       DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+       // Dangerous download will have an unconfirmed intermediate file name.
+       EXPECT_UNCONFIRMED,
+#else
+       DownloadItem::TARGET_DISPOSITION_PROMPT,
+       EXPECT_CRDOWNLOAD,
+#endif
+      },
   };
 
   // The test assumes that .xml files have a danger level of
@@ -1523,7 +1543,12 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
     EXPECT_CALL(*delegate(), NotifyExtensions(_, _, _))
         .Times(test_case.test_type == AUTOMATIC ? 1 : 0);
     EXPECT_CALL(*delegate(), ReserveVirtualPath(_, expected_path, false, _, _));
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, expected_path, _))
+        .Times(0);
+#else
     EXPECT_CALL(*delegate(), PromptUserForDownloadPath(_, expected_path, _));
+#endif
     EXPECT_CALL(*delegate(), DetermineLocalPath(_, expected_path, _));
     EXPECT_CALL(*delegate(), CheckDownloadUrl(_, expected_path, _));
     RunTestCase(test_case, GetPathInDownloadDir(kInitialPath), item.get());
