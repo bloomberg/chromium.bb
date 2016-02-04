@@ -59717,7 +59717,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The content type when user chooses save link context menu option
   </summary>
-  <int value="0" label="Unkown"/>
+  <int value="0" label="Unknown"/>
   <int value="1" label="Text"/>
   <int value="2" label="Image"/>
   <int value="3" label="Audio"/>
