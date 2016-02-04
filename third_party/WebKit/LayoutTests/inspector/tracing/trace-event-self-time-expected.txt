@@ -5,21 +5,23 @@ Layout: 220 50.00/50.00
 Program: 400 40.00/100.00
 EventDispatch: 410 40.00/60.00
 FunctionCall: 420 1.69/10.00
-JSSample: 421 0.00/0.00
 JSFrame: 421 4.79/8.31
+JSSample: 421 0.00/0.00
 JSSample: 422 0.00/0.00
 JSFrame: 423 2.23/2.23
 JSSample: 423 0.00/0.00
 JSSample: 424 0.00/0.00
 JSSample: 425 0.00/0.00
-JSSample: 426 0.00/0.00
 JSFrame: 426 1.28/1.28
+JSSample: 426 0.00/0.00
 JSSample: 427 0.00/0.00
 JSSample: 428 0.00/0.00
 JSSample: 429 0.00/0.00
 FunctionCall: 440 10.00/10.00
+Animation: 445 0.00/800.00
 timestamp: 450 0.00/895.00
 Program: 1200 300.00/300.00
+Animation: 1245 0.00/0.00
 timestamp: 1345 0.00/0.00
 CpuProfile: 1500 0.00/0.00
 

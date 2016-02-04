@@ -288,7 +288,6 @@ function test()
     tracingTimelineModel._addCpuProfile(WebInspector.targetManager.mainTarget().id(), cpuProfile);
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var events = tracingTimelineModel.inspectedTargetEvents();
-    InspectorTest.assertEquals(24, events.length);
     events.forEach(function(e) {
         InspectorTest.addResult(e.name + ": " + e.startTime + " " + (e.selfTime || 0).toFixed(2) + "/" + (e.duration || 0).toFixed(2));
     });
