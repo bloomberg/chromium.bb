@@ -1858,7 +1858,8 @@ INSTANTIATE_TEST_CASE_P(
 
 // Per pixel tests, all sizes are small so that we can print
 // out the generated bitmaps.
-TEST_F(GLHelperPixelTest, ScaleTest) {
+// Flaky. http://crbug.com/583384
+TEST_F(GLHelperPixelTest, DISABLED_ScaleTest) {
   int sizes[] = {3, 6, 16};
   for (int flip = 0; flip <= 1; flip++) {
     for (size_t q_index = 0; q_index < arraysize(kQualities); q_index++) {
@@ -1888,7 +1889,8 @@ TEST_F(GLHelperPixelTest, ScaleTest) {
 
 // Per pixel tests, all sizes are small so that we can print
 // out the generated bitmaps.
-TEST_F(GLHelperPixelTest, CropScaleReadbackAndCleanTextureTest) {
+// Flaky. http://crbug.com/583384
+TEST_F(GLHelperPixelTest, DISABLED_CropScaleReadbackAndCleanTextureTest) {
   const int kSizes[] = {3, 6, 16};
   const SkColorType kColorTypes[] = {
       kAlpha_8_SkColorType, kRGBA_8888_SkColorType, kBGRA_8888_SkColorType};
