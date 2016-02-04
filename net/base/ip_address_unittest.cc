@@ -124,18 +124,18 @@ TEST(IPAddressTest, FromIPLiteral_IPv6) {
   EXPECT_EQ("1:abcd::3:4:ff", address.ToString());
 }
 
-TEST(IPAddressTest, IsIPv4Mapped) {
+TEST(IPAddressTest, IsIPv4MappedIPv6) {
   IPAddress ipv4_address;
   EXPECT_TRUE(IPAddress::FromIPLiteral("192.168.0.1", &ipv4_address));
-  EXPECT_FALSE(ipv4_address.IsIPv4Mapped());
+  EXPECT_FALSE(ipv4_address.IsIPv4MappedIPv6());
 
   IPAddress ipv6_address;
   EXPECT_TRUE(IPAddress::FromIPLiteral("::1", &ipv4_address));
-  EXPECT_FALSE(ipv6_address.IsIPv4Mapped());
+  EXPECT_FALSE(ipv6_address.IsIPv4MappedIPv6());
 
   IPAddress ipv4mapped_address;
   EXPECT_TRUE(IPAddress::FromIPLiteral("::ffff:0101:1", &ipv4mapped_address));
-  EXPECT_TRUE(ipv4mapped_address.IsIPv4Mapped());
+  EXPECT_TRUE(ipv4mapped_address.IsIPv4MappedIPv6());
 }
 
 TEST(IPAddressTest, IsEqual) {
@@ -164,6 +164,57 @@ TEST(IPAddressTest, LessThan) {
   EXPECT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip_address3));
   EXPECT_FALSE(ip_address1 < ip_address3);
   EXPECT_FALSE(ip_address3 < ip_address1);
+}
+
+TEST(IPAddressTest, IPAddressToStringWithPort) {
+  IPAddress address1;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("0.0.0.0", &address1));
+  EXPECT_EQ("0.0.0.0:3", IPAddressToStringWithPort(address1, 3));
+
+  IPAddress address2;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("192.168.0.1", &address2));
+  EXPECT_EQ("192.168.0.1:99", IPAddressToStringWithPort(address2, 99));
+
+  IPAddress address3;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("fedc:ba98::", &address3));
+  EXPECT_EQ("[fedc:ba98::]:8080", IPAddressToStringWithPort(address3, 8080));
+}
+
+TEST(IPAddressTest, IPAddressToPackedString) {
+  IPAddress ipv4_address;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("4.31.198.44", &ipv4_address));
+  std::string expected_ipv4_address("\x04\x1f\xc6\x2c", 4);
+  EXPECT_EQ(expected_ipv4_address, IPAddressToPackedString(ipv4_address));
+
+  IPAddress ipv6_address;
+  EXPECT_TRUE(
+      IPAddress::FromIPLiteral("2001:0700:0300:1800::000f", &ipv6_address));
+  std::string expected_ipv6_address(
+      "\x20\x01\x07\x00\x03\x00\x18\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x0f",
+      16);
+  EXPECT_EQ(expected_ipv6_address, IPAddressToPackedString(ipv6_address));
+}
+
+TEST(IPAddressTest, ConvertIPv4ToIPv4MappedIPv6) {
+  IPAddress ipv4_number;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("192.168.0.1", &ipv4_number));
+
+  IPAddress ipv6_number = ConvertIPv4ToIPv4MappedIPv6(ipv4_number);
+
+  // ::ffff:192.168.0.1
+  EXPECT_EQ("::ffff:c0a8:1", ipv6_number.ToString());
+}
+
+TEST(IPAddressTest, ConvertIPv4MappedIPv6ToIPv4) {
+  IPAddress ipv4mapped_number;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("::ffff:c0a8:1", &ipv4mapped_number));
+
+  IPAddress expected;
+  EXPECT_TRUE(IPAddress::FromIPLiteral("192.168.0.1", &expected));
+
+  IPAddress result = ConvertIPv4MappedIPv6ToIPv4(ipv4mapped_number);
+  EXPECT_EQ(expected, result);
 }
 
 }  // anonymous namespace

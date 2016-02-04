@@ -47,7 +47,7 @@ bool IPAddress::IsZero() const {
   return !empty();
 }
 
-bool IPAddress::IsIPv4Mapped() const {
+bool IPAddress::IsIPv4MappedIPv6() const {
   return net::IsIPv4Mapped(ip_address_);
 }
 
@@ -81,6 +81,22 @@ bool IPAddress::operator<(const IPAddress& that) const {
   }
 
   return ip_address_ < that.ip_address_;
+}
+
+std::string IPAddressToStringWithPort(const IPAddress& address, uint16_t port) {
+  return IPAddressToStringWithPort(address.bytes(), port);
+}
+
+std::string IPAddressToPackedString(const IPAddress& address) {
+  return IPAddressToPackedString(address.bytes());
+}
+
+IPAddress ConvertIPv4ToIPv4MappedIPv6(const IPAddress& address) {
+  return IPAddress(ConvertIPv4NumberToIPv6Number(address.bytes()));
+}
+
+IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address) {
+  return IPAddress(ConvertIPv4MappedToIPv4(address.bytes()));
 }
 
 }  // namespace net

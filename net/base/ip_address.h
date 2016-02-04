@@ -60,7 +60,7 @@ class NET_EXPORT IPAddress {
   bool IsZero() const;
 
   // Returns true if |ip_address_| is an IPv4-mapped IPv6 address.
-  bool IsIPv4Mapped() const;
+  bool IsIPv4MappedIPv6() const;
 
   // The size in bytes of |ip_address_|.
   size_t size() const { return ip_address_.size(); }
@@ -92,6 +92,26 @@ class NET_EXPORT IPAddress {
 
   // This class is copyable and assignable.
 };
+
+// TODO(Martijnc): These utility functions currently forward the calls to
+// the IPAddressNumber implementations. Move the implementations over when
+// the IPAddressNumber migration is complete. https://crbug.com/496258.
+
+// Returns the canonical string representation of an IP address along with its
+// port. For example: "192.168.0.1:99" or "[::1]:80".
+NET_EXPORT std::string IPAddressToStringWithPort(const IPAddress& address,
+                                                 uint16_t port);
+
+// Returns the address as a sequence of bytes in network-byte-order.
+NET_EXPORT std::string IPAddressToPackedString(const IPAddress& address);
+
+// Converts an IPv4 address to an IPv4-mapped IPv6 address.
+// For example 192.168.0.1 would be converted to ::ffff:192.168.0.1.
+NET_EXPORT IPAddress ConvertIPv4ToIPv4MappedIPv6(const IPAddress& address);
+
+// Converts an IPv4-mapped IPv6 address to IPv4 address. Should only be called
+// on IPv4-mapped IPv6 addresses.
+NET_EXPORT IPAddress ConvertIPv4MappedIPv6ToIPv4(const IPAddress& address);
 
 }  // namespace net
 
