@@ -85,8 +85,6 @@ void BlimpView::OnSurfaceChanged(JNIEnv* env,
       compositor_->SetVisible(true);
     }
   }
-
-  compositor_->SetSize(gfx::Size(width, height));
 }
 
 void BlimpView::OnSurfaceCreated(JNIEnv* env,

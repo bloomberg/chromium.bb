@@ -74,8 +74,9 @@ class BLIMP_CLIENT_EXPORT RenderWidgetFeature : public BlimpMessageProcessor {
   // Sets a RenderWidgetMessageDelegate to be notified of all incoming
   // RenderWidget related messages for |tab_id| from the engine.  There can only
   // be one RenderWidgetMessageDelegate per tab.
-  void SetDelegate(const int tab_id, RenderWidgetFeatureDelegate* delegate);
-  void RemoveDelegate(const int tab_id);
+  // virtual for testing.
+  virtual void SetDelegate(int tab_id, RenderWidgetFeatureDelegate* delegate);
+  virtual void RemoveDelegate(const int tab_id);
 
  private:
   // BlimpMessageProcessor implementation.

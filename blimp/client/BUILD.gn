@@ -76,8 +76,6 @@ source_set("feature") {
     "feature/compositor/blimp_layer_tree_settings.h",
     "feature/compositor/blimp_output_surface.cc",
     "feature/compositor/blimp_output_surface.h",
-    "feature/compositor/test/dummy_layer_driver.cc",
-    "feature/compositor/test/dummy_layer_driver.h",
     "feature/navigation_feature.cc",
     "feature/navigation_feature.h",
     "feature/render_widget_feature.cc",
@@ -128,6 +126,11 @@ source_set("feature_unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (is_linux) {
+    #TODO(khushalsagar): Run these tests for android.
+    sources += [ "feature/compositor/blimp_compositor_unittest.cc" ]
+  }
 }
 
 if (is_linux && !is_chromeos && use_x11) {

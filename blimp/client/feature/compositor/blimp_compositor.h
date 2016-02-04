@@ -15,6 +15,7 @@
 #include "blimp/client/feature/compositor/blimp_input_manager.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "cc/layers/layer_settings.h"
+#include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/remote_proto_channel.h"
@@ -27,6 +28,9 @@ class Thread;
 }
 
 namespace cc {
+namespace proto {
+class InitializeImpl;
+}
 class LayerTreeHost;
 }
 
@@ -42,7 +46,7 @@ namespace client {
 // surface this compositor draws to is defined by the gfx::AcceleratedWidget set
 // by SetAcceleratedWidget().  This class should only be accessed from the main
 // thread.  Any interaction with the compositing thread should happen through
-// the LayerTreeHost or RemoteChannelImpl.
+// the LayerTreeHost.
 class BLIMP_CLIENT_EXPORT BlimpCompositor
     : public cc::LayerTreeHostClient,
       public cc::RemoteProtoChannel,
@@ -56,18 +60,11 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
 
   ~BlimpCompositor() override;
 
-  // Default layer settings for all Blimp layer instances.
-  static cc::LayerSettings LayerSettings();
-
   // Sets whether or not this compositor actually draws to the output surface.
   // Setting this to false will make the compositor drop all of its resources
   // and the output surface.  Setting it to true again will rebuild the output
   // surface from the gfx::AcceleratedWidget (see SetAcceleratedWidget).
   void SetVisible(bool visible);
-
-  // Sets the size of the viewport on the compositor.
-  // TODO(dtrainor): Should this be set from the engine all the time?
-  void SetSize(const gfx::Size& size);
 
   // Lets this compositor know that it can draw to |widget|.  This means that,
   // if this compositor is visible, it will build an output surface and GL
@@ -91,6 +88,8 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   virtual void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
 
  private:
+  friend class BlimpCompositorForTesting;
+
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override;
   void DidBeginMainFrame() override;
@@ -127,15 +126,23 @@ class BLIMP_CLIENT_EXPORT BlimpCompositor
   // BlimpInputManagerClient implementation.
   void SendWebInputEvent(const blink::WebInputEvent& input_event) override;
 
+  // Internal method to correctly set the visibility on the |host_|. It will
+  // make the |host_| visible if |visible| is true and we have a valid |window_|
+  // If |visible_| is false, the host will also release its output surface.
+  void SetVisibleInternal(bool visible);
+
   // Helper method to build the internal CC compositor instance from |message|.
-  void CreateLayerTreeHost(scoped_ptr<cc::proto::CompositorMessage> message);
+  void CreateLayerTreeHost(
+      const cc::proto::InitializeImpl& initialize_message);
+
+  // Helper method to destroy the internal CC compositor instance and all its
+  // associated state.
+  void DestroyLayerTreeHost();
 
   // Creates (if necessary) and returns a TaskRunner for a thread meant to run
   // compositor rendering.
   void HandlePendingOutputSurfaceRequest();
   scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner();
-
-  gfx::Size viewport_size_;
 
   // The scale factor used to convert dp units (device independent pixels) to
   // pixels.

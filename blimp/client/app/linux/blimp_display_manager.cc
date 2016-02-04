@@ -27,7 +27,6 @@ BlimpDisplayManager::BlimpDisplayManager(
       platform_window_(new ui::X11Window(this)) {
   platform_window_->SetBounds(gfx::Rect(window_size));
   platform_window_->Show();
-  blimp_compositor_->SetSize(window_size);
   tab_control_feature_->SetSizeAndScale(platform_window_->GetBounds().size(),
                                         device_pixel_ratio_);
 
@@ -37,7 +36,6 @@ BlimpDisplayManager::BlimpDisplayManager(
 BlimpDisplayManager::~BlimpDisplayManager() {}
 
 void BlimpDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  blimp_compositor_->SetSize(new_bounds.size());
   tab_control_feature_->SetSizeAndScale(new_bounds.size(), device_pixel_ratio_);
 }
 

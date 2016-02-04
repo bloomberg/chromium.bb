@@ -16,7 +16,6 @@
 #include "blimp/client/feature/compositor/blimp_context_provider.h"
 #include "blimp/client/feature/compositor/blimp_layer_tree_settings.h"
 #include "blimp/client/feature/compositor/blimp_output_surface.h"
-#include "blimp/client/feature/compositor/test/dummy_layer_driver.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/common/compositor/blimp_task_graph_runner.h"
 #include "cc/layers/layer.h"
@@ -36,11 +35,6 @@ base::LazyInstance<blimp::BlimpTaskGraphRunner> g_task_graph_runner =
 
 const int kDummyTabId = 0;
 
-// TODO(dtrainor): Replace this when Layer content comes from the server (see
-// crbug.com/527200 for details).
-base::LazyInstance<DummyLayerDriver> g_dummy_layer_driver =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 BlimpCompositor::BlimpCompositor(float dp_to_px,
@@ -51,6 +45,7 @@ BlimpCompositor::BlimpCompositor(float dp_to_px,
       output_surface_request_pending_(false),
       remote_proto_channel_receiver_(nullptr),
       render_widget_feature_(render_widget_feature) {
+  DCHECK(render_widget_feature_);
   render_widget_feature_->SetDelegate(kDummyTabId, this);
 }
 
@@ -71,34 +66,8 @@ BlimpCompositor::~BlimpCompositor() {
 }
 
 void BlimpCompositor::SetVisible(bool visible) {
-  // For testing.  Remove once we bind to the network layer.
-  if (!host_)
-    CreateLayerTreeHost(nullptr);
-
   host_should_be_visible_ = visible;
-  if (!host_ || host_->visible() == visible)
-    return;
-
-  if (visible) {
-    // If visible, show the compositor.  If the compositor had an outstanding
-    // output surface request, trigger the request again so we build the output
-    // surface.
-    host_->SetVisible(true);
-    if (output_surface_request_pending_)
-      HandlePendingOutputSurfaceRequest();
-  } else {
-    // If not visible, hide the compositor and have it drop it's output surface.
-    DCHECK(host_->visible());
-    host_->SetVisible(false);
-    if (!host_->output_surface_lost())
-      host_->ReleaseOutputSurface();
-  }
-}
-
-void BlimpCompositor::SetSize(const gfx::Size& size) {
-  viewport_size_ = size;
-  if (host_)
-    host_->SetViewportSize(viewport_size_);
+  SetVisibleInternal(host_should_be_visible_);
 }
 
 void BlimpCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
@@ -113,7 +82,7 @@ void BlimpCompositor::SetAcceleratedWidget(gfx::AcceleratedWidget widget) {
 
   // This will properly set visibility and will build the output surface if
   // necessary.
-  SetVisible(host_should_be_visible_);
+  SetVisibleInternal(host_should_be_visible_);
 }
 
 void BlimpCompositor::ReleaseAcceleratedWidget() {
@@ -121,7 +90,7 @@ void BlimpCompositor::ReleaseAcceleratedWidget() {
     return;
 
   // Hide the compositor and drop the output surface if necessary.
-  SetVisible(false);
+  SetVisibleInternal(false);
 
   window_ = gfx::kNullAcceleratedWidget;
 }
@@ -183,11 +152,121 @@ void BlimpCompositor::SendCompositorProto(
 }
 
 void BlimpCompositor::OnRenderWidgetInitialized() {
-  DVLOG(1) << "OnRenderWidgetInitialized";
+  // Destroy the state for the current LayerTreeHost. Since a new render widget
+  // has been initialized, we will start receiving compositor messages from
+  // this widget now.
+  if (host_)
+    DestroyLayerTreeHost();
+}
 
+void BlimpCompositor::OnCompositorMessageReceived(
+    scoped_ptr<cc::proto::CompositorMessage> message) {
+  DCHECK(message->has_to_impl());
+  const cc::proto::CompositorMessageToImpl& to_impl_proto =
+      message->to_impl();
+
+  DCHECK(to_impl_proto.has_message_type());
+  switch (to_impl_proto.message_type()) {
+    case cc::proto::CompositorMessageToImpl::UNKNOWN:
+      NOTIMPLEMENTED() << "Ignoring message of UNKNOWN type";
+      break;
+    case cc::proto::CompositorMessageToImpl::INITIALIZE_IMPL:
+      DCHECK(!host_);
+      DCHECK(to_impl_proto.has_initialize_impl_message());
+
+      // Create the remote client LayerTreeHost for the compositor.
+      CreateLayerTreeHost(to_impl_proto.initialize_impl_message());
+      break;
+    case cc::proto::CompositorMessageToImpl::CLOSE_IMPL:
+      DCHECK(host_);
+
+      // Destroy the remote client LayerTreeHost for the compositor.
+      DestroyLayerTreeHost();
+      break;
+    default:
+      // We should have a receiver if we're getting compositor messages that
+      // are not INITIALIZE_IMPL or CLOSE_IMPL.
+      DCHECK(remote_proto_channel_receiver_);
+      remote_proto_channel_receiver_->OnProtoReceived(std::move(message));
+  }
+}
+
+void BlimpCompositor::GenerateLayerTreeSettings(
+    cc::LayerTreeSettings* settings) {
+  PopulateCommonLayerTreeSettings(settings);
+}
+
+void BlimpCompositor::SendWebInputEvent(
+    const blink::WebInputEvent& input_event) {
+  render_widget_feature_->SendInputEvent(kDummyTabId, input_event);
+}
+
+void BlimpCompositor::SetVisibleInternal(bool visible) {
+  if (!host_)
+    return;
+
+  if (visible && window_ != gfx::kNullAcceleratedWidget) {
+    // If we're supposed to be visible and we have a valid
+    // gfx::AcceleratedWidget make our compositor visible. If the compositor
+    // had an outstanding output surface request, trigger the request again so
+    // we build the output surface.
+    host_->SetVisible(true);
+    if (output_surface_request_pending_)
+      HandlePendingOutputSurfaceRequest();
+  } else if (!visible) {
+    // If not visible, hide the compositor and have it drop it's output
+    // surface.
+    host_->SetVisible(false);
+    if (!host_->output_surface_lost()) {
+      host_->ReleaseOutputSurface();
+    }
+  }
+}
+
+void BlimpCompositor::CreateLayerTreeHost(
+    const cc::proto::InitializeImpl& initialize_message) {
+  DCHECK(!host_);
+
+  if (!settings_) {
+    settings_.reset(new cc::LayerTreeSettings);
+
+    // TODO(khushalsagar): The server should selectively send only those
+    // LayerTreeSettings which should remain consistent across the server and
+    // client. Since it currently overrides all settings, ignore them.
+    // See crbug/577985.
+    GenerateLayerTreeSettings(settings_.get());
+  }
+
+  // Create the LayerTreeHost
+  cc::LayerTreeHost::InitParams params;
+  params.client = this;
+  params.task_graph_runner = g_task_graph_runner.Pointer();
+  params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
+  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+  params.settings = settings_.get();
+
+  // TODO(khushalsagar): Add the GpuMemoryBufferManager to params
+
+  host_ =
+      cc::LayerTreeHost::CreateRemoteClient(this /* remote_proto_channel */,
+                                            GetCompositorTaskRunner(), &params);
+
+  // Now that we have a host, set the visiblity on it correctly.
+  SetVisibleInternal(host_should_be_visible_);
+
+  DCHECK(!input_manager_);
+  input_manager_ =
+      BlimpInputManager::Create(this,
+                                base::ThreadTaskRunnerHandle::Get(),
+                                GetCompositorTaskRunner(),
+                                host_->GetInputHandler());
+}
+
+void BlimpCompositor::DestroyLayerTreeHost() {
+  DCHECK(host_);
   // Tear down the output surface connection with the old LayerTreeHost
   // instance.
-  SetVisible(false);
+  SetVisibleInternal(false);
 
   // Destroy the old LayerTreeHost state.
   host_.reset();
@@ -203,75 +282,6 @@ void BlimpCompositor::OnRenderWidgetInitialized() {
 
   // Make sure we don't have a receiver at this point.
   DCHECK(!remote_proto_channel_receiver_);
-
-  // TODO(khushalsagar): re-initialize compositor and input state for the new
-  // render widget.
-  SetVisible(true);
-}
-
-void BlimpCompositor::OnCompositorMessageReceived(
-    scoped_ptr<cc::proto::CompositorMessage> message) {
-  // TODO(dtrainor, khushalsagar): Look into the CompositorMessage.  If it is
-  // initialize or shutdown, create or destroy |host_|.
-
-  // We should have a receiver if we're getting compositor messages that aren't
-  // initialize.
-  DCHECK(remote_proto_channel_receiver_);
-  remote_proto_channel_receiver_->OnProtoReceived(std::move(message));
-}
-
-void BlimpCompositor::GenerateLayerTreeSettings(
-    cc::LayerTreeSettings* settings) {
-  PopulateCommonLayerTreeSettings(settings);
-}
-
-void BlimpCompositor::SendWebInputEvent(
-    const blink::WebInputEvent& input_event) {
-  render_widget_feature_->SendInputEvent(kDummyTabId, input_event);
-}
-
-void BlimpCompositor::CreateLayerTreeHost(
-    scoped_ptr<cc::proto::CompositorMessage> message) {
-  if (!settings_) {
-    settings_.reset(new cc::LayerTreeSettings);
-    GenerateLayerTreeSettings(settings_.get());
-  }
-
-  // Create the LayerTreeHost
-  cc::LayerTreeHost::InitParams params;
-  params.client = this;
-  params.task_graph_runner = g_task_graph_runner.Pointer();
-  params.gpu_memory_buffer_manager = &gpu_memory_buffer_manager_;
-  params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
-  params.settings = settings_.get();
-
-  // TODO(dtrainor): Swap this out with the remote client proxy when
-  // implemented.
-  host_ =
-      cc::LayerTreeHost::CreateThreaded(GetCompositorTaskRunner(), &params);
-
-  // If we're supposed to be visible and we have a valid gfx::AcceleratedWidget
-  // make our compositor visible.
-  if (host_should_be_visible_ && window_ != gfx::kNullAcceleratedWidget)
-    host_->SetVisible(true);
-
-  host_->SetViewportSize(viewport_size_);
-  host_->SetDeviceScaleFactor(device_scale_factor_);
-
-  // For testing, set the dummy Layer.
-  scoped_refptr<cc::Layer> root(
-      cc::Layer::Create(BlimpCompositor::LayerSettings()));
-  host_->SetRootLayer(root);
-  g_dummy_layer_driver.Pointer()->SetParentLayer(root);
-
-  // TODO(khushalsagar): Create this after successful initialization of the
-  // remote client compositor when implemented.
-  DCHECK(!input_manager_);
-  input_manager_ =
-      BlimpInputManager::Create(this,
-                                base::ThreadTaskRunnerHandle::Get(),
-                                GetCompositorTaskRunner(),
-                                host_->GetInputHandler());
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -312,12 +322,6 @@ void BlimpCompositor::HandlePendingOutputSurfaceRequest() {
   host_->SetOutputSurface(
       make_scoped_ptr(new BlimpOutputSurface(context_provider)));
   output_surface_request_pending_ = false;
-}
-
-cc::LayerSettings BlimpCompositor::LayerSettings() {
-  cc::LayerSettings settings;
-  settings.use_compositor_animation_timelines = true;
-  return settings;
 }
 
 }  // namespace client
