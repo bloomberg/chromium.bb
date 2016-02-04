@@ -86,45 +86,29 @@ class V4ProtocolManager : public net::URLFetcherDelegate,
 
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
-  // TODO(kcarattini): Use a custom v4 histogram set.
   enum ResultType {
     // 200 response code means that the server recognized the hash
-    // prefix, while 204 is an empty response indicating that the
-    // server did not recognize it.
-    GET_HASH_STATUS_200,
-    GET_HASH_STATUS_204,
-
-    // Subset of successful responses which returned no full hashes.
-    // This includes the STATUS_204 case, and the *_ERROR cases.
-    GET_HASH_FULL_HASH_EMPTY,
-
-    // Subset of successful responses for which one or more of the
-    // full hashes matched (should lead to an interstitial).
-    GET_HASH_FULL_HASH_HIT,
-
-    // Subset of successful responses which weren't empty and have no
-    // matches.  It means that there was a prefix collision which was
-    // cleared up by the full hashes.
-    GET_HASH_FULL_HASH_MISS,
+    // prefix.
+    GET_HASH_STATUS_200 = 0,
 
     // Subset of successful responses where the response body wasn't parsable.
-    GET_HASH_PARSE_ERROR,
+    GET_HASH_PARSE_ERROR = 1,
 
     // Gethash request failed (network error).
-    GET_HASH_NETWORK_ERROR,
+    GET_HASH_NETWORK_ERROR = 2,
 
-    // Gethash request returned HTTP result code other than 200 or 204.
-    GET_HASH_HTTP_ERROR,
+    // Gethash request returned HTTP result code other than 200.
+    GET_HASH_HTTP_ERROR = 3,
 
     // Gethash attempted during error backoff, no request sent.
-    GET_HASH_BACKOFF_ERROR,
+    GET_HASH_BACKOFF_ERROR = 4,
 
     // Gethash attempted before min wait duration elapsed, no request sent.
-    GET_HASH_MIN_WAIT_DURATION_ERROR,
+    GET_HASH_MIN_WAIT_DURATION_ERROR = 5,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
-    GET_HASH_RESULT_MAX
+    GET_HASH_RESULT_MAX = 6
   };
 
   // Record a GetHash result.

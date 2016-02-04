@@ -40908,18 +40908,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.GetV4HashResult" enum="SB2GetHashResult">
+<histogram name="SafeBrowsing.GetV4HashResult"
+    enum="SafeBrowsingGetV4HashResult">
   <owner>kcarattini@chromium.org</owner>
   <summary>
-    Track return status from V4 GetHash attempts (STATUS_200, STATUS_204,
-    NETWORK_ERROR, HTTP_ERROR, BACKOFF_ERROR, PARSE_ERROR, NETWORK_ERROR,
-    HTTP_ERROR, BACKOFF_ERROR and MIN_WAIT_DURATION_ERROR), whether parsing a
-    200 result failed (PARSE_ERROR), and dispensation of returned values (EMPTY,
-    HIT, MISS). EMPTY means the response had no full hashes, and should contain
-    all of the 204 responses plus all *_ERROR cases.  HIT means that one of the
-    full hashes matched. MISS means that none of the hashes matched (there was a
-    prefix collision). The buckets of this histogram overlap, so the counts
-    cannot be used as percentages.
+    Track return status from V4 GetHash attempts. The buckets of this histogram
+    overlap, so the counts cannot be used as percentages.
   </summary>
 </histogram>
 
@@ -76748,6 +76742,15 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SadTabKind" type="int">
   <int value="0" label="Crash (Aw, Snap!)"/>
   <int value="1" label="Kill (He's dead, Jim!)"/>
+</enum>
+
+<enum name="SafeBrowsingGetV4HashResult" type="int">
+  <int value="0" label="STATUS_200"/>
+  <int value="1" label="PARSE_ERROR (subset of STATUS_200)"/>
+  <int value="2" label="NETWORK_ERROR"/>
+  <int value="3" label="HTTP_ERROR"/>
+  <int value="4" label="BACKOFF_ERROR"/>
+  <int value="5" label="MIN_WAIT_DURATION_ERROR"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult" type="int">
