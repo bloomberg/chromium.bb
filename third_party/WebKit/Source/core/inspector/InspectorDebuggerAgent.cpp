@@ -182,25 +182,12 @@ void InspectorDebuggerAgent::setPauseOnExceptions(ErrorString* errorString, cons
     m_v8DebuggerAgent->setPauseOnExceptions(errorString, inState);
 }
 
-void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& inCallFrameId, const String& inExpression, const String* inObjectGroup, const bool* inIncludeCommandLineAPI, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* inReturnByValue, const bool* inGeneratePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, TypeBuilder::OptOutput<bool>* optOutWasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
+void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& inCallFrameId, const String& inExpression, const String* inObjectGroup, const bool* inIncludeCommandLineAPI, const bool* inDoNotPauseOnExceptionsAndMuteConsole, const bool* inReturnByValue, const bool* inGeneratePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, TypeBuilder::OptOutput<bool>* optOutWasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails)
 {
     MuteConsoleScope<InspectorDebuggerAgent> muteScope;
     if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
         muteScope.enter(this);
     m_v8DebuggerAgent->evaluateOnCallFrame(errorString, inCallFrameId, inExpression, inObjectGroup, inIncludeCommandLineAPI, inDoNotPauseOnExceptionsAndMuteConsole, inReturnByValue, inGeneratePreview, outResult, optOutWasThrown, optOutExceptionDetails);
-}
-
-void InspectorDebuggerAgent::compileScript(ErrorString* errorString, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
-{
-    m_v8DebuggerAgent->compileScript(errorString, inExpression, inSourceURL, inPersistScript, inExecutionContextId, optOutScriptId, optOutExceptionDetails);
-}
-
-void InspectorDebuggerAgent::runScript(ErrorString* errorString, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& optOutExceptionDetails)
-{
-    MuteConsoleScope<InspectorDebuggerAgent> muteScope;
-    if (asBool(inDoNotPauseOnExceptionsAndMuteConsole))
-        muteScope.enter(this);
-    m_v8DebuggerAgent->runScript(errorString, inScriptId, inExecutionContextId, inObjectGroup, inDoNotPauseOnExceptionsAndMuteConsole, outResult, optOutExceptionDetails);
 }
 
 void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int inScopeNumber, const String& inVariableName, const RefPtr<JSONObject>& inNewValue, const String* inCallFrameId, const String* inFunctionObjectId)

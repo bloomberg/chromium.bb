@@ -83,7 +83,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
+        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
     void callFunctionOn(ErrorString*,
                         const String& objectId,
                         const String& expression,
@@ -94,11 +94,13 @@ public:
                         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
                         TypeBuilder::OptOutput<bool>* wasThrown) final;
     void releaseObject(ErrorString*, const String& objectId) final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
+    void compileScript(ErrorString*, const String& inExpression, const String& inSourceURL, bool inPersistScript, int inExecutionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>* optOutScriptId, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
+    void runScript(ErrorString*, const String& inScriptId, int inExecutionContextId, const String* inObjectGroup, const bool* inDoNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& outResult, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& optOutExceptionDetails) override;
 
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;

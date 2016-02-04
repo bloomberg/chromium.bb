@@ -72,7 +72,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
+        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
     void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
@@ -83,22 +83,26 @@ public:
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown) final;
     void releaseObject(ErrorString*, const String& objectId) final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) final;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
     void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
     void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
+    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>*, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void runScript(ErrorString*, const TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
 
 private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;
     void reportExecutionContextDestroyed(v8::Local<v8::Context>) override;
+    PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     RefPtr<JSONObject> m_state;
     InspectorFrontend::Runtime* m_frontend;
     InjectedScriptManager* m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     bool m_enabled;
+    HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
 };
 
 } // namespace blink

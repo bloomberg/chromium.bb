@@ -30,16 +30,22 @@
 
 #include "core/inspector/v8/V8RuntimeAgentImpl.h"
 
+#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
+#include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 
+using blink::TypeBuilder::Runtime::ExceptionDetails;
 using blink::TypeBuilder::Runtime::ExecutionContextDescription;
+using blink::TypeBuilder::Runtime::RemoteObject;
+using blink::TypeBuilder::Runtime::ScriptId;
 
 namespace blink {
 
@@ -70,7 +76,7 @@ V8RuntimeAgentImpl::~V8RuntimeAgentImpl()
 {
 }
 
-void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::evaluate(ErrorString* errorString, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const int* executionContextId, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
 {
     if (!executionContextId) {
         *errorString = "Cannot find default execution context";
@@ -109,7 +115,7 @@ void V8RuntimeAgentImpl::callFunctionOn(ErrorString* errorString, const String& 
     injectedScript->callFunctionOn(errorString, objectId, expression, arguments, asBool(returnByValue), asBool(generatePreview), &result, wasThrown);
 }
 
-void V8RuntimeAgentImpl::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
+void V8RuntimeAgentImpl::getProperties(ErrorString* errorString, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
 {
     OwnPtr<RemoteObjectId> remoteId = RemoteObjectId::parse(objectId);
     if (!remoteId) {
@@ -174,6 +180,93 @@ void V8RuntimeAgentImpl::setCustomObjectFormatterEnabled(ErrorString*, bool enab
     injectedScriptManager()->setCustomObjectFormatterEnabled(enabled);
 }
 
+void V8RuntimeAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
+{
+    if (!m_enabled) {
+        *errorString = "Runtime agent is not enabled";
+        return;
+    }
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+
+    v8::Isolate* isolate = injectedScript->isolate();
+    v8::HandleScope handles(isolate);
+    v8::Context::Scope scope(injectedScript->context());
+    v8::TryCatch tryCatch(isolate);
+    v8::Local<v8::Script> script = m_debugger->compileInternalScript(injectedScript->context(), toV8String(isolate, expression), sourceURL);
+    if (script.IsEmpty()) {
+        v8::Local<v8::Message> message = tryCatch.Message();
+        if (!message.IsEmpty())
+            exceptionDetails = createExceptionDetails(isolate, message);
+        else
+            *errorString = "Script compilation failed";
+        return;
+    }
+
+    if (!persistScript)
+        return;
+
+    String scriptValueId = String::number(script->GetUnboundScript()->GetId());
+    OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(isolate, script));
+    m_compiledScripts.set(scriptValueId, global.release());
+    *scriptId = scriptValueId;
+}
+
+void V8RuntimeAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
+{
+    if (!m_enabled) {
+        *errorString = "Runtime agent is not enabled";
+        return;
+    }
+    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
+    if (!injectedScript) {
+        *errorString = "Inspected frame has gone";
+        return;
+    }
+
+    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
+    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
+        ignoreExceptionsScope.emplace(m_debugger);
+
+    if (!m_compiledScripts.contains(scriptId)) {
+        *errorString = "Script execution failed";
+        return;
+    }
+
+    v8::Isolate* isolate = injectedScript->isolate();
+    v8::HandleScope handles(isolate);
+    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Context::Scope scope(context);
+    OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
+    v8::Local<v8::Script> script = scriptWrapper->Get(isolate);
+
+    if (script.IsEmpty()) {
+        *errorString = "Script execution failed";
+        return;
+    }
+    v8::TryCatch tryCatch(isolate);
+    v8::Local<v8::Value> value;
+    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->client()->runCompiledScript(context, script);
+    if (maybeValue.IsEmpty()) {
+        value = tryCatch.Exception();
+        v8::Local<v8::Message> message = tryCatch.Message();
+        if (!message.IsEmpty())
+            exceptionDetails = createExceptionDetails(isolate, message);
+    } else {
+        value = maybeValue.ToLocalChecked();
+    }
+
+    if (value.IsEmpty()) {
+        *errorString = "Script execution failed";
+        return;
+    }
+
+    result = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
+}
+
 void V8RuntimeAgentImpl::setInspectorState(PassRefPtr<JSONObject> state)
 {
     m_state = state;
@@ -208,6 +301,7 @@ void V8RuntimeAgentImpl::enable(ErrorString* errorString)
 
 void V8RuntimeAgentImpl::disable(ErrorString* errorString)
 {
+    m_compiledScripts.clear();
     m_enabled = false;
 }
 
@@ -234,6 +328,17 @@ void V8RuntimeAgentImpl::reportExecutionContextDestroyed(v8::Local<v8::Context> 
     int contextId = injectedScriptManager()->discardInjectedScriptFor(context);
     if (m_enabled)
         m_frontend->executionContextDestroyed(contextId);
+}
+
+PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
+{
+    RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toWTFStringWithTypeCheck(message->Get()));
+    exceptionDetails->setLine(message->GetLineNumber());
+    exceptionDetails->setColumn(message->GetStartColumn());
+    v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
+    if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
+        exceptionDetails->setStackTrace(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorArray());
+    return exceptionDetails.release();
 }
 
 } // namespace blink

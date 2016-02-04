@@ -45,8 +45,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 
-using blink::TypeBuilder::Debugger::ExceptionDetails;
-using blink::TypeBuilder::Debugger::ScriptId;
 using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
@@ -59,7 +57,6 @@ PassOwnPtrWillBeRawPtr<PageDebuggerAgent> PageDebuggerAgent::create(MainThreadDe
 PageDebuggerAgent::PageDebuggerAgent(MainThreadDebugger* mainThreadDebugger, InspectedFrames* inspectedFrames, InjectedScriptManager* injectedScriptManager)
     : InspectorDebuggerAgent(injectedScriptManager, mainThreadDebugger->debugger(), mainThreadDebugger->contextGroupId(inspectedFrames->root()))
     , m_inspectedFrames(inspectedFrames)
-    , m_injectedScriptManager(injectedScriptManager)
 {
 }
 
@@ -128,54 +125,6 @@ void PageDebuggerAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
         return;
     m_asyncCallTracker->resetAsyncOperations();
     m_v8DebuggerAgent->reset();
-}
-
-void PageDebuggerAgent::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
-{
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-    v8::HandleScope handles(injectedScript->isolate());
-    ExecutionContext* executionContext = toExecutionContext(injectedScript->context());
-    if (!executionContext) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-
-    RefPtrWillBeRawPtr<LocalFrame> protect(toDocument(executionContext)->frame());
-    InspectorDebuggerAgent::compileScript(errorString, expression, sourceURL, persistScript, executionContextId, scriptId, exceptionDetails);
-    if (!scriptId->isAssigned())
-        return;
-
-    String scriptIdValue = scriptId->getValue();
-    if (!scriptIdValue.isEmpty())
-        m_compiledScriptURLs.set(scriptId->getValue(), sourceURL);
-}
-
-void PageDebuggerAgent::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
-{
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-    v8::HandleScope handles(injectedScript->isolate());
-    ExecutionContext* executionContext = toExecutionContext(injectedScript->context());
-    if (!executionContext) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-
-    String sourceURL = m_compiledScriptURLs.take(scriptId);
-    LocalFrame* frame = toDocument(executionContext)->frame();
-    TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data", InspectorEvaluateScriptEvent::data(frame, sourceURL, TextPosition::minimumPosition()));
-
-    RefPtrWillBeRawPtr<LocalFrame> protect(frame);
-    InspectorDebuggerAgent::runScript(errorString, scriptId, executionContextId, objectGroup, doNotPauseOnExceptionsAndMuteConsole, result, exceptionDetails);
-
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
 }
 
 } // namespace blink

@@ -34,8 +34,8 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorDebuggerAgent.h"
 
-using blink::TypeBuilder::Debugger::ExceptionDetails;
-using blink::TypeBuilder::Debugger::ScriptId;
+using blink::TypeBuilder::Runtime::ExceptionDetails;
+using blink::TypeBuilder::Runtime::ScriptId;
 using blink::TypeBuilder::Runtime::RemoteObject;
 
 namespace blink {
@@ -56,8 +56,6 @@ public:
     void enable(ErrorString*) final;
     void disable(ErrorString*) final;
     void restore() final;
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
 
     void didStartProvisionalLoad(LocalFrame*);
     void didClearDocumentOfWindowObject(LocalFrame*);
@@ -71,7 +69,6 @@ private:
     bool canExecuteScripts() const;
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    InjectedScriptManager* m_injectedScriptManager;
     HashMap<String, String> m_compiledScriptURLs;
 };
 

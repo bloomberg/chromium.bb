@@ -43,6 +43,8 @@
 #include "core/page/Page.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
+using blink::TypeBuilder::Runtime::ExceptionDetails;
+
 namespace blink {
 
 PageRuntimeAgent::PageRuntimeAgent(InjectedScriptManager* injectedScriptManager, Client* client, V8Debugger* debugger, InspectedFrames* inspectedFrames)

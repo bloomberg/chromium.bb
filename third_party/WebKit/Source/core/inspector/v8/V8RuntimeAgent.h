@@ -47,7 +47,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) = 0;
+        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) = 0;
     virtual void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
@@ -58,11 +58,13 @@ public:
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown) = 0;
     virtual void releaseObject(ErrorString*, const String& objectId) = 0;
-    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) = 0;
+    virtual void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) = 0;
     virtual void releaseObjectGroup(ErrorString*, const String& objectGroup) = 0;
     virtual void run(ErrorString*) = 0;
     virtual void isRunRequired(ErrorString*, bool* out_result) = 0;
     virtual void setCustomObjectFormatterEnabled(ErrorString*, bool) = 0;
+    virtual void compileScript(ErrorString*, const String& in_expression, const String& in_sourceURL, bool in_persistScript, int in_executionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>* opt_out_scriptId, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& opt_out_exceptionDetails) = 0;
+    virtual void runScript(ErrorString*, const String& in_scriptId, int in_executionContextId, const String* in_objectGroup, const bool* in_doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& out_result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& opt_out_exceptionDetails) = 0;
 
     // Embedder callbacks.
     virtual void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) = 0;

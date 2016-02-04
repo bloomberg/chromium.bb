@@ -821,7 +821,7 @@ InjectedScript.prototype = {
      * @param {*} value
      * @param {string|undefined} objectGroup
      * @param {boolean} generatePreview
-     * @param {!DebuggerAgent.ExceptionDetails=} exceptionDetails
+     * @param {!RuntimeAgent.ExceptionDetails=} exceptionDetails
      * @return {!Object}
      */
     _createThrownValue: function(value, objectGroup, generatePreview, exceptionDetails)

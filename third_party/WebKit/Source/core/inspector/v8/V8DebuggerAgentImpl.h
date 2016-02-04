@@ -99,9 +99,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Debugger::ExceptionDetails>&);
-    void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Debugger::ScriptId>*, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
-    void runScript(ErrorString*, const TypeBuilder::Debugger::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Debugger::ExceptionDetails>&) override;
+        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&);
     void setVariableValue(ErrorString*, int in_scopeNumber, const String& in_variableName, const RefPtr<JSONObject>& in_newValue, const String* in_callFrame, const String* in_functionObjectId);
     void setAsyncCallStackDepth(ErrorString*, int depth);
     void enablePromiseTracker(ErrorString*, const bool* captureStacks);
@@ -185,7 +183,6 @@ private:
 
     void internalSetAsyncCallStackDepth(int);
     void increaseCachedSkipStackGeneration();
-    PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
     using ScriptsMap = HashMap<String, V8DebuggerScript>;
     using BreakpointIdToDebuggerBreakpointIdsMap = HashMap<String, Vector<String>>;
@@ -243,7 +240,6 @@ private:
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
-    HashMap<String, OwnPtr<v8::Global<v8::Script>>> m_compiledScripts;
     HashMap<String, Vector<std::pair<int, int>>> m_blackboxedPositions;
 };
 

@@ -23,7 +23,6 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
-#include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
@@ -35,11 +34,11 @@ using blink::TypeBuilder::Debugger::AsyncOperation;
 using blink::TypeBuilder::Debugger::BreakpointId;
 using blink::TypeBuilder::Debugger::CallFrame;
 using blink::TypeBuilder::Debugger::CollectionEntry;
-using blink::TypeBuilder::Debugger::ExceptionDetails;
+using blink::TypeBuilder::Runtime::ExceptionDetails;
 using blink::TypeBuilder::Debugger::FunctionDetails;
 using blink::TypeBuilder::Debugger::GeneratorObjectDetails;
 using blink::TypeBuilder::Debugger::PromiseDetails;
-using blink::TypeBuilder::Debugger::ScriptId;
+using blink::TypeBuilder::Runtime::ScriptId;
 using blink::TypeBuilder::Debugger::StackTrace;
 using blink::TypeBuilder::Runtime::RemoteObject;
 
@@ -235,7 +234,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_skippedStepFrameCount = 0;
     m_recursionLevelForStepFrame = 0;
     m_asyncOperationNotifications.clear();
-    m_compiledScripts.clear();
     clearStepIntoAsync();
     m_skipAllPauses = false;
     m_enabled = false;
@@ -897,7 +895,7 @@ bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteC
     return true;
 }
 
-void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Debugger::ExceptionDetails>& exceptionDetails)
+void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown, RefPtr<TypeBuilder::Runtime::ExceptionDetails>& exceptionDetails)
 {
     if (!isPaused() || m_currentCallStack.IsEmpty()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -926,87 +924,6 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString, const St
         ignoreExceptionsScope.emplace(m_debugger);
 
     injectedScript->evaluateOnCallFrame(errorString, callStack, isAsync, callFrameId, expression, objectGroup ? *objectGroup : "", asBool(includeCommandLineAPI), asBool(returnByValue), asBool(generatePreview), &result, wasThrown, &exceptionDetails);
-}
-
-void V8DebuggerAgentImpl::compileScript(ErrorString* errorString, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<ScriptId>* scriptId, RefPtr<ExceptionDetails>& exceptionDetails)
-{
-    if (!checkEnabled(errorString))
-        return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-
-    v8::HandleScope handles(injectedScript->isolate());
-    v8::Context::Scope scope(injectedScript->context());
-    v8::TryCatch tryCatch(m_isolate);
-    v8::Local<v8::Script> script = m_debugger->compileInternalScript(injectedScript->context(), toV8String(m_isolate, expression), sourceURL);
-    if (script.IsEmpty()) {
-        v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty())
-            exceptionDetails = createExceptionDetails(m_isolate, message);
-        else
-            *errorString = "Script compilation failed";
-        return;
-    }
-
-    if (!persistScript)
-        return;
-
-    String scriptValueId = String::number(script->GetUnboundScript()->GetId());
-    OwnPtr<v8::Global<v8::Script>> global = adoptPtr(new v8::Global<v8::Script>(m_isolate, script));
-    m_compiledScripts.set(scriptValueId, global.release());
-    *scriptId = scriptValueId;
-}
-
-void V8DebuggerAgentImpl::runScript(ErrorString* errorString, const ScriptId& scriptId, int executionContextId, const String* const objectGroup, const bool* const doNotPauseOnExceptionsAndMuteConsole, RefPtr<RemoteObject>& result, RefPtr<ExceptionDetails>& exceptionDetails)
-{
-    if (!checkEnabled(errorString))
-        return;
-    InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(executionContextId);
-    if (!injectedScript) {
-        *errorString = "Inspected frame has gone";
-        return;
-    }
-
-    Optional<IgnoreExceptionsScope> ignoreExceptionsScope;
-    if (asBool(doNotPauseOnExceptionsAndMuteConsole))
-        ignoreExceptionsScope.emplace(m_debugger);
-
-    if (!m_compiledScripts.contains(scriptId)) {
-        *errorString = "Script execution failed";
-        return;
-    }
-
-    v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Context> context = injectedScript->context();
-    v8::Context::Scope scope(context);
-    OwnPtr<v8::Global<v8::Script>> scriptWrapper = m_compiledScripts.take(scriptId);
-    v8::Local<v8::Script> script = scriptWrapper->Get(m_isolate);
-
-    if (script.IsEmpty()) {
-        *errorString = "Script execution failed";
-        return;
-    }
-    v8::TryCatch tryCatch(m_isolate);
-    v8::Local<v8::Value> value;
-    v8::MaybeLocal<v8::Value> maybeValue = m_debugger->client()->runCompiledScript(context, script);
-    if (maybeValue.IsEmpty()) {
-        value = tryCatch.Exception();
-        v8::Local<v8::Message> message = tryCatch.Message();
-        if (!message.IsEmpty())
-            exceptionDetails = createExceptionDetails(m_isolate, message);
-    } else {
-        value = maybeValue.ToLocalChecked();
-    }
-
-    if (value.IsEmpty()) {
-        *errorString = "Script execution failed";
-        return;
-    }
-
-    result = injectedScript->wrapObject(value, objectGroup ? *objectGroup : "");
 }
 
 void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString, int scopeNumber, const String& variableName, const RefPtr<JSONObject>& newValue, const String* callFrameId, const String* functionObjectId)
@@ -1689,17 +1606,6 @@ void V8DebuggerAgentImpl::reset()
     m_promiseTracker->clear();
     if (m_frontend)
         m_frontend->globalObjectCleared();
-}
-
-PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> V8DebuggerAgentImpl::createExceptionDetails(v8::Isolate* isolate, v8::Local<v8::Message> message)
-{
-    RefPtr<ExceptionDetails> exceptionDetails = ExceptionDetails::create().setText(toWTFStringWithTypeCheck(message->Get()));
-    exceptionDetails->setLine(message->GetLineNumber());
-    exceptionDetails->setColumn(message->GetStartColumn());
-    v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
-    if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-        exceptionDetails->setStackTrace(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorArray());
-    return exceptionDetails.release();
 }
 
 } // namespace blink
