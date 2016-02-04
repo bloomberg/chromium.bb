@@ -54,6 +54,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
             const base::string16& app_name,
             const base::string16& target_name,
             scoped_ptr<DesktopMediaList> model,
+            bool request_audio,
             const DoneCallback& done_callback) override {
     if (!expectation_->cancelled) {
       // Post a task to call the callback asynchronously.

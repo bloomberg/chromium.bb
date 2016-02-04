@@ -31,6 +31,7 @@
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/switches.h"
 #include "media/audio/audio_manager_base.h"
 #include "net/base/url_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
@@ -343,11 +344,25 @@ void DesktopCaptureAccessHandler::HandleRequest(
   loopback_audio_supported = true;
 #endif
 
-  // Audio is only supported for screen capture streams.
+  // This value essentially from the checkbox on picker window, so it
+  // corresponds to user permission.
+  bool audio_permitted = media_id.audio_share;
+
+  // This value essentially from whether getUserMedia requests audio stream.
+  bool audio_requested =
+      request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE;
+
+  // This value shows for a given capture type, whether the system or our code
+  // can support audio sharing. Currently audio is only supported for screen
+  // capture streams.
+  bool audio_supported =
+      media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
+      loopback_audio_supported;
+
+  bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      extensions::switches::kEnableDesktopCaptureAudio);
   bool capture_audio =
-      (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
-       request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
-       loopback_audio_supported);
+      (has_flag ? audio_permitted : true) && audio_requested && audio_supported;
 
   ui = GetDevicesForDesktopCapture(&devices, media_id, capture_audio, true,
                                    GetApplicationTitle(web_contents, extension),

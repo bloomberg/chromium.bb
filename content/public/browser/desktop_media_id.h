@@ -67,6 +67,9 @@ struct CONTENT_EXPORT DesktopMediaID {
   Id aura_id = kNullId;
 #endif
 
+  // This records whether the desktop share has sound or not.
+  bool audio_share = false;
+
   // This id contains information for WebContents capture.
   WebContentsMediaCaptureId web_contents_id;
 };

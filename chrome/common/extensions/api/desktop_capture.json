@@ -10,7 +10,7 @@
       {
         "id": "DesktopCaptureSourceType",
         "type": "string",
-        "enum": ["screen", "window", "tab"],
+        "enum": ["screen", "window", "tab", "audio"],
         "description": "Enum used to define set of desktop media sources used in chooseDesktopMedia()."
       }
     ],

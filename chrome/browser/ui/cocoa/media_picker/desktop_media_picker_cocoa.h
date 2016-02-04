@@ -23,6 +23,7 @@ class DesktopMediaPickerCocoa : public DesktopMediaPicker {
             const base::string16& app_name,
             const base::string16& target_name,
             scoped_ptr<DesktopMediaList> media_list,
+            bool request_audio,
             const DoneCallback& done_callback) override;
 
  private:

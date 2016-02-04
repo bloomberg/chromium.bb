@@ -4,7 +4,7 @@
 
 'use strict';
 
-const DESKTOP_MEDIA = ['screen', 'window'];
+const DESKTOP_MEDIA = ['screen', 'window', 'audio'];
 
 var pending_request_id = null;
 var pc1 = null;

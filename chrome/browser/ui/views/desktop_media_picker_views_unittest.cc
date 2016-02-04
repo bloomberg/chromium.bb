@@ -36,7 +36,7 @@ class DesktopMediaPickerViewsTest : public testing::Test {
 
     picker_views_.reset(new DesktopMediaPickerViews());
     picker_views_->Show(NULL, test_helper_.GetContext(), NULL, app_name,
-                        app_name, std::move(media_list),
+                        app_name, std::move(media_list), false,
                         base::Bind(&DesktopMediaPickerViewsTest::OnPickerDone,
                                    base::Unretained(this)));
   }

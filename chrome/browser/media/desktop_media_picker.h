@@ -40,6 +40,7 @@ class DesktopMediaPicker {
                     const base::string16& app_name,
                     const base::string16& target_name,
                     scoped_ptr<DesktopMediaList> list,
+                    bool request_audio,
                     const DoneCallback& done_callback) = 0;
 
  private:

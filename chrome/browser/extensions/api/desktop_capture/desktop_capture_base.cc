@@ -7,6 +7,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -18,6 +19,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/switches.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
@@ -77,6 +79,8 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
   bool show_screens = false;
   bool show_windows = false;
 
+  bool request_audio = false;
+
   for (auto source_type : sources) {
     switch (source_type) {
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_NONE:
@@ -94,6 +98,12 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB:
         error_ = kTabCaptureNotSupportedError;
         return false;
+
+      case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_AUDIO:
+        bool has_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
+            extensions::switches::kEnableDesktopCaptureAudio);
+        request_audio = has_flag;
+        break;
     }
   }
 
@@ -145,7 +155,7 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
 
   picker_->Show(web_contents, parent_window, parent_window,
                 base::UTF8ToUTF16(extension()->name()), target_name,
-                std::move(media_list), callback);
+                std::move(media_list), request_audio, callback);
   origin_ = origin;
   return true;
 }

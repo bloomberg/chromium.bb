@@ -31,6 +31,9 @@ const char kEnableAppWindowControls[] = "enable-app-window-controls";
 // Enable BLE Advertisiing in apps.
 const char kEnableBLEAdvertising[] = "enable-ble-advertising-in-apps";
 
+const char kEnableDesktopCaptureAudio[] =
+    "enable-audio-support-for-desktop-share";
+
 // Hack so that feature switch can work with about_flags. See
 // kEnableScriptsRequireAction.
 const char kEnableEmbeddedExtensionOptions[] =

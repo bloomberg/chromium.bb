@@ -13,6 +13,7 @@
 namespace views {
 class ImageView;
 class Label;
+class Checkbox;
 }  // namespace views
 
 class DesktopMediaPickerDialogView;
@@ -118,7 +119,8 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
                                DesktopMediaPickerViews* parent,
                                const base::string16& app_name,
                                const base::string16& target_name,
-                               scoped_ptr<DesktopMediaList> media_list);
+                               scoped_ptr<DesktopMediaList> media_list,
+                               bool request_audio);
   ~DesktopMediaPickerDialogView() override;
 
   // Called by parent (DesktopMediaPickerViews) when it's destroyed.
@@ -150,9 +152,10 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView {
   DesktopMediaPickerViews* parent_;
   base::string16 app_name_;
 
-  views::Label* label_;
-  views::ScrollView* scroll_view_;
-  DesktopMediaListView* list_view_;
+  views::Label* description_label_;
+  views::Checkbox* audio_share_checkbox_;
+  views::ScrollView* sources_scroll_view_;
+  DesktopMediaListView* sources_list_view_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerDialogView);
 };
@@ -172,6 +175,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
             const base::string16& app_name,
             const base::string16& target_name,
             scoped_ptr<DesktopMediaList> media_list,
+            bool request_audio,
             const DoneCallback& done_callback) override;
 
   DesktopMediaPickerDialogView* GetDialogViewForTesting() const {
