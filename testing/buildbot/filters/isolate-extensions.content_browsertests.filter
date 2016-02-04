@@ -1,2 +1,4 @@
 -SessionHistoryTest.FrameBackForward
 -*.RestoreSubframeFileAccessForHistoryNavigation
+-BatteryMonitorIntegrationTest.*
+-NavigationControllerBrowserTest.FrameNavigationEntry_FrameUniqueName
