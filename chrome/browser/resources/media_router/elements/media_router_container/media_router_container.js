@@ -416,8 +416,9 @@ Polymer({
    * @private
    */
   acknowledgeFirstRunFlow_: function() {
-    var userOptedIntoCloudServices = this.$$('#first-run-cloud-checkbox') ?
-      this.$$('#first-run-cloud-checkbox').checked : false;
+    var userOptedIntoCloudServices = this.$$('#first-run-cloud-checkbox') &&
+        this.showFirstRunFlowCloudPref ?
+        this.$$('#first-run-cloud-checkbox').checked : false;
     this.fire('acknowledge-first-run-flow', {
       optedIntoCloudServices: userOptedIntoCloudServices,
     });
