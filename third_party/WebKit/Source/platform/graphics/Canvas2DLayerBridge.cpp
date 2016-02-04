@@ -602,7 +602,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     }
 
     RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration);
-    if (!image)
+    if (!image || !image->getTexture())
         return false;
 
     WebGraphicsContext3D* webContext = context();
@@ -630,8 +630,6 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
     // Need to flush skia's internal queue because texture is about to be accessed directly
     grContext->flush();
-
-    ASSERT(image->getTexture());
 
     // Because of texture sharing with the compositor, we must invalidate
     // the state cached in skia so that the deferred copy on write
