@@ -39,9 +39,9 @@ class BASE_EXPORT RunLoop {
   ~RunLoop();
 
   // Run the current MessageLoop. This blocks until Quit is called. Before
-  // calling Run, be sure to grab an AsWeakPtr or the QuitClosure in order to
-  // stop the MessageLoop asynchronously. MessageLoop::QuitWhenIdle and QuitNow
-  // will also trigger a return from Run, but those are deprecated.
+  // calling Run, be sure to grab the QuitClosure in order to stop the
+  // MessageLoop asynchronously. MessageLoop::QuitWhenIdle and QuitNow will also
+  // trigger a return from Run, but those are deprecated.
   void Run();
 
   // Run the current MessageLoop until it doesn't find any tasks or messages in
