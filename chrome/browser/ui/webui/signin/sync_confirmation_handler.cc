@@ -54,7 +54,7 @@ void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
   SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))->SignOut(
       signin_metrics::ABORT_SIGNIN,
       signin_metrics::SignoutDelete::IGNORE_METRIC);
-  browser->window()->CloseModalSigninWindow();
+  browser->CloseModalSigninWindow();
 }
 
 void SyncConfirmationHandler::HandleInitialized(const base::ListValue* args) {
@@ -107,5 +107,5 @@ void SyncConfirmationHandler::CloseModalSigninWindow(
   Browser* browser = GetDesktopBrowser();
   LoginUIServiceFactory::GetForProfile(browser->profile())->
       SyncConfirmationUIClosed(results);
-  browser->window()->CloseModalSigninWindow();
+  browser->CloseModalSigninWindow();
 }

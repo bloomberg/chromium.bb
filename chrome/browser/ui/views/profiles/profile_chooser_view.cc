@@ -28,7 +28,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
-#include "chrome/browser/ui/views/profiles/signin_view_controller.h"
+#include "chrome/browser/ui/views/profiles/signin_view_controller_delegate_views.h"
 #include "chrome/browser/ui/views/profiles/user_manager_view.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -846,17 +846,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
 
 void ProfileChooserView::ShowViewFromMode(profiles::BubbleViewMode mode) {
   if (SigninViewController::ShouldShowModalSigninForMode(mode)) {
-    BrowserWindow::AvatarBubbleMode converted_mode =
-        BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT;
-    if (mode == profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN) {
-      converted_mode = BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN;
-    } else if (mode == profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT) {
-      converted_mode = BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT;
-    } else if (mode == profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH) {
-      converted_mode = BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH;
-    }
-
-    browser_->window()->ShowModalSigninWindow(converted_mode, access_point_);
+    browser_->ShowModalSigninWindow(mode, access_point_);
   } else {
     ShowView(mode, avatar_menu_.get());
   }
@@ -1651,8 +1641,9 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 
 views::View* ProfileChooserView::CreateGaiaSigninView(
     views::View** signin_content_view) {
-  views::WebView* web_view = SigninViewController::CreateGaiaWebView(
-      this, view_mode_, browser_->profile(), access_point_);
+  views::WebView* web_view =
+      SigninViewControllerDelegateViews::CreateGaiaWebView(
+          this, view_mode_, browser_->profile(), access_point_);
 
   int message_id;
   switch (view_mode_) {

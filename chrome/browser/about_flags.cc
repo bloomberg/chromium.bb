@@ -1348,7 +1348,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-password-separated-signin-flow",
      IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_NAME,
      IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_DESCRIPTION,
-     kOsWin | kOsLinux,
+     kOsMac | kOsWin | kOsLinux,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePasswordSeparatedSigninFlow,
                                switches::kDisablePasswordSeparatedSigninFlow)},
     {"enable-google-profile-info",

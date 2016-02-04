@@ -952,6 +952,19 @@ void Browser::UpdateUIForNavigationInTab(WebContents* contents,
     contents->SetInitialFocus();
 }
 
+void Browser::ShowModalSigninWindow(profiles::BubbleViewMode mode,
+                                    signin_metrics::AccessPoint access_point) {
+  signin_view_controller_.ShowModalSignin(mode, this, access_point);
+}
+
+void Browser::CloseModalSigninWindow() {
+  signin_view_controller_.CloseModalSignin();
+}
+
+void Browser::ShowModalSyncConfirmationWindow() {
+  signin_view_controller_.ShowModalSyncConfirmationDialog(this);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, PageNavigator implementation:
 

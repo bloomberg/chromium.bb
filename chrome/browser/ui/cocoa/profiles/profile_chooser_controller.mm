@@ -41,6 +41,7 @@
 #import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/profiles/signin_view_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
@@ -101,7 +102,6 @@ const CGFloat kFocusRingLineWidth = 2;
 
 // Fixed size for embedded sign in pages as defined in Gaia.
 const CGFloat kFixedGaiaViewWidth = 360;
-const CGFloat kFixedGaiaViewHeight = 440;
 
 // Fixed size for the account removal view.
 const CGFloat kFixedAccountRemovalViewWidth = 280;
@@ -1059,11 +1059,17 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 }
 
 - (IBAction)showInlineSigninPage:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
+  signin::ManageAccountsParams params;
+  params.service_type = serviceType_;
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, params, accessPoint_);
 }
 
 - (IBAction)addAccount:(id)sender {
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
+  signin::ManageAccountsParams params;
+  params.service_type = serviceType_;
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT, params, accessPoint_);
   [self postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT];
 }
 
@@ -1096,7 +1102,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)showAccountReauthenticationView:(id)sender {
   DCHECK(!isGuestSession_);
-  [self initMenuContentsWithView:profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH];
+  signin::ManageAccountsParams params;
+  params.service_type = serviceType_;
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, params, accessPoint_);
 }
 
 - (IBAction)removeAccount:(id)sender {
@@ -2082,26 +2091,16 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSView alloc] initWithFrame:NSZeroRect]);
   CGFloat yOffset = 0;
 
-  GURL url;
   int messageId = -1;
   switch (viewMode_) {
     case profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN:
-      url = signin::GetPromoURL(
-          accessPoint_, signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
-          false /* auto_close */, true /* is_constrained */);
       messageId = IDS_PROFILES_GAIA_SIGNIN_TITLE;
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT:
-      url = signin::GetPromoURL(
-          accessPoint_, signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT,
-          false /* auto_close */, true /* is_constrained */);
       messageId = IDS_PROFILES_GAIA_ADD_ACCOUNT_TITLE;
       break;
     case profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH:
       DCHECK(HasAuthError(browser_->profile()));
-      url = signin::GetReauthURL(
-          accessPoint_, signin_metrics::Reason::REASON_REAUTHENTICATION,
-          browser_->profile(), GetAuthErrorAccountId(browser_->profile()));
       messageId = IDS_PROFILES_GAIA_REAUTH_TITLE;
       break;
     default:
@@ -2109,21 +2108,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       break;
   }
 
-  webContents_.reset(content::WebContents::Create(
-      content::WebContents::CreateParams(browser_->profile())));
-
   webContentsDelegate_.reset(new GaiaWebContentsDelegate());
-  webContents_->SetDelegate(webContentsDelegate_.get());
-  webContents_->GetController().LoadURL(url,
-                                        content::Referrer(),
-                                        ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                        std::string());
+  webContents_ = SigninViewControllerDelegateMac::CreateGaiaWebContents(
+      webContentsDelegate_.get(), viewMode_, browser_->profile(), accessPoint_);
+
   NSView* webview = webContents_->GetNativeView();
-  [webview setFrameSize:NSMakeSize(kFixedGaiaViewWidth, kFixedGaiaViewHeight)];
+
   [container addSubview:webview];
-  content::RenderWidgetHostView* rwhv = webContents_->GetRenderWidgetHostView();
-  if (rwhv)
-    rwhv->SetBackgroundColor(profiles::kAvatarBubbleGaiaBackgroundColor);
   yOffset = NSMaxY([webview frame]);
 
   // Adds the title card.

@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -47,6 +48,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/website_settings/website_settings_bubble_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -803,28 +805,23 @@ void BrowserWindowCocoa::ShowAvatarBubbleFromAvatarButton(
     AvatarBubbleMode mode,
     const signin::ManageAccountsParams& manage_accounts_params,
     signin_metrics::AccessPoint access_point) {
-  AvatarBaseController* controller = [controller_ avatarButtonController];
-  NSView* anchor = [controller buttonView];
-  if ([anchor isHiddenOrHasHiddenAncestor])
-    anchor = [[controller_ toolbarController] appMenuButton];
-  [controller showAvatarBubbleAnchoredAt:anchor
-                                withMode:mode
-                         withServiceType:manage_accounts_params.service_type
-                         fromAccessPoint:access_point];
-}
+  profiles::BubbleViewMode bubble_view_mode;
+  profiles::TutorialMode tutorial_mode;
+  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
+                                               &tutorial_mode);
 
-void BrowserWindowCocoa::ShowModalSigninWindow(
-    AvatarBubbleMode mode,
-    signin_metrics::AccessPoint access_point) {
-  NOTREACHED();
-}
-
-void BrowserWindowCocoa::CloseModalSigninWindow() {
-  NOTREACHED();
-}
-
-void BrowserWindowCocoa::ShowModalSyncConfirmationWindow() {
-  NOTREACHED();
+  if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
+    browser_->ShowModalSigninWindow(bubble_view_mode, access_point);
+  } else {
+    AvatarBaseController* controller = [controller_ avatarButtonController];
+    NSView* anchor = [controller buttonView];
+    if ([anchor isHiddenOrHasHiddenAncestor])
+      anchor = [[controller_ toolbarController] appMenuButton];
+    [controller showAvatarBubbleAnchoredAt:anchor
+                                  withMode:mode
+                           withServiceType:manage_accounts_params.service_type
+                           fromAccessPoint:access_point];
+  }
 }
 
 int

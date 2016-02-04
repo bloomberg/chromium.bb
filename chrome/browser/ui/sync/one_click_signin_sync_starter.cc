@@ -533,7 +533,7 @@ void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
 
 void OneClickSigninSyncStarter::DisplayModalSyncConfirmationWindow() {
   browser_ = EnsureBrowser(browser_, profile_, desktop_type_);
-  browser_->window()->ShowModalSyncConfirmationWindow();
+  browser_->ShowModalSyncConfirmationWindow();
 }
 
 // static

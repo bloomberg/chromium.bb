@@ -736,12 +736,6 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
     const FinishCompleteLoginParams& params,
     Profile* profile,
     Profile::CreateStatus status) {
-  if (params.handler && switches::UsePasswordSeparatedSigninFlow()) {
-    Browser* browser = params.handler->GetDesktopBrowser();
-    if (browser)
-      browser->window()->CloseModalSigninWindow();
-  }
-
   // When doing a SAML sign in, this email check may result in a false
   // positive.  This happens when the user types one email address in the
   // gaia sign in page, but signs in to a different account in the SAML sign in
@@ -842,6 +836,12 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   if (params.handler)
     params.handler->
         web_ui()->CallJavascriptFunction("inline.login.closeDialog");
+
+  if (params.handler && switches::UsePasswordSeparatedSigninFlow()) {
+    Browser* browser = params.handler->GetDesktopBrowser();
+    if (browser)
+      browser->CloseModalSigninWindow();
+  }
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {

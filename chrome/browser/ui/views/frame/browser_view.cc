@@ -2564,7 +2564,7 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
                                                &tutorial_mode);
   if (SigninViewController::ShouldShowModalSigninForMode(bubble_view_mode)) {
-    ShowModalSigninWindow(mode, access_point);
+    browser_->ShowModalSigninWindow(bubble_view_mode, access_point);
   } else {
     ProfileChooserView::ShowBubble(
         bubble_view_mode, tutorial_mode, manage_accounts_params, access_point,
@@ -2575,25 +2575,6 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
 #else
   NOTREACHED();
 #endif
-}
-
-void BrowserView::CloseModalSigninWindow() {
-  signin_view_controller_.CloseModalSignin();
-}
-
-void BrowserView::ShowModalSigninWindow(
-    AvatarBubbleMode mode,
-    signin_metrics::AccessPoint access_point) {
-  profiles::BubbleViewMode bubble_view_mode;
-  profiles::TutorialMode tutorial_mode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubble_view_mode,
-                                               &tutorial_mode);
-  signin_view_controller_.ShowModalSignin(bubble_view_mode, browser(),
-                                          access_point);
-}
-
-void BrowserView::ShowModalSyncConfirmationWindow() {
-  signin_view_controller_.ShowModalSyncConfirmationDialog(browser());
 }
 
 int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {

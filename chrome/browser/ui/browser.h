@@ -28,8 +28,10 @@
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper_delegate.h"
+#include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -411,6 +413,21 @@ class Browser : public TabStripModelObserver,
   void UpdateUIForNavigationInTab(content::WebContents* contents,
                                   ui::PageTransition transition,
                                   bool user_initiated);
+
+  // Shows the signin flow for |mode| in a tab-modal dialog.
+  // |access_point| indicates the access point used to open the Gaia sign in
+  // page.
+  void ShowModalSigninWindow(profiles::BubbleViewMode mode,
+                             signin_metrics::AccessPoint access_point);
+
+  // Closes the tab-modal signin flow opened with ShowModalSigninWindow, if it's
+  // open. Does nothing otherwise.
+  void CloseModalSigninWindow();
+
+  // Shows the tab modal sync confirmation dialog that informs the user about
+  // sync and gives them a chance to abort signin under the tab modal signin
+  // flow.
+  void ShowModalSyncConfirmationWindow();
 
   // Interface implementations ////////////////////////////////////////////////
 
@@ -991,6 +1008,8 @@ class Browser : public TabStripModelObserver,
   bool window_has_shown_;
 
   scoped_ptr<ValidationMessageBubble> validation_message_bubble_;
+
+  SigninViewController signin_view_controller_;
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_;
