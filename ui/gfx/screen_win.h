@@ -5,29 +5,16 @@
 #ifndef UI_GFX_SCREEN_WIN_H_
 #define UI_GFX_SCREEN_WIN_H_
 
-#include <windows.h>
-
-#include <vector>
-
+#include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/gfx/display_change_notifier.h"
 #include "ui/gfx/gfx_export.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {
-
-class Display;
-class Point;
-class Rect;
-
-namespace win {
-
-struct DisplayInfo;
-struct ScreenWinDisplay;
-
-}  // namespace win
 
 class GFX_EXPORT ScreenWin : public Screen {
  public:
@@ -41,7 +28,7 @@ class GFX_EXPORT ScreenWin : public Screen {
   virtual NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
  protected:
-  // gfx::Screen:
+  // Overridden from gfx::Screen:
   gfx::Point GetCursorScreenPoint() override;
   gfx::NativeWindow GetWindowUnderCursor() override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
@@ -54,46 +41,22 @@ class GFX_EXPORT ScreenWin : public Screen {
   void AddObserver(DisplayObserver* observer) override;
   void RemoveObserver(DisplayObserver* observer) override;
 
-  void UpdateFromDisplayInfos(
-      const std::vector<const gfx::win::DisplayInfo>& display_infos);
-
-  // Virtual to support mocking by unit tests.
-  virtual void Initialize();
-  virtual MONITORINFOEX MonitorInfoFromScreenPoint(
-      const gfx::Point& screen_point) const;
-  virtual MONITORINFOEX MonitorInfoFromScreenRect(const gfx::Rect& screen_rect)
-      const;
-  virtual MONITORINFOEX MonitorInfoFromWindow(HWND hwnd, DWORD default_options)
-      const;
-  virtual HWND GetRootWindow(HWND hwnd) const;
-
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScreenWinTest, SingleDisplay1x);
+  FRIEND_TEST_ALL_PREFIXES(ScreenWinTest, SingleDisplay2x);
+
   void OnWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
 
-  // Returns the ScreenWinDisplay closest to or enclosing |hwnd|.
-  gfx::win::ScreenWinDisplay GetScreenWinDisplayNearestHWND(HWND hwnd) const;
-
-  // Returns the ScreenWinDisplay closest to or enclosing |screen_rect|.
-  gfx::win::ScreenWinDisplay GetScreenWinDisplayNearestScreenRect(
-      const Rect& screen_rect) const;
-
-  // Returns the ScreenWinDisplay closest to or enclosing |screen_point|.
-  gfx::win::ScreenWinDisplay GetScreenWinDisplayNearestScreenPoint(
-      const Point& screen_point) const;
-
-  // Returns the ScreenWinDisplay corresponding to the primary monitor.
-  gfx::win::ScreenWinDisplay GetPrimaryScreenWinDisplay() const;
-
-  gfx::win::ScreenWinDisplay GetScreenWinDisplay(
-      const MONITORINFOEX& monitor_info) const;
+  static std::vector<gfx::Display> GetDisplaysForMonitorInfos(
+      const std::vector<MONITORINFOEX>& monitor_infos);
 
   // Helper implementing the DisplayObserver handling.
   gfx::DisplayChangeNotifier change_notifier_;
 
   scoped_ptr<SingletonHwndObserver> singleton_hwnd_observer_;
 
-  // Current list of ScreenWinDisplays.
-  std::vector<const gfx::win::ScreenWinDisplay> screen_win_displays_;
+  // Current list of displays.
+  std::vector<gfx::Display> displays_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };

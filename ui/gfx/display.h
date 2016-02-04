@@ -154,11 +154,6 @@ class GFX_EXPORT Display final {
   TouchSupport touch_support_;
 };
 
-// This is declared here for use in gtest-based unit tests but is defined in
-// the gfx_test_support target. Depend on that to use this in your unit test.
-// This should not be used in production code - call ToString() instead.
-void PrintTo(const Display& display, ::std::ostream* os);
-
 }  // namespace gfx
 
 #endif  // UI_GFX_DISPLAY_H_
