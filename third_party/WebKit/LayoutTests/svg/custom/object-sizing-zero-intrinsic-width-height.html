@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<style>
+object {
+    background: red;
+}
+</style>
+<body style="margin: 0px; padding: 0px;">
+  <!--There should not be any red rectangle visible. -->
+  <object data="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='0' height='0'>
+        <rect width='50' height='50' fill='red'/>
+    </svg>
+  "></object>
+  <object data="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='50' height='0'>
+        <rect width='50' height='50' fill='red'/>
+    </svg>
+  "></object>
+  <object data="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='0' height='50'>
+        <rect width='50' height='50' fill='red'/>
+    </svg>
+  "></object>
+  <object data="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='0'>
+        <rect width='50' height='50' fill='red'/>
+    </svg>
+  "></object>
+  <object data="data:image/svg+xml,
+    <svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' height='0'>
+        <rect width='50' height='50' fill='red'/>
+    </svg>
+  "></object>
+</body>
+</html>
