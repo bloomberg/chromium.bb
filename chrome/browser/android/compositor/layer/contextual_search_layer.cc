@@ -22,15 +22,11 @@ namespace {
 
 const SkColor kSearchBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
 const SkColor kSearchBarBackgroundColor = SkColorSetRGB(0xff, 0xff, 0xff);
-const SkColor kSearchBarBorderColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kPeekPromoRippleBackgroundColor = SkColorSetRGB(0x42, 0x85, 0xF4);
 
 // The alpha blend used in the Peek Promo Background in order to achieve
 // a lighter shade of the color of the Peek Promo Ripple.
 const SkAlpha kPeekPromoBackgroundMaximumAlphaBlend = 0.25f * 255;
-
-// This is the default width for any icon displayed on an OverlayPanel.
-const float kDefaultIconWidthDp = 36.0f;
 
 }  // namespace
 
@@ -41,6 +37,32 @@ namespace android {
 scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
     ui::ResourceManager* resource_manager) {
   return make_scoped_refptr(new ContextualSearchLayer(resource_manager));
+}
+
+scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
+  if (panel_icon_resource_id_ != 0) {
+    return OverlayPanelLayer::GetIconLayer();
+  }
+
+  // Search Provider Icon Sprite (Animated)
+  if (search_provider_icon_sprite_visible_) {
+    if (search_provider_icon_sprite_->layer()->parent() != layer_) {
+      layer_->AddChild(search_provider_icon_sprite_->layer().get());
+    }
+    search_provider_icon_sprite_->DrawSpriteFrame(
+        resource_manager_,
+        search_provider_icon_sprite_bitmap_resource_id_,
+        search_provider_icon_sprite_metadata_resource_id_,
+        search_provider_icon_sprite_completion_percentage_);
+  } else {
+    if (search_provider_icon_sprite_->layer().get() &&
+        search_provider_icon_sprite_->layer()->parent()) {
+      search_provider_icon_sprite_->layer()->RemoveFromParent();
+    }
+    return nullptr;
+  }
+
+  return search_provider_icon_sprite_->layer();
 }
 
 void ContextualSearchLayer::SetProperties(
@@ -90,51 +112,58 @@ void ContextualSearchLayer::SetProperties(
     float progress_bar_height,
     float progress_bar_opacity,
     int progress_bar_completion) {
+
+  search_provider_icon_sprite_visible_ = search_provider_icon_sprite_visible;
+  search_provider_icon_sprite_bitmap_resource_id_ =
+      search_provider_icon_sprite_bitmap_resource_id;
+  search_provider_icon_sprite_metadata_resource_id_ =
+      search_provider_icon_sprite_metadata_resource_id;
+  search_provider_icon_sprite_completion_percentage_ =
+      search_provider_icon_sprite_completion_percentage;
+
   // Grabs the dynamic Search Bar Text resource.
   ui::ResourceManager::Resource* search_context_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
                                      search_context_resource_id);
-  ui::ResourceManager::Resource* search_term_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     search_term_resource_id);
-
-  // Grabs required static resources.
-  ui::ResourceManager::Resource* panel_shadow_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     panel_shadow_resource_id);
-
-  DCHECK(panel_shadow_resource);
 
   // Round values to avoid pixel gap between layers.
   search_bar_height = floor(search_bar_height);
 
   float search_bar_top = search_peek_promo_height;
   float search_bar_bottom = search_bar_top + search_bar_height;
+  bool should_render_progress_bar =
+      progress_bar_visible && progress_bar_opacity > 0.f;
+
+  OverlayPanelLayer::SetResourceIds(
+      search_term_resource_id,
+      panel_shadow_resource_id,
+      search_bar_shadow_resource_id,
+      panel_icon_resource_id,
+      close_icon_resource_id);
+
+  float content_view_top = search_bar_bottom + search_promo_height;
+  float should_render_bar_border = search_bar_border_visible
+      && !should_render_progress_bar;
+
+  OverlayPanelLayer::SetProperties(
+      dp_to_px,
+      content_view_core,
+      content_view_top,
+      search_panel_x,
+      search_panel_y,
+      search_panel_width,
+      search_panel_height,
+      search_bar_margin_side,
+      search_bar_height,
+      search_bar_top,
+      search_term_opacity,
+      should_render_bar_border,
+      search_bar_border_height,
+      search_bar_shadow_visible,
+      search_bar_shadow_opacity,
+      close_icon_opacity);
 
   bool is_rtl = l10n_util::IsLayoutRtl();
-
-  // If |panel_icon_resource_id| != 0, the static resource associated with that
-  // id will be displayed. If |panel_icon_resource_id| == 0, then the
-  // search provider icon sprite will be shown instead.
-  bool should_use_static_icon = panel_icon_resource_id != 0;
-
-  // ---------------------------------------------------------------------------
-  // Panel Shadow
-  // ---------------------------------------------------------------------------
-  gfx::Size shadow_res_size = panel_shadow_resource->size;
-  gfx::Rect shadow_res_padding = panel_shadow_resource->padding;
-  gfx::Size shadow_bounds(
-      search_panel_width + shadow_res_size.width()
-          - shadow_res_padding.size().width(),
-      search_panel_height + shadow_res_size.height()
-          - shadow_res_padding.size().height());
-  panel_shadow_->SetUIResourceId(panel_shadow_resource->ui_resource->id());
-  panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
-  panel_shadow_->SetAperture(panel_shadow_resource->aperture);
-  panel_shadow_->SetBounds(shadow_bounds);
-  gfx::PointF shadow_position(-shadow_res_padding.origin().x(),
-                              -shadow_res_padding.origin().y());
-  panel_shadow_->SetPosition(shadow_position);
 
   // ---------------------------------------------------------------------------
   // Peek Promo
@@ -230,14 +259,7 @@ void ContextualSearchLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Search Bar Background
-  // ---------------------------------------------------------------------------
-  gfx::Size background_size(search_panel_width, search_bar_height);
-  search_bar_background_->SetBounds(background_size);
-  search_bar_background_->SetPosition(gfx::PointF(0.f, search_bar_top));
-
-  // ---------------------------------------------------------------------------
-  // Search Bar Text
+  // Search Context
   // ---------------------------------------------------------------------------
   if (search_context_resource) {
     // Centers the text vertically in the Search Bar.
@@ -252,115 +274,25 @@ void ContextualSearchLayer::SetProperties(
     search_context_->SetOpacity(search_context_opacity);
   }
 
-  if (search_term_resource) {
-    // Centers the text vertically in the Search Bar.
-    float search_bar_padding_top =
-        search_bar_top +
-        search_bar_height / 2 -
-        search_term_resource->size.height() / 2;
-    search_term_->SetUIResourceId(search_term_resource->ui_resource->id());
-    search_term_->SetBounds(search_term_resource->size);
-    search_term_->SetPosition(gfx::PointF(0.f, search_bar_padding_top));
-    search_term_->SetOpacity(search_term_opacity);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Panel Icon (Static)
-  // ---------------------------------------------------------------------------
-  if (should_use_static_icon) {
-    if (panel_icon_->parent() != layer_) {
-      layer_->AddChild(panel_icon_);
-    }
-    ui::ResourceManager::Resource* panel_icon_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       panel_icon_resource_id);
-    DCHECK(panel_icon_resource);
-
-    // If the icon is not the default width, add or remove padding so it appears
-    // centered.
-    float icon_padding = (kDefaultIconWidthDp * dp_to_px -
-        panel_icon_resource->size.width()) / 2.0f;
-
-    // Positions the Icon at the start of the Search Bar.
-    float search_provider_icon_left;
-    if (is_rtl) {
-      search_provider_icon_left = search_panel_width -
-          panel_icon_resource->size.width() -
-          (search_bar_margin_side + icon_padding);
-    } else {
-      search_provider_icon_left = search_bar_margin_side + icon_padding;
-    }
-
-    // Centers the Icon vertically in the Search Bar.
-    float search_provider_icon_top = search_bar_top +
-        search_bar_height / 2 -
-        panel_icon_resource->size.height() / 2;
-
-    panel_icon_->SetUIResourceId(
-        panel_icon_resource->ui_resource->id());
-    panel_icon_->SetBounds(panel_icon_resource->size);
-    panel_icon_->SetPosition(
-        gfx::PointF(search_provider_icon_left, search_provider_icon_top));
-  }
-
-  // ---------------------------------------------------------------------------
-  // Search Provider Icon Sprite (Animated)
-  // ---------------------------------------------------------------------------
-  if (!should_use_static_icon) {
-    if (search_provider_icon_sprite_visible) {
-      if (search_provider_icon_sprite_->layer()->parent() != layer_) {
-        layer_->AddChild(search_provider_icon_sprite_->layer());
-      }
-
-      search_provider_icon_sprite_->DrawSpriteFrame(
-          resource_manager_,
-          search_provider_icon_sprite_bitmap_resource_id,
-          search_provider_icon_sprite_metadata_resource_id,
-          search_provider_icon_sprite_completion_percentage);
-
-      // Positions the Search Provider Icon at the start of the Search Bar.
-      float icon_x;
-      if (is_rtl) {
-        icon_x = search_panel_width -
-            search_provider_icon_sprite_->layer()->bounds().width() -
-            search_bar_margin_side;
-      } else {
-        icon_x = search_bar_margin_side;
-      }
-
-      // Centers the Search Provider Icon vertically in the Search Bar.
-      float icon_y = search_bar_top + search_bar_height / 2
-          - search_provider_icon_sprite_->layer()->bounds().height() / 2;
-      search_provider_icon_sprite_->layer()->SetPosition(
-          gfx::PointF(icon_x, icon_y));
-    } else {
-      if (search_provider_icon_sprite_->layer().get() &&
-          search_provider_icon_sprite_->layer()->parent()) {
-        search_provider_icon_sprite_->layer()->RemoveFromParent();
-      }
-    }
-  }
-
   // ---------------------------------------------------------------------------
   // Arrow Icon
   // ---------------------------------------------------------------------------
-  // Grabs the Search Arrow Icon resource.
+  // Grabs the arrow icon resource.
   ui::ResourceManager::Resource* arrow_icon_resource =
       resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                      arrow_up_resource_id);
 
-  // Positions the icon at the end of the Search Bar.
+  // Positions the icon at the end of the bar.
   float arrow_icon_left;
   if (is_rtl) {
     arrow_icon_left = search_bar_margin_side;
   } else {
-    arrow_icon_left = search_panel_width -
-        arrow_icon_resource->size.width() - search_bar_margin_side;
+    arrow_icon_left = search_panel_width - arrow_icon_resource->size.width()
+        - search_bar_margin_side;
   }
 
-  // Centers the Arrow Icon vertically in the Search Bar.
-  float arrow_icon_top = search_bar_top +
-      search_bar_height / 2 -
+  // Centers the Arrow Icon vertically in the bar.
+  float arrow_icon_top = search_bar_top + search_bar_height / 2 -
       arrow_icon_resource->size.height() / 2;
 
   arrow_icon_->SetUIResourceId(arrow_icon_resource->ui_resource->id());
@@ -380,35 +312,6 @@ void ContextualSearchLayer::SetProperties(
     transform.Translate(-pivot_origin.x(), -pivot_origin.y());
   }
   arrow_icon_->SetTransform(transform);
-
-  // ---------------------------------------------------------------------------
-  // Close Icon
-  // ---------------------------------------------------------------------------
-  // Grab the Close Icon resource.
-  ui::ResourceManager::Resource* close_icon_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     close_icon_resource_id);
-
-  // Positions the icon at the end of the Search Bar.
-  float close_icon_left;
-  if (is_rtl) {
-    close_icon_left = search_bar_margin_side;
-  } else {
-    close_icon_left = search_panel_width -
-        close_icon_resource->size.width() - search_bar_margin_side;
-  }
-
-  // Centers the Close Icon vertically in the Search Bar.
-  float close_icon_top =
-      search_bar_top +
-      search_bar_height / 2 -
-      close_icon_resource->size.height() / 2;
-
-  close_icon_->SetUIResourceId(close_icon_resource->ui_resource->id());
-  close_icon_->SetBounds(close_icon_resource->size);
-  close_icon_->SetPosition(
-      gfx::PointF(close_icon_left, close_icon_top));
-  close_icon_->SetOpacity(close_icon_opacity);
 
   // ---------------------------------------------------------------------------
   // Search Promo
@@ -451,57 +354,8 @@ void ContextualSearchLayer::SetProperties(
   }
 
   // ---------------------------------------------------------------------------
-  // Search Content View
-  // ---------------------------------------------------------------------------
-  content_view_container_->SetPosition(
-      gfx::PointF(0.f, search_bar_bottom + search_promo_height));
-  content_view_container_->SetBounds(
-      gfx::Size(search_panel_width, search_panel_height));
-  if (content_view_core && content_view_core->GetLayer().get()) {
-    scoped_refptr<cc::Layer> content_view_layer = content_view_core->GetLayer();
-    if (content_view_layer->parent() != content_view_container_)
-      content_view_container_->AddChild(content_view_layer);
-  } else {
-    content_view_container_->RemoveAllChildren();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Search Bar Shadow
-  // ---------------------------------------------------------------------------
-  if (search_bar_shadow_visible) {
-    ui::ResourceManager::Resource* search_bar_shadow_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       search_bar_shadow_resource_id);
-
-    if (search_bar_shadow_resource) {
-      if (search_bar_shadow_->parent() != layer_)
-        layer_->AddChild(search_bar_shadow_);
-
-      int shadow_height = search_bar_shadow_resource->size.height();
-      gfx::Size shadow_size(search_panel_width, shadow_height);
-
-      search_bar_shadow_->SetUIResourceId(
-          search_bar_shadow_resource->ui_resource->id());
-      search_bar_shadow_->SetBounds(shadow_size);
-      search_bar_shadow_->SetPosition(gfx::PointF(0.f, search_bar_bottom));
-      search_bar_shadow_->SetOpacity(search_bar_shadow_opacity);
-    }
-  } else {
-    if (search_bar_shadow_.get() && search_bar_shadow_->parent())
-      search_bar_shadow_->RemoveFromParent();
-  }
-
-  // ---------------------------------------------------------------------------
-  // Search Panel.
-  // ---------------------------------------------------------------------------
-  layer_->SetPosition(
-      gfx::PointF(search_panel_x, search_panel_y));
-
-  // ---------------------------------------------------------------------------
   // Progress Bar
   // ---------------------------------------------------------------------------
-  bool should_render_progress_bar =
-      progress_bar_visible && progress_bar_opacity > 0.f;
   if (should_render_progress_bar) {
     // Grabs Progress Bar resources.
     ui::ResourceManager::Resource* progress_bar_background_resource =
@@ -553,52 +407,16 @@ void ContextualSearchLayer::SetProperties(
     if (progress_bar_.get() && progress_bar_->parent())
       progress_bar_->RemoveFromParent();
   }
-
-  // ---------------------------------------------------------------------------
-  // Search Bar border.
-  // ---------------------------------------------------------------------------
-  if (!should_render_progress_bar && search_bar_border_visible) {
-    gfx::Size search_bar_border_size(search_panel_width,
-                                     search_bar_border_height);
-    float border_y = search_bar_bottom - search_bar_border_height;
-    search_bar_border_->SetBounds(search_bar_border_size);
-    search_bar_border_->SetPosition(
-        gfx::PointF(0.f, border_y));
-    layer_->AddChild(search_bar_border_);
-  } else if (search_bar_border_.get() && search_bar_border_->parent()) {
-    search_bar_border_->RemoveFromParent();
-  }
 }
 
 ContextualSearchLayer::ContextualSearchLayer(
     ui::ResourceManager* resource_manager)
-    : resource_manager_(resource_manager),
-      layer_(cc::Layer::Create(content::Compositor::LayerSettings())),
-      panel_shadow_(
-          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
-      search_bar_background_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
+    : OverlayPanelLayer(resource_manager),
       search_context_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      search_term_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      search_bar_shadow_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      panel_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_provider_icon_sprite_(CrushedSpriteLayer::Create()),
       arrow_icon_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      close_icon_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
-      content_view_container_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
-      search_bar_border_(
-          cc::SolidColorLayer::Create(content::Compositor::LayerSettings())),
-      progress_bar_(
-          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
-      progress_bar_background_(
-          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
       search_promo_(
           cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
       search_promo_container_(
@@ -608,15 +426,11 @@ ContextualSearchLayer::ContextualSearchLayer(
       peek_promo_ripple_(
           cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
       peek_promo_text_(
-          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())) {
-  layer_->SetMasksToBounds(false);
-  layer_->SetIsDrawable(true);
-
-  // Panel Shadow
-  panel_shadow_->SetIsDrawable(true);
-  panel_shadow_->SetFillCenter(false);
-  layer_->AddChild(panel_shadow_);
-
+          cc::UIResourceLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())),
+      progress_bar_background_(
+          cc::NinePatchLayer::Create(content::Compositor::LayerSettings())) {
   // Search Peek Promo
   peek_promo_container_->SetIsDrawable(true);
   peek_promo_container_->SetBackgroundColor(kSearchBarBackgroundColor);
@@ -626,36 +440,19 @@ ContextualSearchLayer::ContextualSearchLayer(
   peek_promo_container_->AddChild(peek_promo_ripple_);
   peek_promo_container_->AddChild(peek_promo_text_);
 
-  // Search Bar Background
-  search_bar_background_->SetIsDrawable(true);
-  search_bar_background_->SetBackgroundColor(kSearchBarBackgroundColor);
-  layer_->AddChild(search_bar_background_);
-
   // Search Bar Text
   search_context_->SetIsDrawable(true);
-  layer_->AddChild(search_context_);
-  search_term_->SetIsDrawable(true);
-  layer_->AddChild(search_term_);
-
-  // Panel Icon
-  panel_icon_->SetIsDrawable(true);
+  // NOTE(mdjones): This can be called multiple times to add other text layers.
+  AddBarTextLayer(search_context_);
 
   // Arrow Icon
   arrow_icon_->SetIsDrawable(true);
   layer_->AddChild(arrow_icon_);
 
-  // Close Icon
-  close_icon_->SetIsDrawable(true);
-  layer_->AddChild(close_icon_);
-
   // Search Opt Out Promo
   search_promo_container_->SetIsDrawable(true);
   search_promo_container_->SetBackgroundColor(kSearchBackgroundColor);
   search_promo_->SetIsDrawable(true);
-
-  // Search Bar Border
-  search_bar_border_->SetIsDrawable(true);
-  search_bar_border_->SetBackgroundColor(kSearchBarBorderColor);
 
   // Progress Bar Background
   progress_bar_background_->SetIsDrawable(true);
@@ -664,21 +461,9 @@ ContextualSearchLayer::ContextualSearchLayer(
   // Progress Bar
   progress_bar_->SetIsDrawable(true);
   progress_bar_->SetFillCenter(true);
-
-  // Search Content View Container
-  content_view_container_->SetIsDrawable(true);
-  content_view_container_->SetBackgroundColor(kSearchBarBackgroundColor);
-  layer_->AddChild(content_view_container_);
-
-  // Search Bar Shadow
-  search_bar_shadow_->SetIsDrawable(true);
 }
 
 ContextualSearchLayer::~ContextualSearchLayer() {
-}
-
-scoped_refptr<cc::Layer> ContextualSearchLayer::layer() {
-  return layer_;
 }
 
 }  //  namespace android

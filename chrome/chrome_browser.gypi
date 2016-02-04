@@ -676,6 +676,8 @@
       'browser/android/compositor/layer/content_layer.h',
       'browser/android/compositor/layer/contextual_search_layer.cc',
       'browser/android/compositor/layer/contextual_search_layer.h',
+      'browser/android/compositor/layer/overlay_panel_layer.cc',
+      'browser/android/compositor/layer/overlay_panel_layer.h',
       'browser/android/compositor/layer/crushed_sprite_layer.cc',
       'browser/android/compositor/layer/crushed_sprite_layer.h',
       'browser/android/compositor/layer/layer.h',
