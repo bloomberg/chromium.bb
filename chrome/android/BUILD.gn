@@ -546,12 +546,14 @@ instrumentation_test_apk("chrome_public_test_apk") {
   apk_name = "ChromePublicTest"
   apk_under_test = ":chrome_public_apk"
   android_manifest = chrome_public_test_apk_manifest
+
   deps = [
     ":chrome_public_test_apk_manifest",
     ":chrome_shared_test_java",
   ]
-  data_deps = [
+  additional_apks = [
     "//chrome/test/android/chrome_public_test_support:chrome_public_test_support_apk",
+    "//net/android:net_test_support_apk",
   ]
   isolate_file = "../chrome_public_test_apk.isolate"
   proguard_enabled = !is_debug

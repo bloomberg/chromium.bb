@@ -33,7 +33,7 @@ def main():
   test_runner_path = ResolvePath('{test_runner_path}')
   test_runner_args = {test_runner_args}
   test_runner_path_args = {test_runner_path_args}
-  for arg, path in sorted(test_runner_path_args.iteritems()):
+  for arg, path in test_runner_path_args:
     test_runner_args.extend([arg, ResolvePath(path)])
 
   test_runner_cmd = [test_runner_path] + test_runner_args + sys.argv[1:]
@@ -54,9 +54,12 @@ def main(args):
   # We need to intercept any test runner path arguments and make all
   # of the paths relative to the output script directory.
   group = parser.add_argument_group('Test runner path arguments.')
-  group.add_argument('--output-directory')
-  group.add_argument('--isolate-file-path')
+  group.add_argument('--additional-apk', action='append',
+                     dest='additional_apks', default=[])
+  group.add_argument('--additional-apk-list')
   group.add_argument('--apk-under-test')
+  group.add_argument('--isolate-file-path')
+  group.add_argument('--output-directory')
   group.add_argument('--test-apk')
   group.add_argument('--coverage-dir')
   args, test_runner_args = parser.parse_known_args(
@@ -70,22 +73,29 @@ def main(args):
       os.path.dirname(__file__), os.path.pardir, 'test_runner.py')
   test_runner_path = RelativizePathToScript(test_runner_path)
 
-  test_runner_path_args = {}
-  if args.output_directory:
-    test_runner_path_args['--output-directory'] = RelativizePathToScript(
-        args.output_directory)
-  if args.isolate_file_path:
-    test_runner_path_args['--isolate-file-path'] = RelativizePathToScript(
-        args.isolate_file_path)
+  test_runner_path_args = []
+  if args.additional_apk_list:
+    args.additional_apks.extend(
+        build_utils.ParseGypList(args.additional_apk_list))
+  if args.additional_apks:
+    test_runner_path_args.extend(
+        ('--additional-apk', RelativizePathToScript(a))
+        for a in args.additional_apks)
   if args.apk_under_test:
-    test_runner_path_args['--apk-under-test'] = RelativizePathToScript(
-        args.apk_under_test)
+    test_runner_path_args.append(
+        ('--apk-under-test', RelativizePathToScript(args.apk_under_test)))
+  if args.isolate_file_path:
+    test_runner_path_args.append(
+        ('--isolate-file-path', RelativizePathToScript(args.isolate_file_path)))
+  if args.output_directory:
+    test_runner_path_args.append(
+        ('--output-directory', RelativizePathToScript(args.output_directory)))
   if args.test_apk:
-    test_runner_path_args['--test-apk'] = RelativizePathToScript(
-        args.test_apk)
+    test_runner_path_args.append(
+        ('--test-apk', RelativizePathToScript(args.test_apk)))
   if args.coverage_dir:
-    test_runner_path_args['--coverage-dir'] = RelativizePathToScript(
-        args.coverage_dir)
+    test_runner_path_args.append(
+        ('--coverage-dir', RelativizePathToScript(args.coverage_dir)))
 
   with open(args.script_output_path, 'w') as script:
     script.write(SCRIPT_TEMPLATE.format(
