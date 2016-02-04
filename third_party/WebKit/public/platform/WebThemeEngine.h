@@ -151,16 +151,6 @@ public:
     // like vertical scrollbar thumbs, the width will be the required width of
     // the track while the height will be the minimum height.
     virtual WebSize getSize(Part) { return WebSize(); }
-
-    struct ScrollbarStyle {
-        int thumbThickness;
-        int scrollbarMargin;
-        WebColor color;
-    };
-
-    // Gets the overlay scrollbar style. Used for mobile theme.
-    virtual void getOverlayScrollbarStyle(ScrollbarStyle*) { }
-
     // Paint the given the given theme part.
     virtual void paint(WebCanvas*, Part, State, const WebRect&, const ExtraParams*) { }
 };

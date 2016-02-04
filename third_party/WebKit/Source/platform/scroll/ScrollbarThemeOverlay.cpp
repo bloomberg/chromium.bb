@@ -173,14 +173,8 @@ ScrollbarPart ScrollbarThemeOverlay::hitTest(const ScrollbarThemeClient& scrollb
 
 ScrollbarThemeOverlay& ScrollbarThemeOverlay::mobileTheme()
 {
-    static ScrollbarThemeOverlay* theme;
-    if (!theme) {
-        WebThemeEngine::ScrollbarStyle style = { 3, 3, 0x80808080 }; // default style
-        if (Platform::current()->themeEngine())
-            Platform::current()->themeEngine()->getOverlayScrollbarStyle(&style);
-        theme = new ScrollbarThemeOverlay(style.thumbThickness, style.scrollbarMargin, ScrollbarThemeOverlay::DisallowHitTest, Color(style.color));
-    }
-    return *theme;
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, (3, 3, ScrollbarThemeOverlay::DisallowHitTest, Color(128, 128, 128, 128)));
+    return theme;
 }
 
 } // namespace blink
