@@ -265,7 +265,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
                                       R.string.offline_pages_as_bookmarks_offline_page_size),
                             Formatter.formatFileSize(this, offlinePage.getFileSize())));
             updateButtonToDeleteOfflinePage(saveRemoveVisitButton);
-        } else if (mWebContents != null
+        } else if (mWebContents != null && !mWebContents.isDestroyed()
                 && offlinePageBridge.canSavePage(mWebContents.getLastCommittedUrl())) {
             // Offline page is not saved, but a bookmarked page is opened. Show save button.
             offlinePageInfoTextView.setText(
