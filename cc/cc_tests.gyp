@@ -424,6 +424,7 @@
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '../third_party/mesa/mesa.gyp:osmesa',
+        '../third_party/protobuf/protobuf.gyp:protobuf_lite',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gfx/gfx.gyp:gfx_test_support',
