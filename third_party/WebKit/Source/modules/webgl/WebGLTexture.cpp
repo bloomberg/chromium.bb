@@ -191,7 +191,7 @@ void WebGLTexture::setTexStorageInfo(GLenum target, GLint levels, GLenum interna
             info.setInfo(internalFormat, levelWidth, levelHeight, levelDepth, type);
             levelWidth = std::max(1, levelWidth >> 1);
             levelHeight = std::max(1, levelHeight >> 1);
-            levelDepth = std::max(1, levelDepth >> 1);
+            levelDepth = m_target == GL_TEXTURE_2D_ARRAY ? levelDepth : std::max(1, levelDepth >> 1);
         }
     }
     update();
@@ -211,7 +211,7 @@ void WebGLTexture::generateMipmapLevelInfo()
             GLsizei width = info0.width;
             GLsizei height = info0.height;
             GLsizei depth = info0.depth;
-            GLint levelCount = computeLevelCount(width, height, depth);
+            GLint levelCount = computeLevelCount(width, height, (m_target == GL_TEXTURE_2D_ARRAY ? 0 : depth));
             size_t maxLevel = 0;
             if (m_baseLevel + levelCount > 0)
                 maxLevel = m_baseLevel + levelCount - 1;
@@ -220,7 +220,7 @@ void WebGLTexture::generateMipmapLevelInfo()
             for (size_t level = m_baseLevel + 1; level <= maxLevel; ++level) {
                 width = std::max(1, width >> 1);
                 height = std::max(1, height >> 1);
-                depth = std::max(1, depth >> 1);
+                depth = m_target == GL_TEXTURE_2D_ARRAY ? depth : std::max(1, depth >> 1);
                 LevelInfo& info = m_info[ii][level];
                 info.setInfo(info0.internalFormat, width, height, depth, info0.type);
             }
@@ -393,7 +393,7 @@ void WebGLTexture::update()
     }
     else {
         const LevelInfo& base = m_info[0][m_baseLevel];
-        size_t levelCount = computeLevelCount(base.width, base.height, base.depth);
+        size_t levelCount = computeLevelCount(base.width, base.height, (m_target == GL_TEXTURE_2D_ARRAY ? 0 : base.depth));
         size_t maxLevel = 0;
         if (m_baseLevel + levelCount > 0)
             maxLevel = m_baseLevel + levelCount - 1;
@@ -419,7 +419,7 @@ void WebGLTexture::update()
             for (size_t level = m_baseLevel + 1; level <= maxLevel; ++level) {
                 width = std::max(1, width >> 1);
                 height = std::max(1, height >> 1);
-                depth = std::max(1, depth >> 1);
+                depth = m_target == GL_TEXTURE_2D_ARRAY ? depth : std::max(1, depth >> 1);
                 const LevelInfo& info = m_info[ii][level];
                 if (!info.valid
                     || info.width != width || info.height != height || info.depth != depth

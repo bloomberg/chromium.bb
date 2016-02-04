@@ -253,7 +253,6 @@ protected:
 
     PersistentWillBeMember<WebGLFramebuffer> m_readFramebufferBinding;
     PersistentWillBeMember<WebGLTransformFeedback> m_transformFeedbackBinding;
-    GLint m_maxArrayTextureLayers;
 
     std::set<GLenum> m_supportedInternalFormatsStorage;
     std::set<GLenum> m_compressedTextureFormatsETC2EAC;

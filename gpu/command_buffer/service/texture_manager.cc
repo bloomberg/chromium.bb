@@ -539,15 +539,15 @@ void Texture::MarkMipmapsGenerated() {
     GLsizei width = level0_info.width;
     GLsizei height = level0_info.height;
     GLsizei depth = level0_info.depth;
-    GLenum target = target_ == GL_TEXTURE_2D ? GL_TEXTURE_2D :
-                               GLES2Util::IndexToGLFaceTarget(ii);
+    GLenum target = target_ == GL_TEXTURE_CUBE_MAP ?
+        GLES2Util::IndexToGLFaceTarget(ii) : target_;
 
     const GLsizei num_mips = face_info.num_mip_levels;
     for (GLsizei level = base_level_ + 1;
          level < base_level_ + num_mips; ++level) {
       width = std::max(1, width >> 1);
       height = std::max(1, height >> 1);
-      depth = std::max(1, depth >> 1);
+      depth = target == GL_TEXTURE_2D_ARRAY ? depth : std::max(1, depth >> 1);
       SetLevelInfo(target, level, level0_info.internal_format,
                    width, height, depth, level0_info.border, level0_info.format,
                    level0_info.type, gfx::Rect(width, height));
@@ -667,7 +667,9 @@ bool Texture::TextureMipComplete(const Texture::LevelInfo& base_level_face,
     const GLsizei mip_width = std::max(1, base_level_face.width >> level_diff);
     const GLsizei mip_height =
         std::max(1, base_level_face.height >> level_diff);
-    const GLsizei mip_depth = std::max(1, base_level_face.depth >> level_diff);
+    const GLsizei mip_depth = target == GL_TEXTURE_2D_ARRAY ?
+        base_level_face.depth :
+        std::max(1, base_level_face.depth >> level_diff);
 
     complete &= (width == mip_width &&
                  height == mip_height &&
@@ -1473,7 +1475,6 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
                                               max_cube_map_texture_size,
                                               max_cube_map_texture_size)),
       max_3d_levels_(ComputeMipMapCount(GL_TEXTURE_3D,
-                                        // Same as GL_TEXTURE_2D_ARRAY
                                         max_3d_texture_size,
                                         max_3d_texture_size,
                                         max_3d_texture_size)),

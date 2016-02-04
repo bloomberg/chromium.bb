@@ -151,9 +151,6 @@ void WebGL2RenderingContextBase::initializeNewContext()
     m_currentBooleanOcclusionQuery = nullptr;
     m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
 
-    m_maxArrayTextureLayers = 0;
-    webContext()->getIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
-
     GLint numCombinedTextureImageUnits = 0;
     webContext()->getIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &numCombinedTextureImageUnits);
     m_samplerUnits.clear();

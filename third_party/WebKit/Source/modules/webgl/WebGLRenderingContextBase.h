@@ -587,6 +587,7 @@ protected:
     GLint m_maxTextureSize;
     GLint m_maxCubeMapTextureSize;
     GLint m_max3DTextureSize;
+    GLint m_maxArrayTextureLayers;
     GLint m_maxRenderbufferSize;
     GLint m_maxViewportDims[2];
     GLint m_maxTextureLevel;

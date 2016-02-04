@@ -653,12 +653,12 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   GLint MaxLevelsForTarget(GLenum target) const {
     switch (target) {
       case GL_TEXTURE_2D:
+      case GL_TEXTURE_2D_ARRAY:
         return max_levels_;
       case GL_TEXTURE_RECTANGLE_ARB:
       case GL_TEXTURE_EXTERNAL_OES:
         return 1;
       case GL_TEXTURE_3D:
-      case GL_TEXTURE_2D_ARRAY:
         return max_3d_levels_;
       default:
         return max_cube_map_levels_;
@@ -670,11 +670,11 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
     switch (target) {
       case GL_TEXTURE_2D:
       case GL_TEXTURE_EXTERNAL_OES:
+      case GL_TEXTURE_2D_ARRAY:
         return max_texture_size_;
       case GL_TEXTURE_RECTANGLE:
         return max_rectangle_texture_size_;
       case GL_TEXTURE_3D:
-      case GL_TEXTURE_2D_ARRAY:
         return max_3d_texture_size_;
       default:
         return max_cube_map_texture_size_;

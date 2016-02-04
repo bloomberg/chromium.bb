@@ -62,6 +62,7 @@ class TextureManagerTest : public GpuServiceTest {
   static const GLint kMax2dLevels = 6;
   static const GLint kMaxCubeMapLevels = 4;
   static const GLint kMaxExternalLevels = 1;
+  static const GLint kMax3dLevels = 9;
   static const bool kUseDefaultTextures = false;
 
   TextureManagerTest() {
@@ -131,9 +132,11 @@ const GLint TextureManagerTest::kMaxTextureSize;
 const GLint TextureManagerTest::kMaxCubeMapTextureSize;
 const GLint TextureManagerTest::kMaxRectangleTextureSize;
 const GLint TextureManagerTest::kMaxExternalTextureSize;
+const GLint TextureManagerTest::kMax3DTextureSize;
 const GLint TextureManagerTest::kMax2dLevels;
 const GLint TextureManagerTest::kMaxCubeMapLevels;
 const GLint TextureManagerTest::kMaxExternalLevels;
+const GLint TextureManagerTest::kMax3dLevels;
 #endif
 
 TEST_F(TextureManagerTest, Basic) {
@@ -354,6 +357,8 @@ TEST_F(TextureManagerTest, MaxValues) {
             manager_->MaxLevelsForTarget(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z));
   EXPECT_EQ(kMaxExternalLevels,
             manager_->MaxLevelsForTarget(GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_EQ(kMax2dLevels, manager_->MaxLevelsForTarget(GL_TEXTURE_2D_ARRAY));
+  EXPECT_EQ(kMax3dLevels, manager_->MaxLevelsForTarget(GL_TEXTURE_3D));
   EXPECT_EQ(kMaxTextureSize, manager_->MaxSizeForTarget(GL_TEXTURE_2D));
   EXPECT_EQ(kMaxCubeMapTextureSize,
             manager_->MaxSizeForTarget(GL_TEXTURE_CUBE_MAP));
@@ -373,6 +378,8 @@ TEST_F(TextureManagerTest, MaxValues) {
             manager_->MaxSizeForTarget(GL_TEXTURE_RECTANGLE_ARB));
   EXPECT_EQ(kMaxExternalTextureSize,
             manager_->MaxSizeForTarget(GL_TEXTURE_EXTERNAL_OES));
+  EXPECT_EQ(kMaxTextureSize, manager_->MaxSizeForTarget(GL_TEXTURE_2D_ARRAY));
+  EXPECT_EQ(kMax3DTextureSize, manager_->MaxSizeForTarget(GL_TEXTURE_3D));
 }
 
 TEST_F(TextureManagerTest, ValidForTarget) {
@@ -1035,6 +1042,52 @@ TEST_F(TextureTest, GetLevelSize) {
   EXPECT_EQ(4, width);
   EXPECT_EQ(5, height);
   EXPECT_EQ(6, depth);
+}
+
+TEST_F(TextureTest, GetLevelSizeTexture2DArray) {
+  manager_->SetTarget(texture_ref_.get(), GL_TEXTURE_2D_ARRAY);
+  manager_->SetLevelInfo(texture_ref_.get(), GL_TEXTURE_2D_ARRAY, 0, GL_RGBA, 4,
+                         4, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect(4, 4));
+  GLsizei width = -1;
+  GLsizei height = -1;
+  GLsizei depth = -1;
+  Texture* texture = texture_ref_->texture();
+  manager_->MarkMipmapsGenerated(texture_ref_.get());
+  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, -1,
+                                     &width, &height, &depth));
+  EXPECT_FALSE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 1000,
+                                     &width, &height, &depth));
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 0,
+                                    &width, &height, &depth));
+  EXPECT_EQ(4, width);
+  EXPECT_EQ(4, height);
+  EXPECT_EQ(2, depth);
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 1,
+                                    &width, &height, &depth));
+  EXPECT_EQ(2, width);
+  EXPECT_EQ(2, height);
+  EXPECT_EQ(2, depth);
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 2,
+                                    &width, &height, &depth));
+  EXPECT_EQ(1, width);
+  EXPECT_EQ(1, height);
+  EXPECT_EQ(2, depth);
+  manager_->RemoveTexture(kClient1Id);
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 0,
+                                    &width, &height, &depth));
+  EXPECT_EQ(4, width);
+  EXPECT_EQ(4, height);
+  EXPECT_EQ(2, depth);
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 1,
+                                    &width, &height, &depth));
+  EXPECT_EQ(2, width);
+  EXPECT_EQ(2, height);
+  EXPECT_EQ(2, depth);
+  EXPECT_TRUE(texture->GetLevelSize(GL_TEXTURE_2D_ARRAY, 2,
+                                    &width, &height, &depth));
+  EXPECT_EQ(1, width);
+  EXPECT_EQ(1, height);
+  EXPECT_EQ(2, depth);
 }
 
 TEST_F(TextureTest, GetLevelType) {

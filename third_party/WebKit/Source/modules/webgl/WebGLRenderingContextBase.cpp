@@ -1058,9 +1058,11 @@ void WebGLRenderingContextBase::initializeNewContext()
     webContext()->getIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &m_maxCubeMapTextureSize);
     m_max3DTextureSize = 0;
     m_max3DTextureLevel = 0;
+    m_maxArrayTextureLayers = 0;
     if (isWebGL2OrHigher()) {
         webContext()->getIntegerv(GL_MAX_3D_TEXTURE_SIZE, &m_max3DTextureSize);
         m_max3DTextureLevel = WebGLTexture::computeLevelCount(m_max3DTextureSize, m_max3DTextureSize, m_max3DTextureSize);
+        webContext()->getIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &m_maxArrayTextureLayers);
     }
     m_maxCubeMapTextureLevel = WebGLTexture::computeLevelCount(m_maxCubeMapTextureSize, m_maxCubeMapTextureSize, 1);
     m_maxRenderbufferSize = 0;
@@ -5735,9 +5737,16 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(const char* functionNa
         }
         break;
     case GL_TEXTURE_3D:
-    case GL_TEXTURE_2D_ARRAY:
         if (isWebGL2OrHigher()) {
             if (width > (m_max3DTextureSize >> level) || height > (m_max3DTextureSize >> level) || depth > (m_max3DTextureSize >> level)) {
+                synthesizeGLError(GL_INVALID_VALUE, functionName, "width, height or depth out of range");
+                return false;
+            }
+            break;
+        }
+    case GL_TEXTURE_2D_ARRAY:
+        if (isWebGL2OrHigher()) {
+            if (width > (m_maxTextureSize >> level) || height > (m_maxTextureSize >> level) || depth > m_maxArrayTextureLayers) {
                 synthesizeGLError(GL_INVALID_VALUE, functionName, "width, height or depth out of range");
                 return false;
             }
