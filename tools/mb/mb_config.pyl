@@ -137,6 +137,14 @@
     'swarming_gyp_release_trybot_minimal_symbols_x86': ['swarming', 'gyp', 'release_trybot', 'minimal_symbols', 'x86'],
     'swarming_tsan_gyp_release_trybot': ['swarming', 'disable_nacl', 'tsan', 'gyp', 'release_trybot'],
 
+    # Configurations that build with proprietary codecs enabled.
+    'android_gn_debug_bot_chrome_with_codecs': ['android', 'gn', 'debug_bot', 'chrome_with_codecs'],
+    'android_gn_release_bot_chrome_with_codecs': ['android', 'gn', 'release_bot', 'chrome_with_codecs'],
+    'gn_debug_bot_minimal_symbols_chrome_with_codecs': ['gn', 'debug_bot_minimal_symbols', 'chrome_with_codecs'],
+    'gn_debug_static_bot_chrome_with_codecs': ['gn', 'debug_static_bot', 'chrome_with_codecs'],
+    'gn_release_bot_chrome_with_codecs': ['gn', 'release_bot', 'chrome_with_codecs'],
+    'gn_release_bot_minimal_symbols_chrome_with_codecs': ['gn', 'release_bot_minimal_symbols', 'chrome_with_codecs'],
+
     # This indicates that we haven't yet set up this bot w/ MB. This is
     # different from 'none' in that a bot set to 'none' should never do
     # compiles; a bot set to 'tbd' should do compiles but we haven't
@@ -178,6 +186,11 @@
       'gyp_defines': 'OS=android',
     },
 
+    'archive_gpu_tests': {
+      # archive_gpu_tests=true is not needed in GN builds.
+      'gyp_defines': 'archive_gpu_tests=1',
+    },
+
     'arm': {
       'gn_args': 'target_cpu="arm"',
       'gyp_defines': 'target_arch=arm',
@@ -206,6 +219,11 @@
     'cfi': {
       'gn_args': 'is_cfi=true',
       'gyp_defines': 'cfi_vptr=1',
+    },
+
+    'chrome_with_codecs': {
+      'gn_args': 'ffmpeg_branding="Chrome" proprietary_codecs=true',
+      'gyp_defines': 'ffmpeg_branding=Chrome proprietary_codecs=1',
     },
 
     'chromeos': {
@@ -291,9 +309,7 @@
     },
 
     'gpu_tests': {
-      # archive_gpu_tests=true is not needed in GN builds.
-      'gn_args': 'ffmpeg_branding="Chrome" proprietary_codecs=true',
-      'gyp_defines': 'archive_gpu_tests=1 ffmpeg_branding=Chrome proprietary_codecs=1',
+      'mixins': ['archive_gpu_tests', 'chrome_with_codecs'],
     },
 
     'gyp': {'type': 'gyp'},
@@ -639,13 +655,13 @@
       'Linux Release dEQP (NVIDIA)': 'none',
     },
     'chromium.webrtc.fyi': {
-      'Android GN': 'android_gn_release_bot',
-      'Android GN (dbg)': 'android_gn_debug_bot',
-      'Linux Builder': 'gn_release_bot',
-      'Mac GN': 'gn_release_bot',
-      'Mac GN (dbg)': 'gn_debug_static_bot',
-      'Win x64 GN': 'gn_release_bot_minimal_symbols',
-      'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols',
+      'Android GN': 'android_gn_release_bot_chrome_with_codecs',
+      'Android GN (dbg)': 'android_gn_debug_bot_chrome_with_codecs',
+      'Linux Builder': 'gn_release_bot_chrome_with_codecs',
+      'Mac GN': 'gn_release_bot_chrome_with_codecs',
+      'Mac GN (dbg)': 'gn_debug_static_bot_chrome_with_codecs',
+      'Win x64 GN': 'gn_release_bot_minimal_symbols_chrome_with_codecs',
+      'Win x64 GN (dbg)': 'gn_debug_bot_minimal_symbols_chrome_with_codecs',
     },
     'client.skia': {
       'Linux Builder': 'swarming_gn_release_bot',
