@@ -57,12 +57,6 @@ interface ApplicationManager {
                           mojo.CapabilityFilter filter,
                           PIDReceiver& pid_receiver);
 
-  // Called by a child process every time it launches a process. This is needed
-  // so that the ChildBroker class in the grandchild process can talk to the one
-  // global BrokerState in the parent mojo_runner process.
-  RegisterProcessWithBroker(uint32 pid,
-                            handle pipe);
-
   // The listener is removed when the pipe is closed.
   AddListener(ApplicationManagerListener listener);
 };

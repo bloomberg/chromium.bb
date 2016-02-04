@@ -628,7 +628,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
 #endif  // USE_ATTACHMENT_BROKER
 
 #if defined(MOJO_SHELL_CLIENT)
-  RegisterChildWithExternalShell(id_, this);
+  RegisterChildWithExternalShell(id_, weak_factory_.GetWeakPtr());
 #endif
 }
 
@@ -2562,16 +2562,8 @@ void RenderProcessHostImpl::OnProcessLaunched() {
       child_process_launcher_.get()) {
     base::ProcessHandle process_handle =
         child_process_launcher_->GetProcess().Handle();
-    mojo::embedder::ScopedPlatformHandle client_pipe;
-#if defined(MOJO_SHELL_CLIENT)
-    if (IsRunningInMojoShell()) {
-      client_pipe = RegisterProcessWithBroker(
-          child_process_launcher_->GetProcess().Pid());
-    } else
-#endif
-    {
-      client_pipe = mojo::embedder::ChildProcessLaunched(process_handle);
-    }
+    mojo::embedder::ScopedPlatformHandle client_pipe =
+        mojo::embedder::ChildProcessLaunched(process_handle);
     Send(new ChildProcessMsg_SetMojoParentPipeHandle(
         IPC::GetFileHandleForProcess(
 #if defined(OS_WIN)

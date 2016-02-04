@@ -10,119 +10,40 @@
 #include "base/thread_task_runner_handle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/edk/system/ports/name.h"
 
 namespace mojo {
 namespace edk {
 
 namespace {
 
-const size_t kMaxTokenSize = 256;
+struct BootstrapData {
+  // The node name of the sender.
+  ports::NodeName node_name;
 
-class ParentBootstrap : public RemoteMessagePipeBootstrap {
- public:
-  static void Create(NodeController* node_controller,
-                     ScopedPlatformHandle platform_handle,
-                     const std::string& token) {
-    // Owns itself.
-    new ParentBootstrap(node_controller, std::move(platform_handle), token);
-  }
-
- private:
-  ParentBootstrap(NodeController* node_controller,
-                  ScopedPlatformHandle platform_handle,
-                  const std::string& token)
-      : RemoteMessagePipeBootstrap(std::move(platform_handle)),
-        node_controller_(node_controller),
-        token_(token) {
-    DCHECK_LE(token_.size(), kMaxTokenSize);
-    Channel::MessagePtr message(new Channel::Message(token_.size(), 0));
-    memcpy(message->mutable_payload(), token_.data(), token_.size());
-    channel_->Write(std::move(message));
-  }
-
-  ~ParentBootstrap() override {}
-
-  void OnTokenReceived(const std::string& token) override {
-    // It's possible for two different endpoints in the same parent process to
-    // initiate parent bootstrap on the same platform channel without being
-    // aware of the other.
-    //
-    // This will successfully connect the two endpoints as long as at least one
-    // of the ParentBootstrap instances receives the other's token. It's OK that
-    // they race. NodeController will silently ignore any missed reservations.
-    node_controller_->ConnectReservedPorts(token_, token);
-    ShutDown();
-  }
-
-  NodeController* node_controller_;
-  const std::string token_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParentBootstrap);
-};
-
-class ChildBootstrap : public RemoteMessagePipeBootstrap {
- public:
-  static void Create(NodeController* node_controller,
-                     ScopedPlatformHandle platform_handle,
-                     const ports::PortRef& port,
-                     const base::Closure& callback) {
-    // Owns itself.
-    new ChildBootstrap(
-        node_controller, std::move(platform_handle), port, callback);
-  }
-
- private:
-  ChildBootstrap(NodeController* node_controller,
-                 ScopedPlatformHandle platform_handle,
-                 const ports::PortRef& port,
-                 const base::Closure& callback)
-      : RemoteMessagePipeBootstrap(std::move(platform_handle)),
-        node_controller_(node_controller),
-        port_(port),
-        callback_(callback) {
-  }
-
-  ~ChildBootstrap() override {}
-
-  void OnTokenReceived(const std::string& token) override {
-    CHECK(!callback_.is_null());
-    base::Closure callback = callback_;
-    callback_.Reset();
-
-    node_controller_->ConnectToParentPort(port_, token, callback);
-    ShutDown();
-  }
-
-  NodeController* const node_controller_;
-  const ports::PortRef port_;
-  base::Closure callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChildBootstrap);
+  // The port name of the sender's local bootstrap port.
+  ports::PortName port_name;
 };
 
 }  // namespace
 
 // static
-void RemoteMessagePipeBootstrap::CreateForParent(
-    NodeController* node_controller,
-    ScopedPlatformHandle platform_handle,
-    const std::string& token) {
-  node_controller->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ParentBootstrap::Create, base::Unretained(node_controller),
-                 base::Passed(&platform_handle), token));
-}
-
-// static
-void RemoteMessagePipeBootstrap::CreateForChild(
+void RemoteMessagePipeBootstrap::Create(
     NodeController* node_controller,
     ScopedPlatformHandle platform_handle,
     const ports::PortRef& port,
     const base::Closure& callback) {
-  node_controller->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChildBootstrap::Create, base::Unretained(node_controller),
-                 base::Passed(&platform_handle), port, callback));
+  if (node_controller->io_task_runner()->RunsTasksOnCurrentThread()) {
+    // Owns itself.
+    new RemoteMessagePipeBootstrap(node_controller, std::move(platform_handle),
+                                   port, callback);
+  } else {
+    node_controller->io_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeBootstrap::Create,
+                   base::Unretained(node_controller),
+                   base::Passed(&platform_handle), port, callback));
+  }
 }
 
 RemoteMessagePipeBootstrap::~RemoteMessagePipeBootstrap() {
@@ -133,12 +54,24 @@ RemoteMessagePipeBootstrap::~RemoteMessagePipeBootstrap() {
 }
 
 RemoteMessagePipeBootstrap::RemoteMessagePipeBootstrap(
-    ScopedPlatformHandle platform_handle)
-    : io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    NodeController* node_controller,
+    ScopedPlatformHandle platform_handle,
+    const ports::PortRef& port,
+    const base::Closure& callback)
+    : node_controller_(node_controller),
+      local_port_(port),
+      callback_(callback),
+      io_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       channel_(Channel::Create(this, std::move(platform_handle),
                                io_task_runner_)) {
   base::MessageLoop::current()->AddDestructionObserver(this);
   channel_->Start();
+
+  Channel::MessagePtr message(new Channel::Message(sizeof(BootstrapData), 0));
+  BootstrapData* data = static_cast<BootstrapData*>(message->mutable_payload());
+  data->node_name = node_controller_->name();
+  data->port_name = local_port_.name();
+  channel_->Write(std::move(message));
 }
 
 void RemoteMessagePipeBootstrap::ShutDown() {
@@ -149,7 +82,8 @@ void RemoteMessagePipeBootstrap::ShutDown() {
 
   shutting_down_ = true;
 
-  // Shut down asynchronously so implementations are free to call it whenever.
+  // Shut down asynchronously so ShutDown() can be called from within
+  // OnChannelMessage and OnChannelError.
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RemoteMessagePipeBootstrap::ShutDownNow,
@@ -167,13 +101,34 @@ void RemoteMessagePipeBootstrap::OnChannelMessage(
     ScopedPlatformHandleVectorPtr handles) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!handles || !handles->size());
-  if (payload_size > kMaxTokenSize) {
-    DLOG(ERROR) << "Invalid token payload. Dropping message pipe bootstrap.";
+
+  const BootstrapData* data = static_cast<const BootstrapData*>(payload);
+  if (peer_info_received_) {
+    // This should only be a confirmation from the other end, which tells us
+    // it's now safe to shut down.
+    if (payload_size != 0)
+      DLOG(ERROR) << "Unexpected message received in message pipe bootstrap.";
     ShutDown();
     return;
   }
 
-  OnTokenReceived(std::string(static_cast<const char*>(payload), payload_size));
+  if (payload_size != sizeof(BootstrapData)) {
+    DLOG(ERROR) << "Invalid bootstrap payload.";
+    ShutDown();
+    return;
+  }
+
+  peer_info_received_ = true;
+  node_controller_->ConnectToRemotePort(
+      local_port_, data->node_name, data->port_name, callback_);
+
+  // Send another ping to the other end to trigger shutdown. This may race with
+  // the other end sending its own ping, but it doesn't matter. Whoever wins
+  // will cause the other end to tear down, and the ensuing channel error will
+  // in turn clean up the remaining end.
+
+  Channel::MessagePtr message(new Channel::Message(0, 0));
+  channel_->Write(std::move(message));
 }
 
 void RemoteMessagePipeBootstrap::OnChannelError() {

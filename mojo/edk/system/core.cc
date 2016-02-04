@@ -160,23 +160,14 @@ void Core::RequestShutdown(const base::Closure& callback) {
   GetNodeController()->RequestShutdown(on_shutdown);
 }
 
-void Core::CreateParentMessagePipe(
-    ScopedPlatformHandle platform_handle,
-    const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
-  std::string token = GenerateRandomToken();
-  CreateParentMessagePipe(token, callback);
-  RemoteMessagePipeBootstrap::CreateForParent(
-      GetNodeController(), std::move(platform_handle), token);
-}
-
-void Core::CreateChildMessagePipe(
+void Core::CreateMessagePipe(
     ScopedPlatformHandle platform_handle,
     const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
   ports::PortRef port;
   GetNodeController()->node()->CreateUninitializedPort(&port);
-  RemoteMessagePipeBootstrap::CreateForChild(
+  RemoteMessagePipeBootstrap::Create(
       GetNodeController(), std::move(platform_handle), port,
-      base::Bind(&OnPortConnected, base::Unretained(this), 1, callback, port));
+      base::Bind(&OnPortConnected, base::Unretained(this), 0, callback, port));
 }
 
 void Core::CreateParentMessagePipe(

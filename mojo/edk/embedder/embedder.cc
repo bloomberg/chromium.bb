@@ -32,14 +32,6 @@ Core* g_core;
 PlatformSupport* g_platform_support;
 ProcessDelegate* g_process_delegate;
 
-// This is used to help negotiate message pipe connections over arbitrary
-// platform channels. The embedder needs to know which end of the pipe it's on
-// so it can do the right thing.
-//
-// TODO: Remove this when people stop using mojo::embedder::CreateChannel()
-// and thus mojo::edk::CreateMessagePipe(ScopedPlatformHandle).
-bool g_is_parent_process = true;
-
 Core* GetCore() { return g_core; }
 
 }  // namespace internal
@@ -51,7 +43,6 @@ void PreInitializeParentProcess() {
 }
 
 void PreInitializeChildProcess() {
-  internal::g_is_parent_process = false;
 }
 
 ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
@@ -68,7 +59,6 @@ void ChildProcessLaunched(base::ProcessHandle child_process,
 
 void SetParentPipeHandle(ScopedPlatformHandle pipe) {
   CHECK(internal::g_core);
-  internal::g_is_parent_process = false;
   internal::g_core->InitChild(std::move(pipe));
 }
 
@@ -125,13 +115,7 @@ void CreateMessagePipe(
     ScopedPlatformHandle platform_handle,
     const base::Callback<void(ScopedMessagePipeHandle)>& callback) {
   DCHECK(internal::g_core);
-  if (internal::g_is_parent_process) {
-    internal::g_core->CreateParentMessagePipe(std::move(platform_handle),
-                                              callback);
-  } else {
-    internal::g_core->CreateChildMessagePipe(std::move(platform_handle),
-                                             callback);
-  }
+  internal::g_core->CreateMessagePipe(std::move(platform_handle), callback);
 }
 
 void CreateParentMessagePipe(

@@ -110,6 +110,14 @@ class NodeController : public ports::NodeDelegate,
   void ConnectReservedPorts(const std::string& token1,
                             const std::string& token2);
 
+  // Connects a local port to a port on a remote node. Note that a connection to
+  // the remote node need not be established yet. The port will be connected
+  // ASAP, at which point |callback| will be run.
+  void ConnectToRemotePort(const ports::PortRef& local_port,
+                           const ports::NodeName& remote_node_name,
+                           const ports::PortName& remote_port_name,
+                           const base::Closure& callback);
+
   // Creates a new shared buffer for use in the current process.
   scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(size_t num_bytes);
 
@@ -148,12 +156,25 @@ class NodeController : public ports::NodeDelegate,
     ReservePortCallback callback;
   };
 
+  // Tracks a pending connection to a remote port on any peer.
+  struct PendingRemotePortConnection {
+    PendingRemotePortConnection();
+    ~PendingRemotePortConnection();
+
+    ports::PortRef local_port;
+    ports::NodeName remote_node_name;
+    ports::PortName remote_port_name;
+    base::Closure callback;
+  };
+
   void ConnectToChildOnIOThread(base::ProcessHandle process_handle,
                                 ScopedPlatformHandle platform_handle);
   void ConnectToParentOnIOThread(ScopedPlatformHandle platform_handle);
   void RequestParentPortConnectionOnIOThread(const ports::PortRef& local_port,
                                              const std::string& token,
                                              const base::Closure& callback);
+  void ConnectToRemotePortOnIOThread(
+      const PendingRemotePortConnection& connection);
 
   scoped_refptr<NodeChannel> GetPeerChannel(const ports::NodeName& name);
   scoped_refptr<NodeChannel> GetParentChannel();
@@ -265,7 +286,12 @@ class NodeController : public ports::NodeDelegate,
   std::vector<PendingPortRequest> pending_port_requests_;
 
   // Port connection requests awaiting a response from the parent.
-  std::unordered_map<ports::PortName, base::Closure> pending_port_connections_;
+  std::unordered_map<ports::PortName, base::Closure>
+      pending_parent_port_connections_;
+
+  // Port connections pending the availability of a remote peer node.
+  std::unordered_map<ports::NodeName, std::vector<PendingRemotePortConnection>>
+      pending_remote_port_connections_;
 
   // Indicates whether this object should delete itself on IO thread shutdown.
   // Must only be accessed from the IO thread.

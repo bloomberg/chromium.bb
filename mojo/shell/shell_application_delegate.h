@@ -42,7 +42,6 @@ class ShellApplicationDelegate
       const String& url,
       CapabilityFilterPtr filter,
       InterfaceRequest<mojom::PIDReceiver> pid_receiver) override;
-  void RegisterProcessWithBroker(uint32_t pid, ScopedHandle pipe) override;
   void AddListener(
       mojom::ApplicationManagerListenerPtr listener) override;
 

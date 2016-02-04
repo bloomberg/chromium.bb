@@ -14,6 +14,7 @@
 #include "base/task_runner.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/port_ref.h"
 
 namespace mojo {
@@ -22,38 +23,52 @@ namespace edk {
 class NodeController;
 
 // This is used by Core to negotiate a new cross-process message pipe given
-// an arbitrary platform channel. One end of the channel must be passed to
-// CreateForParent() in the parent process, and the other end must be passed to
-// CreateForChild() in the child process.
+// an arbitrary platform channel. Both ends of the channel must be passed to
+// RemoteMessagePipeBootstrap::Create() in their respective processes.
+//
+// The bootstrapping procedure the same on either end:
+//
+//   1. Create a local port P.
+//   2. Write the local node name and P's name to the bootstrap pipe.
+//   3. When a message is read from the pipe:
+//      - If it's the first message read, extract the remote node+port name and
+//        initialize the local port. Send an empty ACK message on the pipe.
+//      - If it's the second message read, close the channel, and delete |this|.
+//   4. When an error occus on the pipe, delete |this|.
+//
+// Excluding irrecoverable error conditions such as either process dying,
+// armageddon, etc., this ensures neither end closes the channel until both ends
+// have intiailized their corresponding local port.
 class RemoteMessagePipeBootstrap
     : public Channel::Delegate,
       public base::MessageLoop::DestructionObserver {
  public:
   ~RemoteMessagePipeBootstrap() override;
 
-  // The NodeController should already have reserved a local port for |token|
-  // before calling this method.
-  static void CreateForParent(NodeController* node_controller,
-                              ScopedPlatformHandle platform_handle,
-                              const std::string& token);
-
   // |port| must be a reference to an uninitialized local port.
-  static void CreateForChild(NodeController* node_controller,
-                             ScopedPlatformHandle platform_handle,
-                             const ports::PortRef& port,
-                             const base::Closure& callback);
-
-  // Handle a received token.
-  virtual void OnTokenReceived(const std::string& token) = 0;
+  static void Create(NodeController* node_controller,
+                     ScopedPlatformHandle platform_handle,
+                     const ports::PortRef& port,
+                     const base::Closure& callback);
 
  protected:
-  explicit RemoteMessagePipeBootstrap(ScopedPlatformHandle platform_handle);
+  explicit RemoteMessagePipeBootstrap(
+      NodeController* node_controller,
+      ScopedPlatformHandle platform_handle,
+      const ports::PortRef& port,
+      const base::Closure& callback);
 
   void ShutDown();
 
   bool shutting_down_ = false;
+  NodeController* node_controller_;
+  const ports::PortRef local_port_;
+  base::Closure callback_;
+
   scoped_refptr<base::TaskRunner> io_task_runner_;
   scoped_refptr<Channel> channel_;
+
+  bool peer_info_received_ = false;
 
  private:
   // base::MessageLoop::DestructionObserver:
