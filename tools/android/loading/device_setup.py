@@ -107,7 +107,8 @@ def DeviceConnection(device,
   """
   package_info = constants.PACKAGE_INFO[package]
   command_line_path = '/data/local/chrome-command-line'
-  new_flags = ['--enable-test-events',
+  new_flags = ['--disable-fre',
+               '--enable-test-events',
                '--remote-debugging-port=%d' % port]
   if device:
     _SetUpDevice(device, package_info)
