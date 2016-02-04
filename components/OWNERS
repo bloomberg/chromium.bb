@@ -48,6 +48,9 @@ per-file cloud_devices*=vitalybuka@chromium.org
 
 per-file chrome_apps.gypi=tbarzic@chromium.org
 
+per-file component_updater.gypi=sorin@chromium.org
+per-file component_updater.gypi=waffles@chromium.org
+
 per-file constrained_window*=gbillock@chromium.org
 per-file constrained_window*=msw@chromium.org
 
@@ -345,6 +348,9 @@ per-file undo.gypi=sky@chromium.org
 per-file undo.gypi=tom.cassiotis@gmail.com
 per-file undo_strings.grdp=sky@chromium.org
 per-file undo_strings.grdp=tom.cassiotis@gmail.com
+
+per-file update_client.gypi=sorin@chromium.org
+per-file update_client.gypi=waffles@chromium.org
 
 per-file user_manager.gypi=antrim@chromium.org
 per-file user_manager.gypi=dzhioev@chromium.org
