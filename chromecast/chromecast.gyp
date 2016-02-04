@@ -132,6 +132,18 @@
       ],
     },  # end of target 'cast_base'
     {
+      'target_name': 'cast_component',
+      'type': '<(component)',
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'base/component/component.cc',
+        'base/component/component.h',
+        'base/component/component_internal.h',
+      ],
+    },  # end of target 'cast_component'
+    {
       'target_name': 'cast_crash',
       'type': '<(component)',
       'include_dirs': [

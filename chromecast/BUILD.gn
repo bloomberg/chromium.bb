@@ -33,6 +33,7 @@ cast_test_group("cast_tests") {
   tests = [
     "//base:base_unittests",
     "//chromecast/base:cast_base_unittests",
+    "//chromecast/base/component:cast_component_unittests",
     "//chromecast/crypto:cast_crypto_unittests",
     "//content/test:content_unittests",
     "//crypto:crypto_unittests",
