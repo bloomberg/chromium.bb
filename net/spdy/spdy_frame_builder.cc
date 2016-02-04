@@ -68,8 +68,7 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
   bool success = true;
   FlagsAndLength flags_length = CreateFlagsAndLength(
       flags, capacity_ - framer.GetControlFrameHeaderSize());
-  success &= WriteUInt16(kControlFlagMask |
-                         SpdyConstants::SerializeMajorVersion(version_));
+  success &= WriteUInt16(kControlFlagMask | kSpdy3Version);
   success &= WriteUInt16(
       SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
   success &= WriteBytes(&flags_length, sizeof(flags_length));

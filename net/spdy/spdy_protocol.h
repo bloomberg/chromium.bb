@@ -35,10 +35,11 @@ namespace net {
 // that the enum value SPDYn maps to the integer n.
 enum SpdyMajorVersion {
   SPDY3 = 1,
-  SPDY_MIN_VERSION = SPDY3,
   HTTP2,
-  SPDY_MAX_VERSION = HTTP2
 };
+
+// 15 bit version field for SPDY/3 frames.
+const uint16_t kSpdy3Version = 3;
 
 // A SPDY stream id is a 31 bit entity.
 typedef uint32_t SpdyStreamId;
@@ -517,10 +518,6 @@ class NET_EXPORT_PRIVATE SpdyConstants {
 
   // Initial window size for a session in bytes.
   static int32_t GetInitialSessionWindowSize(SpdyMajorVersion version);
-
-  static SpdyMajorVersion ParseMajorVersion(int version_number);
-
-  static int SerializeMajorVersion(SpdyMajorVersion version);
 
   static std::string GetVersionString(SpdyMajorVersion version);
 };

@@ -706,15 +706,12 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
     bool successful_read = reader.ReadUInt16(&version);
     DCHECK(successful_read);
     is_control_frame = (version & kControlFlagMask) != 0;
-    version &= ~kControlFlagMask;  // Only valid for control frames.
     if (is_control_frame) {
-      // We check version before we check validity: version can never be
-      // 'invalid', it can only be unsupported.
-      if (version != SpdyConstants::SerializeMajorVersion(SPDY3) ||
-          SpdyConstants::ParseMajorVersion(version) != protocol_version_) {
+      version &= ~kControlFlagMask;
+      if (version != kSpdy3Version) {
         // Version does not match the version the framer was initialized with.
         DVLOG(1) << "Unsupported SPDY version " << version << " (expected "
-                 << protocol_version_ << ")";
+                 << kSpdy3Version << ")";
         set_error(SPDY_UNSUPPORTED_VERSION);
         return 0;
       }

@@ -685,30 +685,6 @@ int32_t SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
   return (version == SPDY3) ? (64 * 1024) : (64 * 1024 - 1);
 }
 
-SpdyMajorVersion SpdyConstants::ParseMajorVersion(int version_number) {
-  switch (version_number) {
-    case 3:
-      return SPDY3;
-    case 4:
-      return HTTP2;
-    default:
-      LOG(DFATAL) << "Unsupported SPDY version number: " << version_number;
-      return SPDY3;
-  }
-}
-
-int SpdyConstants::SerializeMajorVersion(SpdyMajorVersion version) {
-  switch (version) {
-    case SPDY3:
-      return 3;
-    case HTTP2:
-      return 4;
-    default:
-      LOG(DFATAL) << "Unsupported SPDY major version: " << version;
-      return -1;
-  }
-}
-
 std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
   switch (version) {
     case SPDY3:
