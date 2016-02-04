@@ -31,6 +31,11 @@ const char* kSuffixesToSetHeadersFor[] = {
     ".ytimg.com",
 };
 
+// Exact hostnames in lowercase to set headers for.
+const char* kHostsToSetHeadersFor[] = {
+    "googleweblight.com",
+};
+
 const char kChromeUMAEnabled[] = "X-Chrome-UMA-Enabled";
 const char kClientData[] = "X-Client-Data";
 
@@ -89,6 +94,10 @@ bool ShouldAppendVariationHeaders(const GURL& url) {
   for (size_t i = 0; i < arraysize(kSuffixesToSetHeadersFor); ++i) {
     if (base::EndsWith(host, kSuffixesToSetHeadersFor[i],
                        base::CompareCase::INSENSITIVE_ASCII))
+      return true;
+  }
+  for (size_t i = 0; i < arraysize(kHostsToSetHeadersFor); ++i) {
+    if (base::LowerCaseEqualsASCII(host, kHostsToSetHeadersFor[i]))
       return true;
   }
 

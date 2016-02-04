@@ -100,6 +100,11 @@ TEST(VariationsHttpHeadersTest, ShouldAppendHeaders) {
       {"http://ssl.gstatic.com", true},
       {"http://a.b.gstatic.com", true},
       {"http://a.b.ytimg.com", true},
+      {"http://googleweblight.com", true},
+      {"https://googleweblight.com", true},
+      {"http://wwwgoogleweblight.com", false},
+      {"http://www.googleweblight.com", false},
+      {"http://a.b.googleweblight.com", false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
