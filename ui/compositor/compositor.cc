@@ -126,6 +126,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
   // These flags should be mirrored by renderer versions in content/renderer/.
   settings.initial_debug_state.show_debug_borders =
       command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders);
+  settings.initial_debug_state.show_fps_counter =
+      command_line->HasSwitch(cc::switches::kUIShowFPSCounter);
   settings.initial_debug_state.show_layer_animation_bounds_rects =
       command_line->HasSwitch(cc::switches::kUIShowLayerAnimationBounds);
   settings.initial_debug_state.show_paint_rects =

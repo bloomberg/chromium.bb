@@ -66,6 +66,12 @@ const char kDisableCompositorPropertyTrees[] =
 const char kShowCompositedLayerBorders[] = "show-composited-layer-borders";
 const char kUIShowCompositedLayerBorders[] = "ui-show-layer-borders";
 
+// Draws a heads-up-display showing Frames Per Second as well as GPU memory
+// usage. If you also use --enable-logging=stderr --vmodule="head*=1" then FPS
+// will also be output to the console log.
+const char kShowFPSCounter[] = "show-fps-counter";
+const char kUIShowFPSCounter[] = "ui-show-fps-counter";
+
 // Renders a border that represents the bounding box for the layer's animation.
 const char kShowLayerAnimationBounds[] = "show-layer-animation-bounds";
 const char kUIShowLayerAnimationBounds[] = "ui-show-layer-animation-bounds";
