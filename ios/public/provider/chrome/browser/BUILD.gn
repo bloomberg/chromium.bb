@@ -17,6 +17,8 @@ source_set("browser") {
     "signin/signin_error_provider.mm",
     "string_provider.cc",
     "string_provider.h",
+    "ui/default_ios_web_view_factory.h",
+    "ui/default_ios_web_view_factory.mm",
     "ui/infobar_view_delegate.h",
     "ui/infobar_view_protocol.h",
     "updatable_resource_provider.h",

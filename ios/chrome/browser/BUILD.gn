@@ -68,10 +68,16 @@ source_set("browser") {
     "browser_state/browser_state_otr_helper.h",
     "browser_state/chrome_browser_state.cc",
     "browser_state/chrome_browser_state.h",
+    "browser_state/chrome_browser_state_impl.cc",
+    "browser_state/chrome_browser_state_impl.h",
     "browser_state/chrome_browser_state_impl_io_data.cc",
     "browser_state/chrome_browser_state_impl_io_data.h",
     "browser_state/chrome_browser_state_io_data.cc",
     "browser_state/chrome_browser_state_io_data.h",
+    "browser_state/chrome_browser_state_removal_controller.h",
+    "browser_state/chrome_browser_state_removal_controller.mm",
+    "browser_state/off_the_record_chrome_browser_state_impl.cc",
+    "browser_state/off_the_record_chrome_browser_state_impl.h",
     "browser_state/off_the_record_chrome_browser_state_io_data.h",
     "browser_state/off_the_record_chrome_browser_state_io_data.mm",
     "browser_state_metrics/browser_state_metrics.cc",
@@ -568,6 +574,7 @@ source_set("browser") {
     "//components/update_client",
     "//components/upload_list",
     "//components/url_formatter",
+    "//components/user_prefs",
     "//components/variations",
     "//components/variations/service",
     "//components/version_info",
@@ -682,6 +689,12 @@ if (enable_rlz_support) {
 source_set("test_support") {
   testonly = true
   sources = [
+    "browser_state/test_chrome_browser_state.cc",
+    "browser_state/test_chrome_browser_state.h",
+    "browser_state/test_chrome_browser_state_isolated_context.h",
+    "browser_state/test_chrome_browser_state_isolated_context.mm",
+    "browser_state/test_chrome_browser_state_manager.c",
+    "browser_state/test_chrome_browser_state_manager.h",
     "geolocation/location_manager+Testing.h",
     "geolocation/test_location_manager.h",
     "geolocation/test_location_manager.mm",
@@ -700,6 +713,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    ":browser",
     "//base",
     "//components/browser_sync/browser",
     "//components/keyed_service/core",

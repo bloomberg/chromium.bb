@@ -113,6 +113,12 @@
         'ios_chrome.gyp:ios_chrome_browser',
       ],
       'sources': [
+        'browser/browser_state/test_chrome_browser_state.cc',
+        'browser/browser_state/test_chrome_browser_state.h',
+        'browser/browser_state/test_chrome_browser_state_isolated_context.h',
+        'browser/browser_state/test_chrome_browser_state_isolated_context.mm',
+        'browser/browser_state/test_chrome_browser_state_manager.cc',
+        'browser/browser_state/test_chrome_browser_state_manager.h',
         'browser/geolocation/location_manager+Testing.h',
         'browser/geolocation/test_location_manager.h',
         'browser/geolocation/test_location_manager.mm',

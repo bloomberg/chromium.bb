@@ -33,6 +33,7 @@ include_rules = [
   "+components/language_usage_metrics",
   "+components/leveldb_proto",
   "+components/metrics",
+  "+components/user_prefs",
   "+components/metrics_services_manager",
   "+components/net_log",
   "+components/network_time",
