@@ -117,7 +117,7 @@ format_is_supported(struct wl_client *client, uint32_t format)
 	default:
 		formats = wl_display_get_additional_shm_formats(display);
 		wl_array_for_each(p, formats)
-			if(*p == format)
+			if (*p == format)
 				return true;
 	}
 
