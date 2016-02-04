@@ -4,9 +4,9 @@
 
 #include "net/socket/server_socket.h"
 
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
 
 namespace net {
 
@@ -19,12 +19,12 @@ ServerSocket::~ServerSocket() {
 int ServerSocket::ListenWithAddressAndPort(const std::string& address_string,
                                            uint16_t port,
                                            int backlog) {
-  IPAddressNumber address_number;
-  if (!ParseIPLiteralToNumber(address_string, &address_number)) {
+  IPAddress ip_address;
+  if (!IPAddress::FromIPLiteral(address_string, &ip_address)) {
     return ERR_ADDRESS_INVALID;
   }
 
-  return Listen(IPEndPoint(address_number, port), backlog);
+  return Listen(IPEndPoint(ip_address, port), backlog);
 }
 
 }  // namespace net
