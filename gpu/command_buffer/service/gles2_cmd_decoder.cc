@@ -1251,14 +1251,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Returns: true if glEnable/glDisable should actually be called.
   bool SetCapabilityState(GLenum cap, bool enabled);
 
-  // Check that the currently bound framebuffers are valid.
-  // Generates GL error if not.
-  bool CheckBoundFramebuffersValid(const char* func_name);
-
-  // Check that the currently bound read framebuffer has a color image
-  // attached. Generates GL error if not.
-  bool CheckBoundReadFramebufferColorAttachment(const char* func_name);
-
   // Infer color encoding from internalformat
   static GLint GetColorEncodingFromInternalFormat(GLenum internalformat);
 
@@ -1270,9 +1262,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool CheckFramebufferValid(
       Framebuffer* framebuffer,
       GLenum target,
+      bool clear_uncleared_images,
       const char* func_name);
 
-  bool CheckBoundDrawFramebufferValid(const char* func_name);
+  bool CheckBoundDrawFramebufferValid(
+      bool clear_uncleared_images, const char* func_name);
+  bool CheckBoundReadFramebufferValid(const char* func_name);
 
   // Check if the current valuebuffer exists and is valid. If not generates
   // the appropriate GL error. Returns true if the current valuebuffer is in
@@ -3653,11 +3648,13 @@ void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
 
 bool GLES2DecoderImpl::CheckFramebufferValid(
     Framebuffer* framebuffer,
-    GLenum target, const char* func_name) {
+    GLenum target,
+    bool clear_uncleared_images,
+    const char* func_name) {
   if (!framebuffer) {
     if (surfaceless_)
       return false;
-    if (backbuffer_needs_clear_bits_) {
+    if (backbuffer_needs_clear_bits_ && clear_uncleared_images) {
       glClearColor(0, 0, 0, BackBufferHasAlpha() ? 0 : 1.f);
       state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
@@ -3698,8 +3695,9 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
   }
 
   // Are all the attachments cleared?
-  if (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
-      texture_manager()->HaveUnclearedMips()) {
+  if (clear_uncleared_images &&
+      (renderbuffer_manager()->HaveUnclearedRenderbuffers() ||
+       texture_manager()->HaveUnclearedMips())) {
     if (!framebuffer->IsCleared()) {
       // Can we clear them?
       if (framebuffer->GetStatus(texture_manager(), target) !=
@@ -3723,63 +3721,27 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     }
     framebuffer_manager()->MarkAsComplete(framebuffer);
   }
-
-  // NOTE: At this point we don't know if the framebuffer is complete but
-  // we DO know that everything that needs to be cleared has been cleared.
   return true;
 }
 
-bool GLES2DecoderImpl::CheckBoundFramebuffersValid(const char* func_name) {
-  if (!features().chromium_framebuffer_multisample) {
-    bool valid = CheckFramebufferValid(
-        framebuffer_state_.bound_draw_framebuffer.get(), GL_FRAMEBUFFER_EXT,
-        func_name);
-
-    if (valid)
-      OnUseFramebuffer();
-
-    return valid;
-  }
-  return CheckFramebufferValid(framebuffer_state_.bound_draw_framebuffer.get(),
-                               GL_DRAW_FRAMEBUFFER_EXT,
-                               func_name) &&
-         CheckFramebufferValid(framebuffer_state_.bound_read_framebuffer.get(),
-                               GL_READ_FRAMEBUFFER_EXT,
-                               func_name);
+bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(
+    bool clear_uncleared_images, const char* func_name) {
+  GLenum target = features().chromium_framebuffer_multisample ?
+      GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  bool valid = CheckFramebufferValid(
+      framebuffer, target, clear_uncleared_images, func_name);
+  if (valid && !features().chromium_framebuffer_multisample)
+    OnUseFramebuffer();
+  return valid;
 }
 
-bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
-  Framebuffer* framebuffer = framebuffer_state_.bound_draw_framebuffer.get();
-  if (!framebuffer) {
-    // Assume the default back buffer is always complete.
-    return true;
-  }
-  if (!framebuffer_manager()->IsComplete(framebuffer)) {
-    if (framebuffer->GetStatus(texture_manager(), GL_DRAW_FRAMEBUFFER) !=
-        GL_FRAMEBUFFER_COMPLETE) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_FRAMEBUFFER_OPERATION, func_name,
-          "framebuffer incomplete (check)");
-      return false;
-    }
-    framebuffer_manager()->MarkAsComplete(framebuffer);
-  }
-  return true;
-}
-
-bool GLES2DecoderImpl::CheckBoundReadFramebufferColorAttachment(
-    const char* func_name) {
-  Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
-      framebuffer_state_.bound_read_framebuffer.get() :
-      framebuffer_state_.bound_draw_framebuffer.get();
-  if (!framebuffer)
-    return true;
-  if (framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0) == NULL) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "no color image attached");
-    return false;
-  }
-  return true;
+bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(const char* func_name) {
+  GLenum target = features().chromium_framebuffer_multisample ?
+      GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  bool valid = CheckFramebufferValid(framebuffer, target, true, func_name);
+  return valid;
 }
 
 GLint GLES2DecoderImpl::GetColorEncodingFromInternalFormat(
@@ -3814,7 +3776,7 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFrameBufferSize() {
       GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
   if (framebuffer != NULL) {
     const Framebuffer::Attachment* attachment =
-        framebuffer->GetAttachment(GL_COLOR_ATTACHMENT0);
+        framebuffer->GetReadBufferAttachment();
     if (attachment) {
       return gfx::Size(attachment->width(), attachment->height());
     }
@@ -5921,7 +5883,7 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(uint32_t immediate_data_size,
 
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   DCHECK(!ShouldDeferDraws());
-  if (CheckBoundFramebuffersValid("glClear")) {
+  if (CheckBoundDrawFramebufferValid(true, "glClear")) {
     ApplyDirtyState();
     // TODO(zmo): Filter out INTEGER/SIGNED INTEGER images to avoid
     // undefined results.
@@ -5945,7 +5907,8 @@ error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
 
 void GLES2DecoderImpl::DoClearBufferiv(
     GLenum buffer, GLint drawbuffer, const GLint* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferiv"))
+  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
+  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferiv"))
     return;
   ApplyDirtyState();
 
@@ -5988,7 +5951,8 @@ void GLES2DecoderImpl::DoClearBufferiv(
 
 void GLES2DecoderImpl::DoClearBufferuiv(
     GLenum buffer, GLint drawbuffer, const GLuint* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferuiv"))
+  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
+  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferuiv"))
     return;
   ApplyDirtyState();
 
@@ -6018,7 +5982,8 @@ void GLES2DecoderImpl::DoClearBufferuiv(
 
 void GLES2DecoderImpl::DoClearBufferfv(
     GLenum buffer, GLint drawbuffer, const GLfloat* value) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferfv"))
+  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
+  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferfv"))
     return;
   ApplyDirtyState();
 
@@ -6061,7 +6026,8 @@ void GLES2DecoderImpl::DoClearBufferfv(
 
 void GLES2DecoderImpl::DoClearBufferfi(
     GLenum buffer, GLint drawbuffer, GLfloat depth, GLint stencil) {
-  if (!CheckBoundDrawFramebufferValid("glClearBufferfi"))
+  // TODO(zmo): Set clear_uncleared_images=true once crbug.com/584059 is fixed.
+  if (!CheckBoundDrawFramebufferValid(false, "glClearBufferfi"))
     return;
   ApplyDirtyState();
 
@@ -6468,7 +6434,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     GLbitfield mask, GLenum filter) {
   DCHECK(!ShouldDeferReads() && !ShouldDeferDraws());
 
-  if (!CheckBoundFramebuffersValid("glBlitFramebufferCHROMIUM")) {
+  if (!CheckBoundDrawFramebufferValid(true, "glBlitFramebufferCHROMIUM") ||
+      !CheckBoundReadFramebufferValid("glBlitFramebufferCHROMIUM")) {
     return;
   }
 
@@ -8013,7 +7980,7 @@ error::Error GLES2DecoderImpl::DoDrawArrays(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, function_name, "primcount < 0");
     return error::kNoError;
   }
-  if (!CheckBoundFramebuffersValid(function_name)) {
+  if (!CheckBoundDrawFramebufferValid(true, function_name)) {
     return error::kNoError;
   }
   // We have to check this here because the prototype for glDrawArrays
@@ -8135,7 +8102,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
     return error::kNoError;
   }
 
-  if (!CheckBoundFramebuffersValid(function_name)) {
+  if (!CheckBoundDrawFramebufferValid(true, function_name)) {
     return error::kNoError;
   }
 
@@ -9218,10 +9185,13 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     return error::kNoError;
   }
 
+  if (!CheckBoundReadFramebufferValid("glReadPixels")) {
+    return error::kNoError;
+  }
   GLenum src_internal_format = GetBoundReadFrameBufferInternalFormat();
   if (src_internal_format == 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glReadPixels",
-        "no valid read buffer source");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
+        "no valid color image");
     return error::kNoError;
   }
   std::vector<GLenum> accepted_formats;
@@ -9326,7 +9296,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     return error::kNoError;
   }
 
-  if (!CheckBoundFramebuffersValid("glReadPixels")) {
+  if (!CheckBoundReadFramebufferValid("glReadPixels")) {
     return error::kNoError;
   }
 
@@ -11218,8 +11188,14 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
-  // Check we have compatible formats.
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+  if (read_format == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
+        "no valid color image");
+    return;
+  }
+
+  // Check we have compatible formats.
   uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);
 
@@ -11268,7 +11244,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     return;
   }
 
-  if (!CheckBoundReadFramebufferColorAttachment("glCopyTexImage2D")) {
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 
@@ -11276,10 +11252,6 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCopyTexImage2D", "source and destination textures are the same");
-    return;
-  }
-
-  if (!CheckBoundFramebuffersValid("glCopyTexImage2D")) {
     return;
   }
 
@@ -11362,8 +11334,13 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  // Check we have compatible formats.
   GLenum read_format = GetBoundReadFrameBufferInternalFormat();
+  if (read_format == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopyTexImage2D",
+        "no valid color image");
+    return;
+  }
+  // Check we have compatible formats.
   uint32_t channels_exist = GLES2Util::GetChannelsForFormat(read_format);
   uint32_t channels_needed = GLES2Util::GetChannelsForFormat(format);
 
@@ -11381,7 +11358,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     return;
   }
 
-  if (!CheckBoundReadFramebufferColorAttachment("glCopyTexSubImage2D")) {
+  if (!CheckBoundReadFramebufferValid("glCopyTexImage2D")) {
     return;
   }
 
@@ -11389,10 +11366,6 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glCopyTexSubImage2D", "source and destination textures are the same");
-    return;
-  }
-
-  if (!CheckBoundFramebuffersValid("glCopyTexSubImage2D")) {
     return;
   }
 

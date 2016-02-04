@@ -1628,6 +1628,9 @@ _NAMED_TYPE_INFO = {
       'GL_RGB_INTEGER',
       'GL_RGBA_INTEGER',
     ],
+    'deprecated_es3': [
+      'GL_ALPHA',
+    ],
   },
   'PixelType': {
     'type': 'GLenum',

@@ -229,6 +229,7 @@ protected:
 
     DOMArrayBufferView::ViewType readPixelsExpectedArrayBufferViewType(GLenum type) override;
     WebGLFramebuffer* getFramebufferBinding(GLenum target) override;
+    WebGLFramebuffer* getReadFramebufferBinding() override;
     GLint getMaxTextureLevelForTarget(GLenum target) override;
     void renderbufferStorageImpl(GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height, const char* functionName) override;
     GLenum boundFramebufferColorFormat() override;

@@ -627,11 +627,14 @@ void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLs
         return;
     }
 
-    // Need to validate whether the pixel pack buffer is mapped,
-    // if we decide to expose mapBufferRange() to web developers.
+    const char* reason = "framebuffer incomplete";
+    WebGLFramebuffer* framebuffer = getReadFramebufferBinding();
+    if (framebuffer && framebuffer->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
+        synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
+        return;
+    }
 
     long long size = buffer->getSize() - offset;
-
     // If size is negative, or size is not large enough to store pixels, those cases
     // are handled by validateReadPixelsFuncParameters to generate INVALID_OPERATION.
     if (!validateReadPixelsFuncParameters(width, height, format, type, size))
@@ -639,9 +642,8 @@ void WebGL2RenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLs
 
     clearIfComposited();
 
-    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(GL_READ_FRAMEBUFFER);
     {
-        ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
+        ScopedDrawingBufferBinder binder(drawingBuffer(), framebuffer);
         webContext()->readPixels(x, y, width, height, format, type, reinterpret_cast<void*>(offset));
     }
 }
@@ -1049,7 +1051,7 @@ void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, G
     WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateCopyTexSubImage("copyTexSubImage3D", target, level, xoffset, yoffset, zoffset, x, y, width, height))
         return;
-    if (!validateReadBufferAndGetInfo("copyTexSubImage3D", readFramebufferBinding, nullptr, nullptr))
+    if (!validateReadBufferAndGetInfo("copyTexSubImage3D", readFramebufferBinding))
         return;
     WebGLTexture* tex = validateTextureBinding("copyTexSubImage3D", target, true);
     ASSERT(tex);
@@ -3126,6 +3128,11 @@ WebGLFramebuffer* WebGL2RenderingContextBase::getFramebufferBinding(GLenum targe
     default:
         return WebGLRenderingContextBase::getFramebufferBinding(target);
     }
+}
+
+WebGLFramebuffer* WebGL2RenderingContextBase::getReadFramebufferBinding()
+{
+    return m_readFramebufferBinding.get();
 }
 
 bool WebGL2RenderingContextBase::validateGetFramebufferAttachmentParameterFunc(const char* functionName, GLenum target, GLenum attachment)

@@ -1763,6 +1763,11 @@ WebGLFramebuffer* WebGLRenderingContextBase::getFramebufferBinding(GLenum target
     return nullptr;
 }
 
+WebGLFramebuffer* WebGLRenderingContextBase::getReadFramebufferBinding()
+{
+    return m_framebufferBinding.get();
+}
+
 GLenum WebGLRenderingContextBase::checkFramebufferStatus(GLenum target)
 {
     if (isContextLost())
@@ -1963,7 +1968,7 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         return;
     }
     WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding, nullptr, nullptr))
+    if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding))
         return;
     if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
@@ -1986,7 +1991,7 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GL
     WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateCopyTexSubImage("copyTexSubImage2D", target, level, xoffset, yoffset, 0, x, y, width, height))
         return;
-    if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding, nullptr, nullptr))
+    if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding))
         return;
     WebGLTexture* tex = validateTextureBinding("copyTexSubImage2D", target, true);
     ASSERT(tex);
@@ -3712,17 +3717,16 @@ void WebGLRenderingContextBase::polygonOffset(GLfloat factor, GLfloat units)
     webContext()->polygonOffset(factor, units);
 }
 
-bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functionName, WebGLFramebuffer*& readFramebufferBinding, GLenum* format, GLenum* type)
+bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functionName, WebGLFramebuffer*& readFramebufferBinding)
 {
-    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-    readFramebufferBinding = getFramebufferBinding(target);
+    readFramebufferBinding = getReadFramebufferBinding();
     if (readFramebufferBinding) {
         const char* reason = "framebuffer incomplete";
         if (readFramebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
             synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
             return false;
         }
-        if (!readFramebufferBinding->getReadBufferFormatAndType(format, type)) {
+        if (!readFramebufferBinding->getReadBufferFormatAndType(nullptr, nullptr)) {
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image to read from");
             return false;
         }
@@ -3732,11 +3736,6 @@ bool WebGLRenderingContextBase::validateReadBufferAndGetInfo(const char* functio
             synthesizeGLError(GL_INVALID_OPERATION, functionName, "no image to read from");
             return false;
         }
-        // Obtain the default drawing buffer's format and type.
-        if (format)
-            *format = drawingBuffer()->getActualAttributes().alpha ? GL_RGBA : GL_RGB;
-        if (type)
-            *type = GL_UNSIGNED_BYTE;
     }
     return true;
 }
@@ -3766,66 +3765,6 @@ bool WebGLRenderingContextBase::validateReadPixelsFormatAndType(GLenum format, G
         return false;
     }
 
-    return true;
-}
-
-bool WebGLRenderingContextBase::validateReadPixelsFormatTypeCombination(GLenum format, GLenum type, GLenum readBufferInternalFormat, GLenum readBufferType)
-{
-    GLenum acceptedFormat = 0, acceptedType = 0;
-    switch (readBufferInternalFormat) { // This is internalformat.
-    case GL_R8UI:
-    case GL_R16UI:
-    case GL_R32UI:
-    case GL_RG8UI:
-    case GL_RG16UI:
-    case GL_RG32UI:
-    // All the RGB_INTEGER formats are not renderable.
-    case GL_RGBA8UI:
-    case GL_RGB10_A2UI:
-    case GL_RGBA16UI:
-    case GL_RGBA32UI:
-        acceptedFormat = GL_RGBA_INTEGER;
-        acceptedType = GL_UNSIGNED_INT;
-        break;
-    case GL_R8I:
-    case GL_R16I:
-    case GL_R32I:
-    case GL_RG8I:
-    case GL_RG16I:
-    case GL_RG32I:
-    case GL_RGBA8I:
-    case GL_RGBA16I:
-    case GL_RGBA32I:
-        acceptedFormat = GL_RGBA_INTEGER;
-        acceptedType = GL_INT;
-        break;
-    default:
-        acceptedFormat = GL_RGBA;
-        switch (readBufferType) {
-        case GL_HALF_FLOAT:
-        case GL_HALF_FLOAT_OES:
-        case GL_FLOAT:
-        case GL_UNSIGNED_INT_10F_11F_11F_REV:
-            acceptedType = GL_FLOAT;
-            break;
-        default:
-            acceptedType = GL_UNSIGNED_BYTE;
-            break;
-        }
-        break;
-    }
-
-    if (!(format == acceptedFormat && type == acceptedType)
-        && !(readBufferInternalFormat == GL_RGB10_A2 && format == GL_RGBA && type == GL_UNSIGNED_INT_2_10_10_10_REV)) {
-        // Check against the implementation color read format and type.
-        WGC3Dint implFormat = 0, implType = 0;
-        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_FORMAT, &implFormat);
-        webContext()->getIntegerv(GL_IMPLEMENTATION_COLOR_READ_TYPE, &implType);
-        if (!implFormat || !implType || format != static_cast<GLenum>(implFormat) || type != static_cast<GLenum>(implType)) {
-            synthesizeGLError(GL_INVALID_OPERATION, "readPixels", "invalid format/type combination");
-            return false;
-        }
-    }
     return true;
 }
 
@@ -3866,12 +3805,6 @@ bool WebGLRenderingContextBase::validateReadPixelsFuncParameters(GLsizei width, 
 {
     if (!validateReadPixelsFormatAndType(format, type))
         return false;
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    GLenum readBufferInternalFormat = 0, readBufferType = 0;
-    if (!validateReadBufferAndGetInfo("readPixels", readFramebufferBinding, &readBufferInternalFormat, &readBufferType))
-        return false;
-    if (!validateReadPixelsFormatTypeCombination(format, type, readBufferInternalFormat, readBufferType))
-        return false;
 
     // Calculate array size, taking into consideration of pack parameters.
     unsigned totalBytesRequired = 0, totalSkipBytes = 0;
@@ -3899,7 +3832,12 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
         synthesizeGLError(GL_INVALID_VALUE, "readPixels", "no destination ArrayBufferView");
         return;
     }
-
+    const char* reason = "framebuffer incomplete";
+    WebGLFramebuffer* framebuffer = getReadFramebufferBinding();
+    if (framebuffer && framebuffer->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
+        synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
+        return;
+    }
     if (!validateReadPixelsFuncParameters(width, height, format, type, static_cast<long long>(pixels->byteLength())))
         return;
 
@@ -3913,10 +3851,8 @@ void WebGLRenderingContextBase::readPixels(GLint x, GLint y, GLsizei width, GLsi
     clearIfComposited();
     void* data = pixels->baseAddress();
 
-    GLenum target = isWebGL2OrHigher() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-    WebGLFramebuffer* readFramebufferBinding = getFramebufferBinding(target);
     {
-        ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
+        ScopedDrawingBufferBinder binder(drawingBuffer(), framebuffer);
         webContext()->readPixels(x, y, width, height, format, type, data);
     }
 }
@@ -6565,7 +6501,7 @@ bool WebGLRenderingContextBase::validateDrawArrays(const char* functionName, GLe
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && m_framebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
+    if (m_framebufferBinding && m_framebufferBinding->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }
@@ -6594,7 +6530,7 @@ bool WebGLRenderingContextBase::validateDrawElements(const char* functionName, G
     }
 
     const char* reason = "framebuffer incomplete";
-    if (m_framebufferBinding && m_framebufferBinding->checkStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
+    if (m_framebufferBinding && m_framebufferBinding->checkDepthStencilStatus(&reason) != GL_FRAMEBUFFER_COMPLETE) {
         synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, functionName, reason);
         return false;
     }

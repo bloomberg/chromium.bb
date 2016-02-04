@@ -1166,6 +1166,8 @@ uint32_t GLES2Util::GetChannelsNeededForAttachmentType(
       return kDepth;
     case GL_STENCIL_ATTACHMENT:
       return kStencil;
+    case GL_DEPTH_STENCIL_ATTACHMENT:
+      return kDepth | kStencil;
     default:
       if (type >= GL_COLOR_ATTACHMENT0 &&
           type < static_cast<int>(

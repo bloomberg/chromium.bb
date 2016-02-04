@@ -3521,9 +3521,6 @@ void GLES2Implementation::ReadPixels(
     SetGLError(GL_INVALID_VALUE, "glReadPixels", "dimensions < 0");
     return;
   }
-  if (width == 0 || height == 0) {
-    return;
-  }
 
   // glReadPixel pads the size of each row of pixels by an amount specified by
   // glPixelStorei. So, we have to take that into account both in the fact that
@@ -3612,8 +3609,10 @@ void GLES2Implementation::ReadPixels(
   if (xoffset < 0) {
     skip_row_bytes = static_cast<uint32_t>(-xoffset) * group_size;
   }
-  while (remaining_rows) {
-    GLsizei desired_size =
+  do {
+    // Even if height == 0, we still need to trigger the service side handling
+    // in case invalid args are passed in and a GL errro needs to be generated.
+    GLsizei desired_size = remaining_rows == 0 ? 0 :
         service_padded_row_size * (remaining_rows - 1) + unpadded_row_size;
     ScopedTransferBufferPtr buffer(desired_size, helper_, transfer_buffer_);
     if (!buffer.valid()) {
@@ -3639,6 +3638,9 @@ void GLES2Implementation::ReadPixels(
     WaitForCmd();
     // If it was not marked as successful exit.
     if (!result->success) {
+      break;
+    }
+    if (remaining_rows == 0) {
       break;
     }
     const uint8_t* src = static_cast<const uint8_t*>(buffer.address());
@@ -3676,7 +3678,7 @@ void GLES2Implementation::ReadPixels(
     }
     y_index += num_rows;
     remaining_rows -= num_rows;
-  }
+  } while (remaining_rows);
   CheckGLError();
 }
 
