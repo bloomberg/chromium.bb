@@ -477,7 +477,11 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     Vector<size_t> flexibleSizedTracksIndex;
     sizingData.contentSizedTracksIndex.shrink(0);
 
-    const LayoutUnit maxSize = std::max(LayoutUnit(), initialFreeSpace);
+    LayoutUnit maxSize = std::max(LayoutUnit(), initialFreeSpace);
+    // Grid gutters were removed from freeSpace by the caller, but we must use them to compute relative (i.e. percentages) sizes.
+    if (availableSpaceType == AvailableSpaceDefinite)
+        maxSize += guttersSize(direction, direction == ForRows ? gridRowCount() : gridColumnCount());
+
     // 1. Initialize per Grid track variables.
     for (size_t i = 0; i < tracks.size(); ++i) {
         GridTrack& track = tracks[i];
