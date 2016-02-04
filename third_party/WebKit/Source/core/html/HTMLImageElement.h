@@ -170,8 +170,6 @@ private:
     RefPtrWillBeMember<HTMLSourceElement> m_source;
     unsigned m_formWasSetByParser : 1;
     unsigned m_elementCreatedByParser : 1;
-    // Intrinsic sizing is viewport dependant if the 'w' descriptor was used for the picked resource.
-    unsigned m_intrinsicSizingViewportDependant : 1;
     unsigned m_useFallbackContent : 1;
     unsigned m_isFallbackImage : 1;
 

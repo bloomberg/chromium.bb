@@ -92,7 +92,6 @@ HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form, bo
     , m_source(nullptr)
     , m_formWasSetByParser(false)
     , m_elementCreatedByParser(createdByParser)
-    , m_intrinsicSizingViewportDependant(false)
     , m_useFallbackContent(false)
     , m_isFallbackImage(false)
     , m_referrerPolicy(ReferrerPolicyDefault)
@@ -251,14 +250,25 @@ void HTMLImageElement::setBestFitURLAndDPRFromImageCandidate(const ImageCandidat
     float candidateDensity = candidate.density();
     if (candidateDensity >= 0)
         m_imageDevicePixelRatio = 1.0 / candidateDensity;
+
+    bool intrinsicSizingViewportDependant = false;
     if (candidate.resourceWidth() > 0) {
-        m_intrinsicSizingViewportDependant = true;
+        intrinsicSizingViewportDependant = true;
         UseCounter::count(document(), UseCounter::SrcsetWDescriptor);
     } else if (!candidate.srcOrigin()) {
         UseCounter::count(document(), UseCounter::SrcsetXDescriptor);
     }
     if (layoutObject() && layoutObject()->isImage())
         toLayoutImage(layoutObject())->setImageDevicePixelRatio(m_imageDevicePixelRatio);
+
+    if (intrinsicSizingViewportDependant) {
+        if (!m_listener)
+            m_listener = ViewportChangeListener::create(this);
+
+        document().mediaQueryMatcher().addViewportListener(m_listener);
+    } else if (m_listener) {
+        document().mediaQueryMatcher().removeViewportListener(m_listener);
+    }
 }
 
 void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
@@ -718,10 +728,6 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     if (!foundURL) {
         candidate = bestFitSourceForImageAttributes(document().devicePixelRatio(), sourceSize(*this), fastGetAttribute(srcAttr), fastGetAttribute(srcsetAttr), &document());
         setBestFitURLAndDPRFromImageCandidate(candidate);
-    }
-    if (m_intrinsicSizingViewportDependant && !m_listener) {
-        m_listener = ViewportChangeListener::create(this);
-        document().mediaQueryMatcher().addViewportListener(m_listener);
     }
     imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
