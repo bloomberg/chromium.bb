@@ -85,8 +85,9 @@ class ChromeTracingController(controllers.BaseController):
       self._logcat_monitor.WaitFor(self._trace_start_re, timeout=5)
       self._is_tracing = True
     except device_errors.CommandTimeoutError:
-      raise RuntimeError('Trace start marker not found. Is the correct version '
-                         'of the browser running?')
+      raise RuntimeError(
+          'Trace start marker not found. Possible causes: 1) Is the correct '
+          'version of the browser running? 2) Is the browser already launched?')
 
   def StopTracing(self):
     if self._is_tracing:
