@@ -5,7 +5,6 @@
 #ifndef NET_SOCKET_TCP_SERVER_SOCKET_H_
 #define NET_SOCKET_TCP_SERVER_SOCKET_H_
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
@@ -16,7 +15,7 @@
 
 namespace net {
 
-class NET_EXPORT_PRIVATE TCPServerSocket : public ServerSocket {
+class NET_EXPORT TCPServerSocket : public ServerSocket {
  public:
   TCPServerSocket(NetLog* net_log, const NetLog::Source& source);
   ~TCPServerSocket() override;
