@@ -377,7 +377,6 @@ bool URLRequestJob::CanEnablePrivacyMode() const {
 }
 
 void URLRequestJob::NotifyBeforeNetworkStart(bool* defer) {
-  DCHECK(request_->status().is_io_pending());
   request_->NotifyBeforeNetworkStart(defer);
 }
 
