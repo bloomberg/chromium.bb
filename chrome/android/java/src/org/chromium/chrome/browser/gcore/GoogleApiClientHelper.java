@@ -134,8 +134,7 @@ public class GoogleApiClientHelper
      */
     public void enableLifecycleManagement(final boolean enabled) {
         Log.v(TAG, "enableLifecycleManagement");
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (sHook == null) sHook = new LifecycleHook();
