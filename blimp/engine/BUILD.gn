@@ -247,7 +247,7 @@ if (is_linux) {
     _rebased_dockerfile = rebase_path("//blimp/engine/Dockerfile")
     _rebased_startup_script = rebase_path("//blimp/engine/start_engine.sh")
     _rebased_manifest = rebase_path("//blimp/engine/engine-manifest.txt")
-    _bundle = "$root_out_dir/blimp_engine_bundle.tar"
+    _bundle = "$root_out_dir/blimp_engine_bundle.tar.gz"
 
     # Detail the target & "source"-file dependencies, and output, for GN.
     deps = [
