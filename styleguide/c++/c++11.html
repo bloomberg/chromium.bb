@@ -335,6 +335,26 @@ Parameter pack</a></td>
 </tr>
 
 <tr>
+<td>Algorithms</td>
+<td>All C++11 features in <code>&lt;algorithm&gt;</code>:<br/>
+<code>all_of</code>, <code>any_of</code>, <code>none_of</code><br/>
+<code>find_if_not</code><br/>
+<code>copy_if</code>, <code>copy_n</code><br/>
+<code>move</code>, <code>move_backward</code> (see note)<br/>
+<code>shuffle</code><br/>
+<code>is_partitioned</code>, <code>partition_copy</code>, <code>partition_point</code><br/>
+<code>is_sorted</code>, <code>is_sorted_until</code><br/>
+<code>is_heap</code>, <code>is_heap_until</code><br/>
+<code>minmax</code>, <code>minmax_element</code><br/>
+<code>is_permutation<br/>
+</td>
+<td>Safe and performant implementations of common algorithms</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/algorithm"><code>&lt;algorithm&gt;</code></a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/UJQk8S1IuHk">Discussion thread</a><br/>
+Note that &lt;algorithm&gt; contains a range-based <code>move</code> method.  This is allowed, but because people may confuse it with the single-arg <code>std::move</code>, there is often a way to write code without it that is more readable.  <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/8WzmtYrZvQ8'>Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Begin and End Non-Member Functions</td>
 <td><code>std::begin()</code> and <code>std::end()</code></td>
 <td>Allows use of free functions on any container, including
@@ -382,6 +402,18 @@ std::end</a></td>
 </tr>
 
 <tr>
+<td>Math functions</td>
+<td>All C++11 features in <code>&lt;cmath&gt;</code>, e.g.:<br/>
+<code>INFINITY</code>, <code>NAN</code>, <code>FP_NAN</code><br/>
+<code>float_t</code>, <code>double_t</code><br/>
+<code>fmax</code>, <code>fmin</code>, <code>trunc</code>, <code>round</code><br/>
+<code>isinf</code>, <code>isnan</code><br/></td>
+<td>Useful for math-related code</td>
+<td><a href="http://en.cppreference.com/w/cpp/header/cmath"><code>&lt;cmath&gt;</code></a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/P-1bFBXMeUk">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Move Iterator Adaptor</td>
 <td><code>std::make_move_iterator()</code></td>
 <td>Wraps an iterator so that it moves objects instead of copying them.</td>
@@ -398,28 +430,17 @@ std::end</a></td>
 </tr>
 
 <tr>
-<td>Range Move</td>
-<td><code>std::move()</code></td>
-<td>Moves contents of an iterator range to a different iterator. This is a counterpart of std::copy that applies std::move() to each element.</td>
-<td><a href="http://en.cppreference.com/w/cpp/algorithm/move"><code>std::move</code> reference</a></td>
-<td>This is allowed, but there is almost always a way to write code without using this version of std::move. Not using it usually results in cleaner, easier to read, and less confusing code. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/8WzmtYrZvQ8'>Discussion thread</a></td>
-</tr>
-
-<tr>
 <td>Type Traits</td>
-<td>Class templates within <code>&lt;type_traits&gt;</code></td>
+<td>All C++11 features in <code>&lt;type_traits&gt;</code> except for aligned storage (see separate item), e.g.:<br/>
+<code>integral_constant</code><br/>
+<code>is_floating_point</code>, <code>is_rvalue_reference</code>, <code>is_scalar</code><br/>
+<code>is_const</code>, <code>is_pod</code>, <code>is_unsigned</code><br/>
+<code>is_default_constructible</code>, <code>is_move_constructible</code>, <code>is_copy_assignable</code><br/>
+<code>enable_if</code>, <code>conditional</code>, <code>result_of</code><br/>
+</td>
 <td>Allows compile-time inspection of the properties of types</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/type_traits">
-Standard library header &lt;type_traits&gt;</a></td>
+<td><a href="http://en.cppreference.com/w/cpp/header/type_traits">&lt;type_traits&gt;</a></td>
 <td>Note that not all type traits are available on all platforms (eg std::underlying_type doesn't work in libstdc++4.6). Use judiciously. <a href='https://groups.google.com/a/chromium.org/forum/#!topic/cxx/vCxo4tZNd_M'>Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Types, functions, and constants from <code>&lt;cmath&gt;</code></td>
-<td><code>std::round()</code>, <code>std::isnan()</code>, and others</td>
-<td>Useful for math-related code</td>
-<td><a href="http://en.cppreference.com/w/cpp/header/cmath"><code>&lt;cmath&gt;</code></a></td>
-<td>Anything in <code>&lt;cmath&gt;</code> is allowed. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/P-1bFBXMeUk">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -903,14 +924,6 @@ std::declare_no_pointers</a></td>
 </tr>
 
 <tr>
-<td>Heap Validation</td>
-<td><code>std::is_heap()</code></td>
-<td>Checks whether an iterator range is in fact a heap</td>
-<td>TODO: documentation link</td>
-<td></td>
-</tr>
-
-<tr>
 <td>Iterator Operators</td>
 <td><code>std::next()</code> and <code>std::prev()</code></td>
 <td>Copies an iterator and increments or decrements the copy by
@@ -998,15 +1011,6 @@ std::stoi, std::stol, std::stoll</a>,
 std::stoul, std::stoull</a>, and
 <a href="http://en.cppreference.com/w/cpp/string/basic_string/stof">
 std::stof, std::stod, std::stold</a> </td>
-<td></td>
-</tr>
-
-<tr>
-<td>STL Algorithms</td>
-<td>Functions within <code>&lt;algorithm&gt;</code>.</td>
-<td>Enhancements to the set of STL algorithms</td>
-<td>See the <a href="http://en.cppreference.com/w/cpp/algorithm">
-Algorithms library</a> for a complete list.</td>
 <td></td>
 </tr>
 
