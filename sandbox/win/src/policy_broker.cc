@@ -98,7 +98,7 @@ bool SetupNtdllImports(TargetProcess *child) {
 
 bool SetupBasicInterceptions(InterceptionManager* manager) {
   // Interceptions provided by process_thread_policy, without actual policy.
-  if (!INTERCEPT_NT(manager, NtOpenThread, OPEN_TREAD_ID, 20) ||
+  if (!INTERCEPT_NT(manager, NtOpenThread, OPEN_THREAD_ID, 20) ||
       !INTERCEPT_NT(manager, NtOpenProcess, OPEN_PROCESS_ID, 20) ||
       !INTERCEPT_NT(manager, NtOpenProcessToken, OPEN_PROCESS_TOKEN_ID, 16))
     return false;

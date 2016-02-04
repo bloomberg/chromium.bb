@@ -141,7 +141,7 @@ SANDBOX_INTERCEPT NTSTATUS WINAPI TargetNtOpenThread64(
     PHANDLE thread, ACCESS_MASK desired_access,
     POBJECT_ATTRIBUTES object_attributes, PCLIENT_ID client_id) {
   NtOpenThreadFunction orig_fn = reinterpret_cast<
-      NtOpenThreadFunction>(g_originals[OPEN_TREAD_ID]);
+      NtOpenThreadFunction>(g_originals[OPEN_THREAD_ID]);
   return TargetNtOpenThread(orig_fn, thread, desired_access, object_attributes,
                             client_id);
 }
