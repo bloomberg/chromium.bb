@@ -1383,7 +1383,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           DCHECK(successful_read);
           if (current_frame_stream_id_ == 0) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
-            break;
+            return original_len - len;
           }
 
           SpdyStreamId associated_to_stream_id = kInvalidStream;
@@ -1412,7 +1412,6 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
               (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
               (current_frame_flags_ & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
         }
-        CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case SYN_REPLY:
         DCHECK_EQ(SPDY3, protocol_version_);
@@ -1427,7 +1426,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           }
           if (current_frame_stream_id_ == 0) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
-            break;
+            return original_len - len;
           }
           if (protocol_version_ == HTTP2 &&
               !(current_frame_flags_ & HEADERS_FLAG_END_HEADERS) &&
@@ -1481,14 +1480,13 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                 expect_continuation_ == 0);
           }
         }
-        CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case PUSH_PROMISE:
         {
           DCHECK_EQ(HTTP2, protocol_version_);
           if (current_frame_stream_id_ == 0) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
-            break;
+            return original_len - len;
           }
           bool successful_read = true;
           if (protocol_version_ == HTTP2 &&
@@ -1507,7 +1505,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           DCHECK(reader.IsDoneReading());
           if (promised_stream_id == 0) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
-            break;
+            return original_len - len;
           }
           if (!(current_frame_flags_ & PUSH_PROMISE_FLAG_END_PUSH_PROMISE)) {
             expect_continuation_ = current_frame_stream_id_;
@@ -1523,7 +1521,6 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                                   (current_frame_flags_ &
                                    PUSH_PROMISE_FLAG_END_PUSH_PROMISE) != 0);
         }
-        CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       case CONTINUATION:
         {
@@ -1534,7 +1531,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           // that current_frame_stream_id != 0.
           if (current_frame_stream_id_ != expect_continuation_) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
-            break;
+            return original_len - len;
           }
           if (current_frame_flags_ & HEADERS_FLAG_END_HEADERS) {
             expect_continuation_ = 0;
@@ -1549,11 +1546,16 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                                    (current_frame_flags_ &
                                     HEADERS_FLAG_END_HEADERS) != 0);
         }
-        CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
         break;
       default:
-        DCHECK(false);
+#ifndef NDEBUG
+        LOG(FATAL) << "Invalid control frame type: " << current_frame_type_;
+#else
+        set_error(SPDY_INVALID_CONTROL_FRAME);
+        return original_len - len;
+#endif
     }
+    CHANGE_STATE(SPDY_CONTROL_FRAME_HEADER_BLOCK);
   }
   return original_len - len;
 }
