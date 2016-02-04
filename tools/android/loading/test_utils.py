@@ -7,6 +7,7 @@
 import devtools_monitor
 import loading_trace
 import page_track
+import tracing
 
 
 class FakeRequestTrack(devtools_monitor.Track):
@@ -39,8 +40,15 @@ class FakePageTrack(devtools_monitor.Track):
     return event['frame_id']
 
 
-def LoadingTraceFromEvents(requests, page_events=None):
+def LoadingTraceFromEvents(requests, page_events=None, trace_events=None):
   """Returns a LoadingTrace instance from a list of requests and page events."""
   request_track = FakeRequestTrack(requests)
-  page = FakePageTrack(page_events if page_events else [])
-  return loading_trace.LoadingTrace(None, None, page, request_track, None)
+  page_event_track = FakePageTrack(page_events if page_events else [])
+  if trace_events:
+    tracing_track = tracing.TracingTrack(None)
+    tracing_track.Handle('Tracing.dataCollected',
+                         {'params': {'value': [e for e in trace_events]}})
+  else:
+    tracing_track = None
+  return loading_trace.LoadingTrace(
+      None, None, page_event_track, request_track, tracing_track)
