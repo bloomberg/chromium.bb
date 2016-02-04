@@ -69,7 +69,7 @@ message LayerProperties {
   optional PictureLayerProperties picture = 6;
 }
 
-// NEXT ID: 51
+// NEXT ID: 53
 message BaseLayerProperties {
   optional Point3F transform_origin = 1;
   optional uint32 background_color = 2;
@@ -103,6 +103,8 @@ message BaseLayerProperties {
   optional int32 num_layer_or_descendants_with_copy_request = 30;
   optional SkXfermode.Mode draw_blend_mode = 31;
   optional bool use_parent_backface_visibility = 32;
+  optional bool use_local_transform_for_backface_visibility = 51;
+  optional bool should_check_backface_visibility = 52;
   optional Transform transform = 33;
   optional bool transform_is_invertible = 34;
   optional int32 sorting_context_id = 35;

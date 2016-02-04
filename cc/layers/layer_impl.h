@@ -386,6 +386,20 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return use_parent_backface_visibility_;
   }
 
+  void SetUseLocalTransformForBackfaceVisibility(bool use_local) {
+    use_local_transform_for_backface_visibility_ = use_local;
+  }
+  bool use_local_transform_for_backface_visibility() const {
+    return use_local_transform_for_backface_visibility_;
+  }
+
+  void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
+    should_check_backface_visibility_ = should_check_backface_visibility;
+  }
+  bool should_check_backface_visibility() const {
+    return should_check_backface_visibility_;
+  }
+
   bool ShowDebugBorders() const;
 
   // These invalidate the host's render surface layer list.  The caller
@@ -775,6 +789,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   bool contents_opaque_ : 1;
   bool is_root_for_isolated_group_ : 1;
   bool use_parent_backface_visibility_ : 1;
+  bool use_local_transform_for_backface_visibility_ : 1;
+  bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool hide_layer_and_subtree_ : 1;
 

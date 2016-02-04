@@ -315,11 +315,19 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   bool Is3dSorted() const { return sorting_context_id_ != 0; }
 
-  void set_use_parent_backface_visibility(bool use) {
-    use_parent_backface_visibility_ = use;
-  }
+  void SetUseParentBackfaceVisibility(bool use);
   bool use_parent_backface_visibility() const {
     return use_parent_backface_visibility_;
+  }
+
+  void SetUseLocalTransformForBackfaceVisibility(bool use_local);
+  bool use_local_transform_for_backface_visibility() const {
+    return use_local_transform_for_backface_visibility_;
+  }
+
+  void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility);
+  bool should_check_backface_visibility() const {
+    return should_check_backface_visibility_;
   }
 
   virtual void SetLayerTreeHost(LayerTreeHost* host);
@@ -730,6 +738,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   bool double_sided_ : 1;
   bool should_flatten_transform_ : 1;
   bool use_parent_backface_visibility_ : 1;
+  bool use_local_transform_for_backface_visibility_ : 1;
+  bool should_check_backface_visibility_ : 1;
   bool force_render_surface_ : 1;
   bool transform_is_invertible_ : 1;
   bool has_render_surface_ : 1;

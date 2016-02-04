@@ -71,6 +71,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       contents_opaque_(false),
       is_root_for_isolated_group_(false),
       use_parent_backface_visibility_(false),
+      use_local_transform_for_backface_visibility_(false),
+      should_check_backface_visibility_(false),
       draws_content_(false),
       hide_layer_and_subtree_(false),
       transform_is_invertible_(true),
@@ -628,6 +630,9 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
       should_flatten_transform_from_property_tree_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
+  layer->SetUseLocalTransformForBackfaceVisibility(
+      use_local_transform_for_backface_visibility_);
+  layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
   layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
 
   layer->SetScrollClipLayer(scroll_clip_layer_id_);

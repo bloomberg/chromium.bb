@@ -6493,13 +6493,13 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
 
   gfx::Transform identity_transform;
   SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(50, 50), false, true,
+                               gfx::PointF(), gfx::Size(50, 50), false, false,
                                true);
   SetLayerPropertiesForTesting(child, identity_transform, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(30, 30), false, true,
+                               gfx::PointF(), gfx::Size(30, 30), false, false,
                                false);
   SetLayerPropertiesForTesting(grand_child, identity_transform, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(20, 20), false, true,
+                               gfx::PointF(), gfx::Size(20, 20), false, false,
                                false);
 
   ExecuteCalculateDrawProperties(root);
@@ -6509,10 +6509,24 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
                              ->at(0)
                              ->render_surface()
                              ->layer_list()[0]);
+
+  // As all layers have identity transform, we shouldn't check for backface
+  // visibility.
+  EXPECT_FALSE(root->should_check_backface_visibility());
+  EXPECT_FALSE(child->should_check_backface_visibility());
+  EXPECT_FALSE(grand_child->should_check_backface_visibility());
+  // As there are no 3d rendering contexts, all layers should use their local
+  // transform for backface visibility.
+  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(grand_child->use_local_transform_for_backface_visibility());
+
   gfx::Transform rotation_transform = identity_transform;
   rotation_transform.RotateAboutXAxis(180.0);
 
   child->SetTransform(rotation_transform);
+  child->Set3dSortingContextId(1);
+  grand_child->Set3dSortingContextId(1);
   child->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   ExecuteCalculateDrawProperties(root);
@@ -6522,6 +6536,44 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
                     ->render_surface()
                     ->layer_list()
                     .size());
+
+  // We should check for backface visibilty of child as it has a rotation
+  // transform. We should also check for grand_child as it uses the backface
+  // visibility of its parent.
+  EXPECT_FALSE(root->should_check_backface_visibility());
+  EXPECT_TRUE(child->should_check_backface_visibility());
+  EXPECT_TRUE(grand_child->should_check_backface_visibility());
+  // child uses its local transform for backface visibility as it is the root of
+  // a 3d rendering context. grand_child is in a 3d rendering context and is not
+  // the root, but it derives its backface visibility from its parent which uses
+  // its local transform.
+  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(grand_child->use_local_transform_for_backface_visibility());
+
+  grand_child->SetUseParentBackfaceVisibility(false);
+  grand_child->SetDoubleSided(false);
+  grand_child->layer_tree_impl()->property_trees()->needs_rebuild = true;
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(1u, render_surface_layer_list_impl()->size());
+  EXPECT_EQ(0u, render_surface_layer_list_impl()
+                    ->at(0)
+                    ->render_surface()
+                    ->layer_list()
+                    .size());
+
+  // We should check the backface visibility of child as it has a rotation
+  // transform and for grand_child as it is in a 3d rendering context and not
+  // the root of it.
+  EXPECT_FALSE(root->should_check_backface_visibility());
+  EXPECT_TRUE(child->should_check_backface_visibility());
+  EXPECT_TRUE(grand_child->should_check_backface_visibility());
+  // grand_child is in an existing 3d rendering context, so it should not use
+  // local transform for backface visibility.
+  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
+  EXPECT_FALSE(grand_child->use_local_transform_for_backface_visibility());
 }
 
 TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {

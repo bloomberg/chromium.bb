@@ -83,6 +83,8 @@ Layer::Layer(const LayerSettings& settings)
       double_sided_(true),
       should_flatten_transform_(true),
       use_parent_backface_visibility_(false),
+      use_local_transform_for_backface_visibility_(false),
+      should_check_backface_visibility_(false),
       force_render_surface_(false),
       transform_is_invertible_(true),
       has_render_surface_(false),
@@ -1093,6 +1095,29 @@ void Layer::SetShouldFlattenTransform(bool should_flatten) {
   SetNeedsCommit();
 }
 
+void Layer::SetUseParentBackfaceVisibility(bool use) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (use_parent_backface_visibility_ == use)
+    return;
+  use_parent_backface_visibility_ = use;
+  SetNeedsPushProperties();
+}
+
+void Layer::SetUseLocalTransformForBackfaceVisibility(bool use_local) {
+  if (use_local_transform_for_backface_visibility_ == use_local)
+    return;
+  use_local_transform_for_backface_visibility_ = use_local;
+  SetNeedsPushProperties();
+}
+
+void Layer::SetShouldCheckBackfaceVisibility(
+    bool should_check_backface_visibility) {
+  if (should_check_backface_visibility_ == should_check_backface_visibility)
+    return;
+  should_check_backface_visibility_ = should_check_backface_visibility;
+  SetNeedsPushProperties();
+}
+
 void Layer::SetIsDrawable(bool is_drawable) {
   DCHECK(IsPropertyChangeAllowed());
   if (is_drawable_ == is_drawable)
@@ -1221,6 +1246,9 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
       should_flatten_transform_from_property_tree_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
+  layer->SetUseLocalTransformForBackfaceVisibility(
+      use_local_transform_for_backface_visibility_);
+  layer->SetShouldCheckBackfaceVisibility(should_check_backface_visibility_);
   if (!layer->TransformIsAnimatingOnImplOnly() && !TransformIsAnimating())
     layer->SetTransformAndInvertibility(transform_, transform_is_invertible_);
   DCHECK(!(TransformIsAnimating() && layer->TransformIsAnimatingOnImplOnly()));

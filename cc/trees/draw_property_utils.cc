@@ -226,52 +226,35 @@ void CalculateVisibleRects(const std::vector<LayerType*>& visible_layer_list,
   }
 }
 
-template <typename LayerType>
-static bool TransformToScreenIsKnown(LayerType* layer,
-                                     const TransformTree& tree) {
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
-  return !node->data.to_screen_is_animated;
-}
-
-template <typename LayerType>
-static bool HasSingularTransform(LayerType* layer, const TransformTree& tree) {
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
+static bool HasSingularTransform(int transform_tree_index,
+                                 const TransformTree& tree) {
+  const TransformNode* node = tree.Node(transform_tree_index);
   return !node->data.is_invertible || !node->data.ancestors_are_invertible;
 }
 
 template <typename LayerType>
-static bool IsLayerBackFaceVisible(LayerType* layer,
-                                   const TransformTree& tree) {
-  // A layer with singular transform is not drawn. So, we can assume that its
-  // backface is not visible.
-  if (HasSingularTransform(layer, tree))
-    return false;
-  // The current W3C spec on CSS transforms says that backface visibility should
-  // be determined differently depending on whether the layer is in a "3d
-  // rendering context" or not. For Chromium code, we can determine whether we
-  // are in a 3d rendering context by checking if the parent preserves 3d.
-
+static int TransformTreeIndexForBackfaceVisibility(LayerType* layer,
+                                                   const TransformTree& tree) {
+  if (!layer->use_parent_backface_visibility())
+    return layer->transform_tree_index();
   const TransformNode* node = tree.Node(layer->transform_tree_index());
-  const TransformNode* parent_node = tree.parent(node);
-  const bool is_3d_sorted = (node->data.sorting_context_id != 0);
-  const bool no_transfrom_node_created = (layer->id() != node->owner_id);
-  const bool parent_also_in_same_rendering_context =
-      parent_node &&
-      parent_node->data.sorting_context_id == node->data.sorting_context_id;
-  if (is_3d_sorted &&
-      (no_transfrom_node_created || parent_also_in_same_rendering_context)) {
-    return DrawTransformFromPropertyTrees(layer, tree).IsBackFaceVisible();
-  }
+  return layer->id() == node->owner_id ? tree.parent(node)->id : node->id;
+}
 
-  // In this case, either the layer establishes a new 3d rendering context, or
-  // is not in a 3d rendering context at all.
-  return layer->transform().IsBackFaceVisible();
+template <typename LayerType>
+static bool IsLayerBackFaceVisible(LayerType* layer,
+                                   int transform_tree_index,
+                                   const TransformTree& tree) {
+  const TransformNode* node = tree.Node(transform_tree_index);
+  return layer->use_local_transform_for_backface_visibility()
+             ? node->data.local.IsBackFaceVisible()
+             : node->data.to_target.IsBackFaceVisible();
 }
 
 template <typename LayerType>
 static bool IsSurfaceBackFaceVisible(LayerType* layer,
                                      const TransformTree& tree) {
-  if (HasSingularTransform(layer, tree))
+  if (HasSingularTransform(layer->transform_tree_index(), tree))
     return false;
   const TransformNode* node = tree.Node(layer->transform_tree_index());
   // If the render_surface is not part of a new or existing rendering context,
@@ -296,19 +279,15 @@ static bool IsSurfaceBackFaceVisible(LayerType* layer,
   return layer->transform().IsBackFaceVisible();
 }
 
-template <typename LayerType>
-static bool IsAnimatingTransformToScreen(LayerType* layer,
-                                         const TransformTree& tree) {
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
-  return node->data.to_screen_is_animated;
-}
-
 static inline bool TransformToScreenIsKnown(Layer* layer,
+                                            int transform_tree_index,
                                             const TransformTree& tree) {
-  return !IsAnimatingTransformToScreen(layer, tree);
+  const TransformNode* node = tree.Node(transform_tree_index);
+  return !node->data.to_screen_is_animated;
 }
 
 static inline bool TransformToScreenIsKnown(LayerImpl* layer,
+                                            int transform_tree_index,
                                             const TransformTree& tree) {
   return true;
 }
@@ -433,19 +412,18 @@ static bool LayerShouldBeSkipped(LayerType* layer,
   if (!layer->DrawsContent() || layer->bounds().IsEmpty())
     return true;
 
-  LayerType* backface_test_layer = layer;
-  if (layer->use_parent_backface_visibility()) {
-    DCHECK(layer->parent());
-    DCHECK(!layer->parent()->use_parent_backface_visibility());
-    backface_test_layer = layer->parent();
-  }
-
   // The layer should not be drawn if (1) it is not double-sided and (2) the
   // back of the layer is known to be facing the screen.
-  if (!backface_test_layer->double_sided() &&
-      TransformToScreenIsKnown(backface_test_layer, tree) &&
-      IsLayerBackFaceVisible(backface_test_layer, tree))
-    return true;
+  if (layer->should_check_backface_visibility()) {
+    int backface_transform_id =
+        TransformTreeIndexForBackfaceVisibility(layer, tree);
+    // A layer with singular transform is not drawn. So, we can assume that its
+    // backface is not visible.
+    if (TransformToScreenIsKnown(layer, backface_transform_id, tree) &&
+        !HasSingularTransform(backface_transform_id, tree) &&
+        IsLayerBackFaceVisible(layer, backface_transform_id, tree))
+      return true;
+  }
 
   return false;
 }

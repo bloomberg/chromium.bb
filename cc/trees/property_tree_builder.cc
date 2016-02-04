@@ -210,6 +210,14 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 }
 
 template <typename LayerType>
+static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
+  return layer->parent()
+             ? layer->parent()->sorting_context_id() !=
+                   layer->sorting_context_id()
+             : layer->Is3dSorted();
+}
+
+template <typename LayerType>
 bool AddTransformNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
     LayerType* layer,
@@ -246,9 +254,8 @@ bool AddTransformNodeIfNeeded(
           layer->scroll_parent()->effect_tree_index();
 
   const bool is_at_boundary_of_3d_rendering_context =
-      layer->parent()
-          ? layer->parent()->sorting_context_id() != layer->sorting_context_id()
-          : layer->Is3dSorted();
+      IsAtBoundaryOf3dRenderingContext(layer);
+
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
                        is_page_scale_layer || is_overscroll_elasticity_layer ||
@@ -687,6 +694,43 @@ void AddScrollNodeIfNeeded(
 }
 
 template <typename LayerType>
+void SetBackfaceVisibilityTransform(LayerType* layer,
+                                    bool created_transform_node) {
+  const bool is_at_boundary_of_3d_rendering_context =
+      IsAtBoundaryOf3dRenderingContext(layer);
+  if (layer->use_parent_backface_visibility()) {
+    DCHECK(!is_at_boundary_of_3d_rendering_context);
+    DCHECK(layer->parent());
+    DCHECK(!layer->parent()->use_parent_backface_visibility());
+    layer->SetUseLocalTransformForBackfaceVisibility(
+        layer->parent()->use_local_transform_for_backface_visibility());
+    layer->SetShouldCheckBackfaceVisibility(
+        layer->parent()->should_check_backface_visibility());
+  } else {
+    // The current W3C spec on CSS transforms says that backface visibility
+    // should be determined differently depending on whether the layer is in a
+    // "3d rendering context" or not. For Chromium code, we can determine
+    // whether we are in a 3d rendering context by checking if the parent
+    // preserves 3d.
+    const bool use_local_transform =
+        !layer->Is3dSorted() ||
+        (layer->Is3dSorted() && is_at_boundary_of_3d_rendering_context);
+    layer->SetUseLocalTransformForBackfaceVisibility(use_local_transform);
+
+    // A double-sided layer's backface can been shown when its visibile.
+    if (layer->double_sided())
+      layer->SetShouldCheckBackfaceVisibility(false);
+    // The backface of a layer that uses local transform for backface visibility
+    // is not visible when it does not create a transform node as its local
+    // transform is identity or 2d translation and is not animating.
+    else if (use_local_transform && !created_transform_node)
+      layer->SetShouldCheckBackfaceVisibility(false);
+    else
+      layer->SetShouldCheckBackfaceVisibility(true);
+  }
+}
+
+template <typename LayerType>
 void BuildPropertyTreesInternal(
     LayerType* layer,
     const DataForRecursion<LayerType>& data_from_parent,
@@ -714,6 +758,8 @@ void BuildPropertyTreesInternal(
                       created_transform_node, &data_for_children);
 
   AddScrollNodeIfNeeded(data_from_parent, layer, &data_for_children);
+
+  SetBackfaceVisibilityTransform(layer, created_transform_node);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
     if (!layer->child_at(i)->scroll_parent()) {

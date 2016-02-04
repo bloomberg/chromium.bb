@@ -219,7 +219,7 @@ void WebLayerImpl::setRenderingContext(int context) {
 
 void WebLayerImpl::setUseParentBackfaceVisibility(
     bool use_parent_backface_visibility) {
-  layer_->set_use_parent_backface_visibility(use_parent_backface_visibility);
+  layer_->SetUseParentBackfaceVisibility(use_parent_backface_visibility);
 }
 
 void WebLayerImpl::setBackgroundColor(WebColor color) {
