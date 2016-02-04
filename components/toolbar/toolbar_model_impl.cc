@@ -4,6 +4,7 @@
 
 #include "components/toolbar/toolbar_model_impl.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -26,7 +27,9 @@ using security_state::SecurityStateModel;
 
 ToolbarModelImpl::ToolbarModelImpl(ToolbarModelDelegate* delegate,
                                    size_t max_url_display_chars)
-    : delegate_(delegate), max_url_display_chars_(max_url_display_chars) {}
+    : delegate_(delegate), max_url_display_chars_(max_url_display_chars) {
+  DCHECK(delegate_);
+}
 
 ToolbarModelImpl::~ToolbarModelImpl() {
 }
