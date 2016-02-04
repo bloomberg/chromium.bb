@@ -157,6 +157,12 @@ class FileCache {
       const ResourceMetadataStorage::RecoveredCacheInfoMap&
           recovered_cache_info);
 
+  // Migrates cache files from |from| directory to |to| directory. Returns true
+  // for success.
+  static bool MigrateCacheFiles(const base::FilePath& from,
+                                const base::FilePath& to,
+                                ResourceMetadataStorage* metadata_storage);
+
  private:
   friend class FileCacheTest;
 

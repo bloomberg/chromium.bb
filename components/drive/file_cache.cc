@@ -37,6 +37,12 @@ std::string GetIdFromPath(const base::FilePath& path) {
   return util::UnescapeCacheFileName(path.BaseName().AsUTF8Unsafe());
 }
 
+base::FilePath GetPathForId(const base::FilePath& cache_directory,
+                            const std::string& id) {
+  return cache_directory.Append(
+      base::FilePath::FromUTF8Unsafe(util::EscapeCacheFileName(id)));
+}
+
 typedef std::pair<base::File::Info, ResourceEntry> CacheInfo;
 
 class CacheInfoLatestCompare {
@@ -75,8 +81,7 @@ void FileCache::SetMaxNumOfEvictedCacheFilesForTest(
 }
 
 base::FilePath FileCache::GetCacheFilePath(const std::string& id) const {
-  return cache_file_directory_.Append(
-      base::FilePath::FromUTF8Unsafe(util::EscapeCacheFileName(id)));
+  return GetPathForId(cache_file_directory_, id);
 }
 
 void FileCache::AssertOnSequencedWorkerPool() {
@@ -671,6 +676,34 @@ bool FileCache::RenameCacheFilesToNewFormat() {
     if (new_path != current && !base::Move(current, new_path))
       return false;
   }
+  return true;
+}
+
+// static
+bool FileCache::MigrateCacheFiles(const base::FilePath& from,
+                                  const base::FilePath& to,
+                                  ResourceMetadataStorage* metadata_storage) {
+  scoped_ptr<ResourceMetadataStorage::Iterator> it =
+      metadata_storage->GetIterator();
+  for (; !it->IsAtEnd(); it->Advance()) {
+    const ResourceEntry& entry = it->GetValue();
+    if (!entry.file_specific_info().cache_state().is_present()) {
+      continue;
+    }
+
+    const base::FilePath move_from = GetPathForId(from, entry.local_id());
+    if (!base::PathExists(move_from)) {
+      continue;
+    }
+
+    const base::FilePath move_to = GetPathForId(to, entry.local_id());
+    if (!base::Move(move_from, move_to)) {
+      return false;
+    }
+
+    // TODO(yawano): create hard link if entry is marked as pinned or dirty.
+  }
+
   return true;
 }
 

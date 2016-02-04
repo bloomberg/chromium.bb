@@ -33,7 +33,11 @@ namespace drive {
 namespace internal {
 namespace {
 
-const char kCacheFileDirectory[] = "files";
+const base::FilePath::CharType kCacheFileDirectory[] =
+    FILE_PATH_LITERAL("files");
+const base::FilePath::CharType kNewCacheFileDirectory[] =
+    FILE_PATH_LITERAL("blobs");
+
 const int kTemporaryFileSizeInBytes = 10;
 
 }  // namespace
@@ -44,7 +48,7 @@ class FileCacheTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    cache_files_dir_ = temp_dir_.path().AppendASCII(kCacheFileDirectory);
+    cache_files_dir_ = temp_dir_.path().Append(kCacheFileDirectory);
 
     ASSERT_TRUE(base::CreateDirectory(metadata_dir));
     ASSERT_TRUE(base::CreateDirectory(cache_files_dir_));
@@ -112,7 +116,7 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
 
   // Set up files in the cache directory. These files should be moved.
   const base::FilePath file_directory =
-      temp_dir_.path().AppendASCII(kCacheFileDirectory);
+      temp_dir_.path().Append(kCacheFileDirectory);
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_bar")));
   ASSERT_TRUE(base::CopyFile(src_path, file_directory.AppendASCII("id_baz")));
 
@@ -338,7 +342,7 @@ TEST_F(FileCacheTest, GetFile) {
   std::string md5(base::MD5String(src_contents));
 
   const base::FilePath cache_file_directory =
-      temp_dir_.path().AppendASCII(kCacheFileDirectory);
+      temp_dir_.path().Append(kCacheFileDirectory);
 
   // Try to get an existing file from cache.
   ResourceEntry entry;
@@ -658,7 +662,7 @@ TEST_F(FileCacheTest, Remove) {
 
 TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
   const base::FilePath file_directory =
-      temp_dir_.path().AppendASCII(kCacheFileDirectory);
+      temp_dir_.path().Append(kCacheFileDirectory);
 
   // File with an old style "<prefix>:<ID>.<MD5>" name.
   ASSERT_TRUE(google_apis::test_util::WriteStringToFile(
@@ -693,6 +697,65 @@ TEST_F(FileCacheTest, RenameCacheFilesToNewFormat) {
   EXPECT_TRUE(base::ReadFileToString(file_directory.AppendASCII("id_kyu"),
                                      &contents));
   EXPECT_EQ("kyu", contents);
+}
+
+// Test for migrating cache files from files to blobs.
+TEST_F(FileCacheTest, MigrateCacheFiles) {
+  // Create test files and metadata.
+  base::FilePath temp_file;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
+
+  const base::FilePath old_cache_dir =
+      temp_dir_.path().Append(kCacheFileDirectory);
+  const base::FilePath new_cache_dir =
+      temp_dir_.path().Append(kNewCacheFileDirectory);
+  ASSERT_TRUE(base::CreateDirectory(old_cache_dir));
+  ASSERT_TRUE(base::CreateDirectory(new_cache_dir));
+
+  // Entry A: cache file in old cache directory with metadata.
+  const std::string id_a = "id_a";
+  ResourceEntry entry_a;
+  entry_a.set_local_id(id_a);
+  entry_a.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
+      true);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_a));
+  const base::FilePath old_file_path_a = old_cache_dir.AppendASCII(id_a);
+  const base::FilePath new_file_path_a = new_cache_dir.AppendASCII(id_a);
+  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_a));
+
+  // Entry B: cache file in old cache directory without metadata.
+  const std::string id_b = "id_b";
+  const base::FilePath old_file_path_b = old_cache_dir.AppendASCII(id_b);
+  ASSERT_TRUE(base::CopyFile(temp_file, old_file_path_b));
+
+  // Entry C: already migrated cache file.
+  const std::string id_c = "id_c";
+  ResourceEntry entry_c;
+  entry_c.set_local_id(id_c);
+  entry_c.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
+      true);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_c));
+  const base::FilePath new_file_path_c = new_cache_dir.AppendASCII(id_c);
+  ASSERT_TRUE(base::CopyFile(temp_file, new_file_path_c));
+
+  // Entry D: metadata entry without cache file.
+  const std::string id_d = "id_d";
+  ResourceEntry entry_d;
+  entry_d.set_local_id(id_d);
+  entry_d.mutable_file_specific_info()->mutable_cache_state()->set_is_present(
+      true);
+  ASSERT_EQ(FILE_ERROR_OK, metadata_storage_->PutEntry(entry_d));
+
+  // Run migration.
+  ASSERT_TRUE(FileCache::MigrateCacheFiles(old_cache_dir, new_cache_dir,
+                                           metadata_storage_.get()));
+
+  // Check result.
+  EXPECT_FALSE(base::PathExists(old_file_path_a));
+  EXPECT_TRUE(base::PathExists(new_file_path_a));
+  // MigrateCacheFiles doesn't delete invalid cache file.
+  EXPECT_TRUE(base::PathExists(old_file_path_b));
+  EXPECT_TRUE(base::PathExists(new_file_path_c));
 }
 
 TEST_F(FileCacheTest, ClearAll) {
