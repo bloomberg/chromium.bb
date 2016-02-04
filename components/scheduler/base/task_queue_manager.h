@@ -126,7 +126,10 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   LazyNow CreateLazyNow() const;
 
+  // Returns the currently executing TaskQueue if any. Must be called on the
+  // thread this class was created on.
   TaskQueue* currently_executing_task_queue() const {
+    DCHECK(main_thread_checker_.CalledOnValidThread());
     return currently_executing_task_queue_;
   }
 

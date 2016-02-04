@@ -288,18 +288,6 @@ void RendererBlinkPlatformImpl::Shutdown() {
 
 //------------------------------------------------------------------------------
 
-double RendererBlinkPlatformImpl::currentTimeSeconds() {
-  // TODO(alexclarke): Change the way this is plumbed through to blink.
-  return renderer_scheduler_->VirtualTimeSeconds();
-}
-
-double RendererBlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
-  // TODO(alexclarke): Change the way this is plumbed through to blink.
-  return renderer_scheduler_->MonotonicallyIncreasingVirtualTimeSeconds();
-}
-
-//------------------------------------------------------------------------------
-
 blink::WebURLLoader* RendererBlinkPlatformImpl::createURLLoader() {
   ChildThreadImpl* child_thread = ChildThreadImpl::current();
   // There may be no child thread in RenderViewTests.  These tests can still use
