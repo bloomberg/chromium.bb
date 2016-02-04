@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
@@ -114,8 +115,14 @@ public class OverlayPanelContent {
     // TODO(jeremycho): Consider creating a Tab with the Panel's ContentViewCore,
     // which would also handle functionality like long-press-to-paste.
     private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
-        final ExternalNavigationHandler mExternalNavHandler = new ExternalNavigationHandler(
-                mActivity.getActivityTab());
+        final ExternalNavigationHandler mExternalNavHandler;
+
+        public InterceptNavigationDelegateImpl() {
+            Tab tab = mActivity.getActivityTab();
+            mExternalNavHandler = (tab != null && tab.getContentViewCore() != null)
+                    ? new ExternalNavigationHandler(tab) : null;
+        }
+
         @Override
         public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
             // TODO(mdjones): Rather than passing the two navigation params, instead consider

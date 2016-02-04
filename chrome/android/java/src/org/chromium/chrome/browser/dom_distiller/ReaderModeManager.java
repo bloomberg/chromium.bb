@@ -216,6 +216,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void onContentChanged(Tab tab) {
         // Only listen to events on the currently active tab.
         if (tab.getId() != mTabId) return;
+        closeReaderPanel(StateChangeReason.UNKNOWN, false);
 
         if (mTabStatusMap.containsKey(mTabId)) {
             // If the panel was closed using the "x" icon, don't show it again for this tab.
