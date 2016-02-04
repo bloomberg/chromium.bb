@@ -9339,11 +9339,14 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -9400,11 +9403,11 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-release": {
         "_template": "release",
@@ -9420,11 +9423,14 @@
         "hwqual": false,
         "image_test": false,
         "important": true,
+        "run_gce_tests": true,
         "sign_types": [
             "base"
         ],
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
@@ -9687,11 +9693,14 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "run_gce_tests": true,
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu_next-no-vmtest-pre-cq": {
         "_template": "no-vmtest-pre-cq",
@@ -9768,9 +9777,12 @@
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
+        "run_gce_tests": true,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": []
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lakitu_next-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
