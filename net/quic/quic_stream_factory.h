@@ -349,6 +349,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     int cert_verify_flags,
                     scoped_ptr<QuicServerInfo> quic_server_info,
                     const AddressList& address_list,
+                    scoped_ptr<DatagramClientSocket> socket,
+                    scoped_ptr<QuicChromiumPacketReader> reader,
                     base::TimeTicks dns_resolution_end_time,
                     const BoundNetLog& net_log,
                     QuicChromiumClientSession** session);

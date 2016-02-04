@@ -165,6 +165,7 @@ void QuicChromiumClientSession::StreamRequest::OnRequestCompleteFailure(
 QuicChromiumClientSession::QuicChromiumClientSession(
     QuicConnection* connection,
     scoped_ptr<DatagramClientSocket> socket,
+    scoped_ptr<QuicChromiumPacketReader> reader,
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     QuicClock* clock,
@@ -200,9 +201,15 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       disabled_reason_(QUIC_DISABLED_NOT),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
-  packet_readers_.push_back(make_scoped_ptr(new QuicChromiumPacketReader(
-      sockets_.back().get(), clock, this, yield_after_packets,
-      yield_after_duration, net_log_)));
+  if (reader) {
+    reader->set_visitor(this);
+  } else {
+    reader.reset(new QuicChromiumPacketReader(sockets_.back().get(), clock,
+                                              this, yield_after_packets,
+                                              yield_after_duration, net_log_));
+  }
+  packet_readers_.push_back(std::move(reader));
+
   crypto_stream_.reset(
       crypto_client_stream_factory->CreateQuicCryptoClientStream(
           server_id, this, make_scoped_ptr(new ProofVerifyContextChromium(
@@ -1022,6 +1029,18 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
   DCHECK(sockets_.back().get() != nullptr);
   // The most recently added socket is the currently active one.
   return sockets_.back().get();
+}
+
+DatagramClientSocket* QuicChromiumClientSession::ReleaseSocket() {
+  DatagramClientSocket* socket = sockets_.back().release();
+  sockets_.pop_back();
+  return socket;
+}
+
+QuicChromiumPacketReader* QuicChromiumClientSession::ReleaseReader() {
+  QuicChromiumPacketReader* reader = packet_readers_.back().release();
+  packet_readers_.pop_back();
+  return reader;
 }
 
 }  // namespace net

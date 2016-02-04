@@ -219,8 +219,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     connection_->SetSendAlgorithm(send_algorithm_);
     session_.reset(new QuicChromiumClientSession(
         connection_, scoped_ptr<DatagramClientSocket>(socket),
+        scoped_ptr<QuicChromiumPacketReader>(nullptr),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
-        &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
+        &transport_security_state_, scoped_ptr<QuicServerInfo>(nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      PRIVACY_MODE_DISABLED),
         kQuicYieldAfterPacketsRead,
