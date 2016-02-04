@@ -116,6 +116,11 @@ source_set("simd") {
       "simd/jsimd_arm.c",
       "simd/jsimd_arm_neon.S",
     ]
+  } else if (current_cpu == "arm64") {
+    sources = [
+      "simd/jsimd_arm64.c",
+      "simd/jsimd_arm64_neon.S",
+    ]
   } else {
     sources = [
       "jsimd_none.c",
