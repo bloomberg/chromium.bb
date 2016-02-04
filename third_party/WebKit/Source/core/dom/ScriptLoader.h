@@ -109,17 +109,17 @@ private:
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
 
-    OwnPtrWillBeMember<PendingScript> m_pendingScript;
-
     bool m_parserInserted : 1;
     bool m_isExternalScript : 1;
     bool m_alreadyStarted : 1;
     bool m_haveFiredLoad : 1;
     bool m_willBeParserExecuted : 1; // Same as "The parser will handle executing the script."
     bool m_readyToBeParserExecuted : 1;
+    bool m_willExecuteInOrder : 1;
     bool m_willExecuteWhenDocumentFinishedParsing : 1;
     bool m_forceAsync : 1;
-    bool m_willExecuteInOrder : 1;
+
+    OwnPtrWillBeMember<PendingScript> m_pendingScript;
 };
 
 ScriptLoader* toScriptLoaderIfPossible(Element*);

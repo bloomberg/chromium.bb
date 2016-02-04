@@ -67,9 +67,9 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     , m_haveFiredLoad(false)
     , m_willBeParserExecuted(false)
     , m_readyToBeParserExecuted(false)
+    , m_willExecuteInOrder(false)
     , m_willExecuteWhenDocumentFinishedParsing(false)
     , m_forceAsync(!parserInserted)
-    , m_willExecuteInOrder(false)
 {
     ASSERT(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
@@ -257,8 +257,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_willBeParserExecuted = true;
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
-        m_willExecuteInOrder = true;
         m_pendingScript = PendingScript::create(m_element, m_resource.get());
+        m_willExecuteInOrder = true;
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::IN_ORDER_EXECUTION);
         // Note that watchForLoad can immediately call notifyFinished.
         m_pendingScript->watchForLoad(this);
