@@ -920,12 +920,11 @@ def _GetAttachedDevices(blacklist_file, test_device, enable_cache):
     return sorted(attached_devices)
 
 
-def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
+def RunTestsCommand(args): # pylint: disable=too-many-return-statements
   """Checks test type and dispatches to the appropriate function.
 
   Args:
     args: argparse.Namespace object.
-    parser: argparse.ArgumentParser object.
 
   Returns:
     Integer indicated exit code.
@@ -939,7 +938,7 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
   ProcessCommonOptions(args)
 
   if args.enable_platform_mode:
-    return RunTestsInPlatformMode(args, parser)
+    return RunTestsInPlatformMode(args)
 
   forwarder.Forwarder.RemoveHostLog()
   if not ports.ResetTestServerPortAllocation():
@@ -950,7 +949,7 @@ def RunTestsCommand(args, parser): # pylint: disable=too-many-return-statements
                                args.enable_device_cache)
 
   if command == 'gtest':
-    return RunTestsInPlatformMode(args, parser)
+    return RunTestsInPlatformMode(args)
   elif command == 'linker':
     return _RunLinkerTests(args, get_devices())
   elif command == 'instrumentation':
@@ -975,10 +974,11 @@ _SUPPORTED_IN_PLATFORM_MODE = [
 ]
 
 
-def RunTestsInPlatformMode(args, parser):
+def RunTestsInPlatformMode(args):
 
   def infra_error(message):
-    parser.exit(status=constants.INFRA_EXIT_CODE, message=message)
+    logging.fatal(message)
+    sys.exit(constants.INFRA_EXIT_CODE)
 
   if args.command not in _SUPPORTED_IN_PLATFORM_MODE:
     infra_error('%s is not yet supported in platform mode' % args.command)
@@ -1095,7 +1095,7 @@ def main():
   args = parser.parse_args()
 
   try:
-    return RunTestsCommand(args, parser)
+    return RunTestsCommand(args)
   except base_error.BaseError as e:
     logging.exception('Error occurred.')
     if e.is_infra_error:
