@@ -1890,7 +1890,7 @@ void EventSender::AddTouchPoint(float x, float y, gin::Arguments* args) {
                         &touch_point.radiusY);
 
   // Set the touch point pressure to zero if it was not set by the caller
-  if (isnan(touch_point.force))
+  if (std::isnan(touch_point.force))
       touch_point.force = 0.0;
 
   touch_points_.push_back(touch_point);

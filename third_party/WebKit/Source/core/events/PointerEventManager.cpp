@@ -41,7 +41,7 @@ EventTarget* PointerEventManager::getCapturingNode(PassRefPtrWillBeRawPtr<Pointe
 
 float getPointerEventPressure(float force, int buttons)
 {
-    if (isnan(force))
+    if (std::isnan(force))
         return buttons ? 0.5 : 0;
     return force;
 }
