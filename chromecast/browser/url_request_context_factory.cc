@@ -291,13 +291,6 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   params->http_server_properties = http_server_properties_->GetWeakPtr();
   params->ignore_certificate_errors = ignore_certificate_errors;
   params->proxy_service = proxy_service_.get();
-
-  // TODO(lcwu): http://crbug.com/329681. Remove this once spdy is enabled
-  // by default at the content level.
-  params->enable_spdy31 = true;
-  params->enable_http2 = false;
-  params->parse_alternative_services = true;
-  params->enable_alternative_service_with_different_host = true;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
