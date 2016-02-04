@@ -266,6 +266,7 @@ D. Local Modifications
      a. do not use WINDOWS_LOCALE_API in locmap.c
      b. do not redefine stringpiece::npos
      c. fix http://bugs.icu-project.org/trac/ticket/12129 (C4138 warning)
+     d. fix http://bugs.icu-project.org/trac/ticket/11893 (C4275 warning)
 
   - patches/data.build.patch :
       Remove unnecessary resources : unames, collator rule source
@@ -285,10 +286,13 @@ D. Local Modifications
   - upstream bug (yet to be resolved)
     http://bugs.icu-project.org/trac/ticket/11937
 
-8. TODO: If removing UTF-32 from Blink is more involved than expected,
-   add back UTF-32 temporarily even when UCONFIG_ONLY_HTML_CONVERSION is
-   defined See
-    http://www.icu-project.org/trac/ticket/11296
+8. Add back UTF-32 converters temporarily even when
+   UCONFIG_ONLY_HTML_CONVERSION is defined until UTF-32 is
+   removed from Blink. See
+   http://www.icu-project.org/trac/ticket/11296 and
+   http://crbug.com/417850
+
+   - patches/utf32.patch
 
 9. Fix a UText bug found in uregex_open fuzzer.
   - patches/utext.patch

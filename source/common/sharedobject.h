@@ -21,7 +21,7 @@ U_NAMESPACE_BEGIN
  * update cache metrics. No other part of ICU, except for SharedObject,
  * should directly call the methods of this base class.
  */
-class UnifiedCacheBase : public UObject {
+class U_COMMON_API UnifiedCacheBase : public UObject {
 public:
     UnifiedCacheBase() { }
 
