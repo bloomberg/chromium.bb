@@ -210,7 +210,8 @@ bool FileSelectorImpl::StartSelectFile(
   // Convert |allowed_extensions| to ui::SelectFileDialog::FileTypeInfo.
   ui::SelectFileDialog::FileTypeInfo allowed_file_info =
       ConvertExtensionsToFileTypeInfo(allowed_extensions);
-  allowed_file_info.support_drive = true;
+  allowed_file_info.allowed_paths =
+      ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
   dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                       base::string16() /* dialog title*/,

@@ -15,6 +15,8 @@ namespace file_manager {
 namespace util {
 namespace {
 
+const char kShouldReturnLocalPath[] = "shouldReturnLocalPath";
+
 // Returns a file manager URL for the given |path|.
 GURL GetFileManagerUrl(const char* path) {
   return GURL(std::string("chrome-extension://") + kFileManagerAppId + path);
@@ -109,8 +111,23 @@ GURL GetFileManagerMainPageUrlWithParams(
 
   // If the caller cannot handle Drive path, the file chooser dialog need to
   // return resolved local native paths to the selected files.
-  arg_value.SetBoolean("shouldReturnLocalPath",
-                       !file_types || !file_types->support_drive);
+  // TODO(hirono): Turns the boolean into enum to pass support virtual path info
+  // to Javascript.
+  if (file_types) {
+    switch (file_types->allowed_paths) {
+      case ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH:
+        arg_value.SetBoolean(kShouldReturnLocalPath, true);
+        break;
+      case ui::SelectFileDialog::FileTypeInfo::NATIVE_OR_DRIVE_PATH:
+        arg_value.SetBoolean(kShouldReturnLocalPath, false);
+        break;
+      case ui::SelectFileDialog::FileTypeInfo::ANY_PATH:
+        arg_value.SetBoolean(kShouldReturnLocalPath, false);
+        break;
+    }
+  } else {
+    arg_value.SetBoolean(kShouldReturnLocalPath, true);
+  }
 
   std::string json_args;
   base::JSONWriter::Write(arg_value, &json_args);

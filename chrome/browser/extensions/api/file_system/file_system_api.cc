@@ -726,7 +726,7 @@ class FileSystemChooseEntryFunction::FilePicker
     // not its cache. On other platforms than Chrome OS, they are the same.
     //
     // TODO(kinaba): remove this, once after the file picker implements proper
-    // switch of the path treatment depending on the |support_drive| flag.
+    // switch of the path treatment depending on the |allowed_paths|.
     FileSelected(file.file_path, index, params);
   }
 
@@ -1105,7 +1105,7 @@ bool FileSystemChooseEntryFunction::RunAsync() {
         options->accepts.get(), options->accepts_all_types.get());
   }
 
-  file_type_info.support_drive = true;
+  file_type_info.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
   base::FilePath previous_path = file_system_api::GetLastChooseEntryDirectory(
       ExtensionPrefs::Get(GetProfile()), extension()->id());

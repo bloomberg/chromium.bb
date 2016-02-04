@@ -443,7 +443,9 @@ void FileSelectHelper::RunFileChooser(RenderViewHost* render_view_host,
 void FileSelectHelper::GetFileTypesOnFileThread(
     scoped_ptr<FileChooserParams> params) {
   select_file_types_ = GetFileTypesFromAcceptType(params->accept_types);
-  select_file_types_->support_drive = !params->need_local_path;
+  select_file_types_->allowed_paths =
+      params->need_local_path ? ui::SelectFileDialog::FileTypeInfo::NATIVE_PATH
+                              : ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

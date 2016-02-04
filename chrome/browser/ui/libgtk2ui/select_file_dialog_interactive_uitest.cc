@@ -64,7 +64,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 
     gfx::NativeWindow parent_window = window->GetNativeWindow();
     ui::SelectFileDialog::FileTypeInfo file_types;
-    file_types.support_drive = true;
+    file_types.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
     const base::FilePath file_path;
     select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                     base::string16(),

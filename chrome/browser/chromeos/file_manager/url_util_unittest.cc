@@ -80,7 +80,7 @@ TEST(FileManagerUrlUtilTest,
   file_types.extension_description_overrides.push_back(
       base::UTF8ToUTF16("TEXT"));
   // "shouldReturnLocalPath" will be false if drive is supported.
-  file_types.support_drive = true;
+  file_types.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
 
   const GURL url = GetFileManagerMainPageUrlWithParams(
       ui::SelectFileDialog::SELECT_OPEN_FILE,
