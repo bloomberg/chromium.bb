@@ -60,6 +60,10 @@ class SiteEngagementScore {
     // each site.
     FIRST_DAILY_ENGAGEMENT,
 
+    // The number of points that the engagement service must accumulate to be
+    // considered 'useful'.
+    BOOTSTRAP_POINTS,
+
     MAX_VARIATION
   };
 
@@ -75,6 +79,7 @@ class SiteEngagementScore {
   static double GetHiddenMediaPoints();
   static double GetWebAppInstalledPoints();
   static double GetFirstDailyEngagementPoints();
+  static double GetBootstrapPoints();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations();
@@ -199,6 +204,11 @@ class SiteEngagementService : public KeyedService,
   // Returns a map of all stored origins and their engagement scores.
   std::map<GURL, double> GetScoreMap() const;
 
+  // Returns whether the engagement service has enough data to make meaningful
+  // decisions. Clients should avoid using engagement in their heuristic until
+  // this is true.
+  bool IsBootstrapped();
+
   // Update the engagement score of the origin matching |url| for navigation.
   void HandleNavigation(const GURL& url, ui::PageTransition transition);
 
@@ -240,6 +250,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupOriginsOnHistoryDeletion);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, IsBootstrapped);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);
 
   // Only used in tests.

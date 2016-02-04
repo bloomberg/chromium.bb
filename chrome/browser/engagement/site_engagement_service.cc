@@ -126,6 +126,7 @@ double SiteEngagementScore::param_values[] = {
     0.01,  // HIDDEN_MEDIA_POINTS
     5,     // WEB_APP_INSTALLED_POINTS
     0.5,   // FIRST_DAILY_ENGAGEMENT
+    8,     // BOOTSTRAP_POINTS
 };
 
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
@@ -168,6 +169,10 @@ double SiteEngagementScore::GetWebAppInstalledPoints() {
 
 double SiteEngagementScore::GetFirstDailyEngagementPoints() {
   return param_values[FIRST_DAILY_ENGAGEMENT];
+}
+
+double SiteEngagementScore::GetBootstrapPoints() {
+  return param_values[BOOTSTRAP_POINTS];
 }
 
 void SiteEngagementScore::UpdateFromVariations() {
@@ -334,6 +339,7 @@ void SiteEngagementScore::SetParamValuesForTesting() {
   param_values[VISIBLE_MEDIA_POINTS] = 0.02;
   param_values[HIDDEN_MEDIA_POINTS] = 0.01;
   param_values[WEB_APP_INSTALLED_POINTS] = 5;
+  param_values[BOOTSTRAP_POINTS] = 8;
 
   // This is set to zero to avoid interference with tests and is set when
   // testing this functionality.
@@ -517,6 +523,11 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
   }
 
   return score_map;
+}
+
+bool SiteEngagementService::IsBootstrapped() {
+  return GetTotalEngagementPoints() >=
+         SiteEngagementScore::GetBootstrapPoints();
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile,

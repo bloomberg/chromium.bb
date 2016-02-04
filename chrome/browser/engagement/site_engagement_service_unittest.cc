@@ -1059,6 +1059,29 @@ TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
                                             ui::PAGE_TRANSITION_FORM_SUBMIT);
 }
 
+TEST_F(SiteEngagementServiceTest, IsBootstrapped) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day);
+
+  GURL url1("https://www.google.com/");
+  GURL url2("https://www.somewhereelse.com/");
+
+  EXPECT_FALSE(service->IsBootstrapped());
+
+  service->AddPoints(url1, 5.0);
+  EXPECT_FALSE(service->IsBootstrapped());
+
+  service->AddPoints(url2, 5.0);
+  EXPECT_TRUE(service->IsBootstrapped());
+
+  clock->SetNow(current_day + base::TimeDelta::FromDays(10));
+  EXPECT_FALSE(service->IsBootstrapped());
+}
+
 TEST_F(SiteEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   SiteEngagementService* engagement =
       SiteEngagementServiceFactory::GetForProfile(profile());
