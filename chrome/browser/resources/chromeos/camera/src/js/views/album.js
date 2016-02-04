@@ -190,11 +190,10 @@ camera.views.Album.prototype.openPictureInBrowser_ = function(picture) {
 };
 
 /**
- * @override
+ * Updates the view for the changed selection.
+ * @private
  */
-camera.views.Album.prototype.setSelectedIndex = function(index) {
-  camera.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
-
+camera.views.Album.prototype.updateOnSelectionChanged_ = function(index) {
   var selectedPicture = this.lastSelectedPicture();
   if (selectedPicture) {
     camera.util.ensureVisible(selectedPicture.element, this.scroller_);
@@ -212,74 +211,105 @@ camera.views.Album.prototype.setSelectedIndex = function(index) {
 /**
  * @override
  */
+camera.views.Album.prototype.setSelectedIndex = function(index) {
+  camera.views.GalleryBase.prototype.setSelectedIndex.apply(this, arguments);
+
+  this.updateOnSelectionChanged_();
+};
+
+/**
+ * @override
+ */
 camera.views.Album.prototype.onKeyPressed = function(event) {
   var selectedIndexes = this.selectedIndexes;
+
+  var changeSelection = function(index, fallback) {
+    // Expand selection if shift-key is pressed and the index is not null;
+    // otherwise, select only a picture instead.
+    if (event.shiftKey && index !== null) {
+      this.expandSelectionTo_(index);
+    } else {
+      this.setSelectedIndex(index !== null ? index : fallback);
+    }
+  }.bind(this);
+
   switch (camera.util.getShortcutIdentifier(event)) {
-    // TODO(yuli): Handle 'Ctrl'/'Shift' keys for multiple selections.
+    case 'Shift-Down':
     case 'Down':
       if (this.pictures.length) {
         if (!selectedIndexes.length) {
-          this.setSelectedIndex(this.pictures.length - 1);
+          changeSelection(this.pictures.length - 1);
         } else {
+          var newIndex = null;
           var min = Math.min.apply(null, selectedIndexes);
           for (var index = min - 1; index >= 0; index--) {
             if (this.pictures[min].element.offsetLeft ==
                 this.pictures[index].element.offsetLeft) {
-              this.setSelectedIndex(index);
+              newIndex = index;
               break;
             }
           }
+          changeSelection(newIndex, min);
         }
       }
       event.preventDefault();
       return;
+    case 'Shift-Up':
     case 'Up':
       if (this.pictures.length) {
         if (!selectedIndexes.length) {
-          this.setSelectedIndex(0);
+          changeSelection(0);
         } else {
+          var newIndex = null;
           var max = Math.max.apply(null, selectedIndexes);
           for (var index = max + 1; index < this.pictures.length; index++) {
             if (this.pictures[max].element.offsetLeft ==
                 this.pictures[index].element.offsetLeft) {
-              this.setSelectedIndex(index);
+              newIndex = index;
               break;
             }
           }
+          changeSelection(newIndex, max);
         }
       }
       event.preventDefault();
       return;
+    case 'Shift-Right':
     case 'Right':
-      if (this.pictures.length) {
+    if (this.pictures.length) {
         if (!selectedIndexes.length) {
-          this.setSelectedIndex(this.pictures.length - 1);
+          changeSelection(this.pictures.length - 1);
         } else {
           var min = Math.min.apply(null, selectedIndexes);
-          this.setSelectedIndex(Math.max(0, min - 1));
+          var newIndex = (min > 0) ? min - 1 : null;
+          changeSelection(newIndex, 0);
         }
       }
       event.preventDefault();
       return;
+    case 'Shift-Left':
     case 'Left':
       if (this.pictures.length) {
         if (!selectedIndexes.length) {
-          this.setSelectedIndex(0);
+          changeSelection(0);
         } else {
           var max = Math.max.apply(null, selectedIndexes);
-          this.setSelectedIndex(Math.min(this.pictures.length - 1, max + 1));
+          var newIndex = (max < this.pictures.length - 1) ? max + 1 : null;
+          changeSelection(newIndex, this.pictures.length - 1);
         }
       }
       event.preventDefault();
       return;
+    case 'Shift-End':
     case 'End':
       if (this.pictures.length)
-        this.setSelectedIndex(0);
+        changeSelection(0);
       event.preventDefault();
       return;
+    case 'Shift-Home':
     case 'Home':
       if (this.pictures.length)
-        this.setSelectedIndex(this.pictures.length - 1);
+        changeSelection(this.pictures.length - 1);
       event.preventDefault();
       return;
     case 'Enter':
@@ -297,6 +327,66 @@ camera.views.Album.prototype.onKeyPressed = function(event) {
 
   // Call the base view for unhandled keys.
   camera.views.GalleryBase.prototype.onKeyPressed.apply(this, arguments);
+};
+
+/**
+ * Toggles the picture's selection.
+ * @param {number} index Index of the picture to be toggled for its selection.
+ * @private
+ */
+camera.views.Album.prototype.toggleSelection_ = function(index) {
+  var removal = this.selectedIndexes.indexOf(index);
+  if (removal != -1) {
+    // Unselect the picture only if it's not the only selection.
+    if (this.selectedIndexes.length > 1) {
+      this.setPictureUnselected(index);
+      this.selectedIndexes.splice(removal, 1);
+      this.updateOnSelectionChanged_();
+    }
+  } else {
+    // Select the picture if it's not selected yet.
+    this.setPictureSelected(index);
+    this.selectedIndexes.push(index);
+    this.updateOnSelectionChanged_();
+  }
+};
+
+/**
+ * Expands the selection to a specified picture.
+ * @param {number} index Index of the picture to be expanded to for selection.
+ * @private
+ */
+camera.views.Album.prototype.expandSelectionTo_ = function(index) {
+  if (this.selectedIndexes.length) {
+    var selectPicture = function(i) {
+      // Remove the index from the selection if it was selected.
+      var removal = this.selectedIndexes.indexOf(i);
+      if (removal !== -1)
+        this.selectedIndexes.splice(removal, 1);
+      this.setPictureSelected(i);
+      this.selectedIndexes.push(i);
+    }.bind(this);
+
+    // Expand the current selection from its min or max index till the
+    // specified index and make the specified index the last selection.
+    var min = Math.min.apply(null, this.selectedIndexes);
+    var max = Math.max.apply(null, this.selectedIndexes);
+    if (max < index) {
+      for (var i = max + 1; i <= index; i++)
+        selectPicture(i);
+    } else if (min > index) {
+      for (var i = min - 1; i >= index; i--)
+        selectPicture(i);
+    } else {
+      // Just select one picture if the specified index is between the current
+      // selection's min and max index.
+      selectPicture(index);
+    }
+  } else {
+    this.setPictureSelected(index);
+    this.selectedIndexes.push(index);
+  }
+  this.updateOnSelectionChanged_();
 };
 
 /**
@@ -327,12 +417,29 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   img.addEventListener('mousedown', function(event) {
     event.preventDefault();  // Prevent focusing.
   });
-  img.addEventListener('click', function() {
-    // TODO(yuli): Handle 'Ctrl'/'Shift' keys for multiple selections.
-    this.setSelectedIndex(this.pictures.indexOf(domPicture));
+  img.addEventListener('click', function(event) {
+    var index = this.pictures.indexOf(domPicture);
+    var key = camera.util.getShortcutIdentifier(event);
+    if (key == 'Ctrl-') {
+      this.toggleSelection_(index);
+    } else if (key == 'Shift-') {
+      this.expandSelectionTo_(index);
+    } else {
+      this.setSelectedIndex(index);
+    }
+  }.bind(this));
+  img.addEventListener('contextmenu', function(event) {
+    // Prevent the default context menu for ctrl-clicking.
+    var index = this.pictures.indexOf(domPicture);
+    if (camera.util.getShortcutIdentifier(event) == 'Ctrl-') {
+      this.toggleSelection_(index);
+      event.preventDefault();
+    }
   }.bind(this));
   img.addEventListener('focus', function() {
-    this.setSelectedIndex(this.pictures.indexOf(domPicture));
+    var index = this.pictures.indexOf(domPicture);
+    if (this.selectedIndexes.indexOf(index) == -1)
+      this.setSelectedIndex(this.pictures.indexOf(domPicture));
   }.bind(this));
 
   img.addEventListener('dblclick', function() {

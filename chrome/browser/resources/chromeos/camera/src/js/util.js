@@ -1141,7 +1141,7 @@ camera.util.getShortcutIdentifier = function(event) {
          (event.altKey ? 'Alt-' : '') +
          (event.shiftKey ? 'Shift-' : '') +
          (event.metaKey ? 'Meta-' : '') +
-         event.keyIdentifier;
+         (event.keyIdentifier ? event.keyIdentifier : '');
 };
 
 /**
