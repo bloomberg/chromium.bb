@@ -450,12 +450,8 @@ class CanaryCompletionStage(MasterSlaveSyncCompletionStage):
     """
     if self._run.manifest_branch == 'master':
       self.SendCanaryFailureAlert(failing, inflight, no_stat)
-      tree_status.ThrottleOrCloseTheTree(
-          '"Canary master"',
-          self._ComposeTreeStatusMessage(failing, inflight, no_stat),
-          internal=self._run.config.internal,
-          buildnumber=self._run.buildnumber,
-          dryrun=self._run.debug)
+      # Note: We used to throttle the tree here. As of
+      # https://chromium-review.googlesource.com/#/c/325821/ we no longer do.
 
   def _HandleStageException(self, exc_info):
     """Decide whether an exception should be treated as fatal."""
