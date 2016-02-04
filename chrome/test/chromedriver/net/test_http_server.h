@@ -57,6 +57,9 @@ class TestHttpServer : public net::HttpServer::Delegate {
   // Sets the action to perform when receiving a WebSocket message.
   void SetMessageAction(WebSocketMessageAction action);
 
+  // Sets a callback to be called once when receiving next WebSocket message.
+  void SetMessageCallback(const base::Closure& callback);
+
   // Returns the web socket URL that points to the server.
   GURL web_socket_url() const;
 
@@ -87,10 +90,11 @@ class TestHttpServer : public net::HttpServer::Delegate {
   mutable base::Lock url_lock_;
   GURL web_socket_url_;
 
-  // Protects the action flags.
+  // Protects the action flags and |message_callback_|.
   base::Lock action_lock_;
   WebSocketRequestAction request_action_;
   WebSocketMessageAction message_action_;
+  base::Closure message_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHttpServer);
 };

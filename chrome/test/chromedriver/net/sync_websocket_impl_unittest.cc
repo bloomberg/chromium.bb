@@ -70,6 +70,13 @@ TEST_F(SyncWebSocketImplTest, SendReceive) {
 
 TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
   SyncWebSocketImpl sock(context_getter_.get());
+
+  // The server might reply too quickly so that the response will be received
+  // before we call ReceiveNextMessage; we must prevent it.
+  base::WaitableEvent server_reply_allowed(false, false);
+  server_.SetMessageCallback(base::Bind(
+      &base::WaitableEvent::Wait, base::Unretained(&server_reply_allowed)));
+
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   ASSERT_TRUE(sock.Send("hi"));
   std::string message;
@@ -77,6 +84,12 @@ TEST_F(SyncWebSocketImplTest, SendReceiveTimeout) {
       SyncWebSocket::kTimeout,
       sock.ReceiveNextMessage(
           &message, base::TimeDelta()));
+
+  server_reply_allowed.Signal();
+  // Receive the response to avoid possible deletion of the event while the
+  // server thread has not yet returned from the call to Wait.
+  EXPECT_EQ(SyncWebSocket::kOk,
+            sock.ReceiveNextMessage(&message, long_timeout_));
 }
 
 TEST_F(SyncWebSocketImplTest, SendReceiveLarge) {
