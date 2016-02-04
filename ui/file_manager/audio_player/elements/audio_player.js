@@ -378,7 +378,7 @@ Polymer({
       this.$.trackInfo.notifyPath('track.title', this.tracks[index].title);
       this.$.trackInfo.notifyPath('track.artist', this.tracks[index].artist);
       var artworkUrl = this.tracks[index].artworkUrl;
-      if (!artworkUrl && artworkUrl !== '') {
+      if (artworkUrl) {
         this.$.trackInfo.notifyPath('track.artworkUrl',
             this.tracks[index].artworkUrl);
         this.$.trackInfo.artworkAvailable = true;
