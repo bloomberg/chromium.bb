@@ -72,7 +72,7 @@ class TrybotCommandTest(unittest.TestCase):
 
   def _MockTryserverJson(self, bots_dict):
     data = mock.Mock()
-    data.read.return_value = json.dumps({'builders': bots_dict})
+    data.read.return_value = json.dumps(bots_dict)
     self._urllib2_mock.urlopen.return_value = data
 
   def testFindAllBrowserTypesList(self):
