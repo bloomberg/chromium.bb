@@ -88,6 +88,7 @@ source_set("opus") {
     ":opus_warnings",
   ]
   public_configs = [ ":opus_config" ]
+  cflags = []
 
   if (is_win) {
     defines += [
@@ -95,7 +96,7 @@ source_set("opus") {
       "inline=__inline",
     ]
 
-    cflags = [
+    cflags += [
       "/wd4305",  # Disable truncation warning in celt/pitch.c .
       "/wd4334",  # Disable 32-bit shift warning in src/opus_encoder.c .
     ]
@@ -110,7 +111,7 @@ source_set("opus") {
   if (is_posix && !is_android) {
     # Suppress a warning given by opus_decoder.c that tells us
     # optimizations are turned off.
-    cflags = [ "-Wno-#pragma-messages" ]
+    cflags += [ "-Wno-#pragma-messages" ]
   }
 
   if (!is_debug && is_posix &&
@@ -175,7 +176,7 @@ source_set("opus") {
       ]
 
       configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-      cflags = [ "-mfpu=neon" ]
+      cflags += [ "-mfpu=neon" ]
     }
   }
 }
