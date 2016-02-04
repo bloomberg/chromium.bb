@@ -19308,6 +19308,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.InputInvalidSampleRateMac" units="Hz">
+  <owner>henrika@chromium.org</owner>
+  <summary>
+    Invalid input sample rate when calling AUAudioInputStream::Open on Mac.
+  </summary>
+</histogram>
+
 <histogram name="Media.InputStreamDuration" units="ms">
   <owner>henrika@chromium.org</owner>
   <summary>

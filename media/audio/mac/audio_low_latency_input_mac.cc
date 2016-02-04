@@ -124,6 +124,21 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
+  // The requested sample-rate must match the hardware sample-rate.
+  int sample_rate =
+      AudioManagerMac::HardwareSampleRateForDevice(input_device_id_);
+  if (sample_rate != format_.mSampleRate) {
+    // Add UMA stat for the case when we detect a mismatch in sample rates,
+    // i.e., when the actual/current native sample rate is different from the
+    // one used when constructing this object. In addition, return false since
+    // the current design does not support changes in the native sample rate
+    // between construction and calls to Open().
+    UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputInvalidSampleRateMac", sample_rate);
+    NOTREACHED() << "Requested sample-rate: " << format_.mSampleRate
+                 << " must match the hardware sample-rate: " << sample_rate;
+    return false;
+  }
+
   // Start by obtaining an AudioOuputUnit using an AUHAL component description.
 
   // Description for the Audio Unit we want to use (AUHAL in this case).
