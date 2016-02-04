@@ -75,7 +75,7 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
 
     RefPtr<JSONArray> stackTrace = object->getArray("stackTrace");
     if (stackTrace && stackTrace->length() > 0) {
-        RefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame>> frames = TypeBuilder::Array<TypeBuilder::Console::CallFrame>::create();
+        RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>> frames = TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>::create();
         for (unsigned i = 0; i < stackTrace->length(); ++i) {
             RefPtr<JSONObject> stackFrame = stackTrace->get(i)->asObject();
             int lineNumber = 0;
@@ -92,7 +92,7 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
             String functionName;
             stackFrame->getString("functionName", &functionName);
 
-            RefPtr<TypeBuilder::Console::CallFrame> callFrame = TypeBuilder::Console::CallFrame::create()
+            RefPtr<TypeBuilder::Runtime::CallFrame> callFrame = TypeBuilder::Runtime::CallFrame::create()
                 .setFunctionName(functionName)
                 .setScriptId(String::number(scriptId))
                 .setUrl(sourceURL)
@@ -101,7 +101,9 @@ static PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> toExceptionDetails(Pas
 
             frames->addItem(callFrame.release());
         }
-        exceptionDetails->setStackTrace(frames.release());
+        RefPtr<TypeBuilder::Runtime::StackTrace> stack = TypeBuilder::Runtime::StackTrace::create()
+            .setCallFrames(frames.release());
+        exceptionDetails->setStack(stack.release());
     }
     if (originScriptId)
         exceptionDetails->setScriptId(String::number(originScriptId));

@@ -45,7 +45,7 @@ function test()
 
     var message = InspectorTest.consoleModel.messages()[0];
     var stack = message.stackTrace;
-    if (stack)
+    if (stack && stack.callFrames.length)
         InspectorTest.addResult("FAIL: found message with stack trace");
     else
         InspectorTest.addResult("SUCCESS: message doesn't have stack trace");

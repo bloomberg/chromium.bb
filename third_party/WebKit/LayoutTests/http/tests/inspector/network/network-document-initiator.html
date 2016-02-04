@@ -20,11 +20,11 @@ var test = function()
         InspectorTest.addResult(request.url + ": " + initiator.type);
         if (initiator.url)
             InspectorTest.addResult("    " + initiator.url + " " + initiator.lineNumber);
-        var stackTrace = initiator.stackTrace;
+        var stackTrace = initiator.stack;
         if (!stackTrace)
             return;
-        for (var i = 0; i < stackTrace.length; ++i) {
-            var frame = stackTrace[i];
+        for (var i = 0; i < stackTrace.callFrames.length; ++i) {
+            var frame = stackTrace.callFrames[i];
             if (frame.lineNumber) {
                 InspectorTest.addResult("    " + frame.functionName + " " + frame.url + " " + frame.lineNumber);
                 return;

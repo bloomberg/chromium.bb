@@ -39,7 +39,6 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
@@ -132,7 +131,7 @@ void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* c
     if (!instrumentingAgents)
         return;
     if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        callStack->setAsyncCallStack(debuggerAgent->currentAsyncStackTraceForConsole());
+        callStack->setParent(debuggerAgent->currentAsyncStackTraceForConsole());
 }
 
 bool consoleAgentEnabled(ExecutionContext* executionContext)

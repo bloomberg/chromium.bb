@@ -58,9 +58,9 @@ ScriptCallFrame::~ScriptCallFrame()
 
 // buildInspectorObject() and toTracedValue() should set the same fields.
 // If either of them is modified, the other should be also modified.
-PassRefPtr<TypeBuilder::Console::CallFrame> ScriptCallFrame::buildInspectorObject() const
+PassRefPtr<TypeBuilder::Runtime::CallFrame> ScriptCallFrame::buildInspectorObject() const
 {
-    return TypeBuilder::Console::CallFrame::create()
+    return TypeBuilder::Runtime::CallFrame::create()
         .setFunctionName(m_functionName)
         .setScriptId(m_scriptId)
         .setUrl(m_scriptName)

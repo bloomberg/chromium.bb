@@ -7,7 +7,7 @@
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 

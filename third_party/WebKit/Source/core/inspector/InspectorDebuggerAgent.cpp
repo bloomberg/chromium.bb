@@ -32,7 +32,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/MuteConsoleScope.h"
-#include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
 
@@ -251,7 +251,7 @@ bool InspectorDebuggerAgent::isPaused()
     return m_v8DebuggerAgent->isPaused();
 }
 
-PassRefPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
+PassRefPtr<ScriptCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     return m_v8DebuggerAgent->currentAsyncStackTraceForConsole();

@@ -30,17 +30,23 @@
 
 #include "core/inspector/ScriptCallStack.h"
 
-#include "core/inspector/ScriptAsyncCallStack.h"
 #include "platform/TracedValue.h"
 
 namespace blink {
 
 PassRefPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
 {
-    return adoptRef(new ScriptCallStack(frames));
+    return adoptRef(new ScriptCallStack(String(), frames, nullptr));
 }
 
-ScriptCallStack::ScriptCallStack(Vector<ScriptCallFrame>& frames)
+PassRefPtr<ScriptCallStack> ScriptCallStack::create(const String& description, Vector<ScriptCallFrame>& frames, PassRefPtr<ScriptCallStack> parent)
+{
+    return adoptRef(new ScriptCallStack(description, frames, parent));
+}
+
+ScriptCallStack::ScriptCallStack(const String& description, Vector<ScriptCallFrame>& frames, PassRefPtr<ScriptCallStack> parent)
+    : m_description(description)
+    , m_parent(parent)
 {
     m_frames.swap(frames);
 }
@@ -55,27 +61,29 @@ const ScriptCallFrame &ScriptCallStack::at(size_t index) const
     return m_frames[index];
 }
 
+void ScriptCallStack::setParent(PassRefPtr<ScriptCallStack> parent)
+{
+    m_parent = parent;
+}
+
 size_t ScriptCallStack::size() const
 {
     return m_frames.size();
 }
 
-PassRefPtr<ScriptAsyncCallStack> ScriptCallStack::asyncCallStack() const
+PassRefPtr<TypeBuilder::Runtime::StackTrace> ScriptCallStack::buildInspectorObject() const
 {
-    return m_asyncCallStack;
-}
-
-void ScriptCallStack::setAsyncCallStack(PassRefPtr<ScriptAsyncCallStack> asyncCallStack)
-{
-    m_asyncCallStack = asyncCallStack;
-}
-
-PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > ScriptCallStack::buildInspectorArray() const
-{
-    RefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > frames = TypeBuilder::Array<TypeBuilder::Console::CallFrame>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>> frames = TypeBuilder::Array<TypeBuilder::Runtime::CallFrame>::create();
     for (size_t i = 0; i < m_frames.size(); i++)
         frames->addItem(m_frames.at(i).buildInspectorObject());
-    return frames;
+
+    RefPtr<TypeBuilder::Runtime::StackTrace> stackTrace = TypeBuilder::Runtime::StackTrace::create()
+        .setCallFrames(frames.release());
+    if (!m_description.isEmpty())
+        stackTrace->setDescription(m_description);
+    if (m_parent)
+        stackTrace->setParent(m_parent->buildInspectorObject());
+    return stackTrace;
 }
 
 void ScriptCallStack::toTracedValue(TracedValue* value, const char* name) const

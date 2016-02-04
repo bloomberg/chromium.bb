@@ -106,12 +106,12 @@ function test()
     function asyncOperationDescription(operation)
     {
         var link = "";
-        var callFrame = operation.stackTrace && operation.stackTrace[0];
+        var callFrame = operation.stack ? operation.stack.callFrames[0] : null;
         if (callFrame) {
             var url = WebInspector.displayNameForURL(callFrame.url);
             link = " " + callFrame.functionName + " @ " + url + ":" + callFrame.lineNumber;
         }
-        return ("[" + operation.description + "]" + link);
+        return ("[" + operation.stack.description + "]" + link);
     }
 
     function maybeRunNoAsyncOperationsCallback()

@@ -53,7 +53,7 @@ public:
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_column; }
 
-    PassRefPtr<TypeBuilder::Console::CallFrame> buildInspectorObject() const;
+    PassRefPtr<TypeBuilder::Runtime::CallFrame> buildInspectorObject() const;
     void toTracedValue(TracedValue*) const;
 
 private:

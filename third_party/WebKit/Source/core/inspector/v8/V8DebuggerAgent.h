@@ -16,7 +16,7 @@ class InjectedScript;
 class InjectedScriptManager;
 class JSONObject;
 class RemoteCallFrameId;
-class ScriptAsyncCallStack;
+class ScriptCallStack;
 class V8Debugger;
 
 typedef String ErrorString;
@@ -97,7 +97,7 @@ public:
     virtual void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) = 0;
 
     // Async call stacks implementation
-    virtual PassRefPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole() = 0;
+    virtual PassRefPtr<ScriptCallStack> currentAsyncStackTraceForConsole() = 0;
     static const int unknownAsyncOperationId;
     virtual int traceAsyncOperationStarting(const String& description) = 0;
     virtual void traceAsyncCallbackStarting(int operationId) = 0;

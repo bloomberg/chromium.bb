@@ -47,7 +47,7 @@ InspectorTest.prepareConsoleMessageText = function(messageElement, consoleMessag
     // Strip out InjectedScript line numbers from stack traces to avoid rebaselining each time InjectedScriptSource is edited.
     messageText = messageText.replace(/InjectedScript\.\w+ @ VM:\d+/g, "");
     // Strip out InjectedScript line numbers from console message anchor.
-    var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace[0] && consoleMessage.stackTrace[0].functionName || "";
+    var functionName = consoleMessage && consoleMessage.stackTrace && consoleMessage.stackTrace.callFrames[0] && consoleMessage.stackTrace.callFrames[0].functionName || "";
     if (functionName.indexOf("InjectedScript") !== -1)
         messageText = messageText.replace(/\bVM:\d+/, ""); // Only first replace.
     if (messageText.startsWith("Navigated to")) {

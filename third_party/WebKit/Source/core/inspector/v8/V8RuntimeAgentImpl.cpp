@@ -337,7 +337,7 @@ PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExc
     exceptionDetails->setColumn(message->GetStartColumn());
     v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
     if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-        exceptionDetails->setStackTrace(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorArray());
+        exceptionDetails->setStack(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorObject());
     return exceptionDetails.release();
 }
 

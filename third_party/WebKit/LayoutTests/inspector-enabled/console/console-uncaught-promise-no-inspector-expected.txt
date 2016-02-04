@@ -3,7 +3,7 @@ CONSOLE ERROR: line 28: Uncaught (in promise) Error: err2
 CONSOLE ERROR: line 47: Uncaught (in promise) NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
 Tests that uncaught promise rejection messages have line numbers when the inspector is closed and stack traces are not collected.
 
-console-uncaught-promise-no-inspector.html:9 Uncaught (in promise) Error: err1(…)
-console-uncaught-promise-no-inspector.html:28 Uncaught (in promise) Error: err2(…)
-console-uncaught-promise-no-inspector.html:47 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.(…)
+    console-uncaught-promise-no-inspector.html:9 Uncaught (in promise) Error: err1(…)
+    console-uncaught-promise-no-inspector.html:28 Uncaught (in promise) Error: err2(…)
+    console-uncaught-promise-no-inspector.html:47 Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.(…)
 

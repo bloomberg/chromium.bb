@@ -5,12 +5,12 @@
 #include "core/inspector/v8/PromiseTracker.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "core/inspector/ScriptAsyncCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
 using blink::TypeBuilder::Array;
-using blink::TypeBuilder::Console::CallFrame;
+using blink::TypeBuilder::Runtime::CallFrame;
 using blink::TypeBuilder::Debugger::PromiseDetails;
 
 namespace blink {
@@ -137,26 +137,18 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
                 promiseDetails->setCreationTime(currentTimeMS());
                 RefPtr<ScriptCallStack> stack = currentScriptCallStack(m_captureStacks ? ScriptCallStack::maxCallStackSizeToCapture : 1);
                 if (stack) {
-                    if (stack->size()) {
+                    if (stack->size())
                         promiseDetails->setCallFrame(stack->at(0).buildInspectorObject());
-                        if (m_captureStacks)
-                            promiseDetails->setCreationStack(stack->buildInspectorArray());
-                    }
-                    RefPtr<ScriptAsyncCallStack> asyncCallStack = stack->asyncCallStack();
-                    if (m_captureStacks && asyncCallStack)
-                        promiseDetails->setAsyncCreationStack(asyncCallStack->buildInspectorObject());
+                    if (m_captureStacks)
+                        promiseDetails->setCreationStack(stack->buildInspectorObject());
                 }
             }
         } else {
             promiseDetails->setSettlementTime(currentTimeMS());
             if (m_captureStacks) {
                 RefPtr<ScriptCallStack> stack = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
-                if (stack) {
-                    if (stack->size())
-                        promiseDetails->setSettlementStack(stack->buildInspectorArray());
-                    if (RefPtr<ScriptAsyncCallStack> asyncCallStack = stack->asyncCallStack())
-                        promiseDetails->setAsyncSettlementStack(asyncCallStack->buildInspectorObject());
-                }
+                if (stack)
+                    promiseDetails->setSettlementStack(stack->buildInspectorObject());
             }
         }
     }

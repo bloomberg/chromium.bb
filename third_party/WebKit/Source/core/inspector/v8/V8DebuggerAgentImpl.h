@@ -30,7 +30,7 @@ class InjectedScriptManager;
 class JavaScriptCallFrame;
 class JSONObject;
 class RemoteCallFrameId;
-class ScriptAsyncCallStack;
+class ScriptCallStack;
 class ScriptRegexp;
 class V8AsyncCallTracker;
 
@@ -125,7 +125,7 @@ public:
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) override;
 
     // Async call stacks implementation
-    PassRefPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole() override;
+    PassRefPtr<ScriptCallStack> currentAsyncStackTraceForConsole() override;
     int traceAsyncOperationStarting(const String& description) override;
     void traceAsyncCallbackStarting(int operationId) override;
     void traceAsyncCallbackCompleted() override;

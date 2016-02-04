@@ -9,7 +9,6 @@
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/ContentSearchUtils.h"
-#include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/AsyncCallChain.h"
@@ -29,7 +28,6 @@
 #include "wtf/text/WTFString.h"
 
 using blink::TypeBuilder::Array;
-using blink::TypeBuilder::Console::AsyncStackTrace;
 using blink::TypeBuilder::Debugger::AsyncOperation;
 using blink::TypeBuilder::Debugger::BreakpointId;
 using blink::TypeBuilder::Debugger::CallFrame;
@@ -99,12 +97,10 @@ static ScriptCallFrame toScriptCallFrame(JavaScriptCallFrame* callFrame)
     return ScriptCallFrame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column);
 }
 
-static PassRefPtr<ScriptCallStack> toScriptCallStack(JavaScriptCallFrame* callFrame)
+static void toScriptCallFrames(JavaScriptCallFrame* callFrame, Vector<ScriptCallFrame>& frames)
 {
-    Vector<ScriptCallFrame> frames;
     for (; callFrame; callFrame = callFrame->caller())
         frames.append(toScriptCallFrame(callFrame));
-    return ScriptCallStack::create(frames);
 }
 
 static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(v8::Local<v8::Context> context, v8::Local<v8::Object> value)
@@ -112,12 +108,6 @@ static PassRefPtr<JavaScriptCallFrame> toJavaScriptCallFrame(v8::Local<v8::Conte
     if (value.IsEmpty())
         return nullptr;
     return V8JavaScriptCallFrame::unwrap(context, value);
-}
-
-static PassRefPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::Context> context, v8::Local<v8::Object> callFrames)
-{
-    RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(context, callFrames);
-    return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
 }
 
 static bool positionComparator(const std::pair<int, int>& a, const std::pair<int, int>& b)
@@ -1151,33 +1141,25 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         const AsyncCallStackVector& callStacks = chain->callStacks();
         ASSERT(!callStacks.isEmpty());
 
-        RefPtr<AsyncOperation> operation;
-        RefPtr<AsyncStackTrace> lastAsyncStackTrace;
-        for (const auto& callStack : callStacks) {
-            v8::HandleScope scope(m_isolate);
-            RefPtr<ScriptCallStack> scriptCallStack = toScriptCallStack(chain->creationContext(m_isolate), callStack->callFrames(m_isolate));
-            if (!scriptCallStack)
-                break;
-            if (!operation) {
-                operation = AsyncOperation::create()
-                    .setId(operationId)
-                    .setDescription(callStack->description())
-                    .release();
-                operation->setStackTrace(scriptCallStack->buildInspectorArray());
+        RefPtr<ScriptCallStack> stack;
+        v8::HandleScope scope(m_isolate);
+        for (int i = callStacks.size() - 1; i >= 0; --i) {
+            v8::Local<v8::Object> callFrames = callStacks.at(i)->callFrames(m_isolate);
+            RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), callFrames);
+            if (!jsCallFrame)
                 continue;
-            }
-            RefPtr<AsyncStackTrace> asyncStackTrace = AsyncStackTrace::create()
-                .setCallFrames(scriptCallStack->buildInspectorArray());
-            asyncStackTrace->setDescription(callStack->description());
-            if (lastAsyncStackTrace)
-                lastAsyncStackTrace->setAsyncStackTrace(asyncStackTrace);
-            else
-                operation->setAsyncStackTrace(asyncStackTrace);
-            lastAsyncStackTrace = asyncStackTrace.release();
+            Vector<ScriptCallFrame> frames;
+            toScriptCallFrames(jsCallFrame.get(), frames);
+            stack = ScriptCallStack::create(callStacks.at(i)->description(), frames, stack);
         }
 
-        if (operation)
+        if (stack) {
+            RefPtr<AsyncOperation> operation = AsyncOperation::create()
+                .setId(operationId)
+                .release();
+            operation->setStack(stack->buildInspectorObject());
             m_frontend->asyncOperationStarted(operation.release());
+        }
     }
 
     m_asyncOperationNotifications.clear();
@@ -1372,7 +1354,7 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     return result.release();
 }
 
-PassRefPtr<ScriptAsyncCallStack> V8DebuggerAgentImpl::currentAsyncStackTraceForConsole()
+PassRefPtr<ScriptCallStack> V8DebuggerAgentImpl::currentAsyncStackTraceForConsole()
 {
     if (!trackingAsyncCalls())
         return nullptr;
@@ -1382,13 +1364,15 @@ PassRefPtr<ScriptAsyncCallStack> V8DebuggerAgentImpl::currentAsyncStackTraceForC
     const AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
-    RefPtr<ScriptAsyncCallStack> result;
+    RefPtr<ScriptCallStack> result;
+    v8::HandleScope scope(m_isolate);
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
-        v8::HandleScope scope(m_isolate);
         RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), (*it)->callFrames(m_isolate));
         if (!callFrame)
             break;
-        result = ScriptAsyncCallStack::create((*it)->description(), toScriptCallStack(callFrame.get()), result.release());
+        Vector<ScriptCallFrame> frames;
+        toScriptCallFrames(callFrame.get(), frames);
+        result = ScriptCallStack::create((*it)->description(), frames, result.release());
     }
     return result.release();
 }

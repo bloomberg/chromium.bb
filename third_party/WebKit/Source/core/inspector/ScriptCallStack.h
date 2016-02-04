@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class ScriptAsyncCallStack;
 class TracedValue;
 
 class CORE_EXPORT ScriptCallStack final : public RefCounted<ScriptCallStack> {
@@ -48,23 +47,24 @@ public:
     static const size_t maxCallStackSizeToCapture = 200;
 
     static PassRefPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
+    static PassRefPtr<ScriptCallStack> create(const String& description, Vector<ScriptCallFrame>&, PassRefPtr<ScriptCallStack>);
 
     ~ScriptCallStack();
 
     const ScriptCallFrame &at(size_t) const;
     size_t size() const;
 
-    PassRefPtr<ScriptAsyncCallStack> asyncCallStack() const;
-    void setAsyncCallStack(PassRefPtr<ScriptAsyncCallStack>);
+    void setParent(PassRefPtr<ScriptCallStack>);
 
-    PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
+    PassRefPtr<TypeBuilder::Runtime::StackTrace> buildInspectorObject() const;
     void toTracedValue(TracedValue*, const char* name) const;
 
 private:
-    explicit ScriptCallStack(Vector<ScriptCallFrame>&);
+    ScriptCallStack(const String& description, Vector<ScriptCallFrame>& frames, PassRefPtr<ScriptCallStack> parent);
 
+    String m_description;
     Vector<ScriptCallFrame> m_frames;
-    RefPtr<ScriptAsyncCallStack> m_asyncCallStack;
+    RefPtr<ScriptCallStack> m_parent;
 };
 
 } // namespace blink
