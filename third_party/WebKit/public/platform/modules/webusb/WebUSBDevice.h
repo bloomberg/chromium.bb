@@ -26,12 +26,6 @@ using WebUSBDeviceSetInterfaceAlternateSettingCallbacks = WebCallbacks<void, con
 using WebUSBDeviceClearHaltCallbacks = WebCallbacks<void, const WebUSBError&>;
 using WebUSBDeviceTransferCallbacks = WebCallbacks<WebPassOwnPtr<WebUSBTransferInfo>, const WebUSBError&>;
 
-// TODO(rockot): Eliminate these aliases once they're no longer used outside of
-// Blink code.
-using WebUSBDeviceControlTransferCallbacks = WebUSBDeviceTransferCallbacks;
-using WebUSBDeviceBulkTransferCallbacks = WebUSBDeviceTransferCallbacks;
-using WebUSBDeviceInterruptTransferCallbacks = WebUSBDeviceTransferCallbacks;
-
 class WebUSBDevice {
 public:
     enum class TransferDirection {
@@ -98,12 +92,16 @@ public:
     virtual void clearHalt(uint8_t endpointNumber, WebUSBDeviceClearHaltCallbacks*) = 0;
 
     // Initiates a control transfer.
-    // Ownership of the WebUSBDeviceControlTransferCallbacks is transferred to the client.
-    virtual void controlTransfer(const ControlTransferParameters&, uint8_t* data, size_t dataSize, unsigned timeout, WebUSBDeviceControlTransferCallbacks*) = 0;
+    // Ownership of the WebUSBDeviceTransferCallbacks is transferred to the client.
+    virtual void controlTransfer(const ControlTransferParameters&, uint8_t* data, size_t dataSize, unsigned timeout, WebUSBDeviceTransferCallbacks*) = 0;
 
     // Initiates a bulk or interrupt transfer.
-    // Ownership of the WebUSBDeviceBulkTransferCallbacks is transferred to the client.
-    virtual void transfer(TransferDirection, uint8_t endpointNumber, uint8_t* data, size_t dataSize, unsigned timeout, WebUSBDeviceBulkTransferCallbacks*) = 0;
+    // Ownership of the WebUSBDeviceTransferCallbacks is transferred to the client.
+    virtual void transfer(TransferDirection, uint8_t endpointNumber, uint8_t* data, size_t dataSize, unsigned timeout, WebUSBDeviceTransferCallbacks*) = 0;
+
+    // Initiates an isochronous transfer.
+    // Ownership of the WebUSBDeviceTransferCallbacks is transferred to the client.
+    virtual void isochronousTransfer(TransferDirection, uint8_t endpointNumber, uint8_t* data, size_t dataSize, WebVector<unsigned> packetLengths, unsigned timeout, WebUSBDeviceTransferCallbacks*) = 0;
 
     // Resets the device.
     // Ownership of the WebUSBDeviceResetCallbacks is transferred to the client.

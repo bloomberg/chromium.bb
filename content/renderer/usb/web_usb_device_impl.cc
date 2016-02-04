@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/child/mojo/type_converters.h"
 #include "content/child/scoped_web_callbacks.h"
 #include "content/renderer/usb/type_converters.h"
 #include "device/devices_app/public/cpp/constants.h"
@@ -113,44 +114,105 @@ void HandlePassFailDeviceOperation(
 }
 
 void OnTransferIn(
-    ScopedWebCallbacks<blink::WebUSBDeviceControlTransferCallbacks> callbacks,
+    ScopedWebCallbacks<blink::WebUSBDeviceTransferCallbacks> callbacks,
     device::usb::TransferStatus status,
     mojo::Array<uint8_t> data) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  if (status != device::usb::TransferStatus::COMPLETED) {
-    RejectWithTransferError(std::move(scoped_callbacks));
-    return;
-  }
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
-  info->status = blink::WebUSBTransferInfo::Status::Ok;
-  info->data.assign(data);
-  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
-}
-
-void OnTransferOut(
-    ScopedWebCallbacks<blink::WebUSBDeviceControlTransferCallbacks> callbacks,
-    size_t bytes_written,
-    device::usb::TransferStatus status) {
-  auto scoped_callbacks = callbacks.PassCallbacks();
-  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  blink::WebUSBTransferInfo::Status web_status;
   switch (status) {
     case device::usb::TransferStatus::COMPLETED:
-      info->status = blink::WebUSBTransferInfo::Status::Ok;
+      web_status = blink::WebUSBTransferInfo::Status::Ok;
       break;
     case device::usb::TransferStatus::STALLED:
-      info->status = blink::WebUSBTransferInfo::Status::Stall;
+      web_status = blink::WebUSBTransferInfo::Status::Stall;
       break;
     case device::usb::TransferStatus::BABBLE:
-      info->status = blink::WebUSBTransferInfo::Status::Babble;
+      web_status = blink::WebUSBTransferInfo::Status::Babble;
       break;
     default:
       RejectWithTransferError(std::move(scoped_callbacks));
       return;
   }
+  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  info->status.assign(
+      std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
+  info->data.assign(data);
+  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+}
 
+void OnTransferOut(
+    ScopedWebCallbacks<blink::WebUSBDeviceTransferCallbacks> callbacks,
+    size_t bytes_written,
+    device::usb::TransferStatus status) {
+  auto scoped_callbacks = callbacks.PassCallbacks();
+  blink::WebUSBTransferInfo::Status web_status;
+  switch (status) {
+    case device::usb::TransferStatus::COMPLETED:
+      web_status = blink::WebUSBTransferInfo::Status::Ok;
+      break;
+    case device::usb::TransferStatus::STALLED:
+      web_status = blink::WebUSBTransferInfo::Status::Stall;
+      break;
+    default:
+      RejectWithTransferError(std::move(scoped_callbacks));
+      return;
+  }
   // TODO(rockot): Device::ControlTransferOut should expose the number of bytes
   // actually transferred so we can send it from here.
-  info->bytesWritten = bytes_written;
+  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  info->status.assign(
+      std::vector<blink::WebUSBTransferInfo::Status>(1, web_status));
+  info->bytesTransferred.assign(std::vector<uint32_t>(1, bytes_written));
+  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+}
+
+void OnIsochronousTransferIn(
+    ScopedWebCallbacks<blink::WebUSBDeviceTransferCallbacks> callbacks,
+    mojo::Array<uint8_t> data,
+    mojo::Array<device::usb::IsochronousPacketPtr> packets) {
+  auto scoped_callbacks = callbacks.PassCallbacks();
+  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  info->data.assign(data);
+  for (size_t i = 0; i < packets.size(); ++i) {
+    switch (packets[i]->status) {
+      case device::usb::TransferStatus::COMPLETED:
+        info->status[i] = blink::WebUSBTransferInfo::Status::Ok;
+        break;
+      case device::usb::TransferStatus::STALLED:
+        info->status[i] = blink::WebUSBTransferInfo::Status::Stall;
+        break;
+      case device::usb::TransferStatus::BABBLE:
+        info->status[i] = blink::WebUSBTransferInfo::Status::Babble;
+        break;
+      default:
+        RejectWithTransferError(std::move(scoped_callbacks));
+        return;
+    }
+    info->packetLength[i] = packets[i]->length;
+    info->bytesTransferred[i] = packets[i]->transferred_length;
+  }
+  scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
+}
+
+void OnIsochronousTransferOut(
+    ScopedWebCallbacks<blink::WebUSBDeviceTransferCallbacks> callbacks,
+    mojo::Array<device::usb::IsochronousPacketPtr> packets) {
+  auto scoped_callbacks = callbacks.PassCallbacks();
+  scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
+  for (size_t i = 0; i < packets.size(); ++i) {
+    switch (packets[i]->status) {
+      case device::usb::TransferStatus::COMPLETED:
+        info->status[i] = blink::WebUSBTransferInfo::Status::Ok;
+        break;
+      case device::usb::TransferStatus::STALLED:
+        info->status[i] = blink::WebUSBTransferInfo::Status::Stall;
+        break;
+      default:
+        RejectWithTransferError(std::move(scoped_callbacks));
+        return;
+    }
+    info->bytesTransferred[i] = packets[i]->transferred_length;
+  }
   scoped_callbacks->onSuccess(adoptWebPtr(info.release()));
 }
 
@@ -241,7 +303,7 @@ void WebUSBDeviceImpl::controlTransfer(
     uint8_t* data,
     size_t data_size,
     unsigned int timeout,
-    blink::WebUSBDeviceControlTransferCallbacks* callbacks) {
+    blink::WebUSBDeviceTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
   device::usb::ControlTransferParamsPtr params =
       device::usb::ControlTransferParams::From(parameters);
@@ -274,7 +336,7 @@ void WebUSBDeviceImpl::transfer(
     uint8_t* data,
     size_t data_size,
     unsigned int timeout,
-    blink::WebUSBDeviceBulkTransferCallbacks* callbacks) {
+    blink::WebUSBDeviceTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
   switch (direction) {
     case WebUSBDevice::TransferDirection::In:
@@ -292,6 +354,40 @@ void WebUSBDeviceImpl::transfer(
           endpoint_number, std::move(mojo_bytes), timeout,
           base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
                      data_size));
+      break;
+    }
+    default:
+      NOTREACHED();
+  }
+}
+
+void WebUSBDeviceImpl::isochronousTransfer(
+    blink::WebUSBDevice::TransferDirection direction,
+    uint8_t endpoint_number,
+    uint8_t* data,
+    size_t data_size,
+    blink::WebVector<uint32_t> packet_lengths,
+    unsigned int timeout,
+    blink::WebUSBDeviceTransferCallbacks* callbacks) {
+  auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
+  switch (direction) {
+    case WebUSBDevice::TransferDirection::In:
+      device_->IsochronousTransferIn(
+          endpoint_number, mojo::Array<uint32_t>::From(packet_lengths), timeout,
+          base::Bind(&OnIsochronousTransferIn,
+                     base::Passed(&scoped_callbacks)));
+      break;
+    case WebUSBDevice::TransferDirection::Out: {
+      std::vector<uint8_t> bytes;
+      if (data)
+        bytes.assign(data, data + data_size);
+      mojo::Array<uint8_t> mojo_bytes;
+      mojo_bytes.Swap(&bytes);
+      device_->IsochronousTransferOut(
+          endpoint_number, std::move(mojo_bytes),
+          mojo::Array<uint32_t>::From(packet_lengths), timeout,
+          base::Bind(&OnIsochronousTransferOut,
+                     base::Passed(&scoped_callbacks)));
       break;
     }
     default:

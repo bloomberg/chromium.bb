@@ -16,8 +16,11 @@
 #include "modules/webusb/USBControlTransferParameters.h"
 #include "modules/webusb/USBError.h"
 #include "modules/webusb/USBInTransferResult.h"
+#include "modules/webusb/USBIsochronousInTransferResult.h"
+#include "modules/webusb/USBIsochronousOutTransferResult.h"
 #include "modules/webusb/USBOutTransferResult.h"
 #include "public/platform/modules/webusb/WebUSBTransferInfo.h"
+#include "wtf/Assertions.h"
 
 namespace blink {
 
@@ -101,7 +104,8 @@ public:
 
     static USBInTransferResult* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBTransferInfo> webTransferInfo)
     {
-        return USBInTransferResult::create(convertTransferStatus(webTransferInfo->status), webTransferInfo->data);
+        ASSERT(webTransferInfo->status.size() == 1);
+        return USBInTransferResult::create(convertTransferStatus(webTransferInfo->status[0]), webTransferInfo->data);
     }
 
 private:
@@ -115,11 +119,49 @@ public:
 
     static USBOutTransferResult* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBTransferInfo> webTransferInfo)
     {
-        return USBOutTransferResult::create(convertTransferStatus(webTransferInfo->status), webTransferInfo->bytesWritten);
+        ASSERT(webTransferInfo->status.size() == 1);
+        ASSERT(webTransferInfo->bytesTransferred.size() == 1);
+        return USBOutTransferResult::create(convertTransferStatus(webTransferInfo->status[0]), webTransferInfo->bytesTransferred[0]);
     }
 
 private:
     OutputTransferResult() = delete;
+};
+
+class IsochronousInputTransferResult {
+    WTF_MAKE_NONCOPYABLE(IsochronousInputTransferResult);
+
+public:
+    using WebType = OwnPtr<WebUSBTransferInfo>;
+
+    static USBIsochronousInTransferResult* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBTransferInfo> webTransferInfo)
+    {
+        ASSERT(webTransferInfo->status.size() == webTransferInfo->packetLength.size() && webTransferInfo->packetLength.size() == webTransferInfo->bytesTransferred.size());
+        RefPtr<DOMArrayBuffer> buffer = DOMArrayBuffer::create(webTransferInfo->data.data(), webTransferInfo->data.size());
+        HeapVector<Member<USBIsochronousInTransferPacket>> packets(webTransferInfo->status.size());
+        size_t byteOffset = 0;
+        for (size_t i = 0; i < webTransferInfo->status.size(); ++i) {
+            packets.append(USBIsochronousInTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), DOMDataView::create(buffer, byteOffset, webTransferInfo->bytesTransferred[i])));
+            byteOffset += webTransferInfo->packetLength[i];
+        }
+        return USBIsochronousInTransferResult::create(buffer, packets);
+    }
+};
+
+class IsochronousOutputTransferResult {
+    WTF_MAKE_NONCOPYABLE(IsochronousOutputTransferResult);
+
+public:
+    using WebType = OwnPtr<WebUSBTransferInfo>;
+
+    static USBIsochronousOutTransferResult* take(ScriptPromiseResolver*, PassOwnPtr<WebUSBTransferInfo> webTransferInfo)
+    {
+        ASSERT(webTransferInfo->status.size() == webTransferInfo->bytesTransferred.size());
+        HeapVector<Member<USBIsochronousOutTransferPacket>> packets(webTransferInfo->status.size());
+        for (size_t i = 0; i < webTransferInfo->status.size(); ++i)
+            packets.append(USBIsochronousOutTransferPacket::create(convertTransferStatus(webTransferInfo->status[i]), webTransferInfo->bytesTransferred[i]));
+        return USBIsochronousOutTransferResult::create(packets);
+    }
 };
 
 class BufferSource {
@@ -279,6 +321,23 @@ ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointN
     ScriptPromise promise = resolver->promise();
     BufferSource buffer(data);
     m_device->transfer(WebUSBDevice::TransferDirection::Out, endpointNumber, buffer.data(), buffer.size(), 0, new CallbackPromiseAdapter<OutputTransferResult, USBError>(resolver));
+    return promise;
+}
+
+ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t endpointNumber, Vector<unsigned> packetLengths)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    m_device->isochronousTransfer(WebUSBDevice::TransferDirection::In, endpointNumber, nullptr, 0, packetLengths, 0, new CallbackPromiseAdapter<IsochronousInputTransferResult, USBError>(resolver));
+    return promise;
+}
+
+ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data, Vector<unsigned> packetLengths)
+{
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    BufferSource buffer(data);
+    m_device->isochronousTransfer(WebUSBDevice::TransferDirection::Out, endpointNumber, buffer.data(), buffer.size(), packetLengths, 0, new CallbackPromiseAdapter<IsochronousOutputTransferResult, USBError>(resolver));
     return promise;
 }
 

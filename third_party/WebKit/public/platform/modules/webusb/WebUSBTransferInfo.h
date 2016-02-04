@@ -17,18 +17,25 @@ struct WebUSBTransferInfo {
     };
 
     WebUSBTransferInfo()
-        : status(Status::Ok)
-        , bytesWritten(0)
     {
     }
 
-    Status status;
+    // Individual packet statuses. This vector has only one element if this is
+    // not an isochronous transfer.
+    WebVector<Status> status;
 
     // Data received, if this is an inbound transfer.
     WebVector<uint8_t> data;
 
-    // Number of bytes written if this is an outbound transfer.
-    uint32_t bytesWritten;
+    // Requested length of each packet if this is an inbound isochronous
+    // transfer.
+    WebVector<uint32_t> packetLength;
+
+    // Number of bytes written if this is an outbound transfer. This vector has
+    // only one element if this is not an isochronous transfer otherwise it is
+    // the number of bytes transferred in each isochronous packet (inbound or
+    // outbound).
+    WebVector<uint32_t> bytesTransferred;
 };
 
 } // namespace blink

@@ -12,6 +12,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBDevice.h"
 #include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
@@ -79,6 +80,8 @@ public:
     ScriptPromise clearHalt(ScriptState*, uint8_t endpointNumber);
     ScriptPromise transferIn(ScriptState*, uint8_t endpointNumber, unsigned length);
     ScriptPromise transferOut(ScriptState*, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data);
+    ScriptPromise isochronousTransferIn(ScriptState*, uint8_t endpointNumber, Vector<unsigned> packetLengths);
+    ScriptPromise isochronousTransferOut(ScriptState*, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data, Vector<unsigned> packetLengths);
     ScriptPromise reset(ScriptState*);
 
     void contextDestroyed() override;

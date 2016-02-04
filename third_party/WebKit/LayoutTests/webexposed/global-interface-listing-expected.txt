@@ -5563,6 +5563,8 @@ interface USBDevice
     method controlTransferIn
     method controlTransferOut
     method getConfiguration
+    method isochronousTransferIn
+    method isochronousTransferOut
     method open
     method releaseInterface
     method reset
@@ -5583,6 +5585,21 @@ interface USBInTransferResult
 interface USBInterface
     getter alternates
     getter interfaceNumber
+    method constructor
+interface USBIsochronousInTransferPacket
+    getter data
+    getter status
+    method constructor
+interface USBIsochronousInTransferResult
+    getter data
+    getter packets
+    method constructor
+interface USBIsochronousOutTransferPacket
+    getter bytesWritten
+    getter status
+    method constructor
+interface USBIsochronousOutTransferResult
+    getter packets
     method constructor
 interface USBOutTransferResult
     getter bytesWritten

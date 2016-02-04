@@ -57,13 +57,21 @@ class WebUSBDeviceImpl : public blink::WebUSBDevice {
       uint8_t* data,
       size_t data_size,
       unsigned int timeout,
-      blink::WebUSBDeviceControlTransferCallbacks* callbacks) override;
+      blink::WebUSBDeviceTransferCallbacks* callbacks) override;
   void transfer(blink::WebUSBDevice::TransferDirection direction,
                 uint8_t endpoint_number,
                 uint8_t* data,
                 size_t data_size,
                 unsigned int timeout,
-                blink::WebUSBDeviceBulkTransferCallbacks* callbacks) override;
+                blink::WebUSBDeviceTransferCallbacks* callbacks) override;
+  void isochronousTransfer(
+      blink::WebUSBDevice::TransferDirection direction,
+      uint8_t endpoint_number,
+      uint8_t* data,
+      size_t data_size,
+      blink::WebVector<uint32_t> packet_lengths,
+      unsigned int timeout,
+      blink::WebUSBDeviceTransferCallbacks* callbacks) override;
   void reset(blink::WebUSBDeviceResetCallbacks* callbacks) override;
 
   device::usb::DevicePtr device_;
