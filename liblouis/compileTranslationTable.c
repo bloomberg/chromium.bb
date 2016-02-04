@@ -250,8 +250,7 @@ static const char *opcodeNames[CTO_None] = {
   "begemph",
   "endemph",
   "begemphphrase",
-  "lastwordemphbefore",
-  "lastwordemphafter",
+  "endemphphrase",
   "lenemphphrase",
   "capsmodechars",
   // "emphmodechars",
@@ -4154,8 +4153,7 @@ doOpcode:
    * - begemph
    * - endemph
    * - begemphphrase
-   * - lastwordemphbefore
-   * - lastwordemphafter
+   * - endemphphrase
    * - lenemphphrase
    */
     case CTO_EmphClass:
@@ -4245,8 +4243,7 @@ doOpcode:
     case CTO_FirstLetterEmph:
     case CTO_LastLetterEmph:
     case CTO_FirstWordEmph:
-    case CTO_LastWordEmphBefore:
-    case CTO_LastWordEmphAfter:
+    case CTO_LastWordEmph:
     case CTO_LenEmphPhrase:
       ok = 0;
       if (getToken(nested, &token, "emphasis class"))
@@ -4296,16 +4293,33 @@ doOpcode:
 				CTO_SingleLetterItalRule + firstWordOffset + (8 * i),
 				&table->emphRules[i][firstWordOffset]);
 		}
-		else if (opcode == CTO_LastWordEmphBefore) {
-			ok = compileBrailleIndicator (nested, "last word before",
-				CTO_SingleLetterItalRule + lastWordBeforeOffset + (8 * i),
-				&table->emphRules[i][lastWordBeforeOffset]);
-		}
-		else if (opcode == CTO_LastWordEmphAfter) {
-			ok = compileBrailleIndicator (nested, "last word after",
-				CTO_SingleLetterItalRule + lastWordAfterOffset + (8 * i),
-				&table->emphRules[i][lastWordAfterOffset]);
-		}
+		else if (opcode == CTO_LastWordEmph)
+			switch (compileBeforeAfter(nested)) {
+				case 1: // before
+					if (table->emphRules[i][lastWordAfterOffset]) {
+						compileError (nested, "last word after already defined.");
+						ok = 0;
+						break;
+					}
+					ok = compileBrailleIndicator (nested, "last word before",
+						CTO_SingleLetterItalRule + lastWordBeforeOffset + (8 * i),
+						&table->emphRules[i][lastWordBeforeOffset]);
+					break;
+				case 2: // after
+					if (table->emphRules[i][lastWordBeforeOffset]) {
+						compileError (nested, "last word before already defined.");
+						ok = 0;
+						break;
+					}
+					ok = compileBrailleIndicator (nested, "last word after",
+						CTO_SingleLetterItalRule + lastWordAfterOffset + (8 * i),
+						&table->emphRules[i][lastWordAfterOffset]);
+					break;
+				default: // error
+					compileError (nested, "Invalid lastword indicator location.");
+					ok = 0;
+					break;
+			}
 		else if (opcode == CTO_LenEmphPhrase)
 			ok = table->emphRules[i][lenPhraseOffset] = compileNumber (nested);
 		free(s);

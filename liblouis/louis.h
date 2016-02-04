@@ -235,8 +235,7 @@ extern "C"
     CTO_FirstLetterEmph,
     CTO_LastLetterEmph,
     CTO_FirstWordEmph,
-    CTO_LastWordEmphBefore,
-    CTO_LastWordEmphAfter,
+    CTO_LastWordEmph,
     CTO_LenEmphPhrase,
     /* End of ordered opcodes */
     

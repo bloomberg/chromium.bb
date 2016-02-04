@@ -70,10 +70,10 @@ emphclass italic
 emphclass underline
 emphclass bold
 begemphphrase italic 46-46
-lastwordemphbefore italic 46
+endemphphrase italic before 46
 lenemphphrase italic 4
 begemphphrase bold 456-456
-lastwordemphbefore bold 456
+endemphphrase bold before 456
 lenemphphrase bold 4
 begcomp 456-346
 endcomp 456-156

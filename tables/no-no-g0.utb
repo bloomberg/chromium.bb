@@ -30,11 +30,11 @@ begemph bold 6-3
 begemphphrase underline 456
 begemph underline 456
 
-lastwordemphafter italic 56
+endemphphrase italic after 56
 endemph italic 56
-lastwordemphafter bold 6-3
+endemphphrase bold after 6-3
 endemph bold 6-3
-lastwordemphafter underline 456
+endemphphrase underline after 456
 endemph underline 456
 
 midnum , 2

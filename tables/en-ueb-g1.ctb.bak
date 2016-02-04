@@ -39,15 +39,15 @@ emphclass italic
 emphclass underline
 emphclass bold
 begemphphrase italic 46-2356 # Start of italicized passage.
-lastwordemphafter italic 46-3
+endemphphrase italic after 46-3
 lenemphphrase italic 3 # Defines italicized passage length.
 emphletter italic 46-23
 begemphphrase bold 45-2356 # Boldface passage.
-lastwordemphafter bold 45-3
+endemphphrase bold after 45-3
 lenemphphrase bold 3
 emphletter bold 45-23
 begemphphrase underline 456-2356 # Underlined passage.
-lastwordemphafter underline 456-3
+endemphphrase underline after 456-3
 emphletter underline 456-23
 lenemphphrase underline 3
 # Todo: add singlewordemph italic, singlewordemph bold, singlewordemph underline and possible ones for scripts and transcriber typeforms.

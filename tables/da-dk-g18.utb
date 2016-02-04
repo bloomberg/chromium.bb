@@ -39,17 +39,17 @@ emphclass underline
 emphclass bold
 
 begemphphrase italic 56
-lastwordemphafter italic 56
+endemphphrase italic after 56
 begemph italic 56
 endemph italic 56
 
 begemphphrase bold 56
-lastwordemphafter bold 56
+endemphphrase bold after 56
 begemph bold 56
 endemph bold 56
 
 begemphphrase underline 56
-lastwordemphafter underline 56
+endemphphrase underline after 56
 begemph underline 56
 endemph underline 56
 

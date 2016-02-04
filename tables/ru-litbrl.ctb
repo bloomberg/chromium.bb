@@ -31,9 +31,9 @@ emphclass italic
 emphclass underline
 emphclass bold
 begemphphrase italic 456
-lastwordemphafter italic 456
+endemphphrase italic after 456
 begemphphrase bold 34
-lastwordemphafter bold 34
+endemphphrase bold after 34
 
 # The decimal digits:
 include litdigits6Dots.uti

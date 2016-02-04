@@ -52,7 +52,7 @@ endemph italic 46-36
 emphletter italic 46-25
 
 begemphphrase bold 456-46-46
-lastwordemphbefore bold 456-46
+endemphphrase bold before 456-46
 lenemphphrase bold 4
 begemphword bold 456-46
 
@@ -60,7 +60,7 @@ begemphword underline 456-36
 endemphword underline 3-6
 lenemphphrase underline 3
 begemphphrase underline 456-2356
-lastwordemphafter underline 6-3
+endemphphrase underline after 6-3
 
 begemph transnote 6-3
 endemph transnote 6-3
