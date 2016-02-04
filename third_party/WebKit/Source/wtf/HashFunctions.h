@@ -37,7 +37,7 @@ template <> struct IntTypes<8> { typedef int64_t SignedType; typedef uint64_t Un
 // integer hash function
 
 // Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned intHash(uint8_t key8)
+inline unsigned hashInt(uint8_t key8)
 {
     unsigned key = key8;
     key += ~(key << 15);
@@ -50,7 +50,7 @@ inline unsigned intHash(uint8_t key8)
 }
 
 // Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned intHash(uint16_t key16)
+inline unsigned hashInt(uint16_t key16)
 {
     unsigned key = key16;
     key += ~(key << 15);
@@ -63,7 +63,7 @@ inline unsigned intHash(uint16_t key16)
 }
 
 // Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned intHash(uint32_t key)
+inline unsigned hashInt(uint32_t key)
 {
     key += ~(key << 15);
     key ^= (key >> 10);
@@ -75,7 +75,7 @@ inline unsigned intHash(uint32_t key)
 }
 
 // Thomas Wang's 64 bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
-inline unsigned intHash(uint64_t key)
+inline unsigned hashInt(uint64_t key)
 {
     key += ~(key << 32);
     key ^= (key >> 22);
@@ -89,7 +89,7 @@ inline unsigned intHash(uint64_t key)
 }
 
 // Compound integer hash method: http://opendatastructures.org/versions/edition-0.1d/ods-java/node33.html#SECTION00832000000000000000
-inline unsigned pairIntHash(unsigned key1, unsigned key2)
+inline unsigned hashInts(unsigned key1, unsigned key2)
 {
     unsigned shortRandom1 = 277951225; // A random 32-bit value.
     unsigned shortRandom2 = 95187966; // A random 32-bit value.
@@ -101,7 +101,7 @@ inline unsigned pairIntHash(unsigned key1, unsigned key2)
 }
 
 template <typename T> struct IntHash {
-    static unsigned hash(T key) { return intHash(static_cast<typename IntTypes<sizeof(T)>::UnsignedType>(key)); }
+    static unsigned hash(T key) { return hashInt(static_cast<typename IntTypes<sizeof(T)>::UnsignedType>(key)); }
     static bool equal(T a, T b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
@@ -110,7 +110,7 @@ template <typename T> struct FloatHash {
     typedef typename IntTypes<sizeof(T)>::UnsignedType Bits;
     static unsigned hash(T key)
     {
-        return intHash(bitwise_cast<Bits>(key));
+        return hashInt(bitwise_cast<Bits>(key));
     }
     static bool equal(T a, T b)
     {
@@ -179,7 +179,7 @@ template <typename T> struct DefaultHash;
 template <typename T, typename U> struct PairHash {
     static unsigned hash(const std::pair<T, U>& p)
     {
-        return pairIntHash(DefaultHash<T>::Hash::hash(p.first), DefaultHash<U>::Hash::hash(p.second));
+        return hashInts(DefaultHash<T>::Hash::hash(p.first), DefaultHash<U>::Hash::hash(p.second));
     }
     static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b)
     {
@@ -190,7 +190,7 @@ template <typename T, typename U> struct PairHash {
 };
 
 template <typename T, typename U> struct IntPairHash {
-    static unsigned hash(const std::pair<T, U>& p) { return pairIntHash(p.first, p.second); }
+    static unsigned hash(const std::pair<T, U>& p) { return hashInts(p.first, p.second); }
     static bool equal(const std::pair<T, U>& a, const std::pair<T, U>& b) { return PairHash<T, T>::equal(a, b); }
     static const bool safeToCompareToEmptyOrDeleted = PairHash<T, U>::safeToCompareToEmptyOrDeleted;
 };

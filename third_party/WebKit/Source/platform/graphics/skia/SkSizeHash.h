@@ -35,7 +35,7 @@ namespace WTF {
 
 template<> struct IntHash<SkSize> {
     STATIC_ONLY(IntHash);
-    static unsigned hash(const SkSize& key) { return pairIntHash(key.width(), key.height()); }
+    static unsigned hash(const SkSize& key) { return hashInts(key.width(), key.height()); }
     static bool equal(const SkSize& a, const SkSize& b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };
@@ -61,7 +61,7 @@ template<> struct HashTraits<SkSize> : GenericHashTraits<SkSize> {
 
 template<> struct IntHash<SkISize> {
     STATIC_ONLY(IntHash);
-    static unsigned hash(const SkISize& key) { return pairIntHash(key.width(), key.height()); }
+    static unsigned hash(const SkISize& key) { return hashInts(key.width(), key.height()); }
     static bool equal(const SkISize& a, const SkISize& b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };

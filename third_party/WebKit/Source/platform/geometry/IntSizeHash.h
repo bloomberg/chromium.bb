@@ -29,7 +29,7 @@ namespace WTF {
 
 template<> struct IntHash<blink::IntSize> {
     STATIC_ONLY(IntHash);
-    static unsigned hash(const blink::IntSize& key) { return pairIntHash(key.width(), key.height()); }
+    static unsigned hash(const blink::IntSize& key) { return hashInts(key.width(), key.height()); }
     static bool equal(const blink::IntSize& a, const blink::IntSize& b) { return a == b; }
     static const bool safeToCompareToEmptyOrDeleted = true;
 };

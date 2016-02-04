@@ -43,7 +43,7 @@ struct CustomElementDescriptorHash {
     STATIC_ONLY(CustomElementDescriptorHash);
     static unsigned hash(const CustomElementDescriptor& descriptor)
     {
-        return WTF::pairIntHash(AtomicStringHash::hash(descriptor.type()), WTF::pairIntHash(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
+        return WTF::hashInts(AtomicStringHash::hash(descriptor.type()), WTF::hashInts(AtomicStringHash::hash(descriptor.namespaceURI()), AtomicStringHash::hash(descriptor.localName())));
     }
 
     static bool equal(const CustomElementDescriptor& a, const CustomElementDescriptor& b)

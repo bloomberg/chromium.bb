@@ -151,7 +151,7 @@ static unsigned computePresentationAttributeCacheHash(const PresentationAttribut
         return 0;
     ASSERT(key.attributesAndValues.size());
     unsigned attributeHash = StringHasher::hashMemory(key.attributesAndValues.data(), key.attributesAndValues.size() * sizeof(key.attributesAndValues[0]));
-    return WTF::pairIntHash(key.tagName->existingHash(), attributeHash);
+    return WTF::hashInts(key.tagName->existingHash(), attributeHash);
 }
 
 PassRefPtrWillBeRawPtr<StylePropertySet> computePresentationAttributeStyle(Element& element)
