@@ -94,3 +94,8 @@ TEST_F(EncodeDecodeTest, Elf_HighBSS) {
   std::string file = FileContents("elf-32-high-bss");
   TestAssembleToStreamDisassemble(file, 7312);
 }
+
+TEST_F(EncodeDecodeTest, Elf_Arm) {
+  std::string file = FileContents("elf-armv7");
+  TestAssembleToStreamDisassemble(file, 8531);
+}

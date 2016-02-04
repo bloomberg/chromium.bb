@@ -162,24 +162,21 @@ CheckBool DisassemblerElf32::IsValidRVA(RVA rva) const {
   return false;
 }
 
-// Returns RVA for an in memory address, or NULL.
-CheckBool DisassemblerElf32::RVAToFileOffset(Elf32_Addr addr,
-                                                size_t* result) const {
+CheckBool DisassemblerElf32::RVAToFileOffset(RVA rva,
+                                             size_t* result) const {
+  for (int i = 0; i < SectionHeaderCount(); i++) {
+    const Elf32_Shdr *section_header = SectionHeader(i);
+    // These can appear to have a size in the file, but don't.
+    if (section_header->sh_type == SHT_NOBITS)
+      continue;
+    Elf32_Addr begin = section_header->sh_addr;
+    Elf32_Addr end = begin + section_header->sh_size;
 
-  for (int i = 0; i < ProgramSegmentHeaderCount(); i++) {
-    Elf32_Addr begin = ProgramSegmentMemoryBegin(i);
-    Elf32_Addr end = begin + ProgramSegmentMemorySize(i);
-
-    if (addr >= begin  && addr < end) {
-      Elf32_Addr offset = addr - begin;
-
-      if (offset < ProgramSegmentFileSize(i)) {
-        *result = ProgramSegmentFileOffset(i) + offset;
-        return true;
-      }
+    if (rva >= begin && rva < end) {
+      *result = section_header->sh_offset + (rva - begin);
+      return true;
     }
   }
-
   return false;
 }
 
@@ -491,7 +488,9 @@ CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
 
     const Elf32_Shdr *section_header = SectionHeader(section_id);
 
-    if (section_header->sh_type != SHT_PROGBITS)
+    // Some debug sections can have sh_type=SHT_PROGBITS but sh_addr=0.
+    if (section_header->sh_type != SHT_PROGBITS ||
+        section_header->sh_addr == 0)
       continue;
 
     if (!ParseRel32RelocsFromSection(section_header))
