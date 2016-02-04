@@ -265,9 +265,12 @@ class CONTENT_EXPORT MediaStreamManager
   void NotifyDevicesChanged(MediaStreamType stream_type,
                             const StreamDeviceInfoArray& devices);
 
-  void HandleAccessRequestResponse(const std::string& label,
-                                   const MediaStreamDevices& devices,
-                                   content::MediaStreamRequestResult result);
+  // |output_parameters| contains real values only if the request requires it.
+  void HandleAccessRequestResponse(
+      const std::string& label,
+      const media::AudioParameters& output_parameters,
+      const MediaStreamDevices& devices,
+      content::MediaStreamRequestResult result);
   void StopMediaStreamFromBrowser(const std::string& label);
 
   void DoEnumerateDevices(const std::string& label);
@@ -319,7 +322,12 @@ class CONTENT_EXPORT MediaStreamManager
   bool SetupScreenCaptureRequest(DeviceRequest* request);
   // Called when a request has been setup and devices have been enumerated if
   // needed.
-  void PostRequestToUI(const std::string& label, DeviceRequest* request);
+  void ReadOutputParamsAndPostRequestToUI(const std::string& label,
+                                          DeviceRequest* request);
+  // Called when audio output parameters have been read if needed.
+  void PostRequestToUI(const std::string& label,
+                       DeviceRequest* request,
+                       const media::AudioParameters& output_parameters);
   // Returns true if a device with |device_id| has already been requested with
   // a render procecss_id and render_frame_id and type equal to the the values
   // in |request|. If it has been requested, |device_info| contain information

@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
@@ -1115,8 +1116,34 @@ void MediaStreamManager::DeleteRequest(const std::string& label) {
   NOTREACHED();
 }
 
-void MediaStreamManager::PostRequestToUI(const std::string& label,
-                                         DeviceRequest* request) {
+void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
+    const std::string& label,
+    DeviceRequest* request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Actual audio parameters are required only for MEDIA_TAB_AUDIO_CAPTURE.
+  // TODO(guidou): MEDIA_TAB_AUDIO_CAPTURE should not be a special case. See
+  // crbug.com/584287.
+  if (request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE) {
+    // Read output parameters on the correct thread for native audio OS calls.
+    // Using base::Unretained is safe since |audio_manager_| is deleted after
+    // its task runner, and MediaStreamManager is deleted on the UI thread,
+    // after the IO thread has been stopped.
+    base::PostTaskAndReplyWithResult(
+        audio_manager_->GetTaskRunner().get(), FROM_HERE,
+        base::Bind(&media::AudioManager::GetDefaultOutputStreamParameters,
+                   base::Unretained(audio_manager_)),
+        base::Bind(&MediaStreamManager::PostRequestToUI, base::Unretained(this),
+                   label, request));
+  } else {
+    PostRequestToUI(label, request, media::AudioParameters());
+  }
+}
+
+void MediaStreamManager::PostRequestToUI(
+    const std::string& label,
+    DeviceRequest* request,
+    const media::AudioParameters& output_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request->HasUIRequest());
   DVLOG(1) << "PostRequestToUI({label= " << label << "})";
@@ -1158,7 +1185,7 @@ void MediaStreamManager::PostRequestToUI(const std::string& label,
   request->ui_proxy->RequestAccess(
       request->DetachUIRequest(),
       base::Bind(&MediaStreamManager::HandleAccessRequestResponse,
-                 base::Unretained(this), label));
+                 base::Unretained(this), label, output_parameters));
 }
 
 void MediaStreamManager::SetupRequest(const std::string& label) {
@@ -1227,7 +1254,7 @@ void MediaStreamManager::SetupRequest(const std::string& label) {
       return;
     }
   }
-  PostRequestToUI(label, request);
+  ReadOutputParamsAndPostRequestToUI(label, request);
 }
 
 bool MediaStreamManager::SetupDeviceCaptureRequest(DeviceRequest* request) {
@@ -1734,7 +1761,7 @@ void MediaStreamManager::DevicesEnumerated(
         if (!SetupDeviceCaptureRequest(request))
           FinalizeRequestFailed(label, request, MEDIA_DEVICE_NO_HARDWARE);
         else
-          PostRequestToUI(label, request);
+          ReadOutputParamsAndPostRequestToUI(label, request);
         break;
     }
   }
@@ -1796,6 +1823,7 @@ void MediaStreamManager::AddLogMessageOnIOThread(const std::string& message) {
 
 void MediaStreamManager::HandleAccessRequestResponse(
     const std::string& label,
+    const media::AudioParameters& output_parameters,
     const MediaStreamDevices& devices,
     content::MediaStreamRequestResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -1835,9 +1863,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
       // mirroring, we don't go through EnumerateDevices where these are usually
       // initialized.
       if (device_info.device.type == content::MEDIA_TAB_AUDIO_CAPTURE) {
-        const media::AudioParameters parameters =
-            audio_manager_->GetDefaultOutputStreamParameters();
-        int sample_rate = parameters.sample_rate();
+        int sample_rate = output_parameters.sample_rate();
         // If we weren't able to get the native sampling rate or the sample_rate
         // is outside the valid range for input devices set reasonable defaults.
         if (sample_rate <= 0 || sample_rate > 96000)
