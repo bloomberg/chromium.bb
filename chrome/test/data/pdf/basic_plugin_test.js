@@ -41,7 +41,6 @@ var tests = [
       chrome.test.assertEq('text', dict.textBox[0].textNodes[0].type);
       chrome.test.assertEq('this is some text',
                            dict.textBox[0].textNodes[0].text);
-      chrome.test.assertEq(1.0, dict.textBox[1].fontSize);
       chrome.test.assertEq('text', dict.textBox[1].textNodes[0].type);
       chrome.test.assertEq('some more text',
                            dict.textBox[1].textNodes[0].text);

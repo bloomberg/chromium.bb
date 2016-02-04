@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -32,10 +34,74 @@ const char kTextBoxFontSize[] = "fontSize";
 const char kTextBoxNodes[] = "textNodes";
 const char kTextNodeType[] = "type";
 const char kTextNodeText[] = "text";
-const char kTextNodeURL[] = "url";
 const char kTextNodeTypeText[] = "text";
-const char kTextNodeTypeURL[] = "url";
-const char kDocLinkURLPrefix[] = "#page";
+
+pp::Rect PageRectToGViewRect(FPDF_PAGE page, const pp::Rect& input) {
+  int output_width = FPDF_GetPageWidth(page);
+  int output_height = FPDF_GetPageHeight(page);
+
+  int min_x;
+  int min_y;
+  int max_x;
+  int max_y;
+  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0,
+                    input.x(), input.y(), &min_x, &min_y);
+  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0,
+                    input.right(), input.bottom(), &max_x, &max_y);
+
+  if (max_x < min_x)
+    std::swap(min_x, max_x);
+  if (max_y < min_y)
+    std::swap(min_y, max_y);
+
+  pp::Rect output_rect(min_x, min_y, max_x - min_x, max_y - min_y);
+  output_rect.Intersect(pp::Rect(0, 0, output_width, output_height));
+  return output_rect;
+}
+
+pp::Rect GetCharRectInGViewCoords(FPDF_PAGE page, FPDF_TEXTPAGE text_page,
+                                  int index) {
+  double left, right, bottom, top;
+  FPDFText_GetCharBox(text_page, index, &left, &right, &bottom, &top);
+  if (right < left)
+    std::swap(left, right);
+  if (bottom < top)
+    std::swap(top, bottom);
+  pp::Rect page_coords(left, top, right - left, bottom - top);
+  return PageRectToGViewRect(page, page_coords);
+}
+
+// This is the character PDFium inserts where a word is broken across lines.
+const unsigned int kSoftHyphen = 0x02;
+
+// The following characters should all be recognized as Unicode newlines:
+//   LF:    Line Feed, U+000A
+//   VT:    Vertical Tab, U+000B
+//   FF:    Form Feed, U+000C
+//   CR:    Carriage Return, U+000D
+//   CR+LF: CR (U+000D) followed by LF (U+000A)
+//   NEL:   Next Line, U+0085
+//   LS:    Line Separator, U+2028
+//   PS:    Paragraph Separator, U+2029.
+// Source: http://en.wikipedia.org/wiki/Newline#Unicode .
+const unsigned int kUnicodeNewlines[] = {
+  0xA, 0xB, 0xC, 0xD, 0X85, 0x2028, 0x2029
+};
+
+bool IsSoftHyphen(unsigned int character) {
+  return kSoftHyphen == character;
+}
+
+bool OverlapsOnYAxis(const pp::Rect &a, const pp::Rect& b) {
+  return !(a.IsEmpty() || b.IsEmpty() ||
+           a.bottom() < b.y() || b.bottom() < a.y());
+}
+
+bool IsEol(unsigned int character) {
+  const unsigned int* first = kUnicodeNewlines;
+  const unsigned int* last = kUnicodeNewlines + arraysize(kUnicodeNewlines);
+  return std::find(first, last, character) != last;
+}
 
 }  // namespace
 
@@ -130,130 +196,105 @@ base::Value* PDFiumPage::GetAccessibleContentAsValue(int rotation) {
   if (!available_)
     return node;
 
-  double width = FPDF_GetPageWidth(GetPage());
-  double height = FPDF_GetPageHeight(GetPage());
+  FPDF_PAGE page = GetPage();
+  FPDF_TEXTPAGE text_page = GetTextPage();
 
-  base::ListValue* text = new base::ListValue();
-  int box_count = FPDFText_CountRects(GetTextPage(), 0, GetCharCount());
-  for (int i = 0; i < box_count; i++) {
-    double left, top, right, bottom;
-    FPDFText_GetRect(GetTextPage(), i, &left, &top, &right, &bottom);
-    text->Append(
-        GetTextBoxAsValue(height, left, top, right, bottom, rotation));
-  }
+  double width = FPDF_GetPageWidth(page);
+  double height = FPDF_GetPageHeight(page);
 
   node->SetDouble(kPageWidth, width);
   node->SetDouble(kPageHeight, height);
-  node->Set(kPageTextBox, text);  // Takes ownership of |text|
+  scoped_ptr<base::ListValue> text(new base::ListValue());
 
-  return node;
-}
+  int chars_count = FPDFText_CountChars(text_page);
+  pp::Rect line_rect;
+  pp::Rect word_rect;
+  bool seen_literal_text_in_word = false;
 
-base::Value* PDFiumPage::GetTextBoxAsValue(double page_height,
-                                           double left, double top,
-                                           double right, double bottom,
-                                           int rotation) {
-  base::string16 text_utf16;
-  int char_count =
-    FPDFText_GetBoundedText(GetTextPage(), left, top, right, bottom, NULL, 0);
-  if (char_count > 0) {
-    unsigned short* data = reinterpret_cast<unsigned short*>(
-        base::WriteInto(&text_utf16, char_count + 1));
-    FPDFText_GetBoundedText(GetTextPage(),
-                            left, top, right, bottom,
-                            data, char_count);
-  }
-  std::string text_utf8 = base::UTF16ToUTF8(text_utf16);
+  // Iterate over all of the chars on the page. Explicitly run the loop
+  // with |i == chars_count|, which is one past the last character, and
+  // pretend it's a newline character in order to ensure we always flush
+  // the last line.
+  base::string16 line;
+  for (int i = 0; i <= chars_count; i++) {
+    unsigned int character;
+    pp::Rect char_rect;
 
-  FPDF_LINK link = FPDFLink_GetLinkAtPoint(GetPage(), left, top);
-  Area area;
-  std::vector<LinkTarget> targets;
-  if (link) {
-    targets.push_back(LinkTarget());
-    area = GetLinkTarget(link, &targets[0]);
-  } else {
-    pp::Rect rect(
-        PageToScreen(pp::Point(), 1.0, left, top, right, bottom, rotation));
-    GetLinks(rect, &targets);
-    area = targets.empty() ? TEXT_AREA : WEBLINK_AREA;
-  }
-
-  int char_index = FPDFText_GetCharIndexAtPos(GetTextPage(), left, top,
-                                              kTolerance, kTolerance);
-  double font_size = FPDFText_GetFontSize(GetTextPage(), char_index);
-
-  base::DictionaryValue* node = new base::DictionaryValue();
-  node->SetDouble(kTextBoxLeft, left);
-  node->SetDouble(kTextBoxTop, page_height - top);
-  node->SetDouble(kTextBoxWidth, right - left);
-  node->SetDouble(kTextBoxHeight, top - bottom);
-  node->SetDouble(kTextBoxFontSize, font_size);
-
-  base::ListValue* text_nodes = new base::ListValue();
-
-  if (area == DOCLINK_AREA) {
-    std::string url = kDocLinkURLPrefix + base::IntToString(targets[0].page);
-    text_nodes->Append(CreateURLNode(text_utf8, url));
-  } else if (area == WEBLINK_AREA && link) {
-    text_nodes->Append(CreateURLNode(text_utf8, targets[0].url));
-  } else if (area == WEBLINK_AREA && !link) {
-    size_t start = 0;
-    for (const auto& target : targets) {
-      // If there is an extra NULL character at end, find() will not return any
-      // matches. There should not be any though.
-      if (!target.url.empty())
-        DCHECK_NE(target.url.back(), '\0');
-
-      // PDFium may change the case of generated links.
-      std::string lowerCaseURL = base::ToLowerASCII(target.url);
-      std::string lowerCaseText = base::ToLowerASCII(text_utf8);
-      size_t pos = lowerCaseText.find(lowerCaseURL, start);
-      size_t length = target.url.size();
-      if (pos == std::string::npos) {
-        // Check if the link is a "mailto:" URL
-        if (lowerCaseURL.compare(0, 7, "mailto:") == 0) {
-          pos = lowerCaseText.find(lowerCaseURL.substr(7), start);
-          length -= 7;
-        }
-
-        if (pos == std::string::npos) {
-          // No match has been found.  This should never happen.
-          continue;
-        }
-      }
-
-      std::string before_text = text_utf8.substr(start, pos - start);
-      if (!before_text.empty())
-        text_nodes->Append(CreateTextNode(before_text));
-      std::string link_text = text_utf8.substr(pos, length);
-      text_nodes->Append(CreateURLNode(link_text, target.url));
-
-      start = pos + length;
+    if (i < chars_count) {
+      character = FPDFText_GetUnicode(text_page, i);
+      char_rect = GetCharRectInGViewCoords(page, text_page, i);
+    } else {
+      // Make the last character a newline so the last line isn't lost.
+      character = '\n';
     }
-    std::string before_text = text_utf8.substr(start);
-    if (!before_text.empty())
-      text_nodes->Append(CreateTextNode(before_text));
-  } else {
-    text_nodes->Append(CreateTextNode(text_utf8));
+
+    // There are spurious STX chars appearing in place
+    // of ligatures.  Apply a heuristic to check that some vertical displacement
+    // is involved before assuming they are line-breaks.
+    bool is_intraword_linebreak = false;
+    if (i < chars_count - 1 && IsSoftHyphen(character)) {
+      // check if the next char and this char are in different lines.
+      pp::Rect next_char_rect = GetCharRectInGViewCoords(
+          page, text_page, i + 1);
+
+      // TODO(dmazzoni): this assumes horizontal text.
+      // https://crbug.com/580311
+      is_intraword_linebreak = !OverlapsOnYAxis(char_rect, next_char_rect);
+    }
+    if (is_intraword_linebreak ||
+        base::IsUnicodeWhitespace(character) ||
+        IsEol(character)) {
+      if (!word_rect.IsEmpty() && seen_literal_text_in_word) {
+        word_rect = pp::Rect();
+        seen_literal_text_in_word = false;
+      }
+    }
+
+    if (is_intraword_linebreak || IsEol(character)) {
+      if (!line_rect.IsEmpty()) {
+        if (is_intraword_linebreak) {
+          // Add a 0-width hyphen.
+          line.push_back('-');
+        }
+
+        base::DictionaryValue* text_node = new base::DictionaryValue();
+        text_node->SetString(kTextNodeType, kTextNodeTypeText);
+        text_node->SetString(kTextNodeText, line);
+
+        base::ListValue* text_nodes = new base::ListValue();
+        text_nodes->Append(text_node);
+
+        base::DictionaryValue* line_node = new base::DictionaryValue();
+        line_node->SetDouble(kTextBoxLeft, line_rect.x());
+        line_node->SetDouble(kTextBoxTop, line_rect.y());
+        line_node->SetDouble(kTextBoxWidth, line_rect.width());
+        line_node->SetDouble(kTextBoxHeight, line_rect.height());
+        line_node->SetDouble(kTextBoxFontSize,
+                             FPDFText_GetFontSize(text_page, i));
+        line_node->Set(kTextBoxNodes, text_nodes);
+        text->Append(line_node);
+
+        line.clear();
+        line_rect = pp::Rect();
+        word_rect = pp::Rect();
+        seen_literal_text_in_word = false;
+      }
+      continue;
+    }
+    seen_literal_text_in_word = seen_literal_text_in_word ||
+        !base::IsUnicodeWhitespace(character);
+    line.push_back(character);
+
+    if (!char_rect.IsEmpty()) {
+      line_rect = line_rect.Union(char_rect);
+
+      if (!base::IsUnicodeWhitespace(character))
+        word_rect = word_rect.Union(char_rect);
+    }
   }
 
-  node->Set(kTextBoxNodes, text_nodes);  // Takes ownership of |text_nodes|.
-  return node;
-}
+  node->Set(kPageTextBox, text.release());  // Takes ownership of |text|
 
-base::Value* PDFiumPage::CreateTextNode(const std::string& text) {
-  base::DictionaryValue* node = new base::DictionaryValue();
-  node->SetString(kTextNodeType, kTextNodeTypeText);
-  node->SetString(kTextNodeText, text);
-  return node;
-}
-
-base::Value* PDFiumPage::CreateURLNode(const std::string& text,
-                                       const std::string& url) {
-  base::DictionaryValue* node = new base::DictionaryValue();
-  node->SetString(kTextNodeType, kTextNodeTypeURL);
-  node->SetString(kTextNodeText, text);
-  node->SetString(kTextNodeURL, url);
   return node;
 }
 

@@ -106,12 +106,6 @@ class PDFiumPage {
   Area GetLinkTarget(FPDF_LINK link, LinkTarget* target) const;
   // Returns target associated with a destination.
   Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target) const;
-  // Returns the text in the supplied box as a Value Node
-  base::Value* GetTextBoxAsValue(double page_height, double left, double top,
-                                 double right, double bottom, int rotation);
-  // Helper functions for JSON generation
-  base::Value* CreateTextNode(const std::string& text);
-  base::Value* CreateURLNode(const std::string& text, const std::string& url);
 
   class ScopedLoadCounter {
    public:
