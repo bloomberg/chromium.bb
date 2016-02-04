@@ -81,6 +81,30 @@ CommandUtil.getCommandEntries = function(element) {
 };
 
 /**
+ * Extracts a directory which contains entries on which command event was
+ * dispatched.
+ *
+ * @param {EventTarget} element Element which is the command event's target.
+ * @param {DirectoryModel} directoryModel
+ * @return {DirectoryEntry|FakeEntry} The extracted parent entry.
+ */
+CommandUtil.getParentEntry = function(element, directoryModel) {
+  if (element instanceof DirectoryTree) {
+    if (!element.selectedItem)
+      return null;
+    var parentItem = element.selectedItem.parentItem;
+    return parentItem ? parentItem.entry : null;
+  } else if (element instanceof DirectoryItem ||
+             element instanceof ShortcutItem) {
+    return element.parentItem ? element.parentItem.entry : null;
+  } else if (element instanceof cr.ui.List) {
+    return directoryModel ? directoryModel.getCurrentDirEntry() : null;
+  } else {
+    return null;
+  }
+};
+
+/**
  * @param {EventTarget} element
  * @param {!FileManager} fileManager
  * @return {VolumeInfo}
@@ -892,9 +916,12 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
       return;
     }
 
-    var locationInfo = fileManager.volumeManager.getLocationInfo(entries[0]);
-    event.canExecute = entries.length === 1 && !!locationInfo &&
-        !locationInfo.isReadOnly;
+    var parentEntry =
+        CommandUtil.getParentEntry(event.target, fileManager.directoryModel);
+    var locationInfo = parentEntry ?
+        fileManager.volumeManager.getLocationInfo(parentEntry) : null;
+    event.canExecute =
+        entries.length === 1 && !!locationInfo && !locationInfo.isReadOnly;
     event.command.setHidden(false);
   }
 });
