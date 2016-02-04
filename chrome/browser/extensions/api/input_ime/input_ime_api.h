@@ -116,7 +116,7 @@ class InputImeEventRouterFactory {
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouterFactory);
 };
 
-class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
+class InputImeKeyEventHandledFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.keyEventHandled",
                              INPUT_IME_KEYEVENTHANDLED)
@@ -124,8 +124,8 @@ class InputImeKeyEventHandledFunction : public AsyncExtensionFunction {
  protected:
   ~InputImeKeyEventHandledFunction() override {}
 
-  // ExtensionFunction:
-  bool RunAsync() override;
+  // UIThreadExtensionFunction:
+  ResponseAction Run() override;
 };
 
 class InputImeAPI : public BrowserContextKeyedAPI,

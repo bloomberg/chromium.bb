@@ -76,10 +76,11 @@ void ImeObserver::OnKeyEvent(
     return;
   }
 
-  if (!extensions::GetInputImeEventRouter(profile_))
+  extensions::InputImeEventRouter* event_router =
+      extensions::GetInputImeEventRouter(profile_);
+  if (!event_router || !event_router->GetActiveEngine(extension_id_))
     return;
-
-  const std::string request_id = extensions::GetInputImeEventRouter(profile_)
+  const std::string request_id = event_router->GetActiveEngine(extension_id_)
                                      ->AddRequest(component_id, key_data);
 
   input_ime::KeyboardEvent key_data_value;
@@ -248,14 +249,18 @@ InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   return router;
 }
 
-bool InputImeKeyEventHandledFunction::RunAsync() {
+ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
   scoped_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
-  if (!GetInputImeEventRouter(Profile::FromBrowserContext(browser_context())))
-    return false;
-  GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
-      ->OnKeyEventHandled(extension_id(), params->request_id, params->response);
-  return true;
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
+  InputMethodEngineBase* engine =
+      event_router ? event_router->GetActiveEngine(extension_id()) : nullptr;
+  if (engine) {
+    engine->KeyEventHandled(extension_id(), params->request_id,
+                            params->response);
+  }
+  return RespondNow(NoArguments());
 }
 
 InputImeAPI::InputImeAPI(content::BrowserContext* context)

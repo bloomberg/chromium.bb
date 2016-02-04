@@ -164,6 +164,15 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                       int cursor,
                       const std::vector<SegmentInfo>& segments,
                       std::string* error);
+  // Called when a key event is handled.
+  void KeyEventHandled(const std::string& extension_id,
+                       const std::string& request_id,
+                       bool handled);
+
+  // Adds unprocessed key event to |request_map_|.
+  std::string AddRequest(
+      const std::string& component_id,
+      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
 
  protected:
   ui::TextInputType current_input_type_;
@@ -192,6 +201,14 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   const ui::KeyEvent* sent_key_event_;
 
   Profile* profile_;
+
+  using RequestMap =
+      std::map<std::string,
+               std::pair<std::string,
+                         ui::IMEEngineHandlerInterface::KeyEventDoneCallback>>;
+
+  unsigned int next_request_id_;
+  RequestMap request_map_;
 };
 
 }  // namespace input_method

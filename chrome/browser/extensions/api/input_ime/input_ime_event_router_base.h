@@ -25,25 +25,9 @@ class InputImeEventRouterBase {
   virtual input_method::InputMethodEngineBase* GetActiveEngine(
       const std::string& extension_id) = 0;
 
-  // Called when a key event was handled.
-  void OnKeyEventHandled(const std::string& extension_id,
-                         const std::string& request_id,
-                         bool handled);
-
-  std::string AddRequest(
-      const std::string& component_id,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
-
   Profile* profile() const { return profile_; }
 
  private:
-  using RequestMap =
-      std::map<std::string,
-               std::pair<std::string,
-                         ui::IMEEngineHandlerInterface::KeyEventDoneCallback>>;
-
-  unsigned int next_request_id_;
-  RequestMap request_map_;
   Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouterBase);
