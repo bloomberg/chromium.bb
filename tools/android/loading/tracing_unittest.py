@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import logging
 import unittest
 
@@ -24,17 +25,27 @@ class TracingTrackTestCase(unittest.TestCase):
       {'ts': 14, 'ph': 'e', 'cat': 'X', 'id': 2},
       {'ts': 15, 'ph': 'D', 'id': 1}]
 
+  _EVENTS = [
+      {'ts': 5, 'ph': 'X', 'dur': 1, 'args': {'name': 'B'}},
+      {'ts': 3, 'ph': 'X', 'dur': 4, 'args': {'name': 'A'}},
+      {'ts': 10, 'ph': 'X', 'dur': 1, 'args': {'name': 'C'}},
+      {'ts': 10, 'ph': 'X', 'dur': 2, 'args': {'name': 'D'}},
+      {'ts': 13, 'ph': 'X', 'dur': 1, 'args': {'name': 'F'}},
+      {'ts': 12, 'ph': 'X', 'dur': 3, 'args': {'name': 'E'}}]
+
   def setUp(self):
     self.track = TracingTrack(None)
 
   def EventToMicroseconds(self, event):
-    if 'ts' in event:
-      event['ts'] *= 1000
-    if 'dur' in event:
-      event['dur'] *= 1000
-    return event
+    result = copy.deepcopy(event)
+    if 'ts' in result:
+      result['ts'] *= 1000
+    if 'dur' in result:
+      result['dur'] *= 1000
+    return result
 
   def CheckTrack(self, timestamp, names):
+    self.track._IndexEvents(strict=True)
     self.assertEqual(
         set((e.args['name'] for e in self.track.EventsAt(timestamp))),
         set(names))
@@ -206,15 +217,8 @@ class TracingTrackTestCase(unittest.TestCase):
 
   def testEventsEndingBetween(self):
     self.track.Handle(
-        'Tracing.dataCollected',
-        {'params':
-         {'value': [self.EventToMicroseconds(e) for e in
-          [{'ts': 5, 'ph': 'X', 'dur': 1, 'args': {'name': 'B'}},
-           {'ts': 3, 'ph': 'X', 'dur': 4, 'args': {'name': 'A'}},
-           {'ts': 10, 'ph': 'X', 'dur': 1, 'args': {'name': 'C'}},
-           {'ts': 10, 'ph': 'X', 'dur': 2, 'args': {'name': 'D'}},
-           {'ts': 13, 'ph': 'X', 'dur': 1, 'args': {'name': 'F'}},
-           {'ts': 12, 'ph': 'X', 'dur': 3, 'args': {'name': 'E'}}]]}})
+        'Tracing.dataCollected', {'params': {'value': [
+            self.EventToMicroseconds(e) for e in self._EVENTS]}})
     self.assertEqual(set('ABCDEF'),
                      set([e.args['name']
                           for e in self.track.EventsEndingBetween(0, 100)]))
@@ -225,24 +229,22 @@ class TracingTrackTestCase(unittest.TestCase):
     self.assertEqual(set('B'),
                      set([e.args['name']
                           for e in self.track.EventsEndingBetween(3, 6)]))
-    self.assertEqual(set('AB'),
-                     set([e.args['name']
-                          for e in self.track.EventsEndingBetween(3, 7)]))
-    self.assertEqual(set('AB'),
-                     set([e.args['name']
-                          for e in self.track.EventsEndingBetween(6, 7)]))
-    self.assertEqual(set('A'),
-                     set([e.args['name']
-                          for e in self.track.EventsEndingBetween(7, 10)]))
-    self.assertEqual(set('AC'),
-                     set([e.args['name']
-                          for e in self.track.EventsEndingBetween(7, 11)]))
-    self.assertEqual(set('CD'),
-                     set([e.args['name']
-                          for e in self.track.EventsEndingBetween(8, 13)]))
 
-
-
+  def testOverlappingEvents(self):
+    self.track.Handle(
+        'Tracing.dataCollected', {'params': {'value': [
+            self.EventToMicroseconds(e) for e in self._EVENTS]}})
+    self.assertEqual(set('ABCDEF'),
+                     set([e.args['name']
+                          for e in self.track.OverlappingEvents(0, 100)]))
+    self.assertFalse([e.args['name']
+                      for e in self.track.OverlappingEvents(0, 2)])
+    self.assertEqual(set('BA'),
+                     set([e.args['name']
+                          for e in self.track.OverlappingEvents(4, 5.1)]))
+    self.assertEqual(set('ACD'),
+                     set([e.args['name']
+                          for e in self.track.OverlappingEvents(6, 10.1)]))
 
 
 if __name__ == '__main__':

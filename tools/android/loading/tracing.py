@@ -110,36 +110,47 @@ class TracingTrack(devtools_monitor.Track):
         tracing_track._base_msec = e.start_msec
     return tracing_track
 
-  def EventsEndingBetween(self, start_msec, end_msec):
-    """Gets the list of events whose end lies in a range.
+  def OverlappingEvents(self, start_msec, end_msec):
+    """Gets the list of events overlapping with an interval.
 
     Args:
       start_msec: the start of the range to query, in milliseconds, inclusive.
       end_msec: the end of the range to query, in milliseconds, inclusive.
 
     Returns:
-      List of events whose end time lies in the range. Note that although the
-      range is inclusive at both ends, an ending timestamp is considered to be
-      exclusive of the actual event. An event ending at 10 msec will be returned
-      for a range [10, 14] as well as [8, 10], though the event is considered to
-      end the instant before 10 msec. In practice this is only important when
-      considering how events overlap; an event ending at 10 msec does not
-      overlap with one starting at 10 msec and so may unambiguously share ids,
-      etc.
+      List of events overlapping with the range. Events are overlapping only if
+      the overlap is strictly larger than 0.
     """
     self._IndexEvents()
     low_idx = bisect.bisect_left(self._event_msec_index, start_msec) - 1
     high_idx = bisect.bisect_right(self._event_msec_index, end_msec)
-    matched_events = []
+    matched_events = set()
     for i in xrange(max(0, low_idx), high_idx):
       if self._event_lists[i]:
         for e in self._event_lists[i].event_list:
-          assert e.end_msec is not None
-          if e.end_msec >= start_msec and e.end_msec <= end_msec:
-            matched_events.append(e)
-    return matched_events
+          if e.end_msec is None:
+            continue
+          overlap_duration = max(
+              0, min(end_msec, e.end_msec) - max(start_msec, e.start_msec))
+          if overlap_duration > 0:
+            matched_events.add(e)
+    return list(matched_events)
 
-  def _IndexEvents(self):
+  def EventsEndingBetween(self, start_msec, end_msec):
+    """Gets the list of events ending within an interval.
+
+    Args:
+      start_msec: the start of the range to query, in milliseconds, inclusive.
+      end_msec: the end of the range to query, in milliseconds, inclusive.
+
+    Returns:
+      See OverlappingEvents() above.
+    """
+    overlapping_events = self.OverlappingEvents(start_msec, end_msec)
+    return [e for e in overlapping_events
+            if start_msec <= e.end_msec <= end_msec]
+
+  def _IndexEvents(self, strict=False):
     """Computes index for in-flight events.
 
     Creates a list of timestamps where events start or end, and tracks the
@@ -183,7 +194,8 @@ class TracingTrack(devtools_monitor.Track):
           if e.end_msec is not None and e.end_msec <= current_msec])
       self._event_msec_index.append(current_msec)
       self._event_lists.append(self._EventList(current_events))
-    if spanning_events.HasPending():
+
+    if strict and spanning_events.HasPending():
       raise devtools_monitor.DevToolsConnectionException(
           'Pending spanning events: %s' %
           '\n'.join([str(e) for e in spanning_events.PendingEvents()]))
@@ -202,8 +214,9 @@ class TracingTrack(devtools_monitor.Track):
           'F': self._AsyncEnd,
           'N': self._ObjectCreated,
           'D': self._ObjectDestroyed,
-          'X': self._Ignore,
           'M': self._Ignore,
+          'X': self._Ignore,
+          'R': self._Ignore,
           None: self._Ignore,
           }
 
@@ -315,6 +328,7 @@ class Event(object):
                     'e': 'b',
                     'F': 'S',
                     'D': 'N'}
+  __slots__ = ('_tracing_event', 'start_msec', 'end_msec', '_synthetic')
   def __init__(self, tracing_event, synthetic=False):
     """Creates Event.
 
@@ -334,22 +348,14 @@ class Event(object):
 
     self._tracing_event = tracing_event
     # Note tracing event times are in microseconds.
-    self._start_msec = tracing_event['ts'] / 1000.0
-    self._end_msec = None
+    self.start_msec = tracing_event['ts'] / 1000.0
+    self.end_msec = None
     self._synthetic = synthetic
     if self.type == 'X':
       # Some events don't have a duration.
       duration = (tracing_event['dur']
                   if 'dur' in tracing_event else tracing_event['tdur'])
-      self._end_msec = self.start_msec + duration / 1000.0
-
-  @property
-  def start_msec(self):
-    return self._start_msec
-
-  @property
-  def end_msec(self):
-    return self._end_msec
+      self.end_msec = self.start_msec + duration / 1000.0
 
   @property
   def type(self):
@@ -383,6 +389,7 @@ class Event(object):
         'I', 'P', 'c', 'C',
         'n', 'T', 'p',  # TODO(mattcary): ?? instant types of async events.
         'O',            # TODO(mattcary): ?? object snapshot
+        'M'             # Metadata
         ]
 
   def Synthesize(self):
@@ -418,7 +425,7 @@ class Event(object):
         self.id != closing.id):
       raise devtools_monitor.DevToolsConnectionException(
         'Bad async closing: %s --> %s' % (self, closing))
-    self._end_msec = closing.start_msec
+    self.end_msec = closing.start_msec
     if 'args' in closing.tracing_event:
       self.tracing_event.setdefault(
           'args', {}).update(closing.tracing_event['args'])

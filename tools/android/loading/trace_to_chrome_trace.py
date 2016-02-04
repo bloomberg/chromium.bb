@@ -5,8 +5,8 @@
 
 """Convert trace output for Chrome.
 
-Take the tracing track output from tracing_driver.py to a zip'd json that can be
-loading by chrome devtools tracing.
+Takes a loading trace from 'analyze.py log_requests' and outputs a zip'd json
+that can be loaded by chrome's about:tracing..
 """
 
 import argparse
@@ -19,5 +19,5 @@ if __name__ == '__main__':
   parser.add_argument('output')
   args = parser.parse_args()
   with gzip.GzipFile(args.output, 'w') as output_f, file(args.input) as input_f:
-    events = json.load(input_f)
+    events = json.load(input_f)['tracing_track']['events']
     json.dump({'traceEvents': events, 'metadata': {}}, output_f)

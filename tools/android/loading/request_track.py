@@ -28,6 +28,7 @@ _TIMING_NAMES_MAPPING = {
 
 Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
 
+
 def TimingAsList(timing):
   """Transform Timing to a list, eg as is used in JSON output.
 
@@ -39,6 +40,7 @@ def TimingAsList(timing):
     Request.ToJsonDict).
   """
   return json.loads(json.dumps(timing))
+
 
 class Request(object):
   """Represents a single request.
