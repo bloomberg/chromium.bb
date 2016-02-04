@@ -115,7 +115,8 @@ void MediaStreamVideoRendererSink::OnVideoFrame(
           &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
           base::Unretained(gpu_memory_buffer_pool_.get()), frame,
           media::BindToCurrentLoop(
-              base::Bind(&MediaStreamVideoRendererSink::FrameReady, this))));
+              base::Bind(&MediaStreamVideoRendererSink::FrameReady,
+                         weak_factory_.GetWeakPtr()))));
 }
 
 void MediaStreamVideoRendererSink::FrameReady(
