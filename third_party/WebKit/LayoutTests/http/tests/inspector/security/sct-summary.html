@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<!-- Since we are testing a static function, we can save work by not (pre)loading the Security panel. -->
+<script>
+function test()
+{
+    for (var numUnknownScts = 0; numUnknownScts < 3; numUnknownScts++) {
+      for (var numInvalidScts = 0; numInvalidScts < 3; numInvalidScts++) {
+        for (var numValidScts = 0; numValidScts < 3; numValidScts++) {
+          InspectorTest.addResult(WebInspector.SecurityOriginView.prototype.sctSummary({
+            "numUnknownScts": numUnknownScts,
+            "numInvalidScts": numInvalidScts,
+            "numValidScts": numValidScts
+          }));
+        }
+      }
+    }
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the SCT summary is correctly formatted and pluralized.</p>
+</body>
+</html>

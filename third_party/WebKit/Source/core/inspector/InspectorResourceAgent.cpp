@@ -383,11 +383,21 @@ static PassRefPtr<TypeBuilder::Network::Response> buildObjectForResourceResponse
 
         const ResourceResponse::SecurityDetails* responseSecurityDetails = response.securityDetails();
 
+        int numUnknownSCTs = safeCast<int>(responseSecurityDetails->numUnknownSCTs);
+        int numInvalidSCTs = safeCast<int>(responseSecurityDetails->numInvalidSCTs);
+        int numValidSCTs = safeCast<int>(responseSecurityDetails->numValidSCTs);
+
+        RefPtr<TypeBuilder::Network::CertificateValidationDetails> certificateValidationDetails = TypeBuilder::Network::CertificateValidationDetails::create()
+            .setNumUnknownScts(numUnknownSCTs)
+            .setNumInvalidScts(numInvalidSCTs)
+            .setNumValidScts(numValidSCTs);
+
         RefPtr<TypeBuilder::Network::SecurityDetails> securityDetails = TypeBuilder::Network::SecurityDetails::create()
             .setProtocol(responseSecurityDetails->protocol)
             .setKeyExchange(responseSecurityDetails->keyExchange)
             .setCipher(responseSecurityDetails->cipher)
             .setCertificateId(responseSecurityDetails->certID);
+        securityDetails->setCertificateValidationDetails(certificateValidationDetails);
         if (responseSecurityDetails->mac.length() > 0)
             securityDetails->setMac(responseSecurityDetails->mac);
 

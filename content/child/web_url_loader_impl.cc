@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -36,9 +37,13 @@
 #include "content/public/child/fixed_received_data.h"
 #include "content/public/child/request_peer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
+#include "content/public/common/ssl_status.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/sct_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -237,14 +242,39 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   response->setSecurityStyle(securityStyle);
 
-  blink::WebString protocol_string = blink::WebString::fromUTF8(protocol);
-  blink::WebString cipher_string = blink::WebString::fromUTF8(cipher);
-  blink::WebString key_exchange_string =
-      blink::WebString::fromUTF8(key_exchange);
-  blink::WebString mac_string = blink::WebString::fromUTF8(mac);
-  response->setSecurityDetails(protocol_string, key_exchange_string,
-                               cipher_string, mac_string,
-                               ssl_status.cert_id);
+  SignedCertificateTimestampIDStatusList sct_list =
+      ssl_status.signed_certificate_timestamp_ids;
+
+  size_t num_unknown_scts = 0;
+  size_t num_invalid_scts = 0;
+  size_t num_valid_scts = 0;
+
+  SignedCertificateTimestampIDStatusList::iterator iter;
+  for (iter = sct_list.begin(); iter < sct_list.end(); ++iter) {
+    switch (iter->status) {
+      case net::ct::SCT_STATUS_LOG_UNKNOWN:
+        num_unknown_scts++;
+        break;
+      case net::ct::SCT_STATUS_INVALID:
+        num_invalid_scts++;
+        break;
+      case net::ct::SCT_STATUS_OK:
+        num_valid_scts++;
+        break;
+      case net::ct::SCT_STATUS_NONE:
+      case net::ct::SCT_STATUS_MAX:
+        // These enum values do not represent SCTs that are taken into account
+        // for CT compliance calculations, so we ignore them.
+        break;
+    }
+  }
+
+  blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
+      WebString::fromUTF8(protocol), WebString::fromUTF8(cipher),
+      WebString::fromUTF8(key_exchange), WebString::fromUTF8(mac),
+      ssl_status.cert_id, num_unknown_scts, num_invalid_scts, num_valid_scts);
+
+  response->setSecurityDetails(webSecurityDetails);
 }
 
 }  // namespace

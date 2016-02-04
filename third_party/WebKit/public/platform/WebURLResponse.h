@@ -33,6 +33,7 @@
 
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPrivateOwnPtr.h"
+#include "public/platform/WebString.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"
 
 namespace blink {
@@ -59,6 +60,31 @@ public:
         SecurityStyleAuthenticationBroken,
         SecurityStyleWarning,
         SecurityStyleAuthenticated
+    };
+
+    struct WebSecurityDetails {
+        WebSecurityDetails(const WebString& protocol, const WebString& keyExchange, const WebString& cipher, const WebString& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts)
+            : protocol(protocol)
+            , keyExchange(keyExchange)
+            , cipher(cipher)
+            , mac(mac)
+            , certId(certId)
+            , numUnknownScts(numUnknownScts)
+            , numInvalidScts(numInvalidScts)
+            , numValidScts(numValidScts)
+        {
+        }
+        // All strings are human-readable values.
+        WebString protocol;
+        WebString keyExchange;
+        WebString cipher;
+        // mac is the empty string when the connection cipher suite does not
+        // have a separate MAC value (i.e. if the cipher suite is AEAD).
+        WebString mac;
+        int certId;
+        size_t numUnknownScts;
+        size_t numInvalidScts;
+        size_t numValidScts;
     };
 
     class ExtraData {
@@ -151,7 +177,7 @@ public:
     BLINK_PLATFORM_EXPORT SecurityStyle securityStyle() const;
     BLINK_PLATFORM_EXPORT void setSecurityStyle(SecurityStyle);
 
-    BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebString& protocol, const WebString& keyExchange, const WebString& cipher, const WebString& mac, int certId);
+    BLINK_PLATFORM_EXPORT void setSecurityDetails(const WebSecurityDetails&);
 
 #if INSIDE_BLINK
     BLINK_PLATFORM_EXPORT ResourceResponse& toMutableResourceResponse();

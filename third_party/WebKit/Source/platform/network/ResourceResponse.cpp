@@ -124,6 +124,9 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
     m_securityDetails.keyExchange = data->m_securityDetails.keyExchange;
     m_securityDetails.mac = data->m_securityDetails.mac;
     m_securityDetails.certID = data->m_securityDetails.certID;
+    m_securityDetails.numUnknownSCTs = data->m_securityDetails.numUnknownSCTs;
+    m_securityDetails.numInvalidSCTs = data->m_securityDetails.numInvalidSCTs;
+    m_securityDetails.numValidSCTs = data->m_securityDetails.numValidSCTs;
     m_httpVersion = data->m_httpVersion;
     m_appCacheID = data->m_appCacheID;
     m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
@@ -168,6 +171,9 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_securityDetails.keyExchange = m_securityDetails.keyExchange.isolatedCopy();
     data->m_securityDetails.mac = m_securityDetails.mac.isolatedCopy();
     data->m_securityDetails.certID = m_securityDetails.certID;
+    data->m_securityDetails.numUnknownSCTs = m_securityDetails.numUnknownSCTs;
+    data->m_securityDetails.numInvalidSCTs = m_securityDetails.numInvalidSCTs;
+    data->m_securityDetails.numValidSCTs = m_securityDetails.numValidSCTs;
     data->m_httpVersion = m_httpVersion;
     data->m_appCacheID = m_appCacheID;
     data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
@@ -318,13 +324,16 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId)
+void ResourceResponse::setSecurityDetails(const String& protocol, const String& keyExchange, const String& cipher, const String& mac, int certId, size_t numUnknownScts, size_t numInvalidScts, size_t numValidScts)
 {
     m_securityDetails.protocol = protocol;
     m_securityDetails.keyExchange = keyExchange;
     m_securityDetails.cipher = cipher;
     m_securityDetails.mac = mac;
     m_securityDetails.certID = certId;
+    m_securityDetails.numUnknownSCTs = numUnknownScts;
+    m_securityDetails.numInvalidSCTs = numInvalidScts;
+    m_securityDetails.numValidSCTs = numValidScts;
 }
 
 void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)

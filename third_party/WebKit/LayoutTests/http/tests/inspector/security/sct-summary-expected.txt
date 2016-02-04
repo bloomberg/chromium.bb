@@ -1,0 +1,30 @@
+Tests that the SCT summary is correctly formatted and pluralized.
+
+0 SCTs
+1 valid SCT
+2 valid SCTs
+1 invalid SCT
+1 valid SCT, 1 invalid SCT
+2 valid SCTs, 1 invalid SCT
+2 invalid SCTs
+1 valid SCT, 2 invalid SCTs
+2 valid SCTs, 2 invalid SCTs
+1 SCT from unknown logs
+1 valid SCT, 1 SCT from unknown logs
+2 valid SCTs, 1 SCT from unknown logs
+1 invalid SCT, 1 SCT from unknown logs
+1 valid SCT, 1 invalid SCT, 1 SCT from unknown logs
+2 valid SCTs, 1 invalid SCT, 1 SCT from unknown logs
+2 invalid SCTs, 1 SCT from unknown logs
+1 valid SCT, 2 invalid SCTs, 1 SCT from unknown logs
+2 valid SCTs, 2 invalid SCTs, 1 SCT from unknown logs
+2 SCTs from unknown logs
+1 valid SCT, 2 SCTs from unknown logs
+2 valid SCTs, 2 SCTs from unknown logs
+1 invalid SCT, 2 SCTs from unknown logs
+1 valid SCT, 1 invalid SCT, 2 SCTs from unknown logs
+2 valid SCTs, 1 invalid SCT, 2 SCTs from unknown logs
+2 invalid SCTs, 2 SCTs from unknown logs
+1 valid SCT, 2 invalid SCTs, 2 SCTs from unknown logs
+2 valid SCTs, 2 invalid SCTs, 2 SCTs from unknown logs
+
