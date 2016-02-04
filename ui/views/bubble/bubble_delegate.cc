@@ -208,6 +208,11 @@ scoped_ptr<View> BubbleDelegateView::CreateFootnoteView() {
   return nullptr;
 }
 
+void BubbleDelegateView::UseCompactMargins() {
+  const int kCompactMargin = 6;
+  margins_.Set(kCompactMargin, kCompactMargin, kCompactMargin, kCompactMargin);
+}
+
 void BubbleDelegateView::SetAlignment(BubbleBorder::BubbleAlignment alignment) {
   GetBubbleFrameView()->bubble_border()->set_alignment(alignment);
   SizeToContents();

@@ -120,6 +120,7 @@ ZoomBubbleView::ZoomBubbleView(
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
   immersive_mode_controller_->AddObserver(this);
+  UseCompactMargins();
 }
 
 ZoomBubbleView::~ZoomBubbleView() {
