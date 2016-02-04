@@ -1562,16 +1562,6 @@ void Document::updateStyleInvalidationIfNeeded()
     styleEngine().styleInvalidator().invalidate(*this);
 }
 
-bool Document::attemptedToDetermineEncodingFromContentSniffing() const
-{
-    return m_encodingData.attemptedToDetermineEncodingFromContentSniffing();
-}
-
-bool Document::encodingWasDetectedFromContentSniffing() const
-{
-    return m_encodingData.encodingWasDetectedFromContentSniffing();
-}
-
 void Document::setupFontBuilder(ComputedStyle& documentStyle)
 {
     FontBuilder fontBuilder(*this);

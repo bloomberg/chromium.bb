@@ -321,18 +321,6 @@ WebDistillabilityFeatures WebDocument::distillabilityFeatures()
     return DocumentStatisticsCollector::collectStatistics(*unwrap<Document>());
 }
 
-bool WebDocument::attemptedToDetermineEncodingFromContentSniffing() const
-{
-    const Document* document = constUnwrap<Document>();
-    return document->attemptedToDetermineEncodingFromContentSniffing();
-}
-
-bool WebDocument::encodingWasDetectedFromContentSniffing() const
-{
-    const Document* document = constUnwrap<Document>();
-    return document->encodingWasDetectedFromContentSniffing();
-}
-
 WebDocument::WebDocument(const PassRefPtrWillBeRawPtr<Document>& elem)
     : WebNode(elem)
 {

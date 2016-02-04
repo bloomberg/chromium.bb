@@ -2162,6 +2162,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="AutodetectEncoding.Attempted" enum="BooleanAttempted">
+  <obsolete>
+    Deprecated as of 2/2016.
+  </obsolete>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
     Whether the text encoding auto detection logic was attempted for a web page.
@@ -2178,6 +2181,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="AutodetectEncoding.Detected" enum="EncodingMethod"
     units="pages">
+  <obsolete>
+    Deprecated as of 2/2016.
+  </obsolete>
   <owner>jinsukkim@chromium.org</owner>
   <summary>
     The number of web pages whose encoding method is found by the auto detection

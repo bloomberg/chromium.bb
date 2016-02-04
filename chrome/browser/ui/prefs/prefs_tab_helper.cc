@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -326,14 +325,6 @@ void RegisterLocalizedFontPref(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterIntegerPref(path, val);
 }
 
-bool IsAutodetectEncodingEnabledByDefault() {
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      "AutodetectEncoding");
-  return base::StartsWith(group_name,
-                          "Enabled",
-                          base::CompareCase::INSENSITIVE_ASCII);
-}
-
 }  // namespace
 
 // Watching all these settings per tab is slow when a user has a lot of tabs and
@@ -606,11 +597,9 @@ void PrefsTabHelper::RegisterProfilePrefs(
                             IDS_MINIMUM_FONT_SIZE);
   RegisterLocalizedFontPref(registry, prefs::kWebKitMinimumLogicalFontSize,
                             IDS_MINIMUM_LOGICAL_FONT_SIZE);
-  bool uses_universal_detector = IsAutodetectEncodingEnabledByDefault() ||
-      l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true";
   registry->RegisterBooleanPref(
       prefs::kWebKitUsesUniversalDetector,
-      uses_universal_detector,
+      l10n_util::GetStringUTF8(IDS_USES_UNIVERSAL_DETECTOR) == "true",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterStringPref(
       prefs::kStaticEncodings,
