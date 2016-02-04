@@ -19,6 +19,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
@@ -73,6 +74,7 @@ const SpdyStreamId kLastStreamId = 0x7fffffff;
 
 class BoundNetLog;
 struct LoadTimingInfo;
+class ProxyDelegate;
 class SpdyStream;
 class SSLInfo;
 class TransportSecurityState;
@@ -245,7 +247,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               size_t stream_max_recv_window_size,
               size_t initial_max_concurrent_streams,
               TimeFunc time_func,
-              const HostPortPair& trusted_spdy_proxy,
+              ProxyDelegate* proxy_delegate,
               NetLog* net_log);
 
   ~SpdySession() override;
@@ -1186,9 +1188,10 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // get a PING response (http://crbug.com/127812).
   base::TimeDelta hung_interval_;
 
-  // This SPDY proxy is allowed to push resources from origins that are
-  // different from those of their associated streams.
-  HostPortPair trusted_spdy_proxy_;
+  // The |proxy_delegate_| verifies that a given proxy is a trusted SPDY proxy,
+  // which is allowed to push resources from origins that are different from
+  // those of their associated streams. May be nullptr.
+  ProxyDelegate* proxy_delegate_;
 
   TimeFunc time_func_;
 

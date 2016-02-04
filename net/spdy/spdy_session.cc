@@ -30,6 +30,7 @@
 #include "crypto/ec_signature_creator.h"
 #include "net/base/connection_type_histograms.h"
 #include "net/base/net_util.h"
+#include "net/base/proxy_delegate.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/http/http_log_util.h"
@@ -38,6 +39,7 @@
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_buffer_producer.h"
 #include "net/spdy/spdy_frame_builder.h"
@@ -658,7 +660,7 @@ SpdySession::SpdySession(
     size_t stream_max_recv_window_size,
     size_t initial_max_concurrent_streams,
     TimeFunc time_func,
-    const HostPortPair& trusted_spdy_proxy,
+    ProxyDelegate* proxy_delegate,
     NetLog* net_log)
     : in_io_loop_(false),
       spdy_session_key_(spdy_session_key),
@@ -713,7 +715,7 @@ SpdySession::SpdySession(
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
-      trusted_spdy_proxy_(trusted_spdy_proxy),
+      proxy_delegate_(proxy_delegate),
       time_func_(time_func),
       send_priority_dependency_(priority_dependency_enabled_default),
       weak_factory_(this) {
@@ -2703,10 +2705,12 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   // Check that the pushed stream advertises the same origin as its associated
   // stream. Bypass this check if and only if this session is with a SPDY proxy
-  // that is trusted explicitly via the --trusted-spdy-proxy switch or if the
+  // that is trusted explicitly as determined by the |proxy_delegate_| or if the
   // proxy is pushing same-origin resources.
   if (!HostPortPair::FromURL(gurl).Equals(host_port_pair())) {
-    if (trusted_spdy_proxy_.Equals(host_port_pair())) {
+    if (proxy_delegate_ &&
+        proxy_delegate_->IsTrustedSpdyProxy(
+            ProxyServer(ProxyServer::SCHEME_HTTPS, host_port_pair()))) {
       // Disallow pushing of HTTPS content.
       if (gurl.SchemeIs("https")) {
         EnqueueResetStreamFrame(

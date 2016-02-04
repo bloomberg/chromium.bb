@@ -1339,6 +1339,8 @@
       'base/stale_while_revalidate_experiment_domains_unittest.cc',
       'base/static_cookie_policy_unittest.cc',
       'base/test_completion_callback_unittest.cc',
+      'base/test_proxy_delegate.cc',
+      'base/test_proxy_delegate.h',      
       'base/upload_bytes_element_reader_unittest.cc',
       'base/upload_file_element_reader_unittest.cc',
       'base/url_util_unittest.cc',

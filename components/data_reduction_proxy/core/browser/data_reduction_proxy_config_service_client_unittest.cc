@@ -127,6 +127,9 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     test_context_->test_config_client()->SetConfigServiceURL(
         GURL("http://configservice.com"));
 
+    delegate_.reset(
+        new DataReductionProxyDelegate(request_options(), config()));
+
     // Set up the various test ClientConfigs.
     ClientConfig config =
         CreateConfig(kSuccessSessionKey, kConfingRefreshDurationSeconds, 0,
@@ -219,6 +222,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     return test_context_->test_configurator();
   }
 
+  TestDataReductionProxyConfig* config() { return test_context_->config(); }
+
   MockDataReductionProxyRequestOptions* request_options() {
     return test_context_->mock_request_options();
   }
@@ -273,6 +278,10 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
     test_context_->test_params()->EnableQuic(enable);
   }
 
+  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) const {
+    return delegate_->IsTrustedSpdyProxy(proxy_server);
+  }
+
   const std::string& loaded_config() const { return loaded_config_; }
 
  private:
@@ -283,6 +292,8 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
   scoped_ptr<DataReductionProxyTestContext> test_context_;
   scoped_ptr<DataReductionProxyRequestOptions> request_options_;
   std::vector<net::ProxyServer> enabled_proxies_for_http_;
+
+  scoped_ptr<DataReductionProxyDelegate> delegate_;
 
   // A configuration from the current remote request. The encoded version is
   // also stored.
@@ -311,18 +322,21 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
   const struct {
     bool enable_dev;
     bool enable_quic;
+    bool enable_trusted_spdy_proxy_field_trial;
     std::string expected_primary_proxy;
     std::string expected_fallback_proxy;
     net::ProxyServer::Scheme expected_primary_proxy_scheme;
   } tests[] = {
-      {false, false, kSuccessOrigin, kSuccessFallback,
+      {false, false, false, kSuccessOrigin, kSuccessFallback,
        net::ProxyServer::SCHEME_HTTPS},
-      {false, true, kSuccessOrigin, kSuccessFallback,
+      {false, false, true, kSuccessOrigin, kSuccessFallback,
+       net::ProxyServer::SCHEME_HTTPS},
+      {false, true, true, kSuccessOrigin, kSuccessFallback,
        net::ProxyServer::SCHEME_QUIC},
-      {true, false, TestDataReductionProxyParams::DefaultDevOrigin(),
+      {true, false, true, TestDataReductionProxyParams::DefaultDevOrigin(),
        TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
        net::ProxyServer::SCHEME_HTTPS},
-      {true, true, TestDataReductionProxyParams::DefaultDevOrigin(),
+      {true, true, true, TestDataReductionProxyParams::DefaultDevOrigin(),
        TestDataReductionProxyParams::DefaultDevFallbackOrigin(),
        net::ProxyServer::SCHEME_QUIC},
   };
@@ -335,6 +349,9 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
     }
 
     base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+    base::FieldTrialList::CreateFieldTrial(
+        params::GetTrustedSpdyProxyFieldTrialName(),
+        tests[i].enable_trusted_spdy_proxy_field_trial ? "Enabled" : "Control");
     if (tests[i].enable_quic) {
       base::FieldTrialList::CreateFieldTrial(params::GetQuicFieldTrialName(),
                                              "Enabled");
@@ -372,6 +389,24 @@ TEST_F(DataReductionProxyConfigServiceClientTest, DevRolloutAndQuic) {
               proxies_for_http[1])
         << i;
     EXPECT_TRUE(configurator()->proxies_for_https().empty()) << i;
+
+    // Test that the trusted SPDY proxy is updated correctly after each config
+    // retrieval.
+    bool expect_proxy_is_trusted =
+        tests[i].expected_primary_proxy_scheme ==
+            net::ProxyServer::SCHEME_HTTPS &&
+        tests[i].enable_trusted_spdy_proxy_field_trial;
+
+    // Apply the specified proxy scheme.
+    const net::ProxyServer proxy_server(
+        tests[i].expected_primary_proxy_scheme,
+        net::ProxyServer::FromURI(tests[i].expected_primary_proxy,
+                                  net::ProxyServer::SCHEME_HTTP)
+            .host_port_pair());
+
+    ASSERT_EQ(tests[i].expected_primary_proxy_scheme, proxy_server.scheme())
+        << i;
+    EXPECT_EQ(expect_proxy_is_trusted, IsTrustedSpdyProxy(proxy_server)) << i;
   }
 }
 

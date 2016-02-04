@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "net/base/host_port_pair.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -437,7 +438,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.time_func = session_deps->time_func;
   params.enable_spdy31 = session_deps->enable_spdy31;
   params.enable_http2 = session_deps->enable_http2;
-  params.trusted_spdy_proxy = session_deps->trusted_spdy_proxy;
+  params.proxy_delegate = session_deps->proxy_delegate.get();
   params.parse_alternative_services = session_deps->parse_alternative_services;
   params.enable_alternative_service_with_different_host =
       session_deps->enable_alternative_service_with_different_host;

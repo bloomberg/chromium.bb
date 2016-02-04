@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -391,8 +390,6 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.enable_spdy31;
   network_session_params.enable_http2 =
       http_network_session_params_.enable_http2;
-  network_session_params.trusted_spdy_proxy =
-      http_network_session_params_.trusted_spdy_proxy;
   network_session_params.parse_alternative_services =
       http_network_session_params_.parse_alternative_services;
   network_session_params.enable_alternative_service_with_different_host =

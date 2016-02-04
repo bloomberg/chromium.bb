@@ -86,7 +86,6 @@ class NET_EXPORT URLRequestContextBuilder {
     uint16_t testing_fixed_https_port;
     bool enable_spdy31;
     bool enable_http2;
-    std::string trusted_spdy_proxy;
     bool parse_alternative_services;
     bool enable_alternative_service_with_different_host;
     bool enable_quic;

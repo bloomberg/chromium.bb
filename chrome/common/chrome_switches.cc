@@ -1038,10 +1038,6 @@ const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[]                      = "test-name";
 
-// Disables same-origin check on HTTP resources pushed via a SPDY proxy.
-// The value is the host:port of the trusted proxy.
-const char kTrustedSpdyProxy[]              = "trusted-spdy-proxy";
-
 // Experimental. Shows a dialog asking the user to try chrome. This flag is to
 // be used only by the upgrade process.
 const char kTryChromeAgain[]                = "try-chrome-again";

@@ -144,6 +144,7 @@
       'data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_config_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_configurator_unittest.cc',
+      'data_reduction_proxy/core/browser/data_reduction_proxy_delegate_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_experiments_stats_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_interceptor_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_io_data_unittest.cc',

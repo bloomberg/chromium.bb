@@ -18,8 +18,10 @@
 #include "net/base/auth.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
+#include "net/base/test_proxy_delegate.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_auth_scheme.h"
@@ -30,6 +32,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/next_proto.h"
 #include "net/spdy/buffered_spdy_framer.h"
@@ -5474,7 +5477,10 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushCrossOriginCorrectness) {
     // not actually enable cross-origin SPDY push.
     scoped_ptr<SpdySessionDependencies> session_deps(
         CreateSpdySessionDependencies(GetParam()));
-    session_deps->trusted_spdy_proxy = "123.45.67.89:8080";
+    scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+    proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
+        "https://123.45.67.89:443", net::ProxyServer::SCHEME_HTTP));
+    session_deps->proxy_delegate.reset(proxy_delegate.release());
     NormalSpdyTransactionHelper helper(request, DEFAULT_PRIORITY, BoundNetLog(),
                                        GetParam(), std::move(session_deps));
     helper.RunPreTestSetup();

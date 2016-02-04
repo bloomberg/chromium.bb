@@ -85,7 +85,6 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
         reference_params->testing_fixed_https_port;
     session_params.enable_spdy31 = reference_params->enable_spdy31;
     session_params.enable_http2 = reference_params->enable_http2;
-    session_params.trusted_spdy_proxy = reference_params->trusted_spdy_proxy;
     session_params.forced_spdy_exclusions =
         reference_params->forced_spdy_exclusions;
     session_params.parse_alternative_services =

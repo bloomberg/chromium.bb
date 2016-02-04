@@ -983,10 +983,6 @@ void IOThread::ConfigureSpdyGlobals(
     base::StringPiece spdy_trial_group,
     const VariationParameters& spdy_trial_params,
     IOThread::Globals* globals) {
-  if (command_line.HasSwitch(switches::kTrustedSpdyProxy)) {
-    globals->trusted_spdy_proxy.set(
-        command_line.GetSwitchValueASCII(switches::kTrustedSpdyProxy));
-  }
   if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
 
@@ -1169,7 +1165,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->spdy_default_protocol);
   globals.enable_spdy31.CopyToIfSet(&params->enable_spdy31);
   globals.enable_http2.CopyToIfSet(&params->enable_http2);
-  globals.trusted_spdy_proxy.CopyToIfSet(&params->trusted_spdy_proxy);
   params->forced_spdy_exclusions = globals.forced_spdy_exclusions;
   globals.parse_alternative_services.CopyToIfSet(
       &params->parse_alternative_services);

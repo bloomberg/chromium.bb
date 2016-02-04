@@ -17,6 +17,7 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "net/base/completion_callback.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verifier.h"
@@ -26,6 +27,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/transport_security_state.h"
+#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -40,6 +42,7 @@ class GURL;
 namespace net {
 
 class BoundNetLog;
+class HostPortPair;
 class SpdySession;
 class SpdySessionKey;
 class SpdySessionPool;
@@ -202,7 +205,7 @@ struct SpdySessionDependencies {
   SpdySession::TimeFunc time_func;
   bool enable_spdy31;
   bool enable_http2;
-  std::string trusted_spdy_proxy;
+  scoped_ptr<ProxyDelegate> proxy_delegate;
   bool parse_alternative_services;
   bool enable_alternative_service_with_different_host;
   NetLog* net_log;

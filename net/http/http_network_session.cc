@@ -198,7 +198,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
                          params.spdy_stream_max_recv_window_size,
                          params.spdy_initial_max_concurrent_streams,
                          params.time_func,
-                         params.trusted_spdy_proxy),
+                         params.proxy_delegate),
       http_stream_factory_(new HttpStreamFactoryImpl(this, false)),
       http_stream_factory_for_websocket_(new HttpStreamFactoryImpl(this, true)),
       params_(params) {

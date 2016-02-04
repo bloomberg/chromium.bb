@@ -9,9 +9,11 @@
 #include "base/metrics/sparse_histogram.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
+#include "net/proxy/proxy_server.h"
 
 namespace data_reduction_proxy {
 
@@ -59,6 +61,17 @@ void DataReductionProxyDelegate::OnBeforeTunnelRequest(
     net::HttpRequestHeaders* extra_headers) {
   request_options_->MaybeAddProxyTunnelRequestHandler(
       proxy_server, extra_headers);
+}
+
+bool DataReductionProxyDelegate::IsTrustedSpdyProxy(
+    const net::ProxyServer& proxy_server) {
+  if (!proxy_server.is_https() ||
+      !params::IsIncludedInTrustedSpdyProxyFieldTrial() ||
+      !proxy_server.is_valid()) {
+    return false;
+  }
+  return config_ &&
+         config_->IsDataReductionProxy(proxy_server.host_port_pair(), nullptr);
 }
 
 void DataReductionProxyDelegate::OnTunnelHeadersReceived(

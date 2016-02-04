@@ -98,9 +98,6 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_initial_max_concurrent_streams;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
-    // This SPDY proxy is allowed to push resources from origins that are
-    // different from those of their associated streams.
-    std::string trusted_spdy_proxy;
     // URLs to exclude from forced SPDY.
     std::set<HostPortPair> forced_spdy_exclusions;
     // Whether to parse Alt-Svc headers.

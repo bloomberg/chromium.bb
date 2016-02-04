@@ -67,6 +67,10 @@ class NET_EXPORT ProxyDelegate {
       const HostPortPair& proxy_server,
       const HttpResponseHeaders& response_headers) = 0;
 
+  // Returns true if |proxy_server| is a trusted SPDY/HTTP2 proxy that is
+  // allowed to push cross-origin resources.
+  virtual bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProxyDelegate);
 };

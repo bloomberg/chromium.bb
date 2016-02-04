@@ -41,7 +41,7 @@ SpdySessionPool::SpdySessionPool(
     size_t stream_max_recv_window_size,
     size_t initial_max_concurrent_streams,
     SpdySessionPool::TimeFunc time_func,
-    const std::string& trusted_spdy_proxy)
+    ProxyDelegate* proxy_delegate)
     : http_server_properties_(http_server_properties),
       transport_security_state_(transport_security_state),
       ssl_config_service_(ssl_config_service),
@@ -59,7 +59,7 @@ SpdySessionPool::SpdySessionPool(
       stream_max_recv_window_size_(stream_max_recv_window_size),
       initial_max_concurrent_streams_(initial_max_concurrent_streams),
       time_func_(time_func),
-      trusted_spdy_proxy_(HostPortPair::FromString(trusted_spdy_proxy)) {
+      proxy_delegate_(proxy_delegate) {
   DCHECK(default_protocol_ >= kProtoSPDYMinimumVersion &&
          default_protocol_ <= kProtoSPDYMaximumVersion);
   NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -101,7 +101,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       enable_compression_, enable_ping_based_connection_checking_,
       default_protocol_, session_max_recv_window_size_,
       stream_max_recv_window_size_, initial_max_concurrent_streams_, time_func_,
-      trusted_spdy_proxy_, net_log.net_log()));
+      proxy_delegate_, net_log.net_log()));
 
   new_session->InitializeWithSocket(std::move(connection), this, is_secure,
                                     certificate_error_code);

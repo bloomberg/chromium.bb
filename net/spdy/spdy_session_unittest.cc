@@ -12,14 +12,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/test_data_stream.h"
+#include "net/base/test_proxy_delegate.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/proxy/proxy_server.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
@@ -4957,8 +4961,12 @@ TEST_P(SpdySessionTest, TrustedSpdyProxy) {
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
   session_deps_.socket_factory->AddSocketDataProvider(&data);
-  session_deps_.trusted_spdy_proxy =
-      HostPortPair::FromURL(GURL(kDefaultURL)).ToString();
+
+  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  proxy_delegate->set_trusted_spdy_proxy(
+      net::ProxyServer(net::ProxyServer::SCHEME_HTTPS,
+                       HostPortPair(GURL(kDefaultURL).host(), 80)));
+  session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
   CreateNetworkSession();
   CreateInsecureSpdySession();

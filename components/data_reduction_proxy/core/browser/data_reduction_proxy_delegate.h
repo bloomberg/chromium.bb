@@ -34,24 +34,21 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
 
   ~DataReductionProxyDelegate() override;
 
+  // net::ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
                       int load_flags,
                       const net::ProxyService& proxy_service,
                       net::ProxyInfo* result) override;
-
   void OnFallback(const net::ProxyServer& bad_proxy, int net_error) override;
-
   void OnBeforeSendHeaders(net::URLRequest* request,
                            const net::ProxyInfo& proxy_info,
                            net::HttpRequestHeaders* headers) override;
-
   void OnBeforeTunnelRequest(const net::HostPortPair& proxy_server,
                              net::HttpRequestHeaders* extra_headers) override;
-
   void OnTunnelConnectCompleted(const net::HostPortPair& endpoint,
                                 const net::HostPortPair& proxy_server,
                                 int net_error) override;
-
+  bool IsTrustedSpdyProxy(const net::ProxyServer& proxy_server) override;
   void OnTunnelHeadersReceived(
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,

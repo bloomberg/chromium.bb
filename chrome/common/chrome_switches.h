@@ -277,7 +277,6 @@ extern const char kSupervisedUserSafeSites[];
 extern const char kSupervisedUserSyncToken[];
 extern const char kSystemLogUploadFrequency[];
 extern const char kTestName[];
-extern const char kTrustedSpdyProxy[];
 extern const char kTryChromeAgain[];
 extern const char kUnlimitedStorage[];
 extern const char kUnsafelyTreatInsecureOriginAsSecure[];

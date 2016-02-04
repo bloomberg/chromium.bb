@@ -209,7 +209,6 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<net::NextProto> spdy_default_protocol;
     Optional<bool> enable_spdy31;
     Optional<bool> enable_http2;
-    Optional<std::string> trusted_spdy_proxy;
     std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> parse_alternative_services;
     Optional<bool> enable_alternative_service_with_different_host;

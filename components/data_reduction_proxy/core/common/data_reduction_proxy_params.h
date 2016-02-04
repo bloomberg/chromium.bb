@@ -40,6 +40,13 @@ bool IsIncludedInPromoFieldTrial();
 // is in effect.
 bool IsIncludedInHoldbackFieldTrial();
 
+// Returns the name of the trusted SPDY/HTTP2 proxy field trial.
+std::string GetTrustedSpdyProxyFieldTrialName();
+
+// Returns true if this client is part of the enabled group of the trusted
+// SPDY/HTTP2 proxy field trial.
+bool IsIncludedInTrustedSpdyProxyFieldTrial();
+
 // Returns true if this client is part of the field trial that should display
 // a promotion for the data reduction proxy on Android One devices.
 bool IsIncludedInAndroidOnePromoFieldTrial(const char* build_fingerprint);

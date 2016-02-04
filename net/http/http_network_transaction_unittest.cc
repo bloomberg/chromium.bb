@@ -32,9 +32,11 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/base/proxy_delegate.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
+#include "net/base/test_proxy_delegate.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -63,6 +65,7 @@
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_resolver.h"
+#include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool.h"
@@ -7689,7 +7692,11 @@ TEST_P(HttpNetworkTransactionTest, BasicAuthSpdyProxy) {
 
 // Test that an explicitly trusted SPDY proxy can push a resource from an
 // origin that is different from that of its associated resource.
-TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
+TEST_P(HttpNetworkTransactionTest, CrossOriginSPDYProxyPush) {
+  // Configure the proxy delegate to allow cross-origin SPDY pushes.
+  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
+      "https://myproxy:443", net::ProxyServer::SCHEME_HTTP));
   HttpRequestInfo request;
   HttpRequestInfo push_request;
 
@@ -7698,14 +7705,13 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
   push_request.method = "GET";
   push_request.url = GURL("http://www.another-origin.com/foo.dat");
 
-  // Configure against https proxy server "myproxy:70".
+  // Configure against https proxy server "myproxy:443".
   session_deps_.proxy_service =
-      ProxyService::CreateFixedFromPacResult("HTTPS myproxy:70");
+      ProxyService::CreateFixedFromPacResult("HTTPS myproxy:443");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
-  // Enable cross-origin push.
-  session_deps_.trusted_spdy_proxy = "myproxy:70";
+  session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -7807,18 +7813,22 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPush) {
 
 // Test that an explicitly trusted SPDY proxy cannot push HTTPS content.
 TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
+  // Configure the proxy delegate to allow cross-origin SPDY pushes.
+  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  proxy_delegate->set_trusted_spdy_proxy(net::ProxyServer::FromURI(
+      "https://myproxy:443", net::ProxyServer::SCHEME_HTTP));
   HttpRequestInfo request;
 
   request.method = "GET";
   request.url = GURL("http://www.example.org/");
 
-  // Configure against https proxy server "myproxy:70".
-  session_deps_.proxy_service = ProxyService::CreateFixed("https://myproxy:70");
+  session_deps_.proxy_service =
+      ProxyService::CreateFixed("https://myproxy:443");
   BoundTestNetLog log;
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.trusted_spdy_proxy = "myproxy:70";
+  session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
@@ -7888,6 +7898,11 @@ TEST_P(HttpNetworkTransactionTest, CrossOriginProxyPushCorrectness) {
 // Test that an explicitly trusted SPDY proxy can push same-origin HTTPS
 // resources.
 TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
+  // Configure the proxy delegate to allow cross-origin SPDY pushes.
+  scoped_ptr<TestProxyDelegate> proxy_delegate(new TestProxyDelegate());
+  proxy_delegate->set_trusted_spdy_proxy(
+      net::ProxyServer::FromURI("myproxy:70", net::ProxyServer::SCHEME_HTTP));
+
   HttpRequestInfo request;
 
   request.method = "GET";
@@ -7899,7 +7914,7 @@ TEST_P(HttpNetworkTransactionTest, SameOriginProxyPushCorrectness) {
   session_deps_.net_log = log.bound().net_log();
 
   // Enable cross-origin push.
-  session_deps_.trusted_spdy_proxy = "myproxy:70";
+  session_deps_.proxy_delegate.reset(proxy_delegate.release());
 
   scoped_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 

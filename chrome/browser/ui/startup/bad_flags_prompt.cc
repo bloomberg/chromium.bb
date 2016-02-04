@@ -54,7 +54,6 @@ void ShowBadFlagsPrompt(Browser* browser) {
     switches::kSingleProcess,
 
     // These flags disable or undermine the Same Origin Policy.
-    switches::kTrustedSpdyProxy,
     translate::switches::kTranslateSecurityOrigin,
 
     // These flags undermine HTTPS / connection security.

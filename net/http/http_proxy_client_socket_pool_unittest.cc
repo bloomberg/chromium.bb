@@ -11,6 +11,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/proxy_delegate.h"
 #include "net/base/test_completion_callback.h"
+#include "net/base/test_proxy_delegate.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_client_socket.h"
 #include "net/http/http_response_headers.h"
@@ -60,97 +61,6 @@ typedef ::testing::TestWithParam<HttpProxyType> TestWithHttpParam;
 
 const char kHttpProxyHost[] = "httpproxy.example.com";
 const char kHttpsProxyHost[] = "httpsproxy.example.com";
-
-class TestProxyDelegate : public ProxyDelegate {
- public:
-  TestProxyDelegate()
-      : on_before_tunnel_request_called_(false),
-        on_tunnel_request_completed_called_(false),
-        on_tunnel_headers_received_called_(false) {
-  }
-
-  ~TestProxyDelegate() override {}
-
-  bool on_before_tunnel_request_called() const {
-    return on_before_tunnel_request_called_;
-  }
-
-  bool on_tunnel_request_completed_called() const {
-    return on_tunnel_request_completed_called_;
-  }
-
-  bool on_tunnel_headers_received_called() const {
-    return on_tunnel_headers_received_called_;
-  }
-
-  void VerifyOnTunnelRequestCompleted(const std::string& endpoint,
-                                      const std::string& proxy_server) const {
-    EXPECT_TRUE(on_tunnel_request_completed_called_);
-    EXPECT_TRUE(HostPortPair::FromString(endpoint).Equals(
-        on_tunnel_request_completed_endpoint_));
-    EXPECT_TRUE(HostPortPair::FromString(proxy_server).Equals(
-        on_tunnel_request_completed_proxy_server_));
-  }
-
-  void VerifyOnTunnelHeadersReceived(const std::string& origin,
-                                     const std::string& proxy_server,
-                                     const std::string& status_line) const {
-    EXPECT_TRUE(on_tunnel_headers_received_called_);
-    EXPECT_TRUE(HostPortPair::FromString(origin).Equals(
-                    on_tunnel_headers_received_origin_));
-    EXPECT_TRUE(HostPortPair::FromString(proxy_server).Equals(
-                    on_tunnel_headers_received_proxy_server_));
-    EXPECT_EQ(status_line, on_tunnel_headers_received_status_line_);
-  }
-
-  // ProxyDelegate:
-  void OnResolveProxy(const GURL& url,
-                      int load_flags,
-                      const ProxyService& proxy_service,
-                      ProxyInfo* result) override {}
-
-  void OnTunnelConnectCompleted(const HostPortPair& endpoint,
-                                const HostPortPair& proxy_server,
-                                int net_error) override {
-    on_tunnel_request_completed_called_ = true;
-    on_tunnel_request_completed_endpoint_ = endpoint;
-    on_tunnel_request_completed_proxy_server_ = proxy_server;
-  }
-
-  void OnFallback(const ProxyServer& bad_proxy, int net_error) override {}
-
-  void OnBeforeSendHeaders(URLRequest* request,
-                           const ProxyInfo& proxy_info,
-                           HttpRequestHeaders* headers) override {}
-
-  void OnBeforeTunnelRequest(const HostPortPair& proxy_server,
-                             HttpRequestHeaders* extra_headers) override {
-    on_before_tunnel_request_called_ = true;
-    if (extra_headers) {
-      extra_headers->SetHeader("Foo", proxy_server.ToString());
-    }
-  }
-
-  void OnTunnelHeadersReceived(
-      const HostPortPair& origin,
-      const HostPortPair& proxy_server,
-      const HttpResponseHeaders& response_headers) override {
-    on_tunnel_headers_received_called_ = true;
-    on_tunnel_headers_received_origin_ = origin;
-    on_tunnel_headers_received_proxy_server_ = proxy_server;
-    on_tunnel_headers_received_status_line_ = response_headers.GetStatusLine();
-  }
-
- private:
-  bool on_before_tunnel_request_called_;
-  bool on_tunnel_request_completed_called_;
-  bool on_tunnel_headers_received_called_;
-  HostPortPair on_tunnel_request_completed_endpoint_;
-  HostPortPair on_tunnel_request_completed_proxy_server_;
-  HostPortPair on_tunnel_headers_received_origin_;
-  HostPortPair on_tunnel_headers_received_proxy_server_;
-  std::string on_tunnel_headers_received_status_line_;
-};
 
 }  // namespace
 
