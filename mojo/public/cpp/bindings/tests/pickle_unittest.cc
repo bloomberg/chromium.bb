@@ -64,6 +64,12 @@ class ChromiumPicklePasserImpl : public chromium::PicklePasser {
     callback.Run(pickle);
   }
 
+  void PassPickleContainer(
+      chromium::PickleContainerPtr container,
+      const PassPickleContainerCallback& callback) override {
+    callback.Run(std::move(container));
+  }
+
   void PassPickles(mojo::Array<PickledStructChromium> pickles,
                    const PassPicklesCallback& callback) override {
     callback.Run(std::move(pickles));
@@ -85,6 +91,12 @@ class BlinkPicklePasserImpl : public blink::PicklePasser {
   void PassPickle(const PickledStructBlink& pickle,
                   const PassPickleCallback& callback) override {
     callback.Run(pickle);
+  }
+
+  void PassPickleContainer(
+      blink::PickleContainerPtr container,
+      const PassPickleContainerCallback& callback) override {
+    callback.Run(std::move(container));
   }
 
   void PassPickles(mojo::Array<PickledStructBlink> pickles,
@@ -269,6 +281,28 @@ TEST_F(PickleTest, PickleArrayArray) {
           EXPECT_EQ(7, passed[1][1].foo());
           EXPECT_EQ(8, passed[1][1].bar());
           EXPECT_EQ(0, passed[1][1].baz());
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+}
+
+TEST_F(PickleTest, PickleContainer) {
+  auto proxy = ConnectToChromiumService();
+  chromium::PickleContainerPtr pickle_container =
+      chromium::PickleContainer::New();
+  pickle_container->pickle.set_foo(42);
+  pickle_container->pickle.set_bar(43);
+  pickle_container->pickle.set_baz(44);
+  {
+    base::RunLoop run_loop;
+    proxy->PassPickleContainer(
+        std::move(pickle_container),
+        [&](chromium::PickleContainerPtr passed) {
+          ASSERT_FALSE(passed.is_null());
+          EXPECT_EQ(42, passed->pickle.foo());
+          EXPECT_EQ(43, passed->pickle.bar());
+          EXPECT_EQ(0, passed->pickle.baz());
           run_loop.Quit();
         });
     run_loop.Run();

@@ -41,7 +41,7 @@ namespace {{variant}} {
 
 {%- endif %}
 
-{%- if not variant %}
+{%- if not variant  and not struct|is_native_only_kind %}
 
 {# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
    of heap allocations. They should stay this way. #}
@@ -53,7 +53,7 @@ class {{struct.name}}_Reader {
 {%-   for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-     set kind = pf.field.kind -%}
 {%-     set name = pf.field.name -%}
-{%-     if kind|is_struct_kind %}
+{%-     if kind|is_struct_kind and not kind|is_native_only_kind %}
   {{kind|get_name_for_kind}}::Reader {{name}}() const;
 {%-     elif kind|is_union_kind %}
   // TODO(rockot): Support reading unions. ({{name}}() omitted)

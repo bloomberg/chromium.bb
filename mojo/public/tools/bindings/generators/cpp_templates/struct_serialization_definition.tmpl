@@ -30,7 +30,7 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
   return success;
 }
 
-{%- if not variant %}
+{%- if not variant and not struct|is_native_only_kind %}
 
 {{struct.name}}_Reader::{{struct.name}}_Reader(
     internal::{{struct.name}}_Data*  data,
@@ -40,7 +40,7 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set name = pf.field.name -%}
 {%-   set kind = pf.field.kind -%}
-{%-   if kind|is_struct_kind %}
+{%-   if kind|is_struct_kind and not kind|is_native_only_kind %}
 {{kind|get_name_for_kind}}_Reader {{struct.name}}_Reader::{{name}}() const {
   return {{kind|get_name_for_kind}}_Reader(data_->{{name}}.ptr, context_);
 }
