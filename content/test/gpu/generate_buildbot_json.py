@@ -142,6 +142,58 @@ WATERFALL = {
       'swarming': True,
       'os_type': 'linux',
     },
+
+    # The following "optional" testers don't actually exist on the
+    # waterfall. They are present here merely to specify additional
+    # tests which aren't on the main tryservers. Unfortunately we need
+    # a completely different (redundant) bot specification to handle
+    # this.
+    'Optional Win7 Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Optional Win7 Release (ATI)': {
+      'swarming_dimensions': {
+        'gpu': '1002:6779',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+    },
+    'Optional Mac 10.10 Release (Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0a2e',
+        'os': 'Mac-10.10'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Optional Mac Retina Release': {
+      'swarming_dimensions': {
+        'gpu': '10de:0fe9',
+        'hidpi': '1',
+        'os': 'Mac'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'mac',
+    },
+    'Optional Linux Release (NVIDIA)': {
+      'swarming_dimensions': {
+        'gpu': '10de:104a',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+    },
   }
 }
 
@@ -375,7 +427,21 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         'fyi_only': True,
-        'os_types': ['win'],
+        # Run only on the Win7 Release NVIDIA 32- and 64-bit bots (and
+        # trybots) for the time being, at least until more capacity is
+        # added.
+        'build_configs': ['Release', 'Release_x64'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
+      },
+      {
+        # This tester config handles running these tests on just the
+        # "optional" tryservers in the non-FYI configuration.
+        'optional_only': True,
         # Run only on the Win7 Release NVIDIA 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is
         # added.
@@ -391,12 +457,15 @@ COMMON_GTESTS = {
     'swarming_shards': 4
   },
   # Until we have more capacity, run angle_end2end_tests only on the
-  # FYI waterfall and the ANGLE trybots (which mirror the FYI
-  # waterfall).
+  # FYI waterfall, the ANGLE trybots (which mirror the FYI waterfall),
+  # and the optional trybots (mainly used during ANGLE rolls).
   'angle_end2end_tests': {
     'tester_configs': [
       {
         'fyi_only': True,
+      },
+      {
+        'optional_only': True,
       }
     ],
     'args': ['--use-gpu-in-tests']
@@ -589,6 +658,17 @@ def matches_swarming_dimensions(tester_config, dimension_sets):
 def should_run_on_tester_impl(tester_name, tester_config, tc, is_fyi):
   if tc.get('fyi_only', False) and not is_fyi:
     return False
+  # Handle the optional tryservers. Most tests do not run on these.
+  # Tests which specify this do NOT get run on the non-optional bots
+  # on this waterfall.
+  #
+  # These are written in an inefficient way to make their logic more
+  # comprehensible.
+  if tc.get('optional_only', False) and not tester_name.startswith('Optional'):
+    return False
+  if tester_name.startswith('Optional') and not tc.get('optional_only', False):
+    return False
+
   if 'names' in tc:
     if not tester_name in tc['names']:
       return False
@@ -606,7 +686,10 @@ def should_run_on_tester_impl(tester_name, tester_config, tc, is_fyi):
 
 def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
   if not 'tester_configs' in test_config:
-    # If unspecified, run on all testers.
+    # Filter out tests from the "optional" bots.
+    if tester_name.startswith('Optional'):
+      return False
+    # Otherwise, if unspecified, run on all testers.
     return True
   for tc in test_config['tester_configs']:
     if should_run_on_tester_impl(tester_name, tester_config, tc, is_fyi):
@@ -640,7 +723,6 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
     if result.get('swarming_shards'):
       result['swarming']['shards'] = result['swarming_shards']
       result.pop('swarming_shards')
-  # print "generating " + test
   return result
 
 def generate_telemetry_test(tester_name, tester_config,

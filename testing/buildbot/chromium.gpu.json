@@ -2605,6 +2605,115 @@
       }
     ]
   },
+  "Optional Linux Release (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests"
+      }
+    ]
+  },
+  "Optional Mac 10.10 Release (Intel)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.10"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests"
+      }
+    ]
+  },
+  "Optional Mac Retina Release": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0fe9",
+              "hidpi": "1",
+              "os": "Mac"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests"
+      }
+    ]
+  },
+  "Optional Win7 Release (ATI)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6779",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests"
+      }
+    ]
+  },
+  "Optional Win7 Release (NVIDIA)": {
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        },
+        "test": "angle_end2end_tests"
+      }
+    ]
+  },
   "Win7 Debug (NVIDIA)": {
     "gtest_tests": [
       {
