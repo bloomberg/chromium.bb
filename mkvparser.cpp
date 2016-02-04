@@ -38,8 +38,9 @@ inline bool isinf(double val) { return std::isinf(val); }
 
 IMkvReader::~IMkvReader() {}
 
-template<typename Type> Type* SafeArrayAlloc(unsigned long long num_elements,
-                                             unsigned long long element_size) {
+template <typename Type>
+Type* SafeArrayAlloc(unsigned long long num_elements,
+                     unsigned long long element_size) {
   if (num_elements == 0 || element_size == 0)
     return NULL;
 
@@ -350,9 +351,8 @@ long UnserializeString(IMkvReader* pReader, long long pos, long long size,
   return 0;
 }
 
-long ParseElementHeader(IMkvReader* pReader, long long& pos,
-                        long long stop, long long& id,
-                        long long& size) {
+long ParseElementHeader(IMkvReader* pReader, long long& pos, long long stop,
+                        long long& id, long long& size) {
   if (stop >= 0 && pos >= stop)
     return E_FILE_FORMAT_INVALID;
 
@@ -649,8 +649,8 @@ long long EBMLHeader::Parse(IMkvReader* pReader, long long& pos) {
     return E_FILE_FORMAT_INVALID;
 
   // Make sure EBMLMaxIDLength and EBMLMaxSizeLength are valid.
-  if (m_maxIdLength <= 0 || m_maxIdLength > 4 ||
-      m_maxSizeLength <= 0 || m_maxSizeLength > 8)
+  if (m_maxIdLength <= 0 || m_maxIdLength > 4 || m_maxSizeLength <= 0 ||
+      m_maxSizeLength > 8)
     return E_FILE_FORMAT_INVALID;
 
   return 0;
@@ -2104,8 +2104,8 @@ const CuePoint* Cues::GetLast() const {
 }
 
 const CuePoint* Cues::GetNext(const CuePoint* pCurr) const {
-  if (pCurr == NULL || pCurr->GetTimeCode() < 0 ||
-      m_cue_points == NULL || m_count < 1) {
+  if (pCurr == NULL || pCurr->GetTimeCode() < 0 || m_cue_points == NULL ||
+      m_count < 1) {
     return NULL;
   }
 
@@ -6034,8 +6034,7 @@ long Cluster::Parse(long long& pos, long& len) const {
 
     if (cluster_stop >= 0) {
       if (block_stop > cluster_stop) {
-        if (id == mkvmuxer::kMkvBlockGroup ||
-            id == mkvmuxer::kMkvSimpleBlock) {
+        if (id == mkvmuxer::kMkvBlockGroup || id == mkvmuxer::kMkvSimpleBlock) {
           return E_FILE_FORMAT_INVALID;
         }
 
@@ -6187,8 +6186,7 @@ long Cluster::ParseSimpleBlock(long long block_size, long long& pos,
     return E_BUFFER_NOT_FULL;
   }
 
-  status = CreateBlock(mkvmuxer::kMkvSimpleBlock,
-                       block_start, block_size,
+  status = CreateBlock(mkvmuxer::kMkvSimpleBlock, block_start, block_size,
                        0);  // DiscardPadding
 
   if (status != 0)
@@ -6398,8 +6396,8 @@ long Cluster::ParseBlockGroup(long long payload_size, long long& pos,
   if (pos != payload_stop)
     return E_FILE_FORMAT_INVALID;
 
-  status = CreateBlock(mkvmuxer::kMkvBlockGroup,
-                       payload_start, payload_size, discard_padding);
+  status = CreateBlock(mkvmuxer::kMkvBlockGroup, payload_start, payload_size,
+                       discard_padding);
   if (status != 0)
     return status;
 
@@ -7553,7 +7551,6 @@ long Block::Parse(const Cluster* pCluster) {
       assert(pf < pf_end);
       if (pf >= pf_end)
         return E_FILE_FORMAT_INVALID;
-
 
       const Frame& prev = *pf++;
       assert(prev.len == frame_size);
