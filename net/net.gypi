@@ -1012,6 +1012,8 @@
       'quic/quic_client_session_base.h',
       'quic/quic_client_promised_info.cc',
       'quic/quic_client_promised_info.h',
+      'quic/quic_client_push_promise_index.cc',
+      'quic/quic_client_push_promise_index.h',
       'quic/quic_crypto_client_stream.cc',
       'quic/quic_crypto_client_stream.h',
       'quic/quic_crypto_client_stream_factory.cc',

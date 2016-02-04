@@ -19,7 +19,7 @@
 
 namespace net {
 
-class QuicSpdySession;
+class QuicClientSessionBase;
 
 // A client-initiated ReliableQuicStream.  Instances of this class
 // are owned by the QuicClientSession which created them.
@@ -54,13 +54,15 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   };
 
   QuicChromiumClientStream(QuicStreamId id,
-                           QuicSpdySession* session,
+                           QuicClientSessionBase* session,
                            const BoundNetLog& net_log);
 
   ~QuicChromiumClientStream() override;
 
   // QuicSpdyStream
   void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
+  void OnPromiseHeadersComplete(QuicStreamId promised_stream_id,
+                                size_t frame_len) override;
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
@@ -105,6 +107,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   bool headers_delivered_;
 
   CompletionCallback callback_;
+
+  QuicClientSessionBase* session_;
 
   base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
 

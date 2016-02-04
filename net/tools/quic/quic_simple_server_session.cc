@@ -175,9 +175,10 @@ void QuicSimpleServerSession::HandlePromisedPushRequests() {
     DCHECK_EQ(promised_info.stream_id, promised_stream->id());
     DVLOG(1) << "created server push stream " << promised_stream->id();
 
-    promised_stream->PushResponse(promised_info.request_headers);
+    const SpdyHeaderBlock request_headers(promised_info.request_headers);
 
     promised_streams_.pop_front();
+    promised_stream->PushResponse(request_headers);
   }
 }
 

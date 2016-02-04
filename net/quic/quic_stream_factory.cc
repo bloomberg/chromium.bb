@@ -1493,7 +1493,7 @@ int QuicStreamFactory::CreateSession(
       transport_security_state_, std::move(server_info), server_id,
       yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
       &crypto_config_, network_connection_.GetDescription(),
-      dns_resolution_end_time, &promised_by_url_,
+      dns_resolution_end_time, &push_promise_index_,
       base::ThreadTaskRunnerHandle::Get().get(),
       std::move(socket_performance_watcher), net_log.net_log());
 

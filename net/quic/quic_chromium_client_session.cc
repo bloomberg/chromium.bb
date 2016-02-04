@@ -179,11 +179,11 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     QuicCryptoClientConfig* crypto_config,
     const char* const connection_description,
     base::TimeTicks dns_resolution_end_time,
-    QuicPromisedByUrlMap* promised_by_url,
+    QuicClientPushPromiseIndex* push_promise_index,
     base::TaskRunner* task_runner,
     scoped_ptr<SocketPerformanceWatcher> socket_performance_watcher,
     NetLog* net_log)
-    : QuicClientSessionBase(connection, promised_by_url, config),
+    : QuicClientSessionBase(connection, push_promise_index, config),
       server_id_(server_id),
       require_confirmation_(false),
       stream_factory_(stream_factory),
@@ -1041,6 +1041,10 @@ QuicChromiumPacketReader* QuicChromiumClientSession::ReleaseReader() {
   QuicChromiumPacketReader* reader = packet_readers_.back().release();
   packet_readers_.pop_back();
   return reader;
+}
+
+bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
+  return CanPool(hostname, server_id_.privacy_mode());
 }
 
 }  // namespace net

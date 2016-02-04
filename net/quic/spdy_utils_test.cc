@@ -125,6 +125,26 @@ TEST(SpdyUtilsTest, GetUrlFromHeaderBlock) {
             "https://www.google.com/index.html");
 }
 
+TEST(SpdyUtilsTest, GetHostNameFromHeaderBlock) {
+  SpdyHeaderBlock headers;
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  headers[":scheme"] = "https";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  headers[":authority"] = "www.google.com";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "");
+  headers[":path"] = "/index.html";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  headers["key1"] = "value1";
+  headers["key2"] = "value2";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  headers[":authority"] = "www.google.com:6666";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "www.google.com");
+  headers[":authority"] = "192.168.1.1";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+  headers[":authority"] = "192.168.1.1:6666";
+  EXPECT_EQ(SpdyUtils::GetHostNameFromHeaderBlock(headers), "192.168.1.1");
+}
+
 TEST(SpdyUtilsTest, UrlIsValid) {
   SpdyHeaderBlock headers;
   EXPECT_FALSE(SpdyUtils::UrlIsValid(headers));

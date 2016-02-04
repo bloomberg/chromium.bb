@@ -227,7 +227,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         kQuicYieldAfterPacketsRead,
         QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
-        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &promised_by_url_,
+        "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &push_promise_index_,
         base::ThreadTaskRunnerHandle::Get().get(),
         /*socket_performance_watcher=*/nullptr, nullptr));
     session_->Initialize();
@@ -330,7 +330,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   SpdyHeaderBlock response_headers_;
   std::string request_data_;
   std::string response_data_;
-  QuicPromisedByUrlMap promised_by_url_;
+  QuicClientPushPromiseIndex push_promise_index_;
 
  private:
   const QuicConnectionId connection_id_;

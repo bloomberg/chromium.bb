@@ -17,17 +17,18 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_client_push_promise_index.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_spdy_stream.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_base.h"
+#include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_process_packet_interface.h"
 
 namespace net {
 
 class QuicServerId;
-
 
 class QuicEpollConnectionHelper;
 class QuicPacketReader;
@@ -39,7 +40,8 @@ class QuicClientPeer;
 class QuicClient : public QuicClientBase,
                    public EpollCallbackInterface,
                    public QuicSpdyStream::Visitor,
-                   public ProcessPacketInterface {
+                   public ProcessPacketInterface,
+                   public QuicClientPushPromiseIndex::Delegate {
  public:
   class ResponseListener {
    public:
@@ -140,6 +142,11 @@ class QuicClient : public QuicClientBase,
   // QuicSpdyStream::Visitor
   void OnClose(QuicSpdyStream* stream) override;
 
+  bool CheckVary(const SpdyHeaderBlock& client_request,
+                 const SpdyHeaderBlock& promise_request,
+                 const SpdyHeaderBlock& promise_response) override;
+  void OnResponse(QuicSpdyStream*) override;
+
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.
   // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
@@ -163,7 +170,6 @@ class QuicClient : public QuicClientBase,
 
   const IPEndPoint& server_address() const { return server_address_; }
 
-
   // Takes ownership of the listener.
   void set_response_listener(ResponseListener* listener) {
     response_listener_.reset(listener);
@@ -181,6 +187,10 @@ class QuicClient : public QuicClientBase,
   void ProcessPacket(const IPEndPoint& self_address,
                      const IPEndPoint& peer_address,
                      const QuicEncryptedPacket& packet) override;
+
+  QuicClientPushPromiseIndex* push_promise_index() {
+    return &push_promise_index_;
+  }
 
  protected:
   virtual QuicPacketWriter* CreateQuicPacketWriter();
@@ -245,6 +255,13 @@ class QuicClient : public QuicClientBase,
   // TODO(rtenneti): Add support for ReadAndProcessPackets().
   // bool ReadAndProcessPackets();
 
+  // If the request URL matches a push promise, bypass sending the
+  // request.
+  bool MaybeHandlePromised(const BalsaHeaders& headers,
+                           const SpdyHeaderBlock& spdy_headers,
+                           base::StringPiece body,
+                           bool fin);
+
   // Address of the server.
   const IPEndPoint server_address_;
 
@@ -259,6 +276,9 @@ class QuicClient : public QuicClientBase,
   // Map mapping created UDP sockets to their addresses. By using linked hash
   // map, the order of socket creation can be recorded.
   linked_hash_map<int, IPEndPoint> fd_address_map_;
+
+  // For requests to claim matching push promised streams.
+  QuicClientPushPromiseIndex push_promise_index_;
 
   // Listens for full responses.
   scoped_ptr<ResponseListener> response_listener_;
@@ -298,6 +318,8 @@ class QuicClient : public QuicClientBase,
   // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
   // QuicPacketReader
   QuicPacketReader* packet_reader_;
+
+  std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

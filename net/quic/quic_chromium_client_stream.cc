@@ -9,19 +9,22 @@
 #include "base/thread_task_runner_handle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 
 namespace net {
 
-QuicChromiumClientStream::QuicChromiumClientStream(QuicStreamId id,
-                                                   QuicSpdySession* session,
-                                                   const BoundNetLog& net_log)
+QuicChromiumClientStream::QuicChromiumClientStream(
+    QuicStreamId id,
+    QuicClientSessionBase* session,
+    const BoundNetLog& net_log)
     : QuicSpdyStream(id, session),
       net_log_(net_log),
       delegate_(nullptr),
       headers_delivered_(false),
+      session_(session),
       weak_factory_(this) {}
 
 QuicChromiumClientStream::~QuicChromiumClientStream() {
@@ -34,6 +37,23 @@ void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   // The delegate will read the headers via a posted task.
   NotifyDelegateOfHeadersCompleteLater(frame_len);
+}
+
+void QuicChromiumClientStream::OnPromiseHeadersComplete(
+    QuicStreamId promised_id,
+    size_t frame_len) {
+  size_t headers_len = decompressed_headers().length();
+  std::unique_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
+  SpdyFramer framer(HTTP2);
+  if (!framer.ParseHeaderBlockInBuffer(decompressed_headers().data(),
+                                       headers_len, headers.get())) {
+    DLOG(WARNING) << "Invalid headers";
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
+    return;
+  }
+  MarkHeadersConsumed(headers_len);
+
+  session_->HandlePromised(promised_id, std::move(headers));
 }
 
 void QuicChromiumClientStream::OnDataAvailable() {
@@ -158,6 +178,8 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
   }
   MarkHeadersConsumed(headers_len);
   headers_delivered_ = true;
+
+  session_->OnInitialHeadersComplete(id(), headers);
 
   delegate_->OnHeadersAvailable(headers, frame_len);
 }

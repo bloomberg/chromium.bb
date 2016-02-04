@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/quic_alarm.h"
+#include "net/quic/quic_client_promised_info.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_client_session.h"
@@ -64,6 +65,7 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(bool fin,
     return;
   }
   MarkHeadersConsumed(decompressed_headers().length());
+  DVLOG(1) << "headers complete for stream " << id();
 
   session_->OnInitialHeadersComplete(id(), response_headers_);
 }
@@ -105,6 +107,13 @@ void QuicSpdyClientStream::OnPromiseHeadersComplete(QuicStreamId promised_id,
 }
 
 void QuicSpdyClientStream::OnDataAvailable() {
+  if (FLAGS_quic_supports_push_promise) {
+    // For push streams, visitor will not be set until the rendezvous
+    // between server promise and client request is complete.
+    if (visitor() == nullptr)
+      return;
+  }
+
   while (HasBytesToRead()) {
     struct iovec iov;
     if (GetReadableRegions(&iov, 1) == 0) {

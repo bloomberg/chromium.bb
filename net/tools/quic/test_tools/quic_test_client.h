@@ -26,7 +26,6 @@ namespace net {
 
 class ProofVerifier;
 
-
 class QuicPacketWriterWrapper;
 
 namespace test {
@@ -67,7 +66,9 @@ class MockableQuicClient : public QuicClient {
 };
 
 // A toy QUIC client used for testing, mostly following the SimpleClient APIs.
-class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
+class QuicTestClient : public test::SimpleClient,
+                       public QuicSpdyStream::Visitor,
+                       public QuicClientPushPromiseIndex::Delegate {
  public:
   QuicTestClient(IPEndPoint server_address,
                  const std::string& server_hostname,
@@ -139,6 +140,12 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // From QuicSpdyStream::Visitor
   void OnClose(QuicSpdyStream* stream) override;
 
+  // From QuicClientPushPromiseIndex::Delegate
+  bool CheckVary(const SpdyHeaderBlock& client_request,
+                 const SpdyHeaderBlock& promise_request,
+                 const SpdyHeaderBlock& promise_response) override;
+  void OnResponse(QuicSpdyStream*) override;
+
   // Configures client_ to take ownership of and use the writer.
   // Must be called before initial connect.
   void UseWriter(QuicPacketWriterWrapper* writer);
@@ -149,8 +156,8 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // Returns nullptr if the maximum number of streams have already been created.
   QuicSpdyClientStream* GetOrCreateStream();
 
-  // Calls GetorCreateStream(), sends the request on the stream, and
-  // stores the reuest in case it needs to be resent.  If |headers| is
+  // Calls GetOrCreateStream(), sends the request on the stream, and
+  // stores the request in case it needs to be resent.  If |headers| is
   // null, only the body will be sent on the stream.
   ssize_t GetOrCreateStreamAndSendRequest(const BalsaHeaders* headers,
                                           StringPiece body,
@@ -222,6 +229,8 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // Given a uri, creates a simple HTTPMessage request message for testing.
   static void FillInRequest(const std::string& uri, HTTPMessage* message);
 
+  bool HaveActiveStream();
+
   EpollServer epoll_server_;
   scoped_ptr<MockableQuicClient> client_;  // The actual client
   QuicSpdyClientStream* stream_;
@@ -256,6 +265,9 @@ class QuicTestClient : public SimpleClient, public QuicSpdyStream::Visitor {
   // When true allows the sending of a request to continue while the response is
   // arriving.
   bool allow_bidirectional_data_;
+  // A request matched a PUSH_PROMISE
+  bool push_promise_pending_;
+  std::unique_ptr<TestClientDataToResend> push_promise_data_to_resend_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicTestClient);
 };

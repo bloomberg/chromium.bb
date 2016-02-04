@@ -194,6 +194,7 @@ const char* QuicUtils::StreamErrorToString(QuicRstStreamErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_INVALID_PROMISE_URL);
     RETURN_STRING_LITERAL(QUIC_UNAUTHORIZED_PROMISE_URL);
     RETURN_STRING_LITERAL(QUIC_DUPLICATE_PROMISE_URL);
+    RETURN_STRING_LITERAL(QUIC_PROMISE_VARY_MISMATCH);
   }
   // Return a default value so that we return this when |error| doesn't match
   // any of the QuicRstStreamErrorCodes. This can happen when the RstStream

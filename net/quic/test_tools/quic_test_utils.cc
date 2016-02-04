@@ -354,7 +354,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     const QuicConfig& config,
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config)
-    : QuicClientSessionBase(connection, &promised_by_url_, config) {
+    : QuicClientSessionBase(connection, &push_promise_index_, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
       server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
       crypto_config));
@@ -362,6 +362,10 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
 }
 
 TestQuicSpdyClientSession::~TestQuicSpdyClientSession() {}
+
+bool TestQuicSpdyClientSession::IsAuthorized(const string& authority) {
+  return true;
+}
 
 QuicCryptoClientStream* TestQuicSpdyClientSession::GetCryptoStream() {
   return crypto_stream_.get();

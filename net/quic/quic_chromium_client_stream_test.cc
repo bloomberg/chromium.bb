@@ -8,6 +8,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -45,6 +46,90 @@ class MockDelegate : public QuicChromiumClientStream::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
+class MockQuicClientSessionBase : public QuicClientSessionBase {
+ public:
+  explicit MockQuicClientSessionBase(QuicConnection* connection,
+                                     QuicClientPushPromiseIndex* index);
+  ~MockQuicClientSessionBase() override;
+
+  QuicCryptoStream* GetCryptoStream() override { return crypto_stream_.get(); }
+
+  // From QuicSession.
+  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD1(CreateOutgoingDynamicStream,
+               QuicChromiumClientStream*(SpdyPriority priority));
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                bool fin,
+                                FecProtection fec_protection,
+                                QuicAckListenerInterface*));
+  MOCK_METHOD3(SendRstStream,
+               void(QuicStreamId stream_id,
+                    QuicRstStreamErrorCode error,
+                    QuicStreamOffset bytes_written));
+
+  MOCK_METHOD2(OnStreamHeaders,
+               void(QuicStreamId stream_id, base::StringPiece headers_data));
+  MOCK_METHOD2(OnStreamHeadersPriority,
+               void(QuicStreamId stream_id, SpdyPriority priority));
+  MOCK_METHOD3(OnStreamHeadersComplete,
+               void(QuicStreamId stream_id, bool fin, size_t frame_len));
+  MOCK_METHOD2(OnPromiseHeaders,
+               void(QuicStreamId stream_id, StringPiece headers_data));
+  MOCK_METHOD3(OnPromiseHeadersComplete,
+               void(QuicStreamId stream_id,
+                    QuicStreamId promised_stream_id,
+                    size_t frame_len));
+  MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
+  MOCK_METHOD5(WriteHeaders,
+               size_t(QuicStreamId id,
+                      const SpdyHeaderBlock& headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicAckListenerInterface* ack_notifier_delegate));
+  MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
+
+  using QuicSession::ActivateStream;
+
+  // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
+  // has been consumed.
+  static QuicConsumedData ConsumeAllData(
+      QuicStreamId id,
+      const QuicIOVector& data,
+      QuicStreamOffset offset,
+      bool fin,
+      FecProtection fec_protection,
+      QuicAckListenerInterface* ack_notifier_delegate);
+
+  void OnProofValid(
+      const QuicCryptoClientConfig::CachedState& cached) override {}
+  void OnProofVerifyDetailsAvailable(
+      const ProofVerifyDetails& verify_details) override {}
+  bool IsAuthorized(const std::string& hostname) override { return true; }
+
+ private:
+  scoped_ptr<QuicCryptoStream> crypto_stream_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockQuicClientSessionBase);
+};
+
+MockQuicClientSessionBase::MockQuicClientSessionBase(
+    QuicConnection* connection,
+    QuicClientPushPromiseIndex* push_promise_index)
+    : QuicClientSessionBase(connection,
+                            push_promise_index,
+                            DefaultQuicConfig()) {
+  crypto_stream_.reset(new QuicCryptoStream(this));
+  Initialize();
+  ON_CALL(*this, WritevData(_, _, _, _, _, _))
+      .WillByDefault(testing::Return(QuicConsumedData(0, false)));
+}
+
+MockQuicClientSessionBase::~MockQuicClientSessionBase() {}
+
 class QuicChromiumClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
@@ -52,7 +137,8 @@ class QuicChromiumClientStreamTest
       : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         session_(new MockConnection(&helper_,
                                     Perspective::IS_CLIENT,
-                                    SupportedVersions(GetParam()))) {
+                                    SupportedVersions(GetParam())),
+                 &push_promise_index_) {
     stream_ =
         new QuicChromiumClientStream(kTestStreamId, &session_, BoundNetLog());
     session_.ActivateStream(stream_);
@@ -100,9 +186,10 @@ class QuicChromiumClientStreamTest
   QuicCryptoClientConfig crypto_config_;
   testing::StrictMock<MockDelegate> delegate_;
   MockConnectionHelper helper_;
-  MockQuicSpdySession session_;
+  MockQuicClientSessionBase session_;
   QuicChromiumClientStream* stream_;
   SpdyHeaderBlock headers_;
+  QuicClientPushPromiseIndex push_promise_index_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,

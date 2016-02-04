@@ -21,11 +21,6 @@ class QuicConnection;
 class QuicServerId;
 class ReliableQuicStream;
 
-
-// The maximum time a promises stream can be reserved without being
-// claimed by a client request.
-const int64_t kPushPromiseTimeoutSecs = 60;
-
 class QuicClientSession : public QuicClientSessionBase {
  public:
   // Caller retains ownership of |promised_by_url|.
@@ -33,7 +28,7 @@ class QuicClientSession : public QuicClientSessionBase {
                     QuicConnection* connection,
                     const QuicServerId& server_id,
                     QuicCryptoClientConfig* crypto_config,
-                    QuicPromisedByUrlMap* promised_by_url);
+                    QuicClientPushPromiseIndex* push_promise_index);
   ~QuicClientSession() override;
   // Set up the QuicClientSession. Must be called prior to use.
   void Initialize() override;
@@ -42,6 +37,8 @@ class QuicClientSession : public QuicClientSessionBase {
   QuicSpdyClientStream* CreateOutgoingDynamicStream(
       SpdyPriority priority) override;
   QuicCryptoClientStreamBase* GetCryptoStream() override;
+
+  bool IsAuthorized(const std::string& authority) override;
 
   // QuicClientSessionBase methods:
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;

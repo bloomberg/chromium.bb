@@ -1704,8 +1704,9 @@ TEST_P(EndToEndTest, RequestWithNoBodyWillNeverSendStreamFrameWithFIN) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  EXPECT_EQ(0u, QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(session)
-                    .size());
+  EXPECT_EQ(
+      0u,
+      QuicSessionPeer::GetLocallyClosedStreamsHighestOffset(session).size());
   server_thread_->Resume();
 }
 
@@ -1731,6 +1732,18 @@ class TestAckListener : public QuicAckListenerInterface {
 
  private:
   int num_notifications_;
+};
+
+class TestResponseListener : public QuicClient::ResponseListener {
+ public:
+  void OnCompleteResponse(QuicStreamId id,
+                          const BalsaHeaders& response_headers,
+                          const string& response_body) override {
+    std::string debug_string;
+    response_headers.DumpHeadersToString(&debug_string);
+    DVLOG(1) << "response for stream " << id << " " << debug_string << "\n"
+             << response_body;
+  }
 };
 
 TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
@@ -2170,6 +2183,52 @@ TEST_P(EndToEndTest, Trailers) {
   EXPECT_EQ(kBody, client_->SendSynchronousRequest("/trailer_url"));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
   EXPECT_EQ(trailers, client_->response_trailers());
+}
+
+TEST_P(EndToEndTest, ServerPush) {
+  FLAGS_quic_supports_push_promise = true;
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // Set reordering to ensure that body arriving before PUSH_PROMISE is ok.
+  SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
+  SetReorderPercentage(30);
+
+  // Add a response with headers, body, and trailers.
+  const string kBody = "body content";
+
+  list<QuicInMemoryCache::ServerPushInfo> push_resources;
+
+  string push_urls[] = {
+      "https://google.com/font.woff", "https://google.com/script.js",
+      "https://fonts.google.com/font.woff", "https://google.com/logo-hires.jpg",
+  };
+  for (const string& url : push_urls) {
+    GURL resource_url(url);
+    string body = "This is server push response body for " + url;
+    SpdyHeaderBlock response_headers;
+    response_headers[":version"] = "HTTP/1.1";
+    response_headers[":status"] = "200";
+    response_headers["content-length"] = IntToString(body.size());
+    push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
+        resource_url, response_headers, kV3LowestPriority, body));
+  }
+
+  QuicInMemoryCache::GetInstance()->AddSimpleResponseWithServerPushResources(
+      "google.com", "/push_example", 200, kBody, push_resources);
+
+  client_->client()->set_response_listener(new TestResponseListener);
+
+  DVLOG(1) << "send request for /push_example";
+  EXPECT_EQ(kBody,
+            client_->SendSynchronousRequest("https://google.com/push_example"));
+  for (const string& url : push_urls) {
+    DVLOG(1) << "send request for pushed stream on url " << url;
+    string expected_body = "This is server push response body for " + url;
+    string response_body = client_->SendSynchronousRequest(url);
+    DVLOG(1) << "response body " << response_body;
+    EXPECT_EQ(expected_body, response_body);
+  }
 }
 
 }  // namespace

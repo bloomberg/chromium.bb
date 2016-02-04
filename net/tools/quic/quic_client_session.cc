@@ -14,12 +14,13 @@ using std::string;
 
 namespace net {
 
-QuicClientSession::QuicClientSession(const QuicConfig& config,
-                                     QuicConnection* connection,
-                                     const QuicServerId& server_id,
-                                     QuicCryptoClientConfig* crypto_config,
-                                     QuicPromisedByUrlMap* promised_by_url)
-    : QuicClientSessionBase(connection, promised_by_url, config),
+QuicClientSession::QuicClientSession(
+    const QuicConfig& config,
+    QuicConnection* connection,
+    const QuicServerId& server_id,
+    QuicCryptoClientConfig* crypto_config,
+    QuicClientPushPromiseIndex* push_promise_index)
+    : QuicClientSessionBase(connection, push_promise_index, config),
       server_id_(server_id),
       crypto_config_(crypto_config),
       respect_goaway_(true) {}
@@ -100,7 +101,9 @@ QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
   if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
-  return new QuicSpdyClientStream(id, this);
+  QuicSpdyStream* stream = new QuicSpdyClientStream(id, this);
+  stream->CloseWriteSide();
+  return stream;
 }
 
 QuicCryptoClientStreamBase* QuicClientSession::CreateQuicCryptoStream() {
@@ -109,5 +112,8 @@ QuicCryptoClientStreamBase* QuicClientSession::CreateQuicCryptoStream() {
       crypto_config_);
 }
 
+bool QuicClientSession::IsAuthorized(const string& authority) {
+  return true;
+}
 
 }  // namespace net

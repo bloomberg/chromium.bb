@@ -28,6 +28,7 @@
 #include "net/proxy/proxy_server.h"
 #include "net/quic/network_connection.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_client_push_promise_index.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
 #include "net/quic/quic_http_stream.h"
@@ -523,7 +524,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   NetworkConnection network_connection_;
 
-  QuicPromisedByUrlMap promised_by_url_;
+  QuicClientPushPromiseIndex push_promise_index_;
 
   base::TaskRunner* task_runner_;
 

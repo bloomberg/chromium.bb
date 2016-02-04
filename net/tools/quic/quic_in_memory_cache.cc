@@ -46,6 +46,8 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     StringPiece path) const {
   ResponseMap::const_iterator it = responses_.find(GetKey(host, path));
   if (it == responses_.end()) {
+    DVLOG(1) << "Get response for resource failed: host " << host << " path "
+             << path;
     if (default_response_.get()) {
       return default_response_.get();
     }
@@ -233,13 +235,18 @@ void QuicInMemoryCache::MaybeAddServerPushResources(
 
     DVLOG(1) << "Add request-resource association.";
     server_push_resources_.insert(std::make_pair(request_url, push_resource));
+    string host = push_resource.request_url.host();
+    if (host.empty()) {
+      host = request_host.as_string();
+    }
     string path = push_resource.request_url.path();
-    if (responses_.find(GetKey(request_host, path)) == responses_.end()) {
+    if (responses_.find(GetKey(host, path)) == responses_.end()) {
       // Add a server push response to responses map, if it is not in the map.
       SpdyHeaderBlock headers = push_resource.headers;
       StringPiece body = push_resource.body;
-      DVLOG(1) << "Add response for push resource " << body;
-      AddResponse(request_host, path, headers, body);
+      DVLOG(1) << "Add response for push resource: host " << host << " path "
+               << path << " body " << body;
+      AddResponse(host, path, headers, body);
     }
   }
 }

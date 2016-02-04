@@ -33,28 +33,18 @@ using testing::TestWithParam;
 namespace net {
 namespace test {
 
-class QuicClientPromisedInfoPeer {
- public:
-  static QuicAlarm* GetAlarm(QuicClientPromisedInfo* promised_stream) {
-    return promised_stream->cleanup_alarm_.get();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(QuicClientPromisedInfoPeer);
-};
-
 namespace {
 
 class MockQuicClientSession : public QuicClientSession {
  public:
   explicit MockQuicClientSession(QuicConnection* connection,
-                                 QuicPromisedByUrlMap* promised_by_url)
+                                 QuicClientPushPromiseIndex* push_promise_index)
       : QuicClientSession(
             DefaultQuicConfig(),
             connection,
             QuicServerId("example.com", 80, PRIVACY_MODE_DISABLED),
             &crypto_config_,
-            promised_by_url),
+            push_promise_index),
         crypto_config_(CryptoTestUtils::ProofVerifierForTesting()) {}
   ~MockQuicClientSession() override {}
 
@@ -68,10 +58,12 @@ class MockQuicClientSession : public QuicClientSession {
 
 class QuicSpdyClientStreamTest : public ::testing::Test {
  public:
+  class StreamVisitor;
+
   QuicSpdyClientStreamTest()
       : connection_(
             new StrictMock<MockConnection>(&helper_, Perspective::IS_CLIENT)),
-        session_(connection_, &promised_by_url_),
+        session_(connection_, &push_promise_index_),
         body_("hello world") {
     session_.Initialize();
 
@@ -81,28 +73,26 @@ class QuicSpdyClientStreamTest : public ::testing::Test {
     headers_string_ = net::SpdyBalsaUtils::SerializeResponseHeaders(headers_);
 
     stream_.reset(new QuicSpdyClientStream(kClientDataStreamId1, &session_));
+    stream_visitor_.reset(new StreamVisitor());
+    stream_->set_visitor(stream_visitor_.get());
   }
 
-  class PromiseListener : public QuicClientPromisedInfo::Listener {
-   public:
-    PromiseListener() : have_promised_response_(false) {}
-
-    void OnResponse() override { have_promised_response_ = true; }
-
-    bool have_promised_response_;
+  class StreamVisitor : public QuicSpdyClientStream::Visitor {
+    void OnClose(QuicSpdyStream* stream) override {
+      DVLOG(1) << "stream " << stream->id();
+    }
   };
 
   MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
-  QuicPromisedByUrlMap promised_by_url_;
+  QuicClientPushPromiseIndex push_promise_index_;
 
   MockQuicClientSession session_;
   scoped_ptr<QuicSpdyClientStream> stream_;
-  scoped_ptr<QuicSpdyClientStream> promised_stream_;
+  scoped_ptr<StreamVisitor> stream_visitor_;
   BalsaHeaders headers_;
   string headers_string_;
   string body_;
-  bool have_promised_response_;
 };
 
 TEST_F(QuicSpdyClientStreamTest, TestFraming) {
@@ -175,212 +165,6 @@ TEST_F(QuicSpdyClientStreamTest, ReceivingTrailers) {
   EXPECT_CALL(session_, CloseStream(stream_->id()));
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromise) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":authority"] = "www.google.com";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-
-  stream_->OnPromiseHeaders(push_promise_string);
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  // Send headers as usual.
-  stream_->OnStreamHeaders(headers_string_);
-  stream_->OnStreamHeadersComplete(false, headers_string_.size());
-
-  // Verify that the promise is in the unclaimed streams map.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-  EXPECT_NE(session_.GetPromisedByUrl(promise_url), nullptr);
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseCleanupAlarm) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":authority"] = "www.google.com";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-
-  stream_->OnStreamHeaders(push_promise_string);
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  // Send headers as usual.
-  stream_->OnStreamHeaders(headers_string_);
-  stream_->OnStreamHeadersComplete(false, headers_string_.size());
-
-  // Verify that the promise is in the unclaimed streams map.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-  QuicPromisedByUrlMap::iterator it = promised_by_url_.find(promise_url);
-  ASSERT_NE(it, promised_by_url_.end());
-
-  // Verify that the promise is gone after the alarm fires.
-  helper_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(it->second));
-  EXPECT_EQ(session_.GetPromisedById(kServerDataStreamId1), nullptr);
-  EXPECT_EQ(session_.GetPromisedByUrl(promise_url), nullptr);
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseInvalidUrl) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise - mising authority
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-  stream_->OnStreamHeaders(push_promise_string);
-
-  EXPECT_CALL(*connection_,
-              SendRstStream(kServerDataStreamId1, QUIC_INVALID_PROMISE_URL, 0));
-
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  // Verify that the promise was not created.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-  EXPECT_EQ(session_.GetPromisedById(kServerDataStreamId1), nullptr);
-  EXPECT_EQ(session_.GetPromisedByUrl(promise_url), nullptr);
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseUnauthorizedUrl) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise - mismatched authority
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":authority"] = "mail.google.com";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-  stream_->OnStreamHeaders(push_promise_string);
-
-  EXPECT_CALL(*connection_, SendRstStream(kServerDataStreamId1,
-                                          QUIC_UNAUTHORIZED_PROMISE_URL, 0));
-
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  // Send response headers usual.
-  stream_->OnStreamHeaders(headers_string_);
-  stream_->OnStreamHeadersComplete(false, headers_string_.size());
-
-  // Ok now get the promise information.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-
-  QuicClientPromisedInfo* promise = session_.GetPromisedByUrl(promise_url);
-  ASSERT_NE(promise, nullptr);
-
-  EXPECT_EQ("https://mail.google.com/bar",
-            SpdyUtils::GetUrlFromHeaderBlock(*promise->request_headers()));
-
-  promise->RejectUnauthorized();
-
-  // Verify that the promise has been destroyed.
-  EXPECT_EQ(session_.GetPromisedById(kServerDataStreamId1), nullptr);
-  EXPECT_EQ(session_.GetPromisedByUrl(promise_url), nullptr);
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseVaryWaits) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":authority"] = "mail.google.com";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-  stream_->OnStreamHeaders(push_promise_string);
-
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  // Ok now get the promise information.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-  QuicPromisedByUrlMap::iterator it = promised_by_url_.find(promise_url);
-  ASSERT_NE(it, promised_by_url_.end());
-  QuicClientPromisedInfo* promise = it->second;
-
-  EXPECT_NE(promise->request_headers(), nullptr);
-  EXPECT_EQ("https://mail.google.com/bar",
-            SpdyUtils::GetUrlFromHeaderBlock(*promise->request_headers()));
-
-  EXPECT_EQ(promise->response_headers(), nullptr);
-
-  PromiseListener listener;
-  EXPECT_FALSE(listener.have_promised_response_);
-  promise->SetListener(&listener);
-  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
-      session_.GetStream(kServerDataStreamId1));
-  promise_stream->OnStreamHeaders(headers_string_);
-  promise_stream->OnStreamHeadersComplete(false, headers_string_.size());
-
-  EXPECT_TRUE(listener.have_promised_response_);
-  EXPECT_NE(promise->response_headers(), nullptr);
-}
-
-TEST_F(QuicSpdyClientStreamTest, ReceivingPromiseVaryNoWait) {
-  ValueRestore<bool> old_flag(&FLAGS_quic_supports_push_promise, true);
-
-  // Receive promise
-  SpdyHeaderBlock push_promise;
-  push_promise[":path"] = "/bar";
-  push_promise[":authority"] = "mail.google.com";
-  push_promise[":version"] = "HTTP/1.1";
-  push_promise[":method"] = "GET";
-  push_promise[":scheme"] = "https";
-
-  string push_promise_string =
-      SpdyUtils::SerializeUncompressedHeaders(push_promise);
-  stream_->OnStreamHeaders(push_promise_string);
-
-  stream_->OnPromiseHeadersComplete(kServerDataStreamId1,
-                                    push_promise_string.size());
-
-  QuicSpdyClientStream* promise_stream = static_cast<QuicSpdyClientStream*>(
-      session_.GetStream(kServerDataStreamId1));
-
-  promise_stream->OnStreamHeaders(headers_string_);
-  promise_stream->OnStreamHeadersComplete(false, headers_string_.size());
-
-  // Ok now get the promise information.
-  string promise_url(SpdyUtils::GetUrlFromHeaderBlock(push_promise));
-  QuicPromisedByUrlMap::iterator it = promised_by_url_.find(promise_url);
-  ASSERT_NE(it, promised_by_url_.end());
-  QuicClientPromisedInfo* promise = it->second;
-
-  EXPECT_NE(promise->request_headers(), nullptr);
-  EXPECT_EQ("https://mail.google.com/bar",
-            SpdyUtils::GetUrlFromHeaderBlock(*promise->request_headers()));
-
-  EXPECT_NE(promise->response_headers(), nullptr);
 }
 
 }  // namespace

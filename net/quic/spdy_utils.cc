@@ -128,6 +128,11 @@ string SpdyUtils::GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers) {
 }
 
 // static
+string SpdyUtils::GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers) {
+  return GURL(GetUrlFromHeaderBlock(headers)).host();
+}
+
+// static
 bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
   string url(GetUrlFromHeaderBlock(headers));
   return url != "" && GURL(url).is_valid();

@@ -47,6 +47,9 @@ class NET_EXPORT_PRIVATE SpdyUtils {
   // values, or empty string if any of those fields are missing.
   static std::string GetUrlFromHeaderBlock(const net::SpdyHeaderBlock& headers);
 
+  // Returns hostname, or empty std::string if missing.
+  static std::string GetHostNameFromHeaderBlock(const SpdyHeaderBlock& headers);
+
   // Returns true if result of |GetUrlFromHeaderBlock()| is non-empty
   // and is a well-formed URL.
   static bool UrlIsValid(const net::SpdyHeaderBlock& headers);

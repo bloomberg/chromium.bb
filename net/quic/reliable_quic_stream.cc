@@ -90,6 +90,8 @@ void ReliableQuicStream::SetFromConfig() {
 void ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
   DCHECK_EQ(frame.stream_id, id_);
 
+  DCHECK(!(read_side_closed_ && write_side_closed_));
+
   if (frame.fin) {
     fin_received_ = true;
     if (fin_sent_) {

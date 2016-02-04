@@ -478,7 +478,8 @@ enum QuicRstStreamErrorCode {
   QUIC_UNAUTHORIZED_PROMISE_URL,
   // Can't have more than one active PUSH_PROMISE per URL.
   QUIC_DUPLICATE_PROMISE_URL,
-
+  // Vary check failed.
+  QUIC_PROMISE_VARY_MISMATCH,
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,
 };

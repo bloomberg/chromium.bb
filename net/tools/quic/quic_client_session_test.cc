@@ -56,12 +56,12 @@ class TestQuicClientSession : public QuicClientSession {
                                  QuicConnection* connection,
                                  const QuicServerId& server_id,
                                  QuicCryptoClientConfig* crypto_config,
-                                 QuicPromisedByUrlMap* promised_by_url)
+                                 QuicClientPushPromiseIndex* push_promise_index)
       : QuicClientSession(config,
                           connection,
                           server_id,
                           crypto_config,
-                          promised_by_url) {}
+                          push_promise_index) {}
 
   QuicSpdyClientStream* CreateClientStream() override {
     return new MockQuicSpdyClientStream(GetNextOutgoingStreamId(), this);
@@ -96,7 +96,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
     session_.reset(new TestQuicClientSession(
         DefaultQuicConfig(), connection_,
         QuicServerId(kServerHostname, kPort, PRIVACY_MODE_DISABLED),
-        &crypto_config_, &promised_by_url_));
+        &crypto_config_, &push_promise_index_));
     session_->Initialize();
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.google.com";
@@ -119,7 +119,7 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
   MockConnectionHelper helper_;
   PacketSavingConnection* connection_;
   scoped_ptr<TestQuicClientSession> session_;
-  QuicPromisedByUrlMap promised_by_url_;
+  QuicClientPushPromiseIndex push_promise_index_;
   SpdyHeaderBlock push_promise_;
   string promise_url_;
   QuicStreamId promised_stream_id_;
@@ -482,6 +482,7 @@ TEST_P(QuicClientSessionTest, OnInitialHeadersCompleteIsPush) {
       promised_stream_id_,
       std::unique_ptr<SpdyHeaderBlock>(new SpdyHeaderBlock(push_promise_)));
   EXPECT_NE(session_->GetPromisedById(promised_stream_id_), nullptr);
+  EXPECT_NE(session_->GetPromisedStream(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
 
   session_->OnInitialHeadersComplete(promised_stream_id_, SpdyHeaderBlock());
@@ -504,6 +505,7 @@ TEST_P(QuicClientSessionTest, DeletePromised) {
   QuicClientPromisedInfo* promised =
       session_->GetPromisedById(promised_stream_id_);
   EXPECT_NE(promised, nullptr);
+  EXPECT_NE(session_->GetPromisedStream(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
 
   session_->DeletePromised(promised);

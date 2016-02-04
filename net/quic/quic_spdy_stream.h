@@ -157,6 +157,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   virtual void OnInitialHeadersComplete(bool fin, size_t frame_len);
   virtual void OnTrailingHeadersComplete(bool fin, size_t frame_len);
   QuicSpdySession* spdy_session() const { return spdy_session_; }
+  Visitor* visitor() { return visitor_; }
 
   // Returns true if headers have been fully read and consumed.
   bool FinishedReadingHeaders() const;
