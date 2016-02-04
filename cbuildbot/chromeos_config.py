@@ -1836,8 +1836,6 @@ def GetConfig():
   site_config.Add(
       'lakitu-pre-cq', pre_cq,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
   )
 
   _CreateConfigsForBoards(no_vmtest_pre_cq, _all_boards, 'no-vmtest-pre-cq')
@@ -1926,15 +1924,11 @@ def GetConfig():
   site_config.Add(
       'lakitu-incremental', internal_incremental,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
   )
 
   site_config.Add(
       'lakitu_next-incremental', internal_incremental,
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
   )
 
   site_config.Add(
@@ -2324,8 +2318,6 @@ def GetConfig():
   site_config.Add(
       'lakitu-release', _release,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
       sign_types=['base'],
       important=True,
   )
@@ -2333,8 +2325,6 @@ def GetConfig():
   site_config.Add(
       'lakitu_mobbuild-release', _release,
       _base_configs['lakitu_mobbuild'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
       signer_tests=False,
       important=True,
   )
@@ -2342,8 +2332,6 @@ def GetConfig():
   site_config.Add(
       'lakitu_next-release', _release,
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-      run_gce_tests=True,
       signer_tests=False,
   )
 
