@@ -21,8 +21,7 @@ PaintRecorder::PaintRecorder(const PaintContext& context,
       // the recorder_ so no need to store a RefPtr to it on this class, we just
       // store the gfx::Canvas.
       canvas_(skia::SharePtr(context.recorder_->beginRecording(
-                                 gfx::RectToSkRect(gfx::Rect(recording_size))))
-                  .get(),
+                             gfx::RectToSkRect(gfx::Rect(recording_size)))),
               context.device_scale_factor_),
       cache_(cache),
       bounds_in_layer_(context.ToLayerSpaceBounds(recording_size)) {

@@ -3019,7 +3019,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
 
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(
       SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
-  Canvas canvas(surface->getCanvas(), 1.0f);
+  Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
@@ -3101,7 +3101,7 @@ TEST_F(RenderTextTest, TextDoesClip) {
 
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(
       SkSurface::NewRasterN32Premul(kCanvasSize.width(), kCanvasSize.height()));
-  Canvas canvas(surface->getCanvas(), 1.0f);
+  Canvas canvas(skia::SharePtr(surface->getCanvas()), 1.0f);
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);

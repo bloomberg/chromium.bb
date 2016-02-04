@@ -487,7 +487,8 @@ scoped_ptr<gfx::Canvas> CommonThemeCreateCanvas(SkCanvas* sk_canvas) {
   // scale factor from canvas scale.
   SkMatrix m = sk_canvas->getTotalMatrix();
   float device_scale = static_cast<float>(SkScalarAbs(m.getScaleX()));
-  return make_scoped_ptr(new gfx::Canvas(sk_canvas, device_scale));
+  return make_scoped_ptr(new gfx::Canvas(skia::SharePtr(sk_canvas),
+                                         device_scale));
 }
 
 }  // namespace ui

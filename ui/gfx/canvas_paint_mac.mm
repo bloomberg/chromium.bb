@@ -23,7 +23,7 @@ CanvasSkiaPaint::CanvasSkiaPaint(NSRect dirtyRect, bool opaque)
 
 CanvasSkiaPaint::~CanvasSkiaPaint() {
   if (!is_empty()) {
-    platform_canvas()->restoreToCount(1);
+    sk_canvas()->restoreToCount(1);
 
     // Blit the dirty rect to the current context.
     CGImageRef image = CGBitmapContextCreateImage(context_);

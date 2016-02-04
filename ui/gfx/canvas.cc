@@ -24,18 +24,16 @@
 namespace gfx {
 
 Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
-    : image_scale_(image_scale),
-      canvas_(NULL) {
+    : image_scale_(image_scale) {
   Size pixel_size = ScaleToCeiledSize(size, image_scale);
-  owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                            pixel_size.height(),
-                                                            is_opaque));
-  canvas_ = owned_canvas_.get();
+  canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                      pixel_size.height(),
+                                                      is_opaque));
 #if !defined(USE_CAIRO)
   // skia::PlatformCanvas instances are initialized to 0 by Cairo, but
   // uninitialized on other platforms.
   if (!is_opaque)
-    owned_canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
+    canvas_->clear(SkColorSetARGB(0, 0, 0, 0));
 #endif
 
   SkScalar scale_scalar = SkFloatToScalar(image_scale);
@@ -44,11 +42,10 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
 
 Canvas::Canvas(const ImageSkiaRep& image_rep, bool is_opaque)
     : image_scale_(image_rep.scale()),
-      owned_canvas_(skia::AdoptRef(
+      canvas_(skia::AdoptRef(
           skia::CreatePlatformCanvas(image_rep.pixel_width(),
                                      image_rep.pixel_height(),
-                                     is_opaque))),
-      canvas_(owned_canvas_.get()) {
+                                     is_opaque))) {
   SkScalar scale_scalar = SkFloatToScalar(image_scale_);
   canvas_->scale(scale_scalar, scale_scalar);
   DrawImageInt(ImageSkia(image_rep), 0, 0);
@@ -56,11 +53,10 @@ Canvas::Canvas(const ImageSkiaRep& image_rep, bool is_opaque)
 
 Canvas::Canvas()
     : image_scale_(1.f),
-      owned_canvas_(skia::AdoptRef(skia::CreatePlatformCanvas(0, 0, false))),
-      canvas_(owned_canvas_.get()) {}
+      canvas_(skia::AdoptRef(skia::CreatePlatformCanvas(0, 0, false))) {}
 
-Canvas::Canvas(SkCanvas* canvas, float image_scale)
-    : image_scale_(image_scale), owned_canvas_(), canvas_(canvas) {
+Canvas::Canvas(const skia::RefPtr<SkCanvas>& canvas, float image_scale)
+    : image_scale_(image_scale), canvas_(canvas) {
   DCHECK(canvas);
 }
 
@@ -72,10 +68,9 @@ void Canvas::RecreateBackingCanvas(const Size& size,
                                    bool is_opaque) {
   image_scale_ = image_scale;
   Size pixel_size = ScaleToFlooredSize(size, image_scale);
-  owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
-                                                            pixel_size.height(),
-                                                            is_opaque));
-  canvas_ = owned_canvas_.get();
+  canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
+                                                      pixel_size.height(),
+                                                      is_opaque));
   SkScalar scale_scalar = SkFloatToScalar(image_scale);
   canvas_->scale(scale_scalar, scale_scalar);
 }

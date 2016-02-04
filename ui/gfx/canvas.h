@@ -89,7 +89,7 @@ class GFX_EXPORT Canvas {
   // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
   // |sk_canvas| is assumed to be already scaled based on |image_scale|
   // so no additional scaling is applied.
-  Canvas(SkCanvas* sk_canvas, float image_scale);
+  Canvas(const skia::RefPtr<SkCanvas>& sk_canvas, float image_scale);
 
   virtual ~Canvas();
 
@@ -409,8 +409,7 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  SkCanvas* platform_canvas() { return owned_canvas_.get(); }
-  SkCanvas* sk_canvas() { return canvas_; }
+  SkCanvas* sk_canvas() { return canvas_.get(); }
   float image_scale() const { return image_scale_; }
 
  private:
@@ -439,8 +438,7 @@ class GFX_EXPORT Canvas {
   // Canvas::Scale() does not affect |image_scale_|.
   float image_scale_;
 
-  skia::RefPtr<SkCanvas> owned_canvas_;
-  SkCanvas* canvas_;
+  skia::RefPtr<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);
 };
