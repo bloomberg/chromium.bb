@@ -38,7 +38,6 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorTaskRunner.h"
-#include "core/inspector/InspectorTimelineAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/WorkerConsoleAgent.h"
 #include "core/inspector/WorkerDebuggerAgent.h"
@@ -142,8 +141,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     WorkerConsoleAgent* workerConsoleAgentPtr = workerConsoleAgent.get();
     workerConsoleAgentPtr->setDebuggerAgent(m_workerDebuggerAgent->v8DebuggerAgent());
     m_agents.append(workerConsoleAgent.release());
-
-    m_agents.append(InspectorTimelineAgent::create());
 
     m_injectedScriptManager->injectedScriptHost()->init(
         nullptr,

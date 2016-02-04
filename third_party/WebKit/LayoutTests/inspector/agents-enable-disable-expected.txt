@@ -16,7 +16,6 @@ Network.disable finished successfully
 Page.disable finished successfully
 Profiler.disable finished successfully
 Runtime.disable finished successfully
-Timeline.disable finished with error Timeline is deprecated. Please use Tracing instead
 Worker.disable finished successfully
 
 Animation.enable finished successfully
@@ -66,9 +65,6 @@ Profiler.disable finished successfully
 
 Runtime.enable finished successfully
 Runtime.disable finished successfully
-
-Timeline.enable finished with error Timeline is deprecated. Please use Tracing instead
-Timeline.disable finished with error Timeline is deprecated. Please use Tracing instead
 
 Worker.enable finished successfully
 Worker.disable finished successfully

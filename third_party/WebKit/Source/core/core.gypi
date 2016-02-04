@@ -1788,8 +1788,6 @@
             'inspector/InspectorStyleSheet.h',
             'inspector/InspectorTaskRunner.cpp',
             'inspector/InspectorTaskRunner.h',
-            'inspector/InspectorTimelineAgent.cpp',
-            'inspector/InspectorTimelineAgent.h',
             'inspector/InspectorTraceEvents.cpp',
             'inspector/InspectorTraceEvents.h',
             'inspector/InspectorTracingAgent.cpp',
