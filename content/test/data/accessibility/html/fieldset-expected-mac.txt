@@ -1,5 +1,5 @@
 AXWebArea
 ++AXGroup
-++++AXGroup AXTitleUIElement='AXGroup'
+++++AXGroup AXDescription='Browser Engines:' AXTitleUIElement='AXGroup'
 ++++++AXGroup
-++++++++AXStaticText AXValue='Browser Engine's:'
+++++++++AXStaticText AXValue='Browser Engines:'

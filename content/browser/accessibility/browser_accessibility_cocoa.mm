@@ -562,14 +562,18 @@ bool InitializeAccessibilityTreeSearch(
       browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LABELLEDBY_IDS);
   ui::AXNameFrom nameFrom = static_cast<ui::AXNameFrom>(
       browserAccessibility_->GetIntAttribute(ui::AX_ATTR_NAME_FROM));
-  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
-      labelledby_ids.size() == 1 &&
-      browserAccessibility_->manager()->GetFromID(labelledby_ids[0])) {
-    return @"";
-  }
-
   std::string name = browserAccessibility_->GetStringAttribute(
       ui::AX_ATTR_NAME);
+
+  // VoiceOver ignores titleUIElement on non-control AX nodes, so this special
+  // case expressly returns a nonempty text name for these nodes.
+  if (nameFrom == ui::AX_NAME_FROM_RELATED_ELEMENT &&
+      labelledby_ids.size() == 1 &&
+      browserAccessibility_->manager()->GetFromID(labelledby_ids[0]) &&
+      !browserAccessibility_->IsControl()) {
+    return base::SysUTF8ToNSString(name);
+  }
+
   if (!name.empty()) {
     // On Mac OS X, the accessible name of an object is exposed as its
     // title if it comes from visible text, and as its description

@@ -1,5 +1,5 @@
 AXWebArea
-++AXGroup AXTitleUIElement='AXGroup'
+++AXGroup AXDescription='Fig.1 - A green Box' AXTitleUIElement='AXGroup'
 ++++AXGroup
 ++++++AXImage AXDescription='This is a green box.'
 ++++AXGroup
