@@ -76,6 +76,9 @@ void ImeObserver::OnKeyEvent(
     return;
   }
 
+  if (!extensions::GetInputImeEventRouter(profile_))
+    return;
+
   const std::string request_id = extensions::GetInputImeEventRouter(profile_)
                                      ->AddRequest(component_id, key_data);
 
@@ -235,6 +238,8 @@ InputImeEventRouterFactory::~InputImeEventRouterFactory() {
 }
 
 InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
+  if (!profile)
+    return nullptr;
   InputImeEventRouter* router = router_map_[profile];
   if (!router) {
     router = new InputImeEventRouter(profile);
@@ -246,6 +251,8 @@ InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
 bool InputImeKeyEventHandledFunction::RunAsync() {
   scoped_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
+  if (!GetInputImeEventRouter(Profile::FromBrowserContext(browser_context())))
+    return false;
   GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
       ->OnKeyEventHandled(extension_id(), params->request_id, params->response);
   return true;
@@ -272,6 +279,8 @@ BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
 }
 
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {
+  if (!profile)
+    return nullptr;
   if (profile->HasOffTheRecordProfile())
     profile = profile->GetOffTheRecordProfile();
   return extensions::InputImeEventRouterFactory::GetInstance()->GetRouter(

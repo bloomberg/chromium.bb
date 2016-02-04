@@ -103,8 +103,10 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       const Extension* extension,
                                       UnloadedExtensionInfo::Reason reason) {
-  GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-      ->DeleteInputMethodEngine(extension->id());
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
+  if (event_router)
+    event_router->DeleteInputMethodEngine(extension->id());
 }
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
@@ -160,7 +162,8 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
 
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
-  event_router->SetActiveEngine(extension_id());
+  if (event_router)
+    event_router->SetActiveEngine(extension_id());
   return RespondNow(NoArguments());
 }
 

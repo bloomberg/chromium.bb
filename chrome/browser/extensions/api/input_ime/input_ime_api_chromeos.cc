@@ -249,8 +249,11 @@ namespace extensions {
 
 InputMethodEngine* GetActiveEngine(Profile* profile,
                                    const std::string& extension_id) {
-  InputMethodEngine* engine = static_cast<InputMethodEngine*>(
-      GetInputImeEventRouter(profile)->GetActiveEngine(extension_id));
+  InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
+  InputMethodEngine* engine =
+      event_router ? static_cast<InputMethodEngine*>(
+                         event_router->GetActiveEngine(extension_id))
+                   : nullptr;
   return engine;
 }
 
@@ -481,9 +484,11 @@ bool InputImeSetCandidateWindowPropertiesFunction::RunSync() {
   const SetCandidateWindowProperties::Params::Parameters&
       params = parent_params->parameters;
 
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
-          ->GetEngine(extension_id(), params.engine_id);
+      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
+                   : nullptr;
   if (!engine) {
     SetResult(new base::FundamentalValue(false));
     return true;
@@ -606,9 +611,11 @@ bool InputImeSetMenuItemsFunction::RunSync() {
   const SetMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
-          ->GetEngine(extension_id(), params.engine_id);
+      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
+                   : nullptr;
   if (!engine) {
     error_ = kErrorEngineNotAvailable;
     return false;
@@ -633,9 +640,11 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
   const UpdateMenuItems::Params::Parameters& params =
       parent_params->parameters;
 
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
-          ->GetEngine(extension_id(), params.engine_id);
+      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
+                   : nullptr;
   if (!engine) {
     error_ = kErrorEngineNotAvailable;
     return false;
@@ -660,9 +669,11 @@ bool InputImeDeleteSurroundingTextFunction::RunSync() {
   const DeleteSurroundingText::Params::Parameters& params =
       parent_params->parameters;
 
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngine* engine =
-      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()))
-          ->GetEngine(extension_id(), params.engine_id);
+      event_router ? event_router->GetEngine(extension_id(), params.engine_id)
+                   : nullptr;
   if (!engine) {
     error_ = kErrorEngineNotAvailable;
     return false;
@@ -677,9 +688,11 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   const std::vector<InputComponentInfo>* input_components =
       InputComponents::GetInputComponents(extension);
-  if (input_components)
-    GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-        ->RegisterImeExtension(extension->id(), *input_components);
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
+  if (input_components && event_router) {
+    event_router->RegisterImeExtension(extension->id(), *input_components);
+  }
 }
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -687,9 +700,10 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       UnloadedExtensionInfo::Reason reason) {
   const std::vector<InputComponentInfo>* input_components =
       InputComponents::GetInputComponents(extension);
-  if (input_components && !input_components->empty()) {
-    GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-        ->UnregisterAllImes(extension->id());
+  InputImeEventRouter* event_router =
+      GetInputImeEventRouter(Profile::FromBrowserContext(browser_context));
+  if (input_components && !input_components->empty() && event_router) {
+    event_router->UnregisterAllImes(extension->id());
   }
 }
 
