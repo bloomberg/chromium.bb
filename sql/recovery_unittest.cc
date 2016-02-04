@@ -67,9 +67,12 @@ std::string GetSchema(sql::Connection* db) {
 
 using SQLRecoveryTest = sql::SQLTestBase;
 
+// Baseline sql::Recovery test covering the different ways to dispose of the
+// scoped pointer received from sql::Recovery::Begin().
 TEST_F(SQLRecoveryTest, RecoverBasic) {
   const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
   const char kInsertSql[] = "INSERT INTO x VALUES ('This is a test')";
+  const char kAltInsertSql[] = "INSERT INTO x VALUES ('That was a test')";
   ASSERT_TRUE(db().Execute(kCreateSql));
   ASSERT_TRUE(db().Execute(kInsertSql));
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
@@ -119,6 +122,10 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
   ASSERT_TRUE(db().Execute(kInsertSql));
   ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
 
+  // Unrecovered table to distinguish from recovered database.
+  ASSERT_TRUE(db().Execute("CREATE TABLE y (c INTEGER)"));
+  ASSERT_NE("CREATE TABLE x (t TEXT)", GetSchema(&db()));
+
   // Recovered() replaces the original with the "recovered" version.
   {
     scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
@@ -128,7 +135,6 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
     ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
 
     // Insert different data to distinguish from original database.
-    const char kAltInsertSql[] = "INSERT INTO x VALUES ('That was a test')";
     ASSERT_TRUE(recovery->db()->Execute(kAltInsertSql));
 
     // Successfully recovered.
@@ -142,12 +148,34 @@ TEST_F(SQLRecoveryTest, RecoverBasic) {
   const char* kXSql = "SELECT * FROM x ORDER BY 1";
   ASSERT_EQ("That was a test",
             ExecuteWithResults(&db(), kXSql, "|", "\n"));
+
+  // Reset the database contents.
+  ASSERT_TRUE(db().Execute("DELETE FROM x"));
+  ASSERT_TRUE(db().Execute(kInsertSql));
+
+  // Rollback() discards recovery progress and leaves the database as it was.
+  {
+    scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(&db(), db_path());
+    ASSERT_TRUE(recovery.get());
+
+    ASSERT_TRUE(recovery->db()->Execute(kCreateSql));
+    ASSERT_TRUE(recovery->db()->Execute(kAltInsertSql));
+
+    sql::Recovery::Rollback(std::move(recovery));
+  }
+  EXPECT_FALSE(db().is_open());
+  ASSERT_TRUE(Reopen());
+  EXPECT_TRUE(db().is_open());
+  ASSERT_EQ("CREATE TABLE x (t TEXT)", GetSchema(&db()));
+
+  ASSERT_EQ("This is a test",
+            ExecuteWithResults(&db(), kXSql, "|", "\n"));
 }
 
 // The recovery virtual table is only supported for Chromium's SQLite.
 #if !defined(USE_SYSTEM_SQLITE)
 
-// Run recovery through its paces on a valid database.
+// Test operation of the virtual table used by sql::Recovery.
 TEST_F(SQLRecoveryTest, VirtualTable) {
   const char kCreateSql[] = "CREATE TABLE x (t TEXT)";
   ASSERT_TRUE(db().Execute(kCreateSql));
@@ -189,6 +217,7 @@ TEST_F(SQLRecoveryTest, VirtualTable) {
 }
 
 void RecoveryCallback(sql::Connection* db, const base::FilePath& db_path,
+                      const char* create_table, const char* create_index,
                       int* record_error, int error, sql::Statement* stmt) {
   *record_error = error;
 
@@ -198,23 +227,11 @@ void RecoveryCallback(sql::Connection* db, const base::FilePath& db_path,
   scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
   ASSERT_TRUE(recovery.get());
 
-  const char kRecoveryCreateSql[] =
-      "CREATE VIRTUAL TABLE temp.recover_x using recover("
-      "  corrupt.x,"
-      "  id INTEGER STRICT,"
-      "  v INTEGER STRICT"
-      ")";
-  const char kCreateTable[] = "CREATE TABLE x (id INTEGER, v INTEGER)";
-  const char kCreateIndex[] = "CREATE UNIQUE INDEX x_id ON x (id)";
+  ASSERT_TRUE(recovery->db()->Execute(create_table));
+  ASSERT_TRUE(recovery->db()->Execute(create_index));
 
-  // Replicate data over.
-  const char kRecoveryCopySql[] =
-      "INSERT OR REPLACE INTO x SELECT id, v FROM recover_x";
-
-  ASSERT_TRUE(recovery->db()->Execute(kRecoveryCreateSql));
-  ASSERT_TRUE(recovery->db()->Execute(kCreateTable));
-  ASSERT_TRUE(recovery->db()->Execute(kCreateIndex));
-  ASSERT_TRUE(recovery->db()->Execute(kRecoveryCopySql));
+  size_t rows = 0;
+  ASSERT_TRUE(recovery->AutoRecoverTable("x", &rows));
 
   ASSERT_TRUE(sql::Recovery::Recovered(std::move(recovery)));
 }
@@ -253,8 +270,8 @@ TEST_F(SQLRecoveryTest, RecoverCorruptIndex) {
   ASSERT_TRUE(Reopen());
 
   int error = SQLITE_OK;
-  db().set_error_callback(base::Bind(&RecoveryCallback,
-                                     &db(), db_path(), &error));
+  db().set_error_callback(base::Bind(&RecoveryCallback, &db(), db_path(),
+                                     kCreateTable, kCreateIndex, &error));
 
   // This works before the callback is called.
   const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
@@ -309,10 +326,11 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   const char kDeleteSql[] = "DELETE FROM x WHERE id = 0";
   ASSERT_TRUE(sql::test::CorruptTableOrIndex(db_path(), "x", kDeleteSql));
 
-  // TODO(shess): Figure out a query which causes SQLite to notice
-  // this organically.  Meanwhile, just handle it manually.
-
   ASSERT_TRUE(Reopen());
+
+  int error = SQLITE_OK;
+  db().set_error_callback(base::Bind(&RecoveryCallback, &db(), db_path(),
+                                     kCreateTable, kCreateIndex, &error));
 
   // Index shows one less than originally inserted.
   const char kCountSql[] = "SELECT COUNT (*) FROM x";
@@ -336,10 +354,13 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   const char kTrivialSql[] = "SELECT COUNT(*) FROM sqlite_master";
   EXPECT_TRUE(db().IsSQLValid(kTrivialSql));
 
-  // Call the recovery callback manually.
-  int error = SQLITE_OK;
-  RecoveryCallback(&db(), db_path(), &error, SQLITE_CORRUPT, NULL);
-  EXPECT_EQ(SQLITE_CORRUPT, error);
+  // TODO(shess): Figure out a statement which causes SQLite to notice the
+  // corruption.  SELECT doesn't see errors because missing index values aren't
+  // visible.  UPDATE or DELETE against v=0 don't see errors, even though the
+  // index item is missing.  I suspect SQLite only deletes the key in these
+  // cases, but doesn't verify that one or more keys were deleted.
+  ASSERT_FALSE(db().Execute("INSERT INTO x (id, v) VALUES (0, 101)"));
+  EXPECT_EQ(SQLITE_CONSTRAINT_UNIQUE, error);
 
   // Database handle has been poisoned.
   EXPECT_FALSE(db().IsSQLValid(kTrivialSql));
