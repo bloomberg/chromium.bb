@@ -17,6 +17,7 @@
 #include <climits>
 #include <cmath>
 #include <cstring>
+#include <memory>
 #include <new>
 
 #include "webmids.hpp"
@@ -4977,9 +4978,199 @@ BlockEntry::Kind Track::EOSBlock::GetKind() const { return kBlockEOS; }
 
 const Block* Track::EOSBlock::GetBlock() const { return NULL; }
 
+bool PrimaryChromaticity::Parse(IMkvReader* reader, long long read_pos,
+                                long long value_size, bool is_x,
+                                PrimaryChromaticity** chromaticity) {
+  if (!reader)
+    return false;
+
+  std::auto_ptr<PrimaryChromaticity> chromaticity_ptr;
+
+  if (!*chromaticity) {
+    chromaticity_ptr.reset(new PrimaryChromaticity());
+  } else {
+    chromaticity_ptr.reset(*chromaticity);
+  }
+
+  if (!chromaticity_ptr.get())
+    return false;
+
+  double* value = is_x ? &chromaticity_ptr->x : &chromaticity_ptr->y;
+
+  const long long value_parse_status =
+      UnserializeFloat(reader, read_pos, value_size, *value);
+
+  if (value_parse_status < 0 || *value < 0.0 || *value > 1.0)
+    return false;
+
+  *chromaticity = chromaticity_ptr.release();
+  return true;
+}
+
+bool MasteringMetadata::Parse(IMkvReader* reader, long long mm_start,
+                              long long mm_size, MasteringMetadata** mm) {
+  if (!reader || *mm)
+    return false;
+
+  std::auto_ptr<MasteringMetadata> mm_ptr(new MasteringMetadata());
+  if (!mm_ptr.get())
+    return false;
+
+  const long long mm_end = mm_start + mm_size;
+  long long read_pos = mm_start;
+
+  while (read_pos < mm_end) {
+    long long child_id = 0;
+    long long child_size = 0;
+
+    const long long status =
+        ParseElementHeader(reader, read_pos, mm_end, child_id, child_size);
+    if (status < 0)
+      return false;
+
+    if (child_id == mkvmuxer::kMkvLuminanceMax) {
+      const long long value_parse_status =
+          UnserializeFloat(reader, read_pos, child_size, mm_ptr->luminance_max);
+      if (value_parse_status < 0 || mm_ptr->luminance_max < 0.0 ||
+          mm_ptr->luminance_max > 9999.99) {
+        return false;
+      }
+    } else if (child_id == mkvmuxer::kMkvLuminanceMin) {
+      const long long value_parse_status =
+          UnserializeFloat(reader, read_pos, child_size, mm_ptr->luminance_min);
+      if (value_parse_status < 0 || mm_ptr->luminance_min < 0.0 ||
+          mm_ptr->luminance_min > 999.9999) {
+        return false;
+      }
+    } else {
+      bool is_x = false;
+      PrimaryChromaticity** chromaticity;
+      switch (child_id) {
+        case mkvmuxer::kMkvPrimaryRChromaticityX:
+        case mkvmuxer::kMkvPrimaryRChromaticityY:
+          is_x = child_id == mkvmuxer::kMkvPrimaryRChromaticityX;
+          chromaticity = &mm_ptr->r;
+          break;
+        case mkvmuxer::kMkvPrimaryGChromaticityX:
+        case mkvmuxer::kMkvPrimaryGChromaticityY:
+          is_x = child_id == mkvmuxer::kMkvPrimaryGChromaticityX;
+          chromaticity = &mm_ptr->g;
+          break;
+        case mkvmuxer::kMkvPrimaryBChromaticityX:
+        case mkvmuxer::kMkvPrimaryBChromaticityY:
+          is_x = child_id == mkvmuxer::kMkvPrimaryBChromaticityX;
+          chromaticity = &mm_ptr->b;
+          break;
+        case mkvmuxer::kMkvWhitePointChromaticityX:
+        case mkvmuxer::kMkvWhitePointChromaticityY:
+          is_x = child_id == mkvmuxer::kMkvWhitePointChromaticityX;
+          chromaticity = &mm_ptr->white_point;
+          break;
+        default:
+          return false;
+      }
+      const bool value_parse_status = PrimaryChromaticity::Parse(
+          reader, read_pos, child_size, is_x, chromaticity);
+      if (!value_parse_status)
+        return false;
+    }
+
+    read_pos += child_size;
+    if (read_pos > mm_end)
+      return false;
+  }
+
+  *mm = mm_ptr.release();
+  return true;
+}
+
+bool Colour::Parse(IMkvReader* reader, long long colour_start,
+                   long long colour_size, Colour** colour) {
+  if (!reader || *colour)
+    return false;
+
+  std::auto_ptr<Colour> colour_ptr(new Colour());
+  if (!colour_ptr.get())
+    return false;
+
+  const long long colour_end = colour_start + colour_size;
+  long long read_pos = colour_start;
+
+  while (read_pos < colour_end) {
+    long long child_id = 0;
+    long long child_size = 0;
+
+    const long status =
+        ParseElementHeader(reader, read_pos, colour_end, child_id, child_size);
+    if (status < 0)
+      return false;
+
+    if (child_id == mkvmuxer::kMkvMatrix) {
+      colour_ptr->matrix = UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->matrix < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvBitsPerChannel) {
+      colour_ptr->bits_per_channel =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->bits_per_channel < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvChromaSubsampling) {
+      colour_ptr->chroma_subsampling =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->chroma_subsampling < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvChromaSitingHorz) {
+      colour_ptr->chroma_siting_horz =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->chroma_siting_horz < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvChromaSitingVert) {
+      colour_ptr->chroma_siting_vert =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->chroma_siting_vert < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvRange) {
+      colour_ptr->range = UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->range < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvTransferFunction) {
+      colour_ptr->transfer_function =
+          UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->transfer_function < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvPrimaries) {
+      colour_ptr->primaries = UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->primaries < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvMaxCLL) {
+      colour_ptr->max_cll = UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->max_cll < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvMaxFALL) {
+      colour_ptr->max_fall = UnserializeUInt(reader, read_pos, child_size);
+      if (colour_ptr->max_fall < 0)
+        return false;
+    } else if (child_id == mkvmuxer::kMkvMasteringMetadata) {
+      if (!MasteringMetadata::Parse(reader, read_pos, child_size,
+                                    &colour_ptr->mastering_metadata))
+        return false;
+    } else {
+      return false;
+    }
+
+    read_pos += child_size;
+    if (read_pos > colour_end)
+      return false;
+  }
+  *colour = colour_ptr.release();
+  return true;
+}
+
 VideoTrack::VideoTrack(Segment* pSegment, long long element_start,
                        long long element_size)
-    : Track(pSegment, element_start, element_size) {}
+    : Track(pSegment, element_start, element_size), m_colour(NULL) {}
+
+VideoTrack::~VideoTrack() { delete m_colour; }
 
 long VideoTrack::Parse(Segment* pSegment, const Info& info,
                        long long element_start, long long element_size,
@@ -5055,6 +5246,9 @@ long VideoTrack::Parse(Segment* pSegment, const Info& info,
         return status;
 
       if (rate <= 0)
+        return E_FILE_FORMAT_INVALID;
+    } else if (id == mkvmuxer::kMkvColour) {
+      if (!Colour::Parse(pReader, pos, size, &pResult->m_colour))
         return E_FILE_FORMAT_INVALID;
     }
 
@@ -5183,6 +5377,8 @@ long VideoTrack::Seek(long long time_ns, const BlockEntry*& pResult) const {
   pResult = GetEOS();
   return 0;
 }
+
+Colour* VideoTrack::GetColour() const { return m_colour; }
 
 long long VideoTrack::GetWidth() const { return m_width; }
 

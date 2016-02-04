@@ -95,6 +95,32 @@ enum MkvId {
   kMkvAspectRatioType = 0x54B3,
   kMkvFrameRate = 0x2383E3,
   // end video
+  // colour
+  kMkvColour = 0x55B0,
+  kMkvMatrix = 0x55B1,
+  kMkvBitsPerChannel = 0x55B2,
+  kMkvChromaSubsampling = 0x55B3,
+  kMkvChromaSitingHorz = 0x55B4,
+  kMkvChromaSitingVert = 0x55B5,
+  kMkvRange = 0x55B6,
+  kMkvTransferFunction = 0x55B7,
+  kMkvPrimaries = 0x55B8,
+  kMkvMaxCLL = 0x55B9,
+  kMkvMaxFALL = 0x55BA,
+  // mastering metadata
+  kMkvMasteringMetadata = 0x55D0,
+  kMkvPrimaryRChromaticityX = 0x55D1,
+  kMkvPrimaryRChromaticityY = 0x55D2,
+  kMkvPrimaryGChromaticityX = 0x55D3,
+  kMkvPrimaryGChromaticityY = 0x55D4,
+  kMkvPrimaryBChromaticityX = 0x55D5,
+  kMkvPrimaryBChromaticityY = 0x55D6,
+  kMkvWhitePointChromaticityX = 0x55D7,
+  kMkvWhitePointChromaticityY = 0x55D8,
+  kMkvLuminanceMax = 0x55D9,
+  kMkvLuminanceMin = 0x55DA,
+  // end mastering metadata
+  // end colour
   // audio
   kMkvAudio = 0xE1,
   kMkvSamplingFrequency = 0xB5,
