@@ -29,13 +29,6 @@ class SiteEngagementHelper
   static void SetSecondsTrackingDelayAfterNavigation(int seconds);
   static void SetSecondsTrackingDelayAfterShow(int seconds);
 
-  // content::WebContentsObserver overrides.
-  void DidNavigateMainFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) override;
-  void WasShown() override;
-  void WasHidden() override;
-
  private:
   // Class to encapsulate the periodic detection of site engagement.
   //
@@ -158,6 +151,13 @@ class SiteEngagementHelper
   // Ask the SiteEngagementService to record engagement via media playing at the
   // current WebContents URL.
   void RecordMediaPlaying(bool is_hidden);
+
+  // content::WebContentsObserver overrides.
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
+  void WasShown() override;
+  void WasHidden() override;
 
   InputTracker input_tracker_;
   MediaTracker media_tracker_;

@@ -10,7 +10,9 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
+#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -194,13 +196,32 @@ void SiteEngagementHelper::RecordMediaPlaying(bool is_hidden) {
 void SiteEngagementHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
+  // Ignore in-page navigations. However, do not stop input or media detection.
+  if (details.is_in_page)
+    return;
+
   input_tracker_.Stop();
   media_tracker_.Stop();
-
   record_engagement_ = params.url.SchemeIsHTTPOrHTTPS();
 
   // Ignore all schemes except HTTP and HTTPS.
   if (!record_engagement_)
+    return;
+
+  // Ignore prerender loads. This means that prerenders will not receive
+  // navigation engagement. The implications are as follows:
+  //
+  // - Instant search prerenders from the omnibox trigger DidNavigateMainFrame
+  //   twice: once for the prerender, and again when the page swaps in. The
+  //   second trigger has transition GENERATED and receives navigation
+  //   engagement.
+  // - Prerenders initiated by <link rel="prerender"> (e.g. search results) are
+  //   always assigned the LINK transition, which is ignored for navigation
+  //   engagement.
+  //
+  // Prerenders trigger WasShown() when they are swapped in, so input engagement
+  // will activate even if navigation engagement is not scored.
+  if (prerender::PrerenderContents::FromWebContents(web_contents()) != nullptr)
     return;
 
   Profile* profile =
