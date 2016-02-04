@@ -375,7 +375,6 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   while (s.Step()) {
     const std::string column_name(s.ColumnString(1));
     const std::string column_type(s.ColumnString(2));
-    const bool not_null = s.ColumnBool(3);
     const int default_type = s.ColumnType(4);
     const bool default_is_null = (default_type == COLUMN_TYPE_NULL);
     const int pk_column = s.ColumnInt(5);
@@ -422,16 +421,6 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       return false;
     }
 
-    // If column has constraint "NOT NULL", then inserting NULL into
-    // that column will fail.  If the column has a non-NULL DEFAULT
-    // specified, the INSERT will handle it (see below).  If the
-    // DEFAULT is also NULL, the row must be filtered out.
-    // TODO(shess): The above scenario applies to INSERT OR REPLACE,
-    // whereas INSERT OR IGNORE drops such rows.
-    // http://www.sqlite.org/lang_conflict.html
-    if (not_null && default_is_null)
-      column_decl += " NOT NULL";
-
     create_column_decls.push_back(column_decl);
 
     // Per the NOTE in the header file, convert NULL values to the
@@ -464,8 +453,10 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       table_name,
       base::JoinString(create_column_decls, ",").c_str()));
 
+  // INSERT OR IGNORE means that it will drop rows resulting from constraint
+  // violations.  INSERT OR REPLACE only handles UNIQUE constraint violations.
   std::string recover_insert(base::StringPrintf(
-      "INSERT OR REPLACE INTO main.%s SELECT %s FROM temp.recover_%s",
+      "INSERT OR IGNORE INTO main.%s SELECT %s FROM temp.recover_%s",
       table_name,
       base::JoinString(insert_columns, ",").c_str(),
       table_name));

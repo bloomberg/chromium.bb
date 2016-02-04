@@ -115,8 +115,8 @@ class SQL_EXPORT Recovery {
   // Attempt to recover the named table from the corrupt database into
   // the recovery database using a temporary recover virtual table.
   // The virtual table schema is derived from the named table's schema
-  // in database [main].  Data is copied using INSERT OR REPLACE, so
-  // duplicates overwrite each other.
+  // in database [main].  Data is copied using INSERT OR IGNORE, so
+  // duplicates are dropped.
   //
   // If the source table has fewer columns than the target, the target
   // DEFAULT value will be used for those columns.

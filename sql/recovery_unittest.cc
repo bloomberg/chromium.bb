@@ -371,9 +371,10 @@ TEST_F(SQLRecoveryTest, RecoverCorruptTable) {
   EXPECT_EQ("10", ExecuteWithResults(&db(), kCountSql, "|", ","));
   EXPECT_EQ("10", ExecuteWithResults(&db(), kDistinctSql, "|", ","));
 
-  // The expected value was retained.
+  // Only one of the values is retained.
   const char kSelectSql[] = "SELECT v FROM x WHERE id = 0";
-  EXPECT_EQ("100", ExecuteWithResults(&db(), kSelectSql, "|", ","));
+  const std::string results = ExecuteWithResults(&db(), kSelectSql, "|", ",");
+  EXPECT_TRUE(results=="100" || results=="0") << "Actual results: " << results;
 }
 
 TEST_F(SQLRecoveryTest, Meta) {
