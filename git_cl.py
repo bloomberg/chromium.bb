@@ -2952,15 +2952,45 @@ def CMDpatch(parser, args):
                         'attempting a 3-way merge')
   parser.add_option('-n', '--no-commit', action='store_true', dest='nocommit',
                     help="don't commit after patch applies")
+
+  group = optparse.OptionGroup(parser,
+                    """Options for continuing work on the current issue uploaded
+from a different clone (e.g. different machine). Must be used independently from
+the other options. No issue number should be specified, and the branch must have
+an issue number associated with it""")
+  group.add_option('--reapply', action='store_true',
+                    dest='reapply',
+                    help="""Reset the branch and reapply the issue.
+CAUTION: This will undo any local changes in this branch""")
+
+  group.add_option('--pull', action='store_true', dest='pull',
+                    help="Performs a pull before reapplying.")
+  parser.add_option_group(group)
+
   auth.add_auth_options(parser)
   (options, args) = parser.parse_args(args)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  if len(args) != 1:
-    parser.print_help()
-    return 1
+  issue_arg = None
+  if options.reapply :
+    if len(args) > 0:
+      parser.error("--reapply implies no additional arguments.")
 
-  issue_arg = ParseIssueNum(args[0])
+    cl = Changelist()
+    issue_arg = cl.GetIssue()
+    upstream = cl.GetUpstreamBranch()
+    if upstream == None:
+      parser.error("No upstream branch specified. Cannot reset branch")
+
+    RunGit(['reset', '--hard', upstream])
+    if options.pull:
+      RunGit(['pull'])
+  else:
+    if len(args) != 1:
+      parser.error("Must specify issue number")
+
+    issue_arg = ParseIssueNum(args[0])
+
   # The patch URL works because ParseIssueNum won't do any substitution
   # as the re.sub pattern fails to match and just returns it.
   if issue_arg == None:
@@ -2975,6 +3005,8 @@ def CMDpatch(parser, args):
   # TODO(ukai): use gerrit-cherry-pick for gerrit repository?
 
   if options.newbranch:
+    if options.reapply:
+      parser.error("--reapply excludes any option other than --pull")
     if options.force:
       RunGit(['branch', '-D', options.newbranch],
           stderr=subprocess2.PIPE, error_ok=True)
