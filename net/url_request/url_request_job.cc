@@ -749,6 +749,8 @@ Error URLRequestJob::ReadFilteredData(int* bytes_read) {
                    << " Filter Error";
           filter_needs_more_output_space_ = false;
           error = ERR_CONTENT_DECODING_FAILED;
+          UMA_HISTOGRAM_ENUMERATION("Net.ContentDecodingFailed.FilterType",
+                                    filter_->type(), Filter::FILTER_TYPE_MAX);
           break;
         }
         default: {

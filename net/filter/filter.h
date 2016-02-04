@@ -151,7 +151,8 @@ class NET_EXPORT_PRIVATE Filter {
     FILTER_ERROR
   };
 
-  // Specifies type of filters that can be created.
+  // Specifies type of filters that can be created.  Do not change the values
+  // of this enum; it is preserved in a histogram.
   enum FilterType {
     FILTER_TYPE_BROTLI,
     FILTER_TYPE_DEFLATE,
@@ -160,6 +161,8 @@ class NET_EXPORT_PRIVATE Filter {
     FILTER_TYPE_SDCH,
     FILTER_TYPE_SDCH_POSSIBLE,  // Sdch possible, but pass through allowed.
     FILTER_TYPE_UNSUPPORTED,
+
+    FILTER_TYPE_MAX
   };
 
   virtual ~Filter();
@@ -232,6 +235,8 @@ class NET_EXPORT_PRIVATE Filter {
 
   // Returns a string describing the FilterTypes implemented by this filter.
   std::string OrderedFilterList() const;
+
+  FilterType type() const { return type_id_; }
 
  protected:
   friend class BrotliUnitTest;

@@ -78,6 +78,8 @@ std::string FilterTypeAsString(Filter::FilterType type_id) {
       return "FILTER_TYPE_SDCH_POSSIBLE  ";
     case Filter::FILTER_TYPE_UNSUPPORTED:
       return "FILTER_TYPE_UNSUPPORTED";
+    case Filter::FILTER_TYPE_MAX:
+      return "FILTER_TYPE_MAX";
   }
   return "";
 }
