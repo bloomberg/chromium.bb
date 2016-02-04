@@ -5002,6 +5002,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_DESCRIPTION" desc="Description for the flag to use Blink's zooming mechanism to implement device scale factor.">
         If enabled, Blink uses its zooming mechanism to scale content for device scale factor.
       </message>
+      <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_CHOICE_DEFAULT" desc="Text to indicate that it'll use the platform settings to enable/disable use-zoom-for-dsf mode.">
+        Default
+      </message>
+      <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_CHOICE_ENABLED" desc="Text to indicate the use-zoom-for-dsf mode is enabled.">
+        Enabled
+      </message>
+      <message name="IDS_FLAGS_ENABLE_USE_ZOOM_FOR_DSF_CHOICE_DISABLED" desc="Text to indicate the use-zoom-for-dsf mode is disabled.">
+        Disabled
+      </message>
 
       <!-- Components -->
       <message name="IDS_COMPONENTS_TITLE" desc="Title for the chrome://components page.">
