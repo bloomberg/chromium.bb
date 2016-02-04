@@ -61,6 +61,7 @@ public class SigninPromoScreen
 
         SigninPromoScreen promoScreen = new SigninPromoScreen(activity);
         promoScreen.show();
+        SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SIGNIN_PROMO);
         preferenceManager.setSigninPromoShown();
         return true;
     }

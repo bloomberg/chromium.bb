@@ -939,6 +939,13 @@ if (is_android) {
     ]
   }
 
+  # GYP: //chrome/chrome.gyp:signin_metrics_enum_java
+  java_cpp_enum("signin_metrics_enum_javagen") {
+    sources = [
+      "../components/signin/core/browser/signin_metrics.h",
+    ]
+  }
+
   # GYP: //chrome/chrome.gyp:page_info_connection_type_java
   java_cpp_enum("page_info_connection_type_javagen") {
     sources = [

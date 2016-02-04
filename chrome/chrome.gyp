@@ -547,6 +547,7 @@
             'profile_account_management_metrics_java',
             'resource_id_java',
             'shortcut_source_java',
+            'signin_metrics_enum_java',
             'tab_load_status_java',
             '../base/base.gyp:base',
             '../build/android/java_google_api_keys.gyp:google_api_keys_java',
@@ -670,6 +671,15 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/ui/android/website_settings_popup_android.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome:signin_metrics_enum_javagen
+          'target_name': 'signin_metrics_enum_java',
+          'type': 'none',
+          'variables': {
+            'source_file': '../components/signin/core/browser/signin_metrics.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

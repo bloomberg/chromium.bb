@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.RecentTabsPromoView.SyncPromoModel;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedCallback;
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -474,5 +475,10 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
             mProfileDataCache = new ProfileDataCache(mContext, Profile.getLastUsedProfile());
         }
         return mProfileDataCache;
+    }
+
+    @Override
+    public int getAccessPoint() {
+        return SigninAccessPoint.RECENT_TABS;
     }
 }

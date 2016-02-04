@@ -167,6 +167,7 @@ android_library("chrome_java") {
     ":resource_id_javagen",
     "//chrome:content_setting_javagen",
     "//chrome:content_settings_type_javagen",
+    "//chrome:signin_metrics_enum_javagen",
   ]
 
   # TODO(sievers): Split java code into components. Not everything

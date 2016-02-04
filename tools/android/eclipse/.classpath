@@ -136,6 +136,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="out/Debug/gen/enums/result_codes_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/screen_orientation_values_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/selection_event_type_java"/>
+    <classpathentry kind="src" path="out/Debug/gen/enums/signin_metrics_enum_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/speech_recognition_error_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/system_ui_resource_type_java"/>
     <classpathentry kind="src" path="out/Debug/gen/enums/tab_load_status_java"/>

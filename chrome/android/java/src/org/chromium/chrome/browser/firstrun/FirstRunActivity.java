@@ -26,6 +26,8 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
+import org.chromium.chrome.browser.signin.SigninManager;
 
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
@@ -307,6 +309,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     public void onSigninDialogShown() {
         RecordUserAction.record("MobileFre.SignInShown");
         RecordUserAction.record("Signin_Impression_FromStartPage");
+        SigninManager.logSigninStartAccessPoint(SigninAccessPoint.START_PAGE);
     }
 
     @Override

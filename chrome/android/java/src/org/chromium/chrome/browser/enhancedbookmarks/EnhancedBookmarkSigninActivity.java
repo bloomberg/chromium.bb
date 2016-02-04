@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ntp.RecentTabsPromoView;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView.SyncPromoModel;
 import org.chromium.chrome.browser.ntp.RecentTabsPromoView.UserActionListener;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -135,5 +136,10 @@ public class EnhancedBookmarkSigninActivity extends EnhancedBookmarkActivityBase
             mProfileDataCache = new ProfileDataCache(this, Profile.getLastUsedProfile());
         }
         return mProfileDataCache;
+    }
+
+    @Override
+    public int getAccessPoint() {
+        return SigninAccessPoint.BOOKMARK_MANAGER;
     }
 }
