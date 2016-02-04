@@ -9,8 +9,10 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "chrome/browser/extensions/extension_keybinding_registry.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_delegate.h"
+#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/toolbar/chevron_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -122,12 +124,14 @@ class ResizeArea;
 // growing the container.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class BrowserActionsContainer : public views::View,
-                                public ToolbarActionsBarDelegate,
-                                public views::ResizeAreaDelegate,
-                                public gfx::AnimationDelegate,
-                                public ToolbarActionView::Delegate,
-                                public views::WidgetObserver {
+class BrowserActionsContainer
+    : public views::View,
+      public ToolbarActionsBarDelegate,
+      public views::ResizeAreaDelegate,
+      public gfx::AnimationDelegate,
+      public ToolbarActionView::Delegate,
+      public views::WidgetObserver,
+      public extensions::ExtensionKeybindingRegistry::Delegate {
  public:
   // Constructs a BrowserActionContainer for a particular |browser| object. For
   // documentation of |main_container|, see class comments.
@@ -149,6 +153,11 @@ class BrowserActionsContainer : public views::View,
 
   ToolbarActionsBar* toolbar_actions_bar() {
     return toolbar_actions_bar_.get();
+  }
+
+  // The class that registers for keyboard shortcuts for extension commands.
+  extensions::ExtensionKeybindingRegistry* extension_keybinding_registry() {
+    return extension_keybinding_registry_.get();
   }
 
   // Get a particular toolbar action view.
@@ -179,6 +188,10 @@ class BrowserActionsContainer : public views::View,
   // Returns how many actions will be visible once the container finishes
   // animating to a new size, or (if not animating) the currently visible icons.
   size_t VisibleBrowserActionsAfterAnimation() const;
+
+  // Executes |command| registered by |extension|.
+  void ExecuteExtensionCommand(const extensions::Extension* extension,
+                               const extensions::Command& command);
 
   // Returns the preferred width given the limit of |max_width|. (Unlike most
   // views, since we don't want to show part of an icon or a large space after
@@ -246,6 +259,10 @@ class BrowserActionsContainer : public views::View,
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  // Overridden from extension::ExtensionKeybindingRegistry::Delegate:
+  extensions::ActiveTabPermissionGranter* GetActiveTabPermissionGranter()
+      override;
 
   views::BubbleDelegateView* active_bubble() { return active_bubble_; }
 
@@ -330,6 +347,9 @@ class BrowserActionsContainer : public views::View,
   // The DropPosition for the current drag-and-drop operation, or NULL if there
   // is none.
   scoped_ptr<DropPosition> drop_position_;
+
+  // The class that registers for keyboard shortcuts for extension commands.
+  scoped_ptr<ExtensionKeybindingRegistryViews> extension_keybinding_registry_;
 
   // The extension bubble that is actively showing, if any.
   views::BubbleDelegateView* active_bubble_;

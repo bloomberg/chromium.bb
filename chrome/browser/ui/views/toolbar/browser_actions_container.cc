@@ -177,6 +177,16 @@ size_t BrowserActionsContainer::VisibleBrowserActionsAfterAnimation() const {
   return toolbar_actions_bar_->WidthToIconCount(animation_target_size_);
 }
 
+void BrowserActionsContainer::ExecuteExtensionCommand(
+    const extensions::Extension* extension,
+    const extensions::Command& command) {
+  // Global commands are handled by the ExtensionCommandsGlobalRegistry
+  // instance.
+  DCHECK(!command.global());
+  extension_keybinding_registry_->ExecuteCommand(extension->id(),
+                                                 command.accelerator());
+}
+
 bool BrowserActionsContainer::ShownInsideMenu() const {
   return in_overflow_mode();
 }
@@ -675,6 +685,15 @@ content::WebContents* BrowserActionsContainer::GetCurrentWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+extensions::ActiveTabPermissionGranter*
+    BrowserActionsContainer::GetActiveTabPermissionGranter() {
+  content::WebContents* web_contents = GetCurrentWebContents();
+  if (!web_contents)
+    return NULL;
+  return extensions::TabHelper::FromWebContents(web_contents)->
+      active_tab_permission_granter();
+}
+
 void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // If the views haven't been initialized yet, wait for the next call to
   // paint (one will be triggered by entering highlight mode).
@@ -733,6 +752,15 @@ void BrowserActionsContainer::ViewHierarchyChanged(
     return;
 
   if (details.is_add && details.child == this) {
+    if (!in_overflow_mode() &&  // We only need one keybinding registry.
+        parent()->GetFocusManager()) {  // focus manager can be null in tests.
+      extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
+          browser_->profile(),
+          parent()->GetFocusManager(),
+          extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
+          this));
+    }
+
     // Initial toolbar button creation and placement in the widget hierarchy.
     // We do this here instead of in the constructor because adding views
     // calls Layout on the Toolbar, which needs this object to be constructed

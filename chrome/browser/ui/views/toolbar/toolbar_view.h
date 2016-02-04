@@ -40,6 +40,7 @@ class ToolbarView : public views::AccessiblePaneView,
                     public content::NotificationObserver,
                     public CommandObserver,
                     public views::ButtonListener,
+                    public views::WidgetObserver,
                     public views::ViewTargeterDelegate,
                     public AppMenuBadgeController::Delegate {
  public:
@@ -85,6 +86,10 @@ class ToolbarView : public views::AccessiblePaneView,
   void OnBubbleCreatedForAnchor(views::View* anchor_view,
                                 views::Widget* bubble_widget);
 
+  // Executes |command| registered by |extension|.
+  void ExecuteExtensionCommand(const extensions::Extension* extension,
+                               const extensions::Command& command);
+
   // Returns the maximum width the browser actions container can have.
   int GetMaxBrowserActionsWidth() const;
 
@@ -129,6 +134,9 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::WidgetObserver:
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -199,8 +207,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   int content_shadow_height() const;
 
-  // Controls. Most of these can be null, e.g. in popup windows. Only
-  // |location_bar_| is guaranteed to exist.
+  // Controls
   BackButton* back_;
   ToolbarButton* forward_;
   ReloadButton* reload_;
@@ -208,7 +215,6 @@ class ToolbarView : public views::AccessiblePaneView,
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
   AppMenuButton* app_menu_button_;
-
   Browser* browser_;
 
   AppMenuBadgeController badge_controller_;
@@ -217,7 +223,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BooleanPrefMember show_home_button_;
 
   // The display mode used when laying out the toolbar.
-  const DisplayMode display_mode_;
+  DisplayMode display_mode_;
 
   content::NotificationRegistrar registrar_;
 

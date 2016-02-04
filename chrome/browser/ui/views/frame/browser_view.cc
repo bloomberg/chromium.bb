@@ -68,7 +68,6 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
-#include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
@@ -99,7 +98,6 @@
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -1108,11 +1106,8 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
 }
 
 void BrowserView::UpdateReloadStopState(bool is_loading, bool force) {
-  if (toolbar_->reload_button()) {
-    toolbar_->reload_button()->ChangeMode(
-        is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD,
-        force);
-  }
+  toolbar_->reload_button()->ChangeMode(
+      is_loading ? ReloadButton::MODE_STOP : ReloadButton::MODE_RELOAD, force);
 }
 
 void BrowserView::UpdateToolbar(content::WebContents* contents) {
@@ -1852,23 +1847,6 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   if (active)
     BrowserList::SetLastActive(browser_.get());
-
-  if (!extension_keybinding_registry_ &&
-      GetFocusManager()) {  // focus manager can be null in tests.
-    extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
-        browser_->profile(), GetFocusManager(),
-        extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS, this));
-  }
-
-  extensions::ExtensionCommandsGlobalRegistry* registry =
-      extensions::ExtensionCommandsGlobalRegistry::Get(browser_->profile());
-  if (active) {
-    registry->set_registry_for_active_window(
-        extension_keybinding_registry_.get());
-  } else if (registry->registry_for_active_window() ==
-             extension_keybinding_registry_.get()) {
-    registry->set_registry_for_active_window(nullptr);
-  }
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
@@ -2632,8 +2610,7 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
 void BrowserView::ExecuteExtensionCommand(
     const extensions::Extension* extension,
     const extensions::Command& command) {
-  extension_keybinding_registry_->ExecuteCommand(extension->id(),
-                                                 command.accelerator());
+  toolbar_->ExecuteExtensionCommand(extension, command);
 }
 
 ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
@@ -2745,13 +2722,4 @@ bool BrowserView::IsImmersiveModeEnabled() {
 
 gfx::Rect BrowserView::GetTopContainerBoundsInScreen() {
   return top_container_->GetBoundsInScreen();
-}
-
-extensions::ActiveTabPermissionGranter*
-BrowserView::GetActiveTabPermissionGranter() {
-  content::WebContents* web_contents = GetActiveWebContents();
-  if (!web_contents)
-    return nullptr;
-  return extensions::TabHelper::FromWebContents(web_contents)
-      ->active_tab_permission_granter();
 }
