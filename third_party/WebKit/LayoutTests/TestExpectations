@@ -103,9 +103,6 @@ crbug.com/527242 virtual/spv2/paint/invalidation/spv2/cached-change-tbody-border
 
 crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor-clip-change.html [ Failure ]
 
-crbug.com/231612 svg/custom/transform-invalid.svg [ NeedsRebaseline ]
-crbug.com/231612 svg/dom/transform-parser.html [ NeedsRebaseline ]
-
 crbug.com/537172 [ Mac10.6 Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
 crbug.com/564443 [ Mac10.7 Mac10.8 Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure Pass ]
 

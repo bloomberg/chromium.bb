@@ -147,10 +147,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "matrix(e+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "matrix(96,e2\t0 1e2-5)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "matrix( 8-7(3.".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected number, "matrix(".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="matrixx(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="matri(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="matrix"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="matrix\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "matrixx(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "matri(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "matrix".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "matrix\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "matrix(\u0000)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate()".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(0,0)".
@@ -242,7 +242,7 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(231293.16e"
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(()2(37-888580(9e…".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(18e805".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "rotate(0".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(63) 693("
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(63) 693(".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(80,2)+ 4ee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(5e+59e2e5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(5\t3e,9".
@@ -255,17 +255,17 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(+".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "rotate(88".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(9 43,+6 87.)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(\t-\t .5997".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(5.9)557"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(+65)e)0,\t217"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(5.9)557".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(+65)e)0,\t217".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "rotate(.2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(+\t".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(e8+(++\te52,. 73".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(,0+\t.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "…e(-59-62159544,8,\t3\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(0857) 5"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(0857) 5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(6,71+5e )e ".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "rotate(2e5\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(1e2)7e()\t90"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(1e2)7e()\t90".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(9.-)7".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(8e759.6,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(2(65\t.59e0+8-5".
@@ -282,15 +282,15 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate()\t+69".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(, 19e\t)2)+0-(9)2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(1e,--+810)5..e37".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(35 )+e"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(35 )+e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(362020()8347081e78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate()+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(e-.54(+006\t3141e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(e)\t.1+9e.0)7".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(61)2e."
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(61)2e.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(7075-5(e67)+(-7)7)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(e  ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate(88)(3e21"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotate(88)(3e21".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(3e-003(4".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "rotate(682- \t19-0)4642".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected number, "rotate(6 7".
@@ -300,10 +300,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Trailing garbage, "rotate(96,e2\t
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate( 8-7(3.".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected number, "rotate(".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected number, "rotate(8 78".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotatee(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotat(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="rotate\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "rotatee(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "rotat(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "rotate".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "rotate\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "rotate(\u0000)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale()".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(0,0,0)".
@@ -394,8 +394,8 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(231293.16e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(()2(37-888580(9e…".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(18e805".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(0".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(63) 693("
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(80,2)+ 4ee,"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(63) 693(".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(80,2)+ 4ee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(5e+59e2e5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(5\t3e,9".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(e7\t)((59\t".
@@ -407,17 +407,17 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(+".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(88".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(9 43,+6 87.)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(\t-\t .5997".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(5.9)557"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(+65)e)0,\t217"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(5.9)557".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(+65)e)0,\t217".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(.2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(+\t".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(e8+(++\te52,. 73".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(,0+\t.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "…ale(-59-62159544,8,\t3\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(0857) 5"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(0857) 5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(6,71+5e )e ".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(2e5\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(1e2)7e()\t90"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(1e2)7e()\t90".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(9.-)7".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(8e759.6,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(2(65\t.59e0+8-5".
@@ -434,15 +434,15 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale()\t+69".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(, 19e\t)2)+0-(9)2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(1e,--+810)5..e37".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(35 )+e"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(35 )+e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(362020()8347081e78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale()+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(e-.54(+006\t3141e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(e)\t.1+9e.0)7".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(61)2e."
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(61)2e.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(7075-5(e67)+(-7)7)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(e  ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale(88)(3e21"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scale(88)(3e21".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(3e-003(4".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(682- \t19-0)4642".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(6 7".
@@ -453,10 +453,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale( 8-7(3.".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected number, "scale(".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "scale(8 78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "scale(2\t8\t2e.172\t(0 .)".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scalee(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scal(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="scale\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "scalee(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "scal(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "scale".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "scale\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "scale(\u0000)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX()".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(0,0)".
@@ -547,7 +547,7 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(231293.16e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(()2(37-888580(9e…".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(18e805".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewX(0".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(63) 693("
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(63) 693(".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(80,2)+ 4ee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(5e+59e2e5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(5\t3e,9".
@@ -560,17 +560,17 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(+".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewX(88".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(9 43,+6 87.)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(\t-\t .5997".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(5.9)557"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(+65)e)0,\t217"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(5.9)557".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(+65)e)0,\t217".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewX(.2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(+\t".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(e8+(++\te52,. 73".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(,0+\t.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(-59-62159544,8,\t3\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(0857) 5"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(0857) 5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(6,71+5e )e ".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewX(2e5\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(1e2)7e()\t90"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(1e2)7e()\t90".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(9.-)7".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(8e759.6,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(2(65\t.59e0+8-5".
@@ -587,15 +587,15 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX()\t+69".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(, 19e\t)2)+0-(9)2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(1e,--+810)5..e37".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(35 )+e"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(35 )+e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(362020()8347081e78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX()+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(e-.54(+006\t3141e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(e)\t.1+9e.0)7".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(61)2e."
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(61)2e.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(7075-5(e67)+(-7)7)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(e  ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX(88)(3e21"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewX(88)(3e21".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(3e-003(4".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(682- \t19-0)4642".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(6 7".
@@ -607,10 +607,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(8 78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewX(2\t8\t2e.172\t(0 .)".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewX(\t9".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewXX(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skew(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewX\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "skewXX(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skew(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "skewX".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "skewX\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewX(\u0000)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY()".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(0,0)".
@@ -700,7 +700,7 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(231293.16e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(()2(37-888580(9e…".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(18e805".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewY(0".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(63) 693("
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(63) 693(".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(80,2)+ 4ee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(5e+59e2e5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(5\t3e,9".
@@ -713,17 +713,17 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(+".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewY(88".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(9 43,+6 87.)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(\t-\t .5997".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(5.9)557"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(+65)e)0,\t217"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(5.9)557".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(+65)e)0,\t217".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewY(.2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(+\t".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(e8+(++\te52,. 73".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(,0+\t.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(-59-62159544,8,\t3\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(0857) 5"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(0857) 5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(6,71+5e )e ".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewY(2e5\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(1e2)7e()\t90"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(1e2)7e()\t90".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(9.-)7".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(8e759.6,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(2(65\t.59e0+8-5".
@@ -740,15 +740,15 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY()\t+69".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(, 19e\t)2)+0-(9)2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(1e,--+810)5..e37".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(35 )+e"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(35 )+e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(362020()8347081e78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY()+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(e-.54(+006\t3141e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(e)\t.1+9e.0)7".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(61)2e."
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(61)2e.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(7075-5(e67)+(-7)7)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(e  ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY(88)(3e21"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skewY(88)(3e21".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(3e-003(4".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(682- \t19-0)4642".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(6 7".
@@ -761,10 +761,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(8 78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(2\t8\t2e.172\t(0 .)".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "skewY(\t9".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "skewY(0 795\t0,- eee,".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewYY(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skew(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="skewY\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "skewYY(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "skew(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "skewY".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "skewY\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "skewY(\u0000)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate()".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(0,0,0)".
@@ -852,8 +852,8 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "…nslate(231293.1
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(()2(37-888580(9e…".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(18e805".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(0".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(63) 693("
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(80,2)+ 4ee,"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(63) 693(".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(80,2)+ 4ee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(5e+59e2e5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(5\t3e,9".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(e7\t)((59\t".
@@ -865,17 +865,17 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(+".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(88".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(9 43,+6 87.)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(\t-\t .5997".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(5.9)557"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(+65)e)0,\t217"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(5.9)557".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(+65)e)0,\t217".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(.2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(+\t".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(e8+(++\te52,. 73".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(,0+\t.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "…ate(-59-62159544,8,\t3\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(0857) 5"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(0857) 5".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(6,71+5e )e ".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(2e5\t".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(1e2)7e()\t90"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(1e2)7e()\t90".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(9.-)7".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(8e759.6,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(2(65\t.59e0+8-5".
@@ -892,15 +892,15 @@ CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expe
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate()\t+69".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(, 19e\t)2)+0-(9)2".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(1e,--+810)5..e37".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(35 )+e"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(35 )+e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(362020()8347081e78".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate()+".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(e-.54(+006\t3141e".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(e)\t.1+9e.0)7".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(61)2e."
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(61)2e.".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(7075-5(e67)+(-7)7)".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(e  ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate(88)(3e21"
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translate(88)(3e21".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(3e-003(4".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(682- \t19-0)4642".
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(6 7".
@@ -914,10 +914,10 @@ CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(2\t8\t2e
 CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected ')', "translate(\t9".
 CONSOLE ERROR: Error: <g> attribute transform: Expected ')', "translate(0 795\t0,- eee,".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate((7- ".
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translatee(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translat(0, 0)"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate"
-CONSOLE ERROR: Error: Invalid value for <g> attribute transform="translate\u0000"
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "translatee(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Expected transform function, "translat(0, 0)".
+CONSOLE ERROR: Error: <g> attribute transform: Unexpected end of attribute. Expected '(', "translate".
+CONSOLE ERROR: Error: <g> attribute transform: Expected '(', "translate\u0000".
 CONSOLE ERROR: Error: <g> attribute transform: Expected number, "translate(\u0000)".
 This test fuzzes the transform parser with semi-random attribute values and dumps the results of any values that parse successfully.
 
