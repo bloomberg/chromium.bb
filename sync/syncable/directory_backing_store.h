@@ -29,6 +29,7 @@ namespace syncer {
 namespace syncable {
 
 SYNC_EXPORT extern const int32_t kCurrentDBVersion;
+SYNC_EXPORT extern const int32_t kCurrentPageSizeKB;
 
 struct ColumnSpec;
 
@@ -96,6 +97,9 @@ class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
   // |catastrophic_error_handler|.
   virtual void SetCatastrophicErrorHandler(
       const base::Closure& catastrophic_error_handler);
+
+  // Returns true on success, false on error.
+  bool GetDatabasePageSize(int* page_size);
 
  protected:
   // For test classes.
@@ -185,8 +189,8 @@ class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
   void ResetAndCreateConnection();
 
  private:
-  friend class TestDirectoryBackingStore;
   friend class DirectoryBackingStoreTest;
+  friend class TestDirectoryBackingStore;
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
                            IncreaseDatabasePageSizeFrom4KTo32K);
   FRIEND_TEST_ALL_PREFIXES(DirectoryBackingStoreTest,
@@ -196,6 +200,7 @@ class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
   FRIEND_TEST_ALL_PREFIXES(
       DirectoryBackingStoreTest,
       CatastrophicErrorHandler_InvocationDuringSaveChanges);
+  FRIEND_TEST_ALL_PREFIXES(MigrationTest, ToCurrentVersion);
 
   // Drop all tables in preparation for reinitialization.
   void DropAllTables();
@@ -235,10 +240,7 @@ class SYNC_EXPORT DirectoryBackingStore : public base::NonThreadSafe {
   bool Vacuum();
 
   // Returns true on success, false on error.
-  bool IncreasePageSizeTo32K();
-
-  // Returns true on success, false on error.
-  bool GetDatabasePageSize(int* page_size);
+  bool UpdatePageSizeIfNecessary();
 
   // Prepares |save_statement| for saving entries in |table|.
   void PrepareSaveEntryStatement(EntryTable table,

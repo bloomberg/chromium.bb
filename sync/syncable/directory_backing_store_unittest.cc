@@ -57,6 +57,7 @@ scoped_ptr<EntryKernel> CreateEntry(int id, const std::string &id_suffix) {
 
 }  // namespace
 
+SYNC_EXPORT extern const int32_t kCurrentPageSizeKB;
 SYNC_EXPORT extern const int32_t kCurrentDBVersion;
 
 class MigrationTest : public testing::TestWithParam<int> {
@@ -3578,7 +3579,9 @@ TEST_F(DirectoryBackingStoreTest, DetectInvalidPosition) {
 
 TEST_P(MigrationTest, ToCurrentVersion) {
   sql::Connection connection;
-  ASSERT_TRUE(connection.OpenInMemory());
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
+  // Assume all old versions have an old page size.
+  connection.set_page_size(4096);
   switch (GetParam()) {
     case 67:
       SetUpVersion67Database(&connection);
@@ -3660,6 +3663,7 @@ TEST_P(MigrationTest, ToCurrentVersion) {
       // at the new schema.  See the MigrateToLatestAndDump test case.
       FAIL() << "Need to supply database dump for version " << GetParam();
   }
+  connection.Close();
 
   syncable::Directory::KernelLoadInfo dir_info;
   Directory::MetahandlesMap handles_map;
@@ -3668,15 +3672,21 @@ TEST_P(MigrationTest, ToCurrentVersion) {
   STLValueDeleter<Directory::MetahandlesMap> index_deleter(&handles_map);
 
   {
-    scoped_ptr<TestDirectoryBackingStore> dbs(
-        new TestDirectoryBackingStore(GetUsername(), &connection));
+    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
+        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
     ASSERT_EQ(OPENED, dbs->Load(&handles_map, &delete_journals,
                                 &metahandles_to_purge, &dir_info));
     if (!metahandles_to_purge.empty())
-      dbs->DeleteEntries(metahandles_to_purge);
+      dbs->DeleteEntries(DirectoryBackingStore::METAS_TABLE,
+                         metahandles_to_purge);
     ASSERT_FALSE(dbs->needs_column_refresh());
     ASSERT_EQ(kCurrentDBVersion, dbs->GetVersion());
+    int pageSize = 0;
+    ASSERT_TRUE(dbs->GetDatabasePageSize(&pageSize));
+    ASSERT_EQ(kCurrentPageSizeKB, pageSize);
   }
+
+  ASSERT_TRUE(connection.Open(GetDatabasePath()));
 
   // Columns deleted in Version 67.
   ASSERT_FALSE(connection.DoesColumnExist("metas", "name"));
@@ -4035,6 +4045,37 @@ TEST_F(DirectoryBackingStoreTest, MinorCorruption) {
   }
 }
 
+TEST_F(DirectoryBackingStoreTest, MinorCorruptionAndUpgrade) {
+  {
+    scoped_ptr<OnDiskDirectoryBackingStore> dbs(
+        new OnDiskDirectoryBackingStore(GetUsername(), GetDatabasePath()));
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+  }
+
+  // Make the node look outdated with an invalid version.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(connection.Execute("UPDATE share_version SET data = 0;"));
+    ASSERT_TRUE(connection.Execute("PRAGMA page_size=4096;"));
+    ASSERT_TRUE(connection.Execute("VACUUM;"));
+  }
+
+  {
+    scoped_ptr<OnDiskDirectoryBackingStoreForTest> dbs(
+        new OnDiskDirectoryBackingStoreForTest(GetUsername(),
+                                               GetDatabasePath()));
+    dbs->SetCatastrophicErrorHandler(base::Bind(&base::DoNothing));
+
+    EXPECT_TRUE(LoadAndIgnoreReturnedData(dbs.get()));
+    EXPECT_TRUE(dbs->DidFailFirstOpenAttempt());
+
+    int page_size = 0;
+    ASSERT_TRUE(dbs->GetDatabasePageSize(&page_size));
+    EXPECT_EQ(kCurrentPageSizeKB, page_size);
+  }
+}
+
 TEST_F(DirectoryBackingStoreTest, DeleteEntries) {
   sql::Connection connection;
   ASSERT_TRUE(connection.OpenInMemory());
@@ -4119,13 +4160,12 @@ TEST_F(DirectoryBackingStoreTest, IncreaseDatabasePageSizeFrom4KTo32K) {
 
   // Check if update is successful.
   int pageSize = 0;
-  dbs->GetDatabasePageSize(&pageSize);
-  EXPECT_NE(32768, pageSize);
-  dbs->db_->set_page_size(32768);
-  dbs->IncreasePageSizeTo32K();
+  EXPECT_TRUE(dbs->GetDatabasePageSize(&pageSize));
+  EXPECT_NE(kCurrentPageSizeKB, pageSize);
+  EXPECT_TRUE(dbs->UpdatePageSizeIfNecessary());
   pageSize = 0;
-  dbs->GetDatabasePageSize(&pageSize);
-  EXPECT_EQ(32768, pageSize);
+  EXPECT_TRUE(dbs->GetDatabasePageSize(&pageSize));
+  EXPECT_EQ(kCurrentPageSizeKB, pageSize);
 }
 
 // See that a catastrophic error handler remains set across instances of the
