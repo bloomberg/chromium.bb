@@ -16,16 +16,16 @@ const uint8_t kInput2[] = {'t', 'e', 'a', 'l'};
 TEST(InputTest, Equals) {
   Input test(kInput);
   Input test2(kInput);
-  EXPECT_TRUE(test.Equals(test2));
+  EXPECT_EQ(test, test2);
 
   uint8_t input_copy[arraysize(kInput)] = {0};
   memcpy(input_copy, kInput, arraysize(kInput));
   Input test_copy(input_copy);
-  EXPECT_TRUE(test.Equals(test_copy));
+  EXPECT_EQ(test, test_copy);
 
   Input test_truncated(kInput, arraysize(kInput) - 1);
-  EXPECT_FALSE(test.Equals(test_truncated));
-  EXPECT_FALSE(test_truncated.Equals(test));
+  EXPECT_NE(test, test_truncated);
+  EXPECT_NE(test_truncated, test);
 }
 
 TEST(InputTest, LessThan) {
@@ -53,7 +53,7 @@ TEST(InputTest, StaticArray) {
   EXPECT_EQ(arraysize(kInput), input.Length());
 
   Input input2(kInput);
-  EXPECT_TRUE(input.Equals(input2));
+  EXPECT_EQ(input, input2);
 }
 
 TEST(ByteReaderTest, NoReadPastEnd) {

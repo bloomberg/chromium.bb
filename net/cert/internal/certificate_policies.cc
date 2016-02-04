@@ -56,9 +56,8 @@ bool ParsePolicyQualifiers(const der::Input& policy_oid,
     // RFC 5280 section 4.2.1.4: When qualifiers are used with the special
     // policy anyPolicy, they MUST be limited to the qualifiers identified in
     // this section.
-    if (policy_oid.Equals(AnyPolicy()) &&
-        !qualifier_oid.Equals(CpsPointerId()) &&
-        !qualifier_oid.Equals(UserNoticeId())) {
+    if (policy_oid == AnyPolicy() && qualifier_oid != CpsPointerId() &&
+        qualifier_oid != UserNoticeId()) {
       return false;
     }
     der::Tag tag;
@@ -152,7 +151,7 @@ bool ParseCertificatePoliciesExtension(const der::Input& extension_value,
         std::lower_bound(policies->begin(), policies->end(), policy_oid);
     // RFC 5280 section 4.2.1.4: A certificate policy OID MUST NOT appear more
     // than once in a certificate policies extension.
-    if (i != policies->end() && i->Equals(policy_oid))
+    if (i != policies->end() && *i == policy_oid)
       return false;
 
     policies->insert(i, policy_oid);

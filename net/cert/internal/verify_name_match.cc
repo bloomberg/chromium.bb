@@ -289,7 +289,7 @@ bool VerifyValueMatch(const der::Tag a_tag,
   if (a_tag != b_tag)
     return false;
   // All other types use binary comparison.
-  return a_value.Equals(b_value);
+  return a_value == b_value;
 }
 
 struct AttributeTypeAndValue {
@@ -381,7 +381,7 @@ bool VerifyRdnMatch(der::Parser* a_parser, der::Parser* b_parser) {
         b_type_and_values.begin();
     for (; b_iter != b_type_and_values.end(); ++b_iter) {
       const auto& b = *b_iter;
-      if (a.type.Equals(b.type) &&
+      if (a.type == b.type &&
           VerifyValueMatch(a.value_tag, a.value, b.value_tag, b.value)) {
         break;
       }
@@ -492,7 +492,7 @@ bool NameContainsEmailAddress(const der::Input& name_rdn_sequence,
       return false;
 
     for (const auto& type_and_value : type_and_values) {
-      if (type_and_value.type.Equals(der::Input(kOidEmailAddress))) {
+      if (type_and_value.type == der::Input(kOidEmailAddress)) {
         *contained_email_address = true;
         return true;
       }

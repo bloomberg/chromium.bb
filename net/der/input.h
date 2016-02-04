@@ -63,9 +63,6 @@ class NET_EXPORT_PRIVATE Input {
   // Returns the length in bytes of an Input's data.
   size_t Length() const { return len_; }
 
-  // Return true if the Input's data and |other|'s data are byte-wise equal.
-  bool Equals(const Input& other) const;
-
   // Returns a pointer to the Input's data. This method is marked as "unsafe"
   // because access to the Input's data should be done through ByteReader
   // instead. This method should only be used where using a ByteReader truly
@@ -90,6 +87,12 @@ class NET_EXPORT_PRIVATE Input {
   const uint8_t* data_;
   size_t len_;
 };
+
+// Return true if |lhs|'s data and |rhs|'s data are byte-wise equal.
+NET_EXPORT_PRIVATE bool operator==(const Input& lhs, const Input& rhs);
+
+// Return true if |lhs|'s data and |rhs|'s data are not byte-wise equal.
+NET_EXPORT_PRIVATE bool operator!=(const Input& lhs, const Input& rhs);
 
 // Returns true if |lhs|'s data is lexicographically less than |rhs|'s data.
 NET_EXPORT_PRIVATE bool operator<(const Input& lhs, const Input& rhs);

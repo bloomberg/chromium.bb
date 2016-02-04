@@ -26,10 +26,6 @@ void PrintTo(const Input& data, ::std::ostream* os) {
   *os << "[" << b64 << "]";
 }
 
-bool operator==(const Input& a, const Input& b) {
-  return a.Equals(b);
-}
-
 }  // namespace der
 
 der::Input SequenceValueFromString(const std::string* s) {

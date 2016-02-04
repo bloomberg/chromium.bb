@@ -24,18 +24,22 @@ Input::Input(const base::StringPiece& in)
 
 Input::Input(const std::string* s) : Input(base::StringPiece(*s)) {}
 
-bool Input::Equals(const Input& other) const {
-  if (len_ != other.len_)
-    return false;
-  return memcmp(data_, other.data_, len_) == 0;
-}
-
 std::string Input::AsString() const {
   return std::string(reinterpret_cast<const char*>(data_), len_);
 }
 
 base::StringPiece Input::AsStringPiece() const {
   return base::StringPiece(reinterpret_cast<const char*>(data_), len_);
+}
+
+bool operator==(const Input& lhs, const Input& rhs) {
+  if (lhs.Length() != rhs.Length())
+    return false;
+  return memcmp(lhs.UnsafeData(), rhs.UnsafeData(), lhs.Length()) == 0;
+}
+
+bool operator!=(const Input& lhs, const Input& rhs) {
+  return !(lhs == rhs);
 }
 
 bool operator<(const Input& lhs, const Input& rhs) {

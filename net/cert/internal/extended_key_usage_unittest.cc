@@ -16,7 +16,7 @@ namespace {
 // Helper method to check if an EKU is present in a std::vector of EKUs.
 bool HasEKU(const std::vector<der::Input>& list, const der::Input& eku) {
   for (const auto& oid : list) {
-    if (oid.Equals(eku))
+    if (oid == eku)
       return true;
   }
   return false;
@@ -62,7 +62,7 @@ TEST(ExtendedKeyUsageTest, RepeatedOid) {
   EXPECT_TRUE(ParseEKUExtension(extension, &ekus));
   EXPECT_EQ(2u, ekus.size());
   for (const auto& eku : ekus) {
-    EXPECT_TRUE(eku.Equals(ServerAuth()));
+    EXPECT_EQ(ServerAuth(), eku);
   }
 }
 

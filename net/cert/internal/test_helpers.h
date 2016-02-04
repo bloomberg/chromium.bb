@@ -18,10 +18,8 @@ namespace net {
 
 namespace der {
 
-// These functions are used by GTest to support EXPECT_EQ() for
-// der::Input.
+// This function is used by GTest to support EXPECT_EQ() for der::Input.
 void PrintTo(const Input& data, ::std::ostream* os);
-bool operator==(const Input& a, const Input& b);
 
 }  // namespace der
 

@@ -229,9 +229,8 @@ WARN_UNUSED_RESULT bool VerifySignatureAlgorithmsMatch(
 
   // Ensure that the two DER-encoded signature algorithms are byte-for-byte
   // equal, but make a compatibility concession for RSA with SHA1.
-  return alg1_tlv.Equals(alg2_tlv) ||
-         (IsRsaWithSha1SignatureAlgorithm(alg1_tlv) &&
-          IsRsaWithSha1SignatureAlgorithm(alg2_tlv));
+  return alg1_tlv == alg2_tlv || (IsRsaWithSha1SignatureAlgorithm(alg1_tlv) &&
+                                  IsRsaWithSha1SignatureAlgorithm(alg2_tlv));
 }
 
 // This function corresponds to RFC 5280 section 6.1.3's "Basic Certificate

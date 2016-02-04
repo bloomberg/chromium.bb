@@ -185,7 +185,7 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
     // CRL Distribution Points extension.
     static const uint8_t kCRLDistributionPointsOID[] = {0x55, 0x1d, 0x1f};
 
-    if (!oid.Equals(der::Input(kCRLDistributionPointsOID)))
+    if (oid != der::Input(kCRLDistributionPointsOID))
       continue;
 
     // critical
