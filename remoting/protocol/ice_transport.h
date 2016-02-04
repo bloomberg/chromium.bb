@@ -22,6 +22,7 @@ namespace protocol {
 class ChannelMultiplexer;
 class PseudoTcpChannelFactory;
 class SecureChannelFactory;
+class MessageChannelFactory;
 
 class IceTransport : public Transport,
                      public IceTransportChannel::Delegate,
@@ -42,8 +43,8 @@ class IceTransport : public Transport,
                EventHandler* event_handler);
   ~IceTransport() override;
 
-  StreamChannelFactory* GetStreamChannelFactory();
-  StreamChannelFactory* GetMultiplexedChannelFactory();
+  MessageChannelFactory* GetChannelFactory();
+  MessageChannelFactory* GetMultiplexedChannelFactory();
 
   // Transport interface.
   void Start(Authenticator* authenticator,
@@ -80,6 +81,10 @@ class IceTransport : public Transport,
   // Sends transport-info message with candidates from |pending_candidates_|.
   void SendTransportInfo();
 
+  // Callback passed to StreamMessageChannelFactoryAdapter to handle read/write
+  // errors on the data channels.
+  void OnChannelError(int error);
+
   scoped_refptr<TransportContext> transport_context_;
   EventHandler* event_handler_;
 
@@ -88,7 +93,10 @@ class IceTransport : public Transport,
   ChannelsMap channels_;
   scoped_ptr<PseudoTcpChannelFactory> pseudotcp_channel_factory_;
   scoped_ptr<SecureChannelFactory> secure_channel_factory_;
+  scoped_ptr<MessageChannelFactory> message_channel_factory_;
+
   scoped_ptr<ChannelMultiplexer> channel_multiplexer_;
+  scoped_ptr<MessageChannelFactory> mux_channel_factory_;
 
   // Pending remote transport info received before the local channels were
   // created.

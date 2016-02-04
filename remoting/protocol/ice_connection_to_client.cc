@@ -153,7 +153,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
           base::Bind(&IceConnectionToClient::OnInputEventReceived,
                      base::Unretained(this)));
 
-      video_dispatcher_->Init(transport_.GetStreamChannelFactory(), this);
+      video_dispatcher_->Init(transport_.GetChannelFactory(), this);
 
       audio_writer_ = AudioWriter::Create(session_->config());
       if (audio_writer_)
@@ -191,16 +191,6 @@ void IceConnectionToClient::OnChannelInitialized(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   NotifyIfChannelsReady();
-}
-
-void IceConnectionToClient::OnChannelError(
-    ChannelDispatcherBase* channel_dispatcher,
-    ErrorCode error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  LOG(ERROR) << "Failed to connect channel "
-             << channel_dispatcher->channel_name();
-  Disconnect(error);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {

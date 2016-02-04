@@ -5,10 +5,11 @@
 #ifndef REMOTING_PROTOCOL_CLIENT_VIDEO_DISPATCHER_H_
 #define REMOTING_PROTOCOL_CLIENT_VIDEO_DISPATCHER_H_
 
+#include <list>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/proto/video.pb.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 
 namespace remoting {

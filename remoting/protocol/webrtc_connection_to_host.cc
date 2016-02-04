@@ -139,14 +139,6 @@ void WebrtcConnectionToHost::OnChannelInitialized(
   NotifyIfChannelsReady();
 }
 
-void WebrtcConnectionToHost::OnChannelError(
-    ChannelDispatcherBase* channel_dispatcher,
-    ErrorCode error) {
-  LOG(ERROR) << "Failed to connect channel " << channel_dispatcher;
-  CloseChannels();
-  SetState(FAILED, CHANNEL_CONNECTION_ERROR);
-}
-
 ConnectionToHost::State WebrtcConnectionToHost::state() const {
   return state_;
 }

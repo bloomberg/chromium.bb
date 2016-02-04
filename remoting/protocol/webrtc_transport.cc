@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
 #include "third_party/libjingle/source/talk/app/webrtc/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
@@ -101,6 +102,11 @@ class SetSessionDescriptionObserver
   DISALLOW_COPY_AND_ASSIGN(SetSessionDescriptionObserver);
 };
 
+void OnChannelErrorHandler(int error) {
+  // WebrtcDataStreamAdapter never returns an error.
+  NOTREACHED();
+}
+
 }  // namespace
 
 WebrtcTransport::WebrtcTransport(
@@ -155,7 +161,12 @@ void WebrtcTransport::Start(
       nullptr, this);
 
   outgoing_data_stream_adapter_.Initialize(peer_connection_);
+  outgoing_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
+      &outgoing_data_stream_adapter_, base::Bind(&OnChannelErrorHandler)));
+
   incoming_data_stream_adapter_.Initialize(peer_connection_);
+  incoming_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
+      &incoming_data_stream_adapter_, base::Bind(&OnChannelErrorHandler)));
 
   event_handler_->OnWebrtcTransportConnecting();
 

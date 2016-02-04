@@ -26,6 +26,7 @@ namespace remoting {
 namespace protocol {
 
 class TransportContext;
+class MessageChannelFactory;
 
 class WebrtcTransport : public Transport,
                         public webrtc::PeerConnectionObserver {
@@ -67,11 +68,11 @@ class WebrtcTransport : public Transport,
 
   // Factories for outgoing and incoming data channels. Must be used only after
   // the transport is connected.
-  StreamChannelFactory* outgoing_channel_factory() {
-    return &outgoing_data_stream_adapter_;
+  MessageChannelFactory* outgoing_channel_factory() {
+    return outgoing_channel_factory_.get();
   }
-  StreamChannelFactory* incoming_channel_factory() {
-    return &incoming_data_stream_adapter_;
+  MessageChannelFactory* incoming_channel_factory() {
+    return incoming_channel_factory_.get();
   }
 
   // Transport interface.
@@ -133,6 +134,11 @@ class WebrtcTransport : public Transport,
 
   WebrtcDataStreamAdapter outgoing_data_stream_adapter_;
   WebrtcDataStreamAdapter incoming_data_stream_adapter_;
+
+  // TODO(sergeyu): Remove these and implement MessageChannelFactory in
+  // WebrtcDataStreamAdapter.
+  scoped_ptr<MessageChannelFactory> outgoing_channel_factory_;
+  scoped_ptr<MessageChannelFactory> incoming_channel_factory_;
 
   base::WeakPtrFactory<WebrtcTransport> weak_factory_;
 

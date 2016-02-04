@@ -61,8 +61,6 @@ class WebrtcConnectionToClient : public ConnectionToClient,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
-  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
-                      ErrorCode error) override;
 
  private:
   base::ThreadChecker thread_checker_;

@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/base/buffered_socket_writer.h"
 #include "remoting/protocol/errors.h"
 
 namespace remoting {
@@ -19,9 +18,8 @@ class CompoundBuffer;
 
 namespace protocol {
 
+class MessageChannelFactory;
 class MessagePipe;
-class P2PStreamSocket;
-class StreamChannelFactory;
 
 // Base class for channel message dispatchers. It's responsible for
 // creating the named channel. Derived dispatchers then dispatch
@@ -36,8 +34,6 @@ class ChannelDispatcherBase {
 
     virtual void OnChannelInitialized(
         ChannelDispatcherBase* channel_dispatcher) = 0;
-    virtual void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
-                                ErrorCode error) = 0;
   };
 
   // The callback is called when initialization is finished. The
@@ -48,7 +44,8 @@ class ChannelDispatcherBase {
 
   // Creates and connects the channel in the specified
   // |session|. Caller retains ownership of the Session.
-  void Init(StreamChannelFactory* channel_factory, EventHandler* event_handler);
+  void Init(MessageChannelFactory* channel_factory,
+            EventHandler* event_handler);
 
   const std::string& channel_name() { return channel_name_; }
 
@@ -64,12 +61,12 @@ class ChannelDispatcherBase {
   virtual void OnIncomingMessage(scoped_ptr<CompoundBuffer> message) = 0;
 
  private:
-  void OnChannelReady(scoped_ptr<P2PStreamSocket> socket);
+  void OnChannelReady(scoped_ptr<MessagePipe> message_pipe);
   void OnPipeError(int error);
 
   std::string channel_name_;
-  StreamChannelFactory* channel_factory_;
-  EventHandler* event_handler_;
+  MessageChannelFactory* channel_factory_ = nullptr;
+  EventHandler* event_handler_ = nullptr;
 
   scoped_ptr<MessagePipe> message_pipe_;
 

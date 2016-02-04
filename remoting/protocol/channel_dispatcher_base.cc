@@ -7,24 +7,22 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "remoting/protocol/p2p_stream_socket.h"
-#include "remoting/protocol/stream_channel_factory.h"
-#include "remoting/protocol/stream_message_pipe_adapter.h"
+#include "remoting/base/compound_buffer.h"
+#include "remoting/protocol/message_channel_factory.h"
+#include "remoting/protocol/message_pipe.h"
 
 namespace remoting {
 namespace protocol {
 
 ChannelDispatcherBase::ChannelDispatcherBase(const char* channel_name)
-    : channel_name_(channel_name),
-      channel_factory_(nullptr),
-      event_handler_(nullptr) {}
+    : channel_name_(channel_name) {}
 
 ChannelDispatcherBase::~ChannelDispatcherBase() {
   if (channel_factory_)
     channel_factory_->CancelChannelCreation(channel_name_);
 }
 
-void ChannelDispatcherBase::Init(StreamChannelFactory* channel_factory,
+void ChannelDispatcherBase::Init(MessageChannelFactory* channel_factory,
                                  EventHandler* event_handler) {
   channel_factory_ = channel_factory;
   event_handler_ = event_handler;
@@ -34,24 +32,13 @@ void ChannelDispatcherBase::Init(StreamChannelFactory* channel_factory,
 }
 
 void ChannelDispatcherBase::OnChannelReady(
-    scoped_ptr<P2PStreamSocket> socket) {
-  if (!socket.get()) {
-    event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
-    return;
-  }
-
+    scoped_ptr<MessagePipe> message_pipe) {
   channel_factory_ = nullptr;
-  message_pipe_.reset(new StreamMessagePipeAdapter(
-      std::move(socket),
-      base::Bind(&ChannelDispatcherBase::OnPipeError, base::Unretained(this))));
+  message_pipe_ = std::move(message_pipe);
   message_pipe_->StartReceiving(base::Bind(
       &ChannelDispatcherBase::OnIncomingMessage, base::Unretained(this)));
 
   event_handler_->OnChannelInitialized(this);
-}
-
-void ChannelDispatcherBase::OnPipeError(int error) {
-  event_handler_->OnChannelError(this, CHANNEL_CONNECTION_ERROR);
 }
 
 }  // namespace protocol

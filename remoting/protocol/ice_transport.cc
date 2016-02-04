@@ -10,6 +10,7 @@
 #include "remoting/protocol/pseudotcp_channel_factory.h"
 #include "remoting/protocol/secure_channel_factory.h"
 #include "remoting/protocol/stream_channel_factory.h"
+#include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
 
 namespace remoting {
@@ -45,6 +46,9 @@ void IceTransport::Start(
   pseudotcp_channel_factory_.reset(new PseudoTcpChannelFactory(this));
   secure_channel_factory_.reset(new SecureChannelFactory(
       pseudotcp_channel_factory_.get(), authenticator));
+  message_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
+      secure_channel_factory_.get(),
+      base::Bind(&IceTransport::OnChannelError, weak_factory_.GetWeakPtr())));
 }
 
 bool IceTransport::ProcessTransportInfo(buzz::XmlElement* transport_info_xml) {
@@ -79,16 +83,19 @@ bool IceTransport::ProcessTransportInfo(buzz::XmlElement* transport_info_xml) {
   return true;
 }
 
-StreamChannelFactory* IceTransport::GetStreamChannelFactory() {
-  return secure_channel_factory_.get();
+MessageChannelFactory* IceTransport::GetChannelFactory() {
+  return message_channel_factory_.get();
 }
 
-StreamChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
-  if (!channel_multiplexer_.get()) {
+MessageChannelFactory* IceTransport::GetMultiplexedChannelFactory() {
+  if (!channel_multiplexer_) {
     channel_multiplexer_.reset(
-        new ChannelMultiplexer(GetStreamChannelFactory(), kMuxChannelName));
+        new ChannelMultiplexer(secure_channel_factory_.get(), kMuxChannelName));
+    mux_channel_factory_.reset(new StreamMessageChannelFactoryAdapter(
+        channel_multiplexer_.get(),
+        base::Bind(&IceTransport::OnChannelError, weak_factory_.GetWeakPtr())));
   }
-  return channel_multiplexer_.get();
+  return mux_channel_factory_.get();
 }
 
 void IceTransport::CreateChannel(const std::string& name,
@@ -189,6 +196,11 @@ void IceTransport::SendTransportInfo() {
       pending_transport_info_message_->ToXml();
   pending_transport_info_message_.reset();
   send_transport_info_callback_.Run(std::move(transport_info_xml));
+}
+
+void IceTransport::OnChannelError(int error) {
+  LOG(ERROR) << "Data channel failed, error=" << error;
+  event_handler_->OnIceTransportError(CHANNEL_CONNECTION_ERROR);
 }
 
 }  // namespace protocol

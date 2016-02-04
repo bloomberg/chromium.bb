@@ -66,15 +66,11 @@ class IceConnectionToHost : public ConnectionToHost,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
-  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
-                      ErrorCode error) override;
 
   // MonitoredVideoStub::EventHandler interface.
   virtual void OnVideoChannelStatus(bool active);
 
   void NotifyIfChannelsReady();
-
-  void CloseOnError(ErrorCode error);
 
   // Closes the P2P connection.
   void CloseChannels();

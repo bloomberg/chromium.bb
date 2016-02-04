@@ -5,13 +5,16 @@
 #ifndef REMOTING_PROTOCOL_CONNECTION_TESTER_H_
 #define REMOTING_PROTOCOL_CONNECTION_TESTER_H_
 
+#include <list>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 
 namespace base {
 class MessageLoop;
-}
+}  // namespace base
 
 namespace net {
 class DrainableIOBuffer;
@@ -20,8 +23,13 @@ class IOBuffer;
 }  // namespace net
 
 namespace remoting {
+
+class CompoundBuffer;
+class VideoPacket;
+
 namespace protocol {
 
+class MessagePipe;
 class P2PDatagramSocket;
 class P2PStreamSocket;
 
@@ -102,6 +110,30 @@ class DatagramConnectionTester {
   int packets_sent_;
   int packets_received_;
   int bad_packets_received_;
+};
+
+class MessagePipeConnectionTester {
+ public:
+  MessagePipeConnectionTester(MessagePipe* client_pipe,
+                              MessagePipe* host_pipe,
+                              int message_size,
+                              int message_count);
+  ~MessagePipeConnectionTester();
+
+  void RunAndCheckResults();
+
+ protected:
+  void OnMessageReceived(scoped_ptr<CompoundBuffer> message);
+
+ private:
+  base::RunLoop run_loop_;
+  MessagePipe* host_pipe_;
+  MessagePipe* client_pipe_;
+  int message_size_;
+  int message_count_;
+
+  std::vector<scoped_ptr<VideoPacket>> sent_messages_;
+  std::vector<scoped_ptr<VideoPacket>> received_messages_;
 };
 
 }  // namespace protocol

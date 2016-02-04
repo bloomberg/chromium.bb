@@ -174,15 +174,5 @@ void WebrtcConnectionToClient::OnChannelInitialized(
   }
 }
 
-void WebrtcConnectionToClient::OnChannelError(
-    ChannelDispatcherBase* channel_dispatcher,
-    ErrorCode error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  LOG(ERROR) << "Failed to connect channel "
-             << channel_dispatcher->channel_name();
-  Disconnect(error);
-}
-
 }  // namespace protocol
 }  // namespace remoting

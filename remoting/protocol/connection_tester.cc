@@ -8,6 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "remoting/proto/video.pb.h"
+#include "remoting/protocol/message_pipe.h"
+#include "remoting/protocol/message_serialization.h"
 #include "remoting/protocol/p2p_datagram_socket.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -254,6 +257,47 @@ void DatagramConnectionTester::HandleReadResult(int result) {
           bad_packets_received_++;
       }
     }
+  }
+}
+
+MessagePipeConnectionTester::MessagePipeConnectionTester(
+    MessagePipe* client_pipe,
+    MessagePipe* host_pipe,
+    int message_size,
+    int message_count)
+    : host_pipe_(host_pipe),
+      client_pipe_(client_pipe),
+      message_size_(message_size),
+      message_count_(message_count) {}
+MessagePipeConnectionTester::~MessagePipeConnectionTester() {}
+
+void MessagePipeConnectionTester::RunAndCheckResults() {
+  host_pipe_->StartReceiving(base::Bind(
+      &MessagePipeConnectionTester::OnMessageReceived, base::Unretained(this)));
+
+  for (int i = 0; i < message_count_; ++i) {
+    scoped_ptr<VideoPacket> message(new VideoPacket());
+    message->mutable_data()->resize(message_size_);
+    for (int p = 0; p < message_size_; ++p) {
+      message->mutable_data()[0] = static_cast<char>(i + p);
+    }
+    client_pipe_->Send(message.get(), base::Closure());
+    sent_messages_.push_back(std::move(message));
+  }
+
+  run_loop_.Run();
+
+  ASSERT_EQ(sent_messages_.size(), received_messages_.size());
+  for (size_t i = 0; i < sent_messages_.size(); ++i) {
+    EXPECT_TRUE(sent_messages_[i]->data() == received_messages_[i]->data());
+  }
+}
+
+void MessagePipeConnectionTester::OnMessageReceived(
+    scoped_ptr<CompoundBuffer> message) {
+  received_messages_.push_back(ParseMessage<VideoPacket>(message.get()));
+  if (received_messages_.size() >= sent_messages_.size()) {
+    run_loop_.Quit();
   }
 }
 

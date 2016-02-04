@@ -62,8 +62,6 @@ class WebrtcConnectionToHost : public ConnectionToHost,
 
   // ChannelDispatcherBase::EventHandler interface.
   void OnChannelInitialized(ChannelDispatcherBase* channel_dispatcher) override;
-  void OnChannelError(ChannelDispatcherBase* channel_dispatcher,
-                      ErrorCode error) override;
 
   void NotifyIfChannelsReady();
 
