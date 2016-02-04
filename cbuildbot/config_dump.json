@@ -8806,21 +8806,6 @@
                 "useflags": [
                     "chrome_internal"
                 ]
-            },
-            {
-                "_template": "no-vmtest-pre-cq",
-                "boards": [
-                    "rush_ryu"
-                ],
-                "grouped": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "name": "rush_ryu-no-vmtest-pre-cq",
-                "overlays": "both",
-                "useflags": [
-                    "chrome_internal"
-                ]
             }
         ],
         "internal": true,
@@ -11046,24 +11031,9 @@
     "mixed-b-pre-cq": {
         "_template": "compile-only-pre-cq",
         "boards": [
-            "rush_ryu"
+            "samus"
         ],
         "child_configs": [
-            {
-                "_template": "compile-only-pre-cq",
-                "boards": [
-                    "rush_ryu"
-                ],
-                "grouped": true,
-                "internal": true,
-                "manifest": "official.xml",
-                "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-                "name": "rush_ryu-compile-only-pre-cq",
-                "overlays": "both",
-                "useflags": [
-                    "chrome_internal"
-                ]
-            },
             {
                 "_template": "compile-only-pre-cq",
                 "boards": [
@@ -16234,177 +16204,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "rush_ryu-chrome-pfq": {
-        "_template": "chrome-pfq",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "rush_ryu"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "rush_ryu-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "boards": [
-            "rush_ryu"
-        ],
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "rush_ryu"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "rush_ryu-full": {
-        "_template": "full",
-        "boards": [
-            "rush_ryu"
-        ],
-        "prebuilts": "public",
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "rush_ryu"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "rush_ryu-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "rush_ryu"
-        ],
-        "description": "Commit Queue (internal)",
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "rush_ryu-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "rush_ryu"
-        ],
-        "internal": true,
-        "manifest": "official.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "rush_ryu"
-        ],
-        "dev_installer_prebuilts": false,
-        "images": [
-            "base",
-            "test",
-            "factory_install"
-        ],
-        "paygen": false,
-        "push_image": false,
-        "signer_tests": false,
-        "vm_tests": []
-    },
-    "rush_ryu-release-afdo": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "rush_ryu"
-        ],
-        "child_configs": [
-            {
-                "_template": "release-afdo-generate",
-                "boards": [
-                    "rush_ryu"
-                ],
-                "grouped": true,
-                "name": "rush_ryu-release-afdo-generate",
-                "vm_tests": []
-            },
-            {
-                "_template": "release-afdo-use",
-                "boards": [
-                    "rush_ryu"
-                ],
-                "grouped": true,
-                "name": "rush_ryu-release-afdo-use",
-                "vm_tests": []
-            }
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-release-afdo-generate": {
-        "_template": "release-afdo-generate",
-        "boards": [
-            "rush_ryu"
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-release-afdo-use": {
-        "_template": "release-afdo-use",
-        "boards": [
-            "rush_ryu"
-        ],
-        "vm_tests": []
-    },
-    "rush_ryu-tot-chrome-pfq-informational": {
-        "_template": "chrome-pfq-informational",
-        "boards": [
-            "rush_ryu"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
-    "rush_ryu-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "rush_ryu"
-        ],
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "samus-chrome-pfq": {
         "_template": "chrome-pfq",

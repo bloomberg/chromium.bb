@@ -359,7 +359,6 @@ _arm_internal_release_boards = frozenset([
     'purin',
     'smaug',
     'storm',
-    'rush_ryu',
     'veyron_brain',
     'veyron_danger',
     'veyron_gus',
@@ -600,7 +599,6 @@ _waterfall_config_map = {
         'kunimitsu-release-group',
         'lakitu_next-release',
         'nyan_freon-release',
-        'rush_ryu-release',
         'smaug-release',
         'strago-c-release-group',
         'guado_moblab-release',
@@ -1225,7 +1223,6 @@ def GetConfig():
 
   _chrome_pfq_important_boards = frozenset([
       'peppy',
-      'rush_ryu',
       'veyron_pinky',
       'nyan',
   ])
@@ -1650,7 +1647,6 @@ def GetConfig():
       'peach_pit',
       'peppy',
       'rambi',
-      'rush_ryu',
       'samus',
       'smaug',
       'storm',
@@ -1895,8 +1891,6 @@ def GetConfig():
 
   site_config.AddGroup(
       'mixed-b-pre-cq',
-      # arm64 w/kernel 3.14.
-      site_config['rush_ryu-compile-only-pre-cq'],
       # samus w/kernel 3.14.
       site_config['samus-compile-only-pre-cq'],
   )
@@ -1927,7 +1921,6 @@ def GetConfig():
   site_config.AddGroup(
       'kernel-3_14-c-pre-cq',
       site_config['veyron_pinky-no-vmtest-pre-cq'],
-      site_config['rush_ryu-no-vmtest-pre-cq']
   )
 
   site_config.AddWithoutTemplate(
@@ -2324,16 +2317,6 @@ def GetConfig():
   site_config.Add(
       'veyron_minnie-cheets-release', cheets_release,
       _base_configs['veyron_minnie-cheets'],
-  )
-
-  site_config.Add(
-      'rush_ryu-release', _release,
-      _base_configs['rush_ryu'],
-      images=['base', 'test', 'factory_install'],
-      dev_installer_prebuilts=False,
-      paygen=False,
-      signer_tests=False,
-      push_image=False,
   )
 
   site_config.Add(
