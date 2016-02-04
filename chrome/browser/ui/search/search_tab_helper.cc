@@ -450,6 +450,15 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
 void SearchTabHelper::NavigateToURL(const GURL& url,
                                     WindowOpenDisposition disposition,
                                     bool is_most_visited_item_url) {
+  // Make sure the specified URL is actually on the most visited or suggested
+  // items list.
+  // TODO(treib): The |is_most_visited_item_url| is meaningless: the way it's
+  // currently set by the renderer means it can't be used to decide which list
+  // of items (most visited or suggestions) to use for the validation check. Can
+  // it be removed?
+  if (!instant_service_ || !instant_service_->IsValidURLForNavigation(url))
+    return;
+
   if (is_most_visited_item_url) {
     content::RecordAction(
         base::UserMetricsAction("InstantExtended.MostVisitedClicked"));

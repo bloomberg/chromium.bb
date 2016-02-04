@@ -50,6 +50,14 @@ class InstantServiceTest : public InstantUnitTestBase {
     return instant_service_->instant_search_prerenderer();
   }
 
+  std::vector<InstantMostVisitedItem>& most_visited_items() {
+    return instant_service_->most_visited_items_;
+  }
+
+  std::vector<InstantMostVisitedItem>& suggestions_items() {
+    return instant_service_->suggestions_items_;
+  }
+
   scoped_ptr<MockInstantServiceObserver> instant_service_observer_;
 };
 
@@ -174,4 +182,46 @@ TEST_F(InstantServiceTest, GetSuggestionFromClientSide) {
   auto items = instant_service_->most_visited_items_;
   ASSERT_EQ(1, (int)items.size());
   ASSERT_FALSE(items[0].is_server_side_suggestion);
+}
+
+TEST_F(InstantServiceTest, IsValidURLForNavigation) {
+  // chrome:// URLs should never appear in the most visited items list, but even
+  // if it does, deny navigation anyway.
+  InstantMostVisitedItem settings_item;
+  settings_item.url = GURL("chrome://settings");
+  most_visited_items().push_back(settings_item);
+  EXPECT_FALSE(instant_service_->IsValidURLForNavigation(settings_item.url));
+
+  // If a chrome-extension:// URL appears in the most visited items list, allow
+  // navigation to it.
+  InstantMostVisitedItem extension_item;
+  extension_item.url = GURL("chrome-extension://awesome");
+  most_visited_items().push_back(extension_item);
+  EXPECT_TRUE(instant_service_->IsValidURLForNavigation(extension_item.url));
+
+  // The renderer filters out javascript:// URLs so we should never receive a
+  // request to navigate to one. But if we do, deny it.
+  InstantMostVisitedItem js_item;
+  js_item.url = GURL("javascript:'moo'");
+  most_visited_items().push_back(js_item);
+  EXPECT_FALSE(instant_service_->IsValidURLForNavigation(js_item.url));
+
+  // Normal case: a request for a web safe URL in the most visited items should
+  // be allowed.
+  InstantMostVisitedItem example_item;
+  example_item.url = GURL("https://example.com");
+  most_visited_items().push_back(example_item);
+  EXPECT_TRUE(instant_service_->IsValidURLForNavigation(example_item.url));
+
+  // Normal case: a request for a web safe URL in the most visited items should
+  // be allowed as well.
+  InstantMostVisitedItem chromium_item;
+  chromium_item.url = GURL("https://chromium.org");
+  suggestions_items().push_back(chromium_item);
+  EXPECT_TRUE(instant_service_->IsValidURLForNavigation(chromium_item.url));
+
+  // http://chromium.org is web safe, but not in |suggestions_items_| or
+  // |most_visited_items_|, so it should be denied.
+  EXPECT_FALSE(
+      instant_service_->IsValidURLForNavigation(GURL("http://chromium.org")));
 }

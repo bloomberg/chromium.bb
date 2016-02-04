@@ -87,6 +87,10 @@ class InstantService : public KeyedService,
   // Sends the current set of search URLs to a renderer process.
   void SendSearchURLsToRenderer(content::RenderProcessHost* rph);
 
+  // Used to validate that the URL the NTP is trying to navigate to is actually
+  // a URL on the most visited items / suggested items list.
+  bool IsValidURLForNavigation(const GURL& url) const;
+
   InstantSearchPrerenderer* instant_search_prerenderer() {
     return instant_prerenderer_.get();
   }

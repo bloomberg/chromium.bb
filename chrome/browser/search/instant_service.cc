@@ -42,10 +42,12 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/url_data_source.h"
+#include "content/public/common/url_constants.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/url_constants.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/search/local_ntp_source.h"
@@ -298,6 +300,30 @@ void InstantService::Observe(int type,
 void InstantService::SendSearchURLsToRenderer(content::RenderProcessHost* rph) {
   rph->Send(new ChromeViewMsg_SetSearchURLs(
       search::GetSearchURLs(profile_), search::GetNewTabPageURL(profile_)));
+}
+
+bool InstantService::IsValidURLForNavigation(const GURL& url) const {
+  // Certain URLs are privileged and should never be considered valid
+  // navigation targets.
+  // TODO(treib): Ideally this should deny by default and only allow if the
+  // scheme passes the content::ChildProcessSecurityPolicy::IsWebSafeScheme()
+  // check.
+  if (url.SchemeIs(content::kChromeUIScheme))
+    return false;
+
+  // javascript: URLs never make sense as a most visited item either.
+  if (url.SchemeIs(url::kJavaScriptScheme))
+    return false;
+
+  for (const auto& item : most_visited_items_) {
+    if (item.url == url)
+      return true;
+  }
+  for (const auto& item : suggestions_items_) {
+    if (item.url == url)
+      return true;
+  }
+  return false;
 }
 
 void InstantService::OnRendererProcessTerminated(int process_id) {

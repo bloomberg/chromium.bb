@@ -1164,7 +1164,9 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
 
   DVLOG(1) << render_view << " NavigateContentWindow: " << destination_url;
 
-  // Navigate the main frame.
+  // Navigate the main frame. Note that the security checks are enforced by the
+  // browser process in InstantService::IsValidURLForNavigation(), but some
+  // simple checks here are useful for avoiding unnecessary IPCs.
   if (destination_url.is_valid() &&
       !destination_url.SchemeIs(url::kJavaScriptScheme)) {
     WindowOpenDisposition disposition = CURRENT_TAB;
