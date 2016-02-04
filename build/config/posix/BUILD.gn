@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/build_metadata.gni")
 import("//build/config/sysroot.gni")
 
 assert(is_posix)
@@ -13,7 +14,14 @@ assert(is_posix)
 config("runtime_library") {
   if (!is_mac && sysroot != "") {
     # Pass the sysroot to all C compiler variants, the assembler, and linker.
-    cflags = [ "--sysroot=" + sysroot ]
+    # If we don't care about build metadata, then just set the sysroot to an
+    # absolute path. Some buildbots (read: codesearch) care about this.
+    # See crbug.com/580103 for some discussion of why this was necessary.
+    if (dont_embed_build_metadata) {
+      cflags = [ "--sysroot=" + rebase_path(sysroot, root_build_dir) ]
+    } else {
+      cflags = [ "--sysroot=" + rebase_path(sysroot) ]
+    }
     asmflags = cflags
     ldflags = cflags
 
