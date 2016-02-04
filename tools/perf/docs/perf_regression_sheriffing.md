@@ -1,4 +1,4 @@
-# Perf Regression Sheriffing
+# Perf Regression Sheriffing (go/perfregression-sheriff)
 
 The perf regression sheriff tracks performance regressions in Chrome's
 continuous integration tests. Note that a [new rotation](perf_bot_sheriffing.md)
@@ -30,23 +30,23 @@ the alerts that have an overlapping revision range with the one you chose, and
 below it the dashboard shows graphs of all the alerts checked in that table.
 
 1. **Look at the graph**.
-  * If the alert appears to be **within the noise**, click on the red
-    exclamation point icon for it in the graph and hit the "Invalid" button.
-  * If the alert is **if the alert is visibly to the left or the right of the
-    actual regression**, click on it and use the "nudge" menu to move it into
-    place.
-  * If there is a line labeled "ref" on the graph, that is the reference build.
-    It's an older version of Chrome, used to help us sort out whether a change
-    to the bot or test might have caused the graph to jump, rather than a real
-    performance regression. If **the ref build moved at the same time as the
-    alert**, click on the alert and hit the "Invalid" button.
+    * If the alert appears to be **within the noise**, click on the red
+      exclamation point icon for it in the graph and hit the "Invalid" button.
+    * If the alert is **visibly to the left or the right of the
+      actual regression**, click on it and use the "nudge" menu to move it into
+      place.
+    * If there is a line labeled "ref" on the graph, that is the reference build.
+      It's an older version of Chrome, used to help us sort out whether a change
+      to the bot or test might have caused the graph to jump, rather than a real
+      performance regression. If **the ref build moved at the same time as the
+      alert**, click on the alert and hit the "Invalid" button.
 2. **Look at the other alerts** in the table to see if any should be grouped together.
    Note that the bisect will automatically dupe bugs if it finds they have the
    same culprit, so you don't need to be too aggressive about grouping alerts
    that might not be related. Some signs alerts should be grouped together:
-  * If they're all in the same test suite
-  * If they all regressed the same metric (a lot of commonality in the Test
-    column)
+    * If they're all in the same test suite
+    * If they all regressed the same metric (a lot of commonality in the Test
+      column)
 3. **Triage the group of alerts**. Check all the alerts you believe are related,
   and press the triage button.
     * If one of the alerts already has a bug id, click "existing bug" and use
@@ -85,13 +85,13 @@ more than anyone else, and their feedback is invaluable for making sure these
 tools are accurate and improving them. Please file bugs and feature requests
 as you see them:
 
-   * **Perf Dashboard**: Please use the red "Report Issue" link in the navbar.
-   * **Perf Bisect/Trybots**: If a bisect is identifying the wrong CL as culprit
-     or missing a clear culprit, or not reproducing what appears to be a clear
-     regression, please link the comment the bisect bot posted on the bug at
-     [go/bad-bisects](https://docs.google.com/spreadsheets/d/13PYIlRGE8eZzsrSocA3SR2LEHdzc8n9ORUoOE2vtO6I/edit#gid=0).
-     The team triages these regularly. If you spot a really clear bug (bisect
-     job red, bugs not being updated with bisect results) please file it in
-     crbug with label `Cr-Tests-AutoBisect`.
-   * **Noisy Tests**: Please file a bug in crbug with label `Cr-Tests-Telemetry`
-     and [cc the owner](http://go/perf-owners).
+* **Perf Dashboard**: Please use the red "Report Issue" link in the navbar.
+* **Perf Bisect/Trybots**: If a bisect is identifying the wrong CL as culprit
+  or missing a clear culprit, or not reproducing what appears to be a clear
+  regression, please link the comment the bisect bot posted on the bug at
+  [go/bad-bisects](https://docs.google.com/spreadsheets/d/13PYIlRGE8eZzsrSocA3SR2LEHdzc8n9ORUoOE2vtO6I/edit#gid=0).
+  The team triages these regularly. If you spot a really clear bug (bisect
+  job red, bugs not being updated with bisect results) please file it in
+  crbug with label `Cr-Tests-AutoBisect`.
+* **Noisy Tests**: Please file a bug in crbug with label `Cr-Tests-Telemetry`
+  and [cc the owner](http://go/perf-owners).
