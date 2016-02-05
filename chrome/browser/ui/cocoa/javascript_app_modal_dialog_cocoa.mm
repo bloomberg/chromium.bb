@@ -81,8 +81,13 @@ const int kMessageTextMaxSlots = 2000;
 }
 
 - (NSAlert*)alert {
-  if (!alert_)
+  if (!alert_) {
     alert_.reset([[NSAlert alloc] init]);
+    // Set a blank icon.
+    NSImage* image =
+        [[[NSImage alloc] initWithSize:NSMakeSize(1, 1)] autorelease];
+    [alert_ setIcon:image];
+  }
   return alert_;
 }
 
