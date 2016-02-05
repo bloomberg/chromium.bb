@@ -170,6 +170,11 @@ void BattOrAgent::OnBytesSent(bool success) {
 
   switch (last_action_) {
     case Action::SEND_RESET:
+      // TODO(charliea): Ideally, we'd just like to send an init, and the BattOr
+      // firmware can handle whether a reset is necessary or not, sending an
+      // init ack regardless. This reset can be removed once this is true.
+      // https://github.com/aschulm/battor/issues/30 tracks this.
+
       // Wait for the reset to happen before sending the init message.
       PerformDelayedAction(Action::SEND_INIT, base::TimeDelta::FromSeconds(
                                                   kBattOrResetTimeSeconds));
