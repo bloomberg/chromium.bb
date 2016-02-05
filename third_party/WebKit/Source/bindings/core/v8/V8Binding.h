@@ -1087,30 +1087,6 @@ CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, 
 
 typedef void (*InstallTemplateFunction)(v8::Local<v8::FunctionTemplate>, v8::Isolate*);
 
-// Utiltiies for calling functions added to the V8 extras binding object.
-
-inline v8::MaybeLocal<v8::Value> v8CallExtraHelper(ScriptState* scriptState, const char* name, size_t numArgs, v8::Local<v8::Value>* args)
-{
-    v8::Isolate* isolate = scriptState->isolate();
-    ExecutionContext* ec = scriptState->executionContext();
-    v8::Local<v8::Value> undefined = v8::Undefined(isolate);
-    v8::Local<v8::Value> functionValue = scriptState->getFromExtrasExports(name).v8Value();
-    v8::Local<v8::Function> function = functionValue.As<v8::Function>();
-    return V8ScriptRunner::callFunction(function, ec, undefined, numArgs, args, isolate);
-}
-
-template <size_t N>
-v8::MaybeLocal<v8::Value> v8CallExtra(ScriptState* scriptState, const char* name, v8::Local<v8::Value>(&args)[N])
-{
-    return v8CallExtraHelper(scriptState, name, N, args);
-}
-
-template <size_t N>
-v8::Local<v8::Value> v8CallExtraOrCrash(ScriptState* scriptState, const char* name, v8::Local<v8::Value>(&args)[N])
-{
-    return v8CallOrCrash(v8CallExtraHelper(scriptState, name, N, args));
-}
-
 } // namespace blink
 
 #endif // V8Binding_h
