@@ -89,9 +89,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_MAIN_JS"
                  file="settings_main/settings_main.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_CSS"
-                 file="settings_menu/settings_menu.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_MENU_HTML"
                  file="settings_menu/settings_menu.html"
                  type="chrome_html"

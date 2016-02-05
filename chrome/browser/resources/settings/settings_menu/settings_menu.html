@@ -4,7 +4,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/social-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
 
@@ -13,92 +12,141 @@
 </if>
 
 <dom-module id="settings-menu">
-  <link rel="import" type="css" href="settings_menu.css">
   <template>
+    <style>
+      iron-icon {
+        -webkit-margin-end: 16px;
+        height: 20px;
+        width: 20px;
+      }
+
+      .menu-trigger span {
+        -webkit-margin-end: 16px;
+        flex: 1;
+      }
+
+      paper-menu {
+        background-color: rgb(236, 239, 241);
+        color: #5a5a5a;
+        font-size: 13px;
+        --paper-menu-selected-item: {
+          font-weight: 500;
+        };
+        --paper-menu-focused-item-after: {
+          background: none;
+        };
+      }
+
+      paper-submenu {
+        --paper-menu-selected-item: {
+          font-weight: 500;
+        };
+      }
+
+      paper-submenu paper-menu {
+        --paper-menu-selected-item: {
+          color: #4285f4;
+          font-weight: 500;
+        };
+        padding: 0;
+      }
+
+      paper-submenu div {
+        @apply(--layout-center);
+        -webkit-margin-start: 24px;
+        display: flex;
+        font-size: 13px;
+        font-weight: 500;
+        min-height: 40px;
+      }
+    </style>
     <paper-menu name="root-menu">
-      <paper-submenu data-page="basic" on-tap="openPage_">
-        <paper-icon-item class="menu-trigger">
-          <iron-icon icon="expand-more" item-icon></iron-icon>
+      <paper-submenu opened="{{basicOpened_}}" data-page="basic"
+          on-tap="openPage_">
+        <div class="menu-trigger">
           <span i18n-content="basicPageTitle"></span>
-        </paper-icon-item>
+          <iron-icon icon="{{arrowState_(basicOpened_)}}" item-icon></iron-icon>
+        </div>
         <paper-menu class="menu-content">
 <if expr="chromeos">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="settings-ethernet" item-icon></iron-icon>
             <span i18n-content="internetPageTitle"></span>
-          </paper-icon-item>
+          </div>
 </if>
-          <paper-icon-item>
+          <div>
             <iron-icon icon="social:person" item-icon></iron-icon>
             <span i18n-content="peoplePageTitle"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="home" item-icon></iron-icon>
             <span i18n-content="appearancePageTitle"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="image:brightness-1" item-icon></iron-icon>
             <span i18n-content="onStartup"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="search" item-icon></iron-icon>
             <span i18n-content="searchPageTitle"></span>
-          </paper-icon-item>
+          </div>
 <if expr="not chromeos">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="open-in-browser" item-icon></iron-icon>
             <span i18n-content="defaultBrowser"></span>
-          </paper-icon-item>
+          </div>
 </if>
         </paper-menu>
       </paper-submenu>
-      <paper-submenu data-page="advanced" on-tap="openPage_">
-        <paper-icon-item class="menu-trigger">
-          <iron-icon icon="expand-more" item-icon></iron-icon>
+      <paper-submenu opened="{{advancedOpened_}}" data-page="advanced"
+          on-tap="openPage_">
+        <div class="menu-trigger">
           <span i18n-content="advancedPageTitle"></span>
-        </paper-icon-item>
+          <iron-icon icon="{{arrowState_(advancedOpened_)}}" item-icon>
+          </iron-icon>
+        </div>
         <paper-menu class="menu-content">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="communication:location-on" item-icon></iron-icon>
             <span i18n-content="siteSettingsLocation"></span>
-          </paper-icon-item>
+          </div>
 <if expr="chromeos">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="device:access-time" item-icon></iron-icon>
             <span i18n-content="dateTimePageTitle"></span>
-          </paper-icon-item>
+          </div>
 </if>
-          <paper-icon-item>
+          <div>
             <iron-icon icon="hardware:security" item-icon></iron-icon>
             <span i18n-content="privacyPageTitle"></span>
-          </paper-icon-item>
+          </div>
 <if expr="chromeos">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="device:bluetooth" item-icon></iron-icon>
             <span i18n-content="bluetoothPageTitle"></span>
-          </paper-icon-item>
+          </div>
 </if>
-          <paper-icon-item>
+          <div>
             <iron-icon icon="lock" item-icon></iron-icon>
             <span i18n-content="passwordsAndAutofillPageTitle"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="language" item-icon></iron-icon>
             <span i18n-content="languagesPageTitle"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="file-download" item-icon></iron-icon>
             <span i18n-content="downloadsPageTitle"></span>
-          </paper-icon-item>
-          <paper-icon-item>
+          </div>
+          <div>
             <iron-icon icon="settings-backup-restore" item-icon></iron-icon>
             <span i18n-content="resetPageTitle"></span>
-          </paper-icon-item>
+          </div>
 <if expr="chromeos">
-          <paper-icon-item>
+          <div>
             <iron-icon icon="accessibility" item-icon></iron-icon>
             <span i18n-content="a11yPageTitle"></span>
-          </paper-icon-item>
+          </div>
 </if>
         </paper-menu>
       </paper-submenu>
