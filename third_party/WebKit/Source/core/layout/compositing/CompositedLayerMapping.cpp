@@ -1201,7 +1201,7 @@ void CompositedLayerMapping::updateDrawsContent()
     if (m_scrollingLayer) {
         // m_scrollingLayer never has backing store.
         // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
-        m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(layoutObject()->hasBackground() || paintsChildren());
+        m_scrollingContentsAreEmpty = !m_owningLayer.hasVisibleContent() || !(layoutObject()->hasBackground() || layoutObject()->hasBackdropFilter() || paintsChildren());
         m_scrollingContentsLayer->setDrawsContent(!m_scrollingContentsAreEmpty);
     }
 
