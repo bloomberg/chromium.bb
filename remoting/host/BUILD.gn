@@ -271,6 +271,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
       "linux/unicode_to_keysym_unittest.cc",
       "linux/x_server_clipboard_unittest.cc",
       "local_input_monitor_unittest.cc",
+      "mouse_cursor_monitor_proxy_unittest.cc",
       "mouse_shape_pump_unittest.cc",
       "native_messaging/native_messaging_reader_unittest.cc",
       "native_messaging/native_messaging_writer_unittest.cc",

@@ -182,6 +182,8 @@
       'host/logging_win.cc',
       'host/me2me_desktop_environment.cc',
       'host/me2me_desktop_environment.h',
+      'host/mouse_cursor_monitor_proxy.cc',
+      'host/mouse_cursor_monitor_proxy.h',
       'host/mouse_shape_pump.cc',
       'host/mouse_shape_pump.h',
       'host/oauth_token_getter.cc',

@@ -277,6 +277,7 @@
         'host/linux/unicode_to_keysym_unittest.cc',
         'host/linux/x_server_clipboard_unittest.cc',
         'host/local_input_monitor_unittest.cc',
+        'host/mouse_cursor_monitor_proxy_unittest.cc',
         'host/mouse_shape_pump_unittest.cc',
         'host/native_messaging/native_messaging_reader_unittest.cc',
         'host/native_messaging/native_messaging_writer_unittest.cc',

@@ -5,49 +5,39 @@
 #ifndef REMOTING_HOST_MOUSE_SHAPE_PUMP_H_
 #define REMOTING_HOST_MOUSE_SHAPE_PUMP_H_
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
-namespace webrtc {
-class MouseCursorMonitor;
-}  // namespace webrtc
+#include "base/timer/timer.h"
+#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 namespace remoting {
 
 namespace protocol {
 class CursorShapeStub;
-class CursorShapeInfo;
-}  // namespace protocol
+}  // namespace
 
 // MouseShapePump is responsible for capturing mouse shape using
 // MouseCursorMonitor and sending it to a CursorShapeStub.
-class MouseShapePump {
+class MouseShapePump : public webrtc::MouseCursorMonitor::Callback {
  public:
-  MouseShapePump(
-      scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-      scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
-      protocol::CursorShapeStub* cursor_shape_stub);
-  ~MouseShapePump();
+  MouseShapePump(scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor,
+                 protocol::CursorShapeStub* cursor_shape_stub);
+  ~MouseShapePump() override;
 
  private:
-  class Core;
+  void Capture();
 
-  void OnCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor);
+  // webrtc::MouseCursorMonitor::Callback implementation.
+  void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
+  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
+                             const webrtc::DesktopVector& position) override;
 
   base::ThreadChecker thread_checker_;
-
-  scoped_ptr<Core> core_;
-  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+  scoped_ptr<webrtc::MouseCursorMonitor> mouse_cursor_monitor_;
   protocol::CursorShapeStub* cursor_shape_stub_;
 
-  base::WeakPtrFactory<MouseShapePump> weak_factory_;
+  base::Timer capture_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseShapePump);
 };

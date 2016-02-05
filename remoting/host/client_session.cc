@@ -22,6 +22,7 @@
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_extension_session.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/mouse_cursor_monitor_proxy.h"
 #include "remoting/host/mouse_shape_pump.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -34,7 +35,6 @@
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_frame_pump.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 
 // Default DPI to assume for old clients that use notifyClientDimensions.
 const int kDefaultDPI = 96;
@@ -455,13 +455,15 @@ void ClientSession::ResetVideoPipeline() {
     return;
 
   // Create MouseShapePump to send mouse cursor shape.
+  // TODO(sergeyu): Move MouseCursorMonitorProxy creation to DesktopEnvironment.
+  // When using IpcDesktopCapturer the capture thread is not useful.
   mouse_shape_pump_.reset(
-      new MouseShapePump(video_capture_task_runner_,
-                         desktop_environment_->CreateMouseCursorMonitor(),
+      new MouseShapePump(make_scoped_ptr(new MouseCursorMonitorProxy(
+                             video_capture_task_runner_,
+                             desktop_environment_->CreateMouseCursorMonitor())),
                          connection_->client_stub()));
 
   // Create a VideoStream to pump frames from the capturer to the client.
-
   // TODO(sergeyu): Move DesktopCapturerProxy creation to DesktopEnvironment.
   // When using IpcDesktopCapturer the capture thread is not useful.
   scoped_ptr<webrtc::DesktopCapturer> capturer_proxy(new DesktopCapturerProxy(
