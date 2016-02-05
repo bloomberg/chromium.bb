@@ -125,7 +125,6 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (mSceneLayer == null) return;
 
         mSceneLayer.update(resourceManager, this,
-                ContextualSearchSceneLayer.CONTEXTUAL_SEARCH_PANEL,
                 getSearchContextViewId(),
                 getSearchTermViewId(),
                 getPeekPromoControl(),
