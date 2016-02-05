@@ -91,7 +91,7 @@ class GclientApi(recipe_api.RecipeApi):
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
     return self.m.python(prefix + name,
-                         self.m.path['depot_tools'].join('gclient.py'),
+                         self.package_resource('gclient.py'),
                          cmd,
                          infra_step=infra_step,
                          **kwargs)
