@@ -249,11 +249,12 @@ class BASE_EXPORT PersistentMemoryAllocator {
   // The shared metadata is always located at the top of the memory segment.
   // These convenience functions eliminate constant casting of the base
   // pointer within the code.
-  const volatile SharedMetadata* shared_meta() const {
-    return reinterpret_cast<const volatile SharedMetadata*>(mem_base_);
+  const SharedMetadata* shared_meta() const {
+    return reinterpret_cast<const SharedMetadata*>(
+        const_cast<const char*>(mem_base_));
   }
-  volatile SharedMetadata* shared_meta() {
-    return reinterpret_cast<volatile SharedMetadata*>(mem_base_);
+  SharedMetadata* shared_meta() {
+    return reinterpret_cast<SharedMetadata*>(const_cast<char*>(mem_base_));
   }
 
   // Actual method for doing the allocation.

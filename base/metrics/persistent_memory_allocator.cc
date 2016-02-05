@@ -90,15 +90,23 @@ struct PersistentMemoryAllocator::SharedMetadata {
   uint32_t size;       // Total size of memory segment.
   uint32_t page_size;  // Paging size within memory segment.
   uint32_t version;    // Version code so upgrades don't break.
-  std::atomic<uint32_t> freeptr;  // Offset/ref to first free space in segment.
-  std::atomic<uint32_t> flags;    // Bitfield of information flags.
   uint64_t id;         // Arbitrary ID number given by creator.
   uint32_t name;       // Reference to stored name string.
 
+  // Above is read-only after first construction. Below may be changed and
+  // so must be marked "volatile" to provide correct inter-process behavior.
+
+  // Bitfield of information flags. Access to this should be done through
+  // the CheckFlag() and SetFlag() methods defined above.
+  volatile std::atomic<uint32_t> flags;
+
+  // Offset/reference to first free space in segment.
+  volatile std::atomic<uint32_t> freeptr;
+
   // The "iterable" queue is an M&S Queue as described here, append-only:
   // https://www.research.ibm.com/people/m/michael/podc-1996.pdf
-  std::atomic<uint32_t> tailptr;  // Last block available for iteration.
-  BlockHeader queue;   // Empty block for linked-list head/tail. (must be last)
+  volatile std::atomic<uint32_t> tailptr;  // Last block of iteration queue.
+  volatile BlockHeader queue;   // Empty block for linked-list head/tail.
 };
 
 // The "queue" block header is used to detect "last node" so that zero/null
