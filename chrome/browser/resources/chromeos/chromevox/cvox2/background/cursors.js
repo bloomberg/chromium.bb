@@ -239,11 +239,6 @@ cursors.Cursor.prototype = {
         }
         break;
       case Unit.LINE:
-        if (newNode.role != RoleType.inlineTextBox) {
-          newNode = AutomationUtil.findNodePre(
-              newNode, Dir.FORWARD, AutomationPredicate.inlineTextBox) ||
-                  newNode;
-        }
         newIndex = 0;
         switch (movement) {
           case Movement.BOUND:

@@ -152,15 +152,15 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
     mockFeedback.call(doCmd('nextCharacter'))
         .expectSpeech('a');
     mockFeedback.call(doCmd('nextWord'))
-        .expectSpeech('Link', 'alpha');
+        .expectSpeech('alpha', 'Link');
     mockFeedback.call(doCmd('nextWord'))
-        .expectSpeech('Link', 'beta');
+        .expectSpeech('beta', 'Link');
     mockFeedback.call(doCmd('nextWord'))
         .expectSpeech('Heading 1', 'charlie');
     mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech('Link', 'delta');
+        .expectSpeech('delta', 'Link');
     mockFeedback.call(doCmd('nextLine'))
-        .expectSpeech('Link', 'echo');
+        .expectSpeech('echo', 'Link');
     mockFeedback.call(doCmd('nextLine'))
         .expectSpeech('Heading 2', 'foxtraut');
     mockFeedback.call(doCmd('nextLine'))
@@ -174,13 +174,13 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
     mockFeedback.call(doCmd('previousWord'))
         .expectSpeech('foxtraut');
     mockFeedback.call(doCmd('previousWord'))
-        .expectSpeech('Link', 'echo');
+        .expectSpeech('echo', 'Link');
     mockFeedback.call(doCmd('previousCharacter'))
         .expectSpeech('Link', 'a');
     mockFeedback.call(doCmd('previousCharacter'))
         .expectSpeech('t');
     mockFeedback.call(doCmd('nextWord'))
-        .expectSpeech('Link', 'echo');
+        .expectSpeech('echo', 'Link');
     mockFeedback.replay();
   });
 });

@@ -200,7 +200,7 @@ TEST_F('CursorsTest', 'LineCursor', function() {
     [LINE, DIRECTIONAL, BACKWARD, {value: 'same line'}],
     [LINE, DIRECTIONAL, BACKWARD, {value: undefined}],
     [LINE, BOUND, BACKWARD, {value: undefined}],
-    [LINE, DIRECTIONAL, FORWARD, {value: 'end'}]]);
+    [LINE, DIRECTIONAL, FORWARD, {value: 'start '}]]);
 });
 
 TEST_F('CursorsTest', 'CharacterRange', function() {
@@ -263,6 +263,8 @@ TEST_F('CursorsTest', 'WordRange', function() {
      
 TEST_F('CursorsTest', 'LineRange', function() {
   this.runCursorMovesOnDocument(this.simpleDoc, [
+        [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
+      [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
       [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
       [LINE, FORWARD, {value: 'end', index: 0}, {value: 'end', index: 3}],
 
@@ -270,7 +272,7 @@ TEST_F('CursorsTest', 'LineRange', function() {
           {value: 'start ', index: 0}, {value: 'same line', index: 9}],
 
       [LINE, BACKWARD,
-          {value: undefined, index: 0}, {value: undefined, index: 9}],
+          {value: undefined, index: 0}, {value: undefined, index: 0}],
   ], this.RANGE);
 });
       

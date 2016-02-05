@@ -93,9 +93,9 @@ AutomationUtil.findNodePost = function(cur, dir, pred) {
 AutomationUtil.findNextNode = function(cur, dir, pred, opt_restrictions) {
   var restrictions = {};
   opt_restrictions = opt_restrictions || {leaf: undefined,
-                                          root: undefined,
-                                          visit: undefined,
-                                          skipInitialSubtree: false};
+      root: undefined,
+      visit: undefined,
+      skipInitialSubtree: !AutomationPredicate.container(cur)};
   restrictions.leaf = opt_restrictions.leaf || function(node) {
     // Treat nodes matched by |pred| as leaves except for containers.
     return !AutomationPredicate.container(node) && pred(node);
