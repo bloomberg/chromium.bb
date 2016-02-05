@@ -853,6 +853,15 @@
       },
       {
         "args": [
+          "--isolate_file_path=src/third_party/WebKit/Source/platform/heap/BlinkHeapUnitTests.isolate"
+        ],
+        "test": "blink_heap_unittests"
+      },
+      {
+        "test": "blink_platform_unittests"
+      },
+      {
+        "args": [
           "--isolate_file_path=src/breakpad/breakpad_unittests.isolate"
         ],
         "override_compile_targets": [
