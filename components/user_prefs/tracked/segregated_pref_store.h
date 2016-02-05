@@ -72,6 +72,8 @@ class SegregatedPrefStore : public PersistentPrefStore {
   void CommitPendingWrite() override;
   void SchedulePendingLossyWrites() override;
 
+  void ClearMutableValues() override;
+
  private:
   // Aggregates events from the underlying stores and synthesizes external
   // events via |on_initialization|, |read_error_delegate_|, and |observers_|.

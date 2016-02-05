@@ -156,6 +156,10 @@ void SegregatedPrefStore::SchedulePendingLossyWrites() {
   selected_pref_store_->SchedulePendingLossyWrites();
 }
 
+void SegregatedPrefStore::ClearMutableValues() {
+  NOTIMPLEMENTED();
+}
+
 SegregatedPrefStore::~SegregatedPrefStore() {
   default_pref_store_->RemoveObserver(&aggregating_observer_);
   selected_pref_store_->RemoveObserver(&aggregating_observer_);

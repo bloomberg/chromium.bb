@@ -111,6 +111,8 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void RegisterOnNextSuccessfulWriteCallback(
       const base::Closure& on_next_successful_write);
 
+  void ClearMutableValues() override;
+
  private:
   // Represents a histogram for recording the number of writes to the pref file
   // that occur every kHistogramWriteReportIntervalInMins minutes.

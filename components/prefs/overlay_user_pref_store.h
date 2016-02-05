@@ -64,6 +64,8 @@ class COMPONENTS_PREFS_EXPORT OverlayUserPrefStore : public PersistentPrefStore,
   void RegisterOverlayPref(const std::string& overlay_key,
                            const std::string& underlay_key);
 
+  void ClearMutableValues() override;
+
  protected:
   ~OverlayUserPrefStore() override;
 

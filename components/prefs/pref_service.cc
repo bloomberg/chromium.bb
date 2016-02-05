@@ -378,6 +378,10 @@ void PrefService::ClearPref(const std::string& path) {
   user_pref_store_->RemoveValue(path, GetWriteFlags(pref));
 }
 
+void PrefService::ClearMutableValues() {
+  user_pref_store_->ClearMutableValues();
+}
+
 void PrefService::Set(const std::string& path, const base::Value& value) {
   SetUserPrefValue(path, value.DeepCopy());
 }

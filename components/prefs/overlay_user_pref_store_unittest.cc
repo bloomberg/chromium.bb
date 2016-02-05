@@ -289,4 +289,23 @@ TEST_F(OverlayUserPrefStoreTest, NamesMapping) {
   EXPECT_TRUE(obs.changed_keys.empty());
 }
 
+// Check that mutable values are removed correctly.
+TEST_F(OverlayUserPrefStoreTest, ClearMutableValues) {
+  // Set in overlay and underlay the same preference.
+  underlay_->SetValue(overlay_key, make_scoped_ptr(new FundamentalValue(42)),
+                      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  overlay_->SetValue(overlay_key, make_scoped_ptr(new FundamentalValue(43)),
+                     WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+
+  const Value* value = nullptr;
+  // Check that an overlay preference is returned.
+  EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));
+  EXPECT_TRUE(base::FundamentalValue(43).Equals(value));
+  overlay_->ClearMutableValues();
+
+  // Check that an underlay preference is returned.
+  EXPECT_TRUE(overlay_->GetValue(overlay_key, &value));
+  EXPECT_TRUE(base::FundamentalValue(42).Equals(value));
+}
+
 }  // namespace base

@@ -161,6 +161,10 @@ void OverlayUserPrefStore::RegisterOverlayPref(
   underlay_to_overlay_names_map_[underlay_key] = overlay_key;
 }
 
+void OverlayUserPrefStore::ClearMutableValues() {
+  overlay_.Clear();
+}
+
 OverlayUserPrefStore::~OverlayUserPrefStore() {
   underlay_->RemoveObserver(this);
 }

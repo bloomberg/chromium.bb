@@ -295,6 +295,9 @@ class COMPONENTS_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // implemented in chrome/browser/prefs/browser_prefs.cc.
   PrefRegistry* DeprecatedGetPrefRegistry();
 
+  // Clears mutable values.
+  void ClearMutableValues();
+
  protected:
   // The PrefNotifier handles registering and notifying preference observers.
   // It is created and owned by this PrefService. Subclasses may access it for

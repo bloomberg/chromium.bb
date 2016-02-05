@@ -330,6 +330,10 @@ void JsonPrefStore::RegisterOnNextSuccessfulWriteCallback(
   writer_.RegisterOnNextSuccessfulWriteCallback(on_next_successful_write);
 }
 
+void JsonPrefStore::ClearMutableValues() {
+  NOTIMPLEMENTED();
+}
+
 void JsonPrefStore::OnFileRead(scoped_ptr<ReadResult> read_result) {
   DCHECK(CalledOnValidThread());
 

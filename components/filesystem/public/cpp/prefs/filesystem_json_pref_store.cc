@@ -160,6 +160,10 @@ void FilesystemJsonPrefStore::RemoveValueSilently(const std::string& key,
   ScheduleWrite(flags);
 }
 
+void FilesystemJsonPrefStore::ClearMutableValues() {
+  NOTIMPLEMENTED();
+}
+
 bool FilesystemJsonPrefStore::ReadOnly() const {
   DCHECK(CalledOnValidThread());
 

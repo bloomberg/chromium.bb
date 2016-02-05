@@ -69,6 +69,8 @@ class TestingPrefStore : public PersistentPrefStore {
   // the call to ReadPrefsAsync.
   void SetBlockAsyncRead(bool block_async_read);
 
+  void ClearMutableValues() override;
+
   // Getter and Setter methods for setting and getting the state of the
   // |TestingPrefStore|.
   virtual void set_read_only(bool read_only);

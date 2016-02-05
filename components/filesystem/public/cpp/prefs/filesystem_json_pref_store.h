@@ -100,6 +100,8 @@ class FilesystemJsonPrefStore
   // cleanup that shouldn't otherwise alert observers.
   void RemoveValueSilently(const std::string& key, uint32_t flags);
 
+  void ClearMutableValues() override;
+
  private:
   friend class base::JsonPrefStoreLossyWriteTest;
 
