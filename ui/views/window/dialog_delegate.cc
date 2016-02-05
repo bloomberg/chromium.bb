@@ -15,6 +15,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -195,7 +196,10 @@ NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
 
 // static
 NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
-  BubbleFrameView* frame = new BubbleFrameView(gfx::Insets());
+  BubbleFrameView* frame =
+      new BubbleFrameView(gfx::Insets(kPanelVertMargin, kButtonHEdgeMarginNew,
+                                      0, kButtonHEdgeMarginNew),
+                          gfx::Insets());
 #if defined(OS_MACOSX)
   // On Mac, dialogs have no border stroke and use a shadow provided by the OS.
   const BubbleBorder::Shadow kShadow = BubbleBorder::NO_ASSETS;

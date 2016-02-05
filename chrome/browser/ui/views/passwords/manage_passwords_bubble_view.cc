@@ -154,38 +154,25 @@ views::StyledLabel::RangeStyleInfo GetLinkStyle() {
   return result;
 }
 
-// Given a layout and a model, add an appropriate title using a
-// SINGLE_VIEW_COLUMN_SET, followed by a spacer row.
-// TODO(estade): make this a title, the link a TitlebarExtraView, and remove the
-// custom margins in the ctor.
-void AddTitleRow(views::GridLayout* layout, ManagePasswordsBubbleModel* model) {
-  views::Label* title_label = new views::Label(model->title());
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetMultiLine(true);
-  title_label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::MediumFont));
-
-  // Add the title to the layout with appropriate padding.
-  layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-}
-
-// Creates a title row possibly with a link. Adds it to |layout|.
+// If a special title is required (i.e. one that contains links), creates a
+// title view and a row for it in |layout|.
+// TODO(estade): this should be removed and a replaced by a normal title (via
+// GetWindowTitle).
 void AddTitleRowWithLink(views::GridLayout* layout,
-                           ManagePasswordsBubbleModel* model,
-                           views::StyledLabelListener* listener) {
+                         ManagePasswordsBubbleModel* model,
+                         views::StyledLabelListener* listener) {
+  if (model->title_brand_link_range().is_empty())
+    return;
+
   views::StyledLabel* title_label =
       new views::StyledLabel(model->title(), listener);
   title_label->SetBaseFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::MediumFont));
-  if (!model->title_brand_link_range().is_empty()) {
-    title_label->AddStyleRange(model->title_brand_link_range(), GetLinkStyle());
-  }
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  title_label->AddStyleRange(model->title_brand_link_range(), GetLinkStyle());
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 }
 
 scoped_ptr<views::LabelButton> GenerateButton(views::ButtonListener* listener,
@@ -330,13 +317,14 @@ ManagePasswordsBubbleView::PendingView::PendingView(
            .release();
 
   // Title row.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   AddTitleRowWithLink(layout, parent_->model(), this);
 
   // Credential row.
   if (item) {
-    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                                views::kUnrelatedControlVerticalSpacing);
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   }
 
   // Smart Lock warm welcome.
@@ -349,15 +337,14 @@ ManagePasswordsBubbleView::PendingView::PendingView(
             ui::ResourceBundle::SmallFont));
     smart_lock_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     smart_lock_label->SetEnabledColor(kWarmWelcomeColor);
-    layout->StartRowWithPadding(0, SINGLE_VIEW_COLUMN_SET, 0,
-                                views::kUnrelatedControlVerticalSpacing);
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(smart_lock_label);
+    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   }
 
   // Button row.
   BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
-  layout->StartRowWithPadding(0, DOUBLE_BUTTON_COLUMN_SET, 0,
-                              views::kUnrelatedControlVerticalSpacing);
+  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
   layout->AddView(save_button_);
   layout->AddView(never_button_);
 
@@ -422,10 +409,6 @@ ManagePasswordsBubbleView::ManageView::ManageView(
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
-  // Add the title.
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
   // If we have a list of passwords to store for the current site, display
   // them to the user for management. Otherwise, render a "No passwords for
   // this site" message.
@@ -437,6 +420,7 @@ ManagePasswordsBubbleView::ManageView::ManageView(
                 return !form->is_public_suffix_match;
               }) == parent_->model()->local_credentials().end();
 
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   if (!only_PSL_matches) {
     ManagePasswordItemsView* item = new ManagePasswordItemsView(
         parent_->model(), parent_->model()->local_credentials().get());
@@ -527,9 +511,6 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
   SetLayoutManager(layout);
 
-  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
-  AddTitleRow(layout, parent_->model());
-
   views::StyledLabel* confirmation =
       new views::StyledLabel(parent_->model()->save_confirmation_text(), this);
   confirmation->SetBaseFontList(
@@ -538,6 +519,7 @@ ManagePasswordsBubbleView::SaveConfirmationView::SaveConfirmationView(
   confirmation->AddStyleRange(
       parent_->model()->save_confirmation_link_range(), GetLinkStyle());
 
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
   layout->AddView(confirmation);
 
@@ -681,8 +663,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
       this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_UPDATE_BUTTON));
 
   // Title row.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
   AddTitleRowWithLink(layout, parent_->model(), this);
-  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
   // Credential row.
   layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
@@ -797,12 +779,6 @@ ManagePasswordsBubbleView::ManagePasswordsBubbleView(
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
 
-  // TODO(estade): Make the title row a regular bubble title and remove this
-  // margin customization.
-  const int top_margin = ShouldShowCloseButton() ? margins().top()
-                                                 : views::kPanelVertMargin;
-  set_margins(gfx::Insets(top_margin, views::kPanelHorizMargin,
-                          views::kPanelVertMargin, views::kPanelHorizMargin));
   mouse_handler_.reset(new WebContentMouseHandler(this));
 }
 
@@ -827,6 +803,17 @@ void ManagePasswordsBubbleView::Close() {
   LocationBarBubbleDelegateView::Close();
 }
 
+base::string16 ManagePasswordsBubbleView::GetWindowTitle() const {
+  return model_.title();
+}
+
+bool ManagePasswordsBubbleView::ShouldShowWindowTitle() const {
+  // Since bubble titles don't support links, fall back to a custom title view
+  // if we need to show a link. Only use the normal title path if there's no
+  // link.
+  return model_.title_brand_link_range().is_empty();
+}
+
 bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
   return model_.state() == password_manager::ui::PENDING_PASSWORD_STATE;
 }
@@ -846,5 +833,7 @@ void ManagePasswordsBubbleView::Refresh() {
   } else {
     AddChildView(new ManageView(this));
   }
+  if (GetWidget())
+    GetWidget()->UpdateWindowTitle();
   GetLayoutManager()->Layout(this);
 }

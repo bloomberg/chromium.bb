@@ -102,7 +102,7 @@ views::View* SaveCardBubbleViews::GetInitiallyFocusedView() {
   return save_button_;
 }
 
-base::string16 SaveCardBubbleViews::GetAccessibleWindowTitle() const {
+base::string16 SaveCardBubbleViews::GetWindowTitle() const {
   return controller_->GetWindowTitle();
 }
 
@@ -155,18 +155,7 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   scoped_ptr<View> view(new View());
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0,
-                           views::kUnrelatedControlLargeHorizontalSpacing));
-
-  // Add a title label. (We don't simply override WidgetDelegate::GetWindowTitle
-  // and WidgetDelegate::ShouldShowWindowTitle because the built-in bubble title
-  // doesn't support multi-line.)
-  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  views::Label* title_label =
-      new views::Label(controller_->GetWindowTitle(),
-                       rb.GetFontList(ui::ResourceBundle::MediumFont));
-  title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  view->AddChildView(title_label);
+                           views::kUnrelatedControlVerticalSpacing));
 
   // Add the card type icon, last four digits and expiration date.
   views::View* description_view = new views::View();
@@ -177,7 +166,9 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   const CreditCard& card = controller_->GetCard();
   views::ImageView* card_type_icon = new views::ImageView();
   card_type_icon->SetImage(
-      rb.GetImageNamed(CreditCard::IconResourceId(card.type())).AsImageSkia());
+      ResourceBundle::GetSharedInstance()
+          .GetImageNamed(CreditCard::IconResourceId(card.type()))
+          .AsImageSkia());
   card_type_icon->SetTooltipText(card.TypeForDisplay());
   card_type_icon->SetBorder(
       views::Border::CreateSolidBorder(1, kSubtleBorderColor));

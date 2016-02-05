@@ -32,6 +32,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -402,6 +403,12 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       sources_scroll_view_(views::ScrollView::CreateScrollViewWithBorder()),
       sources_list_view_(
           new DesktopMediaListView(this, std::move(media_list))) {
+  // TODO(estade): we should be getting the inside-border spacing by default as
+  // a DialogDelegateView subclass, via default BubbleFrameView content margins.
+  SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical, views::kButtonHEdgeMarginNew,
+      views::kPanelVertMargin, views::kLabelToControlVerticalSpacing));
+
   if (app_name == target_name) {
     description_label_->SetText(
         l10n_util::GetStringFUTF16(IDS_DESKTOP_MEDIA_PICKER_TEXT, app_name));
@@ -413,6 +420,11 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label_);
 
+  sources_scroll_view_->SetContents(sources_list_view_);
+  sources_scroll_view_->ClipHeightTo(GetMediaListViewHeightForRows(1),
+                                     GetMediaListViewHeightForRows(2));
+  AddChildView(sources_scroll_view_);
+
   if (request_audio) {
     audio_share_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE));
@@ -421,11 +433,6 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     audio_share_checkbox_->SetTooltipText(l10n_util::GetStringUTF16(
         IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE));
   }
-
-  sources_scroll_view_->SetContents(sources_list_view_);
-  sources_scroll_view_->ClipHeightTo(GetMediaListViewHeightForRows(1),
-                                     GetMediaListViewHeightForRows(2));
-  AddChildView(sources_scroll_view_);
 
   // If |parent_web_contents| is set and it's not a background page then the
   // picker will be shown modal to the web contents. Otherwise the picker is
@@ -474,57 +481,7 @@ void DesktopMediaPickerDialogView::DetachParent() {
 
 gfx::Size DesktopMediaPickerDialogView::GetPreferredSize() const {
   static const size_t kDialogViewWidth = 600;
-
-  const gfx::Insets title_insets = views::BubbleFrameView::GetTitleInsets();
-
-  const size_t kInnerWidth = kDialogViewWidth - title_insets.height() * 2;
-
-  size_t label_height = description_label_->GetHeightForWidth(kInnerWidth);
-
-  size_t checkbox_height_with_padding =
-      audio_share_checkbox_
-          ? audio_share_checkbox_->GetHeightForWidth(kInnerWidth) +
-                views::kPanelVertMargin
-          : 0;
-
-  return gfx::Size(kDialogViewWidth,
-                   views::kPanelVertMargin * 2 + label_height +
-                       checkbox_height_with_padding +
-                       views::kPanelVerticalSpacing +
-                       sources_scroll_view_->GetPreferredSize().height());
-}
-
-void DesktopMediaPickerDialogView::Layout() {
-  // DialogDelegate uses the bubble style frame.
-  const gfx::Insets title_insets = views::BubbleFrameView::GetTitleInsets();
-  gfx::Rect rect = GetLocalBounds();
-
-  rect.Inset(title_insets.left(), views::kPanelVertMargin);
-
-  gfx::Rect label_rect(rect.x(), rect.y(), rect.width(),
-                       description_label_->GetHeightForWidth(rect.width()));
-  description_label_->SetBoundsRect(label_rect);
-
-  int checkbox_height = 0;
-  int checkbox_height_with_padding = 0;
-  if (audio_share_checkbox_) {
-    checkbox_height = audio_share_checkbox_->GetHeightForWidth(rect.width());
-    checkbox_height_with_padding = checkbox_height + views::kPanelVertMargin;
-  }
-
-  int scroll_view_top = label_rect.bottom() + views::kPanelVerticalSpacing;
-  int scroll_view_height =
-      rect.height() - scroll_view_top - checkbox_height_with_padding;
-  gfx::Rect scroll_view_rect(rect.x(), scroll_view_top, rect.width(),
-                             scroll_view_height);
-  sources_scroll_view_->SetBoundsRect(scroll_view_rect);
-
-  if (audio_share_checkbox_) {
-    gfx::Rect checkbox_rect(rect.x(),
-                            scroll_view_rect.bottom() + views::kPanelVertMargin,
-                            rect.width(), checkbox_height);
-    audio_share_checkbox_->SetBoundsRect(checkbox_rect);
-  }
+  return gfx::Size(kDialogViewWidth, GetHeightForWidth(kDialogViewWidth));
 }
 
 ui::ModalType DesktopMediaPickerDialogView::GetModalType() const {

@@ -171,9 +171,12 @@ class AppListDialogContainer : public BaseDialogContainer,
 // A BubbleFrameView that allows its client view to extend all the way to the
 // top of the dialog, overlapping the BubbleFrameView's close button. This
 // allows dialog content to appear closer to the top, in place of a title.
+// TODO(estade): the functionality here should probably be folded into
+// BubbleFrameView.
 class FullSizeBubbleFrameView : public views::BubbleFrameView {
  public:
-  FullSizeBubbleFrameView() : views::BubbleFrameView(gfx::Insets()) {}
+  FullSizeBubbleFrameView()
+      : views::BubbleFrameView(gfx::Insets(), gfx::Insets()) {}
   ~FullSizeBubbleFrameView() override {}
 
  private:

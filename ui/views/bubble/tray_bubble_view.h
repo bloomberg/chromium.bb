@@ -186,7 +186,10 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
   InitParams params_;
   Delegate* delegate_;
   int preferred_width_;
+  // |bubble_border_| and |owned_bubble_border_| point to the same thing, but
+  // the latter ensures we don't leak it before passing off ownership.
   internal::TrayBubbleBorder* bubble_border_;
+  scoped_ptr<views::BubbleBorder> owned_bubble_border_;
   scoped_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
   bool is_gesture_dragging_;
 

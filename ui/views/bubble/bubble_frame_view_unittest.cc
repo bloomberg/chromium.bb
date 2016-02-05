@@ -64,7 +64,8 @@ class TestBubbleFrameViewWidgetDelegate : public WidgetDelegate {
 class TestBubbleFrameView : public BubbleFrameView {
  public:
   TestBubbleFrameView(ViewsTestBase* test_base)
-      : BubbleFrameView(gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
+      : BubbleFrameView(gfx::Insets(),
+                        gfx::Insets(kMargin, kMargin, kMargin, kMargin)),
         test_base_(test_base),
         available_bounds_(gfx::Rect(0, 0, 1000, 1000)) {
     SetBubbleBorder(scoped_ptr<BubbleBorder>(

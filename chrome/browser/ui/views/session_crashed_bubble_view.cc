@@ -61,9 +61,7 @@ const int kWidthOfDescriptionText = 320;
 // Distance between checkbox and the text to the right of it.
 const int kCheckboxTextDistance = 4;
 
-// The color of the text and background of the sub panel to offer UMA opt-in.
-// These values match the BookmarkSyncPromoView colors.
-const SkColor kBackgroundColor = SkColorSetRGB(245, 245, 245);
+// The color of the text of the sub panel to offer UMA opt-in.
 const SkColor kTextColor = SkColorSetRGB(102, 102, 102);
 
 #if !defined(OS_CHROMEOS)
@@ -289,17 +287,14 @@ void SessionCrashedBubbleView::Init() {
   // Text row.
   const int kTextColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kTextColumnSetId);
-  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
   cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                 GridLayout::FIXED, kWidthOfDescriptionText, 0);
-  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
 
   // Restore button row.
   const int kButtonColumnSetId = 1;
   cs = layout->AddColumnSet(kButtonColumnSetId);
   cs->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
                 GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, GetBubbleFrameView()->GetTitleInsets().left());
 
   layout->StartRow(0, kTextColumnSetId);
   layout->AddView(text_label);
@@ -307,34 +302,14 @@ void SessionCrashedBubbleView::Init() {
 
   layout->StartRow(0, kButtonColumnSetId);
   layout->AddView(restore_button_);
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-  int bottom_margin = 1;
-
-  // Metrics reporting option.
-  if (offer_uma_optin_) {
-    const int kUMAOptionColumnSetId = 2;
-    cs = layout->AddColumnSet(kUMAOptionColumnSetId);
-    cs->AddColumn(
-        GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
-    layout->StartRow(1, kUMAOptionColumnSetId);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-    layout->StartRow(1, kUMAOptionColumnSetId);
-    layout->AddView(CreateUMAOptinView());
-
-    // Since the UMA opt-in row has a different background than the default
-    // background color of bubbles, the bottom margin has to be 0 to make sure
-    // the background extends to the bottom edge of the bubble.
-    bottom_margin = 0;
-
-    RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
-  }
-
-  set_margins(gfx::Insets(1, 0, bottom_margin, 0));
-  Layout();
 }
 
-views::View* SessionCrashedBubbleView::CreateUMAOptinView() {
+scoped_ptr<views::View> SessionCrashedBubbleView::CreateFootnoteView() {
+  if (!offer_uma_optin_)
+    return nullptr;
+
+  RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_OPTIN_BAR_SHOWN);
+
   // Checkbox for metric reporting setting.
   // Since the text to the right of the checkbox can't be a simple string (needs
   // a hyperlink in it), this checkbox contains an empty string as its label,
@@ -368,26 +343,17 @@ views::View* SessionCrashedBubbleView::CreateUMAOptinView() {
   uma_label->SetBorder(views::Border::CreateEmptyBorder(1, 0, 0, 0));
 
   // Create a view to hold the checkbox and the text.
-  views::View* uma_view = new views::View();
-  GridLayout* uma_layout = new GridLayout(uma_view);
+  scoped_ptr<views::View> uma_view(new views::View());
+  GridLayout* uma_layout = new GridLayout(uma_view.get());
   uma_view->SetLayoutManager(uma_layout);
-
-  uma_view->set_background(
-      views::Background::CreateSolidBackground(kBackgroundColor));
-  int inset_left = GetBubbleFrameView()->GetTitleInsets().left();
-
-  // Bottom inset for UMA opt-in view in pixels.
-  const int kUMAOptinViewBottomInset = 10;
-  uma_layout->SetInsets(views::kRelatedControlVerticalSpacing, inset_left,
-                        kUMAOptinViewBottomInset, inset_left);
 
   const int kReportColumnSetId = 0;
   views::ColumnSet* cs = uma_layout->AddColumnSet(kReportColumnSetId);
   cs->AddColumn(GridLayout::CENTER, GridLayout::LEADING, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, kCheckboxTextDistance);
-  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                GridLayout::FIXED, kWidthOfDescriptionText, 0);
+  cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0,
+                0);
 
   uma_layout->StartRow(0, kReportColumnSetId);
   uma_layout->AddView(uma_option_);

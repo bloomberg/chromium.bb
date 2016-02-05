@@ -153,8 +153,6 @@ NewCreditCardBubbleViews::NewCreditCardBubbleViews(
     : BubbleDelegateView(GetAnchor(controller), GetArrow(controller)),
       controller_(controller),
       weak_ptr_factory_(this) {
-  gfx::Insets insets = views::BubbleFrameView::GetTitleInsets();
-  set_margins(gfx::Insets(0, insets.left(), insets.top(), insets.left()));
 }
 
 }  // namespace autofill

@@ -34,7 +34,7 @@ const int kInfoBubbleVerticalMargin = 12;
 class InfoBubbleFrame : public views::BubbleFrameView {
  public:
   explicit InfoBubbleFrame(const gfx::Insets& content_margins)
-      : views::BubbleFrameView(content_margins) {}
+      : views::BubbleFrameView(gfx::Insets(), content_margins) {}
   ~InfoBubbleFrame() override {}
 
   gfx::Rect GetAvailableScreenBounds(const gfx::Rect& rect) const override {

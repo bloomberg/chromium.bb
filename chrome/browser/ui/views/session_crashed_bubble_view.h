@@ -64,6 +64,7 @@ class SessionCrashedBubbleView
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  scoped_ptr<views::View> CreateFootnoteView() override;
 
   // views::BubbleDelegateView methods.
   void Init() override;
@@ -95,9 +96,6 @@ class SessionCrashedBubbleView
   // window or to another window, the bubble will be dismissed as if the user
   // chose not to restore the previous session.
   void TabDetachedAt(content::WebContents* contents, int index) override;
-
-  // Create the view for the user to opt in to UMA.
-  views::View* CreateUMAOptinView();
 
   // Restore previous session after user selects so.
   void RestorePreviousSession(views::Button* sender);

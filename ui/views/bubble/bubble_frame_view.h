@@ -30,12 +30,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Internal class name.
   static const char kViewClassName[];
 
-  explicit BubbleFrameView(const gfx::Insets& content_margins);
+  BubbleFrameView(const gfx::Insets& title_margins,
+                  const gfx::Insets& content_margins);
   ~BubbleFrameView() override;
-
-  // Insets to make bubble contents align horizontal with the bubble title.
-  // NOTE: this does not take into account whether a title actually exists.
-  static gfx::Insets GetTitleInsets();
 
   // Creates a close button used in the corner of the dialog.
   static LabelButton* CreateCloseButton(ButtonListener* listener);
@@ -115,6 +112,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // The bubble border.
   BubbleBorder* bubble_border_;
+
+  // Margins around the title label.
+  gfx::Insets title_margins_;
 
   // Margins between the content and the inside of the border, in pixels.
   gfx::Insets content_margins_;

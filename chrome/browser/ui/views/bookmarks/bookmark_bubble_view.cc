@@ -27,7 +27,6 @@
 #include "grit/components_strings.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/label_button.h"
@@ -153,13 +152,6 @@ bool BookmarkBubbleView::AcceleratorPressed(
 }
 
 void BookmarkBubbleView::Init() {
-  views::Label* title_label = new views::Label(
-      l10n_util::GetStringUTF16(
-          newly_bookmarked_ ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED :
-                              IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK));
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::MediumFont));
-
   remove_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
       IDS_BOOKMARK_BUBBLE_REMOVE_BOOKMARK));
   remove_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -184,19 +176,10 @@ void BookmarkBubbleView::Init() {
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
-  // Column sets used in the layout of the bubble.
-  enum ColumnSetID {
-    TITLE_COLUMN_SET_ID,
-    CONTENT_COLUMN_SET_ID,
-    SYNC_PROMO_COLUMN_SET_ID
-  };
-
-  ColumnSet* cs = layout->AddColumnSet(TITLE_COLUMN_SET_ID);
-  cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::USE_PREF,
-                0, 0);
-
-  // The column layout used for middle and bottom rows.
-  cs = layout->AddColumnSet(CONTENT_COLUMN_SET_ID);
+  // This column set is used for the labels and textfields as well as the
+  // buttons at the bottom.
+  const int cs_id = 0;
+  ColumnSet* cs = layout->AddColumnSet(cs_id);
   cs->AddColumn(views::kControlLabelGridAlignment, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);
   cs->AddPaddingColumn(0, views::kUnrelatedControlHorizontalSpacing);
@@ -211,11 +194,7 @@ void BookmarkBubbleView::Init() {
   cs->AddColumn(GridLayout::LEADING, GridLayout::TRAILING, 0,
                 GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, TITLE_COLUMN_SET_ID);
-  layout->AddView(title_label);
-  layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
-
-  layout->StartRow(0, CONTENT_COLUMN_SET_ID);
+  layout->StartRow(0, cs_id);
   views::Label* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_TITLE_TEXT));
   layout->AddView(label);
@@ -228,13 +207,13 @@ void BookmarkBubbleView::Init() {
 
   layout->AddPaddingRow(0, views::kUnrelatedControlHorizontalSpacing);
 
-  layout->StartRow(0, CONTENT_COLUMN_SET_ID);
+  layout->StartRow(0, cs_id);
   layout->AddView(combobox_label);
   layout->AddView(parent_combobox_, 5, 1);
 
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
-  layout->StartRow(0, CONTENT_COLUMN_SET_ID);
+  layout->StartRow(0, cs_id);
   layout->SkipColumns(2);
   layout->AddView(remove_button_);
   layout->AddView(edit_button_);
@@ -243,6 +222,12 @@ void BookmarkBubbleView::Init() {
   AddAccelerator(ui::Accelerator(ui::VKEY_RETURN, ui::EF_NONE));
   AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN));
+}
+
+base::string16 BookmarkBubbleView::GetWindowTitle() const {
+  return l10n_util::GetStringUTF16(newly_bookmarked_
+                                       ? IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARKED
+                                       : IDS_BOOKMARK_BUBBLE_PAGE_BOOKMARK);
 }
 
 const char* BookmarkBubbleView::GetClassName() const {

@@ -62,6 +62,7 @@ class BookmarkBubbleView : public views::BubbleDelegateView,
  protected:
   // views::BubbleDelegateView method.
   void Init() override;
+  base::string16 GetWindowTitle() const override;
 
  private:
   friend class BookmarkBubbleViewTest;

@@ -280,10 +280,8 @@ views::NonClientFrameView*
 ScreenCaptureNotificationUIViews::CreateNonClientFrameView(
     views::Widget* widget) {
   views::BubbleFrameView* frame = new views::BubbleFrameView(
-      gfx::Insets(kPaddingVertical,
-                  kPaddingHorizontal,
-                  kPaddingVertical,
-                  kPaddingHorizontal));
+      gfx::Insets(), gfx::Insets(kPaddingVertical, kPaddingHorizontal,
+                                 kPaddingVertical, kPaddingHorizontal));
   SkColor color = widget->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DialogBackground);
   frame->SetBubbleBorder(scoped_ptr<views::BubbleBorder>(

@@ -52,7 +52,7 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
 
   // views::WidgetDelegate
   views::View* GetInitiallyFocusedView() override;
-  base::string16 GetAccessibleWindowTitle() const override;
+  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
   // views::ButtonListener

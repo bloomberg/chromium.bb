@@ -11,6 +11,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
@@ -21,18 +22,15 @@
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_constants.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 
-namespace {
+namespace views {
 
-// Insets for the title bar views in pixels.
-const int kTitleTopInset = 12;
-const int kTitleLeftInset = 19;
-const int kTitleBottomInset = 12;
-const int kTitleRightInset = 7;
+namespace {
 
 // The horizontal padding between the title and the icon.
 const int kTitleHorizontalPadding = 5;
@@ -68,13 +66,13 @@ int GetOffScreenLength(const gfx::Rect& available_bounds,
 
 }  // namespace
 
-namespace views {
-
 // static
 const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
-BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
+BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
+                                 const gfx::Insets& content_margins)
     : bubble_border_(nullptr),
+      title_margins_(title_margins),
       content_margins_(content_margins),
       title_icon_(new views::ImageView()),
       title_(nullptr),
@@ -90,6 +88,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->set_collapse_when_hidden(true);
   title_->SetVisible(false);
+  title_->SetMultiLine(true);
   AddChildView(title_);
 
   close_ = CreateCloseButton(this);
@@ -98,12 +97,6 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
 }
 
 BubbleFrameView::~BubbleFrameView() {}
-
-// static
-gfx::Insets BubbleFrameView::GetTitleInsets() {
-  return gfx::Insets(
-      kTitleTopInset, kTitleLeftInset, kTitleBottomInset, kTitleRightInset);
-}
 
 // static
 LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
@@ -126,9 +119,8 @@ LabelButton* BubbleFrameView::CreateCloseButton(ButtonListener* listener) {
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
-  gfx::Rect client_bounds = GetLocalBounds();
+  gfx::Rect client_bounds = GetContentsBounds();
   client_bounds.Inset(GetInsets());
-  client_bounds.Inset(bubble_border_->GetInsets());
   if (footnote_container_) {
     client_bounds.set_height(client_bounds.height() -
                              footnote_container_->height());
@@ -218,7 +210,7 @@ gfx::Insets BubbleFrameView::GetInsets() const {
   const int icon_height = title_icon_->GetPreferredSize().height();
   const int label_height = title_->GetPreferredSize().height();
   const bool has_title = icon_height > 0 || label_height > 0;
-  const int title_padding = has_title ? kTitleTopInset + kTitleBottomInset : 0;
+  const int title_padding = has_title ? title_margins_.height() : 0;
   const int title_height = std::max(icon_height, label_height) + title_padding;
   const int close_height = close_->visible() ? close_->height() : 0;
   insets += gfx::Insets(std::max(title_height, close_height), 0, 0, 0);
@@ -263,14 +255,19 @@ gfx::Size BubbleFrameView::GetMaximumSize() const {
 }
 
 void BubbleFrameView::Layout() {
+  // The title margins may not be set, but make sure that's only the case when
+  // there's no title.
+  DCHECK(!title_margins_.IsEmpty() || !title_->visible());
+
   gfx::Rect bounds(GetContentsBounds());
-  bounds.Inset(GetTitleInsets());
+  bounds.Inset(title_margins_);
   if (bounds.IsEmpty())
     return;
 
-  // The close button top inset is actually smaller than the title top inset.
-  close_->SetPosition(gfx::Point(bounds.right() - close_->width(),
-                                 bounds.y() - 5));
+  // The close button is positioned somewhat closer to the edge of the bubble.
+  gfx::Point close_position = GetContentsBounds().top_right();
+  close_position += gfx::Vector2d(-close_->width() - 7, 6);
+  close_->SetPosition(close_position);
 
   gfx::Size title_icon_size(title_icon_->GetPreferredSize());
   gfx::Size title_label_size(title_->GetPreferredSize());
@@ -312,8 +309,7 @@ void BubbleFrameView::Layout() {
   }
 
   if (footnote_container_) {
-    gfx::Rect local_bounds = GetLocalBounds();
-    local_bounds.Inset(bubble_border_->GetInsets());
+    gfx::Rect local_bounds = GetContentsBounds();
     int height = footnote_container_->GetHeightForWidth(local_bounds.width());
     footnote_container_->SetBounds(local_bounds.x(),
                                    local_bounds.bottom() - height,
@@ -494,24 +490,21 @@ void BubbleFrameView::OffsetArrowIfOffScreen(const gfx::Rect& anchor_rect,
 gfx::Size BubbleFrameView::GetSizeForClientSize(
     const gfx::Size& client_size) const {
   // Accommodate the width of the title bar elements.
-  int title_bar_width = GetInsets().width() + border()->GetInsets().width();
+  int title_bar_width = title_margins_.width() + border()->GetInsets().width();
   gfx::Size title_icon_size = title_icon_->GetPreferredSize();
   gfx::Size title_label_size = title_->GetPreferredSize();
-  if (title_icon_size.width() > 0 || title_label_size.width() > 0)
-    title_bar_width += kTitleLeftInset;
   if (title_icon_size.width() > 0 && title_label_size.width() > 0)
     title_bar_width += kTitleHorizontalPadding;
   title_bar_width += title_icon_size.width();
-  title_bar_width += title_label_size.width();
   if (close_->visible())
     title_bar_width += close_->width() + 1;
   if (titlebar_extra_view_)
     title_bar_width += titlebar_extra_view_->GetPreferredSize().width();
-  gfx::Size size(client_size);
-  size.SetToMax(gfx::Size(title_bar_width, 0));
 
-  const gfx::Insets insets(GetInsets());
-  size.Enlarge(insets.width(), insets.height());
+  gfx::Size size(client_size);
+  gfx::Insets client_insets = GetInsets();
+  size.Enlarge(client_insets.width(), client_insets.height());
+  size.SetToMax(gfx::Size(title_bar_width, 0));
 
   if (footnote_container_)
     size.Enlarge(0, footnote_container_->GetHeightForWidth(size.width()));
