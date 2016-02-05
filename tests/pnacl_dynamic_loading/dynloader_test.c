@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "native_client/src/include/nacl_assert.h"
 #include "native_client/src/untrusted/pnacl_dynloader/dynloader.h"
@@ -40,6 +41,22 @@ int main(int argc, char **argv) {
   ASSERT_EQ(*root->get_var(), 2345);
   /* Test that a variable in the BSS is properly zero-initialized. */
   assert_buffer_is_zeroed(root->bss_var, BSS_VAR_SIZE);
+
+  /* Test use of LLVM's memcpy intrinsic inside the PSO. */
+  uint8_t src_buf[0x1000];
+  uint8_t dest_buf[0x1000];
+  memset(dest_buf, 0, sizeof(dest_buf));
+  for (size_t i = 0; i < sizeof(src_buf); i++)
+    src_buf[i] = i;
+  void *memcpy_result = root->memcpy_example(dest_buf, src_buf,
+                                             sizeof(dest_buf));
+  ASSERT_EQ(memcpy_result, dest_buf);
+  for (size_t i = 0; i < sizeof(dest_buf); i++)
+    ASSERT_EQ(dest_buf[i], (uint8_t) i);
+
+  /* Test use of division (e.g. via __divdi3) inside the PSO. */
+  ASSERT_EQ(root->division_example(0x123456789abcdef1, 7),
+            0x123456789abcdef1 / 7);
 
   /*
    * Each call to pnacl_load_elf_file() should create a fresh instantiation
