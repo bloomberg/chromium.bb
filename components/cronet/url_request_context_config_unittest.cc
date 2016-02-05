@@ -15,7 +15,7 @@
 
 namespace cronet {
 
-TEST(URLRequestContextConfigTest, DISABLED_SetQuicExperimentalOptions) {
+TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -41,7 +41,7 @@ TEST(URLRequestContextConfigTest, DISABLED_SetQuicExperimentalOptions) {
       "\"packet_loss_threshold\":0.5,"
       "\"idle_connection_timeout_seconds\":300,"
       "\"close_sessions_on_ip_change\":true,"
-      "\"migrate_sessions_on_nework_change\":true,"
+      "\"migrate_sessions_on_network_change\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true}}",
       // Data reduction proxy key.
