@@ -43,6 +43,7 @@ int C::instanceCount = 0;
 // Structs are like classes.
 struct S {
   int m_integerField;
+  int wantsRename;
   int google_style_already;
 };
 

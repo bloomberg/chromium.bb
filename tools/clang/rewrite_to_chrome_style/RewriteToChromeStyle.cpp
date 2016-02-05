@@ -238,17 +238,18 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
   StringRef original_name = decl.getName();
-  // Blink style field names are prefixed with `m_`. If this prefix isn't
-  // present, assume it's already been converted to Google style.
-  if (original_name.size() < strlen(kBlinkFieldPrefix) ||
-      !original_name.startswith(kBlinkFieldPrefix))
-    return false;
-  name = CamelCaseToUnderscoreCase(
-      original_name.substr(strlen(kBlinkFieldPrefix)), false);
+  bool member_prefix = original_name.startswith(kBlinkFieldPrefix);
+
+  StringRef rename_part = !member_prefix
+                              ? original_name
+                              : original_name.substr(strlen(kBlinkFieldPrefix));
+  name = CamelCaseToUnderscoreCase(rename_part, false);
+
   // Assume that prefix of m_ was intentional and always replace it with a
   // suffix _.
-  if (name.back() != '_')
+  if (member_prefix && name.back() != '_')
     name += '_';
+
   return true;
 }
 
