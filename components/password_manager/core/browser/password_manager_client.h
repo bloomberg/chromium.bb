@@ -105,6 +105,17 @@ class PasswordManagerClient {
   virtual void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) = 0;
 
+  // Inform the embedder that automatic signin would have happened if the user
+  // had been through the first-run experience to ensure their opt-in. |form|
+  // contains the PasswordForm that would have been delivered.
+  virtual void NotifyUserAutoSigninBlockedOnFirstRun(
+      scoped_ptr<autofill::PasswordForm> form) = 0;
+
+  // Inform the embedder that the user signed in with a saved credential.
+  // |form| contains the form used.
+  virtual void NotifySuccessfulLoginWithExistingPassword(
+      const autofill::PasswordForm& form) = 0;
+
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occured.
   virtual void AutomaticPasswordSave(

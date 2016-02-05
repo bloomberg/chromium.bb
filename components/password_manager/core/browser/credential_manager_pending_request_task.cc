@@ -90,8 +90,10 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
   //
   // Moreover, we only return such a credential if the user has opted-in via the
   // first-run experience.
-  if (local_results.size() == 1u && !local_results[0]->skip_zero_click &&
-      delegate_->IsZeroClickAllowed() &&
+  bool can_use_autosignin = local_results.size() == 1u &&
+                            !local_results[0]->skip_zero_click &&
+                            delegate_->IsZeroClickAllowed();
+  if (can_use_autosignin &&
       !password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           delegate_->client()->GetPrefs())) {
     CredentialInfo info(*local_results[0],
@@ -101,6 +103,17 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     delegate_->client()->NotifyUserAutoSignin(std::move(local_results));
     delegate_->SendCredential(id_, info);
     return;
+  }
+
+  // If we didn't even try to ask the user for credentials because the site
+  // asked us for zero-click only and we're blocked on the first-run experience,
+  // then notify the client.
+  if (zero_click_only_ && can_use_autosignin &&
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          delegate_->client()->GetPrefs())) {
+    scoped_ptr<autofill::PasswordForm> form(
+        new autofill::PasswordForm(*local_results[0]));
+    delegate_->client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(form));
   }
 
   // Otherwise, return an empty credential if we're in zero-click-only mode

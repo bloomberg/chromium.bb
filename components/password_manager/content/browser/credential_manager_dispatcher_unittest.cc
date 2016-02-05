@@ -56,6 +56,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_CONST_METHOD0(DidLastPageLoadEncounterSSLErrors, bool());
   MOCK_METHOD1(NotifyUserAutoSigninPtr,
                bool(const std::vector<autofill::PasswordForm*>& local_forms));
+  MOCK_METHOD1(NotifyUserAutoSigninBlockedOnFirstRunPtr,
+               bool(autofill::PasswordForm* form));
   MOCK_METHOD2(PromptUserToSavePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
   MOCK_METHOD4(PromptUserToChooseCredentialsPtr,
@@ -78,6 +80,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     manager_.swap(manager);
     PromptUserToSavePasswordPtr(manager_.get(), type);
     return true;
+  }
+
+  void NotifyUserAutoSigninBlockedOnFirstRun(
+      scoped_ptr<autofill::PasswordForm> form) override {
+    NotifyUserAutoSigninBlockedOnFirstRunPtr(form.get());
   }
 
   PasswordStore* GetPasswordStore() const override { return store_; }
@@ -588,8 +595,11 @@ TEST_F(
 TEST_F(CredentialManagerDispatcherTest,
        CredentialManagerOnRequestCredentialWithZeroClickOnlyFullPasswordStore) {
   store_->AddLogin(form_);
+  client_->set_first_run_seen(true);
 
   std::vector<GURL> federations;
+
+  EXPECT_CALL(*client_, NotifyUserAutoSigninBlockedOnFirstRunPtr(_)).Times(0);
   dispatcher()->OnRequestCredential(kRequestId, true, federations);
 
   ExpectZeroClickSignInSuccess();
@@ -601,6 +611,9 @@ TEST_F(CredentialManagerDispatcherTest, RequestCredentialWithoutFirstRun) {
   store_->AddLogin(form_);
 
   std::vector<GURL> federations;
+  EXPECT_CALL(*client_,
+              NotifyUserAutoSigninBlockedOnFirstRunPtr(testing::Pointee(form_)))
+      .Times(1);
   dispatcher()->OnRequestCredential(kRequestId, true, federations);
 
   ExpectZeroClickSignInFailure();

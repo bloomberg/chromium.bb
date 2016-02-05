@@ -71,6 +71,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   // the PasswordFormManager* argument.
   MOCK_METHOD2(PromptUserToSaveOrUpdatePasswordPtr,
                void(PasswordFormManager*, CredentialSourceType type));
+  MOCK_METHOD1(NotifySuccessfulLoginWithExistingPassword,
+               void(const autofill::PasswordForm&));
   MOCK_METHOD0(AutomaticPasswordSaveIndicator, void());
   MOCK_METHOD0(GetPrefs, PrefService*());
   MOCK_METHOD0(GetDriver, PasswordManagerDriver*());
@@ -1014,6 +1016,38 @@ TEST_F(PasswordManagerTest, FormSubmittedChangedWithAutofillResponse) {
   form_manager_to_save->Save();
 }
 
+TEST_F(PasswordManagerTest, FormSubmittedUnchangedNotifiesClient) {
+  // This tests verifies that if the observed forms and provisionally saved
+  // forms are the same, then successful submission notifies the client.
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleForm());
+  observed.push_back(form);
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(2);
+  EXPECT_CALL(*store_, GetLogins(_, _, _))
+      .WillOnce(WithArg<2>(InvokeConsumer(form)));
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+  OnPasswordFormSubmitted(form);
+
+  autofill::PasswordForm updated_form;
+  autofill::PasswordForm notified_form;
+  EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(*store_, UpdateLogin(_)).WillOnce(SaveArg<0>(&updated_form));
+  EXPECT_CALL(client_, NotifySuccessfulLoginWithExistingPassword(_))
+      .WillOnce(SaveArg<0>(&notified_form));
+
+  // Now the password manager waits for the navigation to complete.
+  observed.clear();
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  EXPECT_THAT(form, FormMatches(updated_form));
+  EXPECT_THAT(form, FormMatches(notified_form));
+}
+
 TEST_F(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   // Test that a password is offered for saving even if the response from the
   // PasswordStore comes after submit.
@@ -1333,8 +1367,11 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   OnPasswordFormSubmitted(filled_form);
 
   PasswordForm saved_form;
+  PasswordForm saved_notified_form;
   EXPECT_CALL(*store_, UpdateLogin(_)).WillOnce(SaveArg<0>(&saved_form));
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_, _)).Times(0);
+  EXPECT_CALL(client_, NotifySuccessfulLoginWithExistingPassword(_))
+      .WillOnce(SaveArg<0>(&saved_notified_form));
   EXPECT_CALL(*store_, AddLogin(_)).Times(0);
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _)).Times(0);
 
@@ -1342,6 +1379,7 @@ TEST_F(PasswordManagerTest, AutofillingOfAffiliatedCredentials) {
   manager()->OnPasswordFormsParsed(&driver_, observed_forms);
   manager()->OnPasswordFormsRendered(&driver_, observed_forms, true);
   EXPECT_THAT(saved_form, FormMatches(android_form));
+  EXPECT_THAT(saved_form, FormMatches(saved_notified_form));
 }
 
 // If the manager fills a credential originally saved from an affiliated Android

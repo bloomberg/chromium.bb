@@ -61,6 +61,10 @@ class ChromePasswordManagerClient
   void ForceSavePassword() override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
+  void NotifyUserAutoSigninBlockedOnFirstRun(
+      scoped_ptr<autofill::PasswordForm> form) override;
+  void NotifySuccessfulLoginWithExistingPassword(
+      const autofill::PasswordForm& form) override;
   void AutomaticPasswordSave(scoped_ptr<password_manager::PasswordFormManager>
                                  saved_form_manager) override;
   void PasswordWasAutofilled(const autofill::PasswordFormMap& best_matches,
@@ -141,6 +145,11 @@ class ChromePasswordManagerClient
   // for UMA stats.
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
+  // Called as a response to PromptUserToChooseCredentials.
+  void OnCredentialsChosen(
+      base::Callback<void(const password_manager::CredentialInfo&)> callback,
+      const password_manager::CredentialInfo& credential);
+
   Profile* const profile_;
 
   password_manager::PasswordManager password_manager_;
@@ -164,6 +173,10 @@ class ChromePasswordManagerClient
   const password_manager::SyncCredentialsFilter credentials_filter_;
 
   scoped_ptr<password_manager::LogManager> log_manager_;
+
+  // Set during 'NotifyUserAutoSigninBlockedOnFirstRun' in order to store the
+  // form for potential use during 'NotifySuccessfulLoginWithExistingPassword'.
+  scoped_ptr<autofill::PasswordForm> form_blocked_on_first_run_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordManagerClient);
 };

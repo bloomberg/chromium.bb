@@ -50,12 +50,13 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
   AutoSigninFirstRunPrompt* CreateAutoSigninPrompt(
       PasswordDialogController* controller) override;
 
-  AccountChooserPrompt* current_account_chooser() const {
-    return current_account_chooser_;
+  AccountChooserDialogView* current_account_chooser() const {
+    return static_cast<AccountChooserDialogView*>(current_account_chooser_);
   }
 
-  AutoSigninFirstRunPrompt* current_autosignin_prompt() const {
-    return current_autosignin_prompt_;
+  AutoSigninFirstRunDialogView* current_autosignin_prompt() const {
+    return static_cast<AutoSigninFirstRunDialogView*>(
+        current_autosignin_prompt_);
   }
 
   MOCK_METHOD0(OnDialogClosed, void());
@@ -112,6 +113,11 @@ class PasswordDialogViewTest : public InProcessBrowserTest {
 
   TestManagePasswordsUIController* controller() const { return controller_; }
 
+  ChromePasswordManagerClient* client() const {
+    return ChromePasswordManagerClient::FromWebContents(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
   MOCK_METHOD1(OnChooseCredential,
                void(const password_manager::CredentialInfo&));
 
@@ -147,14 +153,15 @@ void PasswordDialogViewTest::SetupChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin) {
-  controller()->OnChooseCredentials(
+  client()->PromptUserToChooseCredentials(
       std::move(local_credentials), std::move(federated_credentials), origin,
       base::Bind(&PasswordDialogViewTest::OnChooseCredential, this));
   EXPECT_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE,
             controller()->GetState());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooser) {
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAccountChooserWithMultipleCredentialsReturnEmpty) {
   GURL origin("https://example.com");
   ScopedVector<autofill::PasswordForm> local_credentials;
   autofill::PasswordForm form;
@@ -172,9 +179,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooser) {
   // Prepare to capture the network request.
   TestURLFetcherCallback url_callback;
   net::FakeURLFetcherFactory factory(
-      NULL,
-      base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                 base::Unretained(&url_callback)));
+      NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                       base::Unretained(&url_callback)));
   factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
                           net::URLRequestStatus::FAILED);
   EXPECT_CALL(url_callback, OnRequestDone(icon_url));
@@ -182,13 +188,105 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAccountChooser) {
   SetupChooseCredentials(std::move(local_credentials),
                          ScopedVector<autofill::PasswordForm>(), origin);
   ASSERT_TRUE(controller()->current_account_chooser());
-  AccountChooserDialogView* dialog = static_cast<AccountChooserDialogView*>(
-      controller()->current_account_chooser());
-  EXPECT_CALL(*this, OnChooseCredential(
-      Field(&password_manager::CredentialInfo::type,
-            password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
+  AccountChooserDialogView* dialog = controller()->current_account_chooser();
+  EXPECT_CALL(*this,
+              OnChooseCredential(Field(
+                  &password_manager::CredentialInfo::type,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
   EXPECT_CALL(*controller(), OnDialogClosed());
   EXPECT_TRUE(dialog->Close());
+
+  EXPECT_FALSE(controller()->current_autosignin_prompt());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordDialogViewTest,
+    PopupAccountChooserWithMultipleCredentialsReturnNonEmpty) {
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  form.icon_url = GURL("broken url");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+  GURL icon_url("https://google.com/icon.png");
+  form.icon_url = icon_url;
+  form.display_name = base::ASCIIToUTF16("Peter Pen");
+  form.federation_url = GURL("https://google.com/federation");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+
+  SetupChooseCredentials(std::move(local_credentials),
+                         ScopedVector<autofill::PasswordForm>(), origin);
+  ASSERT_TRUE(controller()->current_account_chooser());
+
+  // After picking a credential, we should pass it back to the caller via the
+  // callback, but we should not pop up the autosignin prompt as there were
+  // multiple credentials available.
+  EXPECT_CALL(
+      *this, OnChooseCredential(Field(
+                 &password_manager::CredentialInfo::type,
+                 password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED)));
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+  controller()->ChooseCredential(
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_FALSE(controller()->current_autosignin_prompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAccountChooserWithSingleCredentialReturnEmpty) {
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+
+  SetupChooseCredentials(std::move(local_credentials),
+                         ScopedVector<autofill::PasswordForm>(), origin);
+
+  EXPECT_TRUE(controller()->current_account_chooser());
+  AccountChooserDialogView* dialog = controller()->current_account_chooser();
+  EXPECT_CALL(*this,
+              OnChooseCredential(Field(
+                  &password_manager::CredentialInfo::type,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
+  EXPECT_CALL(*controller(), OnDialogClosed());
+  EXPECT_TRUE(dialog->Close());
+  EXPECT_FALSE(controller()->current_autosignin_prompt());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAccountChooserWithSingleCredentialReturnNonEmpty) {
+  GURL origin("https://example.com");
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.display_name = base::ASCIIToUTF16("Peter");
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  local_credentials.push_back(new autofill::PasswordForm(form));
+
+  SetupChooseCredentials(std::move(local_credentials),
+                         ScopedVector<autofill::PasswordForm>(), origin);
+
+  EXPECT_TRUE(controller()->current_account_chooser());
+
+  // After picking a credential, we should pass it back to the caller via the
+  // callback, and pop up the autosignin prompt iff we should show it.
+  EXPECT_CALL(*this,
+              OnChooseCredential(Field(
+                  &password_manager::CredentialInfo::type,
+                  password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD)));
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+  controller()->ChooseCredential(
+      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+
+  EXPECT_TRUE(controller()->current_autosignin_prompt());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
@@ -199,8 +297,7 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   ASSERT_TRUE(controller()->current_autosignin_prompt());
   EXPECT_EQ(password_manager::ui::INACTIVE_STATE, controller()->GetState());
   AutoSigninFirstRunDialogView* dialog =
-      static_cast<AutoSigninFirstRunDialogView*>(
-          controller()->current_autosignin_prompt());
+      controller()->current_autosignin_prompt();
   // This is the way how ESC is processed. It's important to reproduce it
   // because of double AutoSigninFirstRunDialogView::OnClosed call due to a bug
   // http://crbug.com/583330.
@@ -211,6 +308,43 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest, PopupAutoSigninPrompt) {
   EXPECT_TRUE(
       password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
           browser()->profile()->GetPrefs()));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
+                       PopupAutoSigninPromptAfterBlockedZeroclick) {
+  EXPECT_TRUE(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          browser()->profile()->GetPrefs()));
+
+  GURL origin("https://example.com");
+  autofill::PasswordForm form;
+  form.origin = origin;
+  form.username_value = base::ASCIIToUTF16("peter@pan.test");
+  form.password_value = base::ASCIIToUTF16("I can fly!");
+
+  // Successful login alone will not prompt:
+  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  ASSERT_FALSE(controller()->current_autosignin_prompt());
+
+  // Blocked automatic sign-in will not prompt:
+  scoped_ptr<autofill::PasswordForm> blocked_form(
+      new autofill::PasswordForm(form));
+  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  ASSERT_FALSE(controller()->current_autosignin_prompt());
+
+  // Successful login with a distinct form after block will not prompt:
+  blocked_form.reset(new autofill::PasswordForm(form));
+  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+
+  form.username_value = base::ASCIIToUTF16("notpeter@pan.test");
+  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  ASSERT_FALSE(controller()->current_autosignin_prompt());
+
+  // Successful login with the same form after block will prompt:
+  blocked_form.reset(new autofill::PasswordForm(form));
+  client()->NotifyUserAutoSigninBlockedOnFirstRun(std::move(blocked_form));
+  client()->NotifySuccessfulLoginWithExistingPassword(form);
+  ASSERT_TRUE(controller()->current_autosignin_prompt());
 }
 
 }  // namespace

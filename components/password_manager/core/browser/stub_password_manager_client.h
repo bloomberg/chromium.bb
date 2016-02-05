@@ -32,6 +32,10 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
+  void NotifyUserAutoSigninBlockedOnFirstRun(
+      scoped_ptr<autofill::PasswordForm>) override;
+  void NotifySuccessfulLoginWithExistingPassword(
+      const autofill::PasswordForm& form) override;
   void AutomaticPasswordSave(
       scoped_ptr<PasswordFormManager> saved_manager) override;
   PrefService* GetPrefs() override;

@@ -37,6 +37,7 @@
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/log_receiver.h"
+#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_internals_service.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -257,20 +258,39 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> federated_forms,
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+  // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
+  // form provided).
+  base::Callback<void(const password_manager::CredentialInfo&)> intercept =
+      local_forms.size() == 1u
+          ? base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
+                       base::Unretained(this), callback)
+          : callback;
 #if defined(OS_ANDROID)
   // Deletes itself on the event from Java counterpart, when user interacts with
   // dialog.
   AccountChooserDialogAndroid* acccount_chooser_dialog =
       new AccountChooserDialogAndroid(web_contents(), std::move(local_forms),
                                       std::move(federated_forms), origin,
-                                      callback);
+                                      intercept);
   acccount_chooser_dialog->ShowDialog();
   return true;
 #else
   return PasswordsClientUIDelegateFromWebContents(web_contents())
       ->OnChooseCredentials(std::move(local_forms), std::move(federated_forms),
-                            origin, callback);
+                            origin, intercept);
 #endif
+}
+
+void ChromePasswordManagerClient::OnCredentialsChosen(
+    base::Callback<void(const password_manager::CredentialInfo&)> callback,
+    const password_manager::CredentialInfo& credential) {
+  callback.Run(credential);
+  if (credential.type !=
+          password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY &&
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          GetPrefs())) {
+    PromptUserToEnableAutosignin();
+  }
 }
 
 void ChromePasswordManagerClient::ForceSavePassword() {
@@ -289,6 +309,30 @@ void ChromePasswordManagerClient::NotifyUserAutoSignin(
       ->OnAutoSignin(std::move(local_forms));
 
 #endif
+}
+
+void ChromePasswordManagerClient::NotifyUserAutoSigninBlockedOnFirstRun(
+    scoped_ptr<autofill::PasswordForm> form) {
+  DCHECK(
+      password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          GetPrefs()));
+  form_blocked_on_first_run_ = std::move(form);
+}
+
+void ChromePasswordManagerClient::NotifySuccessfulLoginWithExistingPassword(
+    const autofill::PasswordForm& form) {
+  if (!password_bubble_experiment::ShouldShowAutoSignInPromptFirstRunExperience(
+          GetPrefs()) ||
+      !form_blocked_on_first_run_) {
+    return;
+  }
+
+  if (form_blocked_on_first_run_->username_value == form.username_value &&
+      form_blocked_on_first_run_->password_value == form.password_value &&
+      form_blocked_on_first_run_->origin == form.origin) {
+    PromptUserToEnableAutosignin();
+  }
+  form_blocked_on_first_run_.reset();
 }
 
 void ChromePasswordManagerClient::AutomaticPasswordSave(

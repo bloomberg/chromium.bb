@@ -717,6 +717,11 @@ void PasswordManager::OnLoginSuccessful() {
       logger->LogMessage(Logger::STRING_DECISION_SAVE);
     provisional_save_manager_->Save();
 
+    if (!provisional_save_manager_->IsNewLogin()) {
+      client_->NotifySuccessfulLoginWithExistingPassword(
+          provisional_save_manager_->pending_credentials());
+    }
+
     if (provisional_save_manager_->has_generated_password()) {
       client_->AutomaticPasswordSave(std::move(provisional_save_manager_));
     } else {

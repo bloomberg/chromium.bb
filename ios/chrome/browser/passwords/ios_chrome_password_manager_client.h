@@ -58,6 +58,10 @@ class IOSChromePasswordManagerClient
   password_manager::PasswordStore* GetPasswordStore() const override;
   void NotifyUserAutoSignin(
       ScopedVector<autofill::PasswordForm> local_forms) override;
+  void NotifyUserAutoSigninBlockedOnFirstRun(
+      scoped_ptr<autofill::PasswordForm> form) override;
+  void NotifySuccessfulLoginWithExistingPassword(
+      const autofill::PasswordForm& form) override;
   void ForceSavePassword() override;
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   const GURL& GetLastCommittedEntryURL() const override;
