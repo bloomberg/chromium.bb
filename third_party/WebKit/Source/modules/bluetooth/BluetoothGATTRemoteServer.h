@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
+#include "modules/bluetooth/BluetoothDevice.h"
 #include "platform/heap/Heap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -14,6 +15,7 @@
 
 namespace blink {
 
+class BluetoothDevice;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -24,24 +26,24 @@ class BluetoothGATTRemoteServer final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    BluetoothGATTRemoteServer(const String& deviceId);
+    BluetoothGATTRemoteServer(BluetoothDevice*);
 
-    static BluetoothGATTRemoteServer* create(const String& deviceId);
+    static BluetoothGATTRemoteServer* create(BluetoothDevice*);
 
-    void disconnectIfConnected(ExecutionContext*);
     void setConnected(bool connected) { m_connected = connected; }
 
     // Interface required by Garbage Collectoin:
-    DEFINE_INLINE_TRACE() { }
+    DECLARE_VIRTUAL_TRACE();
 
     // IDL exposed interface:
+    BluetoothDevice* device() { return m_device; }
     bool connected() { return m_connected; }
     ScriptPromise connect(ScriptState*);
     void disconnect(ScriptState*);
     ScriptPromise getPrimaryService(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
 
 private:
-    String m_deviceId;
+    Member<BluetoothDevice> m_device;
     bool m_connected;
 };
 

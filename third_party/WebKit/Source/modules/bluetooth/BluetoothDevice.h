@@ -18,6 +18,7 @@
 
 namespace blink {
 
+class BluetoothGATTRemoteServer;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -67,6 +68,9 @@ public:
 
     // PageLifecycleObserver interface.
     void pageVisibilityChanged() override;
+
+    // If gatt is connected then disconnects and sets gatt.connected to false.
+    void disconnectGATTIfConnected();
 
     // Interface required by Garbage Collection:
     DECLARE_VIRTUAL_TRACE();

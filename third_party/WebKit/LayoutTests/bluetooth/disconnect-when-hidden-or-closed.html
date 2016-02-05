@@ -53,9 +53,16 @@ promise_test(() => {
    .then(device => {
      let connect_promise = device.gatt.connect();
      testRunner.setPageVisibility('hidden');
-     return connect_promise;
-   }).then(gatt_server => {
-     assert_false(gatt_server.connected);
+     return assert_promise_rejects_with_message(
+       connect_promise,
+       new DOMException('Connection is only allowed while the page is visible. ' +
+                        'This is a temporary measure until we are able to ' +
+                        'effectively communicate to the user that a page is ' +
+                        'connected to a device.',
+                        'SecurityError'))
+       .then(() => {
+         assert_false(device.gatt.connected);
+       });
    });
-}, 'Visibility changes during connection. Should disconnect.');
+}, 'Visibility changes during connection. Should disconnect and reject.');
 </script>

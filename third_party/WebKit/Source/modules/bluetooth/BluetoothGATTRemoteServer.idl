@@ -10,10 +10,8 @@
     GarbageCollected,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothGATTRemoteServer
-// Implement ServiceEventHandlers interface: http://crbug.com/421670
-// : ServiceEventHandlers 
 {
-    // readonly attribute BluetoothDevice                   device;
+    readonly attribute BluetoothDevice                   device;
     readonly attribute boolean                           connected;
     [CallWith=ScriptState] Promise<BluetoothGATTRemoteServer>             connect();
     [CallWith=ScriptState] void                                           disconnect();

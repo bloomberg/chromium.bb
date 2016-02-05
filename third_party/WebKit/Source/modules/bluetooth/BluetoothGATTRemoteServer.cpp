@@ -19,42 +19,49 @@
 #include "wtf/OwnPtr.h"
 
 namespace blink {
+namespace {
 
-BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(const String& deviceId)
-    : m_deviceId(deviceId)
+const char kPageHiddenError[] = "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that a page is connected to a device.";
+
+}
+
+BluetoothGATTRemoteServer::BluetoothGATTRemoteServer(BluetoothDevice* device)
+    : m_device(device)
     , m_connected(false)
 {
 }
 
-BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::create(const String& deviceId)
+BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::create(BluetoothDevice* device)
 {
-    return new BluetoothGATTRemoteServer(deviceId);
+    return new BluetoothGATTRemoteServer(device);
 }
 
-void BluetoothGATTRemoteServer::disconnectIfConnected(ExecutionContext* context)
+DEFINE_TRACE(BluetoothGATTRemoteServer)
 {
-    if (m_connected) {
-        m_connected = false;
-        WebBluetooth* webbluetooth = BluetoothSupplement::fromExecutionContext(context);
-        webbluetooth->disconnect(m_deviceId);
-    }
+    visitor->trace(m_device);
 }
 
 class ConnectCallback : public WebBluetoothGATTServerConnectCallbacks {
 public:
-    ConnectCallback(BluetoothGATTRemoteServer* gatt, ScriptPromiseResolver* resolver)
-        : m_gatt(gatt)
+    ConnectCallback(BluetoothDevice* device, ScriptPromiseResolver* resolver)
+        : m_device(device)
         , m_resolver(resolver) {}
 
     void onSuccess() override
     {
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
-        m_gatt->setConnected(true);
-        if (!toDocument(m_resolver->executionContext())->page()->isPageVisible()) {
-            m_gatt->disconnectIfConnected(m_resolver->executionContext());
+        m_device->gatt()->setConnected(true);
+        if (!m_device->page()->isPageVisible()) {
+            // TODO(ortuno): Allow connections when the tab is in the background.
+            // This is a short term solution instead of implementing a tab indicator
+            // for bluetooth connections.
+            // https://crbug.com/579746
+            m_device->disconnectGATTIfConnected();
+            m_resolver->reject(DOMException::create(SecurityError, kPageHiddenError));
+        } else {
+            m_resolver->resolve(m_device->gatt());
         }
-        m_resolver->resolve(m_gatt);
     }
 
     void onError(const WebBluetoothError& e) override
@@ -64,7 +71,7 @@ public:
         m_resolver->reject(BluetoothError::take(m_resolver, e));
     }
 private:
-    Persistent<BluetoothGATTRemoteServer> m_gatt;
+    Persistent<BluetoothDevice> m_device;
     Persistent<ScriptPromiseResolver> m_resolver;
 };
 
@@ -75,7 +82,7 @@ ScriptPromise BluetoothGATTRemoteServer::connect(ScriptState* scriptState)
     // for bluetooth connections.
     // https://crbug.com/579746
     if (!toDocument(scriptState->executionContext())->page()->isPageVisible()) {
-        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that a page is connected to a device."));
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, kPageHiddenError));
     }
 
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
@@ -84,7 +91,7 @@ ScriptPromise BluetoothGATTRemoteServer::connect(ScriptState* scriptState)
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->connect(m_deviceId, new ConnectCallback(this, resolver));
+    webbluetooth->connect(device()->id(), new ConnectCallback(device(), resolver));
     return promise;
 }
 
@@ -92,7 +99,7 @@ void BluetoothGATTRemoteServer::disconnect(ScriptState* scriptState)
 {
     m_connected = false;
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
-    webbluetooth->disconnect(m_deviceId);
+    webbluetooth->disconnect(device()->id());
 }
 
 ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
@@ -105,7 +112,7 @@ ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptSt
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->getPrimaryService(m_deviceId, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
+    webbluetooth->getPrimaryService(device()->id(), serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
 
     return promise;
 }

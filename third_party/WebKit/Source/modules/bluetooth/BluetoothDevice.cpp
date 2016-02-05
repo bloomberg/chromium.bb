@@ -24,7 +24,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBlueto
     , m_webDevice(webDevice)
     , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower,
         m_webDevice->rssi))
-    , m_gatt(BluetoothGATTRemoteServer::create(m_webDevice->id))
+    , m_gatt(BluetoothGATTRemoteServer::create(this))
 {
     // See example in Source/platform/heap/ThreadState.h
     ThreadState::current()->registerPreFinalizer(this);
@@ -40,18 +40,26 @@ BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnP
 
 void BluetoothDevice::dispose()
 {
-    m_gatt->disconnectIfConnected(executionContext());
+    disconnectGATTIfConnected();
 }
 
 void BluetoothDevice::stop()
 {
-    m_gatt->disconnectIfConnected(executionContext());
+    disconnectGATTIfConnected();
 }
 
 void BluetoothDevice::pageVisibilityChanged()
 {
     if (!page()->isPageVisible()) {
-        m_gatt->disconnectIfConnected(executionContext());
+        disconnectGATTIfConnected();
+    }
+}
+
+void BluetoothDevice::disconnectGATTIfConnected()
+{
+    if (m_gatt->connected()) {
+        m_gatt->setConnected(false);
+        BluetoothSupplement::fromExecutionContext(executionContext())->disconnect(id());
     }
 }
 

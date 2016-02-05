@@ -332,6 +332,7 @@ interface BluetoothGATTCharacteristic : EventTarget
     setter oncharacteristicvaluechanged
 interface BluetoothGATTRemoteServer
     getter connected
+    getter device
     method connect
     method constructor
     method disconnect
