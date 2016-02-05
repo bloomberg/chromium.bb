@@ -63,6 +63,11 @@ class CC_EXPORT VideoFrameExternalResources {
   std::vector<unsigned> software_resources;
   ReleaseCallbackImpl software_release_callback;
 
+  // Used by hardware textures which do not return values in the 0-1 range.
+  // After a lookup, subtract offset and multiply by multiplier.
+  float offset;
+  float multiplier;
+
   VideoFrameExternalResources();
   ~VideoFrameExternalResources();
 };

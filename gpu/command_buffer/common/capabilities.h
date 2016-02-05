@@ -134,6 +134,7 @@ struct GPU_EXPORT Capabilities {
   bool blend_equation_advanced;
   bool blend_equation_advanced_coherent;
   bool texture_rg;
+  bool texture_half_float_linear;
   bool image_ycbcr_422;
   bool image_ycbcr_420v;
   bool render_buffer_format_bgra8888;

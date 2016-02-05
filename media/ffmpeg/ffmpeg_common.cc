@@ -629,6 +629,10 @@ ChannelLayout ChannelLayoutToChromeChannelLayout(int64_t layout, int channels) {
   }
 }
 
+#if !defined(ARCH_CPU_LITTLE_ENDIAN)
+#error The code below assumes little-endianness.
+#endif
+
 VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
   // The YUVJ alternatives are FFmpeg's (deprecated, but still in use) way to
   // specify a pixel format and full range color combination.
@@ -644,6 +648,22 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
       return PIXEL_FORMAT_YV12;
     case AV_PIX_FMT_YUVA420P:
       return PIXEL_FORMAT_YV12A;
+
+    case AV_PIX_FMT_YUV420P9LE:
+      return PIXEL_FORMAT_YUV420P9;
+    case AV_PIX_FMT_YUV420P10LE:
+      return PIXEL_FORMAT_YUV420P10;
+
+    case AV_PIX_FMT_YUV422P9LE:
+      return PIXEL_FORMAT_YUV422P9;
+    case AV_PIX_FMT_YUV422P10LE:
+      return PIXEL_FORMAT_YUV422P10;
+
+    case AV_PIX_FMT_YUV444P9LE:
+      return PIXEL_FORMAT_YUV444P9;
+    case AV_PIX_FMT_YUV444P10LE:
+      return PIXEL_FORMAT_YUV444P10;
+
     default:
       DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
   }
@@ -660,6 +680,19 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
       return AV_PIX_FMT_YUVA420P;
     case PIXEL_FORMAT_YV24:
       return AV_PIX_FMT_YUV444P;
+    case PIXEL_FORMAT_YUV420P9:
+      return AV_PIX_FMT_YUV420P9LE;
+    case PIXEL_FORMAT_YUV420P10:
+      return AV_PIX_FMT_YUV420P10LE;
+    case PIXEL_FORMAT_YUV422P9:
+      return AV_PIX_FMT_YUV422P9LE;
+    case PIXEL_FORMAT_YUV422P10:
+      return AV_PIX_FMT_YUV422P10LE;
+    case PIXEL_FORMAT_YUV444P9:
+      return AV_PIX_FMT_YUV444P9LE;
+    case PIXEL_FORMAT_YUV444P10:
+      return AV_PIX_FMT_YUV444P10LE;
+
     default:
       DVLOG(1) << "Unsupported Format: " << video_format;
   }

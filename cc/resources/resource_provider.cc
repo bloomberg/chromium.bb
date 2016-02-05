@@ -87,6 +87,7 @@ GLenum TextureToStorageFormat(ResourceFormat format) {
     case RGB_565:
     case ETC1:
     case RED_8:
+    case LUMINANCE_F16:
       NOTREACHED();
       break;
   }
@@ -106,6 +107,7 @@ bool IsFormatSupportedForStorage(ResourceFormat format, bool use_bgra) {
     case RGB_565:
     case ETC1:
     case RED_8:
+    case LUMINANCE_F16:
       return false;
   }
   return false;
@@ -391,14 +393,29 @@ void ResourceProvider::LoseResourceForTesting(ResourceId id) {
   resource->lost = true;
 }
 
+ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
+  if (bits > 8) {
+    return yuv_highbit_resource_format_;
+  } else {
+    return yuv_resource_format_;
+  }
+}
+
 ResourceId ResourceProvider::CreateResource(const gfx::Size& size,
                                             TextureHint hint,
                                             ResourceFormat format) {
   DCHECK(!size.IsEmpty());
   switch (default_resource_type_) {
     case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
+      // GPU memory buffers don't support LUMINANCE_F16.
+      if (format != LUMINANCE_F16) {
+        return CreateGLTexture(size, hint, RESOURCE_TYPE_GPU_MEMORY_BUFFER,
+                               format);
+      }
+    // Fall through and use a regular texture.
     case RESOURCE_TYPE_GL_TEXTURE:
-      return CreateGLTexture(size, hint, default_resource_type_, format);
+      return CreateGLTexture(size, hint, RESOURCE_TYPE_GL_TEXTURE, format);
+
     case RESOURCE_TYPE_BITMAP:
       DCHECK_EQ(RGBA_8888, format);
       return CreateBitmap(size);
@@ -1077,6 +1094,9 @@ void ResourceProvider::Initialize() {
   use_texture_usage_hint_ = caps.gpu.texture_usage;
   use_compressed_texture_etc1_ = caps.gpu.texture_format_etc1;
   yuv_resource_format_ = caps.gpu.texture_rg ? RED_8 : LUMINANCE_8;
+  yuv_highbit_resource_format_ = yuv_resource_format_;
+  if (caps.gpu.texture_half_float_linear)
+    yuv_highbit_resource_format_ = LUMINANCE_F16;
   use_sync_query_ = caps.gpu.sync_query;
 
   max_texture_size_ = 0;  // Context expects cleared value.

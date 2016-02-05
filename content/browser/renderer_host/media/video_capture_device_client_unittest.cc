@@ -154,11 +154,17 @@ TEST_F(VideoCaptureDeviceClientTest, DataCaptureInEachVideoFormatInSequence) {
         format == media::PIXEL_FORMAT_ARGB ||
         format == media::PIXEL_FORMAT_XRGB ||
         format == media::PIXEL_FORMAT_MJPEG ||
-        format == media::PIXEL_FORMAT_MT21) {
+        format == media::PIXEL_FORMAT_MT21 ||
+        format == media::PIXEL_FORMAT_YUV420P9 ||
+        format == media::PIXEL_FORMAT_YUV420P10 ||
+        format == media::PIXEL_FORMAT_YUV422P9 ||
+        format == media::PIXEL_FORMAT_YUV422P10 ||
+        format == media::PIXEL_FORMAT_YUV444P9 ||
+        format == media::PIXEL_FORMAT_YUV444P10) {
       continue;
     }
 #if !defined(OS_LINUX) && !defined(OS_WIN)
-    if (format == media::PIXEL_FORMAT_RGB24){
+    if (format == media::PIXEL_FORMAT_RGB24) {
       continue;
     }
 #endif

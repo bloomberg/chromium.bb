@@ -2122,13 +2122,23 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
       break;
   }
 
+  float yuv_to_rgb_multiplied[9];
+  float yuv_adjust_with_offset[3];
+
+  for (int i = 0; i < 9; ++i)
+    yuv_to_rgb_multiplied[i] = yuv_to_rgb[i] * quad->resource_multiplier;
+
+  for (int i = 0; i < 3; ++i)
+    yuv_adjust_with_offset[i] =
+        yuv_adjust[i] / quad->resource_multiplier - quad->resource_offset;
+
   // The transform and vertex data are used to figure out the extents that the
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
   auto tile_rect = gfx::RectF(quad->rect);
-  gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb);
-  gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust);
+  gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb_multiplied);
+  gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust_with_offset);
 
   SetShaderOpacity(quad->shared_quad_state->opacity, alpha_location);
   if (!clip_region) {
