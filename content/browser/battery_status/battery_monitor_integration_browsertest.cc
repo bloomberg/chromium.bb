@@ -95,6 +95,13 @@ class TestContentBrowserClient : public ContentBrowserClient {
     registry->AddService(base::Bind(&FakeBatteryMonitor::Create));
   }
 
+  void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
+                                      int child_process_id) override {
+    // Necessary for passing kIsolateSitesForTesting flag to the renderer.
+    ShellContentBrowserClient::Get()->AppendExtraCommandLineSwitches(
+        command_line, child_process_id);
+  }
+
 #if defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,

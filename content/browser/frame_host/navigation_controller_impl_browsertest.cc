@@ -2609,7 +2609,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // When run just with subframe navigation entries enabled and not in
   // site-per-process-mode the subframe should be in the same SiteInstance as
   // its parent.
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+  if (!AreAllSitesIsolatedForTesting()) {
     EXPECT_EQ(main_site_instance,
               foo_subframe->current_frame_host()->GetSiteInstance());
   } else {
