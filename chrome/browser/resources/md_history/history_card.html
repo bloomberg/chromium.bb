@@ -58,7 +58,8 @@
               selected="{{historyItem.selected}}"
               timestamp_="[[historyItem.time]]">
           </history-item>
-          <template is="dom-if" if="[[needsTimeGap_(index, historyItem)]]">
+          <template is="dom-if"
+              if="[[needsTimeGap_(index, historyItems.length)]]">
             <div id="time-gap-separator"></div>
           </template>
         </template>

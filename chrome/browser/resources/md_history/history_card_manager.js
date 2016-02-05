@@ -104,6 +104,7 @@ Polymer({
   /**
    * Cycle through each entry in historyDataByDay_ and set all items to be
    * unselected.
+   * @param {number} overallItemCount The number of items selected.
    */
   unselectAllItems: function(overallItemCount) {
     var historyCardData = this.historyDataByDay_;
@@ -116,8 +117,53 @@ Polymer({
               '.selected', false);
           overallItemCount--;
           if (overallItemCount == 0)
-            break;
+            return;
         }
+      }
+    }
+  },
+
+  /**
+   * Remove all selected items from the overall array so that they are also
+   * removed from view. Make sure that the card length and positioning is
+   * updated accordingly.
+   * @param {number} overallItemCount The number of items selected.
+   */
+  removeDeletedHistory: function(overallItemCount) {
+    for (var i = 0; i < this.historyDataByDay_.length; i++) {
+      var items = this.historyDataByDay_[i].historyItems;
+      var itemDeletedFromCard = false;
+
+      for (var j = items.length - 1; j >= 0; j--) {
+        if (!items[j].selected)
+          continue;
+
+        this.splice('historyDataByDay_.' + i + '.historyItems', j, 1);
+        itemDeletedFromCard = true;
+        overallItemCount--;
+        if (overallItemCount == 0) {
+          this.removeEmptyCards_();
+          // If the last card has been removed don't try to update its size.
+          if (i < this.historyDataByDay_.length)
+            this.$['infinite-list'].updateSizeForItem(i);
+          return;
+        }
+      }
+      if (itemDeletedFromCard)
+        this.$['infinite-list'].updateSizeForItem(i);
+    }
+  },
+
+  /**
+   * If a day has had all the history it contains removed, remove this day from
+   * the array.
+   * @private
+   */
+  removeEmptyCards_: function() {
+    var historyCards = this.historyDataByDay_;
+    for (var i = historyCards.length - 1; i >= 0; i--) {
+      if (historyCards[i].historyItems.length == 0) {
+        this.splice('historyDataByDay_', i, 1);
       }
     }
   },
@@ -141,6 +187,34 @@ Polymer({
         historyItems: historyItems
       });
     }
+  },
+
+  /**
+   * Based on which items are selected, collect an array of the info required
+   * for chrome.send('removeHistory', ...).
+   * @param {number} count The number of items that are selected.
+   * @return {Array<HistoryEntry>} toBeRemoved An array of objects which contain
+   * information on which history-items should be deleted.
+   */
+  getSelectedItems: function(count) {
+    var toBeRemoved = [];
+    for (var i = 0; i < this.historyDataByDay_.length; i++) {
+      var items = this.historyDataByDay_[i].historyItems;
+      for (var j = 0; j < items.length; j++) {
+        if (items[j].selected) {
+
+          toBeRemoved.push({
+            url: items[j].url,
+            timestamps: items[j].allTimestamps
+          });
+
+          count--;
+          if (count == 0)
+            return toBeRemoved;
+        }
+      }
+    }
+    return toBeRemoved;
   },
 
   /**

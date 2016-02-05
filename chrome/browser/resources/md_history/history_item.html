@@ -90,7 +90,7 @@
     </style>
     <div id="main-container">
       <paper-checkbox id="checkbox" on-tap="onCheckboxSelected_"
-          checked="{{selected}}">
+          checked="{{selected}}" disabled="[[selectionNotAllowed_()]]">
       </paper-checkbox>
       <span id="time">{{timeAccessed_}}</span>
       <div id="website-icon"></div>

@@ -7,19 +7,23 @@ cr.define('md_history.history_card_manager_test', function() {
   var TEST_HISTORY_RESULTS = [
     {
       "dateRelativeDay": "Today - Wednesday, December 9, 2015",
-      "url": "https://www.google.com"
+      "url": "https://www.google.com",
+      "allTimestamps": "1",
     },
     {
       "dateRelativeDay": "Yesterday - Tuesday, December 8, 2015",
-      "url": "https://en.wikipedia.com"
+      "url": "https://en.wikipedia.com",
+      "allTimestamps": "2"
     },
     {
       "dateRelativeDay": "Monday, December 7, 2015",
-      "url": "https://www.example.com"
+      "url": "https://www.example.com",
+      "allTimestamps": "3"
     },
     {
       "dateRelativeDay": "Monday, December 7, 2015",
-      "url": "https://www.google.com"
+      "url": "https://www.google.com",
+      "allTimestamps": "4"
     }
   ];
 
@@ -45,9 +49,13 @@ cr.define('md_history.history_card_manager_test', function() {
   function registerTests() {
     suite('history-card-manager', function() {
       var element;
+      var toolbar;
+      var items;
 
       suiteSetup(function() {
         element = $('history-card-manager');
+        toolbar = $('toolbar');
+        items = [];
       });
 
       setup(function() {
@@ -71,12 +79,10 @@ cr.define('md_history.history_card_manager_test', function() {
       });
 
       test('cancelling selection of multiple items', function(done) {
-        var toolbar = $('toolbar');
-
         flush(function() {
           var cards = Polymer.dom(element.root)
               .querySelectorAll('history-card');
-          var items = Polymer.dom(cards[2].root)
+          items = Polymer.dom(cards[2].root)
               .querySelectorAll('history-item');
 
           MockInteractions.tap(items[0].$.checkbox);
@@ -129,8 +135,70 @@ cr.define('md_history.history_card_manager_test', function() {
                      element.historyDataByDay_[4].historyItems[0].url);
       });
 
+      test('removeVisits for multiple items', function(done) {
+        // Ensure that the correct identifying data is being used for removal.
+        registerMessageCallback('removeVisits', this, function (toBeRemoved) {
+          assertEquals(toBeRemoved[0].url,
+                       element.historyDataByDay_[2].historyItems[0].url);
+          assertEquals(toBeRemoved[1].url,
+                       element.historyDataByDay_[2].historyItems[1].url);
+          assertEquals(toBeRemoved[0].timestamps,
+                       element.historyDataByDay_[2].historyItems[0]
+                            .allTimestamps);
+          assertEquals(toBeRemoved[1].timestamps,
+                       element.historyDataByDay_[2].historyItems[1]
+                            .allTimestamps);
+          done();
+        });
+
+        flush(function() {
+          var cards = Polymer.dom(element.root)
+              .querySelectorAll('history-card');
+          items = Polymer.dom(cards[2].root)
+              .querySelectorAll('history-item');
+
+          MockInteractions.tap(items[0].$['checkbox']);
+          MockInteractions.tap(items[1].$['checkbox']);
+
+          toolbar.onDeleteTap_();
+        });
+      });
+
+      test('deleting multiple items from view', function(done) {
+        flush(function() {
+          var cards = Polymer.dom(element.root)
+              .querySelectorAll('history-card');
+          items = Polymer.dom(cards[2].root)
+              .querySelectorAll('history-item');
+
+          MockInteractions.tap(items[0].$['checkbox']);
+          MockInteractions.tap(items[1].$['checkbox']);
+
+          element.removeDeletedHistory(2);
+
+          flush(function() {
+            var cards = Polymer.dom(element.root)
+              .querySelectorAll('history-card');
+            items = Polymer.dom(cards[2].root)
+              .querySelectorAll('history-item');
+
+            assertEquals(element.historyDataByDay_.length, 2);
+            assertEquals(element.historyDataByDay_[0].date,
+                         "Today - Wednesday, December 9, 2015");
+            assertEquals(element.historyDataByDay_[1].date,
+                         "Yesterday - Tuesday, December 8, 2015");
+            assertEquals(items.length, 0);
+            done();
+          });
+        });
+      });
+
       teardown(function() {
+        for (var i = 0; i < items.length; i++) {
+          items[i].selected = false;
+        }
         element.historyDataByDay_ = [];
+        toolbar.count = 0;
       });
     });
   }

@@ -24,10 +24,12 @@ Polymer({
    * Check whether the time difference between the given historyItem and the
    * next one is large enough for a spacer to be required.
    * @param {number} index The index number of the first item being compared.
+   * @param {number} itemsLength The number of items on the card. Used to force
+   * needsTimeGap_ to run for every item if an item is deleted from the card.
    * @return {boolean} Whether or not time gap separator is required.
    * @private
    */
-  needsTimeGap_: function(index) {
+  needsTimeGap_: function(index, itemsLength) {
     var items = this.historyItems;
     return index + 1 < items.length &&
         items[index].time - items[index + 1].time > BROWSING_GAP_TIME;

@@ -10,6 +10,8 @@ var ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN('#include "base/command_line.h"');
+GEN('#include "chrome/test/data/webui/history_ui_browsertest.h"');
 
 function MaterialHistoryBrowserTest() {}
 
@@ -25,6 +27,7 @@ MaterialHistoryBrowserTest.prototype = {
     'history_card_manager_test.js',
     'history_card_test.js',
     'history_overflow_menu_test.js',
+    'history_supervised_user_test.js',
     'history_toolbar_test.js'
   ])
 };
@@ -46,5 +49,23 @@ TEST_F('MaterialHistoryBrowserTest', 'HistoryToolbarTest', function() {
 
 TEST_F('MaterialHistoryBrowserTest', 'HistoryOverflowMenuTest', function() {
   md_history.history_overflow_menu_test.registerTests();
+  mocha.run();
+});
+
+function MaterialHistoryDeletionDisabledTest() {}
+
+MaterialHistoryDeletionDisabledTest.prototype = {
+  __proto__: MaterialHistoryBrowserTest.prototype,
+
+  typedefCppFixture: 'HistoryUIBrowserTest',
+
+  testGenPreamble: function() {
+    GEN('  SetDeleteAllowed(false);');
+  }
+};
+
+TEST_F('MaterialHistoryDeletionDisabledTest', 'HistorySupervisedUserTest',
+    function() {
+  md_history.history_supervised_user_test.registerTests();
   mocha.run();
 });

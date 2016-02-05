@@ -90,5 +90,9 @@ Polymer({
 
     // Stops the 'tap' event from closing the menu when it opens.
     e.stopPropagation();
+  },
+
+  selectionNotAllowed_: function() {
+    return !loadTimeData.getBoolean('allowDeletingHistory');
   }
 });
