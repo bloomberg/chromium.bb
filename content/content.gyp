@@ -21,6 +21,31 @@
       }],
     ],
   },
+  'targets': [
+    {
+      # GN version: //content/renderer:renderer_features
+      'target_name': 'renderer_features',
+      'includes': [
+        '../build/buildflag_header.gypi',
+        '../third_party/webrtc/build/common.gypi',
+      ],
+      'conditions': [
+        # This conditional looks insane, but without it |rtc_use_h264| is not
+        # recognized as defined. Might have something to do with scopes. Moving
+        # the inclusion of third_party/webrtc/build/common.gypi to outside of
+        # 'targets' is not an option, then we get compile errors.
+        # TODO(hbos): crbug.com/584219
+        ['1==1', {
+          'variables': {
+            'buildflag_header_path': 'content/renderer/renderer_features.h',
+            'buildflag_flags': [
+              'RTC_USE_H264=<(rtc_use_h264)',
+            ],
+          },
+        }],
+      ],
+    },
+  ],
   'conditions': [
     ['OS != "ios"', {
       'includes': [
@@ -259,9 +284,11 @@
                 'content_renderer.gypi',
               ],
               'dependencies': [
+                '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
                 'content_child',
                 'content_common',
                 'content_resources',
+                'renderer_features',
               ],
               'export_dependent_settings': [
                 'content_common',
@@ -300,7 +327,9 @@
           'type': 'shared_library',
           'variables': { 'enable_wexit_time_destructors': 1, },
           'dependencies': [
+            '../third_party/webrtc/modules/modules.gyp:webrtc_h264',
             'content_resources',
+            'renderer_features',
           ],
           'conditions': [
             ['chromium_enable_vtune_jit_for_v8==1', {

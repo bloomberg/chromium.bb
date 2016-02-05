@@ -757,6 +757,7 @@
       'renderer/p2p/socket_client_impl.h',
       'renderer/p2p/socket_dispatcher.cc',
       'renderer/p2p/socket_dispatcher.h',
+      'renderer/renderer_features.h',
     ],
     # Stuff only used when both WebRTC and plugins are enabled.
     'private_renderer_plugin_webrtc_sources': [

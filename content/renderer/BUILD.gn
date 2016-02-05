@@ -4,8 +4,10 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/buildflag_header.gni")
 import("//content/renderer/renderer.gni")
 import("//media/media_options.gni")
+import("//third_party/webrtc/build/webrtc.gni")
 
 source_set("renderer") {
   # Only the public target should depend on this. All other targets (even
@@ -24,6 +26,7 @@ source_set("renderer") {
   defines = []
 
   deps = [
+    ":renderer_features",
     "//base:i18n",
     "//cc",
     "//cc/blink",
@@ -163,6 +166,7 @@ source_set("renderer") {
       "//third_party/webrtc/common_video",
       "//third_party/webrtc/modules/audio_device",
       "//third_party/webrtc/modules/audio_processing",
+      "//third_party/webrtc/modules/video_coding:webrtc_h264",
       "//third_party/webrtc/system_wrappers",
     ]
   } else {
@@ -239,4 +243,10 @@ source_set("renderer") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+}
+
+buildflag_header("renderer_features") {
+  header = "renderer_features.h"
+
+  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }

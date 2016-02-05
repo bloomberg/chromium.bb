@@ -52,9 +52,11 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/renderer_features.h"
 #include "crypto/openssl_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "media/base/media_permission.h"
+#include "media/filters/ffmpeg_glue.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -65,6 +67,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/webrtc/base/ssladapter.h"
+#include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 
 #if defined(OS_ANDROID)
 #include "media/base/android/media_codec_util.h"
@@ -258,6 +261,22 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   DCHECK(!chrome_worker_thread_.IsRunning());
 
   DVLOG(1) << "PeerConnectionDependencyFactory::CreatePeerConnectionFactory()";
+
+#if BUILDFLAG(RTC_USE_H264)
+  // TODO(hbos): This is temporary. Disable the runtime effects of building with
+  // |rtc_use_h264|. We are planning to default the |rtc_use_h264| flag to
+  // |proprietary_codecs| so that it will be used by Chromium trybots. This
+  // would also make it used by Chrome, but this feature is not ready to be
+  // launched yet. An upcoming CL will add browser tests for H264. That CL will
+  // remove this line. It should remain disabled until tested.
+  webrtc::DisableRtcUseH264();
+  // When building with |rtc_use_h264|, |H264DecoderImpl| may be used which
+  // depends on FFmpeg, therefore we need to initialize FFmpeg before going
+  // further.
+  // TODO(hbos): Temporarily commented out due to webrtc::DisableRtcUseH264(),
+  // no need to initialize FFmpeg when |H264DecoderImpl| is disabled.
+  // media::FFmpegGlue::InitializeFFmpeg();
+#endif
 
   base::MessageLoop::current()->AddDestructionObserver(this);
   // To allow sending to the signaling/worker threads.
