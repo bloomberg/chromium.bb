@@ -134,7 +134,7 @@ TEST_F(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
 
     LayoutView* layoutView = document().layoutView();
     ObjectPaintProperties* layoutViewProperties = layoutView->objectPaintProperties();
-    EXPECT_EQ(nullptr, layoutViewProperties);
+    EXPECT_EQ(nullptr, layoutViewProperties->scrollTranslation());
 }
 
 // TODO(trchen): Settings::rootLayerScrolls cannot be switched after main frame being created.
@@ -276,7 +276,9 @@ TEST_F(PaintPropertyTreeBuilderTest, EffectNodesAcrossStackingContext)
     EXPECT_EQ(nullptr, nodeWithOpacityProperties->transform());
 
     LayoutObject& childWithStackingContext = *document().getElementById("childWithStackingContext")->layoutObject();
-    EXPECT_EQ(nullptr, childWithStackingContext.objectPaintProperties());
+    ObjectPaintProperties* childWithStackingContextProperties = childWithStackingContext.objectPaintProperties();
+    EXPECT_EQ(nullptr, childWithStackingContextProperties->effect());
+    EXPECT_EQ(nullptr, childWithStackingContextProperties->transform());
 
     LayoutObject& grandChildWithOpacity = *document().getElementById("grandChildWithOpacity")->layoutObject();
     ObjectPaintProperties* grandChildWithOpacityProperties = grandChildWithOpacity.objectPaintProperties();
@@ -572,6 +574,54 @@ TEST_F(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes)
     LayoutObject* innerDivWithTransform = frameDocument.getElementById("transform")->layoutObject();
     ObjectPaintProperties* innerDivWithTransformProperties = innerDivWithTransform->objectPaintProperties();
     EXPECT_EQ(TransformationMatrix().translate3d(4, 5, 6), innerDivWithTransformProperties->transform()->matrix());
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext)
+{
+    // This test verifies the tree builder correctly computes and records the property tree context
+    // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
+    // the painting ancestors.
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='scroller' style='overflow:scroll; width:400px; height:300px;'>"
+        "  <div id='child' style='position:relative;'></div>"
+        "  <div style='height:10000px;'></div>"
+        "</div>"
+    );
+
+    LayoutObject& scroller = *document().getElementById("scroller")->layoutObject();
+    ObjectPaintProperties* scrollerProperties = scroller.objectPaintProperties();
+    LayoutObject& child = *document().getElementById("child")->layoutObject();
+    ObjectPaintProperties* childProperties = child.objectPaintProperties();
+
+    EXPECT_EQ(scrollerProperties->overflowClip(), childProperties->localBorderBoxProperties()->properties.clip);
+    EXPECT_EQ(scrollerProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->properties.transform);
+    EXPECT_EQ(nullptr, childProperties->localBorderBoxProperties()->properties.effect);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, TreeContextUnclipFromParentStackingContext)
+{
+    // This test verifies the tree builder correctly computes and records the property tree context
+    // for a (pseudo) stacking context that has a scrolling painting ancestor that is not its
+    // containing block (thus should not be scrolled by it).
+
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='scroller' style='overflow:scroll; opacity:0.5;'>"
+        "  <div id='child' style='position:absolute; left:0; top:0;'></div>"
+        "  <div style='height:10000px;'></div>"
+        "</div>"
+    );
+
+    FrameView* frameView = document().view();
+    LayoutObject& scroller = *document().getElementById("scroller")->layoutObject();
+    ObjectPaintProperties* scrollerProperties = scroller.objectPaintProperties();
+    LayoutObject& child = *document().getElementById("child")->layoutObject();
+    ObjectPaintProperties* childProperties = child.objectPaintProperties();
+
+    EXPECT_EQ(frameView->contentClip(), childProperties->localBorderBoxProperties()->properties.clip);
+    EXPECT_EQ(frameView->scrollTranslation(), childProperties->localBorderBoxProperties()->properties.transform);
+    EXPECT_EQ(scrollerProperties->effect(), childProperties->localBorderBoxProperties()->properties.effect);
 }
 
 } // namespace blink
