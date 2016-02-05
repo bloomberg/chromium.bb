@@ -216,9 +216,6 @@ size_t GetDefaultThreadStackSize(const pthread_attr_t& attributes) {
 #endif
 }
 
-void InitOnThread() {
-}
-
 void TerminateOnThread() {
 }
 

@@ -29,7 +29,6 @@ namespace internal {
 namespace {
 #if !defined(OS_NACL)
 const struct sched_param kRealTimePrio = {8};
-const struct sched_param kResetPrio = {0};
 #endif
 }  // namespace
 
@@ -42,17 +41,7 @@ const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
 
 bool SetCurrentThreadPriorityForPlatform(ThreadPriority priority) {
 #if !defined(OS_NACL)
-  ThreadPriority current_priority;
-  if (priority != ThreadPriority::REALTIME_AUDIO &&
-      GetCurrentThreadPriorityForPlatform(&current_priority) &&
-      current_priority == ThreadPriority::REALTIME_AUDIO) {
-    // If the pthread's round-robin scheduler is already enabled, and the new
-    // priority will use setpriority() instead, the pthread scheduler should be
-    // reset to use SCHED_OTHER so that setpriority() just works.
-    pthread_setschedparam(pthread_self(), SCHED_OTHER, &kResetPrio);
-    return false;
-  }
-  return priority == ThreadPriority::REALTIME_AUDIO  &&
+  return priority == ThreadPriority::REALTIME_AUDIO &&
          pthread_setschedparam(pthread_self(), SCHED_RR, &kRealTimePrio) == 0;
 #else
   return false;
@@ -102,8 +91,6 @@ void PlatformThread::SetName(const std::string& name) {
 }
 
 void InitThreading() {}
-
-void InitOnThread() {}
 
 void TerminateOnThread() {}
 

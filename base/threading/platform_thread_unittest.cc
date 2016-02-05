@@ -217,7 +217,8 @@ bool IsBumpingPriorityAllowed() {
 
 class ThreadPriorityTestThread : public FunctionTestThread {
  public:
-  ThreadPriorityTestThread() = default;
+  explicit ThreadPriorityTestThread(ThreadPriority priority)
+      : priority_(priority) {}
   ~ThreadPriorityTestThread() override = default;
 
  private:
@@ -226,23 +227,12 @@ class ThreadPriorityTestThread : public FunctionTestThread {
     EXPECT_EQ(ThreadPriority::NORMAL,
               PlatformThread::GetCurrentThreadPriority());
 
-    // Toggle each supported priority on the current thread and confirm it
-    // affects it.
-    const bool bumping_priority_allowed = IsBumpingPriorityAllowed();
-    for (size_t i = 0; i < arraysize(kThreadPriorityTestValues); ++i) {
-      SCOPED_TRACE(i);
-      if (!bumping_priority_allowed &&
-          kThreadPriorityTestValues[i] >
-              PlatformThread::GetCurrentThreadPriority()) {
-        continue;
-      }
-
-      // Alter and verify the current thread's priority.
-      PlatformThread::SetCurrentThreadPriority(kThreadPriorityTestValues[i]);
-      EXPECT_EQ(kThreadPriorityTestValues[i],
-                PlatformThread::GetCurrentThreadPriority());
-    }
+    // Alter and verify the current thread's priority.
+    PlatformThread::SetCurrentThreadPriority(priority_);
+    EXPECT_EQ(priority_, PlatformThread::GetCurrentThreadPriority());
   }
+
+  const ThreadPriority priority_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPriorityTestThread);
 };
@@ -259,17 +249,33 @@ class ThreadPriorityTestThread : public FunctionTestThread {
 // Test changing a created thread's priority (which has different semantics on
 // some platforms).
 TEST(PlatformThreadTest, MAYBE_ThreadPriorityCurrentThread) {
-  ThreadPriorityTestThread thread;
-  PlatformThreadHandle handle;
+  const bool bumping_priority_allowed = IsBumpingPriorityAllowed();
+  if (bumping_priority_allowed) {
+    // Bump the priority in order to verify that new threads are started with
+    // normal priority.
+    PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
+  }
 
-  ASSERT_FALSE(thread.IsRunning());
-  ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
-  thread.WaitForTerminationReady();
-  ASSERT_TRUE(thread.IsRunning());
+  // Toggle each supported priority on the thread and confirm it affects it.
+  for (size_t i = 0; i < arraysize(kThreadPriorityTestValues); ++i) {
+    if (!bumping_priority_allowed &&
+        kThreadPriorityTestValues[i] >
+            PlatformThread::GetCurrentThreadPriority()) {
+      continue;
+    }
 
-  thread.MarkForTermination();
-  PlatformThread::Join(handle);
-  ASSERT_FALSE(thread.IsRunning());
+    ThreadPriorityTestThread thread(kThreadPriorityTestValues[i]);
+    PlatformThreadHandle handle;
+
+    ASSERT_FALSE(thread.IsRunning());
+    ASSERT_TRUE(PlatformThread::Create(0, &thread, &handle));
+    thread.WaitForTerminationReady();
+    ASSERT_TRUE(thread.IsRunning());
+
+    thread.MarkForTermination();
+    PlatformThread::Join(handle);
+    ASSERT_FALSE(thread.IsRunning());
+  }
 }
 
 }  // namespace base

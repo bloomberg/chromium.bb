@@ -84,12 +84,6 @@ void PlatformThread::SetName(const std::string& name) {
 void InitThreading() {
 }
 
-void InitOnThread() {
-  // Threads on linux/android may inherit their priority from the thread
-  // where they were created. This sets all new threads to the default.
-  PlatformThread::SetCurrentThreadPriority(ThreadPriority::NORMAL);
-}
-
 void TerminateOnThread() {
   base::android::DetachFromVM();
 }
