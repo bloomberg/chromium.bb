@@ -250,9 +250,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Geolocation permission prompt was
-    Denied.
+    The domain for which a Geolocation permission prompt was Denied.
   </summary>
 </rappor-metric>
 
@@ -261,9 +259,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Geolocation permission prompt was
-    Dismissed.
+    The domain for which a Geolocation permission prompt was Dismissed.
   </summary>
 </rappor-metric>
 
@@ -271,9 +267,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Geolocation permission prompt was
-    accepted.
+    The domain for which a Geolocation permission prompt was accepted.
   </summary>
 </rappor-metric>
 
@@ -281,9 +275,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Geolocation permission prompt was
-    Ignored.
+    The domain for which a Geolocation permission prompt was Ignored.
   </summary>
 </rappor-metric>
 
@@ -310,9 +302,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Notification permission prompt was
-    Denied.
+    The domain for which a Notification permission prompt was Denied.
   </summary>
 </rappor-metric>
 
@@ -321,9 +311,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Notification permission prompt was
-    Dismissed.
+    The domain for which a Notification permission prompt was Dismissed.
   </summary>
 </rappor-metric>
 
@@ -332,9 +320,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Notification permission prompt was
-    accepted.
+    The domain for which a Notification permission prompt was accepted.
   </summary>
 </rappor-metric>
 
@@ -343,9 +329,7 @@ components/rappor/rappor_service.cc.
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
   <summary>
-    ** DEPRECATED. Replaced by Permissions.Action multi-dimensionsal metric on
-    2015-08-05.** The domain for which a Notification permission prompt was
-    Ignored.
+    The domain for which a Notification permission prompt was Ignored.
   </summary>
 </rappor-metric>
 
