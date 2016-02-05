@@ -4,6 +4,7 @@
 
 #include "base/metrics/histogram_persistence.h"
 
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -401,12 +402,12 @@ HistogramBase* AllocatePersistentHistogram(
 void ImportPersistentHistograms() {
   // Each call resumes from where it last left off so need persistant iterator.
   // The lock protects against concurrent access to the iterator and is created
-  // dynamically so as to not require destruction during program exit.
+  // in a thread-safe manner when needed.
   static PersistentMemoryAllocator::Iterator iter;
-  static base::Lock* lock = new base::Lock();
+  static base::LazyInstance<base::Lock> lock = LAZY_INSTANCE_INITIALIZER;
 
   if (g_allocator) {
-    base::AutoLock auto_lock(*lock);
+    base::AutoLock auto_lock(lock.Get());
     if (iter.is_clear())
       g_allocator->CreateIterator(&iter);
 
