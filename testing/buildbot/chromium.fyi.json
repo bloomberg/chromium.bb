@@ -5638,6 +5638,52 @@
       }
     ]
   },
+  "MD Top Chrome ChromeOS non-material": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "ash_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "aura_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "interactive_ui_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "ui_base_unittests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "unit_tests"
+      },
+      {
+        "args": [
+          "--top-chrome-md=non-material"
+        ],
+        "test": "views_unittests"
+      }
+    ]
+  },
   "Site Isolation Linux": {
     "gtest_tests": [
       {
