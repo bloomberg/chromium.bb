@@ -11,6 +11,8 @@
 
 namespace blink {
 
+// Represents a (non-strict) subset of a PropertySpecificKeyframe's value broken down into interpolable and non-interpolable parts.
+// InterpolationValues can be composed together to represent a whole PropertySpecificKeyframe value.
 struct InterpolationValue {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -46,30 +48,6 @@ struct InterpolationValue {
     }
 
     OwnPtr<InterpolableValue> interpolableValue;
-    RefPtr<NonInterpolableValue> nonInterpolableValue;
-};
-
-struct PairwiseInterpolationValue {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
-    PairwiseInterpolationValue(PassOwnPtr<InterpolableValue> startInterpolableValue, PassOwnPtr<InterpolableValue> endInterpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)
-        : startInterpolableValue(std::move(startInterpolableValue))
-        , endInterpolableValue(std::move(endInterpolableValue))
-        , nonInterpolableValue(nonInterpolableValue)
-    { }
-
-    PairwiseInterpolationValue(std::nullptr_t) { }
-
-    PairwiseInterpolationValue(PairwiseInterpolationValue&& other)
-        : startInterpolableValue(other.startInterpolableValue.release())
-        , endInterpolableValue(other.endInterpolableValue.release())
-        , nonInterpolableValue(other.nonInterpolableValue.release())
-    { }
-
-    operator bool() const { return startInterpolableValue; }
-
-    OwnPtr<InterpolableValue> startInterpolableValue;
-    OwnPtr<InterpolableValue> endInterpolableValue;
     RefPtr<NonInterpolableValue> nonInterpolableValue;
 };
 

@@ -156,6 +156,7 @@ protected:
     friend class KeyframeEffectModelTest;
 };
 
+// Time independent representation of an Animation's keyframes.
 template <class Keyframe>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
 public:

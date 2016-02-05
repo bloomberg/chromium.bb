@@ -13,6 +13,7 @@ namespace blink {
 
 class PropertyHandle;
 
+// Represents an animation's effect between an adjacent pair of PropertySpecificKeyframes.
 class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
     WTF_MAKE_NONCOPYABLE(Interpolation);
 public:

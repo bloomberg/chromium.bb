@@ -7,6 +7,7 @@
 
 #include "core/animation/InterpolationValue.h"
 #include "core/animation/Keyframe.h"
+#include "core/animation/PairwiseInterpolationValue.h"
 #include "core/animation/PrimitiveInterpolation.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/animation/UnderlyingValueOwner.h"
@@ -17,9 +18,10 @@ namespace blink {
 
 class InterpolationEnvironment;
 
-// A singleton that:
-// - Converts from animation keyframe(s) to interpolation compatible representations: maybeConvertPairwise() and maybeConvertSingle()
-// - Applies interpolation compatible representations of values to a StyleResolverState: apply()
+// Subclasses of InterpolationType implement the logic for a specific value type of a specific PropertyHandle to:
+// - Convert PropertySpecificKeyframe values to (Pairwise)?InterpolationValues: maybeConvertPairwise() and maybeConvertSingle()
+// - Convert the target Element's property value to an InterpolationValue: maybeConvertUnderlyingValue()
+// - Apply an InterpolationValue to a target Element's property: apply().
 class InterpolationType {
     USING_FAST_MALLOC(InterpolationType);
     WTF_MAKE_NONCOPYABLE(InterpolationType);
@@ -28,7 +30,8 @@ public:
 
     PropertyHandle property() const { return m_property; }
 
-    // Represents logic for determining whether a conversion decision is no longer valid given the current environment.
+    // ConversionCheckers are returned from calls to maybeConvertPairwise() and maybeConvertSingle() to enable the caller to check
+    // whether the result is still valid given changes in the InterpolationEnvironment and underlying InterpolationValue.
     class ConversionChecker {
         USING_FAST_MALLOC(ConversionChecker);
         WTF_MAKE_NONCOPYABLE(ConversionChecker);

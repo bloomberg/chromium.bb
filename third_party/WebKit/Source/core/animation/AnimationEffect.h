@@ -61,6 +61,8 @@ static inline double nullValue()
     return std::numeric_limits<double>::quiet_NaN();
 }
 
+// Represents the content of an Animation and its fractional timing state.
+// http://w3c.github.io/web-animations/#animation-effect
 class CORE_EXPORT AnimationEffect : public GarbageCollectedFinalized<AnimationEffect>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class Animation; // Calls attach/detach, updateInheritedTime.

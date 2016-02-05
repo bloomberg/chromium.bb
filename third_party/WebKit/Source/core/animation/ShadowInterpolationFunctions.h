@@ -6,6 +6,7 @@
 #define ShadowInterpolationFunctions_h
 
 #include "core/animation/InterpolationValue.h"
+#include "core/animation/PairwiseInterpolationValue.h"
 
 namespace blink {
 

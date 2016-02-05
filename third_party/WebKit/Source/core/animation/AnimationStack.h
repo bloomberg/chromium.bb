@@ -47,6 +47,8 @@ using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
 
 class InertEffect;
 
+// Represents the order in which a sequence of SampledEffects should apply.
+// This sequence is broken down to per PropertyHandle granularity.
 class CORE_EXPORT AnimationStack {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(AnimationStack);

@@ -14,6 +14,7 @@
 
 namespace blink {
 
+// Represents the components of a PropertySpecificKeyframe's value that change smoothly as it interpolates to an adjacent value.
 class CORE_EXPORT InterpolableValue {
     USING_FAST_MALLOC(InterpolableValue);
 public:

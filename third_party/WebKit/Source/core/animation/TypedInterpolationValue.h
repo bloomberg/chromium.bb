@@ -11,6 +11,7 @@ namespace blink {
 
 class InterpolationType;
 
+// Represents an interpolated value between an adjacent pair of PropertySpecificKeyframes.
 class TypedInterpolationValue {
 public:
     static PassOwnPtr<TypedInterpolationValue> create(const InterpolationType& type, PassOwnPtr<InterpolableValue> interpolableValue, PassRefPtr<NonInterpolableValue> nonInterpolableValue = nullptr)

@@ -9,7 +9,7 @@
 
 namespace blink {
 
-// Holds components of a keyframe value that do not change when interpolating with another keyframe.
+// Represents components of a PropertySpecificKeyframe's value that either do not change or 50% flip when interpolating with an adjacent value.
 class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
 public:
     virtual ~NonInterpolableValue() { }

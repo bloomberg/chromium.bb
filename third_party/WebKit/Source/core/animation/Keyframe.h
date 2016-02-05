@@ -19,6 +19,8 @@ using PropertyHandleSet = HashSet<PropertyHandle>;
 class Element;
 class ComputedStyle;
 
+// Represents a user specificed keyframe in a KeyframeEffect.
+// http://w3c.github.io/web-animations/#keyframe
 // FIXME: Make Keyframe immutable
 class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     USING_FAST_MALLOC(Keyframe);
@@ -53,6 +55,7 @@ public:
     virtual bool isAnimatableValueKeyframe() const { return false; }
     virtual bool isStringKeyframe() const { return false; }
 
+    // Represents a property-value pair in a keyframe.
     class PropertySpecificKeyframe {
         USING_FAST_MALLOC(PropertySpecificKeyframe);
         WTF_MAKE_NONCOPYABLE(PropertySpecificKeyframe);

@@ -14,7 +14,7 @@ namespace blink {
 
 using InterpolationTypes = Vector<OwnPtr<const InterpolationType>>;
 
-// TODO(alancutter): This class will replace *StyleInterpolation, SVGInterpolation, Interpolation.
+// TODO(alancutter): This class will replace *StyleInterpolation and Interpolation.
 // For now it needs to distinguish itself during the refactor and temporarily has an ugly name.
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 public:

@@ -48,6 +48,8 @@ class ExceptionState;
 class PropertyHandle;
 class SampledEffect;
 
+// Represents the effect of an Animation on an Element's properties.
+// http://w3c.github.io/web-animations/#keyframe-effect
 class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
     DEFINE_WRAPPERTYPEINFO();
 public:

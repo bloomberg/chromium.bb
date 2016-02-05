@@ -12,6 +12,7 @@
 
 namespace blink {
 
+// Represents the property of a PropertySpecificKeyframe.
 class CORE_EXPORT PropertyHandle {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:

@@ -931,6 +931,7 @@
             'animation/NumberPropertyFunctions.h',
             'animation/PaintPropertyFunctions.cpp',
             'animation/PaintPropertyFunctions.h',
+            'animation/PairwiseInterpolationValue.h',
             'animation/PathInterpolationFunctions.cpp',
             'animation/PathInterpolationFunctions.h',
             'animation/PrimitiveInterpolation.h',

@@ -6,6 +6,7 @@
 #define ListInterpolationFunctions_h
 
 #include "core/animation/InterpolationValue.h"
+#include "core/animation/PairwiseInterpolationValue.h"
 #include "wtf/Vector.h"
 
 namespace blink {
