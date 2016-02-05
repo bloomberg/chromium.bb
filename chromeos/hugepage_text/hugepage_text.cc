@@ -36,11 +36,6 @@ const int kMmapFlags = (MAP_ANONYMOUS | MAP_SHARED);
 const int kMmapHtlbFlags = (kMmapFlags | MAP_HUGETLB);
 const int kMremapFlags = (MREMAP_MAYMOVE | MREMAP_FIXED);
 
-// The number of hugepages we want to use to map chrome text section
-// to hugepages. With the help of AutoFDO, the hot functions are grouped
-// in to a small area of the binary.
-const int kNumHugePages = 15;
-
 // mremap syscall is always supported for small page segment on all kernels.
 // However, it is not the case for hugepage.
 // If not used carefully, mremap() a hugepage segment directly onto small page
@@ -129,10 +124,9 @@ static void NoAsanAlignedMemcpy(void* dst, void* src, size_t size) {
 // Effect: physical backing page changed from small page to hugepage. If there
 //         are error condition, the remapping operation is aborted.
 static void MremapHugetlbText(void* vaddr, const size_t hsize) {
+  DCHECK_EQ(0ul, reinterpret_cast<uintptr_t>(vaddr) & ~kHpageMask);
   void* haddr = MAP_FAILED;
-
-  if ((reinterpret_cast<intptr_t>(vaddr) & ~kHpageMask) == 0 &&
-      HugetlbMremapSupported()) {
+  if (HugetlbMremapSupported()) {
     // Try anon hugepage from static hugepage pool only if the source address
     // is hugepage aligned, otherwise, mremap below has non-recoverable error.
     haddr = mmap(NULL, hsize, kProtection, kMmapHtlbFlags, 0, 0);
@@ -172,15 +166,18 @@ static void MremapHugetlbText(void* vaddr, const size_t hsize) {
 // Effect: physical backing page changed from small page to hugepage. If there
 //         are error condition, the remaping operation is aborted.
 static void RemapHugetlbText(void* vaddr, const size_t segsize) {
-  int hsize = segsize;
-  if (segsize > kHpageSize * kNumHugePages)
-    hsize = kHpageSize * kNumHugePages;
+  // remove unaligned head regions
+  size_t head_gap = (kHpageSize - reinterpret_cast<size_t>(vaddr) % kHpageSize)
+                    % kHpageSize;
+  size_t addr = reinterpret_cast<size_t>(vaddr) + head_gap;
+
+  int hsize = segsize - head_gap;
   hsize = hsize & kHpageMask;
 
   if (hsize == 0)
     return;
 
-  MremapHugetlbText(vaddr, hsize);
+  MremapHugetlbText(reinterpret_cast<void *>(addr), hsize);
 }
 
 // For a given ELF program header descriptor, iterates over all segments within
