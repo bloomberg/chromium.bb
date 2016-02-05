@@ -41,7 +41,6 @@
     DOMString formatMonth(long year, long zeroBaseMonth);
     DOMString formatShortMonth(long year, long zeroBaseMonth);
     DOMString formatWeek(long year, long weekNumber, DOMString localizedStartDate);
-    void histogramEnumeration(DOMString name, long sample, long boundaryValue);
     // window.resizeTo/moveTo are not suitable because LocalDOMWindow adjusts
     // rectangle to fit in the current screen. Popups sometimes need to be
     // positioned on other screens.

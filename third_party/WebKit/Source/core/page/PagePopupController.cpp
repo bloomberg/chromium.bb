@@ -115,11 +115,6 @@ void PagePopupController::clearPagePopupClient()
     m_popupClient = nullptr;
 }
 
-void PagePopupController::histogramEnumeration(const String& name, int sample, int boundaryValue)
-{
-    Platform::current()->histogramEnumeration(name.utf8().data(), sample, boundaryValue);
-}
-
 void PagePopupController::setWindowRect(int x, int y, int width, int height)
 {
     m_popup.setWindowRect(IntRect(x, y, width, height));

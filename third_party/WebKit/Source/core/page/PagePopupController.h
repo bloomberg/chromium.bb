@@ -55,7 +55,6 @@ public:
     String formatShortMonth(int year, int zeroBaseMonth);
     String formatWeek(int year, int weekNumber, const String& localizedStartDate);
     void clearPagePopupClient();
-    void histogramEnumeration(const String& name, int sample, int boundaryValue);
     void setWindowRect(int x, int y, int width, int height);
 
     DEFINE_INLINE_TRACE() { }
