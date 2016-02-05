@@ -583,6 +583,34 @@ cr.define('media_router_container', function() {
         });
       });
 
+      test('updated route in route details', function(done) {
+        container.allSinks = fakeSinkList;
+        var description = 'Title';
+        var route = new media_router.Route(
+            'id 1', 'sink id 1', description, 0, true, false);
+        container.routeList = [route];
+        container.showRouteDetails_(route);
+        setTimeout(function() {
+          // Note that sink-list-view is hidden.
+          checkElementsVisibleWithId(
+              ['container-header', 'route-details', 'sink-list']);
+          assertTrue(!!container.currentRoute_);
+          assertEquals(description, container.currentRoute_.description);
+
+          var newDescription = 'Foo';
+          route.description = newDescription;
+          container.routeList = [route];
+          setTimeout(function() {
+            // Note that sink-list-view is hidden.
+            checkElementsVisibleWithId(
+                ['container-header', 'route-details', 'sink-list']);
+            assertTrue(!!container.currentRoute_);
+            assertEquals(newDescription, container.currentRoute_.description);
+            done();
+          });
+        });
+      });
+
       // Tests for expected visible UI when the view is ROUTE_DETAILS, and there
       // is a non-blocking issue.
       test('route details visibility non blocking issue', function(done) {
