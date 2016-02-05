@@ -378,23 +378,6 @@ CookieMonster::CookieMonster(PersistentCookieStore* store,
       kDefaultCookieableSchemes + kDefaultCookieableSchemesCount);
 }
 
-bool CookieMonster::ImportCookies(const CookieList& list) {
-  base::AutoLock autolock(lock_);
-  MarkCookieStoreAsInitialized();
-  if (ShouldFetchAllCookiesWhenFetchingAnyCookie())
-    FetchAllCookiesIfNecessary();
-  for (CookieList::const_iterator iter = list.begin(); iter != list.end();
-       ++iter) {
-    scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
-    CookieOptions options;
-    options.set_include_httponly();
-    options.set_include_same_site();
-    if (!SetCanonicalCookie(std::move(cookie), options))
-      return false;
-  }
-  return true;
-}
-
 // Task classes for queueing the coming request.
 
 class CookieMonster::CookieMonsterTask
@@ -462,8 +445,9 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
                            const std::string& value,
                            const std::string& domain,
                            const std::string& path,
-                           const base::Time creation_time,
-                           const base::Time expiration_time,
+                           base::Time creation_time,
+                           base::Time expiration_time,
+                           base::Time last_access_time,
                            bool secure,
                            bool http_only,
                            bool same_site,
@@ -478,6 +462,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
         path_(path),
         creation_time_(creation_time),
         expiration_time_(expiration_time),
+        last_access_time_(last_access_time),
         secure_(secure),
         http_only_(http_only),
         same_site_(same_site),
@@ -499,6 +484,7 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
   std::string path_;
   base::Time creation_time_;
   base::Time expiration_time_;
+  base::Time last_access_time_;
   bool secure_;
   bool http_only_;
   bool same_site_;
@@ -512,7 +498,8 @@ class CookieMonster::SetCookieWithDetailsTask : public CookieMonsterTask {
 void CookieMonster::SetCookieWithDetailsTask::Run() {
   bool success = this->cookie_monster()->SetCookieWithDetails(
       url_, name_, value_, domain_, path_, creation_time_, expiration_time_,
-      secure_, http_only_, same_site_, enforce_strict_secure_, priority_);
+      last_access_time_, secure_, http_only_, same_site_,
+      enforce_strict_secure_, priority_);
   if (!callback_.is_null()) {
     this->InvokeCallback(base::Bind(&SetCookiesCallback::Run,
                                     base::Unretained(&callback_), success));
@@ -913,8 +900,9 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const std::string& value,
     const std::string& domain,
     const std::string& path,
-    const Time creation_time,
-    const Time expiration_time,
+    Time creation_time,
+    Time expiration_time,
+    Time last_access_time,
     bool secure,
     bool http_only,
     bool same_site,
@@ -923,7 +911,8 @@ void CookieMonster::SetCookieWithDetailsAsync(
     const SetCookiesCallback& callback) {
   scoped_refptr<SetCookieWithDetailsTask> task = new SetCookieWithDetailsTask(
       this, url, name, value, domain, path, creation_time, expiration_time,
-      secure, http_only, same_site, enforce_strict_secure, priority, callback);
+      last_access_time, secure, http_only, same_site, enforce_strict_secure,
+      priority, callback);
   DoCookieTaskForURL(task, url);
 }
 
@@ -1115,8 +1104,9 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
                                          const std::string& value,
                                          const std::string& domain,
                                          const std::string& path,
-                                         const base::Time creation_time,
-                                         const base::Time expiration_time,
+                                         base::Time creation_time,
+                                         base::Time expiration_time,
+                                         base::Time last_access_time,
                                          bool secure,
                                          bool http_only,
                                          bool same_site,
@@ -1143,6 +1133,9 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 
   if (!cc.get())
     return false;
+
+  if (!last_access_time.is_null())
+    cc->SetLastAccessDate(last_access_time);
 
   CookieOptions options;
   options.set_include_httponly();

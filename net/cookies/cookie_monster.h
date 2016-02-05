@@ -146,10 +146,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
                 CookieMonsterDelegate* delegate,
                 int last_access_threshold_milliseconds);
 
-  // Helper function that adds all cookies from |list| into this instance,
-  // overwriting any equivalent cookies.
-  bool ImportCookies(const CookieList& list);
-
   typedef base::Callback<void(const CookieList& cookies)> GetCookieListCallback;
   typedef base::Callback<void(bool success)> DeleteCookieCallback;
 
@@ -181,8 +177,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                                  const std::string& value,
                                  const std::string& domain,
                                  const std::string& path,
-                                 const base::Time creation_time,
-                                 const base::Time expiration_time,
+                                 base::Time creation_time,
+                                 base::Time expiration_time,
+                                 base::Time last_access_time,
                                  bool secure,
                                  bool http_only,
                                  bool same_site,
@@ -418,8 +415,9 @@ class NET_EXPORT CookieMonster : public CookieStore {
                             const std::string& value,
                             const std::string& domain,
                             const std::string& path,
-                            const base::Time creation_time,
-                            const base::Time expiration_time,
+                            base::Time creation_time,
+                            base::Time expiration_time,
+                            base::Time last_access_time,
                             bool secure,
                             bool http_only,
                             bool same_site,

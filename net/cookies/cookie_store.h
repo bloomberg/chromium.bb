@@ -64,6 +64,7 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // if such characters are found.
   //
   // If |creation_time| is null, it will be set to the time the cookie is set.
+  // If |last_access_time| is null, it be set to |creation_time|.
   //
   // If unable to set a cookie, will  invoke |callback| with false.
   virtual void SetCookieWithDetailsAsync(
@@ -72,8 +73,9 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
       const std::string& value,
       const std::string& domain,
       const std::string& path,
-      const base::Time creation_time,
-      const base::Time expiration_time,
+      base::Time creation_time,
+      base::Time expiration_time,
+      base::Time last_access_time,
       bool secure,
       bool http_only,
       bool same_site,

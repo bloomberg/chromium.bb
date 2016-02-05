@@ -435,8 +435,9 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
     const std::string& value,
     const std::string& domain,
     const std::string& path,
-    const base::Time creation_time,
-    const base::Time expiration_time,
+    base::Time creation_time,
+    base::Time expiration_time,
+    base::Time last_access_time,
     bool secure,
     bool http_only,
     bool same_site,
@@ -449,15 +450,15 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
     case NOT_SYNCHRONIZED:
       cookie_monster_->SetCookieWithDetailsAsync(
           url, name, value, domain, path, creation_time, expiration_time,
-          secure, http_only, same_site, enforce_strict_secure, priority,
-          WrapSetCallback(callback));
+          last_access_time, secure, http_only, same_site, enforce_strict_secure,
+          priority, WrapSetCallback(callback));
       break;
     case SYNCHRONIZING:
-      tasks_pending_synchronization_.push_back(
-          base::Bind(&CookieStoreIOS::SetCookieWithDetailsAsync, this, url,
-                     name, value, domain, path, creation_time, expiration_time,
-                     secure, http_only, same_site, enforce_strict_secure,
-                     priority, WrapSetCallback(callback)));
+      tasks_pending_synchronization_.push_back(base::Bind(
+          &CookieStoreIOS::SetCookieWithDetailsAsync, this, url, name, value,
+          domain, path, creation_time, expiration_time, last_access_time,
+          secure, http_only, same_site, enforce_strict_secure, priority,
+          WrapSetCallback(callback)));
       break;
     case SYNCHRONIZED:
       // If cookies are not allowed, they are stashed in the CookieMonster, and
@@ -465,6 +466,9 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
       DCHECK(SystemCookiesAllowed());
 
       bool success = false;
+
+      if (creation_time.is_null())
+        creation_time = base::Time::Now();
 
       // First create a CanonicalCookie, to normalize the arguments,
       // particularly domain and path, and perform validation.
@@ -480,13 +484,9 @@ void CookieStoreIOS::SetCookieWithDetailsAsync(
 
         if (cookie != nil) {
           [system_store_ setCookie:cookie];
-          base::Time base_creation_time = creation_time;
-          if (base_creation_time.is_null()) {
-            base_creation_time = base::Time::Now();
-          }
           creation_time_manager_->SetCreationTime(
               cookie, creation_time_manager_->MakeUniqueCreationTime(
-                          base_creation_time));
+                          canonical_cookie->CreationDate()));
           success = true;
         }
       }

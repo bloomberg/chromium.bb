@@ -161,9 +161,9 @@ void CookiesFetcher::RestoreToCookieJarInternal(
           switches::kEnableExperimentalWebPlatformFeatures);
   store->SetCookieWithDetailsAsync(
       cookie.Source(), cookie.Name(), cookie.Value(), cookie.Domain(),
-      cookie.Path(), base::Time(), cookie.ExpiryDate(), cookie.IsSecure(),
-      cookie.IsHttpOnly(), cookie.IsSameSite(), experimental_features_enabled,
-      cookie.Priority(), cb);
+      cookie.Path(), base::Time(), cookie.ExpiryDate(), cookie.LastAccessDate(),
+      cookie.IsSecure(), cookie.IsHttpOnly(), cookie.IsSameSite(),
+      experimental_features_enabled, cookie.Priority(), cb);
 }
 
 // JNI functions

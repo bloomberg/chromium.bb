@@ -92,8 +92,9 @@ class RoundTripTestCookieStore : public net::CookieStore {
                                  const std::string& value,
                                  const std::string& domain,
                                  const std::string& path,
-                                 const base::Time creation_time,
-                                 const base::Time expiration_time,
+                                 base::Time creation_time,
+                                 base::Time expiration_time,
+                                 base::Time last_access_time,
                                  bool secure,
                                  bool http_only,
                                  bool same_site,
@@ -102,8 +103,9 @@ class RoundTripTestCookieStore : public net::CookieStore {
                                  const SetCookiesCallback& callback) override {
     RoundTrip();
     store_->SetCookieWithDetailsAsync(
-        url, name, value, domain, path, creation_time, expiration_time, secure,
-        http_only, same_site, enforce_strict_secure, priority, callback);
+        url, name, value, domain, path, creation_time, expiration_time,
+        last_access_time, secure, http_only, same_site, enforce_strict_secure,
+        priority, callback);
   }
 
   void GetCookiesWithOptionsAsync(const GURL& url,
