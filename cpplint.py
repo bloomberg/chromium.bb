@@ -1666,7 +1666,7 @@ def GetHeaderGuardCPPVariable(filename):
   filename = re.sub(r'/\.flymake/([^/]*)$', r'/\1', filename)
   # Replace 'c++' with 'cpp'.
   filename = filename.replace('C++', 'cpp').replace('c++', 'cpp')
-  
+
   fileinfo = FileInfo(filename)
   file_path_from_root = fileinfo.RepositoryName()
   if _root:
@@ -4794,7 +4794,7 @@ def CheckLanguage(filename, clean_lines, linenum, file_extension,
 
   # Make Windows paths like Unix.
   fullname = os.path.abspath(filename).replace('\\', '/')
-  
+
   # Perform other checks now that we are sure that this is not an include line
   CheckCasts(filename, clean_lines, linenum, error)
   CheckGlobalStatic(filename, clean_lines, linenum, error)
@@ -5498,18 +5498,26 @@ _HEADERS_CONTAINING_TEMPLATES = (
     ('<slist>', ('slist',)),
     )
 
+_HEADERS_MAYBE_TEMPLATES = (
+    ('<algorithm>', ('copy', 'max', 'min', 'min_element', 'sort',
+                     'transform',
+                    )),
+    ('<utility>', ('swap',)),
+    )
+
 _RE_PATTERN_STRING = re.compile(r'\bstring\b')
 
-_re_pattern_algorithm_header = []
-for _template in ('copy', 'max', 'min', 'min_element', 'sort', 'swap',
-                  'transform'):
-  # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
-  # type::max().
-  _re_pattern_algorithm_header.append(
-      (re.compile(r'[^>.]\b' + _template + r'(<.*?>)?\([^\)]'),
-       _template,
-       '<algorithm>'))
+_re_pattern_headers_maybe_templates = []
+for _header, _templates in _HEADERS_MAYBE_TEMPLATES:
+  for _template in _templates:
+    # Match max<type>(..., ...), max(..., ...), but not foo->max, foo.max or
+    # type::max().
+    _re_pattern_headers_maybe_templates.append(
+        (re.compile(r'[^>.]\b' + _template + r'(<.*?>)?\([^\)]'),
+            _template,
+            _header))
 
+# Other scripts may reach in and modify this pattern.
 _re_pattern_templates = []
 for _header, _templates in _HEADERS_CONTAINING_TEMPLATES:
   for _template in _templates:
@@ -5636,7 +5644,7 @@ def CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error,
       if prefix.endswith('std::') or not prefix.endswith('::'):
         required['<string>'] = (linenum, 'string')
 
-    for pattern, template, header in _re_pattern_algorithm_header:
+    for pattern, template, header in _re_pattern_headers_maybe_templates:
       if pattern.search(line):
         required[header] = (linenum, template)
 
@@ -6034,7 +6042,7 @@ def ProcessFileData(filename, file_extension, lines, error,
   nesting_state.CheckCompletedBlocks(filename, error)
 
   CheckForIncludeWhatYouUse(filename, clean_lines, include_state, error)
-  
+
   # Check that the .cc file has included its header if it exists.
   if file_extension == 'cc':
     CheckHeaderFileIncluded(filename, include_state, error)
