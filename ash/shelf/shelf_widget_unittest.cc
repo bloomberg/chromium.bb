@@ -12,8 +12,11 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
+#include "ash/test/test_shelf_delegate.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event_utils.h"
@@ -306,6 +309,92 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
     EXPECT_EQ(shelf_widget->GetNativeWindow(),
               targeter->FindTargetForEvent(root, &touch));
   }
+}
+
+namespace {
+
+// A TestShellDelegate that attempts to set an initial shelf auto hide behavior
+// when creating a ShelfDelegate, which simulates ChromeLauncherController's
+// behavior.
+class ShelfWidgetTestShellDelegate : public test::TestShellDelegate {
+ public:
+  ShelfWidgetTestShellDelegate() {}
+  ~ShelfWidgetTestShellDelegate() override {}
+
+  // test::TestShellDelegate
+  ShelfDelegate* CreateShelfDelegate(ShelfModel* model) override {
+    ShelfDelegate* shelf_delegate = new test::TestShelfDelegate(model);
+    Shell::GetInstance()->SetShelfAutoHideBehavior(
+        initial_auto_hide_behavior_, Shell::GetPrimaryRootWindow());
+    return shelf_delegate;
+  }
+
+  void set_initial_auto_hide_behavior(ash::ShelfAutoHideBehavior behavior) {
+    initial_auto_hide_behavior_ = behavior;
+  }
+
+ private:
+  ash::ShelfAutoHideBehavior initial_auto_hide_behavior_ =
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+  DISALLOW_COPY_AND_ASSIGN(ShelfWidgetTestShellDelegate);
+};
+
+class ShelfWidgetTestWithDelegate : public ShelfWidgetTest {
+ public:
+  ShelfWidgetTestWithDelegate() { set_start_session(false); }
+  ~ShelfWidgetTestWithDelegate() override {}
+
+  // ShelfWidgetTest:
+  void SetUp() override {
+    shelf_widget_test_shell_delegate_ = new ShelfWidgetTestShellDelegate;
+    ash_test_helper()->set_test_shell_delegate(
+        shelf_widget_test_shell_delegate_);
+    ShelfWidgetTest::SetUp();
+  }
+
+  void TestCreateShelfWithInitialAutoHideBehavior(
+      ash::ShelfAutoHideBehavior initial_auto_hide_behavior,
+      ShelfVisibilityState expected_shelf_visibility_state,
+      ShelfAutoHideState expected_shelf_auto_hide_state) {
+    shelf_widget_test_shell_delegate_->set_initial_auto_hide_behavior(
+        initial_auto_hide_behavior);
+    SetUserLoggedIn(true);
+    SetSessionStarted(true);
+
+    ShelfWidget* shelf_widget = GetShelfWidget();
+    ASSERT_NE(nullptr, shelf_widget);
+    Shelf* shelf = shelf_widget->shelf();
+    ASSERT_NE(nullptr, shelf);
+    ShelfLayoutManager* shelf_layout_manager =
+        shelf_widget->shelf_layout_manager();
+    ASSERT_NE(nullptr, shelf_layout_manager);
+
+    EXPECT_EQ(expected_shelf_visibility_state,
+              shelf_layout_manager->visibility_state());
+    EXPECT_EQ(expected_shelf_auto_hide_state,
+              shelf_layout_manager->auto_hide_state());
+  }
+
+ private:
+  ShelfWidgetTestShellDelegate* shelf_widget_test_shell_delegate_;
+  DISALLOW_COPY_AND_ASSIGN(ShelfWidgetTestWithDelegate);
+};
+
+}  // namespace
+
+TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideAlwaysShelf) {
+  TestCreateShelfWithInitialAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, SHELF_AUTO_HIDE, SHELF_AUTO_HIDE_HIDDEN);
+}
+
+TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideNeverShelf) {
+  TestCreateShelfWithInitialAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_NEVER, SHELF_VISIBLE, SHELF_AUTO_HIDE_HIDDEN);
+}
+
+TEST_F(ShelfWidgetTestWithDelegate, CreateAutoHideAlwaysHideShelf) {
+  TestCreateShelfWithInitialAutoHideBehavior(
+      SHELF_AUTO_HIDE_ALWAYS_HIDDEN, SHELF_HIDDEN, SHELF_AUTO_HIDE_HIDDEN);
 }
 
 }  // namespace ash

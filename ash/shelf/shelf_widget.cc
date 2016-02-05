@@ -783,6 +783,7 @@ void ShelfWidget::CreateShelf() {
   shelf_->SetVisible(
       shell->session_state_delegate()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
+  shelf_layout_manager_->UpdateAutoHideState();
   Show();
 }
 

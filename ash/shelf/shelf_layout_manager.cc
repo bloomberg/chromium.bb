@@ -1007,7 +1007,7 @@ gfx::Rect ShelfLayoutManager::GetAutoHideShowShelfRegionInScreen() const {
 
 ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     ShelfVisibilityState visibility_state) const {
-  if (visibility_state != SHELF_AUTO_HIDE || !shelf_)
+  if (visibility_state != SHELF_AUTO_HIDE || !shelf_ || !shelf_->shelf())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   Shell* shell = Shell::GetInstance();
