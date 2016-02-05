@@ -3534,6 +3534,7 @@ def MatchingFileType(file_name, extensions):
 def CMDformat(parser, args):
   """Runs auto-formatting tools (clang-format etc.) on the diff."""
   CLANG_EXTS = ['.cc', '.cpp', '.h', '.mm', '.proto', '.java']
+  GN_EXTS = ['.gn', '.gni']
   parser.add_option('--full', action='store_true',
                     help='Reformat the full content of all touched files')
   parser.add_option('--dry-run', action='store_true',
@@ -3574,6 +3575,7 @@ def CMDformat(parser, args):
   clang_diff_files = [x for x in diff_files if MatchingFileType(x, CLANG_EXTS)]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
   dart_diff_files = [x for x in diff_files if MatchingFileType(x, ['.dart'])]
+  gn_diff_files = [x for x in diff_files if MatchingFileType(x, GN_EXTS)]
 
   top_dir = os.path.normpath(
       RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
@@ -3654,6 +3656,16 @@ def CMDformat(parser, args):
       print ('Warning: Unable to check Dart code formatting. Dart SDK not ' +
              'found in this checkout. Files in other languages are still ' +
              'formatted.')
+
+  # Format GN build files. Always run on full build files for canonical form.
+  if gn_diff_files:
+    cmd = ['gn', 'format']
+    if not opts.dry_run and not opts.diff:
+      cmd.append('--in-place')
+    for gn_diff_file in gn_diff_files:
+      stdout = RunCommand(cmd + [gn_diff_file], cwd=top_dir)
+      if opts.diff:
+        sys.stdout.write(stdout)
 
   return return_value
 
