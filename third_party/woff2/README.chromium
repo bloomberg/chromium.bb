@@ -13,3 +13,4 @@ Local Modifications:
 
 - BUILD.gn: Added.
 - woff2.gyp: Added.
+- Cherry-picked revision d1efde9124f7bef4b0fd82e98f4702651d3095bc.
