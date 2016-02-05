@@ -106,6 +106,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint32
 [Worker]     method setUint8
 [Worker] interface DedicatedWorkerGlobalScope : WorkerGlobalScope
+[Worker]     attribute PERSISTENT
+[Worker]     attribute TEMPORARY
 [Worker]     method constructor
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
@@ -561,8 +563,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onmessage
 [Worker]     setter onopen
 [Worker] interface WorkerGlobalScope : EventTarget
-[Worker]     attribute PERSISTENT
-[Worker]     attribute TEMPORARY
 [Worker]     getter console
 [Worker]     getter crypto
 [Worker]     getter indexedDB
@@ -585,10 +585,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method importScripts
 [Worker]     method setInterval
 [Worker]     method setTimeout
-[Worker]     method webkitRequestFileSystem
-[Worker]     method webkitRequestFileSystemSync
-[Worker]     method webkitResolveLocalFileSystemSyncURL
-[Worker]     method webkitResolveLocalFileSystemURL
 [Worker]     setter console
 [Worker]     setter onerror
 [Worker]     setter onrejectionhandled
@@ -771,6 +767,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter onmessage
 [Worker]     method gc
 [Worker]     method postMessage
+[Worker]     method webkitRequestFileSystem
+[Worker]     method webkitRequestFileSystemSync
+[Worker]     method webkitResolveLocalFileSystemSyncURL
+[Worker]     method webkitResolveLocalFileSystemURL
 [Worker]     setter onmessage
 PASS successfullyParsed is true
 

@@ -24,7 +24,8 @@
  *
  */
 
-partial interface WorkerGlobalScope {
+[ImplementedAs=WorkerGlobalScopeFileSystem]
+partial interface SharedWorkerGlobalScope {
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 
@@ -32,6 +33,4 @@ partial interface WorkerGlobalScope {
     [RuntimeEnabled=FileSystem, RaisesException, MeasureAs=RequestFileSystemSyncWorker] DOMFileSystemSync webkitRequestFileSystemSync(unsigned short type, long long size);
     [RuntimeEnabled=FileSystem] void webkitResolveLocalFileSystemURL(DOMString url, EntryCallback successCallback, optional ErrorCallback errorCallback);
     [RuntimeEnabled=FileSystem, RaisesException] EntrySync webkitResolveLocalFileSystemSyncURL(DOMString url);
-
-    [RuntimeEnabled=FileSystem] attribute FileErrorConstructor FileError;
 };

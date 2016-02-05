@@ -48,23 +48,6 @@ static bool TestTypedefsCreateDataProperty(v8::Local<v8::Name> name, v8::Local<v
     return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
-static void TestTypedefsConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    do {
-        v8::Local<v8::Value> data = info.Data();
-        ASSERT(data->IsExternal());
-        V8PerContextData* perContextData = V8PerContextData::from(info.Holder()->CreationContext());
-        if (!perContextData)
-            break;
-        const WrapperTypeInfo* wrapperTypeInfo = WrapperTypeInfo::unwrap(data);
-        if (!wrapperTypeInfo)
-            break;
-        TestTypedefsCreateDataProperty(v8String(info.GetIsolate(), wrapperTypeInfo->interfaceName), v8Value, info);
-    } while (false); // do ... while (false) just for use of break
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-
 static void uLongLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();

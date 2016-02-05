@@ -29,6 +29,7 @@
  */
 
 // TODO(philipj): Remove the FileError interface. crbug.com/496901
+[Exposed=(Window,Worker)]
 interface FileError : DOMError {
     const unsigned short NOT_FOUND_ERR = 1;
     const unsigned short SECURITY_ERR = 2;

@@ -12,25 +12,25 @@ PASS [Worker] expectedPath is actualPath
 PASS [Worker] isFile is true
 [Worker] * Resolving a URL with the wrong security origin (domain)
 PASS [Worker] error.name is 'SecurityError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
 [Worker] * Resolving a URL with the wrong security origin (port)
 PASS [Worker] error.name is 'SecurityError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
 [Worker] * Resolving a URL with the wrong security origin (scheme)
 PASS [Worker] error.name is 'SecurityError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
 [Worker] * Resolving a completely bogus URL.
 PASS [Worker] error.name is 'EncodingError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
 [Worker] * Resolving a URL with the wrong protocol
 PASS [Worker] error.name is 'EncodingError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
 [Worker] * Resolving a URL with no slash between type and file
 PASS [Worker] error.name is 'EncodingError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': A URI supplied to the API was malformed, or the resulting Data URL has exceeded the URL length limitations for Data URLs.
 [Worker] * Resolving a URL with no slash between protocol and type (bogus port)
 PASS [Worker] error.name is 'SecurityError'
-[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'WorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
+[Worker] Failed to execute 'webkitResolveLocalFileSystemSyncURL' on 'DedicatedWorkerGlobalScope': It was determined that certain files are unsafe for access within a Web application, or that too many calls are being made on file resources.
 [Worker] * Resolve a path using backslashes
 PASS [Worker] expectedPath is actualPath
 PASS [Worker] isFile is true

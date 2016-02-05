@@ -311,6 +311,7 @@ def interface_context(interface):
             attribute['should_be_exposed_to_script']
             for attribute in attributes),
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
+        'needs_constructor_setter_callback': any(attribute['constructor_type'] == attribute['name'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
 

@@ -70,7 +70,7 @@ static bool {{cpp_class}}CreateDataProperty(v8::Local<v8::Name> name, v8::Local<
     return v8CallBoolean(v8::Local<v8::Object>::Cast(info.This())->CreateDataProperty(info.GetIsolate()->GetCurrentContext(), name, v8Value));
 }
 
-{% if has_constructor_attributes %}
+{% if needs_constructor_setter_callback %}
 static void {{cpp_class}}ConstructorAttributeSetterCallback(v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");

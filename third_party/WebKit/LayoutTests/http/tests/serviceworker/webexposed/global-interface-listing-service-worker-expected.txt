@@ -694,8 +694,6 @@ interface WindowClient : Client
     method focus
     method navigate
 interface WorkerGlobalScope : EventTarget
-    attribute PERSISTENT
-    attribute TEMPORARY
     getter console
     getter crypto
     getter indexedDB
@@ -718,10 +716,6 @@ interface WorkerGlobalScope : EventTarget
     method importScripts
     method setInterval
     method setTimeout
-    method webkitRequestFileSystem
-    method webkitRequestFileSystemSync
-    method webkitResolveLocalFileSystemSyncURL
-    method webkitResolveLocalFileSystemURL
     setter console
     setter onerror
     setter onrejectionhandled

@@ -54,21 +54,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint16
 [Worker]     method setUint32
 [Worker]     method setUint8
-[Worker] interface FileError : DOMError
-[Worker]     attribute ABORT_ERR
-[Worker]     attribute ENCODING_ERR
-[Worker]     attribute INVALID_MODIFICATION_ERR
-[Worker]     attribute INVALID_STATE_ERR
-[Worker]     attribute NOT_FOUND_ERR
-[Worker]     attribute NOT_READABLE_ERR
-[Worker]     attribute NO_MODIFICATION_ALLOWED_ERR
-[Worker]     attribute PATH_EXISTS_ERR
-[Worker]     attribute QUOTA_EXCEEDED_ERR
-[Worker]     attribute SECURITY_ERR
-[Worker]     attribute SYNTAX_ERR
-[Worker]     attribute TYPE_MISMATCH_ERR
-[Worker]     getter code
-[Worker]     method constructor
 [Worker] interface ReadableStream
 [Worker]     getter locked
 [Worker]     method cancel
