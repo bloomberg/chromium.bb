@@ -333,6 +333,99 @@ TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
   }
 }
 
+// Tests if Lo-Fi field trial is set correctly.
+TEST_F(DataReductionProxyParamsTest, LoFiEnabledFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+    bool expected_control;
+    bool expected_preview_enabled;
+  } tests[] = {
+      {"Enabled", true, false, false},
+      {"Enabled_Control", true, false, false},
+      {"Disabled", false, false, false},
+      {"enabled", false, false, false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        params::GetLoFiFieldTrialName(), test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled,
+              params::IsIncludedInLoFiEnabledFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_control,
+              params::IsIncludedInLoFiControlFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_preview_enabled,
+              params::IsIncludedInLoFiPreviewFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
+// Tests if Lo-Fi field trial is set correctly.
+TEST_F(DataReductionProxyParamsTest, LoFiControlFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+    bool expected_control;
+    bool expected_preview_enabled;
+  } tests[] = {
+      {"Control", false, true, false},
+      {"Control_Enabled", false, true, false},
+      {"Disabled", false, false, false},
+      {"control", false, false, false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        params::GetLoFiFieldTrialName(), test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled,
+              params::IsIncludedInLoFiEnabledFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_control,
+              params::IsIncludedInLoFiControlFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_preview_enabled,
+              params::IsIncludedInLoFiPreviewFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
+// Tests if Lo-Fi field trial is set correctly.
+TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+    bool expected_control;
+    bool expected_preview_enabled;
+  } tests[] = {
+      {"Enabled_Preview", true, false, true},
+      {"Enabled_Preview_Control", true, false, true},
+      {"Disabled", false, false, false},
+      {"enabled_Preview", false, false, false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        params::GetLoFiFieldTrialName(), test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled,
+              params::IsIncludedInLoFiEnabledFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_control,
+              params::IsIncludedInLoFiControlFieldTrial())
+        << test.trial_group_name;
+    EXPECT_EQ(test.expected_preview_enabled,
+              params::IsIncludedInLoFiPreviewFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
 TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
   const struct {
     std::string trial_group_value;

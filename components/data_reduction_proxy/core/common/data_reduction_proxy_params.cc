@@ -103,11 +103,13 @@ bool IsIncludedInLoFiEnabledFieldTrial() {
 }
 
 bool IsIncludedInLoFiControlFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kControl;
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kControl) ==
+         0;
 }
 
 bool IsIncludedInLoFiPreviewFieldTrial() {
-  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kPreview;
+  return FieldTrialList::FindFullName(GetLoFiFieldTrialName()).find(kPreview) ==
+         0;
 }
 
 bool IsIncludedInTamperDetectionExperiment() {
