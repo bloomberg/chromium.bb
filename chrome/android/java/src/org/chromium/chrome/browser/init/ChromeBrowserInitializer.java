@@ -6,10 +6,12 @@ package org.chromium.chrome.browser.init;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 import android.preference.PreferenceManager;
+import android.text.TextUtils;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -30,11 +32,13 @@ import org.chromium.chrome.browser.ChromeStrictMode;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.FileProviderHelper;
+import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModelImpl;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.DeviceUtils;
@@ -62,6 +66,8 @@ public class ChromeBrowserInitializer {
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
+
+    private MinidumpDirectoryObserver mMinidumpDirectoryObserver;
 
     /**
      * A callback to be executed when there is a new version available in Play Store.
@@ -353,6 +359,24 @@ public class ChromeBrowserInitializer {
 
         mNativeInitializationComplete = true;
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+
+        if (TextUtils.equals("true", VariationsAssociatedData.getVariationParamValue(
+                MinidumpDirectoryObserver.MINIDUMP_EXPERIMENT_NAME, "Enabled"))) {
+
+            // Start the file observer to watch the minidump directory.
+            new AsyncTask<Void, Void, MinidumpDirectoryObserver>() {
+                @Override
+                protected MinidumpDirectoryObserver doInBackground(Void... params) {
+                    return new MinidumpDirectoryObserver();
+                }
+
+                @Override
+                protected void onPostExecute(MinidumpDirectoryObserver minidumpDirectoryObserver) {
+                    mMinidumpDirectoryObserver = minidumpDirectoryObserver;
+                    mMinidumpDirectoryObserver.startWatching();
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     private void waitForDebuggerIfNeeded() {

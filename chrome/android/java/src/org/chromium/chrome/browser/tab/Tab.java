@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchTabHelper;
+import org.chromium.chrome.browser.crash.MinidumpDirectoryObserver;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
@@ -76,6 +77,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
@@ -2471,22 +2473,26 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         if (mTabUma != null) mTabUma.onRendererCrashed();
 
-        try {
-            // Update the most recent minidump file with the logcat. Doing this asynchronously
-            // adds a race condition in the case of multiple simultaneously renderer crashses
-            // but because the data will be the same for all of them it is innocuous. We can
-            // attempt to do this regardless of whether it was a foreground tab in the event
-            // that it's a real crash and not just android killing the tab.
-            Context context = getApplicationContext();
-            Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
-            context.startService(intent);
-            RecordUserAction.record("MobileBreakpadUploadAttempt");
-        } catch (SecurityException e) {
-            // For KitKat and below, there was a framework bug which cause us to not be able to
-            // find our own crash uploading service. Ignore a SecurityException here on older
-            // OS versions since the crash will eventually get uploaded on next start. crbug/542533
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                throw e;
+        if (!TextUtils.equals("true", VariationsAssociatedData.getVariationParamValue(
+                MinidumpDirectoryObserver.MINIDUMP_EXPERIMENT_NAME, "Enabled"))) {
+            try {
+                // Update the most recent minidump file with the logcat. Doing this asynchronously
+                // adds a race condition in the case of multiple simultaneously renderer crashses
+                // but because the data will be the same for all of them it is innocuous. We can
+                // attempt to do this regardless of whether it was a foreground tab in the event
+                // that it's a real crash and not just android killing the tab.
+                Context context = getApplicationContext();
+                Intent intent = MinidumpUploadService.createFindAndUploadLastCrashIntent(context);
+                context.startService(intent);
+                RecordUserAction.record("MobileBreakpadUploadAttempt");
+            } catch (SecurityException e) {
+                // For KitKat and below, there was a framework bug which cause us to not be able to
+                // find our own crash uploading service. Ignore a SecurityException here on older
+                // OS versions since the crash will eventually get uploaded on next start.
+                // crbug/542533
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    throw e;
+                }
             }
         }
     }

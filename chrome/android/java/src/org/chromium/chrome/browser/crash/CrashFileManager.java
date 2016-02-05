@@ -33,6 +33,9 @@ public class CrashFileManager {
     private static final Pattern MINIDUMP_FIRST_TRY_PATTERN =
             Pattern.compile("\\.dmp([0-9]*)$\\z");
 
+    private static final Pattern MINIDUMP_MIME_FIRST_TRY_PATTERN =
+            Pattern.compile("\\.dmp([0-9]+)$\\z");
+
     private static final Pattern MINIDUMP_PATTERN =
             Pattern.compile("\\.dmp([0-9]*)(\\.try[0-9])?\\z");
 
@@ -77,6 +80,10 @@ public class CrashFileManager {
 
     public File[] getMinidumpWithoutLogcat() {
         return getMatchingFiles(MINIDUMP_FIRST_TRY_PATTERN);
+    }
+
+    public static boolean isMinidumpMIMEFirstTry(String path) {
+        return MINIDUMP_MIME_FIRST_TRY_PATTERN.matcher(path).find();
     }
 
     public static String tryIncrementAttemptNumber(File mFileToUpload) {
