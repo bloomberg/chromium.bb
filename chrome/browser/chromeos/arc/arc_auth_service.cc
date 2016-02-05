@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/arc/arc_auth_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -65,21 +67,35 @@ void ArcAuthService::DisableUIForTesting() {
   disable_ui_for_testing = true;
 }
 
+// static
+bool ArcAuthService::IsOptInVerificationDisabled() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableArcOptInVerification);
+}
+
 void ArcAuthService::OnAuthInstanceReady() {
   arc_bridge_service()->auth_instance()->Init(
       binding_.CreateInterfacePtrAndBind());
 }
 
-std::string ArcAuthService::GetAndResetAutoCode() {
+std::string ArcAuthService::GetAndResetAuthCode() {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string auth_code;
   auth_code_.swap(auth_code);
   return auth_code;
 }
 
+void ArcAuthService::GetAuthCodeDeprecated(
+    const GetAuthCodeDeprecatedCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!IsOptInVerificationDisabled());
+  callback.Run(mojo::String(GetAndResetAuthCode()));
+}
+
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  callback.Run(mojo::String(GetAndResetAutoCode()));
+  callback.Run(mojo::String(GetAndResetAuthCode()),
+               !IsOptInVerificationDisabled());
 }
 
 void ArcAuthService::SetState(State state) {
@@ -97,11 +113,17 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   profile_ = profile;
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kArcEnabled, base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
-                                     base::Unretained(this)));
-  OnOptInPreferenceChanged();
+  // In case UI is disabled we assume that ARC is opted-in.
+  if (!IsOptInVerificationDisabled()) {
+    pref_change_registrar_.Init(profile_->GetPrefs());
+    pref_change_registrar_.Add(
+        prefs::kArcEnabled,
+        base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
+                   base::Unretained(this)));
+    OnOptInPreferenceChanged();
+  } else {
+    SetAuthCodeAndStartArc(std::string());
+  }
 }
 
 void ArcAuthService::Shutdown() {
@@ -156,7 +178,7 @@ void ArcAuthService::CloseUI() {
 
 void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!auth_code.empty());
+  DCHECK(!auth_code.empty() || IsOptInVerificationDisabled());
   DCHECK_NE(state_, State::ENABLE);
 
   ShutdownBridgeAndCloseUI();
@@ -186,7 +208,7 @@ void ArcAuthService::OnAuthCodeFetched(const std::string& auth_code) {
 
 void ArcAuthService::OnAuthCodeNeedUI() {
   CloseUI();
-  if (!disable_ui_for_testing)
+  if (!disable_ui_for_testing && !IsOptInVerificationDisabled())
     auth_ui_ = new ArcAuthUI(profile_, this);
 }
 

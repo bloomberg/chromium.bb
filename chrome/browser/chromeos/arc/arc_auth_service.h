@@ -60,6 +60,9 @@ class ArcAuthService : public ArcService,
 
   static void DisableUIForTesting();
 
+  // Checks if OptIn verification was disabled by switch in command line.
+  static bool IsOptInVerificationDisabled();
+
   void OnPrimaryUserProfilePrepared(Profile* profile);
   void Shutdown();
 
@@ -69,7 +72,7 @@ class ArcAuthService : public ArcService,
   // that accepts user's credentials. This actually starts ARC bridge service.
   void SetAuthCodeAndStartArc(const std::string& auth_code);
 
-  std::string GetAndResetAutoCode();
+  std::string GetAndResetAuthCode();
 
   // Adds or removes observers.
   void AddObserver(Observer* observer);
@@ -80,6 +83,8 @@ class ArcAuthService : public ArcService,
 
   // Overrides AuthHost.  For security reason this code can be used only
   // once and exists for specific period of time.
+  void GetAuthCodeDeprecated(
+      const GetAuthCodeDeprecatedCallback& callback) override;
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
 
   // ArcAuthFetcher::Delegate:

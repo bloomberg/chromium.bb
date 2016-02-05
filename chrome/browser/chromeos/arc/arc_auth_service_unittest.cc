@@ -133,7 +133,7 @@ TEST_F(ArcAuthServiceTest, PrefChangeTriggersService) {
 TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAutoCode());
+  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   const GURL gaia_gurl = ArcAuthFetcher::CreateURL();
   url_fetcher_factory().SetFakeResponse(gaia_gurl, std::string(), net::HTTP_OK,
@@ -158,13 +158,13 @@ TEST_F(ArcAuthServiceTest, BaseWorkflow) {
   ASSERT_EQ(ArcAuthService::State::ENABLE, auth_service()->state());
   ASSERT_EQ(ArcBridgeService::State::READY, bridge_service()->state());
   // Auth code valid only for one call.
-  ASSERT_EQ(kTestAuthCode, auth_service()->GetAndResetAutoCode());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAutoCode());
+  ASSERT_EQ(kTestAuthCode, auth_service()->GetAndResetAuthCode());
+  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   auth_service()->Shutdown();
   ASSERT_EQ(ArcAuthService::State::DISABLE, auth_service()->state());
   ASSERT_EQ(ArcBridgeService::State::STOPPED, bridge_service()->state());
-  ASSERT_EQ(std::string(), auth_service()->GetAndResetAutoCode());
+  ASSERT_EQ(std::string(), auth_service()->GetAndResetAuthCode());
 
   // Send profile and don't provide a code.
   auth_service()->OnPrimaryUserProfilePrepared(profile());

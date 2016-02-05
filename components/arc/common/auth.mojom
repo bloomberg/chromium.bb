@@ -6,7 +6,10 @@ module arc;
 
 interface AuthHost {
   // Returns an authorization code, which can be used to sign in.
-  GetAuthCode() => (string auth_code);
+  GetAuthCodeDeprecated@0() => (string auth_code);
+  // Returns an authorization code in case is_enforced is set, which can be used
+  // to sign in.
+  [MinVersion=1] GetAuthCode@1() => (string auth_code, bool is_enforced);
 };
 
 interface AuthInstance {
