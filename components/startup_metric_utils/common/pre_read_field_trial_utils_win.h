@@ -22,16 +22,20 @@ using RegisterPreReadSyntheticFieldTrialCallback =
 // The options controlled by the PreRead field trial.
 struct PreReadOptions {
   // Pre-read DLLs explicitly.
-  bool pre_read;
+  bool pre_read : 1;
 
   // Pre-read DLLs with a high thread priority.
-  bool high_priority;
+  bool high_priority : 1;
 
   // Pre-read DLLs using the ::PrefetchVirtualMemory function, if available.
-  bool prefetch_virtual_memory;
+  bool prefetch_virtual_memory : 1;
 
   // Use a /prefetch argument when launching a process.
-  bool use_prefetch_argument;
+  bool use_prefetch_argument : 1;
+
+  // Pre-read chrome_child.dll in the browser process and not in child
+  // processes.
+  bool pre_read_chrome_child_in_browser : 1;
 };
 
 // Initializes DLL pre-reading options from the registry.

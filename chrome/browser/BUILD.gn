@@ -437,6 +437,9 @@ source_set("browser") {
       "//chrome/browser/apps/app_shim",
     ]
   }
+  if (is_win) {
+    deps += [ "//chrome:file_pre_reader" ]
+  }
   if (is_mac || is_android) {
     sources += rebase_path(
             gypi_values.chrome_browser_password_manager_mac_android_sources,

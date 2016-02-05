@@ -5,6 +5,7 @@
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
@@ -34,13 +35,15 @@ const base::char16 kHighPriorityVariationName[] = L"HighPriority";
 const base::char16 kPrefetchVirtualMemoryVariationName[] =
     L"PrefetchVirtualMemory";
 const base::char16 kNoPrefetchArgumentVariationName[] = L"NoPrefetchArgument";
+const base::char16 kPreReadChromeChildInBrowser[] =
+    L"PreReadChromeChildInBrowser";
 
 // Registry key in which the PreRead field trial group is stored.
 const base::char16 kPreReadFieldTrialRegistryKey[] = L"\\PreReadFieldTrial";
 
 // Pre-read options to use for the current process. This is initialized by
 // InitializePreReadOptions().
-PreReadOptions g_pre_read_options = {false, false, false, false};
+PreReadOptions g_pre_read_options = {};
 
 // Returns the registry path in which the PreRead group is stored.
 base::string16 GetPreReadRegistryPath(
@@ -59,6 +62,12 @@ bool ReadBool(const base::win::RegKey& key, const base::char16* name) {
 void InitializePreReadOptions(const base::string16& product_registry_path) {
   DCHECK(!product_registry_path.empty());
 
+#if DCHECK_IS_ON()
+  static bool initialized = false;
+  DCHECK(!initialized);
+  initialized = true;
+#endif  // DCHECK_IS_ON()
+
   // Open the PreRead field trial's registry key.
   const base::string16 registry_path =
       GetPreReadRegistryPath(product_registry_path);
@@ -72,6 +81,8 @@ void InitializePreReadOptions(const base::string16& product_registry_path) {
       ReadBool(key, kPrefetchVirtualMemoryVariationName);
   g_pre_read_options.use_prefetch_argument =
       !ReadBool(key, kNoPrefetchArgumentVariationName);
+  g_pre_read_options.pre_read_chrome_child_in_browser =
+      ReadBool(key, kPreReadChromeChildInBrowser);
 }
 
 PreReadOptions GetPreReadOptions() {

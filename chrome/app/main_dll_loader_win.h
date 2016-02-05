@@ -11,8 +11,11 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
 #include "base/strings/string16.h"
+
+namespace base {
+class FilePath;
+}
 
 // Implements the common aspects of loading the main dll for both chrome and
 // chromium scenarios, which are in charge of implementing two abstract

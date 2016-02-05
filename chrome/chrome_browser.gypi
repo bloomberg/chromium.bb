@@ -3434,6 +3434,11 @@
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
         }],
+        ['OS=="win"', {
+          'dependencies': [
+            'file_pre_reader',
+          ],
+        }],
         ['OS=="mac" or OS=="android"', {
           'sources': [
             '<@(chrome_browser_password_manager_mac_android_sources)',

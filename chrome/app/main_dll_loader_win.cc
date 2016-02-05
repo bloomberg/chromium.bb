@@ -13,6 +13,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -58,11 +59,18 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
-  // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
   const startup_metric_utils::PreReadOptions pre_read_options =
       startup_metric_utils::GetPreReadOptions();
-  if (pre_read_options.pre_read)
+
+  // If enabled by the PreRead field trial, pre-read the binary to avoid a lot
+  // of random IO. Don't pre-read the binary if it is chrome_child.dll and the
+  // |pre_read_chrome_child_in_browser| option is enabled; the binary should
+  // already have been pre-read by the browser process in that case.
+  if (pre_read_options.pre_read &&
+      (!pre_read_options.pre_read_chrome_child_in_browser ||
+       module.BaseName().value() != installer::kChromeChildDll)) {
     PreReadFile(module, pre_read_options);
+  }
 
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
