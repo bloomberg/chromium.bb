@@ -9,6 +9,15 @@
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
   <link rel="import" type="css" href="settings_checkbox.css">
   <template>
+    <style is="custom-style">
+      paper-checkbox {
+        --paper-checkbox-label-spacing: 18px;
+        --paper-checkbox-size: 16px;
+        --paper-checkbox-checked-color: #4285f4;
+        --paper-checkbox-unchecked-color: #969696;
+        -webkit-margin-start: 2px;
+      }
+    </style>
     <cr-events id="events"></cr-events>
     <settings-pref-tracker pref="[[pref]]"></settings-pref-tracker>
 
