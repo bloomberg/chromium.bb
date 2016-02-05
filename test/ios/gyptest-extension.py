@@ -10,11 +10,15 @@ Verifies that ios app extensions are built correctly.
 
 import TestGyp
 import TestMac
+import subprocess
+
+def CheckStrip(p, n_expected):
+  if "ActionViewController" not in subprocess.check_output(['nm','-gU', p]):
+    print "ActionViewController shouldn't get stripped out."
+    test.fail_test()
 
 import sys
 if sys.platform == 'darwin' and TestMac.Xcode.Version()>="0600":
-  print "This test is currently disabled: https://crbug.com/483696."
-  sys.exit(0)
 
   test = TestGyp.TestGyp(formats=['ninja', 'xcode'])
 
@@ -26,6 +30,11 @@ if sys.platform == 'darwin' and TestMac.Xcode.Version()>="0600":
   test.built_file_must_exist(
       'ExtensionContainer.app/PlugIns/ActionExtension.appex',
       chdir='extension')
+
+  path = test.built_file_path(
+      'ExtensionContainer.app/PlugIns/ActionExtension.appex/ActionExtension',
+      chdir='extension')
+  CheckStrip(path, "ActionViewController")
 
   test.pass_test()
 

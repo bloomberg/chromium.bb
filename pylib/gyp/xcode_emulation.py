@@ -938,7 +938,8 @@ class XcodeSettings(object):
         self._Test('STRIP_INSTALLED_PRODUCT', 'YES', default='NO')):
 
       default_strip_style = 'debugging'
-      if self.spec['type'] == 'loadable_module' and self._IsBundle():
+      if ((self.spec['type'] == 'loadable_module' or self._IsIosAppExtension())
+          and self._IsBundle()):
         default_strip_style = 'non-global'
       elif self.spec['type'] == 'executable':
         default_strip_style = 'all'
