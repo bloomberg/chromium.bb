@@ -37,6 +37,8 @@ static const int64_t kMaxRetransmissionTimeMs = 60000;
 static const size_t kMaxRetransmissions = 10;
 // Maximum number of packets retransmitted upon an RTO.
 static const size_t kMaxRetransmissionsOnTimeout = 2;
+// Minimum number of consecutive RTOs before path is considered to be degrading.
+const size_t kMinTimeoutsBeforePathDegrading = 2;
 
 // Ensure the handshake timer isnt't faster than 10ms.
 // This limits the tenth retransmitted packet to 10s after the initial CHLO.
@@ -619,6 +621,10 @@ void QuicSentPacketManager::OnRetransmissionTimeout() {
     case RTO_MODE:
       ++stats_->rto_count;
       RetransmitRtoPackets();
+      if (network_change_visitor_ != nullptr &&
+          consecutive_rto_count_ == kMinTimeoutsBeforePathDegrading) {
+        network_change_visitor_->OnPathDegrading();
+      }
       return;
   }
 }

@@ -102,6 +102,12 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     // Called when RTT may have changed, including when an RTT is read from
     // the config.
     virtual void OnRttChange() = 0;
+
+    // Called with the path may be degrading. Note that the path may only be
+    // temporarily degrading.
+    // TODO(jri): With multipath, this method should probably have a path_id
+    // parameter, and should maybe result in the path being marked as inactive.
+    virtual void OnPathDegrading() = 0;
   };
 
   QuicSentPacketManager(Perspective perspective,

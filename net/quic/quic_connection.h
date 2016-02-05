@@ -132,6 +132,9 @@ class NET_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called when the connection receives a packet from a migrated client.
   virtual void OnConnectionMigration() = 0;
 
+  // Called when the peer seems unreachable over the current path.
+  virtual void OnPathDegrading() = 0;
+
   // Called after OnStreamFrame, OnRstStream, OnGoAway, OnWindowUpdateFrame,
   // OnBlockedFrame, and OnCanWrite to allow post-processing once the work has
   // been done.
@@ -465,6 +468,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // QuicSentPacketManager::NetworkChangeVisitor
   void OnCongestionWindowChange() override;
   void OnRttChange() override;
+  void OnPathDegrading() override;
 
   // Called by the crypto stream when the handshake completes. In the server's
   // case this is when the SHLO has been ACKed. Clients call this on receipt of

@@ -3373,6 +3373,7 @@ TEST_P(QuicConnectionTest, TestRetransmitOrder) {
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(20));
   {
     InSequence s;
+    EXPECT_CALL(visitor_, OnPathDegrading());
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, first_packet_size, _));
     EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, second_packet_size, _));
   }
@@ -5508,6 +5509,30 @@ TEST_P(QuicConnectionTest, BadMultipathFlag) {
                 "Received a packet with multipath flag on when multipath is "
                 "not enabled.");
   EXPECT_FALSE(connection_.connected());
+}
+
+TEST_P(QuicConnectionTest, OnPathDegrading) {
+  QuicByteCount packet_size;
+  const size_t kMinTimeoutsBeforePathDegrading = 2;
+
+  EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _))
+      .WillOnce(DoAll(SaveArg<3>(&packet_size), Return(true)));
+  connection_.SendStreamDataWithString(3, "packet", 0, !kFin, nullptr);
+  for (size_t i = 1; i < kMinTimeoutsBeforePathDegrading; ++i) {
+    clock_.AdvanceTime(QuicTime::Delta::FromSeconds(10 * i));
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, packet_size, _));
+    connection_.GetRetransmissionAlarm()->Fire();
+  }
+  // Next RTO should cause OnPathDegrading to be called before the
+  // retransmission is sent out.
+  clock_.AdvanceTime(
+      QuicTime::Delta::FromSeconds(kMinTimeoutsBeforePathDegrading * 10));
+  {
+    InSequence s;
+    EXPECT_CALL(visitor_, OnPathDegrading());
+    EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, packet_size, _));
+  }
+  connection_.GetRetransmissionAlarm()->Fire();
 }
 
 }  // namespace

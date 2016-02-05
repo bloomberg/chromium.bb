@@ -82,6 +82,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   bool WillingAndAbleToWrite() const override;
   bool HasPendingHandshake() const override;
   bool HasOpenDynamicStreams() const override;
+  void OnPathDegrading() override;
 
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const IPEndPoint& self_address,

@@ -33,6 +33,9 @@ const uint32_t kDefaultLength = 1000;
 // Stream ID for data sent in CreatePacket().
 const QuicStreamId kStreamId = 7;
 
+// Minimum number of consecutive RTOs before path is considered to be degrading.
+const size_t kMinTimeoutsBeforePathDegrading = 2;
+
 // Matcher to check the key of the key-value pair it receives as first argument
 // equals its second argument.
 MATCHER(KeyEq, "") {
@@ -1170,6 +1173,7 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckSecond) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Rto a second time.
+  EXPECT_CALL(*network_change_visitor_, OnPathDegrading());
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(2 * kDefaultLength,
@@ -1203,6 +1207,7 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Rto a second time.
+  EXPECT_CALL(*network_change_visitor_, OnPathDegrading());
   manager_.OnRetransmissionTimeout();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   EXPECT_EQ(2 * kDefaultLength,
@@ -1222,6 +1227,21 @@ TEST_F(QuicSentPacketManagerTest, TwoRetransmissionTimeoutsAckFirst) {
   // The first two packets should still be outstanding.
   EXPECT_EQ(2 * kDefaultLength,
             QuicSentPacketManagerPeer::GetBytesInFlight(&manager_));
+}
+
+TEST_F(QuicSentPacketManagerTest, OnPathDegrading) {
+  SendDataPacket(1);
+  QuicTime::Delta delay = QuicTime::Delta::FromMilliseconds(500);
+  EXPECT_CALL(*send_algorithm_, RetransmissionDelay())
+      .WillRepeatedly(Return(delay));
+  for (size_t i = 1; i < kMinTimeoutsBeforePathDegrading; ++i) {
+    manager_.OnRetransmissionTimeout();
+    RetransmitNextPacket(i + 2);
+  }
+  // Next RTO should cause network_change_visitor_'s OnPathDegrading method
+  // to be called.
+  EXPECT_CALL(*network_change_visitor_, OnPathDegrading());
+  manager_.OnRetransmissionTimeout();
 }
 
 TEST_F(QuicSentPacketManagerTest, GetTransmissionTime) {
@@ -1357,6 +1377,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelayMin) {
 
   // If the delay is smaller than the min, ensure it exponentially backs off
   // from the min.
+  EXPECT_CALL(*network_change_visitor_, OnPathDegrading());
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));
@@ -1381,6 +1402,7 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionDelay) {
       .WillRepeatedly(Return(delay));
 
   // Delay should back off exponentially.
+  EXPECT_CALL(*network_change_visitor_, OnPathDegrading());
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(delay,
               QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_));

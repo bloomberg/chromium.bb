@@ -296,6 +296,7 @@ class MockConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnCanWrite, void());
   MOCK_METHOD1(OnCongestionWindowChange, void(QuicTime now));
   MOCK_METHOD0(OnConnectionMigration, void());
+  MOCK_METHOD0(OnPathDegrading, void());
   MOCK_CONST_METHOD0(WillingAndAbleToWrite, bool());
   MOCK_CONST_METHOD0(HasPendingHandshake, bool());
   MOCK_CONST_METHOD0(HasOpenDynamicStreams, bool());
@@ -697,6 +698,7 @@ class MockNetworkChangeVisitor
 
   MOCK_METHOD0(OnCongestionWindowChange, void());
   MOCK_METHOD0(OnRttChange, void());
+  MOCK_METHOD0(OnPathDegrading, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);

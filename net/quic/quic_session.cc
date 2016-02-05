@@ -132,6 +132,8 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
 void QuicSession::OnSuccessfulVersionNegotiation(
     const QuicVersion& /*version*/) {}
 
+void QuicSession::OnPathDegrading() {}
+
 void QuicSession::OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame) {
   // Stream may be closed by the time we receive a WINDOW_UPDATE, so we can't
   // assume that it still exists.

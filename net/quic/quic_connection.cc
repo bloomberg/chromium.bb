@@ -1803,6 +1803,10 @@ void QuicConnection::OnRttChange() {
   packet_generator_.OnRttChange(rtt);
 }
 
+void QuicConnection::OnPathDegrading() {
+  visitor_->OnPathDegrading();
+}
+
 void QuicConnection::OnHandshakeComplete() {
   sent_packet_manager_.SetHandshakeConfirmed();
   // The client should immediately ack the SHLO to confirm the handshake is
