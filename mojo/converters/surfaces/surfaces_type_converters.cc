@@ -245,9 +245,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           yuv_state->y_plane_resource_id, yuv_state->u_plane_resource_id,
           yuv_state->v_plane_resource_id, yuv_state->a_plane_resource_id,
           static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-              yuv_state->color_space),
-          yuv_state->resource_offset,
-          yuv_state->resource_multiplier);
+              yuv_state->color_space));
       break;
     }
     default:
@@ -413,8 +411,6 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       yuv_state->a_plane_resource_id = yuv_quad->a_plane_resource_id();
       yuv_state->color_space =
           static_cast<YUVColorSpace>(yuv_quad->color_space);
-      yuv_state->resource_offset = yuv_quad->resource_offset;
-      yuv_state->resource_multiplier = yuv_quad->resource_multiplier;
       quad->yuv_video_quad_state = std::move(yuv_state);
       break;
     }

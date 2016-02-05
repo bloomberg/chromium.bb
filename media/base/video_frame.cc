@@ -112,13 +112,9 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
     case VideoFrame::kVPlane:
       switch (format) {
         case PIXEL_FORMAT_YV24:
-        case PIXEL_FORMAT_YUV444P9:
-        case PIXEL_FORMAT_YUV444P10:
           return gfx::Size(1, 1);
 
         case PIXEL_FORMAT_YV16:
-        case PIXEL_FORMAT_YUV422P9:
-        case PIXEL_FORMAT_YUV422P10:
           return gfx::Size(2, 1);
 
         case PIXEL_FORMAT_YV12:
@@ -127,8 +123,6 @@ static gfx::Size SampleSize(VideoPixelFormat format, size_t plane) {
         case PIXEL_FORMAT_NV12:
         case PIXEL_FORMAT_NV21:
         case PIXEL_FORMAT_MT21:
-        case PIXEL_FORMAT_YUV420P9:
-        case PIXEL_FORMAT_YUV420P10:
           return gfx::Size(2, 2);
 
         case PIXEL_FORMAT_UNKNOWN:
@@ -171,12 +165,6 @@ static int BytesPerElement(VideoPixelFormat format, size_t plane) {
       return 3;
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_YUY2:
-    case PIXEL_FORMAT_YUV420P9:
-    case PIXEL_FORMAT_YUV422P9:
-    case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV420P10:
-    case PIXEL_FORMAT_YUV422P10:
-    case PIXEL_FORMAT_YUV444P10:
       return 2;
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21:
@@ -226,7 +214,7 @@ bool VideoFrame::IsValidConfig(VideoPixelFormat format,
     return true;
 
   // Make sure new formats are properly accounted for in the method.
-  static_assert(PIXEL_FORMAT_MAX == 21,
+  static_assert(PIXEL_FORMAT_MAX == 15,
                 "Added pixel format, please review IsValidConfig()");
 
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -629,12 +617,6 @@ size_t VideoFrame::NumPlanes(VideoPixelFormat format) {
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_YV16:
     case PIXEL_FORMAT_YV24:
-    case PIXEL_FORMAT_YUV420P9:
-    case PIXEL_FORMAT_YUV422P9:
-    case PIXEL_FORMAT_YUV444P9:
-    case PIXEL_FORMAT_YUV420P10:
-    case PIXEL_FORMAT_YUV422P10:
-    case PIXEL_FORMAT_YUV444P10:
       return 3;
     case PIXEL_FORMAT_YV12A:
       return 4;

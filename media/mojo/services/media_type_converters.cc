@@ -154,24 +154,6 @@ ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB24, VideoFormat::RGB24);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB32, VideoFormat::RGB32);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MJPEG, VideoFormat::MJPEG);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MT21, VideoFormat::MT21);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV420P9,
-                   VideoFormat::YUV420P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV422P9,
-                   VideoFormat::YUV422P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV444P9,
-                   VideoFormat::YUV444P9);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV420P10,
-                   VideoFormat::YUV420P10);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV422P10,
-                   VideoFormat::YUV422P10);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
-                   PIXEL_FORMAT_YUV444P10,
-                   VideoFormat::YUV444P10);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VideoFormat::FORMAT_MAX);
 
 // ColorSpace.

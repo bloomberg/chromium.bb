@@ -46,17 +46,9 @@ enum VideoPixelFormat {
   // Row pitch = ((width+15)/16) * 16.
   // Plane size = Row pitch * (((height+31)/32)*32)
   PIXEL_FORMAT_MT21 = 15,
-
-  PIXEL_FORMAT_YUV420P9 = 16,
-  PIXEL_FORMAT_YUV420P10 = 17,
-  PIXEL_FORMAT_YUV422P9 = 18,
-  PIXEL_FORMAT_YUV422P10 = 19,
-  PIXEL_FORMAT_YUV444P9 = 20,
-  PIXEL_FORMAT_YUV444P10 = 21,
-
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
-      PIXEL_FORMAT_YUV444P10,  // Must always be equal to largest entry logged.
+      PIXEL_FORMAT_MT21,    // Must always be equal to largest entry logged.
 };
 
 // Color space or color range used for the pixels.

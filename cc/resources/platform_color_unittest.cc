@@ -34,7 +34,6 @@ TEST(PlatformColorTest, SameComponentOrder) {
       case RGB_565:
       case ETC1:
       case RED_8:
-      case LUMINANCE_F16:
         EXPECT_FALSE(PlatformColor::SameComponentOrder(format));
         break;
     }

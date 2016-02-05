@@ -347,9 +347,6 @@ class TestWebGraphicsContext3D {
   void set_support_texture_rectangle(bool support) {
     test_capabilities_.gpu.texture_rectangle = support;
   }
-  void set_support_texture_half_float_linear(bool support) {
-    test_capabilities_.gpu.texture_half_float_linear = support;
-  }
 
   // When this context is lost, all contexts in its share group are also lost.
   void add_share_group_context(TestWebGraphicsContext3D* context3d) {

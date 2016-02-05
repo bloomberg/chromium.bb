@@ -119,8 +119,6 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         external_resources.software_release_callback;
     return true;
   }
-  frame_resource_offset_ = external_resources.offset;
-  frame_resource_multiplier_ = external_resources.multiplier;
 
   DCHECK_EQ(external_resources.mailboxes.size(),
             external_resources.release_callbacks.size());
@@ -279,8 +277,8 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
           ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size, uv_tex_size,
           frame_resources_[0].id, frame_resources_[1].id,
           frame_resources_[2].id,
-          frame_resources_.size() > 3 ? frame_resources_[3].id : 0, color_space,
-          frame_resource_offset_, frame_resource_multiplier_);
+          frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
+          color_space);
       ValidateQuadResources(yuv_video_quad);
       break;
     }

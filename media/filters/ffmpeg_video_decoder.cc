@@ -94,10 +94,7 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   if (format == PIXEL_FORMAT_UNKNOWN)
     return AVERROR(EINVAL);
   DCHECK(format == PIXEL_FORMAT_YV12 || format == PIXEL_FORMAT_YV16 ||
-         format == PIXEL_FORMAT_YV24 || format == PIXEL_FORMAT_YUV420P9 ||
-         format == PIXEL_FORMAT_YUV420P10 || format == PIXEL_FORMAT_YUV422P9 ||
-         format == PIXEL_FORMAT_YUV422P10 || format == PIXEL_FORMAT_YUV444P9 ||
-         format == PIXEL_FORMAT_YUV444P10);
+         format == PIXEL_FORMAT_YV24);
 
   gfx::Size size(codec_context->width, codec_context->height);
   const int ret = av_image_check_size(size.width(), size.height(), 0, NULL);

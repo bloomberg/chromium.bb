@@ -27,9 +27,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
                               unsigned a_plane_resource_id,
-                              ColorSpace color_space,
-                              float offset,
-                              float multiplier) {
+                              ColorSpace color_space) {
   bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
@@ -43,8 +41,6 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
   resources.count = a_plane_resource_id ? 4 : 3;
   this->color_space = color_space;
-  this->resource_offset = offset;
-  this->resource_multiplier = multiplier;
 }
 
 void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
@@ -60,9 +56,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               unsigned u_plane_resource_id,
                               unsigned v_plane_resource_id,
                               unsigned a_plane_resource_id,
-                              ColorSpace color_space,
-                              float offset,
-                              float multiplier) {
+                              ColorSpace color_space) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
@@ -75,8 +69,6 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   resources.ids[kAPlaneResourceIdIndex] = a_plane_resource_id;
   resources.count = resources.ids[kAPlaneResourceIdIndex] ? 4 : 3;
   this->color_space = color_space;
-  this->resource_offset = offset;
-  this->resource_multiplier = multiplier;
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(

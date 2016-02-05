@@ -94,10 +94,6 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     output_surface3d_ = FakeOutputSurface::Create3d(std::move(context3d));
     CHECK(output_surface3d_->BindToClient(&client_));
-  }
-
-  void SetUp() override {
-    testing::Test::SetUp();
 
     output_surface_software_ = FakeOutputSurface::CreateSoftware(
         make_scoped_ptr(new SoftwareOutputDevice));
@@ -131,43 +127,6 @@ class VideoResourceUpdaterTest : public testing::Test {
             u_data,                    // u_data
             v_data,                    // v_data
             base::TimeDelta());        // timestamp
-    EXPECT_TRUE(video_frame);
-    return video_frame;
-  }
-
-  scoped_refptr<media::VideoFrame> CreateWonkyTestYUVVideoFrame() {
-    const int kDimension = 10;
-    const int kYWidth = kDimension + 5;
-    const int kUWidth = (kYWidth + 1) / 2 + 200;
-    const int kVWidth = (kYWidth + 1) / 2 + 1;
-    static uint8_t y_data[kYWidth * kDimension] = {0};
-    static uint8_t u_data[kUWidth * kDimension] = {0};
-    static uint8_t v_data[kVWidth * kDimension] = {0};
-
-    scoped_refptr<media::VideoFrame> video_frame =
-        media::VideoFrame::WrapExternalYuvData(
-            media::PIXEL_FORMAT_YV16,                 // format
-            gfx::Size(kYWidth, kDimension),           // coded_size
-            gfx::Rect(2, 0, kDimension, kDimension),  // visible_rect
-            gfx::Size(kDimension, kDimension),        // natural_size
-            -kYWidth,                                 // y_stride (negative)
-            kUWidth,                                  // u_stride
-            kVWidth,                                  // v_stride
-            y_data + kYWidth * (kDimension - 1),      // y_data
-            u_data,                                   // u_data
-            v_data,                                   // v_data
-            base::TimeDelta());                       // timestamp
-    EXPECT_TRUE(video_frame);
-    return video_frame;
-  }
-
-  scoped_refptr<media::VideoFrame> CreateTestHighBitFrame() {
-    const int kDimension = 10;
-    gfx::Size size(kDimension, kDimension);
-
-    scoped_refptr<media::VideoFrame> video_frame(media::VideoFrame::CreateFrame(
-        media::PIXEL_FORMAT_YUV420P10, size, gfx::Rect(size), size,
-        base::TimeDelta()));
     EXPECT_TRUE(video_frame);
     return video_frame;
   }
@@ -256,61 +215,6 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
   VideoFrameExternalResources resources =
       updater.CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
-}
-
-TEST_F(VideoResourceUpdaterTest, HighBitFrameNoF16) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
-                               resource_provider3d_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
-}
-
-class VideoResourceUpdaterTestWithF16 : public VideoResourceUpdaterTest {
- public:
-  VideoResourceUpdaterTestWithF16() : VideoResourceUpdaterTest() {
-    context3d_->set_support_texture_half_float_linear(true);
-  }
-};
-
-TEST_F(VideoResourceUpdaterTestWithF16, HighBitFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
-                               resource_provider3d_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
-}
-
-TEST_F(VideoResourceUpdaterTest, HighBitFrameSoftwareCompositor) {
-  VideoResourceUpdater updater(nullptr, resource_provider_software_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateTestHighBitFrame();
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
-}
-
-TEST_F(VideoResourceUpdaterTest, WonkySoftwareFrame) {
-  VideoResourceUpdater updater(output_surface3d_->context_provider(),
-                               resource_provider3d_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateWonkyTestYUVVideoFrame();
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
-}
-
-TEST_F(VideoResourceUpdaterTest, WonkySoftwareFrameSoftwareCompositor) {
-  VideoResourceUpdater updater(nullptr, resource_provider_software_.get());
-  scoped_refptr<media::VideoFrame> video_frame = CreateWonkyTestYUVVideoFrame();
-
-  VideoFrameExternalResources resources =
-      updater.CreateExternalResourcesFromVideoFrame(video_frame);
-  EXPECT_EQ(VideoFrameExternalResources::SOFTWARE_RESOURCE, resources.type);
 }
 
 TEST_F(VideoResourceUpdaterTest, ReuseResource) {
@@ -501,6 +405,5 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_StreamTexture) {
   // that extension is supported.
   EXPECT_FALSE(context3d_->WasImmutableTextureCreated());
 }
-
 }  // namespace
 }  // namespace cc

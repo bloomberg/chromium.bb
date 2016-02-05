@@ -106,8 +106,6 @@ struct YUVVideoQuadState {
   uint32 v_plane_resource_id;
   uint32 a_plane_resource_id;
   YUVColorSpace color_space;
-  float resource_offset;
-  float resource_multiplier;
 };
 
 enum Material {

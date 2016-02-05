@@ -27,8 +27,7 @@ enum ResourceFormat {
   RGB_565,
   ETC1,
   RED_8,
-  LUMINANCE_F16,
-  RESOURCE_FORMAT_MAX = LUMINANCE_F16,
+  RESOURCE_FORMAT_MAX = RED_8,
 };
 
 SkColorType ResourceFormatToSkColorType(ResourceFormat format);
