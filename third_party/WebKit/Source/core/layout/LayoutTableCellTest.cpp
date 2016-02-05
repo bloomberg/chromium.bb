@@ -60,9 +60,7 @@ TEST_F(LayoutTableCellDeathTest, CanSetColumnToMaxColumnIndex)
     EXPECT_EQ(maxColumnIndex, m_cell->col());
 }
 
-// FIXME: Re-enable these tests once ASSERT_DEATH is supported for Android.
-// See: https://bugs.webkit.org/show_bug.cgi?id=74089
-#if !OS(ANDROID)
+#if GTEST_HAS_DEATH_TEST
 
 TEST_F(LayoutTableCellDeathTest, CrashIfColumnOverflowOnSetting)
 {
@@ -74,7 +72,7 @@ TEST_F(LayoutTableCellDeathTest, CrashIfSettingUnsetColumnIndex)
     ASSERT_DEATH(m_cell->setCol(unsetColumnIndex), "");
 }
 
-#endif
+#endif // GTEST_HAS_DEATH_TEST
 
 using LayoutTableCellTest = RenderingTest;
 
