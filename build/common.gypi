@@ -2292,6 +2292,10 @@
       # TODO(rnk): Kill off variables that no one else uses and just implement
       # them under a build_for_tool== condition.
       ['build_for_tool=="memcheck" or build_for_tool=="tsan"', {
+
+        # tcmalloc causes Valgrind failures. Discussion in crrev.com/1642383002.
+        'use_allocator%': 'none',
+
         # gcc flags
         'mac_debug_optimization': '1',
         'mac_release_optimization': '1',
