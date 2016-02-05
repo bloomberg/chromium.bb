@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -195,13 +196,20 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         AccountManagerHelper.get(context).getGoogleAccountNames(new Callback<List<String>>() {
             @Override
             public void onResult(List<String> accountNames) {
+                FragmentManager fragmentManager = getFragmentManager();
+                if (fragmentManager == null) {
+                    // Preferences were closed since the click happened; abort.
+                    callback.onResult(null);
+                    return;
+                }
+
                 if (!accountNames.isEmpty()) {
-                    if (getFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
+                    if (fragmentManager.findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) {
                         callback.onResult(null);
                     } else {
                         ChooseAccountFragment chooserFragment =
                                 new ChooseAccountFragment(accountNames);
-                        chooserFragment.show(getFragmentManager(), ACCOUNT_PICKER_DIALOG_TAG);
+                        chooserFragment.show(fragmentManager, ACCOUNT_PICKER_DIALOG_TAG);
                         callback.onResult(chooserFragment);
                         SigninManager.logSigninStartAccessPoint(SigninAccessPoint.SETTINGS);
                     }
@@ -215,7 +223,7 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
                                     MainPreferences.this, AccountAdder.ADD_ACCOUNT_RESULT);
                         }
                     });
-                    dialog.show(getFragmentManager(), null);
+                    dialog.show(fragmentManager, null);
                     callback.onResult(dialog);
                 }
             }
