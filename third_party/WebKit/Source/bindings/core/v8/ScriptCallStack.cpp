@@ -35,6 +35,7 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8StackTrace.h"
+#include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
 
 namespace blink {
@@ -55,6 +56,7 @@ PassRefPtr<ScriptCallStack> ScriptCallStack::capture(size_t maxStackSize)
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     if (!data->threadDebugger())
         return nullptr;
+    ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     OwnPtr<V8StackTrace> stack = data->threadDebugger()->debugger()->captureStackTrace(maxStackSize);
     return stack ? adoptRef(new ScriptCallStack(stack.release())) : nullptr;
 }
