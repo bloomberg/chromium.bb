@@ -66,6 +66,8 @@ class VideoDecoder::ImplBase
     const scoped_refptr<VideoFrame> decoded_frame = Decode(
         encoded_frame->mutable_bytes(),
         static_cast<int>(encoded_frame->data.size()));
+    decoded_frame->set_timestamp(
+        encoded_frame->rtp_timestamp.ToTimeDelta(kVideoFrequency));
 
     scoped_ptr<FrameEvent> decode_event(new FrameEvent());
     decode_event->timestamp = cast_environment_->Clock()->NowTicks();
