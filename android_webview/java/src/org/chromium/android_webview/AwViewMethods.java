@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -47,6 +48,11 @@ interface AwViewMethods {
      * @see android.view.View#onCreateInputConnection
      */
     InputConnection onCreateInputConnection(EditorInfo outAttrs);
+
+    /**
+     * @see android.view.View#onDragEvent
+     */
+    boolean onDragEvent(DragEvent event);
 
     /**
      * @see android.view.View#onKeyUp

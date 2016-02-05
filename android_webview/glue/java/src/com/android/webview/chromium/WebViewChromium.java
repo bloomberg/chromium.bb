@@ -25,6 +25,7 @@ import android.os.Looper;
 import android.os.Message;
 import android.print.PrintDocumentAdapter;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1792,6 +1793,22 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             return;
         }
         mAwContents.onConfigurationChanged(newConfig);
+    }
+
+    //TODO(hush): add override after release.
+    //@Override
+    public boolean onDragEvent(final DragEvent event) {
+        mFactory.startYourEngines(false);
+        if (checkNeedsPost()) {
+            boolean ret = runOnUiThreadBlocking(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return onDragEvent(event);
+                }
+            });
+            return ret;
+        }
+        return mAwContents.onDragEvent(event);
     }
 
     @Override

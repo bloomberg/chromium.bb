@@ -27,6 +27,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Pair;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -1840,6 +1841,13 @@ public class AwContents implements SmartClipProvider,
     }
 
     /**
+     * @see android.webkit.WebView#onDragEvent(DragEvent)
+     */
+    public boolean onDragEvent(DragEvent event) {
+        return mAwViewMethods.onDragEvent(event);
+    }
+
+    /**
      * @see android.webkit.WebView#onKeyUp(int, KeyEvent)
      */
     public boolean onKeyUp(int keyCode, KeyEvent event) {
@@ -2962,6 +2970,12 @@ public class AwContents implements SmartClipProvider,
         @Override
         public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
             return isDestroyed(NO_WARN) ? null : mContentViewCore.onCreateInputConnection(outAttrs);
+        }
+
+        @Override
+        public boolean onDragEvent(DragEvent event) {
+            // TODO(hush): implement this. crbug.com/584789
+            return false;
         }
 
         @Override

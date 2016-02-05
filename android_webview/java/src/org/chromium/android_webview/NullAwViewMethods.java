@@ -8,6 +8,7 @@ import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -63,6 +64,10 @@ class NullAwViewMethods implements AwViewMethods {
         return null; // Intentional no-op.
     }
 
+    @Override
+    public boolean onDragEvent(DragEvent event) {
+        return false; // Intentional no-op.
+    }
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return false; // Intentional no-op.

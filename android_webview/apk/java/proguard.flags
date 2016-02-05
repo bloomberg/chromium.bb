@@ -85,9 +85,10 @@
   public static boolean dumpWithoutCrashing(...);
 }
 
-#TODO(hush): remove after N release. crbug.com/543272
+#TODO(hush): remove after N release. crbug.com/543272, crbug.com/584789
 -keep class com.android.webview.chromium.WebViewChromium {
   public void onActivityResult(int,int,android.content.Intent);
+  public boolean onDragEvent(android.view.DragEvent);
 }
 
 #TODO(hush): remove after N release. crbug.com/546762
