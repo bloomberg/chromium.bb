@@ -21,7 +21,6 @@
 #include "core/svg/SVGCursorElement.h"
 
 #include "core/SVGNames.h"
-#include "core/XLinkNames.h"
 
 namespace blink {
 

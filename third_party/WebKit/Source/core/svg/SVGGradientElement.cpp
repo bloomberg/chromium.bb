@@ -21,7 +21,6 @@
 
 #include "core/svg/SVGGradientElement.h"
 
-#include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"

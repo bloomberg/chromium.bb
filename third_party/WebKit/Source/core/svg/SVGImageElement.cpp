@@ -22,7 +22,6 @@
 #include "core/svg/SVGImageElement.h"
 
 #include "core/CSSPropertyNames.h"
-#include "core/XLinkNames.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
 

@@ -22,7 +22,6 @@
 
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
-#include "core/XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/ScriptRunner.h"

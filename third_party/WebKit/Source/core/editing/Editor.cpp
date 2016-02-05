@@ -30,7 +30,6 @@
 #include "core/CSSPropertyNames.h"
 #include "core/EventNames.h"
 #include "core/HTMLNames.h"
-#include "core/XLinkNames.h"
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/clipboard/Pasteboard.h"
@@ -459,7 +458,7 @@ static void writeImageNodeToPasteboard(Pasteboard* pasteboard, Node* node, const
     if (isHTMLImageElement(*node) || isHTMLInputElement(*node))
         urlString = toHTMLElement(node)->getAttribute(srcAttr);
     else if (isSVGImageElement(*node))
-        urlString = toSVGElement(node)->getAttribute(XLinkNames::hrefAttr);
+        urlString = toSVGElement(node)->imageSourceURL();
     else if (isHTMLEmbedElement(*node) || isHTMLObjectElement(*node) || isHTMLCanvasElement(*node))
         urlString = toHTMLElement(node)->imageSourceURL();
     KURL url = urlString.isEmpty() ? KURL() : node->document().completeURL(stripLeadingAndTrailingHTMLSpaces(urlString));

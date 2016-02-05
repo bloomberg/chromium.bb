@@ -23,7 +23,6 @@
 
 #include "core/svg/SVGFilterElement.h"
 
-#include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/svg/SVGParserUtilities.h"

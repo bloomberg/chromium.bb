@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGForeignObjectElement.h"
 
-#include "core/XLinkNames.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/svg/LayoutSVGForeignObject.h"
 #include "core/svg/SVGLength.h"

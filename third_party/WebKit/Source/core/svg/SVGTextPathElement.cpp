@@ -20,7 +20,6 @@
 
 #include "core/svg/SVGTextPathElement.h"
 
-#include "core/XLinkNames.h"
 #include "core/layout/svg/LayoutSVGTextPath.h"
 #include "core/svg/SVGDocumentExtensions.h"
 
