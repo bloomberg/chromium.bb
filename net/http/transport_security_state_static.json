@@ -3998,7 +3998,6 @@
     { "name": "moparisthebest.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "moparscape.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "my-pawnshop.com.ua", "include_subdomains": true, "mode": "force-https" },
-    { "name": "myfrm.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "mygov.scot", "include_subdomains": true, "mode": "force-https" },
     { "name": "nagb.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "nagb.org", "include_subdomains": true, "mode": "force-https" },
