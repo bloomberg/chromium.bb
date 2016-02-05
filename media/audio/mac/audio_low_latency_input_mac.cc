@@ -114,13 +114,13 @@ AUAudioInputStream::~AUAudioInputStream() {
 bool AUAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Open";
-  // Verify that we are not already opened.
-  if (audio_unit_)
-    return false;
+  DCHECK(!audio_unit_);
 
-  // Verify that we have a valid device.
+  // Verify that we have a valid device. Send appropriate error code to
+  // HandleError() to ensure that the error type is added to UMA stats.
   if (input_device_id_ == kAudioObjectUnknown) {
     NOTREACHED() << "Device ID is unknown";
+    HandleError(kAudioUnitErr_InvalidElement);
     return false;
   }
 
@@ -136,6 +136,7 @@ bool AUAudioInputStream::Open() {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.InputInvalidSampleRateMac", sample_rate);
     NOTREACHED() << "Requested sample-rate: " << format_.mSampleRate
                  << " must match the hardware sample-rate: " << sample_rate;
+    HandleError(kAudioUnitErr_InvalidParameter);
     return false;
   }
 
@@ -154,8 +155,13 @@ bool AUAudioInputStream::Open() {
       0
   };
 
+  // Find a component that meets the description in |desc|.
   AudioComponent comp = AudioComponentFindNext(nullptr, &desc);
   DCHECK(comp);
+  if (!comp) {
+    HandleError(kAudioUnitErr_NoConnection);
+    return false;
+  }
 
   // Get access to the service provided by the specified Audio Unit.
   OSStatus result = AudioComponentInstanceNew(comp, &audio_unit_);

@@ -191,9 +191,7 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamMiscCallingSequences) {
   AudioInputStream* ais = CreateDefaultAudioInputStream();
   AUAudioInputStream* auais = static_cast<AUAudioInputStream*>(ais);
 
-  // Open(), Open() should fail the second time.
   EXPECT_TRUE(ais->Open());
-  EXPECT_FALSE(ais->Open());
 
   MockAudioInputCallback sink;
 
