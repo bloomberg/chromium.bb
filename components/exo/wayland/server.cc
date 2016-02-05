@@ -89,6 +89,11 @@ void buffer_destroy(wl_client* client, wl_resource* resource) {
 
 const struct wl_buffer_interface buffer_implementation = {buffer_destroy};
 
+void HandleBufferReleaseCallback(wl_resource* resource) {
+  wl_buffer_send_release(resource);
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // wl_surface_interface:
 
@@ -348,8 +353,8 @@ void shm_pool_create_buffer(wl_client* client,
     return;
   }
 
-  buffer->set_release_callback(
-      base::Bind(&wl_buffer_send_release, base::Unretained(buffer_resource)));
+  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
+                                          base::Unretained(buffer_resource)));
 
   SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 }
@@ -496,8 +501,8 @@ void drm_create_prime_buffer(wl_client* client,
     return;
   }
 
-  buffer->set_release_callback(
-      base::Bind(&wl_buffer_send_release, base::Unretained(buffer_resource)));
+  buffer->set_release_callback(base::Bind(&HandleBufferReleaseCallback,
+                                          base::Unretained(buffer_resource)));
 
   SetImplementation(buffer_resource, &buffer_implementation, std::move(buffer));
 }
@@ -706,6 +711,7 @@ void HandleShellSurfaceConfigureCallback(wl_resource* resource,
                                          bool activated) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
+  wl_client_flush(wl_resource_get_client(resource));
 }
 
 void shell_get_shell_surface(wl_client* client,
@@ -927,6 +933,11 @@ void xdg_shell_use_unstable_version(wl_client* client,
   }
 }
 
+void HandleXdgSurfaceCloseCallback(wl_resource* resource) {
+  xdg_surface_send_close(resource);
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
 void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
                                        const gfx::Size& size,
                                        ash::wm::WindowStateType state_type,
@@ -955,6 +966,7 @@ void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
   xdg_surface_send_configure(resource, size.width(), size.height(), &states,
                              wl_display_next_serial(wl_client_get_display(
                                  wl_resource_get_client(resource))));
+  wl_client_flush(wl_resource_get_client(resource));
   wl_array_release(&states);
 }
 
@@ -978,7 +990,7 @@ void xdg_shell_get_xdg_surface(wl_client* client,
   }
 
   shell_surface->set_close_callback(base::Bind(
-      &xdg_surface_send_close, base::Unretained(xdg_surface_resource)));
+      &HandleXdgSurfaceCloseCallback, base::Unretained(xdg_surface_resource)));
 
   shell_surface->set_configure_callback(
       base::Bind(&HandleXdgSurfaceConfigureCallback,
