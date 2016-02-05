@@ -141,17 +141,11 @@ void CoreInitializer::init()
     ScriptStreamerThread::init();
 }
 
-void CoreInitializer::terminateThreads()
+void CoreInitializer::shutdown()
 {
     // Make sure we stop the HTMLParserThread before Platform::current() is
     // cleared.
     HTMLParserThread::shutdown();
-
-    WorkerThread::terminateAndWaitForAllWorkers();
-}
-
-void CoreInitializer::shutdown()
-{
 }
 
 } // namespace blink
