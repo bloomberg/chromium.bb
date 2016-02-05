@@ -470,15 +470,38 @@ void BlinkTestController::PluginCrashed(const base::FilePath& plugin_path,
                  base::Unretained(this)));
 }
 
-void BlinkTestController::RenderViewCreated(RenderViewHost* render_view_host) {
+void BlinkTestController::RenderFrameCreated(
+    RenderFrameHost* render_frame_host) {
   DCHECK(CalledOnValidThread());
+
+  // Ignore hosts created for frames other than the main / top-level frame.
+  if (render_frame_host->GetParent() != nullptr)
+    return;
+
   // Might be kNullProcessHandle, in which case we will receive a notification
   // later when the RenderProcessHost was created.
-  if (render_view_host->GetProcess()->GetHandle() != base::kNullProcessHandle)
-    current_pid_ = base::GetProcId(render_view_host->GetProcess()->GetHandle());
+  base::ProcessHandle handle = render_frame_host->GetProcess()->GetHandle();
+  if (handle != base::kNullProcessHandle)
+    current_pid_ = base::GetProcId(handle);
+
   if (!send_configuration_to_next_host_)
     return;
   send_configuration_to_next_host_ = false;
+  SendTestConfiguration();
+}
+
+void BlinkTestController::RenderFrameHostChanged(RenderFrameHost* old_host,
+                                                 RenderFrameHost* new_host) {
+  DCHECK(CalledOnValidThread());
+
+  // Ignore host changes for frames other than the main / top-level frame.
+  if (new_host->GetParent() != nullptr)
+    return;
+
+  base::ProcessHandle process_handle = new_host->GetProcess()->GetHandle();
+  DCHECK(process_handle != base::kNullProcessHandle);
+  current_pid_ = base::GetProcId(process_handle);
+
   SendTestConfiguration();
 }
 

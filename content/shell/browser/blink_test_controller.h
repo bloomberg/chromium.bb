@@ -151,7 +151,9 @@ class BlinkTestController : public base::NonThreadSafe,
                          RenderFrameHost* render_frame_host) override;
   void PluginCrashed(const base::FilePath& plugin_path,
                      base::ProcessId plugin_pid) override;
-  void RenderViewCreated(RenderViewHost* render_view_host) override;
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
 
