@@ -180,8 +180,9 @@ static IMFSample* CreateEmptySample() {
 
 // Creates a Media Foundation sample with one buffer of length |buffer_length|
 // on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
-static IMFSample* CreateEmptySampleWithBuffer(int buffer_length, int align) {
-  CHECK_GT(buffer_length, 0);
+static IMFSample* CreateEmptySampleWithBuffer(uint32_t buffer_length,
+                                              int align) {
+  CHECK_GT(buffer_length, 0U);
 
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateEmptySample());
@@ -212,11 +213,11 @@ static IMFSample* CreateEmptySampleWithBuffer(int buffer_length, int align) {
 // |min_size| specifies the minimum size of the buffer (might be required by
 // the decoder for input). If no alignment is required, provide 0.
 static IMFSample* CreateInputSample(const uint8_t* stream,
-                                    int size,
-                                    int min_size,
+                                    uint32_t size,
+                                    uint32_t min_size,
                                     int alignment) {
   CHECK(stream);
-  CHECK_GT(size, 0);
+  CHECK_GT(size, 0U);
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateEmptySampleWithBuffer(std::max(min_size, size),
                                             alignment));
@@ -233,28 +234,31 @@ static IMFSample* CreateInputSample(const uint8_t* stream,
   RETURN_ON_HR_FAILURE(hr, "Failed to lock buffer", NULL);
 
   CHECK_EQ(current_length, 0u);
-  CHECK_GE(static_cast<int>(max_length), size);
+  CHECK_GE(max_length, size);
   memcpy(destination, stream, size);
-
-  hr = buffer->Unlock();
-  RETURN_ON_HR_FAILURE(hr, "Failed to unlock buffer", NULL);
 
   hr = buffer->SetCurrentLength(size);
   RETURN_ON_HR_FAILURE(hr, "Failed to set buffer length", NULL);
+
+  hr = buffer->Unlock();
+  RETURN_ON_HR_FAILURE(hr, "Failed to unlock buffer", NULL);
 
   return sample.Detach();
 }
 
 static IMFSample* CreateSampleFromInputBuffer(
     const media::BitstreamBuffer& bitstream_buffer,
-    DWORD stream_size,
+    uint32_t stream_size,
     DWORD alignment) {
   base::SharedMemory shm(bitstream_buffer.handle(), true);
   RETURN_ON_FAILURE(shm.Map(bitstream_buffer.size()),
                     "Failed in base::SharedMemory::Map", NULL);
 
   return CreateInputSample(reinterpret_cast<const uint8_t*>(shm.memory()),
-                           bitstream_buffer.size(), stream_size, alignment);
+                           bitstream_buffer.size(),
+                           std::min<uint32_t>(bitstream_buffer.size(),
+                                              stream_size),
+                           alignment);
 }
 
 // Helper function to create a COM object instance from a DLL. The alternative
