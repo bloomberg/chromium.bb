@@ -40,6 +40,7 @@ def CleanupLeftoverProcesses(devices):
   device_utils.RestartServer()
 
   def cleanup_device(d):
+    d.WaitUntilFullyBooted()
     d.RestartAdbd()
     try:
       d.EnableRoot()
