@@ -8,13 +8,20 @@
   ],
   'variables': {
     'variables': {
+      'mojom_typemap_dependencies%': [],
+      'mojom_typemaps%': [],
       'mojom_variant%': 'none',
     },
+    'mojom_typemap_dependencies%': ['<@(mojom_typemap_dependencies)'],
+    'mojom_typemaps%': ['<@(mojom_typemaps)'],
     'mojom_variant%': '<(mojom_variant)',
     'mojom_base_output_dir':
         '<!(python <(DEPTH)/build/inverse_depth.py <(DEPTH))',
     'mojom_generated_outputs': [
       '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_list_outputs.py --basedir <(mojom_base_output_dir) --variant <(mojom_variant) <@(_sources))',
+    ],
+    'mojom_generator_typemap_args': [
+      '<!@(python <(DEPTH)/mojo/public/tools/bindings/mojom_get_generator_typemap_args.py <@(mojom_typemaps))',
     ],
     'mojom_extra_generator_args%': [],
     'conditions': [
@@ -51,11 +58,13 @@
         'java_out_dir': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/src',
         'mojom_import_args%': [
          '-I<(DEPTH)',
+         '-I<(DEPTH)/mojo/services',
         ],
         'stamp_filename': '<(PRODUCT_DIR)/java_mojo/<(_target_name)/<(_target_name).stamp',
       },
       'inputs': [
         '<@(mojom_bindings_generator_sources)',
+        '<@(mojom_typemaps)',
         '<(stamp_filename)',
         '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/cpp_templates.zip',
         '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/java_templates.zip',
@@ -87,6 +96,7 @@
         '--java_output_directory=<(java_out_dir)',
         '--variant', '<(mojom_variant)',
         '-g', '<(mojom_output_languages)',
+        '<@(mojom_generator_typemap_args)',
         '<@(mojom_extra_generator_args)',
         '--bytecode_path',
         '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings',
@@ -99,6 +109,10 @@
     '<(DEPTH)/base/base.gyp:base',
     '<(DEPTH)/mojo/public/tools/bindings/bindings.gyp:precompile_mojom_bindings_generator_templates',
     '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_interface_bindings_generation',
+    '<@(mojom_typemap_dependencies)',
+  ],
+  'export_dependent_settings': [
+    '<@(mojom_typemap_dependencies)',
   ],
   'include_dirs': [
     '<(DEPTH)',

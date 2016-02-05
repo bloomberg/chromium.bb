@@ -37,6 +37,9 @@ mojom_generator_sources = [
 #   deps (optional)
 #       Note: this can contain only other mojom targets.
 #
+#       DEPRECATED: This is synonymous with public_deps because all mojom
+#       dependencies must be public by design. Please use public_deps.
+#
 #   public_deps (optional)
 #       Note: this can contain only other mojom targets.
 #
@@ -50,6 +53,9 @@ mojom_generator_sources = [
 #
 #   typemaps (optional)
 #       A list of typemap files to apply during bindings generation.
+#
+#   typemap_deps (optional)
+#       A list of public dependencies needed to support active typemaps.
 #
 #   variant (optional)
 #       A variant name to apply to generated bindings. Variant influences
@@ -66,27 +72,33 @@ template("mojom") {
 
   cpp_sources_suffix = "cpp_sources"
   cpp_sources_target_name = "${target_name}_${cpp_sources_suffix}"
+  cpp_only = false
   if (defined(invoker.sources)) {
     if (defined(invoker.variant)) {
       variant = invoker.variant
+      cpp_only = true
       generator_cpp_outputs = [
         "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}.cc",
         "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}.h",
         "{{source_gen_dir}}/{{source_name_part}}.mojom-${variant}-internal.h",
       ]
-      generator_js_outputs = []
-      generator_java_outputs = []
     } else {
       generator_cpp_outputs = [
         "{{source_gen_dir}}/{{source_name_part}}.mojom.cc",
         "{{source_gen_dir}}/{{source_name_part}}.mojom.h",
         "{{source_gen_dir}}/{{source_name_part}}.mojom-internal.h",
       ]
-      generator_js_outputs =
-          [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
-      generator_java_outputs =
-          [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
     }
+  }
+
+  if (cpp_only) {
+    generator_js_outputs = []
+    generator_java_outputs = []
+  } else {
+    generator_js_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.js" ]
+    generator_java_outputs =
+        [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
   }
 
   if (defined(invoker.sources)) {
@@ -123,10 +135,8 @@ template("mojom") {
         }
       }
 
-      if (defined(invoker.variant)) {
+      if (cpp_only) {
         args += [
-          "--variant",
-          invoker.variant,
           "-g",
           "c++",
         ]
@@ -137,6 +147,13 @@ template("mojom") {
         ]
       }
 
+      if (defined(invoker.variant)) {
+        args += [
+          "--variant",
+          invoker.variant,
+        ]
+      }
+
       if (defined(invoker.typemaps)) {
         foreach(typemap, invoker.typemaps) {
           args += [
@@ -144,6 +161,7 @@ template("mojom") {
             rebase_path(typemap, root_build_dir),
           ]
         }
+        inputs += invoker.typemaps
       }
     }
   }
@@ -165,16 +183,19 @@ template("mojom") {
     if (defined(invoker.sources)) {
       public_deps += [ ":${cpp_sources_target_name}" ]
     }
+    if (defined(invoker.deps)) {
+      public_deps += invoker.deps
+    }
     if (defined(invoker.public_deps)) {
       public_deps += invoker.public_deps
+    }
+    if (defined(invoker.typemap_deps)) {
+      public_deps += invoker.typemap_deps
     }
 
     deps = []
     if (defined(invoker.sources)) {
       public_deps += [ ":$generator_target_name" ]
-    }
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
     }
   }
 
@@ -214,9 +235,14 @@ template("mojom") {
       sources = process_file_template(invoker.sources, generator_cpp_outputs)
       deps = [
         ":$generator_target_name",
-        "//base",
         "//mojo/public/interfaces/bindings:bindings__generator",
       ]
+      public_deps = [
+        "//base",
+      ]
+      if (defined(invoker.typemap_deps)) {
+        public_deps += invoker.typemap_deps
+      }
       foreach(d, all_deps) {
         # Resolve the name, so that a target //mojo/something becomes
         # //mojo/something:something and we can append cpp_sources_suffix to
