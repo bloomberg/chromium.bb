@@ -2099,6 +2099,18 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mAwContents.setLayerType(layerType, paint);
     }
 
+    // Overrides method added to WebViewProvider.ViewDelegate interface
+    // (not called in M and below)
+    public Handler getHandler(Handler originalHandler) {
+        return originalHandler;
+    }
+
+    // Overrides method added to WebViewProvider.ViewDelegate interface
+    // (not called in M and below)
+    public View findFocus(View originalFocusedView) {
+        return originalFocusedView;
+    }
+
     // Remove from superclass
     public void preDispatchDraw(Canvas canvas) {
         // TODO(leandrogracia): remove this method from WebViewProvider if we think
