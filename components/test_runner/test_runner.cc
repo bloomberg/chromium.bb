@@ -3103,20 +3103,20 @@ void TestRunner::CapturePixelsCallback(scoped_ptr<InvokeCallbackTask> task,
   int height = snapshot.info().height();
   argv[1] = v8::Number::New(isolate, height);
 
+  // Skia's internal byte order is platform-dependent. Always convert to RGBA
+  // in order to provide a consistent ordering to the layout tests.
+  const SkImageInfo bufferInfo =
+      snapshot.info().makeColorType(kRGBA_8888_SkColorType);
+  const size_t bufferRowBytes = bufferInfo.minRowBytes();
   blink::WebArrayBuffer buffer =
-      blink::WebArrayBuffer::create(snapshot.getSize(), 1);
-  memcpy(buffer.data(), snapshot.getPixels(), buffer.byteLength());
-#if (SK_R32_SHIFT == 16) && !SK_B32_SHIFT
-  {
-    // Skia's internal byte order is BGRA. Must swap the B and R channels in
-    // order to provide a consistent ordering to the layout tests.
-    unsigned char* pixels = static_cast<unsigned char*>(buffer.data());
-    unsigned len = buffer.byteLength();
-    for (unsigned i = 0; i < len; i += 4) {
-      std::swap(pixels[i], pixels[i + 2]);
-    }
+      blink::WebArrayBuffer::create(bufferInfo.getSafeSize(bufferRowBytes), 1);
+  if (!snapshot.readPixels(bufferInfo,
+                           buffer.data(),
+                           bufferRowBytes,
+                           0, 0)) {
+    // We only expect readPixels to fail for null bitmaps.
+    DCHECK(snapshot.isNull());
   }
-#endif
 
   argv[2] = blink::WebArrayBufferConverter::toV8Value(
       &buffer, context->Global(), isolate);
