@@ -11,6 +11,7 @@
 #include "chrome/browser/media/android/remote/record_cast_action.h"
 #include "chrome/browser/media/android/remote/remote_media_player_manager.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/RemoteMediaPlayerBridge_jni.h"
 #include "media/base/android/media_common_android.h"
@@ -23,6 +24,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;
+using content::BrowserThread;
 
 namespace {
 /*
@@ -49,6 +51,7 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
       first_party_for_cookies_(local_player->GetFirstPartyForCookies()),
       user_agent_(user_agent),
       weak_factory_(this) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   ScopedJavaLocalRef<jstring> j_url_string;
@@ -107,6 +110,7 @@ void RemoteMediaPlayerBridge::OnPlaybackComplete() {
 void RemoteMediaPlayerBridge::OnMediaInterrupted() {}
 
 void RemoteMediaPlayerBridge::StartInternal() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   Java_RemoteMediaPlayerBridge_start(env, java_bridge_.obj());
   if (!time_update_timer_.IsRunning()) {
@@ -118,6 +122,7 @@ void RemoteMediaPlayerBridge::StartInternal() {
 }
 
 void RemoteMediaPlayerBridge::PauseInternal() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   Java_RemoteMediaPlayerBridge_pause(env, java_bridge_.obj());
   time_update_timer_.Stop();
@@ -145,6 +150,7 @@ void RemoteMediaPlayerBridge::OnCastStarting(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& casting_message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static_cast<RemoteMediaPlayerManager*>(manager())->SwitchToRemotePlayer(
       player_id(), ConvertJavaStringToUTF8(env, casting_message));
   if (!time_update_timer_.IsRunning()) {
@@ -173,6 +179,7 @@ void RemoteMediaPlayerBridge::Pause(bool is_media_related_action) {
   // reasons, such as freeing resources, etc. and during those times, the
   // remote video playback should not be paused.
   if (is_media_related_action) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     JNIEnv* env = AttachCurrentThread();
     Java_RemoteMediaPlayerBridge_pause(env, java_bridge_.obj());
     time_update_timer_.Stop();
@@ -234,6 +241,7 @@ bool RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge(JNIEnv* env) {
 }
 
 void RemoteMediaPlayerBridge::RequestRemotePlayback() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -243,6 +251,7 @@ void RemoteMediaPlayerBridge::RequestRemotePlayback() {
 }
 
 void RemoteMediaPlayerBridge::RequestRemotePlaybackControl() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -251,6 +260,7 @@ void RemoteMediaPlayerBridge::RequestRemotePlaybackControl() {
 }
 
 void RemoteMediaPlayerBridge::SetNativePlayer() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -259,6 +269,7 @@ void RemoteMediaPlayerBridge::SetNativePlayer() {
 }
 
 void RemoteMediaPlayerBridge::OnPlayerCreated() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -267,6 +278,7 @@ void RemoteMediaPlayerBridge::OnPlayerCreated() {
 }
 
 void RemoteMediaPlayerBridge::OnPlayerDestroyed() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -281,6 +293,7 @@ std::string RemoteMediaPlayerBridge::GetCastingMessage() {
 
 void RemoteMediaPlayerBridge::SetPosterBitmap(
     const std::vector<SkBitmap>& bitmaps) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
 
@@ -300,6 +313,7 @@ void RemoteMediaPlayerBridge::Start() {
 }
 
 void RemoteMediaPlayerBridge::SeekTo(base::TimeDelta time) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(aberent) Move the checks to the Java side.
   base::TimeDelta duration = GetDuration();
 
@@ -320,6 +334,7 @@ void RemoteMediaPlayerBridge::SeekTo(base::TimeDelta time) {
 }
 
 void RemoteMediaPlayerBridge::Release() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   time_update_timer_.Stop();
   JNIEnv* env = AttachCurrentThread();
   Java_RemoteMediaPlayerBridge_release(env, java_bridge_.obj());
@@ -328,6 +343,7 @@ void RemoteMediaPlayerBridge::Release() {
 
 void RemoteMediaPlayerBridge::UpdateEffectiveVolumeInternal(
     double effective_volume) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
   Java_RemoteMediaPlayerBridge_setVolume(
@@ -335,6 +351,7 @@ void RemoteMediaPlayerBridge::UpdateEffectiveVolumeInternal(
 }
 
 base::TimeDelta RemoteMediaPlayerBridge::GetCurrentTime() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   return base::TimeDelta::FromMilliseconds(
       Java_RemoteMediaPlayerBridge_getCurrentPosition(
@@ -342,6 +359,7 @@ base::TimeDelta RemoteMediaPlayerBridge::GetCurrentTime() {
 }
 
 base::TimeDelta RemoteMediaPlayerBridge::GetDuration() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   const int duration_ms =
       Java_RemoteMediaPlayerBridge_getDuration(env, java_bridge_.obj());
@@ -357,6 +375,7 @@ base::TimeDelta RemoteMediaPlayerBridge::GetDuration() {
 }
 
 bool RemoteMediaPlayerBridge::IsPlaying() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
   jboolean result = Java_RemoteMediaPlayerBridge_isPlaying(
@@ -414,6 +433,7 @@ base::android::ScopedJavaLocalRef<jstring> RemoteMediaPlayerBridge::GetTitle(
 }
 
 void RemoteMediaPlayerBridge::OnCookiesRetrieved(const std::string& cookies) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(aberent) Do we need to retrieve auth credentials for basic
   // authentication? MediaPlayerBridge does.
   cookies_ = cookies;
