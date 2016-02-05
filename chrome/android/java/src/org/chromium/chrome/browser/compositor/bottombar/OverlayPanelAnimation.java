@@ -177,8 +177,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     }
 
     @Override
-    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
-        super.onSizeChanged(width, height, isToolbarShowing);
+    public void onSizeChanged(float width, float height) {
+        super.onSizeChanged(width, height);
         // In fullscreen, when the panel is opened the bottom Android controls show causing
         // a call to onSizeChanged(). Since the screen size changes, the height of the panel
         // needs to be recalculated. If the expansion animation is running, cancel it and start

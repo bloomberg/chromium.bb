@@ -191,11 +191,10 @@ public class OverlayPanelManager {
      * Send size change event to all panels.
      * @param width The new width.
      * @param height The new height.
-     * @param toolbarVisible True if the toolbar is visible.
      */
-    public void onSizeChanged(float width, float height, boolean toolbarVisible) {
+    public void onSizeChanged(float width, float height) {
         for (OverlayPanel p : mPanelSet) {
-            p.onSizeChanged(width, height, toolbarVisible);
+            p.onSizeChanged(width, height);
         }
     }
 

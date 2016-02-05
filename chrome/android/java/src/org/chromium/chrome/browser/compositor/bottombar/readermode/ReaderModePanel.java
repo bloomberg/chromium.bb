@@ -307,8 +307,8 @@ public class ReaderModePanel extends OverlayPanel {
     }
 
     @Override
-    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
-        super.onSizeChanged(width, height, isToolbarShowing);
+    public void onSizeChanged(float width, float height) {
+        super.onSizeChanged(width, height);
         if (mManagerDelegate != null) {
             mManagerDelegate.onSizeChanged();
         }

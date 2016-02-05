@@ -33,24 +33,16 @@ import java.util.Map;
  * TODO(mdjones): Remove contextual search dependencies from this class.
  */
 abstract class OverlayPanelBase implements ContextualSearchPromoHost {
-    /**
-     * The side padding of Bar icons in dps.
-     */
+    /** The side padding of Bar icons in dps. */
     private static final float BAR_ICON_SIDE_PADDING_DP = 12.f;
 
-    /**
-     * The height of the Bar's border in dps.
-     */
+    /** The height of the Bar's border in dps. */
     private static final float BAR_BORDER_HEIGHT_DP = 1.f;
 
-    /**
-     * The height of the expanded Overlay Panel relative to the height of the screen.
-     */
+    /** The height of the expanded Overlay Panel relative to the height of the screen. */
     private static final float EXPANDED_PANEL_HEIGHT_PERCENTAGE = .7f;
 
-    /**
-     * The width of the small version of the Overlay Panel in dps.
-     */
+    /** The width of the small version of the Overlay Panel in dps. */
     private static final float SMALL_PANEL_WIDTH_DP = 600.f;
 
     /**
@@ -58,14 +50,10 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private static final float SMALL_PANEL_WIDTH_THRESHOLD_DP = 680.f;
 
-    /**
-     * The brightness of the base page when the Panel is peeking.
-     */
+    /** The brightness of the base page when the Panel is peeking. */
     private static final float BASE_PAGE_BRIGHTNESS_STATE_PEEKED = 1.f;
 
-    /**
-     * The brightness of the base page when the Panel is expanded.
-     */
+    /** The brightness of the base page when the Panel is expanded. */
     private static final float BASE_PAGE_BRIGHTNESS_STATE_EXPANDED = .7f;
 
     /**
@@ -74,49 +62,31 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private static final float BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED = .4f;
 
-    /**
-     * The opacity of the arrow icon when the Panel is peeking.
-     */
+    /** The opacity of the arrow icon when the Panel is peeking. */
     private static final float ARROW_ICON_OPACITY_STATE_PEEKED = 1.f;
 
-    /**
-     * The opacity of the arrow icon when the Panel is expanded.
-     */
+    /** The opacity of the arrow icon when the Panel is expanded. */
     private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 0.f;
 
-    /**
-     * The opacity of the arrow icon when the Panel is maximized.
-     */
+    /** The opacity of the arrow icon when the Panel is maximized. */
     private static final float ARROW_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
-    /**
-     * The rotation of the arrow icon.
-     */
+    /** The rotation of the arrow icon. */
     private static final float ARROW_ICON_ROTATION = -90.f;
 
-    /**
-     * The opacity of the close icon when the Panel is peeking.
-     */
+    /** The opacity of the close icon when the Panel is peeking. */
     private static final float CLOSE_ICON_OPACITY_STATE_PEEKED = 0.f;
 
-    /**
-     * The opacity of the close icon when the Panel is expanded.
-     */
+    /** The opacity of the close icon when the Panel is expanded. */
     private static final float CLOSE_ICON_OPACITY_STATE_EXPANDED = 1.f;
 
-    /**
-     * The opacity of the close icon when the Panel is maximized.
-     */
+    /** The opacity of the close icon when the Panel is maximized. */
     private static final float CLOSE_ICON_OPACITY_STATE_MAXIMIZED = 1.f;
 
-    /**
-     * The id of the close icon drawable.
-     */
+    /** The id of the close icon drawable. */
     public static final int CLOSE_ICON_DRAWABLE_ID = R.drawable.btn_close;
 
-    /**
-     * The height of the Progress Bar in dps.
-     */
+    /** The height of the Progress Bar in dps. */
     private static final float PROGRESS_BAR_HEIGHT_DP = 2.f;
 
     /**
@@ -128,34 +98,22 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private static final float PROGRESS_BAR_VISIBILITY_THRESHOLD_DP = 10.f;
 
-    /**
-     * The height of the Toolbar in dps.
-     */
+    /** The height of the Toolbar in dps. */
     private float mToolbarHeight;
 
-    /**
-     * The height of the Bar when the Panel is peeking, in dps.
-     */
+    /** The height of the Bar when the Panel is peeking, in dps. */
     private float mBarHeightPeeking;
 
-    /**
-     * The height of the Bar when the Panel is expanded, in dps.
-     */
+    /** The height of the Bar when the Panel is expanded, in dps. */
     private float mBarHeightExpanded;
 
-    /**
-     * The height of the Bar when the Panel is maximized, in dps.
-     */
+    /** The height of the Bar when the Panel is maximized, in dps. */
     private float mBarHeightMaximized;
 
-    /**
-     * Ratio of dps per pixel.
-     */
+    /** Ratio of dps per pixel. */
     protected float mPxToDp;
 
-    /**
-     * The approximate Y coordinate of the selection in pixels.
-     */
+    /** The approximate Y coordinate of the selection in pixels. */
     private float mBasePageSelectionYPx = -1.f;
 
     /**
@@ -164,19 +122,13 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     private float mBasePageTargetY = 0.f;
 
-    /**
-     * Whether the Panel is showing.
-     */
+    /** Whether the Panel is showing. */
     private boolean mIsShowing;
 
-    /**
-     * The current context.
-     */
+    /** The current context. */
     protected final Context mContext;
 
-    /**
-     * The current state of the Overlay Panel.
-     */
+    /** The current state of the Overlay Panel. */
     private PanelState mPanelState = PanelState.UNDEFINED;
 
     /**
@@ -270,7 +222,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
 
     private float mLayoutWidth;
     private float mLayoutHeight;
-    private boolean mIsToolbarShowing;
 
     private float mMaximumWidth;
     private float mMaximumHeight;
@@ -283,12 +234,10 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      *
      * @param width  The new width in dp.
      * @param height The new width in dp.
-     * @param isToolbarShowing Whether the Toolbar is showing.
      */
-    public void onSizeChanged(float width, float height, boolean isToolbarShowing) {
+    public void onSizeChanged(float width, float height) {
         mLayoutWidth = width;
         mLayoutHeight = height;
-        mIsToolbarShowing = isToolbarShowing;
 
         mMaximumWidth = calculateOverlayPanelWidth();
         mMaximumHeight = getPanelHeightFromState(PanelState.MAXIMIZED);
@@ -365,10 +314,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The Y coordinate relative the fullscreen height.
      */
     public float getFullscreenY(float y) {
-        if (mIsToolbarShowing) {
-            y += mToolbarHeight / mPxToDp;
-        }
-        return y;
+        return y + (mToolbarHeight - getTopControlsOffsetDp()) / mPxToDp;
     }
 
     /**
@@ -620,7 +566,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     public float getArrowIconRotation() {
         return ARROW_ICON_ROTATION;
     }
-
 
     /**
      * @return The opacity of the close icon.
@@ -1356,7 +1301,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         offset = Math.min(offset, 0.f);
         // If visible, the Toolbar will be hidden. Therefore, we need to adjust
         // the offset to account for this difference.
-        if (mIsToolbarShowing) offset -= mToolbarHeight;
+        offset -= (mToolbarHeight - getTopControlsOffsetDp());
         // Make sure the offset is not greater than the expanded height, because
         // there's nothing to render below the Page.
         offset = Math.max(offset, -expandedHeight);

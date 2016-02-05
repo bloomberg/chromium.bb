@@ -40,11 +40,6 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     protected final OverlayPanelManager mPanelManager;
 
     /**
-     * Size of half pixel in dps.
-     */
-    private final float mHalfPixelDp;
-
-    /**
      * @param context The current Android context.
      * @param updateHost The {@link LayoutUpdateHost} view for this layout.
      * @param renderHost The {@link LayoutRenderHost} view for this layout.
@@ -64,8 +59,6 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
         };
 
         mPanelManager = panelManager;
-        float dpToPx = context.getResources().getDisplayMetrics().density;
-        mHalfPixelDp = 0.5f / dpToPx;
     }
 
     @Override
@@ -114,14 +107,7 @@ public abstract class ContextualSearchSupportedLayout extends Layout {
     @Override
     protected void notifySizeChanged(float width, float height, int orientation) {
         super.notifySizeChanged(width, height, orientation);
-
-        // NOTE(pedrosimonetti): Due to some floating point madness, getHeight() and
-        // getHeightMinusTopControls() might not always be the same when the Toolbar is
-        // visible. For this reason, we're comparing to see if the difference between them
-        // is less than half pixel. If so, it means the Toolbar is visible.
-        final boolean isToolbarVisible = getHeight() - getHeightMinusTopControls() <= mHalfPixelDp;
-
-        mPanelManager.onSizeChanged(width, height, isToolbarVisible);
+        mPanelManager.onSizeChanged(width, height);
         onSizeChanged(width, height);
     }
 
