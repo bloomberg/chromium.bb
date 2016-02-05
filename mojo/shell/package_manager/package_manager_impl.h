@@ -127,7 +127,8 @@ class PackageManagerImpl : public PackageManager {
   void SerializeCatalog();
 
   // Construct a catalog entry from |dictionary|.
-  void DeserializeApplication(const base::DictionaryValue* dictionary);
+  const ApplicationInfo& DeserializeApplication(
+      const base::DictionaryValue* dictionary);
 
   // Reads a manifest in the blocking pool and returns a base::Value with its
   // contents via OnReadManifest().

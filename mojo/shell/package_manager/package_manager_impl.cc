@@ -346,11 +346,25 @@ void PackageManagerImpl::SerializeCatalog() {
     catalog_store_->UpdateStore(std::move(catalog));
 }
 
-void PackageManagerImpl::DeserializeApplication(
+const ApplicationInfo& PackageManagerImpl::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
   ApplicationInfo info = BuildApplicationInfoFromDictionary(*dictionary);
   CHECK(catalog_.find(info.url) == catalog_.end());
   catalog_[info.url] = info;
+
+  if (dictionary->HasKey("applications")) {
+    const base::ListValue* applications = nullptr;
+    dictionary->GetList("applications", &applications);
+    for (size_t i = 0; i < applications->GetSize(); ++i) {
+      const base::DictionaryValue* child = nullptr;
+      applications->GetDictionary(i, &child);
+      const ApplicationInfo& child_info = DeserializeApplication(child);
+      GURL child_url(child_info.url);
+      RegisterApplicationPackageAlias(child_url, GURL(info.url),
+                                      child_url.host());
+    }
+  }
+  return catalog_[info.url];
 }
 
 scoped_ptr<base::Value> PackageManagerImpl::ReadManifest(

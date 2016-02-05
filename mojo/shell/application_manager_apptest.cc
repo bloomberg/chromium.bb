@@ -98,6 +98,18 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
     binding_.WaitForIncomingMethodCall();
   }
 
+  bool ContainsApplicationNamed(const std::string& name) const {
+    for (const auto& application : initial_applications_) {
+      if (application.name == name)
+        return true;
+    }
+    for (const auto& application : applications_) {
+      if (application.name == name)
+        return true;
+    }
+    return false;
+  }
+
   uint32_t target_id() const {
     DCHECK(delegate_);
     return delegate_->target_id();
@@ -118,7 +130,13 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
   // mojom::ApplicationManagerListener:
   void SetRunningApplications(
-      Array<mojom::ApplicationInfoPtr> applications) override {}
+      Array<mojom::ApplicationInfoPtr> applications) override {
+    for (size_t i = 0; i < applications.size(); ++i) {
+      initial_applications_.push_back(ApplicationInfo(applications[i]->id,
+                                                      applications[i]->url,
+                                                      applications[i]->name));
+    }
+  }
   void ApplicationInstanceCreated(
       mojom::ApplicationInfoPtr application) override {
     applications_.push_back(ApplicationInfo(application->id, application->url,
@@ -145,6 +163,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
   ApplicationManagerAppTestDelegate* delegate_;
   Binding<mojom::ApplicationManagerListener> binding_;
   std::vector<ApplicationInfo> applications_;
+  std::vector<ApplicationInfo> initial_applications_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManagerAppTest);
 };
@@ -168,7 +187,11 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   EXPECT_TRUE(connection->GetRemoteApplicationID(&remote_id));
   EXPECT_NE(Shell::kInvalidApplicationID, remote_id);
 
-  // 2. Validate that the right applications/processes were created.
+  // 3. Validate that this test suite's pretty name was consumed from its
+  //    manifest.
+  EXPECT_TRUE(ContainsApplicationNamed("Application Manager Apptests"));
+
+  // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are
   //    run with --single-process.
   EXPECT_EQ(2u, applications().size());

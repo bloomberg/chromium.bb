@@ -121,6 +121,7 @@ test("mojo_shell_unittests") {
 mojom("test_bindings") {
   sources = [
     "application_manager_apptests.mojom",
+    "application_package_apptest.mojom",
     "capability_filter_unittest.mojom",
     "test.mojom",
   ]
@@ -132,6 +133,7 @@ mojo_native_application("apptests") {
 
   sources = [
     "application_manager_apptest.cc",
+    "application_package_apptest.cc",
   ]
 
   deps = [
@@ -155,6 +157,24 @@ mojo_native_application("apptests") {
 mojo_application_manifest("apptests_manifest") {
   application_name = "mojo_shell_apptests"
   source = "application_manager_apptest_manifest.json"
+  deps = [
+    ":package_test_a_manifest",
+    ":package_test_b_manifest",
+  ]
+  packaged_applications = [
+    "package_test_a",
+    "package_test_b",
+  ]
+}
+
+mojo_application_manifest("package_test_a_manifest") {
+  application_name = "package_test_a"
+  source = "application_package_apptest_app_a_manifest.json"
+}
+
+mojo_application_manifest("package_test_b_manifest") {
+  application_name = "package_test_b"
+  source = "application_package_apptest_app_b_manifest.json"
 }
 
 executable("application_manager_apptest_driver") {
