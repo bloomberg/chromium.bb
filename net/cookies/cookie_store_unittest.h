@@ -216,6 +216,16 @@ class CookieStoreTest : public testing::Test {
     callback.WaitUntilDone();
   }
 
+  int DeleteCanonicalCookie(CookieStore* cs, const CanonicalCookie& cookie) {
+    DCHECK(cs);
+    ResultSavingCookieCallback<int> callback;
+    cs->DeleteCanonicalCookieAsync(
+        cookie, base::Bind(&ResultSavingCookieCallback<int>::Run,
+                           base::Unretained(&callback)));
+    callback.WaitUntilDone();
+    return callback.result();
+  }
+
   int DeleteCreatedBetween(CookieStore* cs,
                             const base::Time& delete_begin,
                             const base::Time& delete_end) {
@@ -1261,6 +1271,47 @@ TYPED_TEST_P(CookieStoreTest, GetAllCookiesAsync) {
   ASSERT_TRUE(++it == cookies.end());
 }
 
+TYPED_TEST_P(CookieStoreTest, DeleteCanonicalCookieAsync) {
+  scoped_refptr<CookieStore> cs(this->GetCookieStore());
+
+  // Set two cookies with the same name, and make sure both are set.
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=B;Path=/foo"));
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=C;Path=/bar"));
+  EXPECT_EQ(2u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ("A=B", this->GetCookies(cs.get(), this->www_google_foo_.url()));
+  EXPECT_EQ("A=C", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+
+  // Delete the "/foo" cookie, and make sure only it was deleted.
+  CookieList cookies =
+      this->GetAllCookiesForURL(cs.get(), this->www_google_foo_.url());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
+  EXPECT_EQ(1u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ("", this->GetCookies(cs.get(), this->www_google_foo_.url()));
+  EXPECT_EQ("A=C", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+
+  // Deleting the "/foo" cookie again should fail.
+  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
+
+  // Try to delete the "/bar" cookie after overwriting it with a new cookie.
+  cookies = this->GetAllCookiesForURL(cs.get(), this->www_google_bar_.url());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_TRUE(
+      this->SetCookie(cs.get(), this->http_www_google_.url(), "A=D;Path=/bar"));
+  EXPECT_EQ(0, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
+  EXPECT_EQ(1u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ("A=D", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+
+  // Delete the new "/bar" cookie.
+  cookies = this->GetAllCookiesForURL(cs.get(), this->www_google_bar_.url());
+  ASSERT_EQ(1u, cookies.size());
+  EXPECT_EQ(1, this->DeleteCanonicalCookie(cs.get(), cookies[0]));
+  EXPECT_EQ(0u, this->GetAllCookies(cs.get()).size());
+  EXPECT_EQ("", this->GetCookies(cs.get(), this->www_google_bar_.url()));
+}
+
 TYPED_TEST_P(CookieStoreTest, DeleteSessionCookie) {
   scoped_refptr<CookieStore> cs(this->GetCookieStore());
   // Create a session cookie and a persistent cookie.
@@ -1304,6 +1355,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            OverwritePersistentCookie,
                            CookieOrdering,
                            GetAllCookiesAsync,
+                           DeleteCanonicalCookieAsync,
                            DeleteSessionCookie);
 
 template<class CookieStoreTestTraits>

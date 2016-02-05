@@ -154,6 +154,12 @@ void DelayedCookieMonster::DeleteCookieAsync(const GURL& url,
   ADD_FAILURE();
 }
 
+void DelayedCookieMonster::DeleteCanonicalCookieAsync(
+    const CanonicalCookie& cookie,
+    const DeleteCallback& callback) {
+  ADD_FAILURE();
+}
+
 void DelayedCookieMonster::DeleteAllCreatedBetweenAsync(
     const base::Time& delete_begin,
     const base::Time& delete_end,

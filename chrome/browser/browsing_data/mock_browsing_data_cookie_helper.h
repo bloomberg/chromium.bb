@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_store.h"
 
 // Mock for BrowsingDataCookieHelper.
 class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
@@ -20,7 +21,7 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
 
   // BrowsingDataCookieHelper methods.
   void StartFetching(
-      const net::CookieMonster::GetCookieListCallback& callback) override;
+      const net::CookieStore::GetCookieListCallback& callback) override;
   void DeleteCookie(const net::CanonicalCookie& cookie) override;
 
   // Adds some cookie samples.
@@ -39,7 +40,7 @@ class MockBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  private:
   ~MockBrowsingDataCookieHelper() override;
 
-  net::CookieMonster::GetCookieListCallback callback_;
+  net::CookieStore::GetCookieListCallback callback_;
 
   net::CookieList cookie_list_;
 

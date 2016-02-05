@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "net/cookies/canonical_cookie.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,7 +18,7 @@ MockBrowsingDataCookieHelper::~MockBrowsingDataCookieHelper() {
 }
 
 void MockBrowsingDataCookieHelper::StartFetching(
-    const net::CookieMonster::GetCookieListCallback &callback) {
+    const net::CookieStore::GetCookieListCallback &callback) {
   ASSERT_FALSE(callback.is_null());
   ASSERT_TRUE(callback_.is_null());
   callback_ = callback;

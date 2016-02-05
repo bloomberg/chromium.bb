@@ -700,15 +700,15 @@ int CookieMonster::DeleteAllCreatedBetweenForHostTask::RunDeleteTask() {
 }
 
 // Task class for DeleteCanonicalCookie call.
-class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<bool> {
+class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<int> {
  public:
   DeleteCanonicalCookieTask(CookieMonster* cookie_monster,
                             const CanonicalCookie& cookie,
-                            const DeleteCookieCallback& callback)
-      : DeleteTask<bool>(cookie_monster, callback), cookie_(cookie) {}
+                            const DeleteCallback& callback)
+      : DeleteTask<int>(cookie_monster, callback), cookie_(cookie) {}
 
   // DeleteTask:
-  bool RunDeleteTask() override;
+  int RunDeleteTask() override;
 
  protected:
   ~DeleteCanonicalCookieTask() override {}
@@ -719,7 +719,7 @@ class CookieMonster::DeleteCanonicalCookieTask : public DeleteTask<bool> {
   DISALLOW_COPY_AND_ASSIGN(DeleteCanonicalCookieTask);
 };
 
-bool CookieMonster::DeleteCanonicalCookieTask::RunDeleteTask() {
+int CookieMonster::DeleteCanonicalCookieTask::RunDeleteTask() {
   return this->cookie_monster()->DeleteCanonicalCookie(cookie_);
 }
 
@@ -926,15 +926,6 @@ void CookieMonster::GetAllCookiesForURLWithOptionsAsync(
   DoCookieTaskForURL(task, url);
 }
 
-void CookieMonster::DeleteCanonicalCookieAsync(
-    const CanonicalCookie& cookie,
-    const DeleteCookieCallback& callback) {
-  scoped_refptr<DeleteCanonicalCookieTask> task =
-      new DeleteCanonicalCookieTask(this, cookie, callback);
-
-  DoCookieTask(task);
-}
-
 void CookieMonster::FlushStore(const base::Closure& callback) {
   base::AutoLock autolock(lock_);
   if (initialized_ && store_.get())
@@ -996,6 +987,14 @@ void CookieMonster::DeleteCookieAsync(const GURL& url,
       new DeleteCookieTask(this, url, cookie_name, callback);
 
   DoCookieTaskForURL(task, url);
+}
+
+void CookieMonster::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
+                                               const DeleteCallback& callback) {
+  scoped_refptr<DeleteCanonicalCookieTask> task =
+      new DeleteCanonicalCookieTask(this, cookie, callback);
+
+  DoCookieTask(task);
 }
 
 void CookieMonster::DeleteAllCreatedBetweenAsync(
@@ -1251,20 +1250,6 @@ int CookieMonster::DeleteAllCreatedBetweenForHost(const Time delete_begin,
 }
 
 
-bool CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
-  base::AutoLock autolock(lock_);
-
-  for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
-       its.first != its.second; ++its.first) {
-    // The creation date acts as our unique index...
-    if (its.first->second->CreationDate() == cookie.CreationDate()) {
-      InternalDeleteCookie(its.first, true, DELETE_COOKIE_EXPLICIT);
-      return true;
-    }
-  }
-  return false;
-}
-
 bool CookieMonster::SetCookieWithOptions(const GURL& url,
                                          const std::string& cookie_line,
                                          const CookieOptions& options) {
@@ -1326,6 +1311,20 @@ void CookieMonster::DeleteCookie(const GURL& url,
       InternalDeleteCookie(curit, true, DELETE_COOKIE_EXPLICIT);
     }
   }
+}
+
+int CookieMonster::DeleteCanonicalCookie(const CanonicalCookie& cookie) {
+  base::AutoLock autolock(lock_);
+
+  for (CookieMapItPair its = cookies_.equal_range(GetKey(cookie.Domain()));
+       its.first != its.second; ++its.first) {
+    // The creation date acts as the unique index...
+    if (its.first->second->CreationDate() == cookie.CreationDate()) {
+      InternalDeleteCookie(its.first, true, DELETE_COOKIE_EXPLICIT);
+      return 1;
+    }
+  }
+  return 0;
 }
 
 bool CookieMonster::SetCookieWithCreationTime(const GURL& url,

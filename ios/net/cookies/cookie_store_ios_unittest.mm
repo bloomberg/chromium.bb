@@ -134,6 +134,13 @@ class RoundTripTestCookieStore : public net::CookieStore {
     store_->DeleteCookieAsync(url, cookie_name, callback);
   }
 
+  void DeleteCanonicalCookieAsync(
+      const CanonicalCookie& cookie,
+      const DeleteCallback& callback) override {
+    RoundTrip();
+    store_->DeleteCanonicalCookieAsync(cookie, callback);
+  }
+
   net::CookieMonster* GetCookieMonster() override { return nullptr; }
 
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,

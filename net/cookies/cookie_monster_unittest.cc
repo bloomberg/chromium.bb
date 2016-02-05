@@ -170,16 +170,6 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
     return callback.result();
   }
 
-  bool DeleteCanonicalCookie(CookieMonster* cm, const CanonicalCookie& cookie) {
-    DCHECK(cm);
-    ResultSavingCookieCallback<bool> callback;
-    cm->DeleteCanonicalCookieAsync(
-        cookie, base::Bind(&ResultSavingCookieCallback<bool>::Run,
-                           base::Unretained(&callback)));
-    callback.WaitUntilDone();
-    return callback.result();
-  }
-
   // Helper for DeleteAllForHost test; repopulates CM with same layout
   // each time.
   void PopulateCmForDeleteAllForHost(scoped_refptr<CookieMonster> cm) {
@@ -626,13 +616,6 @@ class MockDeleteCallback
                                 CookieMonster::DeleteCallback> {
  public:
   MOCK_METHOD1(Invoke, void(int num_deleted));
-};
-
-class MockDeleteCookieCallback
-    : public MockCookieCallback<MockDeleteCookieCallback,
-                                CookieMonster::DeleteCookieCallback> {
- public:
-  MOCK_METHOD1(Invoke, void(bool success));
 };
 
 struct CookiesInputInfo {
@@ -1097,19 +1080,18 @@ TEST_F(DeferredCookieTaskTest, DeferredDeleteCanonicalCookie) {
   CanonicalCookie cookie = BuildCanonicalCookie(
       http_www_google_.host(), "X=1; path=/", base::Time::Now());
 
-  MockDeleteCookieCallback delete_cookie_callback;
+  MockDeleteCallback delete_cookie_callback;
 
   BeginWith(DeleteCanonicalCookieAction(&cookie_monster(), cookie,
                                         &delete_cookie_callback));
 
   WaitForLoadCall();
 
-  EXPECT_CALL(delete_cookie_callback, Invoke(false))
+  EXPECT_CALL(delete_cookie_callback, Invoke(0))
       .WillOnce(DeleteCanonicalCookieAction(&cookie_monster(), cookie,
                                             &delete_cookie_callback));
   base::RunLoop loop;
-  EXPECT_CALL(delete_cookie_callback, Invoke(false))
-      .WillOnce(QuitRunLoop(&loop));
+  EXPECT_CALL(delete_cookie_callback, Invoke(0)).WillOnce(QuitRunLoop(&loop));
 
   CompleteLoading();
   loop.Run();
@@ -1268,22 +1250,6 @@ TEST_F(CookieMonsterTest, TestHostGarbageCollection) {
 
 TEST_F(CookieMonsterTest, TestPriorityAwareGarbageCollection) {
   TestPriorityAwareGarbageCollectHelper();
-}
-
-TEST_F(CookieMonsterTest, TestDeleteSingleCookie) {
-  scoped_refptr<CookieMonster> cm(new CookieMonster(NULL, NULL));
-
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "A=B"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "C=D"));
-  EXPECT_TRUE(SetCookie(cm.get(), http_www_google_.url(), "E=F"));
-  EXPECT_EQ("A=B; C=D; E=F", GetCookies(cm.get(), http_www_google_.url()));
-
-  EXPECT_TRUE(
-      FindAndDeleteCookie(cm.get(), http_www_google_.url().host(), "C"));
-  EXPECT_EQ("A=B; E=F", GetCookies(cm.get(), http_www_google_.url()));
-
-  EXPECT_FALSE(FindAndDeleteCookie(cm.get(), "random.host", "E"));
-  EXPECT_EQ("A=B; E=F", GetCookies(cm.get(), http_www_google_.url()));
 }
 
 TEST_F(CookieMonsterTest, SetCookieableSchemes) {
@@ -2440,9 +2406,9 @@ class MultiThreadedCookieMonsterTest : public CookieMonsterTest {
 
   void DeleteCanonicalCookieTask(CookieMonster* cm,
                                  const CanonicalCookie& cookie,
-                                 ResultSavingCookieCallback<bool>* callback) {
+                                 ResultSavingCookieCallback<int>* callback) {
     cm->DeleteCanonicalCookieAsync(
-        cookie, base::Bind(&ResultSavingCookieCallback<bool>::Run,
+        cookie, base::Bind(&ResultSavingCookieCallback<int>::Run,
                            base::Unretained(callback)));
   }
 
@@ -2619,7 +2585,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
 
   EXPECT_TRUE(
       SetCookieWithOptions(cm.get(), http_www_google_.url(), "A=B", options));
-  ResultSavingCookieCallback<bool> callback(&other_thread_);
+  ResultSavingCookieCallback<int> callback(&other_thread_);
   cookies = GetAllCookies(cm.get());
   it = cookies.begin();
   base::Closure task =
@@ -2627,7 +2593,7 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
                  base::Unretained(this), cm, *it, &callback);
   RunOnOtherThread(task);
   callback.WaitUntilDone();
-  EXPECT_TRUE(callback.result());
+  EXPECT_EQ(1, callback.result());
 }
 
 // Ensure that cookies for http, https, ws, and wss all share the same storage

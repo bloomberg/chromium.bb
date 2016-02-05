@@ -114,6 +114,12 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
                                  const std::string& cookie_name,
                                  const base::Closure& callback) = 0;
 
+  // Deletes one specific cookie. |cookie| must have been returned by a previous
+  // query on this CookieStore. Invokes |callback| with 1 if a cookie was
+  // deleted, 0 otherwise.
+  virtual void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
+                                          const DeleteCallback& callback) = 0;
+
   // Deletes all of the cookies that have a creation_date greater than or equal
   // to |delete_begin| and less than |delete_end|
   // Returns the number of cookies that have been deleted.

@@ -620,6 +620,29 @@ void CookieStoreIOS::DeleteCookieAsync(const GURL& url,
   }
 }
 
+void CookieStoreIOS::DeleteCanonicalCookieAsync(
+    const CanonicalCookie& cookie,
+    const DeleteCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  switch (synchronization_state_) {
+    case NOT_SYNCHRONIZED:
+      cookie_monster_->DeleteCanonicalCookieAsync(cookie,
+                                                  WrapDeleteCallback(callback));
+      break;
+    case SYNCHRONIZING:
+      tasks_pending_synchronization_.push_back(
+          base::Bind(&CookieStoreIOS::DeleteCanonicalCookieAsync, this, cookie,
+                     WrapDeleteCallback(callback)));
+      break;
+    case SYNCHRONIZED:
+      // This relies on the fact cookies are given unique creation dates.
+      CookieFilterFunction filter = base::Bind(
+          IsCookieCreatedBetween, cookie.CreationDate(), cookie.CreationDate());
+      DeleteCookiesWithFilter(filter, callback);
+  }
+}
+
 // CookieStoreIOS is an implementation of CookieStore which is not a
 // CookieMonster. As CookieStore is the main cookie API, a caller of
 // GetCookieMonster must handle the case where this returns null.

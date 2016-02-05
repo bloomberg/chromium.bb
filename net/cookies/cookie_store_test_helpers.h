@@ -68,6 +68,9 @@ class DelayedCookieMonster : public CookieStore {
                          const std::string& cookie_name,
                          const base::Closure& callback) override;
 
+  void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
+                                  const DeleteCallback& callback) override;
+
   void DeleteAllCreatedBetweenAsync(const base::Time& delete_begin,
                                     const base::Time& delete_end,
                                     const DeleteCallback& callback) override;

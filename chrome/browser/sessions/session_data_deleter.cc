@@ -18,7 +18,6 @@
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/storage_partition.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
@@ -26,8 +25,8 @@
 
 namespace {
 
-void CookieDeleted(bool success) {
-  DCHECK(success);
+void CookieDeleted(int num_cookies_deleted) {
+  DCHECK_EQ(1, num_cookies_deleted);
 }
 
 class SessionDataDeleter
@@ -62,7 +61,7 @@ class SessionDataDeleter
   // session-only.
   void DeleteSessionOnlyOriginCookies(const net::CookieList& cookies);
 
-  scoped_refptr<net::CookieMonster> cookie_monster_;
+  scoped_refptr<net::CookieStore> cookie_store_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
   const bool delete_only_by_session_only_policy_;
 
@@ -112,18 +111,18 @@ void SessionDataDeleter::DeleteSessionCookiesOnIOThread(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   net::URLRequestContext* request_context =
       profile_io_data->GetMainRequestContext();
-  cookie_monster_ = request_context->cookie_store()->GetCookieMonster();
+  cookie_store_ = request_context->cookie_store();
   if (delete_only_by_session_only_policy_) {
-    cookie_monster_->GetAllCookiesAsync(
+    cookie_store_->GetAllCookiesAsync(
         base::Bind(&SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
   } else {
-    cookie_monster_->DeleteSessionCookiesAsync(
+    cookie_store_->DeleteSessionCookiesAsync(
         base::Bind(&SessionDataDeleter::DeleteSessionCookiesDone, this));
   }
 }
 
 void SessionDataDeleter::DeleteSessionCookiesDone(int num_deleted) {
-  cookie_monster_->GetAllCookiesAsync(
+  cookie_store_->GetAllCookiesAsync(
       base::Bind(&SessionDataDeleter::DeleteSessionOnlyOriginCookies, this));
 }
 
@@ -139,7 +138,7 @@ void SessionDataDeleter::DeleteSessionOnlyOriginCookies(
         net::cookie_util::CookieOriginToURL(it->Domain(), it->IsSecure());
     if (!storage_policy_->IsStorageSessionOnly(url))
       continue;
-    cookie_monster_->DeleteCanonicalCookieAsync(*it, base::Bind(CookieDeleted));
+    cookie_store_->DeleteCanonicalCookieAsync(*it, base::Bind(CookieDeleted));
   }
 }
 
