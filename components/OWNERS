@@ -93,6 +93,9 @@ per-file data_usage*=tbansal@chromium.org
 per-file data_use_measurement*=sclittle@chromium.org
 per-file data_use_measurement*=bengr@chromium.org
 
+per-file device_event_log*=stevenjb@chromium.org
+per-file device_event_log*=reillyg@chromium.org
+
 per-file devtools_discovery.gyp*=dgozman@chromium.org
 per-file devtools_discovery.gyp*=pfeldman@chromium.org
 

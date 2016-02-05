@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "net/base/escape.h"
 
 namespace device_event_log {
 
@@ -82,15 +81,11 @@ std::string TimeWithMillieconds(const base::Time& time) {
                             exploded.millisecond);
 }
 
-// Defined below for easier review. TODO(stevenjb): Move implementation here.
-std::string GetHtmlText(LogLevel log_level, const std::string& event);
-
 std::string LogEntryToString(const DeviceEventLogImpl::LogEntry& log_entry,
                              bool show_time,
                              bool show_file,
                              bool show_type,
-                             bool show_level,
-                             bool format_html) {
+                             bool show_level) {
   std::string line;
   if (show_time)
     line += "[" + TimeWithMillieconds(log_entry.time) + "] ";
@@ -101,13 +96,10 @@ std::string LogEntryToString(const DeviceEventLogImpl::LogEntry& log_entry,
     line += base::StringPrintf("%s: ", kLevelDesc[log_entry.log_level]);
   }
   if (show_file) {
-    std::string filestr =
-        format_html ? net::EscapeForHTML(log_entry.file) : log_entry.file;
     line += base::StringPrintf("%s:%d ", log_entry.file.c_str(),
                                log_entry.file_line);
   }
-  line += format_html ? GetHtmlText(log_entry.log_level, log_entry.event)
-                      : log_entry.event;
+  line += log_entry.event;
   if (log_entry.count > 1)
     line += base::StringPrintf(" (%d)", log_entry.count);
   return line;
@@ -135,26 +127,6 @@ std::string LogEntryAsJSON(const DeviceEventLogImpl::LogEntry& log_entry) {
   return json;
 }
 
-std::string GetHtmlText(LogLevel log_level, const std::string& event) {
-  std::string text;
-  if (log_level == LOG_LEVEL_DEBUG)
-    text += "<i>";
-  else if (log_level == LOG_LEVEL_USER)
-    text += "<b>";
-  else if (log_level == LOG_LEVEL_ERROR)
-    text += "<b><i>";
-
-  text += net::EscapeForHTML(event);
-
-  if (log_level == LOG_LEVEL_DEBUG)
-    text += "</i>";
-  else if (log_level == LOG_LEVEL_USER)
-    text += "</b>";
-  else if (log_level == LOG_LEVEL_ERROR)
-    text += "</i></b>";
-  return text;
-}
-
 void SendLogEntryToVLogOrErrorLog(
     const DeviceEventLogImpl::LogEntry& log_entry) {
   if (log_entry.log_level != LOG_LEVEL_ERROR && !VLOG_IS_ON(1))
@@ -163,9 +135,8 @@ void SendLogEntryToVLogOrErrorLog(
   const bool show_file = true;
   const bool show_type = true;
   const bool show_level = log_entry.log_level != LOG_LEVEL_ERROR;
-  const bool format_html = false;
-  std::string output = LogEntryToString(log_entry, show_time, show_file,
-                                        show_type, show_level, format_html);
+  std::string output =
+      LogEntryToString(log_entry, show_time, show_file, show_type, show_level);
   if (log_entry.log_level == LOG_LEVEL_ERROR)
     LOG(ERROR) << output;
   else
@@ -196,14 +167,12 @@ void GetFormat(const std::string& format_string,
                bool* show_file,
                bool* show_type,
                bool* show_level,
-               bool* format_html,
                bool* format_json) {
   base::StringTokenizer tokens(format_string, ",");
   *show_time = false;
   *show_file = false;
   *show_type = false;
   *show_level = false;
-  *format_html = false;
   *format_json = false;
   while (tokens.GetNext()) {
     std::string tok(tokens.token());
@@ -215,8 +184,6 @@ void GetFormat(const std::string& format_string,
       *show_type = true;
     if (tok == "level")
       *show_level = true;
-    if (tok == "html")
-      *format_html = true;
     if (tok == "json")
       *format_json = true;
   }
@@ -281,8 +248,7 @@ DeviceEventLogImpl::DeviceEventLogImpl(
   DCHECK(task_runner_);
 }
 
-DeviceEventLogImpl::~DeviceEventLogImpl() {
-}
+DeviceEventLogImpl::~DeviceEventLogImpl() {}
 
 void DeviceEventLogImpl::AddEntry(const char* file,
                                   int file_line,
@@ -342,9 +308,9 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
   if (entries_.empty())
     return "No Log Entries.";
 
-  bool show_time, show_file, show_type, show_level, format_html, format_json;
+  bool show_time, show_file, show_type, show_level, format_json;
   GetFormat(format, &show_time, &show_file, &show_type, &show_level,
-            &format_html, &format_json);
+            &format_json);
 
   std::set<LogType> include_types, exclude_types;
   GetLogTypes(types, &include_types, &exclude_types);
@@ -382,7 +348,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
         log_entries.AppendString(LogEntryAsJSON(entry));
       } else {
         result += LogEntryToString(entry, show_time, show_file, show_type,
-                                   show_level, format_html);
+                                   show_level);
         result += "\n";
       }
     }
@@ -398,7 +364,7 @@ std::string DeviceEventLogImpl::GetAsString(StringOrder order,
         log_entries.AppendString(LogEntryAsJSON(entry));
       } else {
         result += LogEntryToString(entry, show_time, show_file, show_type,
-                                   show_level, format_html);
+                                   show_level);
         result += "\n";
       }
       if (max_events > 0 && ++nlines >= max_events)

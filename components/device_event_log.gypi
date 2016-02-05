@@ -9,7 +9,6 @@
       'type': '<(component)',
       'dependencies': [
         '../base/base.gyp:base',
-        '../net/net.gyp:net',
       ],
       'include_dirs': [
         '..',

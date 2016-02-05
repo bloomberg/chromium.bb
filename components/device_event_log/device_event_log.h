@@ -144,7 +144,6 @@ AddEntryWithDescription(const char* file,
 //  "time" - Include a timestamp.
 //  "file" - Include file and line number.
 //  "type" - Include the event type.
-//  "html" - Include html tags.
 //  "json" - Return JSON format dictionaries containing entries for timestamp,
 //           level, type, file, and event.
 // |types| lists the types included in the output. Prepend "non-" to disclude

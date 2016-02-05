@@ -14,7 +14,6 @@ component("device_event_log") {
 
   deps = [
     "//base",
-    "//net",
   ]
 }
 
