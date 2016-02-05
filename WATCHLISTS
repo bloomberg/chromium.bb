@@ -1159,6 +1159,9 @@
     'blink_spellcheck' : {
       'filepath': 'third_party/WebKit/Source/core/editing/spellcheck'
     },
+    'blink_spv2_layout_tests': {
+      'filepath': 'third_party/WebKit/LayoutTests/virtual/spv2'
+    },
     'blink_style': {
       'filepath': 'third_party/WebKit/.*(style/|Style)',
     },
@@ -1680,6 +1683,8 @@
                                'cbiesinger@chromium.org',
                                'teravest@chromium.org' ],
     'blink_spellcheck' : [ 'groby+blinkspell@chromium.org' ],
+    'blink_spv2_layout_tests': [ 'jbroman+watch@chromium.org',
+                                 'pdr+virtualspv2watchlist@chromium.org' ],
     'blink_style': [ 'blink-reviews-style@chromium.org' ],
     'blink_svg': [ 'schenney@chromium.org',
                    'pdr+svgwatchlist@chromium.org',
