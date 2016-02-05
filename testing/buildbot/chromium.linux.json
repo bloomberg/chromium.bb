@@ -529,12 +529,16 @@
   },
   "Linux Builder": {
     "additional_compile_targets": [
-      "all"
+      "battor_agent",
+      "blimp",
+      "mandoline:all",
+      "mash:all",
+      "remoting_all"
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
-      "all"
+      "gn_all"
     ]
   },
   "Linux Tests": {
