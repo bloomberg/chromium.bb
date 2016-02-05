@@ -32,9 +32,6 @@ class BloomFilter {
   // Returns the current value of the Bloom filter's bit array.
   const ByteVector& bytes() const { return bytes_; };
 
-  // Sets bytes for testing purposes.
-  void SetBytesForTesting(const ByteVector& bytes);
-
  private:
   // Stores the byte array of the Bloom filter.
   ByteVector bytes_;

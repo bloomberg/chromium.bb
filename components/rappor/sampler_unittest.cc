@@ -16,10 +16,7 @@ const RapporParameters kTestRapporParameters = {
     1 /* Num cohorts */,
     1 /* Bloom filter size bytes */,
     4 /* Bloom filter hash count */,
-    PROBABILITY_75 /* Fake data probability */,
-    PROBABILITY_50 /* Fake one probability */,
-    PROBABILITY_75 /* One coin probability */,
-    PROBABILITY_50 /* Zero coin probability */,
+    NORMAL_NOISE /* Noise level */,
     UMA_RAPPOR_GROUP /* Recording group (not used) */};
 
 class TestSamplerFactory {

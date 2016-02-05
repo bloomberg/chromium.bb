@@ -51,9 +51,6 @@ class RapporMetric {
   // final report bits.
   ByteVector GetReport(const std::string& secret) const;
 
-  // Specify the bytes to generate a report from, for testing purposes.
-  void SetBytesForTesting(const ByteVector& bytes);
-
  private:
   const std::string metric_name_;
   const RapporParameters parameters_;

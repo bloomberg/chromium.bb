@@ -64,7 +64,9 @@ void Sample::ExportMetrics(const std::string& secret,
     ByteVector value_bytes(size);
     Uint64ToByteVector(value, size, &value_bytes);
     ByteVector report_bytes = internal::GenerateReport(
-        secret, parameters_, value_bytes);
+        secret,
+        internal::kNoiseParametersForLevel[parameters_.noise_level],
+        value_bytes);
 
     RapporReports::Report* report = reports->add_report();
     report->set_name_hash(base::HashMetricName(

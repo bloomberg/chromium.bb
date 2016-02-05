@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/rand_util.h"
+#include "components/rappor/rappor_parameters.h"
 #include "components/rappor/reports.h"
 
 namespace rappor {
@@ -39,11 +40,10 @@ void RapporMetric::AddSample(const std::string& str) {
 }
 
 ByteVector RapporMetric::GetReport(const std::string& secret) const {
-  return internal::GenerateReport(secret, parameters(), bytes());
-}
-
-void RapporMetric::SetBytesForTesting(const ByteVector& bytes) {
-  bloom_filter_.SetBytesForTesting(bytes);
+  return internal::GenerateReport(
+      secret,
+      internal::kNoiseParametersForLevel[parameters().noise_level],
+      bytes());
 }
 
 }  // namespace rappor

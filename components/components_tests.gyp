@@ -618,6 +618,7 @@
       'rappor/rappor_prefs_unittest.cc',
       'rappor/rappor_service_unittest.cc',
       'rappor/rappor_utils_unittest.cc',
+      'rappor/reports_unittest.cc',
       'rappor/sampler_unittest.cc',
     ],
     'rlz_unittest_sources': [

@@ -77,6 +77,7 @@ source_set("unit_tests") {
     "rappor_prefs_unittest.cc",
     "rappor_service_unittest.cc",
     "rappor_utils_unittest.cc",
+    "reports_unittest.cc",
     "sampler_unittest.cc",
   ]
 
