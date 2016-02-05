@@ -110,11 +110,14 @@ class ChromeDriver(object):
       options['debuggerAddress'] = debugger_address
 
     if logging_prefs:
+      assert type(logging_prefs) is dict
       log_types = ['client', 'driver', 'browser', 'server', 'performance']
       log_levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'SEVERE', 'OFF']
       for log_type, log_level in logging_prefs.iteritems():
         assert log_type in log_types
         assert log_level in log_levels
+    else:
+      logging_prefs = {}
 
     download_prefs = {}
     if download_dir:
