@@ -367,8 +367,12 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
     if (firstEventTime > startFrame / sampleRate) {
         // |fillToFrame| is an exclusive upper bound, so use ceil() to compute the bound from the
         // firstEventTime.
-        size_t fillToFrame = std::min(endFrame, static_cast<size_t>(ceil(firstEventTime * sampleRate)));
+        size_t fillToFrame = endFrame;
+        double firstEventFrame = ceil(firstEventTime * sampleRate);
+        if (endFrame > firstEventFrame)
+            fillToFrame = static_cast<size_t>(firstEventFrame);
         ASSERT(fillToFrame >= startFrame);
+
         fillToFrame -= startFrame;
         fillToFrame = std::min(fillToFrame, static_cast<size_t>(numberOfValues));
         for (; writeIndex < fillToFrame; ++writeIndex)
@@ -647,9 +651,18 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                     // instead of the next event time.
                     size_t nextEventFillToFrame = fillToFrame;
 
-                    // Use ceil here for the same reason as using ceil above: fillToEndFrame is an
-                    // exclusive upper bound of the last frame to be computed.
-                    fillToEndFrame = std::min(endFrame, static_cast<size_t>(ceil(sampleRate*(time1 + duration))));
+                    // fillToEndFrame = min(endFrame, ceil(sampleRate * (time1 + duration))), but
+                    // compute this carefully in case sampleRate*(time1 + duration) is huge.
+                    // fillToEndFrame is an exclusive upper bound of the last frame to be computed,
+                    // so ceil is used.
+                    {
+                        double curveEndFrame = ceil(sampleRate*(time1 + duration));
+                        if (endFrame > curveEndFrame)
+                            fillToEndFrame = static_cast<size_t>(curveEndFrame);
+                        else
+                            fillToEndFrame = endFrame;
+                    }
+
                     // |fillToFrame| can be less than |startFrame| when the end of the
                     // setValueCurve automation has been reached, but the next automation has not
                     // yet started. In this case, |fillToFrame| is clipped to |time1|+|duration|

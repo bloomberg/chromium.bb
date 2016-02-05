@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="resources/audioparam-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <title>Test setValueCurveAtTime with Huge Duration</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioParam setValueCurveAtTime() with Huge Duration.");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      var renderFrames = 1000;
+      
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("long duration", function (done) {
+        // We only need to generate a small number of frames for this test.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var src = context.createBufferSource();
+
+        // Constant source of amplitude 1, looping.
+        src.buffer = createConstantBuffer(context, 1, 1);
+        src.loop = true;
+
+        // Automate the gain with a setValueCurve with a very long duration.  The duration should
+        // produce a frame number greater than 2^64 (larger than the largest size_t value).
+        var gain = context.createGain();
+        var duration = Math.pow(2, 64);
+        var curve = Float32Array.from([0, 1]);
+        gain.gain.setValueCurveAtTime(curve, 0, duration);
+
+        // Create the graph and go!
+        src.connect(gain);
+        gain.connect(context.destination);
+        src.start();
+
+        context.startRendering().then(function (result) {
+           // Find the maximum value of the buffer.
+           console.log(result);
+           var max = Math.max.apply(null, result.getChannelData(0));
+
+           // The automation does linear interpolation between 0 and 1 from time 0 to duration.
+           // Hence the max value of the interpolation occurs at the end of the rendering.  Compute
+           // this value.
+
+           var expectedMax = (renderFrames / sampleRate) * (1 / duration);
+
+           var message = "setValueCurve([" + curve + "], 0, " + duration + ")";
+
+           success = Should("Max amplitude of " + message, max).beLessThanOrEqualTo(expectedMax);
+
+           if (success)
+             testPassed(message + " correctly rendered.")
+           else
+             testFailed(message + " incorrectly rendered with a peak value of " + max);
+        }).then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+Test Scheduled Soruces with Huge Time Limits.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Output from AudioBufferSource.stop(1e+300) contains only the constant 1.
+PASS Peak amplitude from oscillator.stop(1e+300) is greater than 0.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

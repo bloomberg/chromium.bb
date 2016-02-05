@@ -1,0 +1,12 @@
+CONSOLE MESSAGE: line 44: [object AudioBuffer]
+Test AudioParam setValueCurveAtTime() with Huge Duration.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Max amplitude of setValueCurve([0,1], 0, 18446744073709552000) is less than or equal to 1.1293772630057337e-21.
+PASS setValueCurve([0,1], 0, 18446744073709552000) correctly rendered.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

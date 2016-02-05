@@ -554,6 +554,27 @@ var Should = (function () {
         return this._success;
     }
 
+    // Check if |target| is greater than |value|.
+    //
+    // Example:
+    // Should("SNR", snr).beGreaterThan(100);
+    // Result:
+    // "PASS SNR is greater than 100"
+    // "FAIL SNR (n) is not greater than 100"
+    ShouldModel.prototype.beGreaterThan = function (value) {
+        var type = typeof value;
+        this._assert(type === 'number' || type === 'string',
+            'value should be number or string for', value);
+
+        this._checkNaN(value, 'EXPECTED');
+
+        if (this.target > value)
+            this._testPassed("is greater than " + value);
+        else
+            this._testFailed("(" + this.target + ") is not greater than " + value);
+        return this._success;
+    }
+
     // Check if |target| is lest than or equal to |value|.
     //
     // Example:

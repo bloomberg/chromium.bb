@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="resources/audioparam-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <title>Test Scheduled Sources with Huge Time Limits</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test Scheduled Soruces with Huge Time Limits.");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      var renderFrames = 1000;
+      
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("buffersource: huge stop time", function (done) {
+        // We only need to generate a small number of frames for this test.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var src = context.createBufferSource();
+
+        // Constant source of amplitude 1, looping.
+        src.buffer = createConstantBuffer(context, 1, 1);
+        src.loop = true;
+
+        // Create the graph and go!
+        var endTime = 1e300;
+        src.connect(context.destination);
+        src.start();
+        src.stop(endTime);
+
+        context.startRendering().then(function (resultBuffer) {
+          var result = resultBuffer.getChannelData(0);
+          Should("Output from AudioBufferSource.stop(" + endTime + ")", result).beConstantValueOf(1);
+        }).then(done);
+      });
+
+      
+      audit.defineTask("oscillator: huge stop time", function (done) {
+        // We only need to generate a small number of frames for this test.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var src = context.createOscillator();
+
+        // Create the graph and go!
+        var endTime = 1e300;
+        src.connect(context.destination);
+        src.start();
+        src.stop(endTime);
+
+        context.startRendering().then(function (resultBuffer) {
+          var result = resultBuffer.getChannelData(0);
+          // The buffer should not be empty.  Just find the max and verify that it's not zero.
+          var max = Math.max.apply(null, result);
+          Should("Peak amplitude from oscillator.stop(" + endTime + ")", max).beGreaterThan(0);
+        }).then(done);
+      });
+
+      
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

@@ -54,7 +54,14 @@ double discreteTimeConstantForSampleRate(double timeConstant, double sampleRate)
 size_t timeToSampleFrame(double time, double sampleRate)
 {
     ASSERT(time >= 0);
-    return static_cast<size_t>(round(time * sampleRate));
+    double frame = round(time * sampleRate);
+
+    // Just return the largest possible size_t value if necessary.
+    if (frame >= std::numeric_limits<size_t>::max()) {
+        return std::numeric_limits<size_t>::max();
+    }
+
+    return static_cast<size_t>(frame);
 }
 
 bool isValidAudioBufferSampleRate(float sampleRate)
