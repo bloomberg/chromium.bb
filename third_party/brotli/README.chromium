@@ -16,3 +16,4 @@ Local Modifications:
 - .gitignore: Added.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
+- Cherry-picked 37a320dd81db8d546cd24a45b4c61d87b45dcade (04 Feb 2016)
