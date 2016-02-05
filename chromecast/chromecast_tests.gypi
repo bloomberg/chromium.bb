@@ -177,7 +177,6 @@
         }],
         ['OS!="android"', {
           'dependencies': [
-            'cast_renderer_media_unittests',
             'cast_shell_unittests',
             'cast_shell_browser_test',
             'media/media.gyp:cast_media_unittests',
