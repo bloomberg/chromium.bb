@@ -1174,6 +1174,8 @@ drm_output_set_cursor(struct drm_output *output)
 	output->cursor_view = NULL;
 	if (ev == NULL) {
 		drmModeSetCursor(b->drm.fd, output->crtc_id, 0, 0, 0);
+		output->cursor_plane.x = INT32_MIN;
+		output->cursor_plane.y = INT32_MIN;
 		return;
 	}
 
@@ -2430,7 +2432,8 @@ create_output_for_connector(struct drm_backend *b,
 	output->base.gamma_size = output->original_crtc->gamma_size;
 	output->base.set_gamma = drm_output_set_gamma;
 
-	weston_plane_init(&output->cursor_plane, b->compositor, 0, 0);
+	weston_plane_init(&output->cursor_plane, b->compositor,
+			  INT32_MIN, INT32_MIN);
 	weston_plane_init(&output->fb_plane, b->compositor, 0, 0);
 
 	weston_compositor_stack_plane(b->compositor, &output->cursor_plane, NULL);
