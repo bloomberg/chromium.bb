@@ -111,6 +111,14 @@ struct RouteMessage {
   array<uint8>? data;
 };
 
+// Maps to a ResultCode value in route_request_result.h
+// The enum defined here is a subset of those defined in route_request_result.h.
+enum RouteRequestResultCode {
+  UNKNOWN_ERROR,
+  OK,
+  TIMED_OUT
+};
+
 // Modeled after the MediaRouter interface defined in
 // chrome/browser/media/router/media_router.h
 interface MediaRouteProvider {
@@ -122,28 +130,42 @@ interface MediaRouteProvider {
   // same-tab scopes.
   // Since int types cannot be made optional, use -1 as |tab_id| in cases where
   // it is not applicable.
+  // If |timeout_millis| is positive, it will be used in place of the default
+  // timeout defined by Media Route Provider Manager.
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
   // If the operation failed, |route| will be null and |error_text|
   //     will be set.
+  // |result| will be set to OK if successful, or an error code if an error
+  // occurred.
   CreateRoute(string media_source,
               string sink_id,
               string original_presentation_id,
               string origin,
-              int32 tab_id) => (MediaRoute? route, string? error_text);
+              int32 tab_id,
+              int64 timeout_millis) => (MediaRoute? route,
+                                        string? error_text,
+                                        RouteRequestResultCode result_code);
 
   // Joins an established route given by |presentation_id|
   // with |media_source|.
   // |origin| and |tab_id| are used for validating same-origin/tab scopes.
   // (See CreateRoute for additional documentation)
+  // If |timeout_millis| is positive, it will be used in place of the default
+  // timeout defined by Media Route Provider Manager.
   // If the operation was successful, |route| will be defined and
   //     |error_text| will be null.
   // If the operation failed, |route| will be null and |error_text|
   //     will be set.
+  // |result| will be set to OK if successful, or an error code if an error
+  // occurred.
   JoinRoute(string media_source,
             string presentation_id,
             string origin,
-            int32 tab_id) => (MediaRoute? route, string? error_text);
+            int32 tab_id,
+            int64 timeout_millis) => (MediaRoute? route,
+                                      string? error_text,
+                                      RouteRequestResultCode result_code);
 
   // Connects an established route given by |route_id| with
   // |media_source|. The presentation ID of the route created will be
@@ -151,16 +173,23 @@ interface MediaRouteProvider {
   // The presentation ID will be used by the presentation API to refer to the
   // created route. |origin| and |tab_id| are used for validating
   // same-origin/tab scopes.
+  // If |timeout_millis| is positive, it will be used in place of the default
+  // timeout defined by Media Route Provider Manager.
   // (See CreateRoute for additional documentation)
   // If the operation was successful, |route| will be defined and
   // |error_text| will be null. If the operation failed, |route| will be null
   // and |error_text| will be set.
+  // |result| will be set to OK if successful, or an error code if an error
+  // occurred.
   ConnectRouteByRouteId(string media_source,
                         string route_id,
                         string presentation_id,
                         string origin,
-                        int32 tab_id) =>
-                            (MediaRoute? route, string? error_text);
+                        int32 tab_id,
+                        int64 timeout_millis) =>
+                            (MediaRoute? route,
+                             string? error_text,
+                             RouteRequestResultCode result_code);
 
   // Terminates the route specified by |route_id|.
   TerminateRoute(string route_id);

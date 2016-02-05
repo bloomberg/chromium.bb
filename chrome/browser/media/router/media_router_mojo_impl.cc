@@ -140,7 +140,8 @@ void MediaRouterMojoImpl::RegisterMediaRouteProvider(
   if (event_page_tracker_->IsEventPageSuspended(
           media_route_provider_extension_id_)) {
     DVLOG_WITH_INSTANCE(1)
-        << "ExecutePendingRequests was called while extension is suspended.";
+        << "RegisterMediaRouteProvider was called while extension is "
+           "suspended.";
     media_route_provider_.reset();
     SetWakeReason(MediaRouteProviderWakeReason::REGISTER_MEDIA_ROUTE_PROVIDER);
     AttemptWakeEventPage();
@@ -223,21 +224,25 @@ void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     const std::vector<MediaRouteResponseCallback>& callbacks,
     interfaces::MediaRoutePtr media_route,
-    const mojo::String& error_text) {
-  scoped_ptr<MediaRoute> route;
-  std::string actual_presentation_id;
-  std::string error;
+    const mojo::String& error_text,
+    interfaces::RouteRequestResultCode result_code) {
+  scoped_ptr<RouteRequestResult> result;
   if (media_route.is_null()) {
     // An error occurred.
     DCHECK(!error_text.is_null());
-    error = !error_text.get().empty() ? error_text.get() : "Unknown error.";
+    std::string error =
+        !error_text.get().empty() ? error_text.get() : "Unknown error.";
+
+    result = RouteRequestResult::FromError(
+        error, mojo::RouteRequestResultCodeFromMojo(result_code));
   } else {
-    route = media_route.To<scoped_ptr<MediaRoute>>();
-    actual_presentation_id = presentation_id;
+    result = RouteRequestResult::FromSuccess(
+        media_route.To<scoped_ptr<MediaRoute>>(), presentation_id);
   }
 
+  // TODO(imcheng): Add UMA histogram based on result code (crbug.com/583044).
   for (const MediaRouteResponseCallback& callback : callbacks)
-    callback.Run(route.get(), actual_presentation_id, error);
+    callback.Run(*result);
 }
 
 void MediaRouterMojoImpl::CreateRoute(
@@ -245,21 +250,25 @@ void MediaRouterMojoImpl::CreateRoute(
     const MediaSink::Id& sink_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "", "Invalid origin");
+      callback.Run(*result);
     return;
   }
 
   SetWakeReason(MediaRouteProviderWakeReason::CREATE_ROUTE);
   int tab_id = SessionTabHelper::IdForTab(web_contents);
-  RunOrDefer(base::Bind(
-      &MediaRouterMojoImpl::DoCreateRoute, base::Unretained(this), source_id,
-      sink_id, origin.is_empty() ? "" : origin.spec(), tab_id, callbacks));
+  RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoCreateRoute,
+                        base::Unretained(this), source_id, sink_id,
+                        origin.is_empty() ? "" : origin.spec(), tab_id,
+                        callbacks, timeout));
 }
 
 void MediaRouterMojoImpl::JoinRoute(
@@ -267,13 +276,16 @@ void MediaRouterMojoImpl::JoinRoute(
     const std::string& presentation_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "", "Invalid origin");
+      callback.Run(*result);
     return;
   }
 
@@ -282,7 +294,7 @@ void MediaRouterMojoImpl::JoinRoute(
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoJoinRoute,
                         base::Unretained(this), source_id, presentation_id,
                         origin.is_empty() ? "" : origin.spec(), tab_id,
-                        callbacks));
+                        callbacks, timeout));
 }
 
 void MediaRouterMojoImpl::ConnectRouteByRouteId(
@@ -290,13 +302,16 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!origin.is_valid()) {
     DVLOG_WITH_INSTANCE(1) << "Invalid origin: " << origin;
+    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "", "Invalid origin");
+      callback.Run(*result);
     return;
   }
 
@@ -305,7 +320,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
   RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoConnectRouteByRouteId,
                         base::Unretained(this), source_id, route_id,
                         origin.is_empty() ? "" : origin.spec(), tab_id,
-                        callbacks));
+                        callbacks, timeout));
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
@@ -518,15 +533,18 @@ void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSink::Id& sink_id,
     const std::string& origin,
     int tab_id,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   std::string presentation_id("mr_");
   presentation_id += base::GenerateGUID();
   DVLOG_WITH_INSTANCE(1) << "DoCreateRoute " << source_id << "=>" << sink_id
                          << ", presentation ID: " << presentation_id;
+
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id,
+      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-          base::Unretained(this), presentation_id, callbacks));
+                 base::Unretained(this), presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -534,13 +552,16 @@ void MediaRouterMojoImpl::DoJoinRoute(
     const std::string& presentation_id,
     const std::string& origin,
     int tab_id,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   DVLOG_WITH_INSTANCE(1) << "DoJoinRoute " << source_id
                          << ", presentation ID: " << presentation_id;
+
   media_route_provider_->JoinRoute(
       source_id, presentation_id, origin, tab_id,
+      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-          base::Unretained(this), presentation_id, callbacks));
+                 base::Unretained(this), presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoConnectRouteByRouteId(
@@ -548,16 +569,19 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const std::string& origin,
     int tab_id,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   std::string presentation_id("mr_");
   presentation_id += base::GenerateGUID();
   DVLOG_WITH_INSTANCE(1) << "DoConnectRouteByRouteId " << source_id
                          << ", route ID: " << route_id
                          << ", presentation ID: " << presentation_id;
+
   media_route_provider_->ConnectRouteByRouteId(
       source_id, route_id, presentation_id, origin, tab_id,
+      timeout > base::TimeDelta() ? timeout.InMilliseconds() : 0,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-          base::Unretained(this), presentation_id, callbacks));
+                 base::Unretained(this), presentation_id, callbacks));
 }
 
 void MediaRouterMojoImpl::DoTerminateRoute(const MediaRoute::Id& route_id) {

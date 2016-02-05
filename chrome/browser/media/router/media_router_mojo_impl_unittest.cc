@@ -67,6 +67,7 @@ const char kPresentationId[] = "presentationId";
 const char kOrigin[] = "http://origin/";
 const int kInvalidTabId = -1;
 const uint8_t kBinaryMessage[] = {0x01, 0x02, 0x03, 0x04};
+const int kTimeoutMillis = 5 * 1000;
 
 bool ArePresentationSessionMessagesEqual(
     const content::PresentationSessionMessage* expected,
@@ -96,10 +97,15 @@ interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
 
 class RouteResponseCallbackHandler {
  public:
-  MOCK_METHOD3(Invoke,
+  void Invoke(const RouteRequestResult& result) {
+    DoInvoke(result.route(), result.presentation_id(), result.error(),
+             result.result_code());
+  }
+  MOCK_METHOD4(DoInvoke,
                void(const MediaRoute* route,
                     const std::string& presentation_id,
-                    const std::string& error_text));
+                    const std::string& error_text,
+                    RouteRequestResult::ResultCode result_code));
 };
 
 class SendMessageCallbackHandler {
@@ -179,63 +185,68 @@ TEST_F(MediaRouterMojoImplTest, CreateRoute) {
   MediaSource media_source(kSource);
   MediaRoute expected_route(kRouteId, media_source,
                             kSinkId, "", false, "", false);
-  interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
-  route->media_source = kSource;
-  route->media_sink_id = kSinkId;
-  route->media_route_id = kRouteId;
-  route->description = kDescription;
-  route->is_local = true;
-  route->for_display = true;
 
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
   // in runnable parameter lists.
   EXPECT_CALL(mock_media_route_provider_,
               CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
-                          mojo::String(kOrigin), kInvalidTabId, _))
-      .WillOnce(Invoke([&route](
-          const mojo::String& source, const mojo::String& sink,
-          const mojo::String& presentation_id, const mojo::String& origin,
-          int tab_id,
-          const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
-        cb.Run(std::move(route), mojo::String());
-      }));
+                          mojo::String(kOrigin), kInvalidTabId, _, _))
+      .WillOnce(Invoke(
+          [](const mojo::String& source, const mojo::String& sink,
+             const mojo::String& presentation_id, const mojo::String& origin,
+             int tab_id, int64_t timeout_millis,
+             const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
+            interfaces::MediaRoutePtr route = interfaces::MediaRoute::New();
+            route->media_source = kSource;
+            route->media_sink_id = kSinkId;
+            route->media_route_id = kRouteId;
+            route->description = kDescription;
+            route->is_local = true;
+            route->for_display = true;
+            cb.Run(std::move(route), mojo::String(),
+                   interfaces::RouteRequestResultCode::OK);
+          }));
 
   base::RunLoop run_loop;
   RouteResponseCallbackHandler handler;
-  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""))
+  EXPECT_CALL(handler, DoInvoke(Pointee(Equals(expected_route)), Not(""), "",
+                                RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), nullptr,
-                        route_response_callbacks);
+                        route_response_callbacks,
+                        base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 
 TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
-  EXPECT_CALL(mock_media_route_provider_,
-              CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
-                          mojo::String(kOrigin), kInvalidTabId, _))
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      CreateRoute(mojo::String(kSource), mojo::String(kSinkId), _,
+                  mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& sink,
              const mojo::String& presentation_id, const mojo::String& origin,
-             int tab_id,
+             int tab_id, int64_t timeout_millis,
              const interfaces::MediaRouteProvider::CreateRouteCallback& cb) {
-            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError));
+            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
+                   interfaces::RouteRequestResultCode::TIMED_OUT);
           }));
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  EXPECT_CALL(handler, Invoke(nullptr, "", kError))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+  EXPECT_CALL(handler,
+              DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->CreateRoute(kSource, kSinkId, GURL(kOrigin), nullptr,
-                        route_response_callbacks);
+                        route_response_callbacks,
+                        base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 
@@ -254,50 +265,56 @@ TEST_F(MediaRouterMojoImplTest, JoinRoute) {
   // Use a lambda function as an invocation target here to work around
   // a limitation with GMock::Invoke that prevents it from using move-only types
   // in runnable parameter lists.
-  EXPECT_CALL(mock_media_route_provider_,
-              JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
-                        mojo::String(kOrigin), kInvalidTabId, _))
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
+                mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& presentation_id,
-          const mojo::String& origin, int tab_id,
+          const mojo::String& origin, int tab_id, int64_t timeout_millis,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
-        cb.Run(std::move(route), mojo::String());
+        cb.Run(std::move(route), mojo::String(),
+               interfaces::RouteRequestResultCode::OK);
       }));
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""))
+  EXPECT_CALL(handler, DoInvoke(Pointee(Equals(expected_route)), Not(""), "",
+                                RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
-                      route_response_callbacks);
+                      route_response_callbacks,
+                      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 
 TEST_F(MediaRouterMojoImplTest, JoinRouteFails) {
-  EXPECT_CALL(mock_media_route_provider_,
-              JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
-                        mojo::String(kOrigin), kInvalidTabId, _))
+  EXPECT_CALL(
+      mock_media_route_provider_,
+      JoinRoute(mojo::String(kSource), mojo::String(kPresentationId),
+                mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
       .WillOnce(Invoke(
           [](const mojo::String& source, const mojo::String& presentation_id,
-             const mojo::String& origin, int tab_id,
+             const mojo::String& origin, int tab_id, int64_t timeout_millis,
              const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
-            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError));
+            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
+                   interfaces::RouteRequestResultCode::TIMED_OUT);
           }));
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  EXPECT_CALL(handler, Invoke(nullptr, "", kError))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+  EXPECT_CALL(handler,
+              DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
   router()->JoinRoute(kSource, kPresentationId, GURL(kOrigin), nullptr,
-                      route_response_callbacks);
+                      route_response_callbacks,
+                      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 
@@ -317,54 +334,57 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteId) {
   // a limitation with GMock::Invoke that prevents it from using move-only types
   // in runnable parameter lists.
   EXPECT_CALL(mock_media_route_provider_,
-              ConnectRouteByRouteId(mojo::String(kSource),
-                                    mojo::String(kRouteId), _,
-                                    mojo::String(kOrigin), kInvalidTabId, _))
+              ConnectRouteByRouteId(
+                  mojo::String(kSource), mojo::String(kRouteId), _,
+                  mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
       .WillOnce(Invoke([&route](
           const mojo::String& source, const mojo::String& route_id,
-          const mojo::String& presentation_id,
-          const mojo::String& origin, int tab_id,
+          const mojo::String& presentation_id, const mojo::String& origin,
+          int tab_id, int64_t timeout_millis,
           const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
-        cb.Run(std::move(route), mojo::String());
+        cb.Run(std::move(route), mojo::String(),
+               interfaces::RouteRequestResultCode::OK);
       }));
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  EXPECT_CALL(handler, Invoke(Pointee(Equals(expected_route)), Not(""), ""))
+  EXPECT_CALL(handler, DoInvoke(Pointee(Equals(expected_route)), Not(""), "",
+                                RouteRequestResult::OK))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->ConnectRouteByRouteId(kSource, kRouteId, GURL(kOrigin), nullptr,
-                                  route_response_callbacks);
+  router()->ConnectRouteByRouteId(
+      kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 
 TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
   EXPECT_CALL(mock_media_route_provider_,
-              ConnectRouteByRouteId(mojo::String(kSource),
-                                    mojo::String(kRouteId), _,
-                                    mojo::String(kOrigin), kInvalidTabId, _))
+              ConnectRouteByRouteId(
+                  mojo::String(kSource), mojo::String(kRouteId), _,
+                  mojo::String(kOrigin), kInvalidTabId, kTimeoutMillis, _))
       .WillOnce(Invoke(
-          [](const mojo::String& source,
-             const mojo::String& route_id,
-             const mojo::String& presentation_id,
-             const mojo::String& origin, int tab_id,
+          [](const mojo::String& source, const mojo::String& route_id,
+             const mojo::String& presentation_id, const mojo::String& origin,
+             int tab_id, int64_t timeout_millis,
              const interfaces::MediaRouteProvider::JoinRouteCallback& cb) {
-            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError));
+            cb.Run(interfaces::MediaRoutePtr(), mojo::String(kError),
+                   interfaces::RouteRequestResultCode::TIMED_OUT);
           }));
 
   RouteResponseCallbackHandler handler;
   base::RunLoop run_loop;
-  EXPECT_CALL(handler, Invoke(nullptr, "", kError))
-      .WillOnce(InvokeWithoutArgs([&run_loop]() {
-        run_loop.Quit();
-      }));
+  EXPECT_CALL(handler,
+              DoInvoke(nullptr, "", kError, RouteRequestResult::TIMED_OUT))
+      .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
   route_response_callbacks.push_back(base::Bind(
       &RouteResponseCallbackHandler::Invoke, base::Unretained(&handler)));
-  router()->ConnectRouteByRouteId(kSource, kRouteId, GURL(kOrigin), nullptr,
-                                  route_response_callbacks);
+  router()->ConnectRouteByRouteId(
+      kSource, kRouteId, GURL(kOrigin), nullptr, route_response_callbacks,
+      base::TimeDelta::FromMilliseconds(kTimeoutMillis));
   run_loop.Run();
 }
 

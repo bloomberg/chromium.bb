@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 
 #include "chrome/browser/media/router/media_source_helper.h"
+#include "chrome/browser/media/router/route_request_result.h"
 
 using content::PresentationSessionInfo;
 using content::PresentationError;
@@ -57,15 +58,13 @@ void CreatePresentationConnectionRequest::InvokeErrorCallback(
 // static
 void CreatePresentationConnectionRequest::HandleRouteResponse(
     scoped_ptr<CreatePresentationConnectionRequest> presentation_request,
-    const MediaRoute* route,
-    const std::string& presentation_id,
-    const std::string& error) {
-  if (!route) {
-    presentation_request->InvokeErrorCallback(
-        content::PresentationError(content::PRESENTATION_ERROR_UNKNOWN, error));
+    const RouteRequestResult& result) {
+  if (!result.route()) {
+    presentation_request->InvokeErrorCallback(content::PresentationError(
+        content::PRESENTATION_ERROR_UNKNOWN, result.error()));
   } else {
-    presentation_request->InvokeSuccessCallback(presentation_id,
-                                                route->media_route_id());
+    presentation_request->InvokeSuccessCallback(
+        result.presentation_id(), result.route()->media_route_id());
   }
 }
 

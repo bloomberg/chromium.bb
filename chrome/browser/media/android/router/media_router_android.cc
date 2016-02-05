@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
+#include "chrome/browser/media/router/route_request_result.h"
 #include "jni/ChromeMediaRouter_jni.h"
 #include "url/gurl.h"
 
@@ -71,10 +72,14 @@ void MediaRouterAndroid::CreateRoute(
     const MediaSink::Id& sink_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
+  // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
+    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "", "Invalid origin");
+      callback.Run(*result);
     return;
   }
 
@@ -121,7 +126,8 @@ void MediaRouterAndroid::ConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
   NOTIMPLEMENTED();
 }
 
@@ -130,10 +136,14 @@ void MediaRouterAndroid::JoinRoute(
     const std::string& presentation_id,
     const GURL& origin,
     content::WebContents* web_contents,
-    const std::vector<MediaRouteResponseCallback>& callbacks) {
+    const std::vector<MediaRouteResponseCallback>& callbacks,
+    base::TimeDelta timeout) {
+  // TODO(avayvod): Implement timeouts (crbug.com/583036).
   if (!origin.is_valid()) {
+    scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
+        "Invalid origin", RouteRequestResult::INVALID_ORIGIN);
     for (const MediaRouteResponseCallback& callback : callbacks)
-      callback.Run(nullptr, "", "Invalid origin");
+      callback.Run(*result);
     return;
   }
 
@@ -365,8 +375,10 @@ void MediaRouterAndroid::OnRouteCreated(
                    jis_local, std::string(),
                    true);  // TODO(avayvod): Populate for_display.
 
+  scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
+      make_scoped_ptr(new MediaRoute(route)), request->presentation_id);
   for (const MediaRouteResponseCallback& callback : request->callbacks)
-    callback.Run(&route, request->presentation_id, std::string());
+    callback.Run(*result);
 
   route_requests_.Remove(jroute_request_id);
 
@@ -384,10 +396,12 @@ void MediaRouterAndroid::OnRouteRequestError(
   if (!request)
     return;
 
-  std::string error_text = ConvertJavaStringToUTF8(env, jerror_text);
-
+  // TODO(imcheng): Provide a more specific result code.
+  scoped_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromError(ConvertJavaStringToUTF8(env, jerror_text),
+                                    RouteRequestResult::UNKNOWN_ERROR);
   for (const MediaRouteResponseCallback& callback : request->callbacks)
-    callback.Run(nullptr, std::string(), error_text);
+    callback.Run(*result);
 
   route_requests_.Remove(jroute_request_id);
 }

@@ -35,6 +35,7 @@ namespace media_router {
 class MediaRoute;
 class MediaSinksObserver;
 class PresentationFrameManager;
+class RouteRequestResult;
 
 // Implementation of PresentationServiceDelegate that interfaces an
 // instance of WebContents with the Chrome Media Router. It uses the Media
@@ -132,9 +133,7 @@ class PresentationServiceDelegateImpl
   // Callback invoked when a default PresentationRequest is started from a
   // browser-initiated dialog.
   void OnRouteResponse(const PresentationRequest& request,
-                       const MediaRoute* route,
-                       const std::string& presentation_id,
-                       const std::string& error);
+                       const RouteRequestResult& result);
 
   // Adds / removes an observer for listening to default PresentationRequest
   // changes. This class does not own |observer|. When |observer| is about to
@@ -188,9 +187,7 @@ class PresentationServiceDelegateImpl
       const content::PresentationSessionInfo& session,
       const content::PresentationSessionStartedCallback& success_cb,
       const content::PresentationSessionErrorCallback& error_cb,
-      const MediaRoute* route,
-      const std::string& presentation_id,
-      const std::string& error_text);
+      const RouteRequestResult& result);
 
   void OnStartSessionSucceeded(
       int render_process_id,

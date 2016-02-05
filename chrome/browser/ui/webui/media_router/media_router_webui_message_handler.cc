@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/web_ui.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -59,8 +60,6 @@ const char kOnInitialDataReceived[] = "onInitialDataReceived";
 
 // JS function names.
 const char kSetInitialData[] = "media_router.ui.setInitialData";
-const char kNotifyRouteCreationTimeout[] =
-    "media_router.ui.onNotifyRouteCreationTimeout";
 const char kOnCreateRouteResponseReceived[] =
     "media_router.ui.onCreateRouteResponseReceived";
 const char kSetIssue[] = "media_router.ui.setIssue";
@@ -249,11 +248,6 @@ void MediaRouterWebUIMessageHandler::UpdateMaxDialogHeight(int height) {
   DVLOG(2) << "UpdateMaxDialogHeight";
   web_ui()->CallJavascriptFunction(kUpdateMaxHeight,
                                    base::FundamentalValue(height));
-}
-
-void MediaRouterWebUIMessageHandler::NotifyRouteCreationTimeout() {
-  DVLOG(2) << "NotifyRouteCreationTimeout";
-  web_ui()->CallJavascriptFunction(kNotifyRouteCreationTimeout);
 }
 
 void MediaRouterWebUIMessageHandler::RegisterMessages() {
@@ -689,6 +683,10 @@ bool MediaRouterWebUIMessageHandler::ActOnIssueType(
     // Do nothing; no other issue action types require any other action.
     return true;
   }
+}
+
+void MediaRouterWebUIMessageHandler::SetWebUIForTest(content::WebUI* web_ui) {
+  set_web_ui(web_ui);
 }
 
 }  // namespace media_router

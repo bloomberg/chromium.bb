@@ -31,21 +31,6 @@ class MockMediaRouterUI : public MediaRouterUI {
   MOCK_CONST_METHOD0(GetRouteProviderExtensionId, const std::string&());
 };
 
-class TestingMediaRouterWebUIMessageHandler
-    : public MediaRouterWebUIMessageHandler {
- public:
-  TestingMediaRouterWebUIMessageHandler(content::WebUI* web_ui,
-      MediaRouterUI* media_router_ui)
-          : MediaRouterWebUIMessageHandler(media_router_ui) {
-    set_web_ui(web_ui);
-  }
-
-  ~TestingMediaRouterWebUIMessageHandler() override { set_web_ui(nullptr); }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestingMediaRouterWebUIMessageHandler);
-};
-
 class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
  public:
   MediaRouterWebUIMessageHandlerTest()
@@ -60,8 +45,9 @@ class MediaRouterWebUIMessageHandlerTest : public MediaRouterTest {
     web_ui_->set_web_contents(
         browser()->tab_strip_model()->GetActiveWebContents());
     mock_media_router_ui_.reset(new MockMediaRouterUI(web_ui_.get()));
-    handler_.reset(new TestingMediaRouterWebUIMessageHandler(
-        web_ui_.get(), mock_media_router_ui_.get()));
+    handler_.reset(
+        new MediaRouterWebUIMessageHandler(mock_media_router_ui_.get()));
+    handler_->SetWebUIForTest(web_ui_.get());
   }
 
   void TearDown() override {

@@ -22,6 +22,8 @@ struct PresentationSessionInfo;
 
 namespace media_router {
 
+class RouteRequestResult;
+
 // Holds parameters for creating a presentation session.
 // A request object is created by presentation_service_delegate_impl when it
 // gets create-session request. The object is then passed to and owned by the
@@ -62,9 +64,7 @@ class CreatePresentationConnectionRequest {
   // Handle route creation/joining response by invoking the right callback.
   static void HandleRouteResponse(
       scoped_ptr<CreatePresentationConnectionRequest> presentation_request,
-      const MediaRoute* route,
-      const std::string& presentation_id,
-      const std::string& error);
+      const RouteRequestResult& result);
 
  private:
   const PresentationRequest presentation_request_;

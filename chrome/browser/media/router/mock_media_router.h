@@ -25,24 +25,27 @@ class MockMediaRouter : public MediaRouter {
   MockMediaRouter();
   ~MockMediaRouter() override;
 
-  MOCK_METHOD5(CreateRoute,
+  MOCK_METHOD6(CreateRoute,
                void(const MediaSource::Id& source,
                     const MediaSink::Id& sink_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks));
-  MOCK_METHOD5(JoinRoute,
+                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    base::TimeDelta timeout));
+  MOCK_METHOD6(JoinRoute,
                void(const MediaSource::Id& source,
                     const std::string& presentation_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks));
-  MOCK_METHOD5(ConnectRouteByRouteId,
+                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    base::TimeDelta timeout));
+  MOCK_METHOD6(ConnectRouteByRouteId,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,
                     const GURL& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks));
+                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    base::TimeDelta timeout));
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD3(SendRouteMessage,

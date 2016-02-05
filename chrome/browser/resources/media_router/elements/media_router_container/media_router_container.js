@@ -955,13 +955,6 @@ Polymer({
   },
 
   /**
-   * Handles timeout of previous create route attempt.
-   */
-  onNotifyRouteCreationTimeout: function() {
-    this.resetRouteCreationProperties_(false);
-  },
-
-  /**
    * Called when a sink is clicked.
    *
    * @param {!Event} event The event object.

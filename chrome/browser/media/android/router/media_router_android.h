@@ -32,24 +32,25 @@ class MediaRouterAndroid : public MediaRouterBase {
   const MediaRoute* FindRouteBySource(const MediaSource::Id& source_id) const;
 
   // MediaRouter implementation.
-  void CreateRoute(
-      const MediaSource::Id& source_id,
-      const MediaSink::Id& sink_id,
-      const GURL& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
-  void JoinRoute(
-      const MediaSource::Id& source,
-      const std::string& presentation_id,
-      const GURL& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
+  void CreateRoute(const MediaSource::Id& source_id,
+                   const MediaSink::Id& sink_id,
+                   const GURL& origin,
+                   content::WebContents* web_contents,
+                   const std::vector<MediaRouteResponseCallback>& callbacks,
+                   base::TimeDelta timeout) override;
+  void JoinRoute(const MediaSource::Id& source,
+                 const std::string& presentation_id,
+                 const GURL& origin,
+                 content::WebContents* web_contents,
+                 const std::vector<MediaRouteResponseCallback>& callbacks,
+                 base::TimeDelta timeout) override;
   void ConnectRouteByRouteId(
       const MediaSource::Id& source,
       const MediaRoute::Id& route_id,
       const GURL& origin,
       content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      base::TimeDelta timeout) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,

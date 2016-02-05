@@ -192,10 +192,12 @@ void CastConfigDelegateMediaRouter::RequestDeviceRefresh() {
 
 void CastConfigDelegateMediaRouter::CastToReceiver(
     const std::string& receiver_id) {
+  // TODO(imcheng): Pass in tab casting timeout.
   GetMediaRouter()->CreateRoute(
       media_router::MediaSourceForDesktop().id(), receiver_id,
       GURL("http://cros-cast-origin/"), nullptr,
-      std::vector<media_router::MediaRouteResponseCallback>());
+      std::vector<media_router::MediaRouteResponseCallback>(),
+      base::TimeDelta());
 }
 
 void CastConfigDelegateMediaRouter::StopCasting(const std::string& route_id) {

@@ -10,6 +10,7 @@
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/mock_screen_availability_listener.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
+#include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -193,7 +194,9 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultPresentationUrlCallback) {
   PresentationRequest request = delegate_impl_->GetDefaultPresentationRequest();
 
   // Should not trigger callback since route response is error.
-  delegate_impl_->OnRouteResponse(request, nullptr, "", "Error");
+  scoped_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromError("Error", RouteRequestResult::UNKNOWN_ERROR);
+  delegate_impl_->OnRouteResponse(request, *result);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
   // Should not trigger callback since request doesn't match.
@@ -201,18 +204,22 @@ TEST_F(PresentationServiceDelegateImplTest, DefaultPresentationUrlCallback) {
   PresentationRequest different_request(RenderFrameHostId(100, 200),
                                         presentation_url2,
                                         GURL("http://anotherFrameUrl.fakeUrl"));
-  MediaRoute different_route("differentRouteId",
-                             MediaSourceForPresentationUrl(presentation_url2),
-                             "mediaSinkId", "", true, "", true);
-  delegate_impl_->OnRouteResponse(different_request, &different_route,
-                                  "differentPresentationId", "");
+  result = RouteRequestResult::FromSuccess(
+      make_scoped_ptr(new MediaRoute(
+          "differentRouteId", MediaSourceForPresentationUrl(presentation_url2),
+          "mediaSinkId", "", true, "", true)),
+      "differentPresentationId");
+  delegate_impl_->OnRouteResponse(different_request, *result);
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(this));
 
   // Should trigger callback since request matches.
-  MediaRoute route("routeId", MediaSourceForPresentationUrl(presentation_url1),
-                   "mediaSinkId", "", true, "", true);
   EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
-  delegate_impl_->OnRouteResponse(request, &route, "presentationId", "");
+  result = RouteRequestResult::FromSuccess(
+      make_scoped_ptr(new MediaRoute(
+          "routeId", MediaSourceForPresentationUrl(presentation_url1),
+          "mediaSinkId", "", true, "", true)),
+      "presentationId");
+  delegate_impl_->OnRouteResponse(request, *result);
 }
 
 TEST_F(PresentationServiceDelegateImplTest,
@@ -276,7 +283,7 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
 
   // Set up a PresentationConnection so we can listen to it.
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  EXPECT_CALL(router_, JoinRoute(_, _, _, _, _))
+  EXPECT_CALL(router_, JoinRoute(_, _, _, _, _, _))
       .WillOnce(SaveArg<4>(&route_response_callbacks));
 
   const std::string kPresentationUrl("http://url1.fakeUrl");
@@ -293,10 +300,13 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
 
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionSuccess(_))
       .Times(1);
-  MediaRoute route("routeId", MediaSourceForPresentationUrl(kPresentationUrl),
-                   "mediaSinkId", "description", true, "", true);
+  scoped_ptr<RouteRequestResult> result = RouteRequestResult::FromSuccess(
+      make_scoped_ptr(new MediaRoute(
+          "routeId", MediaSourceForPresentationUrl(kPresentationUrl),
+          "mediaSinkId", "description", true, "", true)),
+      kPresentationId);
   for (const auto& route_response_callback : route_response_callbacks)
-    route_response_callback.Run(&route, kPresentationId, "");
+    route_response_callback.Run(*result);
 
   MockPresentationConnectionStateChangedCallback mock_callback;
   content::PresentationConnectionStateChangedCallback callback =

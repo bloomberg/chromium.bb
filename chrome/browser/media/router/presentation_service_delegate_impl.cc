@@ -21,6 +21,7 @@
 #include "chrome/browser/media/router/media_source_helper.h"
 #include "chrome/browser/media/router/presentation_media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
+#include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/presentation_screen_availability_listener.h"
 #include "content/public/browser/presentation_session.h"
@@ -661,21 +662,19 @@ void PresentationServiceDelegateImpl::OnJoinRouteResponse(
     const content::PresentationSessionInfo& session,
     const content::PresentationSessionStartedCallback& success_cb,
     const content::PresentationSessionErrorCallback& error_cb,
-    const MediaRoute* route,
-    const std::string& presentation_id,
-    const std::string& error_text) {
-  if (!route) {
+    const RouteRequestResult& result) {
+  if (!result.route()) {
     error_cb.Run(content::PresentationError(
-        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, error_text));
+        content::PRESENTATION_ERROR_NO_PRESENTATION_FOUND, result.error()));
   } else {
     DVLOG(1) << "OnJoinRouteResponse: "
-             << "route_id: " << route->media_route_id()
+             << "route_id: " << result.route()->media_route_id()
              << ", presentation URL: " << session.presentation_url
              << ", presentation ID: " << session.presentation_id;
-    DCHECK_EQ(session.presentation_id, presentation_id);
+    DCHECK_EQ(session.presentation_id, result.presentation_id());
     frame_manager_->OnPresentationSessionStarted(
         RenderFrameHostId(render_process_id, render_frame_id), session,
-        route->media_route_id());
+        result.route()->media_route_id());
     success_cb.Run(session);
   }
 }
@@ -745,7 +744,7 @@ void PresentationServiceDelegateImpl::JoinSession(
       GetLastCommittedURLForFrame(
           RenderFrameHostId(render_process_id, render_frame_id))
           .GetOrigin(),
-      web_contents_, route_response_callbacks);
+      web_contents_, route_response_callbacks, base::TimeDelta());
 }
 
 void PresentationServiceDelegateImpl::CloseConnection(
@@ -828,16 +827,14 @@ void PresentationServiceDelegateImpl::ListenForConnectionStateChange(
 
 void PresentationServiceDelegateImpl::OnRouteResponse(
     const PresentationRequest& presentation_request,
-    const MediaRoute* route,
-    const std::string& presentation_id,
-    const std::string& error) {
-  if (!route)
+    const RouteRequestResult& result) {
+  if (!result.route())
     return;
 
   content::PresentationSessionInfo session_info(
-      presentation_request.presentation_url(), presentation_id);
+      presentation_request.presentation_url(), result.presentation_id());
   frame_manager_->OnDefaultPresentationSessionStarted(
-      presentation_request, session_info, route->media_route_id());
+      presentation_request, session_info, result.route()->media_route_id());
 }
 
 void PresentationServiceDelegateImpl::AddDefaultPresentationRequestObserver(

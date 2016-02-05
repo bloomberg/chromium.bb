@@ -53,12 +53,8 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
 
   MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
       initiator()->GetBrowserContext());
-  router->CreateRoute(
-      source_id,
-      ConvertJavaStringToUTF8(env, jsink_id),
-      origin,
-      initiator(),
-      route_response_callbacks);
+  router->CreateRoute(source_id, ConvertJavaStringToUTF8(env, jsink_id), origin,
+                      initiator(), route_response_callbacks, base::TimeDelta());
 }
 
 void MediaRouterDialogControllerAndroid::OnRouteClosed(

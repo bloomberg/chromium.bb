@@ -19,6 +19,10 @@ class DictionaryValue;
 class ListValue;
 }  // namespace base
 
+namespace content {
+class WebUI;
+}
+
 namespace media_router {
 
 class Issue;
@@ -48,8 +52,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // the browser window changes.
   void UpdateMaxDialogHeight(int height);
 
-  // Notifies the dialog that the route creation attempt timed out.
-  void NotifyRouteCreationTimeout();
+  void SetWebUIForTest(content::WebUI* webui);
 
  private:
   // WebUIMessageHandler implementation.

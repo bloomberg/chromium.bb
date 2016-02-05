@@ -64,24 +64,25 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // MediaRouter implementation.
   // Execution of the requests is delegated to the Do* methods, which can be
   // enqueued for later use if the extension is temporarily suspended.
-  void CreateRoute(
-      const MediaSource::Id& source_id,
-      const MediaSink::Id& sink_id,
-      const GURL& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
-  void JoinRoute(
-      const MediaSource::Id& source_id,
-      const std::string& presentation_id,
-      const GURL& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
+  void CreateRoute(const MediaSource::Id& source_id,
+                   const MediaSink::Id& sink_id,
+                   const GURL& origin,
+                   content::WebContents* web_contents,
+                   const std::vector<MediaRouteResponseCallback>& callbacks,
+                   base::TimeDelta timeout) override;
+  void JoinRoute(const MediaSource::Id& source_id,
+                 const std::string& presentation_id,
+                 const GURL& origin,
+                 content::WebContents* web_contents,
+                 const std::vector<MediaRouteResponseCallback>& callbacks,
+                 base::TimeDelta timeout) override;
   void ConnectRouteByRouteId(
       const MediaSource::Id& source,
       const MediaRoute::Id& route_id,
       const GURL& origin,
       content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks) override;
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      base::TimeDelta timeout) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -210,17 +211,21 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                      const MediaSink::Id& sink_id,
                      const std::string& origin,
                      int tab_id,
-                     const std::vector<MediaRouteResponseCallback>& callbacks);
+                     const std::vector<MediaRouteResponseCallback>& callbacks,
+                     base::TimeDelta timeout);
   void DoJoinRoute(const MediaSource::Id& source_id,
                    const std::string& presentation_id,
                    const std::string& origin,
                    int tab_id,
-                   const std::vector<MediaRouteResponseCallback>& callbacks);
-  void DoConnectRouteByRouteId(const MediaSource::Id& source_id,
-                   const MediaRoute::Id& route_id,
-                   const std::string& origin,
-                   int tab_id,
-                   const std::vector<MediaRouteResponseCallback>& callbacks);
+                   const std::vector<MediaRouteResponseCallback>& callbacks,
+                   base::TimeDelta timeout);
+  void DoConnectRouteByRouteId(
+      const MediaSource::Id& source_id,
+      const MediaRoute::Id& route_id,
+      const std::string& origin,
+      int tab_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      base::TimeDelta timeout);
   void DoTerminateRoute(const MediaRoute::Id& route_id);
   void DoDetachRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
@@ -268,10 +273,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
   void RouteResponseReceived(
-    const std::string& presentation_id,
-    const std::vector<MediaRouteResponseCallback>& callbacks,
-    interfaces::MediaRoutePtr media_route,
-    const mojo::String& error_text);
+      const std::string& presentation_id,
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      interfaces::MediaRoutePtr media_route,
+      const mojo::String& error_text,
+      interfaces::RouteRequestResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
   // component extension. If |success| is false, the pending request queue is

@@ -44,6 +44,8 @@
       'presentation_session_messages_observer.cc',
       'presentation_session_messages_observer.h',
       'render_frame_host_id.h',
+      'route_request_result.cc',
+      'route_request_result.h',
     ],
     # Files that are only needed on desktop builds
     'media_router_non_android_sources': [

@@ -5,7 +5,9 @@
 #include "base/bind.h"
 #include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/mock_media_router.h"
+#include "chrome/browser/media/router/route_request_result.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -18,7 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::SaveArg;
+using testing::Return;
 
 namespace media_router {
 
@@ -32,21 +36,75 @@ class MockRoutesUpdatedCallback {
 class MediaRouterUITest : public ::testing::Test {
  public:
   MediaRouterUITest() {
+    initiator_.reset(content::WebContents::Create(
+        content::WebContents::CreateParams(&profile_)));
     web_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(&profile_)));
     web_ui_.set_web_contents(web_contents_.get());
     media_router_ui_.reset(new MediaRouterUI(&web_ui_));
+    message_handler_.reset(
+        new MediaRouterWebUIMessageHandler(media_router_ui_.get()));
+    EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_))
+        .Times(AnyNumber());
+    media_router_ui_->InitForTest(&mock_router_, initiator_.get(),
+                                  message_handler_.get());
+    message_handler_->SetWebUIForTest(&web_ui_);
   }
 
-  ~MediaRouterUITest() override = default;
+  ~MediaRouterUITest() override {
+    EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_))
+        .Times(AnyNumber());
+  }
 
  protected:
+  MockMediaRouter mock_router_;
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  scoped_ptr<content::WebContents> initiator_;
   content::TestWebUI web_ui_;
   scoped_ptr<content::WebContents> web_contents_;
   scoped_ptr<MediaRouterUI> media_router_ui_;
+  scoped_ptr<MediaRouterWebUIMessageHandler> message_handler_;
 };
+
+TEST_F(MediaRouterUITest, RouteRequestTimedOut) {
+  std::vector<MediaRouteResponseCallback> callbacks;
+  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _))
+      .WillOnce(SaveArg<4>(&callbacks));
+  media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
+
+  EXPECT_CALL(mock_router_, AddIssue(_));
+  scoped_ptr<RouteRequestResult> result =
+      RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
+}
+
+TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
+  EXPECT_CALL(mock_router_,
+              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60)));
+  media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
+}
+
+TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
+  EXPECT_CALL(mock_router_,
+              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120)));
+  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DESKTOP_MIRROR);
+}
+
+TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
+  PresentationRequest presentation_request(
+      RenderFrameHostId(0, 0), "https://fooUrl", GURL("https://frameUrl"));
+  media_router_ui_->OnDefaultPresentationChanged(presentation_request);
+
+  EXPECT_CALL(mock_router_,
+              CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20)));
+  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
+}
 
 TEST_F(MediaRouterUITest, SortedSinks) {
   std::vector<MediaSinkWithCastModes> unsorted_sinks;
@@ -77,13 +135,12 @@ TEST_F(MediaRouterUITest, SortedSinks) {
 }
 
 TEST_F(MediaRouterUITest, UIMediaRoutesObserverFiltersNonDisplayRoutes) {
-  MockMediaRouter mock_router;
-  EXPECT_CALL(mock_router, RegisterMediaRoutesObserver(_)).Times(1);
+  EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_)).Times(1);
   MediaSource media_source("mediaSource");
   MockRoutesUpdatedCallback mock_callback;
   scoped_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
-          &mock_router, media_source.id(),
+          &mock_router_, media_source.id(),
           base::Bind(&MockRoutesUpdatedCallback::OnRoutesUpdated,
                      base::Unretained(&mock_callback))));
 
@@ -110,21 +167,20 @@ TEST_F(MediaRouterUITest, UIMediaRoutesObserverFiltersNonDisplayRoutes) {
   EXPECT_TRUE(display_route_2.Equals(filtered_routes[1]));
   EXPECT_TRUE(filtered_routes[1].for_display());
 
-  EXPECT_CALL(mock_router, UnregisterMediaRoutesObserver(_)).Times(1);
+  EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_)).Times(1);
   observer.reset();
 }
 
 TEST_F(MediaRouterUITest,
     UIMediaRoutesObserverFiltersNonDisplayJoinableRoutes) {
-  MockMediaRouter mock_router;
-  EXPECT_CALL(mock_router, RegisterMediaRoutesObserver(_)).Times(1);
+  EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_)).Times(1);
   MediaSource media_source("mediaSource");
   MockRoutesUpdatedCallback mock_callback;
   scoped_ptr<MediaRouterUI::UIMediaRoutesObserver> observer(
       new MediaRouterUI::UIMediaRoutesObserver(
-          &mock_router, media_source.id(),
+          &mock_router_, media_source.id(),
           base::Bind(&MockRoutesUpdatedCallback::OnRoutesUpdated,
-                                   base::Unretained(&mock_callback))));
+                     base::Unretained(&mock_callback))));
 
   MediaRoute display_route_1("routeId1", media_source, "sinkId1",
                              "desc 1", true, "", true);
@@ -153,7 +209,7 @@ TEST_F(MediaRouterUITest,
   EXPECT_EQ(display_route_1.media_route_id(), filtered_joinable_route_ids[0]);
   EXPECT_EQ(display_route_2.media_route_id(), filtered_joinable_route_ids[1]);
 
-  EXPECT_CALL(mock_router, UnregisterMediaRoutesObserver(_)).Times(1);
+  EXPECT_CALL(mock_router_, UnregisterMediaRoutesObserver(_)).Times(1);
   observer.reset();
 }
 

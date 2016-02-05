@@ -11,13 +11,6 @@ cr.define('media_router.ui', function() {
   var container = null;
 
   /**
-   * Handles timeout of previous create route attempt.
-   */
-  function onNotifyRouteCreationTimeout() {
-    container.onNotifyRouteCreationTimeout();
-  }
-
-  /**
    * Handles response of previous create route attempt.
    *
    * @param {string} sinkId The ID of the sink to which the Media Route was
@@ -130,7 +123,6 @@ cr.define('media_router.ui', function() {
   }
 
   return {
-    onNotifyRouteCreationTimeout: onNotifyRouteCreationTimeout,
     onCreateRouteResponseReceived: onCreateRouteResponseReceived,
     setCastModeList: setCastModeList,
     setContainer: setContainer,

@@ -123,6 +123,43 @@ define('media_router_bindings', [
   }
 
   /**
+   * Parses the given route request Error object and converts it to the
+   * corresponding result code.
+   * @param {!Error} error
+   * @return {!mediaRouterMojom.RouteRequestResultCode}
+   */
+  function getRouteRequestResultCode_(error) {
+    if (error.message.startsWith('timeout'))
+      return mediaRouterMojom.RouteRequestResultCode.TIMED_OUT;
+    else
+      return mediaRouterMojom.RouteRequestResultCode.UNKNOWN_ERROR;
+  }
+
+  /**
+   * Creates and returns a successful route response from given route.
+   * @param {!MediaRoute} route
+   * @return {!Object}
+   */
+  function toSuccessRouteResponse_(route) {
+    return {
+        route: routeToMojo_(route),
+        result_code: mediaRouterMojom.RouteRequestResultCode.OK
+    };
+  }
+
+  /**
+   * Creates and returns a error route response from given Error object
+   * @param {!Error} error
+   * @return {!Object}
+   */
+  function toErrorRouteResponse_(error) {
+    return {
+        error_text: 'Error creating route: ' + error.message,
+        result_code: getRouteRequestResultCode_(error)
+    };
+  }
+
+  /**
    * Creates a new MediaRouter.
    * Converts a route struct to its Mojo form.
    * @param {!MediaRouterService} service
@@ -481,19 +518,23 @@ define('media_router_bindings', [
    *     requesting presentation. TODO(mfoltz): Remove.
    * @param {!string} origin Origin of site requesting presentation.
    * @param {!number} tabId ID of tab requesting presentation.
+   * @param {!number} timeoutMillis If positive, the timeout duration for the
+   *     request, measured in seconds. Otherwise, the default duration will be
+   *     used.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.createRoute =
-      function(sourceUrn, sinkId, presentationId, origin, tabId) {
+      function(sourceUrn, sinkId, presentationId, origin, tabId,
+          timeoutMillis) {
     return this.handlers_.createRoute(
-        sourceUrn, sinkId, presentationId, origin, tabId)
+        sourceUrn, sinkId, presentationId, origin, tabId, timeoutMillis)
         .then(function(route) {
-          return {route: routeToMojo_(route)};
-        }.bind(this))
-        .catch(function(err) {
-          return {error_text: 'Error creating route: ' + err.message};
+          return toSuccessRouteResponse_(route);
+        },
+        function(err) {
+          return toErrorRouteResponse_(err);
         });
   };
 
@@ -505,18 +546,22 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
+   * @param {!number} timeoutMillis If positive, the timeout duration for the
+   *     request, measured in seconds. Otherwise, the default duration will be
+   *     used.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.joinRoute =
-      function(sourceUrn, presentationId, origin, tabId) {
-    return this.handlers_.joinRoute(sourceUrn, presentationId, origin, tabId)
-        .then(function(newRoute) {
-          return {route: routeToMojo_(newRoute)};
+      function(sourceUrn, presentationId, origin, tabId, timeoutMillis) {
+    return this.handlers_.joinRoute(
+        sourceUrn, presentationId, origin, tabId, timeoutMillis)
+        .then(function(route) {
+          return toSuccessRouteResponse_(route);
         },
         function(err) {
-          return {error_text: 'Error joining route: ' + err.message};
+          return toErrorRouteResponse_(err);
         });
   };
 
@@ -529,19 +574,23 @@ define('media_router_bindings', [
    * @param {!string} presentationId Presentation ID to join.
    * @param {!string} origin Origin of site requesting join.
    * @param {!number} tabId ID of tab requesting join.
+   * @param {!number} timeoutMillis If positive, the timeout duration for the
+   *     request, measured in seconds. Otherwise, the default duration will be
+   *     used.
    * @return {!Promise.<!Object>} A Promise resolving to an object describing
    *     the newly created media route, or rejecting with an error message on
    *     failure.
    */
   MediaRouteProvider.prototype.connectRouteByRouteId =
-      function(sourceUrn, routeId, presentationId, origin, tabId) {
+      function(sourceUrn, routeId, presentationId, origin, tabId,
+          timeoutMillis) {
     return this.handlers_.connectRouteByRouteId(
-        sourceUrn, routeId, presentationId, origin, tabId)
-        .then(function(newRoute) {
-          return {route: routeToMojo_(newRoute)};
+        sourceUrn, routeId, presentationId, origin, tabId, timeoutMillis)
+        .then(function(route) {
+          return toSuccessRouteResponse_(route);
         },
         function(err) {
-          return {error_text: 'Error joining route: ' + err.message};
+          return toErrorRouteResponse_(err);
         });
   };
 
