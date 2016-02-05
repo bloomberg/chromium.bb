@@ -8,10 +8,17 @@ from __future__ import print_function
 
 import argparse
 
+from chromite.lib import cros_logging as logging
+
 from infra_libs.ts_mon import config
+import googleapiclient.discovery
 
 
-def setup_ts_mon_global_state():
+# google-api-client has too much noisey logging.
+googleapiclient.discovery.logger.setLevel(logging.WARNING)
+
+
+def SetupTsMonGlobalState():
   """Uses a dummy argument parser to get the default behavior from ts-mon."""
   parser = argparse.ArgumentParser()
   config.add_argparse_options(parser)

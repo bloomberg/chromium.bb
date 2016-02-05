@@ -1013,7 +1013,7 @@ def _SetupConnections(options, build_config):
 
   if run_type == _ENVIRONMENT_PROD:
     cidb.CIDBConnectionFactory.SetupProdCidb()
-    ts_mon_config.setup_ts_mon_global_state()
+    ts_mon_config.SetupTsMonGlobalState()
   elif run_type == _ENVIRONMENT_DEBUG:
     cidb.CIDBConnectionFactory.SetupDebugCidb()
   else:
