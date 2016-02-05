@@ -271,7 +271,14 @@ String HTMLInputElement::validationMessage() const
     if (customError())
         return customValidationMessage();
 
-    return m_inputType->validationMessage();
+    return m_inputType->validationMessage().first;
+}
+
+String HTMLInputElement::validationSubMessage() const
+{
+    if (!willValidate() || customError())
+        return String();
+    return m_inputType->validationMessage().second;
 }
 
 double HTMLInputElement::minimum() const

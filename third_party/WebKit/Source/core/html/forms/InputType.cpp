@@ -362,44 +362,50 @@ String InputType::valueMissingText() const
     return locale().queryString(WebLocalizedString::ValidationValueMissing);
 }
 
-String InputType::validationMessage() const
+std::pair<String, String> InputType::validationMessage() const
 {
     const String value = element().value();
 
     // The order of the following checks is meaningful. e.g. We'd like to show the
     // badInput message even if the control has other validation errors.
     if (hasBadInput())
-        return badInputText();
+        return std::make_pair(badInputText(), emptyString());
 
     if (valueMissing(value))
-        return valueMissingText();
+        return std::make_pair(valueMissingText(), emptyString());
 
     if (typeMismatch())
-        return typeMismatchText();
+        return std::make_pair(typeMismatchText(), emptyString());
 
-    if (patternMismatch(value))
-        return locale().queryString(WebLocalizedString::ValidationPatternMismatch);
+    if (patternMismatch(value)) {
+        // https://html.spec.whatwg.org/multipage/forms.html#attr-input-pattern
+        //   When an input element has a pattern attribute specified, authors
+        //   should include a title attribute to give a description of the
+        //   pattern. User agents may use the contents of this attribute, if it
+        //   is present, when informing the user that the pattern is not matched
+        return std::make_pair(locale().queryString(WebLocalizedString::ValidationPatternMismatch), element().fastGetAttribute(titleAttr).string());
+    }
 
     if (element().tooLong())
-        return locale().validationMessageTooLongText(value.length(), element().maxLength());
+        return std::make_pair(locale().validationMessageTooLongText(value.length(), element().maxLength()), emptyString());
 
     if (element().tooShort())
-        return locale().validationMessageTooShortText(value.length(), element().minLength());
+        return std::make_pair(locale().validationMessageTooShortText(value.length(), element().minLength()), emptyString());
 
     if (!isSteppable())
-        return emptyString();
+        return std::make_pair(emptyString(), emptyString());
 
     const Decimal numericValue = parseToNumberOrNaN(value);
     if (!numericValue.isFinite())
-        return emptyString();
+        return std::make_pair(emptyString(), emptyString());
 
     StepRange stepRange(createStepRange(RejectAny));
 
     if (numericValue < stepRange.minimum())
-        return rangeUnderflowText(stepRange.minimum());
+        return std::make_pair(rangeUnderflowText(stepRange.minimum()), emptyString());
 
     if (numericValue > stepRange.maximum())
-        return rangeOverflowText(stepRange.maximum());
+        return std::make_pair(rangeOverflowText(stepRange.maximum()), emptyString());
 
     if (stepRange.stepMismatch(numericValue)) {
         ASSERT(stepRange.hasStep());
@@ -407,14 +413,14 @@ String InputType::validationMessage() const
         String localizedCandidate1 = localizeValue(serialize(candidate1));
         Decimal candidate2 = candidate1 < numericValue ? candidate1 + stepRange.step() : candidate1 - stepRange.step();
         if (!candidate2.isFinite() || candidate2 < stepRange.minimum() || candidate2 > stepRange.maximum())
-            return locale().queryString(WebLocalizedString::ValidationStepMismatchCloseToLimit, localizedCandidate1);
+            return std::make_pair(locale().queryString(WebLocalizedString::ValidationStepMismatchCloseToLimit, localizedCandidate1), emptyString());
         String localizedCandidate2 = localizeValue(serialize(candidate2));
         if (candidate1 < candidate2)
-            return locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate1, localizedCandidate2);
-        return locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate2, localizedCandidate1);
+            return std::make_pair(locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate1, localizedCandidate2), emptyString());
+        return std::make_pair(locale().queryString(WebLocalizedString::ValidationStepMismatch, localizedCandidate2, localizedCandidate1), emptyString());
     }
 
-    return emptyString();
+    return std::make_pair(emptyString(), emptyString());
 }
 
 bool InputType::shouldSubmitImplicitly(Event* event)
@@ -691,7 +697,7 @@ bool InputType::supportsReadOnly() const
 
 String InputType::defaultToolTip() const
 {
-    return validationMessage();
+    return validationMessage().first;
 }
 
 Decimal InputType::findClosestTickMarkValue(const Decimal&)

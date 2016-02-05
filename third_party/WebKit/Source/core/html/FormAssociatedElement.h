@@ -86,6 +86,7 @@ public:
     virtual bool typeMismatch() const;
     virtual bool valueMissing() const;
     virtual String validationMessage() const;
+    virtual String validationSubMessage() const;
     bool valid() const;
     virtual void setCustomValidity(const String&);
 

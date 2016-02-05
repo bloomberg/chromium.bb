@@ -269,6 +269,11 @@ String FormAssociatedElement::validationMessage() const
     return customError() ? m_customValidationMessage : String();
 }
 
+String FormAssociatedElement::validationSubMessage() const
+{
+    return String();
+}
+
 void FormAssociatedElement::setCustomValidity(const String& error)
 {
     m_customValidationMessage = error;

@@ -1,5 +1,5 @@
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
-ValidationMessageClient: main-message=Please match the requested format. sub-message=
+ValidationMessageClient: main-message=Please match the requested format. sub-message=Should type 'Lorem ipsum'
 ValidationMessageClient: main-message=Please fill out this field. sub-message=
 ValidationMessageClient: main-message=Please select an item in the list. sub-message=
 ValidationMessageClient: main-message=Please fill out this field. sub-message=

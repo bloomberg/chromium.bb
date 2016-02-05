@@ -35,6 +35,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "public/platform/Platform.h"
+#include "wtf/LeakAnnotations.h"
 #include "wtf/MainThread.h"
 
 namespace blink {
@@ -252,6 +253,7 @@ void V8PerIsolateData::setDOMTemplate(const void* domTemplateKey, v8::Local<v8::
 v8::Local<v8::Context> V8PerIsolateData::ensureScriptRegexpContext()
 {
     if (!m_scriptRegexpScriptState) {
+        LEAK_SANITIZER_DISABLED_SCOPE;
         v8::Local<v8::Context> context(v8::Context::New(isolate()));
         m_scriptRegexpScriptState = ScriptState::create(context, DOMWrapperWorld::create(isolate()));
     }
