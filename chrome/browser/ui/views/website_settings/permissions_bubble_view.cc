@@ -170,6 +170,7 @@ class PermissionsBubbleDelegateView : public views::BubbleDelegateView,
   const gfx::FontList& GetTitleFontList() const override;
   base::string16 GetWindowTitle() const override;
   void OnWidgetDestroying(views::Widget* widget) override;
+  gfx::Size GetPreferredSize() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
   // ButtonListener:
@@ -343,6 +344,12 @@ void PermissionsBubbleDelegateView::OnWidgetDestroying(views::Widget* widget) {
     owner_->Closing();
     owner_ = nullptr;
   }
+}
+
+gfx::Size PermissionsBubbleDelegateView::GetPreferredSize() const {
+  // TODO(estade): bubbles should default to this width.
+  const int kWidth = 320 - GetInsets().width();
+  return gfx::Size(kWidth, GetHeightForWidth(kWidth));
 }
 
 void PermissionsBubbleDelegateView::GetAccessibleState(ui::AXViewState* state) {
