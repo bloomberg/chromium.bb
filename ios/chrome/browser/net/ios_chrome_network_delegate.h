@@ -20,10 +20,6 @@ class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
 
-namespace domain_reliability {
-class DomainReliabilityMonitor;
-}
-
 // IOSChromeNetworkDelegate is the central point from within the Chrome code to
 // add hooks into the network stack.
 class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
@@ -43,11 +39,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
     enable_do_not_track_ = enable_do_not_track;
   }
 
-  void set_domain_reliability_monitor(
-      domain_reliability::DomainReliabilityMonitor* monitor) {
-    domain_reliability_monitor_ = monitor;
-  }
-
   // Binds the pref members to |pref_service| and moves them to the IO thread.
   // This method should be called on the UI thread.
   static void InitializePrefsOnUIThread(BooleanPrefMember* enable_do_not_track,
@@ -58,8 +49,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
   int OnBeforeURLRequest(net::URLRequest* request,
                          const net::CompletionCallback& callback,
                          GURL* new_url) override;
-  void OnBeforeRedirect(net::URLRequest* request,
-                        const GURL& new_location) override;
   void OnCompleted(net::URLRequest* request, bool started) override;
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       net::URLRequest* request,
@@ -85,9 +74,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_do_not_track_;
-
-  // Weak, owned by our owner.
-  domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeNetworkDelegate);
 };

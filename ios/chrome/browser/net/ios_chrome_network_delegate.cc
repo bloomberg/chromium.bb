@@ -16,7 +16,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
-#include "components/domain_reliability/monitor.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -68,9 +67,7 @@ void RecordNetworkErrorHistograms(const net::URLRequest* request) {
 }  // namespace
 
 IOSChromeNetworkDelegate::IOSChromeNetworkDelegate()
-    : enable_do_not_track_(nullptr),
-      domain_reliability_monitor_(nullptr) {
-}
+    : enable_do_not_track_(nullptr) {}
 
 IOSChromeNetworkDelegate::~IOSChromeNetworkDelegate() {}
 
@@ -111,17 +108,9 @@ int IOSChromeNetworkDelegate::OnBeforeURLRequest(
   return net::OK;
 }
 
-void IOSChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
-                                                const GURL& new_location) {
-  if (domain_reliability_monitor_)
-    domain_reliability_monitor_->OnBeforeRedirect(request);
-}
-
 void IOSChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                            bool started) {
   RecordNetworkErrorHistograms(request);
-  if (domain_reliability_monitor_)
-    domain_reliability_monitor_->OnCompleted(request, started);
 }
 
 net::NetworkDelegate::AuthRequiredResponse
