@@ -175,6 +175,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   QuicErrorCode quic_connection_error_;
 
+  // SSLInfo from the underlying QuicSession.
+  SSLInfo ssl_info_;
+
   base::WeakPtrFactory<QuicHttpStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicHttpStream);

@@ -72,6 +72,11 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   request_time_ = base::Time::Now();
   priority_ = priority;
 
+  SSLInfo ssl_info;
+  bool success = session_->GetSSLInfo(&ssl_info);
+  DCHECK(success);
+  DCHECK(ssl_info.cert.get());
+
   int rv = stream_request_.StartRequest(
       session_, &stream_,
       base::Bind(&QuicHttpStream::OnStreamReady, weak_factory_.GetWeakPtr()));
@@ -110,12 +115,8 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   HostPortPair origin = HostPortPair::FromURL(request_info_->url);
   if (origin.Equals(HostPortPair("accounts.google.com", 443)) &&
       request_headers.HasHeader(HttpRequestHeaders::kCookie)) {
-    SSLInfo ssl_info;
-    bool secure_session =
-        session_->GetSSLInfo(&ssl_info) && ssl_info.cert.get();
-    DCHECK(secure_session);
     UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.CookieSentToAccountsOverChannelId",
-                          ssl_info.channel_id_sent);
+                          ssl_info_.channel_id_sent);
   }
   if (!stream_) {
     return ERR_CONNECTION_CLOSED;
@@ -263,8 +264,7 @@ bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
 }
 
 void QuicHttpStream::GetSSLInfo(SSLInfo* ssl_info) {
-  DCHECK(stream_);
-  session_->GetSSLInfo(ssl_info);
+  *ssl_info = ssl_info_;
 }
 
 void QuicHttpStream::GetSSLCertRequestInfo(
