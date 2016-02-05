@@ -88,6 +88,8 @@ private:
     // considered safe and allowed.
     static const int kSafeStackFrameSize = 32 * 1024;
 
+    static uintptr_t getFallbackStackLimit();
+
     static uintptr_t s_stackFrameLimit;
 #if ENABLE(ASSERT)
     static bool s_isEnabled;
