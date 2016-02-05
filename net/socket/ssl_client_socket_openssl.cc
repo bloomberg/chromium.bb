@@ -83,7 +83,7 @@ const char kDefaultSupportedNPNProtocol[] = "http/1.1";
 const int KDefaultOpenSSLBufferSize = 17 * 1024;
 
 // TLS extension number use for Token Binding.
-const unsigned int kTbExtNum = 30033;
+const unsigned int kTbExtNum = 24;
 
 // Token Binding ProtocolVersions supported.
 const uint8_t kTbProtocolVersionMajor = 0;
