@@ -384,6 +384,10 @@ const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
 // Boolean that indicates whether the browser should put up a confirmation
 // window when the user is attempting to quit. Mac only.
 const char kConfirmToQuitEnabled[] = "browser.confirm_to_quit";
+
+// Boolean that indicates whether the browser should hide the toolbar when it's
+// in fullscreen. Mac only.
+const char kHideFullscreenToolbar[] = "browser.hide_fullscreen_toolbar";
 #endif
 
 // Boolean which specifies whether we should ask the user if we should download

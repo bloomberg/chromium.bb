@@ -37,8 +37,8 @@ class ExclusiveAccessContext {
   // Currently only supported on Mac.
   virtual void UpdateFullscreenWithToolbar(bool with_toolbar);
 
-  // Toggles the toolbar state to be hidden or shown in fullscreen.
-  // Currently only supported on Mac.
+  // Toggles the toolbar state to be hidden or shown in fullscreen. Updates
+  // the preference accordingly. Only supported on Mac.
   virtual void ToggleFullscreenToolbar();
 
   // Returns true if the window is fullscreen with additional UI elements. See

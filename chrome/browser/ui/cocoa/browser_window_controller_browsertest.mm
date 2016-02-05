@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
+#include "chrome/browser/fullscreen.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,6 +31,7 @@
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/presentation_mode_controller.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/overlayable_contents_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
@@ -40,6 +42,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/infobars/core/infobar_delegate.h"
@@ -314,6 +317,17 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
                    [controller() bookmarkBarController],
                    runner->QuitClosure()));
     runner->Run();
+  }
+
+  void VerifyFullscreenToolbarVisibility(fullscreen_mac::SlidingStyle style) {
+    EXPECT_EQ([[controller() presentationModeController] slidingStyle], style);
+
+    NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
+    NSRect screenFrame = [[[controller() window] screen] frame];
+    if (style == fullscreen_mac::OMNIBOX_TABS_PRESENT)
+      EXPECT_LE(NSMaxY(toolbarFrame), NSMaxY(screenFrame));
+    else
+      EXPECT_GE(NSMinY(toolbarFrame), NSMaxY(screenFrame));
   }
 
   NSInteger GetExpectedTopInfoBarTipHeight() {
@@ -672,4 +686,38 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenResizeFlags) {
   // Exit fullscreen and verify the flags.
   ToggleFullscreenAndWaitForNotification();
   VerifyFullscreenResizeFlagsAfterTransition();
+}
+
+// Tests that the omnibox and tabs are hidden/visible in fullscreen mode.
+// Ensure that when the user toggles this setting, the omnibox, tabs and
+// preferences are updated correctly.
+IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
+                       FullscreenToolbarIsVisibleAccordingToPrefs) {
+  // This feature is only available on SystemFullscreen.
+  if (!chrome::mac::SupportsSystemFullscreen())
+    return;
+
+  // Tests that the preference is set to false by default.
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
+
+  // Toggle fullscreen and check if the toolbar is shown.
+  ToggleFullscreenAndWaitForNotification();
+  VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_PRESENT);
+
+  // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
+  // is hidden and the preference is correctly updated.
+  [[controller() presentationModeController] setToolbarFraction:0.0];
+  chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
+  VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
+
+  // Toggle out and back into fullscreen and verify that the toolbar is still
+  // hidden.
+  ToggleFullscreenAndWaitForNotification();
+  ToggleFullscreenAndWaitForNotification();
+  VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
+
+  chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
+  EXPECT_FALSE(prefs->GetBoolean(prefs::kHideFullscreenToolbar));
 }

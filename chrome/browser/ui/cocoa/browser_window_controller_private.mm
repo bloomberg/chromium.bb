@@ -782,6 +782,7 @@ willPositionSheet:(NSWindow*)sheet
     [self deregisterForContentViewResizeNotifications];
 
   browser_->WindowFullscreenStateChanged();
+  [self.chromeContentView setAutoresizesSubviews:YES];
 
   [self resetCustomAppKitFullscreenVariables];
 

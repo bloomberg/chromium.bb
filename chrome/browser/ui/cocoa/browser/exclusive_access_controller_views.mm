@@ -13,6 +13,8 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 ExclusiveAccessController::ExclusiveAccessController(
@@ -72,7 +74,10 @@ void ExclusiveAccessController::UpdateFullscreenWithToolbar(bool with_toolbar) {
 }
 
 void ExclusiveAccessController::ToggleFullscreenToolbar() {
-  [controller_ toggleFullscreenToolbar];
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  bool hideToolbar = !prefs->GetBoolean(prefs::kHideFullscreenToolbar);
+  [controller_ setFullscreenToolbarHidden:hideToolbar];
+  prefs->SetBoolean(prefs::kHideFullscreenToolbar, hideToolbar);
 }
 
 bool ExclusiveAccessController::IsFullscreenWithToolbar() const {
