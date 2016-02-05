@@ -22,7 +22,7 @@ import org.chromium.blimp.session.BlimpClientSession;
  * a native compositor.
  */
 @JNINamespace("blimp::client")
-public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
+public class BlimpView extends SurfaceView implements SurfaceHolder.Callback {
     private long mNativeBlimpViewPtr;
 
     /**
@@ -148,9 +148,6 @@ public class BlimpView extends SurfaceView implements SurfaceHolder.Callback2 {
         if (mNativeBlimpViewPtr == 0) return;
         nativeOnSurfaceDestroyed(mNativeBlimpViewPtr);
     }
-
-    @Override
-    public void surfaceRedrawNeeded(SurfaceHolder holder) {}
 
     private static boolean isValidTouchEventActionForNative(int eventAction) {
         // Only these actions have any effect on gesture detection.  Other
