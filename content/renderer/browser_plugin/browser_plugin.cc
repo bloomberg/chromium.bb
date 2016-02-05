@@ -498,7 +498,6 @@ blink::WebInputEventResult BrowserPlugin::handleInputEvent(
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
-                                                view_rect_,
                                                 &event));
   GetWebCursorInfo(cursor_, &cursor_info);
 
@@ -623,7 +622,6 @@ bool BrowserPlugin::HandleMouseLockedInputEvent(
     const blink::WebMouseEvent& event) {
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_HandleInputEvent(browser_plugin_instance_id_,
-                                                view_rect_,
                                                 &event));
   return true;
 }

@@ -165,7 +165,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 
   void OnHandleInputEvent(RenderWidgetHostImpl* embedder,
                           int browser_plugin_instance_id,
-                          const gfx::Rect& guest_window_rect,
                           const blink::WebInputEvent* event);
 
   // BrowserPluginGuest and RenderWidgetHostViewGuest's lifetimes are not tied
