@@ -224,10 +224,7 @@ void shutdown()
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     V8PerIsolateData::willBeDestroyed(isolate);
 
-    // Make sure we stop WorkerThreads before the main thread's ThreadState
-    // and later shutdown steps starts freeing up resources needed during
-    // worker termination.
-    WorkerThread::terminateAndWaitForAllWorkers();
+    CoreInitializer::terminateThreads();
 
     ModulesInitializer::terminateThreads();
 

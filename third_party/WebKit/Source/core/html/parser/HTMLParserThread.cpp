@@ -32,8 +32,10 @@
 
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/heap/SafePoint.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/WebWaitableEvent.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -65,15 +67,19 @@ void HTMLParserThread::shutdown()
     ASSERT(s_sharedThread);
     // currentThread will always be non-null in production, but can be null in Chromium unit tests.
     if (Platform::current()->currentThread() && s_sharedThread->isRunning()) {
-        s_sharedThread->postTask(threadSafeBind(&HTMLParserThread::cleanupHTMLParserThread, AllowCrossThreadAccess(s_sharedThread)));
+        OwnPtr<WebWaitableEvent> waitableEvent(adoptPtr(Platform::current()->createWaitableEvent()));
+        s_sharedThread->postTask(threadSafeBind(&HTMLParserThread::cleanupHTMLParserThread, AllowCrossThreadAccess(s_sharedThread), AllowCrossThreadAccess(waitableEvent.get())));
+        SafePointScope scope(BlinkGC::HeapPointersOnStack);
+        waitableEvent->wait();
     }
     delete s_sharedThread;
     s_sharedThread = 0;
 }
 
-void HTMLParserThread::cleanupHTMLParserThread()
+void HTMLParserThread::cleanupHTMLParserThread(WebWaitableEvent* waitableEvent)
 {
     m_thread->shutdown();
+    waitableEvent->signal();
 }
 
 HTMLParserThread* HTMLParserThread::shared()

@@ -43,6 +43,8 @@ public:
     // Should be called by clients before trying to create Frames.
     virtual void init();
 
+    static void terminateThreads();
+
     // FIXME: Why is this function static?
     static void shutdown();
 

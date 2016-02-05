@@ -40,6 +40,8 @@
 
 namespace blink {
 
+class WebWaitableEvent;
+
 class CORE_EXPORT HTMLParserThread {
     USING_FAST_MALLOC(HTMLParserThread);
 public:
@@ -57,7 +59,7 @@ private:
     HTMLParserThread();
     ~HTMLParserThread();
     void setupHTMLParserThread();
-    void cleanupHTMLParserThread();
+    void cleanupHTMLParserThread(WebWaitableEvent*);
 
     OwnPtr<WebThreadSupportingGC> m_thread;
 };
