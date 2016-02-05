@@ -292,8 +292,6 @@
             '<(DEPTH)/third_party/webrtc/media/base/videoframefactory.h',
             '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.cc',
             '<(DEPTH)/third_party/webrtc/media/devices/dummydevicemanager.h',
-            '<(DEPTH)/third_party/webrtc/media/devices/filevideocapturer.cc',
-            '<(DEPTH)/third_party/webrtc/media/devices/filevideocapturer.h',
             '<(DEPTH)/third_party/webrtc/media/webrtc/webrtccommon.h',
             '<(DEPTH)/third_party/webrtc/media/webrtc/webrtcvideoframe.cc',
             '<(DEPTH)/third_party/webrtc/media/webrtc/webrtcvideoframe.h',
