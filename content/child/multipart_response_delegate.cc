@@ -176,7 +176,7 @@ void MultipartResponseDelegate::OnReceivedData(const char* data,
     // If the last character is a new line character, go ahead and just send
     // everything we have buffered.  This matches an optimization in Gecko.
     int send_length = data_.length() - boundary_.length();
-    if (data_[data_.length() - 1] == '\n')
+    if (data_.back() == '\n')
       send_length = data_.length();
     if (client_)
       client_->didReceiveData(loader_,

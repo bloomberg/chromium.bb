@@ -172,7 +172,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
     size_t path_start = base.find_first_of('/');
     StringPiece host(StringPiece(base).substr(0, path_start));
     StringPiece path(StringPiece(base).substr(path_start));
-    if (path[path.length() - 1] == ',') {
+    if (path.back() == ',') {
       path.remove_suffix(1);
     }
     StringPiece body(file_contents.data() + headers_end,

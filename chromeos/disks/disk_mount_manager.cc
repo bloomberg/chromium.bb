@@ -275,7 +275,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   void UnmountChildMounts(const std::string& mount_path_in) {
     std::string mount_path = mount_path_in;
     // Let's make sure mount path has trailing slash.
-    if (mount_path[mount_path.length() - 1] != '/')
+    if (mount_path.back() != '/')
       mount_path += '/';
 
     for (MountPointMap::iterator it = mount_points_.begin();

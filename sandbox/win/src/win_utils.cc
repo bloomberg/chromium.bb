@@ -226,7 +226,7 @@ bool SameObject(HANDLE handle, const wchar_t* full_path) {
 
   // This may end with a backslash.
   const wchar_t kBackslash = '\\';
-  if (path[path.length() - 1] == kBackslash)
+  if (path.back() == kBackslash)
     path = path.substr(0, path.length() - 1);
 
   // Perfect match (case-insesitive check).

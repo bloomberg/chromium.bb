@@ -353,7 +353,7 @@ class CookiesTreeModelTest : public testing::Test {
     CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(
         cookies_model->GetRoot());
     std::string retval = GetNodesOfChildren(root, type);
-    if (retval.length() && retval[retval.length() - 1] == ',')
+    if (!retval.empty() && retval.back() == ',')
       retval.erase(retval.length() - 1);
     return retval;
   }

@@ -73,8 +73,8 @@ base::FilePath::StringType ExpandPathVariables(
     return result;
   // Sanitize quotes in case of any around the whole string.
   if (result.length() > 1 &&
-      ((result[0] == L'"' && result[result.length() - 1] == L'"') ||
-       (result[0] == L'\'' && result[result.length() - 1] == L'\''))) {
+      ((result.front() == L'"' && result.back() == L'"') ||
+       (result.front() == L'\'' && result.back() == L'\''))) {
     // Strip first and last char which should be matching quotes now.
     result = result.substr(1, result.length() - 2);
   }

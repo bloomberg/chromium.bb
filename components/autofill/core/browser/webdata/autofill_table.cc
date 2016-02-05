@@ -495,7 +495,7 @@ bool AutofillTable::GetFormValuesForElementName(
   } else {
     base::string16 prefix_lower = base::i18n::ToLower(prefix);
     base::string16 next_prefix = prefix_lower;
-    next_prefix[next_prefix.length() - 1]++;
+    next_prefix.back()++;
 
     sql::Statement s1;
     s1.Assign(db_->GetUniqueStatement(

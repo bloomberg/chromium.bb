@@ -27,8 +27,8 @@ static base::TimeDelta Interval(double hertz) {
 }
 
 std::vector<int> CreateCadenceFromString(const std::string& cadence) {
-  CHECK_EQ('[', cadence[0]);
-  CHECK_EQ(']', cadence[cadence.length() - 1]);
+  CHECK_EQ('[', cadence.front());
+  CHECK_EQ(']', cadence.back());
 
   std::vector<int> result;
   for (const std::string& token :

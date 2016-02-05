@@ -31,8 +31,8 @@ const uint16_t kWildcardPortNumber = 0;
 const uint16_t kInvalidPort = 65535;
 
 bool StartsOrEndsWithWhitespace(const std::string& str) {
-  return !str.empty() && (base::IsUnicodeWhitespace(str[0]) ||
-                          base::IsUnicodeWhitespace(str[str.length() - 1]));
+  return !str.empty() && (base::IsUnicodeWhitespace(str.front()) ||
+                          base::IsUnicodeWhitespace(str.back()));
 }
 
 }  // namespace

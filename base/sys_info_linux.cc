@@ -37,7 +37,7 @@ uint64_t MaxSharedMemorySize() {
   std::string contents;
   base::ReadFileToString(base::FilePath("/proc/sys/kernel/shmmax"), &contents);
   DCHECK(!contents.empty());
-  if (!contents.empty() && contents[contents.length() - 1] == '\n') {
+  if (!contents.empty() && contents.back() == '\n') {
     contents.erase(contents.length() - 1);
   }
 

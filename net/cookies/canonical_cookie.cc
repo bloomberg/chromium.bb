@@ -362,8 +362,7 @@ bool CanonicalCookie::IsOnPath(const std::string& url_path) const {
   // the cookie path ends in a trailing '/', or that we prefix up to a '/'
   // in the url path.  Since we know that the url path length is greater
   // than the cookie path length, it's safe to index one byte past.
-  if (path_.length() != url_path.length() &&
-      path_[path_.length() - 1] != '/' &&
+  if (path_.length() != url_path.length() && path_.back() != '/' &&
       url_path[path_.length()] != '/')
     return false;
 

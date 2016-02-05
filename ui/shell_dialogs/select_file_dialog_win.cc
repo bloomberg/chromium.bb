@@ -684,7 +684,7 @@ std::wstring AppendExtensionIfNeeded(
   if (!(filter_selected.empty() || filter_selected == L"*.*") &&
       !base::win::RegKey(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ).Valid() &&
       file_extension != suggested_ext) {
-    if (return_value[return_value.length() - 1] != L'.')
+    if (return_value.back() != L'.')
       return_value.append(L".");
     return_value.append(suggested_ext);
   }

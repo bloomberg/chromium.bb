@@ -38,8 +38,7 @@ void HistoryProvider::DeleteMatch(const AutocompleteMatch& match) {
 bool HistoryProvider::PreventInlineAutocomplete(
     const AutocompleteInput& input) {
   return input.prevent_inline_autocomplete() ||
-      (!input.text().empty() &&
-       base::IsUnicodeWhitespace(input.text()[input.text().length() - 1]));
+      (!input.text().empty() && base::IsUnicodeWhitespace(input.text().back()));
 }
 
 HistoryProvider::HistoryProvider(AutocompleteProvider::Type type,

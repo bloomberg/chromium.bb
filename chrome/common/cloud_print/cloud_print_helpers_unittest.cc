@@ -17,7 +17,7 @@ namespace {
 
 void CheckURLs(const GURL& server_base_url) {
   std::string expected_url_base = server_base_url.spec();
-  if (expected_url_base[expected_url_base.length() - 1] != '/')
+  if (expected_url_base.back() != '/')
     expected_url_base += "/";
 
   EXPECT_EQ(base::StringPrintf("%ssearch", expected_url_base.c_str()),

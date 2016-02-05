@@ -206,7 +206,7 @@ TEST_F(ProgramInfoManagerTest, UpdateES2) {
     EXPECT_LT(kNames[0].length(),
               static_cast<size_t>(active_uniform_max_length));
     EXPECT_EQ(kNames[ii], info->name);
-    EXPECT_EQ(kNames[ii][kNames[ii].length() - 1] == ']', info->is_array);
+    EXPECT_EQ(kNames[ii].back() == ']', info->is_array);
     EXPECT_EQ(data.uniforms[ii].size,
               static_cast<int32_t>(info->element_locations.size()));
     for (int32_t uu = 0; uu < data.uniforms[ii].size; ++uu) {

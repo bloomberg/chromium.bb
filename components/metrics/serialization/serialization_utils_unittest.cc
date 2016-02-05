@@ -32,7 +32,7 @@ class SerializationUtilsTest : public testing::Test {
 
   void TestSerialization(MetricSample* sample) {
     std::string serialized(sample->ToString());
-    ASSERT_EQ('\0', serialized[serialized.length() - 1]);
+    ASSERT_EQ('\0', serialized.back());
     scoped_ptr<MetricSample> deserialized =
         SerializationUtils::ParseSample(serialized);
     ASSERT_TRUE(deserialized);

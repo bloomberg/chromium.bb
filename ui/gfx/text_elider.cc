@@ -570,7 +570,7 @@ void RectangleText::AddString(const base::string16& input) {
       // The BREAK_NEWLINE iterator will keep the trailing newline character,
       // except in the case of the last line, which may not have one.  Remove
       // the newline character, if it exists.
-      last_line_ended_in_lf_ = !line.empty() && line[line.length() - 1] == '\n';
+      last_line_ended_in_lf_ = !line.empty() && line.back() == '\n';
       if (last_line_ended_in_lf_)
         line.resize(line.length() - 1);
       AddLine(line);

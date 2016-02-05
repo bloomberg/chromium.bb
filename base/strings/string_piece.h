@@ -224,6 +224,8 @@ template <typename STRING_TYPE> class BasicStringPiece {
   }
 
   value_type operator[](size_type i) const { return ptr_[i]; }
+  value_type front() const { return ptr_[0]; }
+  value_type back() const { return ptr_[length_ - 1]; }
 
   void remove_prefix(size_type n) {
     ptr_ += n;

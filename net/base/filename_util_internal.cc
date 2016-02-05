@@ -162,8 +162,8 @@ bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
   // http://www.juniper.net/security/auto/vulnerabilities/vuln2612.html
   // Files become magical if they end in a CLSID, so block such extensions.
   if (!extension_lower.empty() &&
-      (extension_lower[0] == FILE_PATH_LITERAL('{')) &&
-      (extension_lower[extension_lower.length() - 1] == FILE_PATH_LITERAL('}')))
+      (extension_lower.front() == FILE_PATH_LITERAL('{')) &&
+      (extension_lower.back() == FILE_PATH_LITERAL('}')))
     return true;
   return false;
 }

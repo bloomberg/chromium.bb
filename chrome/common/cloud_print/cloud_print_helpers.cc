@@ -52,7 +52,7 @@ std::string HashPrinterTags(const PrinterTags& printer_tags) {
 std::string AppendPathToUrl(const GURL& url, const std::string& path) {
   DCHECK_NE(path[0], '/');
   std::string ret = url.path();
-  if (url.has_path() && (ret[ret.length() - 1] != '/'))
+  if (url.has_path() && (ret.back() != '/'))
     ret += '/';
   ret += path;
   return ret;

@@ -285,9 +285,9 @@ int main(int argc, char *argv[]) {
   }
   if (cmd_line->HasSwitch("url-base"))
     url_base = cmd_line->GetSwitchValueASCII("url-base");
-  if (url_base.empty() || url_base[0] != '/')
+  if (url_base.empty() || url_base.front() != '/')
     url_base = "/" + url_base;
-  if (url_base[url_base.length() - 1] != '/')
+  if (url_base.back() != '/')
     url_base = url_base + "/";
   if (cmd_line->HasSwitch("whitelisted-ips")) {
     allow_remote = true;

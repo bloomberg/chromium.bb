@@ -502,10 +502,10 @@ FilePath FilePath::Append(StringPieceType component) const {
   // Don't append a separator if the path is empty (indicating the current
   // directory) or if the path component is empty (indicating nothing to
   // append).
-  if (appended.length() > 0 && new_path.path_.length() > 0) {
+  if (!appended.empty() && !new_path.path_.empty()) {
     // Don't append a separator if the path still ends with a trailing
     // separator after stripping (indicating the root directory).
-    if (!IsSeparator(new_path.path_[new_path.path_.length() - 1])) {
+    if (!IsSeparator(new_path.path_.back())) {
       // Don't append a separator if the path is just a drive letter.
       if (FindDriveLetter(new_path.path_) + 1 != new_path.path_.length()) {
         new_path.path_.append(1, kSeparators[0]);

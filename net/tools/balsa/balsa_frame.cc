@@ -751,9 +751,9 @@ void ProcessChunkExtensionsManual(base::StringPiece all_extensions,
     SplitStringPiece(extension, '=', &key, &value);
     if (!value.empty()) {
       // Strip quotation marks if they exist.
-      if (!value.empty() && value[0] == '"')
+      if (!value.empty() && value.front() == '"')
         value.remove_prefix(1);
-      if (!value.empty() && value[value.length() - 1] == '"')
+      if (!value.empty() && value.back() == '"')
         value.remove_suffix(1);
     }
 

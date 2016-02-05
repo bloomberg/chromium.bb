@@ -388,7 +388,7 @@ class CookieMonsterTestBase : public CookieStoreTest<T> {
                            base::SPLIT_WANT_ALL)) {
       DCHECK(!token.empty());
       // Take last character as priority.
-      CookiePriority priority = CharToPriority(token[token.length() - 1]);
+      CookiePriority priority = CharToPriority(token.back());
       std::string priority_str = CookiePriorityToString(priority);
       // The rest of the string (possibly empty) specifies repetition.
       int rep = 1;

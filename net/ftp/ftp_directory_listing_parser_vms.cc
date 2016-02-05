@@ -113,7 +113,7 @@ bool LooksLikeVmsFileProtectionListingPart(const base::string16& input) {
 bool LooksLikeVmsFileProtectionListing(const base::string16& input) {
   if (input.length() < 2)
     return false;
-  if (input[0] != '(' || input[input.length() - 1] != ')')
+  if (input.front() != '(' || input.back() != ')')
     return false;
 
   // We expect four parts of the file protection listing: for System, Owner,
@@ -133,7 +133,7 @@ bool LooksLikeVmsFileProtectionListing(const base::string16& input) {
 bool LooksLikeVmsUserIdentificationCode(const base::string16& input) {
   if (input.length() < 2)
     return false;
-  return input[0] == '[' && input[input.length() - 1] == ']';
+  return input.front() == '[' && input.back() == ']';
 }
 
 bool LooksLikeVMSError(const base::string16& text) {

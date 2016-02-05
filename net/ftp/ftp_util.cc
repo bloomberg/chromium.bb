@@ -82,7 +82,7 @@ std::string FtpUtil::UnixDirectoryPathToVMS(const std::string& unix_path) {
 
   std::string path(unix_path);
 
-  if (path[path.length() - 1] != '/')
+  if (path.back() != '/')
     path.append("/");
 
   // Reuse logic from UnixFilePathToVMS by appending a fake file name to the
@@ -121,7 +121,7 @@ std::string FtpUtil::VMSPathToUnix(const std::string& vms_path) {
   std::replace(result.begin(), result.end(), ']', '/');
 
   // Make sure the result doesn't end with a slash.
-  if (result.length() && result[result.length() - 1] == '/')
+  if (!result.empty() && result.back() == '/')
     result = result.substr(0, result.length() - 1);
 
   return result;
