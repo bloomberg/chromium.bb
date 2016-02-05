@@ -537,6 +537,12 @@ class CC_EXPORT ResourceProvider
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
 
+  // This creates the resource mailbox and also binds the texture if dirty. This
+  // is meant to be called lazily internally and returns true if a mailbox
+  // was created or if the resource was bound.
+  bool CreateMailboxAndBindResource(gpu::gles2::GLES2Interface* gl,
+                                    Resource* resource);
+
   void TransferResource(gpu::gles2::GLES2Interface* gl,
                         ResourceId id,
                         TransferableResource* resource);
