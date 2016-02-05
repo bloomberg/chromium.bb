@@ -77,10 +77,10 @@ typedef enum {
 
 /* Output data format for qcms_transform_get_input|output_trc_rgba() */
 typedef enum {
-	QCMS_TRC_PARAMETRIC,
-	QCMS_TRC_FLOAT,
-	QCMS_TRC_HALF_FLOAT, // XXX: only type implemented.
-	QCMS_TRC_USHORT,
+	QCMS_TRC_PARAMETRIC, // Not implemented.
+	QCMS_TRC_FLOAT,      // Not implemented.
+	QCMS_TRC_HALF_FLOAT, // IEE754: binary16.
+	QCMS_TRC_USHORT,     // 0.16 fixed point.
 } qcms_trc_type;
 
 typedef struct {
