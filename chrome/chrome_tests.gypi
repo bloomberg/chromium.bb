@@ -460,37 +460,6 @@
       'browser/ui/browser_navigator_browsertest.h',
       'browser/ui/browser_navigator_browsertest_chromeos.cc',
       'browser/ui/browser_tabrestore_browsertest.cc',
-      'browser/ui/cocoa/accelerators_cocoa_browsertest.mm',
-      'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
-      'browser/ui/cocoa/applescript/window_applescript_test.mm',
-      'browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm',
-      'browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_cocoa_browsertest.mm',
-      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.h',
-      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.mm',
-      'browser/ui/cocoa/browser_window_controller_browsertest.mm',
-      'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
-      'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
-      'browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm',
-      'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm',
-      'browser/ui/cocoa/dev_tools_controller_browsertest.mm',
-      'browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm',
-      'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
-      'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
-      'browser/ui/cocoa/extensions/extension_message_bubble_browsertest_mac.mm',
-      'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm',
-      'browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm',
-      'browser/ui/cocoa/find_bar/find_bar_browsertest.mm',
-      'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
-      'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
-      'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
-      'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
-      'browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm',
-      'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
-      'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
-      'browser/ui/cocoa/view_id_util_browsertest.mm',
-      'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm',
-      'browser/ui/cocoa/website_settings/permission_bubble_cocoa_browser_test.mm',
       'browser/ui/content_settings/content_setting_bubble_model_browsertest.cc',
       'browser/ui/content_settings/content_setting_image_model_browsertest.cc',
       'browser/ui/exclusive_access/fullscreen_controller_browsertest.cc',
@@ -609,6 +578,41 @@
       'test/ppapi/ppapi_browsertest.cc',
       'test/ppapi/ppapi_filechooser_browsertest.cc',
     ],
+    # Tests corresponding to the files in chrome_browser_ui_cocoa_sources.
+    # Built on Mac, except when mac_views_browser==1.
+    'chrome_browser_tests_cocoa_sources': [
+      'browser/ui/cocoa/accelerators_cocoa_browsertest.mm',
+      'browser/ui/cocoa/applescript/browsercrapplication+applescript_test.mm',
+      'browser/ui/cocoa/applescript/window_applescript_test.mm',
+      'browser/ui/cocoa/apps/app_shim_menu_controller_mac_browsertest.mm',
+      'browser/ui/cocoa/apps/native_app_window_cocoa_browsertest.mm',
+      'browser/ui/cocoa/autofill/autofill_dialog_cocoa_browsertest.mm',
+      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.h',
+      'browser/ui/cocoa/autofill/autofill_dialog_view_tester_cocoa.mm',
+      'browser/ui/cocoa/browser_window_controller_browsertest.mm',
+      'browser/ui/cocoa/certificate_viewer_mac_browsertest.mm',
+      'browser/ui/cocoa/constrained_window/constrained_window_mac_browsertest.mm',
+      'browser/ui/cocoa/content_settings/collected_cookies_mac_browsertest.mm',
+      'browser/ui/cocoa/content_settings/content_setting_bubble_cocoa_browsertest.mm',
+      'browser/ui/cocoa/dev_tools_controller_browsertest.mm',
+      'browser/ui/cocoa/extensions/extension_install_dialog_controller_browsertest.mm',
+      'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
+      'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
+      'browser/ui/cocoa/extensions/extension_message_bubble_browsertest_mac.mm',
+      'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm',
+      'browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm',
+      'browser/ui/cocoa/find_bar/find_bar_browsertest.mm',
+      'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
+      'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',
+      'browser/ui/cocoa/one_click_signin_bubble_controller_browsertest.mm',
+      'browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm',
+      'browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm',
+      'browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm',
+      'browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm',
+      'browser/ui/cocoa/view_id_util_browsertest.mm',
+      'browser/ui/cocoa/web_contents_modal_dialog_manager_views_mac_browsertest.mm',
+      'browser/ui/cocoa/website_settings/permission_bubble_cocoa_browser_test.mm',
+    ],
     'chrome_browser_tests_ash_sources': [
       'browser/ui/ash/accelerator_commands_browsertest.cc',
       'browser/ui/ash/accelerator_controller_browsertest.cc',
@@ -631,12 +635,11 @@
       'browser/ui/views/frame/browser_window_property_manager_browsertest_win.cc',
       'browser/ui/views/select_file_dialog_extension_browsertest.cc',
     ],
-    # Cross-platform (except Mac) views browser tests. Assumes app list is
-    # enabled (as for chrome_browser_ui_views_non_mac_sources).
+    # Cross-platform (except Mac/Cocoa) views browser tests. Excluded on Mac
+    # unless building with mac_views_browser=1. Assumes app list is enabled (as
+    # for chrome_browser_ui_views_non_mac_sources).
     'chrome_browser_tests_views_non_mac_sources': [
-      # TODO(tapted): These assume the AppListService is views-based. Enable
-      # with toolkit-views app launcher on Mac. http://crbug.com/365977.
-      'browser/apps/custom_launcher_page_browsertest_views.cc',
+      # This assumes the AppListService is views-based.
       'browser/ui/app_list/app_list_service_views_browsertest.cc',
 
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
@@ -665,6 +668,7 @@
       'browser/ui/views/web_dialog_view_browsertest.cc',
     ],
     'chrome_browser_tests_chromeos_sources': [
+      'browser/apps/custom_launcher_page_browsertest_views.cc',
       'browser/chromeos/accessibility/accessibility_manager_browsertest.cc',
       'browser/chromeos/accessibility/magnification_manager_browsertest.cc',
       'browser/chromeos/accessibility/speech_monitor.cc',
@@ -2492,6 +2496,14 @@
             # This tests the language options UI features that do not exist on
             # Mac.
             'browser/ui/webui/options/multilanguage_options_webui_browsertest.js',
+          ],
+          'conditions': [
+            # The browser window can be views or Cocoa on Mac. Test accordingly.
+            ['mac_views_browser==1', {
+              'sources': [ '<@(chrome_browser_tests_views_non_mac_sources)' ],
+            }, {
+              'sources': [ '<@(chrome_browser_tests_cocoa_sources)' ],
+            }],
           ],
         }],  # OS=="mac"
         ['OS=="mac" or OS=="win"', {

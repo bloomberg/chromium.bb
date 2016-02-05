@@ -1156,6 +1156,19 @@ if (!is_android) {
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
       ]
+
+      # The browser window can be views or Cocoa on Mac. Test accordingly.
+      if (mac_views_browser) {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_browser_tests_views_non_mac_sources,
+                ".",
+                "//chrome")
+      } else {
+        sources += rebase_path(
+                chrome_tests_gypi_values.chrome_browser_tests_cocoa_sources,
+                ".",
+                "//chrome")
+      }
     }
     if (is_mac || is_win) {
       sources += [
