@@ -137,6 +137,8 @@ The following changes have been made since qcms was imported:
    - https://code.google.com/p/chromium/issues/detail?id=580920
  - Verify internal sRGB profile tristimulus match the standard sRGB profile
    - https://code.google.com/p/chromium/issues/detail?id=580917
+ - Expose unsigned short version of TRC curve
+   - https://code.google.com/p/chromium/issues/detail?id=495196
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src

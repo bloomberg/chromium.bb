@@ -1522,7 +1522,7 @@ float qcms_transform_get_matrix(qcms_transform *t, unsigned i, unsigned j)
 
 static inline qcms_bool supported_trc_type(qcms_trc_type type)
 {
-	return type == QCMS_TRC_HALF_FLOAT;
+	return (type == QCMS_TRC_HALF_FLOAT || type == QCMS_TRC_USHORT);
 }
 
 const uint16_t half_float_one = 0x3c00;
@@ -1548,11 +1548,26 @@ size_t qcms_transform_get_input_trc_rgba(qcms_transform *t, qcms_profile *in, qc
 	if (!data)
 		return size;
 
-	for (i = 0; i < size; ++i) {
-		*data++ = float_to_half_float(t->input_gamma_table_r[i]); // r
-		*data++ = float_to_half_float(t->input_gamma_table_g[i]); // g
-		*data++ = float_to_half_float(t->input_gamma_table_b[i]); // b
-		*data++ = half_float_one;                                 // a
+	switch(type) {
+		case QCMS_TRC_HALF_FLOAT:
+			for (i = 0; i < size; ++i) {
+				*data++ = float_to_half_float(t->input_gamma_table_r[i]); // r
+				*data++ = float_to_half_float(t->input_gamma_table_g[i]); // g
+				*data++ = float_to_half_float(t->input_gamma_table_b[i]); // b
+				*data++ = half_float_one;                                 // a
+			}
+			break;
+		case QCMS_TRC_USHORT:
+			for (i = 0; i < size; ++i) {
+				*data++ = roundf(t->input_gamma_table_r[i] * 65535.0); // r
+				*data++ = roundf(t->input_gamma_table_g[i] * 65535.0); // g
+				*data++ = roundf(t->input_gamma_table_b[i] * 65535.0); // b
+				*data++ = 65535;                                       // a
+			}
+			break;
+		default:
+			/* should not be reached */
+			assert(0);
 	}
 
 	return size;
@@ -1600,11 +1615,26 @@ size_t qcms_transform_get_output_trc_rgba(qcms_transform *t, qcms_profile *out, 
 	if (!data)
 		return size;
 
-	for (i = 0; i < size; ++i) {
-		*data++ = float_to_half_float(t->output_gamma_lut_r[i] * inverse65535); // r
-		*data++ = float_to_half_float(t->output_gamma_lut_g[i] * inverse65535); // g
-		*data++ = float_to_half_float(t->output_gamma_lut_b[i] * inverse65535); // b
-		*data++ = half_float_one;                                               // a
+	switch (type) {
+		case QCMS_TRC_HALF_FLOAT:
+			for (i = 0; i < size; ++i) {
+				*data++ = float_to_half_float(t->output_gamma_lut_r[i] * inverse65535); // r
+				*data++ = float_to_half_float(t->output_gamma_lut_g[i] * inverse65535); // g
+				*data++ = float_to_half_float(t->output_gamma_lut_b[i] * inverse65535); // b
+				*data++ = half_float_one;                                               // a
+			}
+			break;
+		case QCMS_TRC_USHORT:
+			for (i = 0; i < size; ++i) {
+				*data++ = t->output_gamma_lut_r[i]; // r
+				*data++ = t->output_gamma_lut_g[i]; // g
+				*data++ = t->output_gamma_lut_b[i]; // b
+				*data++ = 65535;                    // a
+			}
+			break;
+		default:
+			/* should not be reached */
+			assert(0);
 	}
 
 	return size;
