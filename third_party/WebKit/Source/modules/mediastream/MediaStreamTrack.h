@@ -84,6 +84,7 @@ public:
     ExecutionContext* executionContext() const override;
 
     // ActiveDOMObject
+    bool hasPendingActivity() const override;
     void stop() override;
 
     PassOwnPtr<AudioSourceProvider> createWebAudioSource();

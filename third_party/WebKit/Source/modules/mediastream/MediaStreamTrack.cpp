@@ -210,6 +210,11 @@ void MediaStreamTrack::stop()
     m_stopped = true;
 }
 
+bool MediaStreamTrack::hasPendingActivity() const
+{
+    return !m_stopped && hasEventListeners();
+}
+
 PassOwnPtr<AudioSourceProvider> MediaStreamTrack::createWebAudioSource()
 {
     return MediaStreamCenter::instance().createWebAudioSourceFromMediaStreamTrack(component());
