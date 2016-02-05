@@ -561,9 +561,14 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
   // have changes in flight for we can update them immediately. For properties
   // with changes in flight we set the revert value from the server.
 
+  if (!in_flight_map_.count(change_id)) {
+    // The window may have been destroyed locally before the server could finish
+    // creating the window, and before the server received the notification that
+    // the window has been destroyed.
+    return;
+  }
   scoped_ptr<InFlightChange> change(std::move(in_flight_map_[change_id]));
   in_flight_map_.erase(change_id);
-  DCHECK(change);
 
   Window* window = change->window();
   WindowPrivate window_private(window);

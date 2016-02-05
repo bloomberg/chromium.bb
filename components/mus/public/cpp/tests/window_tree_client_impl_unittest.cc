@@ -663,4 +663,30 @@ TEST_F(WindowTreeClientImplTest, MultipleUnOwnedWindowsDuringDestruction) {
   EXPECT_TRUE(tracker.windows().empty());
 }
 
+TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
+  WindowTreeSetup setup;
+  Window* root1 = setup.GetFirstRoot();
+  ASSERT_TRUE(root1);
+  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  ASSERT_TRUE(root2);
+  ASSERT_EQ(2u, setup.window_tree_connection()->GetRoots().size());
+
+  // Get the id of the in flight change for creating the new window.
+  uint32_t change_id;
+  ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
+  EXPECT_EQ(setup.window_tree()->window_id(), root2->id());
+
+  mojom::WindowDataPtr data = mojom::WindowData::New();
+  data->window_id = root2->id();
+  data->viewport_metrics = mojom::ViewportMetrics::New();
+
+  // Destroy the window before the server has a chance to ack the window
+  // creation.
+  root2->Destroy();
+  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
+
+  setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data));
+  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
+}
+
 }  // namespace mus
