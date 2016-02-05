@@ -9,11 +9,11 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_util.h"
-#include "grit/webui_resources_map.h"
 #include "ios/web/public/web_client.h"
 #include "net/base/mime_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
+#include "ui/resources/grit/webui_resources_map.h"
 
 namespace web {
 

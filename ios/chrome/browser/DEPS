@@ -100,10 +100,7 @@ include_rules = [
   "+skia/ext/skia_utils_ios.h",
 
   # Strings and resources.
-  "+grit/components_chromium_strings.h",
-  "+grit/components_google_chrome_strings.h",
-  "+grit/components_resources.h",
-  "+grit/components_scaled_resources.h",
-  "+grit/components_strings.h",
+  "+components/grit",
+  "+components/strings/grit",
   "+ios/chrome/grit",
 ]
