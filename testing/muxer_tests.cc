@@ -281,7 +281,7 @@ TEST_F(MuxerTest, BlockWithAdditional) {
   // Valid Frame
   EXPECT_TRUE(segment_.AddFrameWithAdditional(dummy_data_, kFrameLength,
                                               dummy_data_, kFrameLength, 1,
-                                              kVideoTrackNumber, 0, false));
+                                              kVideoTrackNumber, 0, true));
 
   // Valid Frame
   EXPECT_TRUE(segment_.AddFrameWithAdditional(
@@ -323,7 +323,7 @@ TEST_F(MuxerTest, BlockAdditionalWithAddGenericFrame) {
   frame.Init(dummy_data_, kFrameLength);
   frame.AddAdditionalData(dummy_data_, kFrameLength, 1);
   frame.set_track_number(kVideoTrackNumber);
-  frame.set_is_key(false);
+  frame.set_is_key(true);
 
   // Valid Frame
   frame.set_timestamp(0);
@@ -331,6 +331,7 @@ TEST_F(MuxerTest, BlockAdditionalWithAddGenericFrame) {
 
   // Valid Frame
   frame.set_timestamp(2000000);
+  frame.set_is_key(false);
   EXPECT_TRUE(segment_.AddGenericFrame(&frame));
 
   // Invalid Frame - Non monotonically increasing timestamp
