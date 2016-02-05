@@ -48,6 +48,9 @@ layer at (0,0) size 800x600
       LayoutTextControl {INPUT} at (405,228) size 131x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (536,231) size 4x18
         text run at (536,231) width 4: " "
+      LayoutTextControl {INPUT} at (540,228) size 131x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (671,231) size 4x18
+        text run at (671,231) width 4: " "
       LayoutBR {BR} at (0,0) size 0x0
       LayoutTextControl {INPUT} at (0,256) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
       LayoutText {#text} at (131,256) size 4x18
@@ -72,10 +75,10 @@ layer at (11,30) size 65x13
       text run at (0,0) width 59: "placeholder"
 layer at (11,30) size 65x13
   LayoutBlockFlow {DIV} at (3,3) size 65x13
-layer at (86,31) size 65x11 scrollHeight 12
-  LayoutBlockFlow {DIV} at (3,4) size 65x11 [color=#A9A9A9]
-    LayoutText {#text} at (0,-1) size 59x13
-      text run at (0,-1) width 59: "placeholder"
+layer at (86,30) size 65x13
+  LayoutBlockFlow {DIV} at (3,3) size 65x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 59x13
+      text run at (0,0) width 59: "placeholder"
 layer at (86,30) size 65x13
   LayoutBlockFlow {DIV} at (3,3) size 65x13
 layer at (161,30) size 125x13
@@ -124,10 +127,10 @@ layer at (11,236) size 125x25
   LayoutBlockFlow {DIV} at (3,3) size 125x25
     LayoutText {#text} at (0,6) size 27x13
       text run at (0,6) width 27: "Value"
-layer at (146,236) size 125x25
-  LayoutBlockFlow {DIV} at (3,3) size 125x25 [color=#A9A9A9]
-    LayoutText {#text} at (0,6) size 59x13
-      text run at (0,6) width 59: "placeholder"
+layer at (146,242) size 125x13
+  LayoutBlockFlow {DIV} at (3,9) size 125x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 59x13
+      text run at (0,0) width 59: "placeholder"
 layer at (146,236) size 125x25
   LayoutBlockFlow {DIV} at (3,3) size 125x25
 layer at (281,242) size 125x13
@@ -136,11 +139,17 @@ layer at (281,242) size 125x13
       text run at (0,0) width 59: "placeholder"
 layer at (281,242) size 125x13
   LayoutBlockFlow {DIV} at (3,6) size 125x13
-layer at (416,236) size 125x25
-  LayoutBlockFlow {DIV} at (3,0) size 125x25 [color=#A9A9A9]
-    LayoutText {#text} at (0,6) size 59x13
-      text run at (0,6) width 59: "placeholder"
 layer at (416,242) size 125x13
+  LayoutBlockFlow {DIV} at (3,6) size 125x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 59x13
+      text run at (0,0) width 59: "placeholder"
+layer at (416,242) size 125x13
+  LayoutBlockFlow {DIV} at (3,6) size 125x13
+layer at (551,242) size 125x13
+  LayoutBlockFlow {DIV} at (3,6) size 125x13 [color=#A9A9A9]
+    LayoutText {#text} at (0,0) size 59x13
+      text run at (0,0) width 59: "placeholder"
+layer at (551,242) size 125x13
   LayoutBlockFlow {DIV} at (3,6) size 125x13
 layer at (11,267) size 125x13
   LayoutBlockFlow {DIV} at (3,3) size 125x13
