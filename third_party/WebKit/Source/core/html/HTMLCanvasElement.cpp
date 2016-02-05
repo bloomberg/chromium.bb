@@ -937,6 +937,7 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
 {
     if (!m_context)
         return;
+
     bool hidden = visibility != PageVisibilityStateVisible;
     m_context->setIsHidden(hidden);
     if (hidden) {
@@ -945,6 +946,12 @@ void HTMLCanvasElement::didChangeVisibilityState(PageVisibilityState visibility)
             discardImageBuffer();
         }
     }
+}
+
+void HTMLCanvasElement::willDetachDocument()
+{
+    if (m_context)
+        m_context->stop();
 }
 
 void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle)
@@ -956,8 +963,6 @@ void HTMLCanvasElement::styleDidChange(const ComputedStyle* oldStyle, const Comp
 void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
 {
     setObservedDocument(document());
-    if (m_context)
-        m_context->didMoveToNewDocument(&document());
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 

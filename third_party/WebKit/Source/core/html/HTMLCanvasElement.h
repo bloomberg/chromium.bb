@@ -149,6 +149,7 @@ public:
 
     // DocumentVisibilityObserver implementation
     void didChangeVisibilityState(PageVisibilityState) override;
+    void willDetachDocument() override;
 
     // CanvasImageSource implementation
     PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;

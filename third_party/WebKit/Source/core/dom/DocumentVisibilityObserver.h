@@ -20,6 +20,7 @@ public:
     virtual ~DocumentVisibilityObserver();
 
     virtual void didChangeVisibilityState(PageVisibilityState) = 0;
+    virtual void willDetachDocument() = 0;
 
     // Classes that inherit Node and DocumentVisibilityObserver must have a
     // virtual override of Node::didMoveToNewDocument that calls

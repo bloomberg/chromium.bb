@@ -2209,6 +2209,8 @@ void Document::detach(const AttachContext& context)
     if (m_frame->loader().client()->sharedWorkerRepositoryClient())
         m_frame->loader().client()->sharedWorkerRepositoryClient()->documentDetached(this);
 
+    for (DocumentVisibilityObserver* observer : m_visibilityObservers)
+        observer->willDetachDocument();
     stopActiveDOMObjects();
 
     // FIXME: consider using ActiveDOMObject.

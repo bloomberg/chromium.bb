@@ -90,6 +90,7 @@ public:
     }
 
     MOCK_METHOD1(didChangeVisibilityState, void(PageVisibilityState));
+    MOCK_METHOD0(willDetachDocument, void());
 
 private:
     MockDocumentVisibilityObserver(Document& document) : DocumentVisibilityObserver(document) { }
