@@ -602,7 +602,7 @@ static const double bigtens[] = { 1e16, 1e32, 1e64, 1e128, 1e256 };
 #define Scale_Bit 0x10
 #define n_bigtens 5
 
-static ALWAYS_INLINE int quorem(BigInt& b, BigInt& S)
+static ALWAYS_INLINE int quorem(BigInt& b, BigInt& s)
 {
     size_t n;
     uint32_t* bx;
@@ -617,13 +617,13 @@ static ALWAYS_INLINE int quorem(BigInt& b, BigInt& S)
     uint32_t si, z, zs;
 #endif
     ASSERT(b.size() <= 1 || b.words()[b.size() - 1]);
-    ASSERT(S.size() <= 1 || S.words()[S.size() - 1]);
+    ASSERT(s.size() <= 1 || s.words()[s.size() - 1]);
 
-    n = S.size();
+    n = s.size();
     ASSERT_WITH_MESSAGE(b.size() <= n, "oversize b in quorem");
     if (b.size() < n)
         return 0;
-    sx = S.words();
+    sx = s.words();
     sxe = sx + --n;
     bx = b.words();
     bxe = bx + n;
@@ -658,12 +658,12 @@ static ALWAYS_INLINE int quorem(BigInt& b, BigInt& S)
             b.resize(n);
         }
     }
-    if (cmp(b, S) >= 0) {
+    if (cmp(b, s) >= 0) {
         q++;
         borrow = 0;
         carry = 0;
         bx = b.words();
-        sx = S.words();
+        sx = s.words();
         do {
 #ifdef USE_LONG_LONG
             ys = *sx++ + carry;
@@ -745,11 +745,11 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
     int32_t L;
     int denorm;
     uint32_t x;
-    BigInt b, delta, mlo, mhi, S;
+    BigInt b, delta, mlo, mhi, s;
     U d2, eps, u;
     double ds;
-    char* s;
-    char* s0;
+    char* str;
+    char* str0;
 
     u.d = dd;
 
@@ -859,7 +859,7 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
             i = 1;
     }
 
-    s = s0 = result;
+    str = str0 = result;
 
     if (ilim >= 0 && ilim <= Quick_max) {
         /* Try to get by with floating-point arithmetic. */
@@ -905,7 +905,7 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
         dval(&eps) = (ieps * dval(&u)) + 7.;
         word0(&eps) -= (P - 1) * Exp_msk1;
         if (!ilim) {
-            S.clear();
+            s.clear();
             mhi.clear();
             dval(&u) -= 5.;
             if (dval(&u) > dval(&eps))
@@ -922,7 +922,7 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
             for (i = 0;;) {
                 L = (long int)dval(&u);
                 dval(&u) -= L;
-                *s++ = '0' + (int)L;
+                *str++ = '0' + (int)L;
                 if (dval(&u) < dval(&eps))
                     goto ret;
                 if (1. - dval(&u) < dval(&eps))
@@ -939,13 +939,13 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
                 L = (int32_t)(dval(&u));
                 if (!(dval(&u) -= L))
                     ilim = i;
-                *s++ = '0' + (int)L;
+                *str++ = '0' + (int)L;
                 if (i == ilim) {
                     if (dval(&u) > 0.5 + dval(&eps))
                         goto bumpUp;
                     if (dval(&u) < 0.5 - dval(&eps)) {
-                        while (*--s == '0') { }
-                        s++;
+                        while (*--str == '0') { }
+                        str++;
                         goto ret;
                     }
                     break;
@@ -953,7 +953,7 @@ void dtoa(DtoaBuffer result, double dd, int ndigits, bool& signOut, int& exponen
             }
         }
 fastFailed:
-        s = s0;
+        str = str0;
         dval(&u) = dval(&d2);
         k = k0;
         ilim = ilim0;
@@ -965,7 +965,7 @@ fastFailed:
         /* Yes. */
         ds = tens[k];
         if (ndigits < 0 && ilim <= 0) {
-            S.clear();
+            s.clear();
             mhi.clear();
             if (ilim < 0 || dval(&u) <= 5 * ds)
                 goto noDigits;
@@ -974,7 +974,7 @@ fastFailed:
         for (i = 1;; i++, dval(&u) *= 10.) {
             L = (int32_t)(dval(&u) / ds);
             dval(&u) -= L * ds;
-            *s++ = '0' + (int)L;
+            *str++ = '0' + (int)L;
             if (!dval(&u)) {
                 break;
             }
@@ -982,13 +982,13 @@ fastFailed:
                 dval(&u) += dval(&u);
                 if (dval(&u) > ds || (dval(&u) == ds && (L & 1))) {
 bumpUp:
-                    while (*--s == '9')
-                        if (s == s0) {
+                    while (*--str == '9')
+                        if (str == str0) {
                             k++;
-                            *s = '0';
+                            *str = '0';
                             break;
                         }
-                    ++*s++;
+                    ++*str++;
                 }
                 break;
             }
@@ -1023,9 +1023,9 @@ bumpUp:
         } else
             pow5mult(b, b5);
     }
-    i2b(S, 1);
+    i2b(s, 1);
     if (s5 > 0)
-        pow5mult(S, s5);
+        pow5mult(s, s5);
 
     /* Check for special case that d is a normalized power of 2. */
 
@@ -1040,11 +1040,11 @@ bumpUp:
     /* Arrange for convenient computation of quotients:
      * shift left if necessary so divisor has 4 leading 0 bits.
      *
-     * Perhaps we should just compute leading 28 bits of S once
+     * Perhaps we should just compute leading 28 bits of s once
      * and for all and pass them and a shift to quorem, so it
      * can do shifts and ors to compute the numerator for q.
      */
-    if ((i = ((s5 ? 32 - hi0bits(S.words()[S.size() - 1]) : 1) + s2) & 0x1f))
+    if ((i = ((s5 ? 32 - hi0bits(s.words()[s.size() - 1]) : 1) + s2) & 0x1f))
         i = 32 - i;
     if (i > 4) {
         i -= 4;
@@ -1060,9 +1060,9 @@ bumpUp:
     if (b2 > 0)
         lshift(b, b2);
     if (s2 > 0)
-        lshift(S, s2);
+        lshift(s, s2);
     if (k_check) {
-        if (cmp(b, S) < 0) {
+        if (cmp(b, s) < 0) {
             k--;
             multadd(b, 10, 0);    /* we botched the k estimate */
             if (leftright)
@@ -1073,9 +1073,9 @@ bumpUp:
     if (ilim <= 0 && roundingDecimalPlaces) {
         if (ilim < 0)
             goto noDigits;
-        multadd(S, 5, 0);
+        multadd(s, 5, 0);
         // For IEEE-754 unbiased rounding this check should be <=, such that 0.5 would flush to zero.
-        if (cmp(b, S) < 0)
+        if (cmp(b, s) < 0)
             goto noDigits;
         goto oneDigit;
     }
@@ -1092,12 +1092,12 @@ bumpUp:
             lshift(mhi, Log2P);
 
         for (i = 1;;i++) {
-            dig = quorem(b, S) + '0';
+            dig = quorem(b, s) + '0';
             /* Do we yet have the shortest decimal string
              * that will round to d?
              */
             j = cmp(b, mlo);
-            diff(delta, S, mhi);
+            diff(delta, s, mhi);
             j1 = delta.sign ? 1 : cmp(b, delta);
 #ifdef DTOA_ROUND_BIASED
             if (j < 0 || !j) {
@@ -1119,14 +1119,14 @@ bumpUp:
                     goto round9up;
                 if (j > 0)
                     dig++;
-                *s++ = dig;
+                *str++ = dig;
                 goto ret;
             }
             if (j < 0 || (!j && !(word1(&u) & 1))) {
 #endif
                 if ((b.words()[0] || b.size() > 1) && (j1 > 0)) {
                     lshift(b, 1);
-                    j1 = cmp(b, S);
+                    j1 = cmp(b, s);
                     // For IEEE-754 round-to-even, this check should be (j1 > 0 || (!j1 && (dig & 1))),
                     // but ECMA-262 specifies that equidistant values (e.g. (.5).toFixed()) should
                     // be rounded away from zero.
@@ -1136,19 +1136,19 @@ bumpUp:
                         dig++;
                     }
                 }
-                *s++ = dig;
+                *str++ = dig;
                 goto ret;
             }
             if (j1 > 0) {
                 if (dig == '9') { /* possible if i == 1 */
 round9up:
-                    *s++ = '9';
+                    *str++ = '9';
                     goto roundoff;
                 }
-                *s++ = dig + 1;
+                *str++ = dig + 1;
                 goto ret;
             }
-            *s++ = dig;
+            *str++ = dig;
             if (i == ilim)
                 break;
             multadd(b, 10, 0);
@@ -1157,7 +1157,7 @@ round9up:
         }
     } else {
         for (i = 1;; i++) {
-            *s++ = dig = quorem(b, S) + '0';
+            *str++ = dig = quorem(b, s) + '0';
             if (!b.words()[0] && b.size() <= 1)
                 goto ret;
             if (i >= ilim)
@@ -1169,22 +1169,22 @@ round9up:
     /* Round off last digit */
 
     lshift(b, 1);
-    j = cmp(b, S);
+    j = cmp(b, s);
     // For IEEE-754 round-to-even, this check should be (j > 0 || (!j && (dig & 1))),
     // but ECMA-262 specifies that equidistant values (e.g. (.5).toFixed()) should
     // be rounded away from zero.
     if (j >= 0) {
 roundoff:
-        while (*--s == '9')
-            if (s == s0) {
+        while (*--str == '9')
+            if (str == str0) {
                 k++;
-                *s++ = '1';
+                *str++ = '1';
                 goto ret;
             }
-        ++*s++;
+        ++*str++;
     } else {
-        while (*--s == '0') { }
-        s++;
+        while (*--str == '0') { }
+        str++;
     }
     goto ret;
 noDigits:
@@ -1194,14 +1194,14 @@ noDigits:
     result[1] = '\0';
     return;
 oneDigit:
-    *s++ = '1';
+    *str++ = '1';
     k++;
     goto ret;
 ret:
-    ASSERT(s > result);
-    *s = 0;
+    ASSERT(str > result);
+    *str = 0;
     exponentOut = k;
-    precisionOut = s - result;
+    precisionOut = str - result;
 }
 
 void dtoa(DtoaBuffer result, double dd, bool& sign, int& exponent, unsigned& precision)
