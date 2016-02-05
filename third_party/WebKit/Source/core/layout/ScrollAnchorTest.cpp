@@ -8,13 +8,10 @@
 
 namespace blink {
 
-static void enableScrollAnchoring(Settings& settings)
-{
-    settings.setScrollAnchoringEnabled(true);
-}
-
 class ScrollAnchorTest : public RenderingTest {
-    FrameSettingOverrideFunction settingOverrider() const override { return enableScrollAnchoring; }
+public:
+    ScrollAnchorTest() { RuntimeEnabledFeatures::setScrollAnchoringEnabled(true); }
+    ~ScrollAnchorTest() { RuntimeEnabledFeatures::setScrollAnchoringEnabled(false); }
 };
 
 TEST_F(ScrollAnchorTest, Basic)

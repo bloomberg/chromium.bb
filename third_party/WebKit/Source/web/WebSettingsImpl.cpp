@@ -793,9 +793,4 @@ void WebSettingsImpl::setUseMobileViewportStyle(bool enabled)
     m_devToolsEmulator->setUseMobileViewportStyle(enabled);
 }
 
-void WebSettingsImpl::setScrollAnchoringEnabled(bool enabled)
-{
-    m_settings->setScrollAnchoringEnabled(enabled);
-}
-
 } // namespace blink

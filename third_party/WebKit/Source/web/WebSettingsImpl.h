@@ -136,7 +136,6 @@ public:
     void setRootLayerScrolls(bool) override;
     void setRubberBandingOnCompositorThread(bool) override;
     void setSansSerifFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
-    void setScrollAnchoringEnabled(bool) override;
     void setSelectTrailingWhitespaceEnabled(bool override);
     void setSelectionIncludesAltImageText(bool) override;
     void setSelectionStrategy(SelectionStrategyType) override;

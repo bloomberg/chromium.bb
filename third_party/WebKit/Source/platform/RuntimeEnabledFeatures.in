@@ -159,6 +159,8 @@ RestrictIFramePermissions
 SandboxBlocksModals status=stable
 ScreenOrientation status=stable
 ScriptedSpeech status=stable
+// Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
+ScrollAnchoring
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental

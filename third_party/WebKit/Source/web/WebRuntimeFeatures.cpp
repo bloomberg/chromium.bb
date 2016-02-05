@@ -320,4 +320,9 @@ void WebRuntimeFeatures::enableWebFontsIntervention(bool enable)
     RuntimeEnabledFeatures::setWebFontsInterventionEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
+{
+    RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);
+}
+
 } // namespace blink

@@ -161,6 +161,8 @@ public:
     BLINK_EXPORT static void enablePresentationAPI(bool);
 
     BLINK_EXPORT static void enableWebFontsIntervention(bool);
+
+    BLINK_EXPORT static void enableScrollAnchoring(bool);
 private:
     WebRuntimeFeatures();
 };

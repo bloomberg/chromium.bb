@@ -741,8 +741,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
       !command_line.HasSwitch(switches::kDisableThreadedScrolling));
   webview()->settings()->setRootLayerScrolls(
       command_line.HasSwitch(switches::kRootLayerScrolls));
-  webview()->settings()->setScrollAnchoringEnabled(
-      command_line.HasSwitch(switches::kEnableScrollAnchoring));
   webview()->setShowFPSCounter(
       command_line.HasSwitch(cc::switches::kShowFPSCounter));
 

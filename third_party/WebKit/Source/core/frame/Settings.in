@@ -385,6 +385,3 @@ autoplayExperimentMode type=String, initial="off"
 # When DevTools is emulating mobile device, frame resize may mean device size has changed,
 # which in turn affects media queries.
 resizeIsDeviceSizeChange initial=false
-
-# Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
-scrollAnchoringEnabled initial=false
