@@ -148,6 +148,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chromium instance. Title case. [Length: 20em] [iOS only]">
         Copied to Chrome
       </message>
+      <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
+        Use Chromium without a Google Account.
+      </message>
       <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 30em]">
         Chromium Terms of Service
       </message>
