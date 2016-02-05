@@ -906,6 +906,7 @@
   { \
     typedef class_name _IpcMessageHandlerClass ALLOW_UNUSED_TYPE; \
     void* param__ = NULL; \
+    (void)param__; \
     const IPC::Message& ipc_message__ = msg; \
     switch (ipc_message__.type()) {
 
