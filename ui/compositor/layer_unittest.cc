@@ -20,12 +20,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/layers/delegated_frame_provider.h"
-#include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/layer.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "cc/output/delegated_frame_data.h"
+#include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
@@ -1472,68 +1471,13 @@ TEST_F(LayerWithDelegateTest, SetBoundsWhenInvisible) {
   EXPECT_TRUE(delegate.painted());
 }
 
-static scoped_ptr<cc::DelegatedFrameData> MakeFrameData(gfx::Size size) {
-  scoped_ptr<cc::DelegatedFrameData> frame_data(new cc::DelegatedFrameData);
-  scoped_ptr<cc::RenderPass> render_pass(cc::RenderPass::Create());
-  render_pass->SetNew(
-      cc::RenderPassId(1, 1), gfx::Rect(size), gfx::Rect(), gfx::Transform());
-  frame_data->render_pass_list.push_back(std::move(render_pass));
-  return frame_data;
-}
+namespace {
 
-TEST_F(LayerWithDelegateTest, DelegatedLayer) {
-  scoped_ptr<Layer> root(CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
+void FakeSatisfyCallback(cc::SurfaceSequence) {}
 
-  scoped_ptr<Layer> child(CreateLayer(LAYER_TEXTURED));
+void FakeRequireCallback(cc::SurfaceId, cc::SurfaceSequence) {}
 
-  child->SetBounds(gfx::Rect(0, 0, 10, 10));
-  child->SetVisible(true);
-  root->Add(child.get());
-  DrawTree(root.get());
-
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
-      new cc::DelegatedFrameResourceCollection;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider;
-
-  // Content matches layer size.
-  frame_provider = new cc::DelegatedFrameProvider(
-      resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
-  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(10, 10).ToString());
-
-  // Content larger than layer.
-  child->SetBounds(gfx::Rect(0, 0, 5, 5));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(5, 5).ToString());
-
-  // Content smaller than layer.
-  child->SetBounds(gfx::Rect(0, 0, 10, 10));
-  frame_provider = new cc::DelegatedFrameProvider(
-      resource_collection.get(), MakeFrameData(gfx::Size(5, 5)));
-  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(5, 5));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(5, 5).ToString());
-
-  // Hi-DPI content on low-DPI layer.
-  frame_provider = new cc::DelegatedFrameProvider(
-      resource_collection.get(), MakeFrameData(gfx::Size(20, 20)));
-  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(10, 10).ToString());
-
-  // Hi-DPI content on hi-DPI layer.
-  compositor()->SetScaleAndSize(2.f, gfx::Size(1000, 1000));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(10, 10).ToString());
-
-  // Low-DPI content on hi-DPI layer.
-  frame_provider = new cc::DelegatedFrameProvider(
-      resource_collection.get(), MakeFrameData(gfx::Size(10, 10)));
-  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
-  EXPECT_EQ(child->cc_layer_for_testing()->bounds().ToString(),
-            gfx::Size(10, 10).ToString());
-}
+}  // namespace
 
 TEST_F(LayerWithDelegateTest, ExternalContent) {
   scoped_ptr<Layer> root(CreateNoTextureLayer(gfx::Rect(0, 0, 1000, 1000)));
@@ -1550,15 +1494,11 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_EQ(before.get(), child->cc_layer_for_testing());
 
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
-      new cc::DelegatedFrameResourceCollection;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
-      new cc::DelegatedFrameProvider(resource_collection.get(),
-                                     MakeFrameData(gfx::Size(10, 10)));
-
-  // Showing delegated content changes the underlying cc layer.
+  // Showing surface content changes the underlying cc layer.
   before = child->cc_layer_for_testing();
-  child->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
+  child->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
+                        base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
+                        1.0, gfx::Size(10, 10));
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_NE(before.get(), child->cc_layer_for_testing());
 
@@ -1581,15 +1521,11 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_EQ(1u, layer->cc_layer_for_testing()->filters().size());
 
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
-      new cc::DelegatedFrameResourceCollection;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider =
-      new cc::DelegatedFrameProvider(resource_collection.get(),
-                                     MakeFrameData(gfx::Size(10, 10)));
-
-  // Showing delegated content changes the underlying cc layer.
+  // Showing surface content changes the underlying cc layer.
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
-  layer->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
+  layer->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
+                        base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
+                        1.0, gfx::Size(10, 10));
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
   EXPECT_NE(before.get(), layer->cc_layer_for_testing());
@@ -1854,12 +1790,9 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
 
   FrameDamageCheckingDelegate delegate;
   layer->set_delegate(&delegate);
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection =
-      new cc::DelegatedFrameResourceCollection;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider(
-      new cc::DelegatedFrameProvider(resource_collection.get(),
-                                     MakeFrameData(gfx::Size(10, 10))));
-  layer->SetShowDelegatedContent(frame_provider.get(), gfx::Size(10, 10));
+  layer->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
+                        base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
+                        1.0, gfx::Size(10, 10));
 
   EXPECT_FALSE(delegate.delegated_frame_damage_called());
   layer->OnDelegatedFrameDamage(damage_rect);

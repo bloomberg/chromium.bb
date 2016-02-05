@@ -38,8 +38,6 @@ class SkCanvas;
 namespace cc {
 class ContentLayer;
 class CopyOutputRequest;
-class DelegatedFrameProvider;
-class DelegatedRendererLayer;
 class Layer;
 class NinePatchLayer;
 class ResourceUpdateQueue;
@@ -286,10 +284,6 @@ class COMPOSITOR_EXPORT Layer
   void SetTextureFlipped(bool flipped);
   bool TextureFlipped() const;
 
-  // Begins showing delegated frames from the |frame_provider|.
-  void SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
-                               gfx::Size frame_size_in_dip);
-
   // Begins showing content from a surface with a particular id.
   void SetShowSurface(cc::SurfaceId surface_id,
                       const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
@@ -299,8 +293,7 @@ class COMPOSITOR_EXPORT Layer
                       gfx::Size frame_size_in_dip);
 
   bool has_external_content() {
-    return texture_layer_.get() || delegated_renderer_layer_.get() ||
-           surface_layer_.get();
+    return texture_layer_.get() || surface_layer_.get();
   }
 
   // Show a solid color instead of delegated or surface contents.
@@ -510,7 +503,6 @@ class COMPOSITOR_EXPORT Layer
   scoped_refptr<cc::NinePatchLayer> nine_patch_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
   scoped_refptr<cc::SolidColorLayer> solid_color_layer_;
-  scoped_refptr<cc::DelegatedRendererLayer> delegated_renderer_layer_;
   scoped_refptr<cc::SurfaceLayer> surface_layer_;
   cc::Layer* cc_layer_;
 

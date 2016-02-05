@@ -162,6 +162,7 @@
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:test_support_base',
         '<(DEPTH)/cc/cc.gyp:cc',
+        '<(DEPTH)/cc/cc.gyp:cc_surfaces',
         '<(DEPTH)/cc/cc_tests.gyp:cc_test_support',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/testing/gmock.gyp:gmock',
