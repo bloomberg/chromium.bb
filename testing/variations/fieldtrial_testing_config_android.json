@@ -4,6 +4,17 @@
             "group_name": "Disabled"
         }
     ],
+    "AsyncDns": [
+        {
+            "group_name": "AsyncDnsA"
+        },
+        {
+            "group_name": "SystemDnsA"
+        },
+        {
+            "group_name": "AsyncDnsNoFallbackA"
+        }
+    ],
     "AutodetectEncoding": [
         {
             "group_name": "Enabled"
