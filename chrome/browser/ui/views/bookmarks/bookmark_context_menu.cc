@@ -42,14 +42,20 @@ BookmarkContextMenu::BookmarkContextMenu(
     const std::vector<const BookmarkNode*>& selection,
     bool close_on_remove)
     : controller_(new BookmarkContextMenuController(
-          parent_widget ? parent_widget->GetNativeWindow() : NULL, this,
-          browser, profile, page_navigator, parent, selection)),
+          parent_widget ? parent_widget->GetNativeWindow() : nullptr,
+          this,
+          browser,
+          profile,
+          page_navigator,
+          parent,
+          selection)),
       parent_widget_(parent_widget),
       menu_(new views::MenuItemView(this)),
       menu_runner_(new views::MenuRunner(menu_,
                                          views::MenuRunner::HAS_MNEMONICS |
                                              views::MenuRunner::IS_NESTED |
-                                             views::MenuRunner::CONTEXT_MENU)),
+                                             views::MenuRunner::CONTEXT_MENU |
+                                             views::MenuRunner::ASYNC)),
       observer_(NULL),
       close_on_remove_(close_on_remove) {
   ui::SimpleMenuModel* menu_model = controller_->menu_model();
@@ -72,13 +78,9 @@ void BookmarkContextMenu::RunMenuAt(const gfx::Point& point,
       content::Source<BookmarkContextMenu>(this),
       content::NotificationService::NoDetails());
   // width/height don't matter here.
-  if (menu_runner_->RunMenuAt(parent_widget_,
-                              NULL,
-                              gfx::Rect(point.x(), point.y(), 0, 0),
-                              views::MENU_ANCHOR_TOPLEFT,
-                              source_type) == views::MenuRunner::MENU_DELETED) {
-    return;
-  }
+  menu_runner_->RunMenuAt(parent_widget_, nullptr,
+                          gfx::Rect(point.x(), point.y(), 0, 0),
+                          views::MENU_ANCHOR_TOPLEFT, source_type);
 }
 
 void BookmarkContextMenu::SetPageNavigator(PageNavigator* navigator) {
@@ -106,6 +108,12 @@ bool BookmarkContextMenu::IsCommandVisible(int command_id) const {
 
 bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
   return (id != IDC_BOOKMARK_BAR_REMOVE) || close_on_remove_;
+}
+
+void BookmarkContextMenu::OnMenuClosed(views::MenuItemView* menu,
+                                       views::MenuRunner::RunResult result) {
+  if (observer_)
+    observer_->OnContextMenuClosed();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

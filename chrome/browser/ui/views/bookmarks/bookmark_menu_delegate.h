@@ -136,10 +136,11 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   void BookmarkNodeFaviconChanged(bookmarks::BookmarkModel* model,
                                   const bookmarks::BookmarkNode* node) override;
 
-  // BookmarkContextMenu::Observer methods.
+  // BookmarkContextMenuObserver methods.
   void WillRemoveBookmarks(
       const std::vector<const bookmarks::BookmarkNode*>& bookmarks) override;
   void DidRemoveBookmarks() override;
+  void OnContextMenuClosed() override;
 
  private:
   friend class BookmarkMenuDelegateTest;

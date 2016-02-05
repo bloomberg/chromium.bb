@@ -320,7 +320,6 @@ bool BookmarkMenuDelegate::ShowContextMenu(MenuItemView* source,
       ShouldCloseOnRemove(node)));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(p, source_type);
-  context_menu_.reset(nullptr);
   return true;
 }
 
@@ -432,6 +431,10 @@ void BookmarkMenuDelegate::DidRemoveBookmarks() {
   GetBookmarkModel()->AddObserver(this);
   DCHECK(is_mutating_model_);
   is_mutating_model_ = false;
+}
+
+void BookmarkMenuDelegate::OnContextMenuClosed() {
+  context_menu_.reset();
 }
 
 bool BookmarkMenuDelegate::ShouldCloseOnRemove(const BookmarkNode* node) const {

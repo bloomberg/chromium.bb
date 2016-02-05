@@ -120,7 +120,7 @@ class VIEWS_EXPORT MenuRunner {
                       MenuButton* button,
                       const gfx::Rect& bounds,
                       MenuAnchorPosition anchor,
-                      ui::MenuSourceType source_type) WARN_UNUSED_RESULT;
+                      ui::MenuSourceType source_type);
 
   // Returns true if we're in a nested message loop running the menu.
   bool IsRunning() const;
