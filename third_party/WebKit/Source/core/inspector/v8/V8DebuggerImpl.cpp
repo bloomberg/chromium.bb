@@ -822,4 +822,11 @@ PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
     return V8StackTraceImpl::capture(agent, maxStackSize);
 }
 
+v8::Local<v8::Context> V8DebuggerImpl::regexContext()
+{
+    if (m_regexContext.IsEmpty())
+        m_regexContext.Reset(m_isolate, v8::Context::New(m_isolate));
+    return m_regexContext.Get(m_isolate);
+}
+
 } // namespace blink

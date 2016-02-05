@@ -97,6 +97,7 @@ public:
     V8DebuggerClient* client() { return m_client; }
 
     v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String& fileName);
+    v8::Local<v8::Context> regexContext();
 
     // V8Debugger implementation
     PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
@@ -148,6 +149,7 @@ private:
     v8::Local<v8::Object> m_executionState;
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;
+    v8::Global<v8::Context> m_regexContext;
 };
 
 } // namespace blink

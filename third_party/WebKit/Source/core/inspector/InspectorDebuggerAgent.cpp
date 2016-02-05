@@ -44,6 +44,7 @@ static const char debuggerEnabled[] = "debuggerEnabled";
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
     , m_v8DebuggerAgent(V8DebuggerAgent::create(injectedScriptManager, debugger, contextGroupId))
+    , m_debugger(debugger)
 {
 }
 

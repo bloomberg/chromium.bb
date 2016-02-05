@@ -46,10 +46,10 @@
 #include "core/dom/Element.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "core/svg/SVGStyleElement.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -1487,7 +1487,7 @@ String InspectorStyleSheet::sourceURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = ContentSearchUtils::findSourceURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
+        String commentValue = V8StringUtil::findSourceURL(styleSheetText, true);
         if (!commentValue.isEmpty()) {
             m_sourceURL = commentValue;
             return commentValue;
@@ -1538,7 +1538,7 @@ String InspectorStyleSheet::sourceMapURL()
     String styleSheetText;
     bool success = getText(&styleSheetText);
     if (success) {
-        String commentValue = ContentSearchUtils::findSourceMapURL(styleSheetText, ContentSearchUtils::CSSMagicComment);
+        String commentValue = V8StringUtil::findSourceMapURL(styleSheetText, true);
         if (!commentValue.isEmpty())
             return commentValue;
     }

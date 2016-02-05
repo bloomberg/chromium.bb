@@ -98,6 +98,7 @@ public:
     virtual void muteConsole() = 0;
     virtual void unmuteConsole() = 0;
 
+    V8Debugger* debugger() { return m_debugger; }
 protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
 
@@ -106,6 +107,7 @@ protected:
 
 private:
     void setTrackingAsyncCalls(bool);
+    V8Debugger* m_debugger;
 };
 
 } // namespace blink

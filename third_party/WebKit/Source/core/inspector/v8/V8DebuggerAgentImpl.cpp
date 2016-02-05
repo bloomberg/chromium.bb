@@ -4,10 +4,8 @@
 
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
 
-#include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
-#include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/v8/AsyncCallChain.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
@@ -20,7 +18,9 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8Regex.h"
 #include "core/inspector/v8/V8StackTraceImpl.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
@@ -301,10 +301,10 @@ static PassRefPtr<JSONObject> buildObjectForBreakpointCookie(const String& url, 
     return breakpointObject.release();
 }
 
-static bool matches(const String& url, const String& pattern, bool isRegex)
+static bool matches(V8DebuggerImpl* debugger, const String& url, const String& pattern, bool isRegex)
 {
     if (isRegex) {
-        ScriptRegexp regex(pattern, TextCaseSensitive);
+        V8Regex regex(debugger, pattern, TextCaseSensitive);
         return regex.match(url) != -1;
     }
     return url == pattern;
@@ -346,7 +346,7 @@ void V8DebuggerAgentImpl::setBreakpointByUrl(ErrorString* errorString, int lineN
 
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
     for (auto& script : m_scripts) {
-        if (!matches(script.value.sourceURL(), url, isRegex))
+        if (!matches(m_debugger, script.value.sourceURL(), url, isRegex))
             continue;
         RefPtr<TypeBuilder::Debugger::Location> location = resolveBreakpoint(breakpointId, script.key, breakpoint, UserBreakpointSource);
         if (location)
@@ -599,7 +599,7 @@ void V8DebuggerAgentImpl::searchInContent(ErrorString* error, const String& scri
 {
     ScriptsMap::iterator it = m_scripts.find(scriptId);
     if (it != m_scripts.end())
-        results = ContentSearchUtils::searchInTextByLines(it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
+        results = V8StringUtil::searchInTextByLines(m_debugger, it->value.source(), query, asBool(optionalCaseSensitive), asBool(optionalIsRegex));
     else
         *error = "No script for id: " + scriptId;
 }
@@ -1380,7 +1380,7 @@ String V8DebuggerAgentImpl::sourceMapURLForScript(const V8DebuggerScript& script
 {
     if (success)
         return script.sourceMappingURL();
-    return ContentSearchUtils::findSourceMapURL(script.source(), ContentSearchUtils::JavaScriptMagicComment);
+    return V8StringUtil::findSourceMapURL(script.source(), false);
 }
 
 void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScript)
@@ -1388,7 +1388,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     V8DebuggerScript script = parsedScript.script;
 
     if (!parsedScript.success)
-        script.setSourceURL(ContentSearchUtils::findSourceURL(script.source(), ContentSearchUtils::JavaScriptMagicComment));
+        script.setSourceURL(V8StringUtil::findSourceURL(script.source(), false));
 
     int executionContextId = script.executionContextId();
     bool isContentScript = script.isContentScript();
@@ -1423,7 +1423,7 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
         breakpointObject->getBoolean(DebuggerAgentState::isRegex, &isRegex);
         String url;
         breakpointObject->getString(DebuggerAgentState::url, &url);
-        if (!matches(scriptURL, url, isRegex))
+        if (!matches(m_debugger, scriptURL, url, isRegex))
             continue;
         ScriptBreakpoint breakpoint;
         breakpointObject->getNumber(DebuggerAgentState::lineNumber, &breakpoint.lineNumber);

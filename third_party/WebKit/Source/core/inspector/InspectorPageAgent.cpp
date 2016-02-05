@@ -49,7 +49,6 @@
 #include "core/html/imports/HTMLImportLoader.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/html/parser/TextResourceDecoder.h"
-#include "core/inspector/ContentSearchUtils.h"
 #include "core/inspector/DOMPatchSupport.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
@@ -58,6 +57,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceContentLoader.h"
 #include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/v8/V8StringUtil.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/JSONValues.h"
@@ -555,7 +555,7 @@ void InspectorPageAgent::searchContentAfterResourcesContentLoaded(const String& 
     }
 
     RefPtr<TypeBuilder::Array<TypeBuilder::Debugger::SearchMatch>> results;
-    results = ContentSearchUtils::searchInTextByLines(content, query, caseSensitive, isRegex);
+    results = V8StringUtil::searchInTextByLines(m_debuggerAgent->debugger(), content, query, caseSensitive, isRegex);
     callback->sendSuccess(results);
 }
 
