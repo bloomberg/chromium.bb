@@ -876,22 +876,20 @@ bool ChromeClientImpl::shouldOpenModalDialogDuringPageDismissal(const DialogType
     return false;
 }
 
-void ChromeClientImpl::needTouchEvents(bool needsTouchEvents)
+void ChromeClientImpl::setEventListenerProperties(WebEventListenerClass eventClass, WebEventListenerProperties properties)
 {
-    m_webView->hasTouchEventHandlers(needsTouchEvents);
+    if (eventClass == WebEventListenerClass::Touch)
+        m_webView->hasTouchEventHandlers(properties != WebEventListenerProperties::Nothing);
+
+    if (WebLayerTreeView* treeView = m_webView->layerTreeView())
+        treeView->setEventListenerProperties(eventClass, properties);
 }
 
-void ChromeClientImpl::setHaveWheelEventHandlers(bool hasEventHandlers)
+WebEventListenerProperties ChromeClientImpl::eventListenerProperties(WebEventListenerClass eventClass) const
 {
     if (WebLayerTreeView* treeView = m_webView->layerTreeView())
-        treeView->setHaveWheelEventHandlers(hasEventHandlers);
-}
-
-bool ChromeClientImpl::haveWheelEventHandlers() const
-{
-    if (WebLayerTreeView* treeView = m_webView->layerTreeView())
-        return treeView->haveWheelEventHandlers();
-    return false;
+        return treeView->eventListenerProperties(eventClass);
+    return WebEventListenerProperties::Nothing;
 }
 
 void ChromeClientImpl::setHaveScrollEventHandlers(bool hasEventHandlers)

@@ -156,9 +156,8 @@ public:
 
     void attachRootGraphicsLayer(GraphicsLayer*, LocalFrame* localRoot) override {}
 
-    void needTouchEvents(bool) override {}
-    void setHaveWheelEventHandlers(bool) override {}
-    bool haveWheelEventHandlers() const override { return false; }
+    void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) override {}
+    WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const override { return WebEventListenerProperties::Nothing; }
     void setHaveScrollEventHandlers(bool) override {}
     bool haveScrollEventHandlers() const override { return false; }
 

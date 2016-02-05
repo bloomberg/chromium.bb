@@ -556,13 +556,19 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     }
   }
 
-  if ((type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) &&
-      layer_tree_impl_->have_wheel_event_handlers()) {
-    TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
-    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        MainThreadScrollingReason::kEventHandlers;
-    return scroll_status;
+  if (type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) {
+    EventListenerProperties event_properties =
+        layer_tree_impl_->event_listener_properties(
+            EventListenerClass::kMouseWheel);
+    if (event_properties == EventListenerProperties::kBlocking ||
+        (!layer_tree_impl_->settings().use_mouse_wheel_gestures &&
+         event_properties == EventListenerProperties::kPassive)) {
+      TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
+      scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+      scroll_status.main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kEventHandlers;
+      return scroll_status;
+    }
   }
 
   if (!scrollable()) {

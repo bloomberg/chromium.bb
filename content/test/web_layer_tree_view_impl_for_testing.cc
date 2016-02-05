@@ -200,13 +200,22 @@ void WebLayerTreeViewImplForTesting::registerSelection(
 void WebLayerTreeViewImplForTesting::clearSelection() {
 }
 
-void WebLayerTreeViewImplForTesting::setHaveWheelEventHandlers(
-    bool have_event_handlers) {
-  layer_tree_host_->SetHaveWheelEventHandlers(have_event_handlers);
+void WebLayerTreeViewImplForTesting::setEventListenerProperties(
+    blink::WebEventListenerClass eventClass,
+    blink::WebEventListenerProperties properties) {
+  // Equality of static_cast is checked in render_widget_compositor.cc.
+  layer_tree_host_->SetEventListenerProperties(
+      static_cast<cc::EventListenerClass>(eventClass),
+      static_cast<cc::EventListenerProperties>(properties));
 }
 
-bool WebLayerTreeViewImplForTesting::haveWheelEventHandlers() const {
-  return layer_tree_host_->have_wheel_event_handlers();
+blink::WebEventListenerProperties
+WebLayerTreeViewImplForTesting::eventListenerProperties(
+    blink::WebEventListenerClass event_class) const {
+  // Equality of static_cast is checked in render_widget_compositor.cc.
+  return static_cast<blink::WebEventListenerProperties>(
+      layer_tree_host_->event_listener_properties(
+          static_cast<cc::EventListenerClass>(event_class)));
 }
 
 void WebLayerTreeViewImplForTesting::setHaveScrollEventHandlers(

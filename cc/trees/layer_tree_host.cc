@@ -184,7 +184,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
       background_color_(SK_ColorWHITE),
       has_transparent_background_(false),
       have_scroll_event_handlers_(false),
-      have_wheel_event_handlers_(false),
+      event_listener_properties_(),
       did_complete_scale_animation_(false),
       in_paint_layer_contents_(false),
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
@@ -401,7 +401,12 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->set_background_color(background_color_);
   sync_tree->set_has_transparent_background(has_transparent_background_);
   sync_tree->set_have_scroll_event_handlers(have_scroll_event_handlers_);
-  sync_tree->set_have_wheel_event_handlers(have_wheel_event_handlers_);
+  sync_tree->set_event_listener_properties(
+      EventListenerClass::kTouch,
+      event_listener_properties(EventListenerClass::kTouch));
+  sync_tree->set_event_listener_properties(
+      EventListenerClass::kMouseWheel,
+      event_listener_properties(EventListenerClass::kMouseWheel));
 
   if (page_scale_layer_.get() && inner_viewport_scroll_layer_.get()) {
     sync_tree->SetViewportLayersFromIds(
@@ -1124,11 +1129,14 @@ void LayerTreeHost::SetHaveScrollEventHandlers(bool have_event_handlers) {
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetHaveWheelEventHandlers(bool have_event_handlers) {
-  if (have_wheel_event_handlers_ == have_event_handlers)
+void LayerTreeHost::SetEventListenerProperties(
+    EventListenerClass event_class,
+    EventListenerProperties properties) {
+  const size_t index = static_cast<size_t>(event_class);
+  if (event_listener_properties_[index] == properties)
     return;
 
-  have_wheel_event_handlers_ = have_event_handlers;
+  event_listener_properties_[index] = properties;
   SetNeedsCommit();
 }
 
@@ -1458,7 +1466,10 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {
   proto->set_background_color(background_color_);
   proto->set_has_transparent_background(has_transparent_background_);
   proto->set_have_scroll_event_handlers(have_scroll_event_handlers_);
-  proto->set_have_wheel_event_handlers(have_wheel_event_handlers_);
+  proto->set_wheel_event_listener_properties(static_cast<uint32_t>(
+      event_listener_properties(EventListenerClass::kMouseWheel)));
+  proto->set_touch_event_listener_properties(static_cast<uint32_t>(
+      event_listener_properties(EventListenerClass::kTouch)));
   proto->set_in_paint_layer_contents(in_paint_layer_contents_);
   proto->set_id(id_);
   proto->set_next_commit_forces_redraw(next_commit_forces_redraw_);
@@ -1525,7 +1536,13 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   background_color_ = proto.background_color();
   has_transparent_background_ = proto.has_transparent_background();
   have_scroll_event_handlers_ = proto.have_scroll_event_handlers();
-  have_wheel_event_handlers_ = proto.have_wheel_event_handlers();
+  event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kMouseWheel)] =
+      static_cast<EventListenerProperties>(
+          proto.wheel_event_listener_properties());
+  event_listener_properties_[static_cast<size_t>(EventListenerClass::kTouch)] =
+      static_cast<EventListenerProperties>(
+          proto.touch_event_listener_properties());
   in_paint_layer_contents_ = proto.in_paint_layer_contents();
   id_ = proto.id();
   next_commit_forces_redraw_ = proto.next_commit_forces_redraw();

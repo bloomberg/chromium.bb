@@ -135,8 +135,11 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void clearViewportLayers() override;
   void registerSelection(const blink::WebSelection& selection) override;
   void clearSelection() override;
-  void setHaveWheelEventHandlers(bool) override;
-  bool haveWheelEventHandlers() const override;
+  void setEventListenerProperties(
+      blink::WebEventListenerClass eventClass,
+      blink::WebEventListenerProperties properties) override;
+  blink::WebEventListenerProperties eventListenerProperties(
+      blink::WebEventListenerClass eventClass) const override;
   void setHaveScrollEventHandlers(bool) override;
   bool haveScrollEventHandlers() const override;
   int layerTreeId() const override;

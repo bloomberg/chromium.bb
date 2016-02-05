@@ -181,8 +181,14 @@ void DebugRectHistory::SaveWheelEventHandlerRects(LayerImpl* layer) {
 }
 
 void DebugRectHistory::SaveWheelEventHandlerRectsCallback(LayerImpl* layer) {
-  if (!layer->layer_tree_impl()->have_wheel_event_handlers())
+  EventListenerProperties event_properties =
+      layer->layer_tree_impl()->event_listener_properties(
+          EventListenerClass::kMouseWheel);
+  if (event_properties == EventListenerProperties::kNone ||
+      (layer->layer_tree_impl()->settings().use_mouse_wheel_gestures &&
+       event_properties == EventListenerProperties::kPassive)) {
     return;
+  }
 
   debug_rects_.push_back(
       DebugRect(WHEEL_EVENT_HANDLER_RECT_TYPE,

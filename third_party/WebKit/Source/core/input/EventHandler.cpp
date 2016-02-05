@@ -104,6 +104,12 @@ namespace blink {
 
 namespace {
 
+bool hasTouchHandlers(const EventHandlerRegistry& registry)
+{
+    return registry.hasEventHandlers(EventHandlerRegistry::TouchEventBlocking)
+        || registry.hasEventHandlers(EventHandlerRegistry::TouchEventPassive);
+}
+
 WebInputEventResult mergeEventResult(WebInputEventResult responseA, WebInputEventResult responseB)
 {
     // The ordering of the enumeration is specific. There are times that
@@ -4002,7 +4008,7 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
     // If there's no document receiving touch events, or no handlers on the
     // document set to receive the events, then we can skip all the rest of
     // this work.
-    if (!m_touchSequenceDocument || !m_touchSequenceDocument->frameHost() || !m_touchSequenceDocument->frameHost()->eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::TouchEvent) || !m_touchSequenceDocument->frame()) {
+    if (!m_touchSequenceDocument || !m_touchSequenceDocument->frameHost() || !hasTouchHandlers(m_touchSequenceDocument->frameHost()->eventHandlerRegistry()) || !m_touchSequenceDocument->frame()) {
         if (allTouchReleased) {
             m_touchSequenceDocument.clear();
             m_touchSequenceUserGestureToken.clear();

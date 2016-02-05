@@ -53,6 +53,7 @@ message LayerTreeHost {
   optional PropertyTrees property_trees = 31;
   optional uint32 surface_id_namespace = 32;
   optional uint32 next_surface_sequence = 33;
-  optional bool have_wheel_event_handlers = 34;
+  optional uint32 wheel_event_listener_properties = 34;
   optional bool have_scroll_event_handlers = 35;
+  optional uint32 touch_event_listener_properties = 36;
 }

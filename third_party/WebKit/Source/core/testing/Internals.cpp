@@ -1259,7 +1259,7 @@ static unsigned eventHandlerCount(Document& document, EventHandlerRegistry::Even
 unsigned Internals::wheelEventHandlerCount(Document* document)
 {
     ASSERT(document);
-    return eventHandlerCount(*document, EventHandlerRegistry::WheelEvent);
+    return eventHandlerCount(*document, EventHandlerRegistry::WheelEventBlocking);
 }
 
 unsigned Internals::scrollEventHandlerCount(Document* document)
@@ -1271,7 +1271,7 @@ unsigned Internals::scrollEventHandlerCount(Document* document)
 unsigned Internals::touchEventHandlerCount(Document* document)
 {
     ASSERT(document);
-    return eventHandlerCount(*document, EventHandlerRegistry::TouchEvent);
+    return eventHandlerCount(*document, EventHandlerRegistry::TouchEventBlocking);
 }
 
 static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot, GraphicsLayer* graphicsLayer, IntSize* layerOffset, String* layerType)

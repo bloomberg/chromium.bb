@@ -77,7 +77,7 @@ LayerTreeImpl::LayerTreeImpl(
       has_ever_been_drawn_(false),
       render_surface_layer_list_id_(0),
       have_scroll_event_handlers_(false),
-      have_wheel_event_handlers_(false),
+      event_listener_properties_(),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
       top_controls_shown_ratio_(top_controls_shown_ratio) {}
@@ -348,7 +348,12 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->set_background_color(background_color());
   target_tree->set_has_transparent_background(has_transparent_background());
   target_tree->set_have_scroll_event_handlers(have_scroll_event_handlers());
-  target_tree->set_have_wheel_event_handlers(have_wheel_event_handlers());
+  target_tree->set_event_listener_properties(
+      EventListenerClass::kTouch,
+      event_listener_properties(EventListenerClass::kTouch));
+  target_tree->set_event_listener_properties(
+      EventListenerClass::kMouseWheel,
+      event_listener_properties(EventListenerClass::kMouseWheel));
 
   if (ViewportSizeInvalid())
     target_tree->SetViewportSizeInvalid();
@@ -1690,7 +1695,9 @@ struct HitTestVisibleScrollableOrTouchableFunctor {
     return layer->IsDrawnRenderSurfaceLayerListMember() ||
            ScrollsAnyDrawnRenderSurfaceLayerListMember(layer) ||
            !layer->touch_event_handler_region().IsEmpty() ||
-           layer->layer_tree_impl()->have_wheel_event_handlers();
+           layer->layer_tree_impl()->event_listener_properties(
+               EventListenerClass::kMouseWheel) !=
+               EventListenerProperties::kNone;
   }
 };
 

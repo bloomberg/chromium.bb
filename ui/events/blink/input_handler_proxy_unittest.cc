@@ -131,7 +131,9 @@ class MockInputHandler : public cc::InputHandler {
                      bool(const gfx::Point& point,
                           cc::InputHandler::ScrollInputType type));
 
-  MOCK_CONST_METHOD0(HaveWheelEventHandlers, bool());
+  MOCK_CONST_METHOD1(
+      GetEventListenerProperties,
+      cc::EventListenerProperties(cc::EventListenerClass event_class));
   MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
 
   MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
@@ -625,8 +627,9 @@ TEST_P(InputHandlerProxyTest, GesturePinch) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
-      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -674,8 +677,9 @@ TEST_P(InputHandlerProxyTest, GesturePinchWithWheelHandler) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
-      .WillOnce(testing::Return(true));
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -723,8 +727,9 @@ TEST_P(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 
   gesture_.type = WebInputEvent::GesturePinchBegin;
-  EXPECT_CALL(mock_input_handler_, HaveWheelEventHandlers())
-      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_,
+              GetEventListenerProperties(cc::EventListenerClass::kMouseWheel))
+      .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
   EXPECT_CALL(mock_input_handler_, PinchGestureBegin());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 

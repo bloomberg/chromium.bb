@@ -717,7 +717,8 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
 
   // With registered event handlers, wheel scrolls don't necessarily
   // have to go to the main thread.
-  host_impl_->active_tree()->set_have_wheel_event_handlers(true);
+  host_impl_->active_tree()->set_event_listener_properties(
+      EventListenerClass::kMouseWheel, EventListenerProperties::kBlocking);
   InputHandler::ScrollStatus status =
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::WHEEL);
@@ -734,8 +735,9 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnWheelEventHandlers) {
   host_impl_->ScrollEnd(EndState().get());
 
   // And if the handlers go away, wheel scrolls can again be processed
-  // on impl (despite the scroll-blocks-on mode).
-  host_impl_->active_tree()->set_have_wheel_event_handlers(false);
+  // on impl.
+  host_impl_->active_tree()->set_event_listener_properties(
+      EventListenerClass::kMouseWheel, EventListenerProperties::kNone);
   status = host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                                    InputHandler::WHEEL);
   EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);

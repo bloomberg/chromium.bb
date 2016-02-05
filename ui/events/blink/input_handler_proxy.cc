@@ -288,7 +288,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       const WebGestureEvent& gesture_event =
           static_cast<const WebGestureEvent&>(event);
       if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad &&
-          input_handler_->HaveWheelEventHandlers()) {
+          input_handler_->GetEventListenerProperties(
+              cc::EventListenerClass::kMouseWheel) !=
+              cc::EventListenerProperties::kNone) {
         return DID_NOT_HANDLE;
       } else {
         input_handler_->PinchGestureBegin();

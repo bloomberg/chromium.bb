@@ -67,8 +67,11 @@ class WebLayerTreeViewImplForTesting
   void clearViewportLayers() override;
   void registerSelection(const blink::WebSelection& selection) override;
   void clearSelection() override;
-  void setHaveWheelEventHandlers(bool have_event_handlers) override;
-  bool haveWheelEventHandlers() const override;
+  void setEventListenerProperties(
+      blink::WebEventListenerClass event_class,
+      blink::WebEventListenerProperties properties) override;
+  blink::WebEventListenerProperties eventListenerProperties(
+      blink::WebEventListenerClass event_class) const override;
   void setHaveScrollEventHandlers(bool) override;
   bool haveScrollEventHandlers() const override;
 

@@ -103,6 +103,7 @@ LayerTreeSettings::LayerTreeSettings()
       image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(true),
       wait_for_beginframe_interval(true),
+      use_mouse_wheel_gestures(false),
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024),
       memory_policy_(64 * 1024 * 1024,
                      gpu::MemoryAllocation::CUTOFF_ALLOW_EVERYTHING,
@@ -171,6 +172,7 @@ bool LayerTreeSettings::operator==(const LayerTreeSettings& other) const {
          use_compositor_animation_timelines ==
              other.use_compositor_animation_timelines &&
          wait_for_beginframe_interval == other.wait_for_beginframe_interval &&
+         use_mouse_wheel_gestures == other.use_mouse_wheel_gestures &&
          max_staging_buffer_usage_in_bytes ==
              other.max_staging_buffer_usage_in_bytes &&
          memory_policy_ == other.memory_policy_ &&
@@ -235,6 +237,7 @@ void LayerTreeSettings::ToProtobuf(proto::LayerTreeSettings* proto) const {
   proto->set_use_compositor_animation_timelines(
       use_compositor_animation_timelines);
   proto->set_wait_for_beginframe_interval(wait_for_beginframe_interval);
+  proto->set_use_mouse_wheel_gestures(use_mouse_wheel_gestures);
   proto->set_max_staging_buffer_usage_in_bytes(
       max_staging_buffer_usage_in_bytes);
   memory_policy_.ToProtobuf(proto->mutable_memory_policy());
@@ -303,6 +306,7 @@ void LayerTreeSettings::FromProtobuf(const proto::LayerTreeSettings& proto) {
   use_compositor_animation_timelines =
       proto.use_compositor_animation_timelines();
   wait_for_beginframe_interval = proto.wait_for_beginframe_interval();
+  use_mouse_wheel_gestures = proto.use_mouse_wheel_gestures();
   max_staging_buffer_usage_in_bytes = proto.max_staging_buffer_usage_in_bytes();
   memory_policy_.FromProtobuf(proto.memory_policy());
   initial_debug_state.FromProtobuf(proto.initial_debug_state());

@@ -163,22 +163,18 @@ private:
             m_popup->m_webView->client()->didChangeCursor(WebCursorInfo(cursor));
     }
 
-    void needTouchEvents(bool needsTouchEvents) override
+    void setEventListenerProperties(WebEventListenerClass eventClass, WebEventListenerProperties properties) override
     {
-        m_popup->widgetClient()->hasTouchEventHandlers(needsTouchEvents);
+        if (eventClass == WebEventListenerClass::Touch)
+            m_popup->widgetClient()->hasTouchEventHandlers(properties != WebEventListenerProperties::Nothing);
+        if (m_popup->m_layerTreeView)
+            m_popup->m_layerTreeView->setEventListenerProperties(eventClass, properties);
     }
-
-    void setHaveWheelEventHandlers(bool haveEventHandlers) override
+    WebEventListenerProperties eventListenerProperties(WebEventListenerClass eventClass) const override
     {
         if (m_popup->m_layerTreeView)
-            return m_popup->m_layerTreeView->setHaveWheelEventHandlers(haveEventHandlers);
-    }
-
-    bool haveWheelEventHandlers() const override
-    {
-        if (m_popup->m_layerTreeView)
-            return m_popup->m_layerTreeView->haveWheelEventHandlers();
-        return false;
+            return m_popup->m_layerTreeView->eventListenerProperties(eventClass);
+        return WebEventListenerProperties::Nothing;
     }
 
     void setHaveScrollEventHandlers(bool hasEventHandlers) override

@@ -25,6 +25,7 @@
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
+#include "cc/input/event_listener_properties.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/scrollbar.h"
@@ -229,8 +230,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   }
   void SetHaveScrollEventHandlers(bool have_event_handlers);
 
-  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
-  void SetHaveWheelEventHandlers(bool have_event_handlers);
+  void SetEventListenerProperties(EventListenerClass event_class,
+                                  EventListenerProperties event_properties);
+  EventListenerProperties event_listener_properties(
+      EventListenerClass event_class) const {
+    return event_listener_properties_[static_cast<size_t>(event_class)];
+  }
 
   const LayerTreeSettings& settings() const { return settings_; }
 
@@ -538,7 +543,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool has_transparent_background_;
 
   bool have_scroll_event_handlers_;
-  bool have_wheel_event_handlers_;
+  EventListenerProperties event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kNumClasses)];
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
   scoped_ptr<AnimationHost> animation_host_;

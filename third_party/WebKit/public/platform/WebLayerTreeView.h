@@ -28,6 +28,7 @@
 
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
 #include "WebNonCopyable.h"
 #include "WebPrivateOwnPtr.h"
@@ -142,12 +143,12 @@ public:
     virtual void clearSelection() { }
 
     // Input properties ---------------------------------------------------
-    virtual void setHaveWheelEventHandlers(bool) { };
+    virtual void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) { };
     virtual void setHaveScrollEventHandlers(bool) { };
 
     // Debugging / dangerous ---------------------------------------------
 
-    virtual bool haveWheelEventHandlers() const { return false; };
+    virtual WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const { return WebEventListenerProperties::Nothing; };
     virtual bool haveScrollEventHandlers() const { return false; };
 
     virtual int layerTreeId() const { return 0; }

@@ -35,6 +35,7 @@
 #include "platform/PopupMenu.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebEventListenerProperties.h"
 #include "public/platform/WebFocusType.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -198,9 +199,8 @@ public:
     virtual void clearCompositedSelection() { }
     virtual void updateCompositedSelection(const CompositedSelection&) { }
 
-    virtual void needTouchEvents(bool) = 0;
-    virtual void setHaveWheelEventHandlers(bool) = 0;
-    virtual bool haveWheelEventHandlers() const = 0;
+    virtual void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) = 0;
+    virtual WebEventListenerProperties eventListenerProperties(WebEventListenerClass) const = 0;
     virtual void setHaveScrollEventHandlers(bool) = 0;
     virtual bool haveScrollEventHandlers() const = 0;
 

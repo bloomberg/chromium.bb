@@ -70,4 +70,5 @@ message LayerTreeSettings {
   optional int32 max_staging_buffer_usage_in_bytes = 47;
   optional ManagedMemoryPolicy memory_policy = 48;
   optional LayerTreeDebugState initial_debug_state = 49;
+  optional bool use_mouse_wheel_gestures = 50;
 }

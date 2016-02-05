@@ -4,6 +4,7 @@
 
 #include "core/frame/EventHandlerRegistry.h"
 
+#include "core/events/EventListenerOptions.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -37,6 +38,15 @@ inline bool isPointerEventType(const AtomicString& eventType)
         || eventType == EventTypeNames::pointerup;
 }
 
+WebEventListenerProperties webEventListenerProperties(bool hasBlocking, bool hasPassive)
+{
+    if (hasBlocking)
+        return WebEventListenerProperties::Blocking;
+    if (hasPassive)
+        return WebEventListenerProperties::Passive;
+    return WebEventListenerProperties::Nothing;
+}
+
 } // namespace
 
 EventHandlerRegistry::EventHandlerRegistry(FrameHost& frameHost)
@@ -49,18 +59,19 @@ EventHandlerRegistry::~EventHandlerRegistry()
     checkConsistency();
 }
 
-bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, EventHandlerClass* result)
+bool EventHandlerRegistry::eventTypeToClass(const AtomicString& eventType, const EventListenerOptions& options, EventHandlerClass* result)
 {
     if (eventType == EventTypeNames::scroll) {
         *result = ScrollEvent;
     } else if (eventType == EventTypeNames::wheel || eventType == EventTypeNames::mousewheel) {
-        *result = WheelEvent;
+        *result = options.passive() ? WheelEventPassive : WheelEventBlocking;
     } else if (isTouchEventType(eventType)) {
-        *result = TouchEvent;
+        *result = options.passive() ? TouchEventPassive : TouchEventBlocking;
     } else if (isPointerEventType(eventType)) {
-        // The EventHandlerClass is still TouchEvent below since we are firing PointerEvents only from
-        // EventHandler::handleTouchEvent for now. See crbug.com/476565.
-        *result = TouchEvent;
+        // The EventHandlerClass is TouchEventPassive since the pointer events
+        // never block scrolling and the compositor only needs to know
+        // about the touch listeners.
+        *result = TouchEventPassive;
 #if ENABLE(ASSERT)
     } else if (eventType == EventTypeNames::load || eventType == EventTypeNames::mousemove || eventType == EventTypeNames::touchstart) {
         *result = EventsForTesting;
@@ -122,22 +133,22 @@ void EventHandlerRegistry::updateEventHandlerInternal(ChangeOperation op, EventH
         notifyDidAddOrRemoveEventHandlerTarget(handlerClass);
 }
 
-void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const AtomicString& eventType, EventTarget* target)
+void EventHandlerRegistry::updateEventHandlerOfType(ChangeOperation op, const AtomicString& eventType, const EventListenerOptions& options, EventTarget* target)
 {
     EventHandlerClass handlerClass;
-    if (!eventTypeToClass(eventType, &handlerClass))
+    if (!eventTypeToClass(eventType, options, &handlerClass))
         return;
     updateEventHandlerInternal(op, handlerClass, target);
 }
 
-void EventHandlerRegistry::didAddEventHandler(EventTarget& target, const AtomicString& eventType)
+void EventHandlerRegistry::didAddEventHandler(EventTarget& target, const AtomicString& eventType, const EventListenerOptions& options)
 {
-    updateEventHandlerOfType(Add, eventType, &target);
+    updateEventHandlerOfType(Add, eventType, options, &target);
 }
 
-void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, const AtomicString& eventType)
+void EventHandlerRegistry::didRemoveEventHandler(EventTarget& target, const AtomicString& eventType, const EventListenerOptions& options)
 {
-    updateEventHandlerOfType(Remove, eventType, &target);
+    updateEventHandlerOfType(Remove, eventType, options, &target);
 }
 
 void EventHandlerRegistry::didAddEventHandler(EventTarget& target, EventHandlerClass handlerClass)
@@ -155,16 +166,19 @@ void EventHandlerRegistry::didMoveIntoFrameHost(EventTarget& target)
     if (!target.hasEventListeners())
         return;
 
+    // This code is not efficient at all.
     Vector<AtomicString> eventTypes = target.eventTypes();
     for (size_t i = 0; i < eventTypes.size(); ++i) {
-        EventHandlerClass handlerClass;
-        if (!eventTypeToClass(eventTypes[i], &handlerClass))
-            continue;
         EventListenerVector* listeners = target.getEventListeners(eventTypes[i]);
         if (!listeners)
             continue;
-        for (unsigned count = listeners->size(); count > 0; --count)
+        for (unsigned count = listeners->size(); count > 0; --count) {
+            EventHandlerClass handlerClass;
+            if (!eventTypeToClass(eventTypes[i], (*listeners)[count - 1].options(), &handlerClass))
+                continue;
+
             didAddEventHandler(target, handlerClass);
+        }
     }
 }
 
@@ -199,11 +213,13 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
     case ScrollEvent:
         m_frameHost->chromeClient().setHaveScrollEventHandlers(hasActiveHandlers);
         break;
-    case WheelEvent:
-        m_frameHost->chromeClient().setHaveWheelEventHandlers(hasActiveHandlers);
+    case WheelEventBlocking:
+    case WheelEventPassive:
+        m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::MouseWheel, webEventListenerProperties(hasEventHandlers(WheelEventBlocking), hasEventHandlers(WheelEventPassive)));
         break;
-    case TouchEvent:
-        m_frameHost->chromeClient().needTouchEvents(hasActiveHandlers);
+    case TouchEventBlocking:
+    case TouchEventPassive:
+        m_frameHost->chromeClient().setEventListenerProperties(WebEventListenerClass::Touch, webEventListenerProperties(hasEventHandlers(TouchEventBlocking), hasEventHandlers(TouchEventPassive)));
         break;
 #if ENABLE(ASSERT)
     case EventsForTesting:
@@ -218,7 +234,7 @@ void EventHandlerRegistry::notifyHasHandlersChanged(EventHandlerClass handlerCla
 void EventHandlerRegistry::notifyDidAddOrRemoveEventHandlerTarget(EventHandlerClass handlerClass)
 {
     ScrollingCoordinator* scrollingCoordinator = m_frameHost->page().scrollingCoordinator();
-    if (scrollingCoordinator && handlerClass == TouchEvent)
+    if (scrollingCoordinator && handlerClass == TouchEventBlocking)
         scrollingCoordinator->touchEventTargetRectsDidChange();
 }
 

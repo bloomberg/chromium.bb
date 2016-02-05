@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/event_listener_properties.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
@@ -170,7 +171,8 @@ class CC_EXPORT InputHandler {
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,
                                            ScrollInputType type) const = 0;
 
-  virtual bool HaveWheelEventHandlers() const = 0;
+  virtual EventListenerProperties GetEventListenerProperties(
+      EventListenerClass event_class) const = 0;
 
   // Whether the page should be given the opportunity to suppress scrolling by
   // consuming touch events that started at |viewport_point|.

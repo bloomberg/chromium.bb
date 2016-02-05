@@ -572,8 +572,9 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
   return false;
 }
 
-bool LayerTreeHostImpl::HaveWheelEventHandlers() const {
-  return active_tree_->have_wheel_event_handlers();
+EventListenerProperties LayerTreeHostImpl::GetEventListenerProperties(
+    EventListenerClass event_class) const {
+  return active_tree_->event_listener_properties(event_class);
 }
 
 bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(

@@ -538,9 +538,9 @@ void WebPluginContainerImpl::requestTouchEventType(TouchEventRequestType request
     if (m_element->document().frameHost()) {
         EventHandlerRegistry& registry = m_element->document().frameHost()->eventHandlerRegistry();
         if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
-            registry.didAddEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
+            registry.didAddEventHandler(*m_element, EventHandlerRegistry::TouchEventBlocking);
         else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
-            registry.didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEvent);
+            registry.didRemoveEventHandler(*m_element, EventHandlerRegistry::TouchEventBlocking);
     }
     m_touchEventRequestType = requestType;
 }

@@ -1095,8 +1095,10 @@ void FrameLoader::commitProvisionalLoad()
     if (!prepareForCommit())
         return;
 
-    if (isLoadingMainFrame())
-        m_frame->page()->chromeClient().needTouchEvents(false);
+    if (isLoadingMainFrame()) {
+        m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::Touch, WebEventListenerProperties::Nothing);
+        m_frame->page()->chromeClient().setEventListenerProperties(WebEventListenerClass::MouseWheel, WebEventListenerProperties::Nothing);
+    }
 
     client()->transitionToCommittedForNewPage();
     m_frame->navigationScheduler().cancel();

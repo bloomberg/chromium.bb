@@ -126,7 +126,8 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingByDefault)
     WebLayer* rootScrollLayer = getRootScrollLayer();
     ASSERT_TRUE(rootScrollLayer->scrollable());
     ASSERT_FALSE(rootScrollLayer->shouldScrollOnMainThread());
-    ASSERT_FALSE(webLayerTreeView()->haveWheelEventHandlers());
+    ASSERT_EQ(WebEventListenerProperties::Nothing, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+    ASSERT_EQ(WebEventListenerProperties::Nothing, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
 }
 
 TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting)
@@ -306,13 +307,58 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingForFixedPosition)
     }
 }
 
+TEST_F(ScrollingCoordinatorTest, touchEventHandler)
+{
+    registerMockedHttpURLLoad("touch-event-handler.html");
+    navigateTo(m_baseURL + "touch-event-handler.html");
+    forceFullCompositingUpdate();
+
+    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+}
+
+TEST_F(ScrollingCoordinatorTest, touchEventHandlerPassive)
+{
+    registerMockedHttpURLLoad("touch-event-handler-passive.html");
+    navigateTo(m_baseURL + "touch-event-handler-passive.html");
+    forceFullCompositingUpdate();
+
+    ASSERT_EQ(WebEventListenerProperties::Passive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+}
+
+TEST_F(ScrollingCoordinatorTest, touchEventHandlerBoth)
+{
+    registerMockedHttpURLLoad("touch-event-handler-both.html");
+    navigateTo(m_baseURL + "touch-event-handler-both.html");
+    forceFullCompositingUpdate();
+
+    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::Touch));
+}
+
 TEST_F(ScrollingCoordinatorTest, wheelEventHandler)
 {
     registerMockedHttpURLLoad("wheel-event-handler.html");
     navigateTo(m_baseURL + "wheel-event-handler.html");
     forceFullCompositingUpdate();
 
-    ASSERT_TRUE(webLayerTreeView()->haveWheelEventHandlers());
+    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
+}
+
+TEST_F(ScrollingCoordinatorTest, wheelEventHandlerPassive)
+{
+    registerMockedHttpURLLoad("wheel-event-handler-passive.html");
+    navigateTo(m_baseURL + "wheel-event-handler-passive.html");
+    forceFullCompositingUpdate();
+
+    ASSERT_EQ(WebEventListenerProperties::Passive, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
+}
+
+TEST_F(ScrollingCoordinatorTest, wheelEventHandlerBoth)
+{
+    registerMockedHttpURLLoad("wheel-event-handler-both.html");
+    navigateTo(m_baseURL + "wheel-event-handler-both.html");
+    forceFullCompositingUpdate();
+
+    ASSERT_EQ(WebEventListenerProperties::Blocking, webLayerTreeView()->eventListenerProperties(WebEventListenerClass::MouseWheel));
 }
 
 TEST_F(ScrollingCoordinatorTest, scrollEventHandler)

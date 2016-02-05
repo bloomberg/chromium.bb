@@ -1305,7 +1305,7 @@ bool LocalDOMWindow::addEventListenerInternal(const AtomicString& eventType, Pas
         return false;
 
     if (frame() && frame()->host())
-        frame()->host()->eventHandlerRegistry().didAddEventHandler(*this, eventType);
+        frame()->host()->eventHandlerRegistry().didAddEventHandler(*this, eventType, options);
 
     if (Document* document = this->document()) {
         document->addListenerTypeIfNeeded(eventType);
@@ -1338,7 +1338,7 @@ bool LocalDOMWindow::removeEventListenerInternal(const AtomicString& eventType, 
         return false;
 
     if (frame() && frame()->host())
-        frame()->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType);
+        frame()->host()->eventHandlerRegistry().didRemoveEventHandler(*this, eventType, options);
 
     notifyRemoveEventListener(this, eventType);
 

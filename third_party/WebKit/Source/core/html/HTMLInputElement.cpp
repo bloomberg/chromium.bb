@@ -175,8 +175,10 @@ HTMLInputElement::~HTMLInputElement()
     // We should unregister it to avoid accessing a deleted object.
     if (type() == InputTypeNames::radio)
         document().formController().radioButtonGroupScope().removeButton(this);
+
+    // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
     if (m_hasTouchEventHandler && document().frameHost())
-        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
+        document().frameHost()->eventHandlerRegistry().didRemoveEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
 #endif
 }
 
@@ -426,10 +428,11 @@ void HTMLInputElement::updateTouchEventHandlerRegistry()
     // If the Document is being or has been stopped, don't register any handlers.
     if (document().frameHost() && document().lifecycle().state() < DocumentLifecycle::Stopping) {
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
+        // TODO(dtapuska): Make this passive touch listener see crbug.com/584438
         if (hasTouchEventHandler)
-            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEvent);
+            registry.didAddEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
         else
-            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEvent);
+            registry.didRemoveEventHandler(*this, EventHandlerRegistry::TouchEventBlocking);
         m_hasTouchEventHandler = hasTouchEventHandler;
     }
 }

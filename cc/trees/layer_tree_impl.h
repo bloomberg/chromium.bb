@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "cc/base/synced_property.h"
+#include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/begin_frame_args.h"
@@ -443,9 +444,14 @@ class CC_EXPORT LayerTreeImpl {
     have_scroll_event_handlers_ = have_event_handlers;
   }
 
-  bool have_wheel_event_handlers() const { return have_wheel_event_handlers_; }
-  void set_have_wheel_event_handlers(bool have_event_handlers) {
-    have_wheel_event_handlers_ = have_event_handlers;
+  EventListenerProperties event_listener_properties(
+      EventListenerClass event_class) const {
+    return event_listener_properties_[static_cast<size_t>(event_class)];
+  }
+  void set_event_listener_properties(EventListenerClass event_class,
+                                     EventListenerProperties event_properties) {
+    event_listener_properties_[static_cast<size_t>(event_class)] =
+        event_properties;
   }
 
  protected:
@@ -536,7 +542,8 @@ class CC_EXPORT LayerTreeImpl {
   int render_surface_layer_list_id_;
 
   bool have_scroll_event_handlers_;
-  bool have_wheel_event_handlers_;
+  EventListenerProperties event_listener_properties_[static_cast<size_t>(
+      EventListenerClass::kNumClasses)];
 
   // Whether or not Blink's viewport size was shrunk by the height of the top
   // controls at the time of the last layout.

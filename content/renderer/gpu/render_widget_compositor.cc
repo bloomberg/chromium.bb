@@ -257,6 +257,9 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   blink::WebRuntimeFeatures::enableCompositorAnimationTimelines(
       settings.use_compositor_animation_timelines);
 
+  settings.use_mouse_wheel_gestures =
+      cmd->HasSwitch(switches::kEnableWheelGestures);
+
   settings.default_tile_size = CalculateDefaultTileSize(device_scale_factor);
   if (cmd->HasSwitch(switches::kDefaultTileWidth)) {
     int tile_width = 0;
@@ -743,12 +746,42 @@ void RenderWidgetCompositor::clearSelection() {
   layer_tree_host_->RegisterSelection(empty_selection);
 }
 
-void RenderWidgetCompositor::setHaveWheelEventHandlers(bool value) {
-  layer_tree_host_->SetHaveWheelEventHandlers(value);
+static_assert(
+    static_cast<cc::EventListenerClass>(blink::WebEventListenerClass::Touch) ==
+        cc::EventListenerClass::kTouch,
+    "EventListenerClass and WebEventListenerClass enums must match");
+static_assert(static_cast<cc::EventListenerClass>(
+                  blink::WebEventListenerClass::MouseWheel) ==
+                  cc::EventListenerClass::kMouseWheel,
+              "EventListenerClass and WebEventListenerClass enums must match");
+
+static_assert(static_cast<cc::EventListenerProperties>(
+                  blink::WebEventListenerProperties::Nothing) ==
+                  cc::EventListenerProperties::kNone,
+              "EventListener and WebEventListener enums must match");
+static_assert(static_cast<cc::EventListenerProperties>(
+                  blink::WebEventListenerProperties::Passive) ==
+                  cc::EventListenerProperties::kPassive,
+              "EventListener and WebEventListener enums must match");
+static_assert(static_cast<cc::EventListenerProperties>(
+                  blink::WebEventListenerProperties::Blocking) ==
+                  cc::EventListenerProperties::kBlocking,
+              "EventListener and WebEventListener enums must match");
+
+void RenderWidgetCompositor::setEventListenerProperties(
+    blink::WebEventListenerClass eventClass,
+    blink::WebEventListenerProperties properties) {
+  layer_tree_host_->SetEventListenerProperties(
+      static_cast<cc::EventListenerClass>(eventClass),
+      static_cast<cc::EventListenerProperties>(properties));
 }
 
-bool RenderWidgetCompositor::haveWheelEventHandlers() const {
-  return layer_tree_host_->have_wheel_event_handlers();
+blink::WebEventListenerProperties
+RenderWidgetCompositor::eventListenerProperties(
+    blink::WebEventListenerClass event_class) const {
+  return static_cast<blink::WebEventListenerProperties>(
+      layer_tree_host_->event_listener_properties(
+          static_cast<cc::EventListenerClass>(event_class)));
 }
 
 void RenderWidgetCompositor::setHaveScrollEventHandlers(bool has_handlers) {

@@ -2044,13 +2044,14 @@ void LayoutObject::styleWillChange(StyleDifference diff, const ComputedStyle& ne
     //
     // Since a CSS property cannot be applied directly to a text node, a
     // handler will have already been added for its parent so ignore it.
+    // TODO: Remove this blocking event handler; crbug.com/318381
     TouchAction oldTouchAction = m_style ? m_style->touchAction() : TouchActionAuto;
     if (node() && !node()->isTextNode() && (oldTouchAction == TouchActionAuto) != (newStyle.touchAction() == TouchActionAuto)) {
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
         if (newStyle.touchAction() != TouchActionAuto)
-            registry.didAddEventHandler(*node(), EventHandlerRegistry::TouchEvent);
+            registry.didAddEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
         else
-            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
+            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
     }
 }
 
@@ -2572,8 +2573,8 @@ void LayoutObject::willBeDestroyed()
     // previously may have already been removed by the Document independently.
     if (node() && !node()->isTextNode() && m_style && m_style->touchAction() != TouchActionAuto) {
         EventHandlerRegistry& registry = document().frameHost()->eventHandlerRegistry();
-        if (registry.eventHandlerTargets(EventHandlerRegistry::TouchEvent)->contains(node()))
-            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEvent);
+        if (registry.eventHandlerTargets(EventHandlerRegistry::TouchEventBlocking)->contains(node()))
+            registry.didRemoveEventHandler(*node(), EventHandlerRegistry::TouchEventBlocking);
     }
 
     setAncestorLineBoxDirty(false);
