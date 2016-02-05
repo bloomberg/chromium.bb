@@ -75,48 +75,35 @@ bool GetEDIDProperty(XID output, std::vector<uint8_t>* edid) {
   return true;
 }
 
-// Gets some useful data from the specified output device, such like
-// manufacturer's ID, product code, and human readable name. Returns false if it
-// fails to get those data and doesn't touch manufacturer ID/product code/name.
-// nullptr can be passed for unwanted output parameters.
-bool GetOutputDeviceData(XID output,
-                         uint16_t* manufacturer_id,
-                         std::string* human_readable_name) {
-  std::vector<uint8_t> edid;
-  if (!GetEDIDProperty(output, &edid))
-    return false;
-
-  return ParseOutputDeviceData(edid, manufacturer_id, nullptr,
-                               human_readable_name, nullptr, nullptr);
-}
-
 }  // namespace
 
-bool GetDisplayId(XID output_id,
-                  uint8_t output_index,
-                  int64_t* display_id_out) {
-  std::vector<uint8_t> edid;
-  if (!GetEDIDProperty(output_id, &edid))
-    return false;
-
-  bool result =
-      GetDisplayIdFromEDID(edid, output_index, display_id_out, nullptr);
-  return result;
+EDIDParserX11::EDIDParserX11(XID output_id)
+    : output_id_(output_id) {
+  GetEDIDProperty(output_id_, &edid_);
 }
 
-std::string GetDisplayName(RROutput output) {
+EDIDParserX11::~EDIDParserX11() {
+}
+
+bool EDIDParserX11::GetDisplayId(uint8_t index, int64_t* out_display_id) const {
+  if (edid_.empty())
+    return false;
+
+  return GetDisplayIdFromEDID(edid_, index, out_display_id, nullptr);
+}
+
+std::string EDIDParserX11::GetDisplayName() const {
   std::string display_name;
-  GetOutputDeviceData(output, nullptr, &display_name);
+  ParseOutputDeviceData(edid_, nullptr, nullptr, &display_name, nullptr,
+                        nullptr);
   return display_name;
 }
 
-bool GetOutputOverscanFlag(RROutput output, bool* flag) {
-  std::vector<uint8_t> edid;
-  if (!GetEDIDProperty(output, &edid))
+bool EDIDParserX11::GetOutputOverscanFlag(bool* out_flag) const {
+  if (edid_.empty())
     return false;
 
-  bool found = ParseOutputOverscanFlag(edid, flag);
-  return found;
+  return ParseOutputOverscanFlag(edid_, out_flag);
 }
 
 }  // namespace ui
