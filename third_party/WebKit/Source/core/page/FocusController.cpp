@@ -552,7 +552,7 @@ PassOwnPtrWillBeRawPtr<FocusController> FocusController::create(Page* page)
 void FocusController::setFocusedFrame(PassRefPtrWillBeRawPtr<Frame> frame, bool notifyEmbedder)
 {
     ASSERT(!frame || frame->page() == m_page);
-    if (m_focusedFrame == frame || m_isChangingFocusedFrame)
+    if (m_focusedFrame == frame || (m_isChangingFocusedFrame && frame))
         return;
 
     m_isChangingFocusedFrame = true;
