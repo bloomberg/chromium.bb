@@ -56,14 +56,12 @@ namespace {
 const wchar_t kAppListAppNameSuffix[] = L"AppList";
 
 const char kAsyncSetAsDefaultExperimentName[] = "AsyncSetAsDefault";
-// A prefix shared by multiple groups that kicks off the generic
-// AsyncSetAsDefault experiment.
-const char kAsyncSetAsDefaultExperimentEnabledGroupPrefix[] = "Enabled";
-// One of the group names for the AsyncSetAsDefault experiment. Unlike other
-// "Enabled" groups, this group doesn't reset the current default browser choice
-// in the registry.
-const char kAsyncSetAsDefaultExperimentEnabledNoRegistryGroupName[] =
-    "EnabledNoRegistry";
+const char kAsyncSetAsDefaultEnabledGroupName[] = "Enabled";
+// For client in the Enabled group of the AsyncSetAsDefault experiment, if the
+// Windows build number of the user is greater or equal than this value, the
+// default browser choice won't be reset.
+const char kAsyncSetAsDefaultEnabledBuildNumberParamName[] =
+    "ResetOlderThanBuildNumber";
 
 const char kEnableAsyncSetAsDefault[] = "enable-async-set-as-default";
 const char kDisableAsyncSetAsDefault[] = "disable-async-set-as-default";
@@ -266,18 +264,26 @@ bool IsAsyncSetAsDefaultEnabled() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableAsyncSetAsDefault))
     return true;
 
-  return base::StartsWith(group_name,
-                          kAsyncSetAsDefaultExperimentEnabledGroupPrefix,
+  return base::StartsWith(group_name, kAsyncSetAsDefaultEnabledGroupName,
                           base::CompareCase::SENSITIVE);
 }
 
 // Returns true if the default browser choice should be reset for the current
-// user.
+// user. Determined by an experiment parameter.
 bool ShouldResetDefaultBrowser() {
-  return !base::StartsWith(
-      base::FieldTrialList::FindFullName(kAsyncSetAsDefaultExperimentName),
-      kAsyncSetAsDefaultExperimentEnabledNoRegistryGroupName,
-      base::CompareCase::SENSITIVE);
+  // Get the build number where it is no longer needed to reset the default
+  // browser.
+  std::string build_number_value = variations::GetVariationParamValue(
+      kAsyncSetAsDefaultExperimentName,
+      kAsyncSetAsDefaultEnabledBuildNumberParamName);
+  int build_number = 0;
+  // Don't reset the default browser on empty/invalid values.
+  if (!base::StringToInt(build_number_value, &build_number))
+    return false;
+  DCHECK_NE(0, build_number);
+
+  return base::win::OSInfo::GetInstance()->version_number().build <
+         build_number;
 }
 
 bool RegisterBrowser() {
