@@ -335,6 +335,7 @@
         'chrome_shared_test_java',
         'chrome_public_apk_java',
         '../../chrome/chrome.gyp:require_chrome_public_test_support_apk',
+        '../../net/net.gyp:require_net_test_support_apk',
         '../../testing/android/on_device_instrumentation.gyp:broker_java',
         '../../testing/android/on_device_instrumentation.gyp:require_driver_apk',
       ],
@@ -347,6 +348,10 @@
         'is_test_apk': 1,
         'test_type': 'instrumentation',
         'isolate_file': '../chrome_public_test_apk.isolate',
+        'additional_apks': [
+          '<(PRODUCT_DIR)/apks/ChromePublicTestSupport.apk',
+          '<(PRODUCT_DIR)/apks/ChromiumNetTestSupport.apk',
+        ],
       },
       'includes': [
         '../../build/java_apk.gypi',

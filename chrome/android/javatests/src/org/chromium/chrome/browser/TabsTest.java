@@ -9,6 +9,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Debug;
+import android.os.Environment;
 import android.os.SystemClock;
 import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -21,9 +22,9 @@ import android.view.View;
 
 import junit.framework.Assert;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -57,7 +58,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
-import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -67,6 +67,7 @@ import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -79,8 +80,11 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class TabsTest extends ChromeTabbedActivityTestBase {
 
-    private static final String TEST_FILE_PATH = "chrome/test/data/android/tabstest/tabs_test.html";
-    private static final String TEST_PAGE_FILE_PATH = "chrome/test/data/google/google.html";
+    private static final String TEST_FILE_PATH =
+            "/chrome/test/data/android/tabstest/tabs_test.html";
+    private static final String TEST_PAGE_FILE_PATH = "/chrome/test/data/google/google.html";
+
+    private EmbeddedTestServer mTestServer;
 
     private float mPxToDp = 1.0f;
     private float mTabsViewHeightDp;
@@ -116,6 +120,18 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             + "  <div id=\"test\">No resize event has been received yet.</div>"
             + "</body></html>");
 
+    public TabsTest() {
+        mSkipCheckHttpServer = true;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (mTestServer != null) {
+            mTestServer.stopAndDestroyServer();
+        }
+        super.tearDown();
+    }
+
     /**
      * Verify that spawning a popup from a background tab in a different model works properly.
      * @throws InterruptedException
@@ -124,8 +140,11 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @LargeTest
     @Feature({"Navigation"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     public void testSpawnPopupOnBackgroundTab() throws InterruptedException, TimeoutException {
-        loadUrl(UrlUtils.getIsolatedTestFileUrl(TEST_FILE_PATH));
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = getActivity().getActivityTab();
 
         newIncognitoTabFromMenu();
@@ -151,8 +170,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         newIncognitoTabFromMenu();
-        loadUrl(UrlUtils.getIsolatedTestFileUrl(TEST_FILE_PATH));
+        loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = getActivity().getActivityTab();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -208,7 +229,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @DisabledTest
     public void testOpenAndCloseNewTabButton() throws InterruptedException {
-        startMainActivityWithURL(UrlUtils.getIsolatedTestFileUrl(TEST_FILE_PATH));
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        startMainActivityWithURL(mTestServer.getURL(TEST_FILE_PATH));
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -453,8 +476,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @FlakyTest
     public void testOpenManyTabsInBursts() throws InterruptedException {
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         final int burstSize = 5;
-        final String url = TestHttpServerClient.getUrl(TEST_PAGE_FILE_PATH);
+        final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         final int startCount = getActivity().getCurrentTabModel().getCount();
         for (int tabCount = startCount; tabCount < STRESSFUL_TAB_COUNT; tabCount += burstSize)  {
             loadUrlInManyNewTabs(url, burstSize);
@@ -481,7 +506,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      * tab loads when selected.
      */
     private void openAndVerifyManyTestTabs(final int num) throws InterruptedException {
-        final String url = TestHttpServerClient.getUrl(TEST_PAGE_FILE_PATH);
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         int startCount = getActivity().getCurrentTabModel().getCount();
         loadUrlInManyNewTabs(url, num);
         assertEquals(startCount + num,
@@ -939,7 +966,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"Android-TabSwitcher", "Main"})
     public void testCloseTabPortrait() throws InterruptedException {
-        startMainActivityWithURL(TestHttpServerClient.getUrl("chrome/test/data/android/test.html"));
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        startMainActivityWithURL(mTestServer.getURL("/chrome/test/data/android/test.html"));
 
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -962,7 +991,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @Feature({"Android-TabSwitcher", "Main"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     public void testCloseTabLandscape() throws InterruptedException {
-        startMainActivityWithURL(TestHttpServerClient.getUrl("chrome/test/data/android/test.html"));
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        startMainActivityWithURL(mTestServer.getURL("/chrome/test/data/android/test.html"));
 
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -1134,8 +1165,10 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature({"Android-TabSwitcher"})
     public void testCloseTabDuringFling() throws InterruptedException {
-        loadUrlInNewTab(TestHttpServerClient.getUrl(
-                "chrome/test/data/android/tabstest/text_page.html"));
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
+        loadUrlInNewTab(mTestServer.getURL(
+                "/chrome/test/data/android/tabstest/text_page.html"));
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
@@ -1154,10 +1187,12 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
      */
     @FlakyTest
     public void testQuickSwitchBetweenTabAndSwitcherMode() throws InterruptedException {
+        mTestServer = EmbeddedTestServer.createAndStartFileServer(
+                getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         final String[] urls = {
-                TestHttpServerClient.getUrl("chrome/test/data/android/navigate/one.html"),
-                TestHttpServerClient.getUrl("chrome/test/data/android/navigate/two.html"),
-                TestHttpServerClient.getUrl("chrome/test/data/android/navigate/three.html")};
+                mTestServer.getURL("/chrome/test/data/android/navigate/one.html"),
+                mTestServer.getURL("/chrome/test/data/android/navigate/two.html"),
+                mTestServer.getURL("/chrome/test/data/android/navigate/three.html")};
 
         for (String url : urls) {
             loadUrlInNewTab(url);
@@ -1637,10 +1672,6 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 || getName().equals("testCloseTabLandscape")
                 || getName().equals("testTabsAreDestroyedOnModelDestruction")) {
             return;
-        }
-
-        if (getName().equals("testSpawnPopupOnBackgroundTab")) {
-            CommandLine.getInstance().appendSwitch(ContentSwitches.DISABLE_POPUP_BLOCKING);
         }
         startMainActivityFromLauncher();
     }

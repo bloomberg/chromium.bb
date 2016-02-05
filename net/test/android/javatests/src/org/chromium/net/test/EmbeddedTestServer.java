@@ -59,6 +59,7 @@ public class EmbeddedTestServer {
         }
     };
 
+    private Context mContext;
     private final Object mImplMonitor = new Object();
 
     /**
@@ -74,11 +75,18 @@ public class EmbeddedTestServer {
         }
     }
 
+    /** Bind the service that will run the native server object.
+     *
+     *  @param context The context to use to bind the service. This will also be used to unbind
+     #          the service at server destruction time.
+     */
     public void initializeNative(Context context) throws InterruptedException {
+        mContext = context;
+
         Intent intent = new Intent(EMBEDDED_TEST_SERVER_SERVICE);
         intent.setClassName(
                 "org.chromium.net.test.support", "org.chromium.net.test.EmbeddedTestServerService");
-        if (!context.bindService(intent, mConn, Context.BIND_AUTO_CREATE)) {
+        if (!mContext.bindService(intent, mConn, Context.BIND_AUTO_CREATE)) {
             throw new EmbeddedTestServerFailure(
                     "Unable to bind to the EmbeddedTestServer service.");
         }
@@ -156,7 +164,7 @@ public class EmbeddedTestServer {
      *  This handles native object initialization, server configuration, and server initialization.
      *  On returning, the server is ready for use.
      *
-     *  @param context The context in which the server is being started.
+     *  @param context The context in which the server will run.
      *  @param directory The directory from which files should be served.
      *  @return The created server.
      */
@@ -204,7 +212,7 @@ public class EmbeddedTestServer {
     }
 
     /** Destroy the native EmbeddedTestServer object. */
-    public void destroy(Context context) {
+    public void destroy() {
         try {
             synchronized (mImplMonitor) {
                 checkServiceLocked();
@@ -213,20 +221,18 @@ public class EmbeddedTestServer {
         } catch (RemoteException e) {
             throw new EmbeddedTestServerFailure("Failed to destroy native server.", e);
         } finally {
-            context.unbindService(mConn);
+            mContext.unbindService(mConn);
         }
     }
 
-    /** Stop and destroy the provided server.
+    /** Stop and destroy the server.
      *
      *  This handles stopping the server and destroying the native object.
-     *
-     *  @param server The server to stop and destroy.
      */
-    public static void stopAndDestroyServer(EmbeddedTestServer server, Context context) {
-        if (!server.shutdownAndWaitUntilComplete()) {
+    public void stopAndDestroyServer() {
+        if (!shutdownAndWaitUntilComplete()) {
             throw new EmbeddedTestServerFailure("Failed to stop server.");
         }
-        server.destroy(context);
+        destroy();
     }
 }
