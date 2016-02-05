@@ -260,9 +260,7 @@ bool LayoutTextControlSingleLine::hasControlClip() const
 
 LayoutRect LayoutTextControlSingleLine::controlClipRect(const LayoutPoint& additionalOffset) const
 {
-    LayoutRect clipRect = contentBoxRect();
-    if (containerElement() && containerElement()->layoutBox())
-        clipRect = unionRect(clipRect, containerElement()->layoutBox()->frameRect());
+    LayoutRect clipRect = paddingBoxRect();
     clipRect.moveBy(additionalOffset);
     return clipRect;
 }

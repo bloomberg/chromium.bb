@@ -46,8 +46,9 @@ crbug.com/569901 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5
 crbug.com/569901 [ Debug ] fast/frames/cached-frame-counter.html [ Timeout ]
 crbug.com/569901 [ Debug ] http/tests/security/w3c/cross-origin-objects.html [ Timeout ]
 
-crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
-crbug.com/299010 [ Linux Debug ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
+# Temporarily disabled to do rebaseline for crbug.com/582363
+# crbug.com/299010 [ Win ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
+# crbug.com/299010 [ Linux Debug ] fast/forms/text/text-font-height-mismatch.html [ Pass Failure ]
 crbug.com/581990 [ Win ] fast/writing-mode/english-lr-text.html [ Pass Failure ]
 
 # See also crbug.com/521730 for the these two text/emphasis tests (non-Oilpan) Win10 failures.
@@ -152,6 +153,18 @@ crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correc
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+crbug.com/582363 editing/selection/select-across-readonly-input-3.html [ NeedsRebaseline ]
+crbug.com/582363 fast/css/input-search-padding.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/number/number-appearance-datalist.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/number/number-appearance-rtl.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/placeholder-position.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/search/search-vertical-alignment.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/search/searchfield-heights.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/text/text-font-height-mismatch.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/text/textfield-overflow-by-value-update.html [ NeedsRebaseline ]
+crbug.com/582363 fast/forms/text/textfield-overflow.html [ NeedsRebaseline ]
+crbug.com/582363 fast/text/international/mixed-directionality-selection.html [ NeedsRebaseline ]
+crbug.com/582363 fast/transforms/transformed-focused-text-input.html [ NeedsRebaseline ]
 
 crbug.com/563650 inspector/elements/css-rule-hover-highlights-selectors.html [ Pass Failure ]
 
