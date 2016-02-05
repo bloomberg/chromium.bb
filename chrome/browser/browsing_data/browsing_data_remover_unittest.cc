@@ -878,6 +878,29 @@ class RemoveDownloadsTester {
   DISALLOW_COPY_AND_ASSIGN(RemoveDownloadsTester);
 };
 
+class RemovePasswordsTester {
+ public:
+  explicit RemovePasswordsTester(TestingProfile* testing_profile) {
+    PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
+        testing_profile,
+        password_manager::BuildPasswordStore<
+            content::BrowserContext,
+            testing::NiceMock<password_manager::MockPasswordStore>>);
+
+    store_ = static_cast<password_manager::MockPasswordStore*>(
+        PasswordStoreFactory::GetInstance()
+            ->GetForProfile(testing_profile, ServiceAccessType::EXPLICIT_ACCESS)
+            .get());
+  }
+
+  password_manager::MockPasswordStore* store() { return store_; }
+
+ private:
+  password_manager::MockPasswordStore* store_;
+
+  DISALLOW_COPY_AND_ASSIGN(RemovePasswordsTester);
+};
+
 // Test Class ----------------------------------------------------------------
 
 class BrowsingDataRemoverTest : public testing::Test {
@@ -2145,7 +2168,16 @@ TEST_F(BrowsingDataRemoverTest, DISABLED_DomainReliability_NoMonitor) {
       BrowsingDataRemover::REMOVE_COOKIES, false);
 }
 
-TEST_F(BrowsingDataRemoverTest, RemoveSameOriginDownloads) {
+TEST_F(BrowsingDataRemoverTest, RemoveDownloadsByTimeOnly) {
+  RemoveDownloadsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.download_manager(), RemoveDownloadsBetween(_, _));
+
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_DOWNLOADS, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveDownloadsByOrigin) {
   RemoveDownloadsTester tester(GetProfile());
   const url::Origin expectedOrigin(kOrigin1);
 
@@ -2157,18 +2189,31 @@ TEST_F(BrowsingDataRemoverTest, RemoveSameOriginDownloads) {
 }
 
 TEST_F(BrowsingDataRemoverTest, RemovePasswordStatistics) {
-  PasswordStoreFactory::GetInstance()->SetTestingFactoryAndUse(
-      GetProfile(),
-      password_manager::BuildPasswordStore<
-          content::BrowserContext, password_manager::MockPasswordStore>);
-  password_manager::MockPasswordStore* store =
-      static_cast<password_manager::MockPasswordStore*>(
-          PasswordStoreFactory::GetInstance()
-              ->GetForProfile(GetProfile(), ServiceAccessType::EXPLICIT_ACCESS)
-              .get());
-  EXPECT_CALL(*store, RemoveStatisticsCreatedBetweenImpl(base::Time(),
-                                                         base::Time::Max()));
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.store(), RemoveStatisticsCreatedBetweenImpl(
+                                   base::Time(), base::Time::Max()));
   BlockUntilBrowsingDataRemoved(
       BrowsingDataRemover::EVERYTHING,
       BrowsingDataRemover::REMOVE_HISTORY, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, RemovePasswordsByTimeOnly) {
+  RemovePasswordsTester tester(GetProfile());
+
+  EXPECT_CALL(*tester.store(), RemoveLoginsCreatedBetweenImpl(_, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+  BlockUntilBrowsingDataRemoved(BrowsingDataRemover::EVERYTHING,
+                                BrowsingDataRemover::REMOVE_PASSWORDS, false);
+}
+
+TEST_F(BrowsingDataRemoverTest, RemovePasswordsByOrigin) {
+  RemovePasswordsTester tester(GetProfile());
+  const url::Origin expectedOrigin(kOrigin1);
+
+  EXPECT_CALL(*tester.store(),
+              RemoveLoginsByOriginAndTimeImpl(SameOrigin(expectedOrigin), _, _))
+      .WillOnce(Return(password_manager::PasswordStoreChangeList()));
+  BlockUntilOriginDataRemoved(BrowsingDataRemover::EVERYTHING,
+                              BrowsingDataRemover::REMOVE_PASSWORDS, kOrigin1);
 }

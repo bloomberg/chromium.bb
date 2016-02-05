@@ -343,7 +343,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
   delete_end_ = time_range.end;
   remove_mask_ = remove_mask;
   origin_type_mask_ = origin_type_mask;
-  url::Origin remove_origin(remove_url);
+  const url::Origin remove_origin(remove_url);
 
   PrefService* prefs = profile_->GetPrefs();
   bool may_delete_history = prefs->GetBoolean(
@@ -559,11 +559,12 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Downloads"));
     content::DownloadManager* download_manager =
         BrowserContext::GetDownloadManager(profile_);
-    if (remove_origin.unique())
+    if (remove_url.is_empty()) {
       download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
-    else
+    } else {
       download_manager->RemoveDownloadsByOriginAndTime(
           remove_origin, delete_begin_, delete_end_);
+    }
     DownloadPrefs* download_prefs = DownloadPrefs::FromDownloadManager(
         download_manager);
     download_prefs->SetSaveFilePath(download_prefs->DownloadPath());
@@ -698,10 +699,16 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 
     if (password_store) {
       waiting_for_clear_passwords_ = true;
-      password_store->RemoveLoginsCreatedBetween(
-          delete_begin_, delete_end_,
+      auto on_cleared_passwords =
           base::Bind(&BrowsingDataRemover::OnClearedPasswords,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr());
+      if (remove_url.is_empty()) {
+        password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_,
+                                                   on_cleared_passwords);
+      } else {
+        password_store->RemoveLoginsByOriginAndTime(
+            remove_origin, delete_begin_, delete_end_, on_cleared_passwords);
+      }
     }
   }
 

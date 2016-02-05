@@ -291,12 +291,12 @@ class BrowsingDataRemover : public KeyedService
 #endif
 
   // Removes the specified items related to browsing for a specific host. If the
-  // provided |remove_url| is empty, data is removed for all origins. The
+  // provided |remove_url| is empty, data is removed for all origins; otherwise,
+  // it is restricted by origin (where implemented yet). The
   // |origin_type_mask| parameter defines the set of origins from which data
   // should be removed (protected, unprotected, or both).
-  // TODO(mkwst): The current implementation relies on unique (empty) origins to
-  // signal removal of all origins. Reconsider this behavior if/when we build
-  // a "forget this site" feature.
+  // TODO(ttr314): Remove "(where implemented yet)" constraint above once
+  // crbug.com/113621 is done.
   void RemoveImpl(const TimeRange& time_range,
                   int remove_mask,
                   const GURL& remove_url,
