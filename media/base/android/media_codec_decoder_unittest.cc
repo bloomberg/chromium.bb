@@ -505,7 +505,7 @@ TEST_F(MediaCodecDecoderTest, AudioStartWithoutConfigure) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecDecoderTest, AudioPlayTillCompletion) {
+TEST_F(MediaCodecDecoderTest, DISABLED_AudioPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   DVLOG(0) << "AudioPlayTillCompletion started";

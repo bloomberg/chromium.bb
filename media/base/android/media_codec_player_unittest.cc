@@ -938,7 +938,7 @@ TEST_F(MediaCodecPlayerTest, SetAudioVideoConfigsAfterPlayerCreation) {
   EXPECT_EQ(240, manager_.media_metadata_.height);
 }
 
-TEST_F(MediaCodecPlayerTest, AudioPlayTillCompletion) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioPlayTillCompletion) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -1053,7 +1053,7 @@ TEST_F(MediaCodecPlayerTest, VideoNoPermission) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekAfterStop) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then Pause, then Seek to beginning. The playback should
@@ -1112,7 +1112,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekAfterStop) {
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
-TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlay) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Issue Seek command immediately followed by Start. The playback should
@@ -1146,7 +1146,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlay) {
       &MockMediaPlayerManager::IsSeekCompleted, base::Unretained(&manager_))));
 }
 
-TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekThenPlayThenConfig) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Issue Seek command immediately followed by Start but without prior demuxer
@@ -1186,7 +1186,7 @@ TEST_F(MediaCodecPlayerTest, AudioSeekThenPlayThenConfig) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, AudioSeekWhilePlaying) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AudioSeekWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Play for 300 ms, then issue several Seek commands in the row.
@@ -1265,7 +1265,7 @@ TEST_F(MediaCodecPlayerTest, VideoReplaceSurface) {
   EXPECT_LE(duration, manager_.pts_stat_.max());
 }
 
-TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoRemoveAndSetSurface) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -1315,7 +1315,7 @@ TEST_F(MediaCodecPlayerTest, VideoRemoveAndSetSurface) {
 }
 
 // http://crbug.com/518900
-TEST_F(MediaCodecPlayerTest, VideoReleaseAndStart) {
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoReleaseAndStart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(1000);
@@ -1363,7 +1363,7 @@ TEST_F(MediaCodecPlayerTest, VideoReleaseAndStart) {
   EXPECT_LE(max_pts_before_backgrounding, manager_.pts_stat_.max());
 }
 
-TEST_F(MediaCodecPlayerTest, VideoSeekAndRelease) {
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoSeekAndRelease) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(2000);
@@ -1526,7 +1526,7 @@ TEST_F(MediaCodecPlayerTest, VideoPrerollAfterSeek) {
   EXPECT_EQ(6, manager_.pts_stat_.num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollAudioWaitsForVideo) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAudioWaitsForVideo) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that during prerolling neither audio nor video plays and that both
@@ -1577,7 +1577,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollAudioWaitsForVideo) {
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollReleaseAndRestart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that player will resume prerolling if prerolling is interrupted by
@@ -1651,7 +1651,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollReleaseAndRestart) {
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 50));
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollStopAndRestart) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that if Pause() happens during the preroll phase,
@@ -1743,7 +1743,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollStopAndRestart) {
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollVideoEndsWhilePrerolling) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that when one stream ends in the preroll phase and another is not
@@ -1828,7 +1828,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollVideoEndsWhilePrerolling) {
   DVLOG(0) << "AVPrerollVideoEndsWhilePrerolling: end";
 }
 
-TEST_F(MediaCodecPlayerTest, VideoConfigChangeWhilePlaying) {
+TEST_F(MediaCodecPlayerTest, DISABLED_VideoConfigChangeWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that video only playback continues after video config change.
@@ -1945,7 +1945,7 @@ TEST_F(MediaCodecPlayerTest, AVVideoConfigChangeWhilePlaying) {
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVAudioConfigChangeWhilePlaying) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVAudioConfigChangeWhilePlaying) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that A/V playback continues after audio config change.
@@ -1989,7 +1989,7 @@ TEST_F(MediaCodecPlayerTest, AVAudioConfigChangeWhilePlaying) {
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_1) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVSimultaneousConfigChange_1) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that the playback continues if audio and video config changes happen
@@ -2036,7 +2036,7 @@ TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_1) {
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_2) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVSimultaneousConfigChange_2) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that the playback continues if audio and video config changes happen
@@ -2084,7 +2084,7 @@ TEST_F(MediaCodecPlayerTest, AVSimultaneousConfigChange_2) {
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVAudioEndsAcrossVideoConfigChange) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVAudioEndsAcrossVideoConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that audio can end while video config change processing.
@@ -2173,7 +2173,7 @@ TEST_F(MediaCodecPlayerTest, AVVideoEndsAcrossAudioConfigChange) {
             manager_.render_stat_[DemuxerStream::AUDIO].num_values());
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollAcrossVideoConfigChange) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAcrossVideoConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that preroll continues if interrupted by video config change.
@@ -2222,7 +2222,7 @@ TEST_F(MediaCodecPlayerTest, AVPrerollAcrossVideoConfigChange) {
   EXPECT_TRUE(AlmostEqual(seek_position, manager_.pts_stat_.min(), 25));
 }
 
-TEST_F(MediaCodecPlayerTest, AVPrerollAcrossAudioConfigChange) {
+TEST_F(MediaCodecPlayerTest, DISABLED_AVPrerollAcrossAudioConfigChange) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test that preroll continues if interrupted by video config change.
