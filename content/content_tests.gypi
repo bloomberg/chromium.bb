@@ -1022,6 +1022,17 @@
     ['test_isolation_mode != "noop"', {
       'targets': [
         {
+          # GN: //content/test:content_site_isolation_browsertests_run
+          'target_name': 'content_site_isolation_browsertests_run',
+          'type': 'none',
+          'dependencies': [
+            'content_browsertests_run',
+          ],
+          'sources': [
+            'content_site_isolation_browsertests.isolate',
+          ],
+        },
+        {
           'target_name': 'content_browsertests_run',
           'type': 'none',
           'dependencies': [

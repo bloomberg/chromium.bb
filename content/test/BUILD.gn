@@ -339,6 +339,25 @@ if (is_android) {
   }
 }
 
+# TODO(GYP): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("content_site_isolation_browsertests_run") {
+  testonly = true
+  deps = [
+    ":content_browsertests",
+  ]
+}
+
+group("content_site_isolation_browsertests") {
+  testonly = true
+  data = [
+    "//testing/buildbot/filters/site-per-process.content_browsertests.filter",
+  ]
+  data_deps = [
+    ":content_browsertests",
+  ]
+}
+
 test("content_browsertests") {
   sources = rebase_path(content_tests_gypi_values.content_browsertests_sources,
                         ".",

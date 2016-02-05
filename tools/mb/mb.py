@@ -545,7 +545,8 @@ class MetaBuildWrapper(object):
             'obj/%s.stamp' % label.replace(':', '/')]
       elif gn_isolate_map[target]['type'] == 'gpu_browser_test':
         runtime_deps_targets = ['browser_tests']
-      elif gn_isolate_map[target]['type'] == 'script':
+      elif (gn_isolate_map[target]['type'] == 'script' or
+            gn_isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory.
@@ -699,10 +700,12 @@ class MetaBuildWrapper(object):
     msan = 'is_msan=true' in vals['gn_args']
     tsan = 'is_tsan=true' in vals['gn_args']
 
-    executable_suffix = '.exe' if self.platform == 'win32' else ''
-
     target_name = self.GNTargetName(target)
     test_type = gn_isolate_map[target_name]['type']
+
+    executable = gn_isolate_map[target_name].get('executable', target_name)
+    executable_suffix = '.exe' if self.platform == 'win32' else ''
+
     cmdline = []
     extra_files = []
 
@@ -717,14 +720,14 @@ class MetaBuildWrapper(object):
           '../../testing/xvfb.py',
       ]
       cmdline = [
-          '../../testing/xvfb.py',
-          '.',
-          './' + str(target),
-          '--brave-new-test-launcher',
-          '--test-launcher-bot-mode',
-          '--asan=%d' % asan,
-          '--msan=%d' % msan,
-          '--tsan=%d' % tsan,
+        '../../testing/xvfb.py',
+        '.',
+        './' + str(executable) + executable_suffix,
+        '--brave-new-test-launcher',
+        '--test-launcher-bot-mode',
+        '--asan=%d' % asan,
+        '--msan=%d' % msan,
+        '--tsan=%d' % tsan,
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
       extra_files = [
@@ -732,7 +735,7 @@ class MetaBuildWrapper(object):
       ]
       cmdline = [
           '../../testing/test_env.py',
-          './' + str(target) + executable_suffix,
+          './' + str(executable) + executable_suffix,
           '--brave-new-test-launcher',
           '--test-launcher-bot-mode',
           '--asan=%d' % asan,
@@ -759,16 +762,18 @@ class MetaBuildWrapper(object):
       cmdline = [
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(gn_isolate_map[target]['script'])
-      ] + gn_isolate_map[target].get('args', [])
+      ]
     elif test_type in ('raw'):
       extra_files = []
       cmdline = [
           './' + str(target) + executable_suffix,
-      ] + gn_isolate_map[target].get('args')
+      ]
 
     else:
       self.WriteFailureAndRaise('No command line for %s found (test type %s).'
                                 % (target, test_type), output_path=None)
+
+    cmdline += gn_isolate_map[target].get('args', [])
 
     return cmdline, extra_files
 

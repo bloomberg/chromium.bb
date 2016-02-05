@@ -641,6 +641,15 @@
         "test": "content_browsertests"
       },
       {
+        "override_compile_targets": [
+          "content_site_isolation_browsertests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "content_site_isolation_browsertests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
