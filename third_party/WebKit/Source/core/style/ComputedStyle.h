@@ -1627,7 +1627,7 @@ public:
     bool hasChildDependentFlags() const { return emptyState() || hasExplicitlyInheritedProperties(); }
     void copyChildDependentFlagsFrom(const ComputedStyle&);
 
-    bool hasBoxDecorations() const { return hasBorderDecoration() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || hasBackdropFilter() || resize() != RESIZE_NONE; }
+    bool hasBoxDecorations() const { return hasBorderDecoration() || hasBorderRadius() || hasOutline() || hasAppearance() || boxShadow() || hasFilter() || resize() != RESIZE_NONE; }
 
     bool borderObscuresBackground() const;
     void getBorderEdgeInfo(BorderEdge edges[], bool includeLogicalLeftEdge = true, bool includeLogicalRightEdge = true) const;
