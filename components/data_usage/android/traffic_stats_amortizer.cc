@@ -9,14 +9,11 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
 #include "components/data_usage/core/data_use.h"
-#include "components/variations/variations_associated_data.h"
 #include "net/android/traffic_stats.h"
 
 namespace data_usage {
@@ -29,53 +26,20 @@ typedef std::vector<std::pair<scoped_ptr<DataUse>,
                               DataUseAmortizer::AmortizationCompleteCallback>>
     DataUseBuffer;
 
-// Name of the field trial.
-const char kTrafficStatsAmortizerFieldTrial[] = "TrafficStatsAmortizer";
-
 // The delay between receiving DataUse and querying TrafficStats byte counts for
 // amortization.
+// TODO(sclittle): Control this with a field trial parameter.
 const int64_t kDefaultTrafficStatsQueryDelayMs = 50;
 
 // The longest amount of time that an amortization run can be delayed for.
+// TODO(sclittle): Control this with a field trial parameter.
 const int64_t kDefaultMaxAmortizationDelayMs = 500;
 
 // The maximum allowed size of the DataUse buffer. If the buffer ever exceeds
 // this size, then DataUse will be amortized immediately and the buffer will be
 // flushed.
+// TODO(sclittle): Control this with a field trial parameter.
 const size_t kDefaultMaxDataUseBufferSize = 128;
-
-base::TimeDelta GetTrafficStatsQueryDelay() {
-  int64_t duration_ms = kDefaultTrafficStatsQueryDelayMs;
-  std::string variation_value = variations::GetVariationParamValue(
-      kTrafficStatsAmortizerFieldTrial, "traffic_stats_query_delay_ms");
-  if (!variation_value.empty() &&
-      base::StringToInt64(variation_value, &duration_ms) && duration_ms >= 0) {
-    return base::TimeDelta::FromMilliseconds(duration_ms);
-  }
-  return base::TimeDelta::FromMilliseconds(kDefaultTrafficStatsQueryDelayMs);
-}
-
-base::TimeDelta GetMaxAmortizationDelay() {
-  int64_t duration_ms = kDefaultMaxAmortizationDelayMs;
-  std::string variation_value = variations::GetVariationParamValue(
-      kTrafficStatsAmortizerFieldTrial, "max_amortization_delay_ms");
-  if (!variation_value.empty() &&
-      base::StringToInt64(variation_value, &duration_ms) && duration_ms >= 0) {
-    return base::TimeDelta::FromMilliseconds(duration_ms);
-  }
-  return base::TimeDelta::FromMilliseconds(kDefaultMaxAmortizationDelayMs);
-}
-
-size_t GetMaxDataUseBufferSize() {
-  size_t max_buffer_size = kDefaultMaxDataUseBufferSize;
-  std::string variation_value = variations::GetVariationParamValue(
-      kTrafficStatsAmortizerFieldTrial, "max_data_use_buffer_size");
-  if (!variation_value.empty() &&
-      base::StringToSizeT(variation_value, &max_buffer_size)) {
-    return max_buffer_size;
-  }
-  return kDefaultMaxDataUseBufferSize;
-}
 
 // Returns |byte_count| as a histogram sample capped at the maximum histogram
 // sample value that's suitable for being recorded without overflowing.
@@ -169,9 +133,9 @@ TrafficStatsAmortizer::TrafficStatsAmortizer()
     : TrafficStatsAmortizer(
           scoped_ptr<base::TickClock>(new base::DefaultTickClock()),
           scoped_ptr<base::Timer>(new base::Timer(false, false)),
-          GetTrafficStatsQueryDelay(),
-          GetMaxAmortizationDelay(),
-          GetMaxDataUseBufferSize()) {}
+          base::TimeDelta::FromMilliseconds(kDefaultTrafficStatsQueryDelayMs),
+          base::TimeDelta::FromMilliseconds(kDefaultMaxAmortizationDelayMs),
+          kDefaultMaxDataUseBufferSize) {}
 
 TrafficStatsAmortizer::~TrafficStatsAmortizer() {}
 

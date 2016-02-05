@@ -1,6 +1,5 @@
 include_rules = [
   "+components/data_usage/core",
-  "+components/variations",
   "+net",
   "+url",
 ]
