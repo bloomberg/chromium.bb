@@ -25,6 +25,11 @@ void begin() {}
 void trace() {}
 void lock() {}
 
+class SwapType {};
+
+// swap() functions are not renamed.
+void swap(SwapType& a, SwapType& b) {}
+
 // Note: F is already Google style and should not change.
 void F() {
   // Test referencing a function without calling it.
@@ -37,4 +42,7 @@ using blink::testFunctionThatTakesTwoInts;
 
 void G() {
   testFunctionThatTakesTwoInts(1, 2);
+
+  blink::SwapType a, b;
+  swap(a, b);
 }

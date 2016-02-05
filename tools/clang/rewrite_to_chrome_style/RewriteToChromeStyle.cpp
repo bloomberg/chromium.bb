@@ -178,7 +178,17 @@ bool IsProbablyConst(const clang::VarDecl& decl,
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
-  name = decl.getName().str();
+  StringRef original_name = decl.getName();
+
+  // Some functions shouldn't be renamed because reasons.
+  // - swap() methods should match the signature of std::swap for ADL tricks.
+  static const char* kBlacklist[] = {"swap"};
+  for (const auto& b : kBlacklist) {
+    if (original_name == b)
+      return false;
+  }
+
+  name = original_name.str();
   name[0] = clang::toUppercase(name[0]);
   return true;
 }
