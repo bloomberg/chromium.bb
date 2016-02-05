@@ -222,7 +222,7 @@ AutomationNodeImpl.prototype = {
   },
 
   get state() {
-    return GetState(this.treeID, this.id);
+    return GetState(this.treeID, this.id) || {};
   },
 
   get role() {

@@ -255,6 +255,9 @@ DesktopAutomationHandler.prototype = {
    * @override
    */
   onScrollPositionChanged: function(evt) {
+    if (ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
+      return;
+
     var currentRange = ChromeVoxState.instance.currentRange;
     if (currentRange)
       new Output().withLocation(currentRange, null, evt.type).go();

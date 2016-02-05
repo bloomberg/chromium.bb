@@ -1168,7 +1168,8 @@ Output.prototype = {
       var buff = [];
       this.ancestry_(node, prevNode, type, buff);
       this.node_(node, prevNode, type, buff);
-      this.locations_.push(node.location);
+      if (node.location)
+        this.locations_.push(node.location);
       return buff;
     }.bind(this);
 
@@ -1321,7 +1322,10 @@ Output.prototype = {
     this.append_(
         buff, range.start.getText().substring(startIndex, endIndex),
         options);
-    this.locations_.push(node.boundsForRange(startIndex, endIndex));
+    var loc =
+        range.start.node.boundsForRange(startIndex, endIndex);
+    if (loc)
+      this.locations_.push(loc);
   },
 
   /**
@@ -1355,7 +1359,11 @@ Output.prototype = {
             return false;
           var start = s.getSpanStart(annotation);
           var end = s.getSpanEnd(annotation);
-          return s.substring(start, end).toString() == value.toString();
+          var substr = s.substring(start, end);
+          if (substr && value)
+            return substr.toString() == value.toString();
+          else
+            return false;
         });
       });
       if (alreadyAnnotated)

@@ -430,7 +430,7 @@ chrome.automation.AutomationNode.prototype.children;
 
 
 /**
- * @type {{top: number, left: number, height: number, width: number}}
+ * @type {{top: number, left: number, height: number, width: number}|undefined}
  */
 chrome.automation.AutomationNode.prototype.location;
 
