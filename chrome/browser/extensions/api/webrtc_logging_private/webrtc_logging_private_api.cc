@@ -77,10 +77,10 @@ content::RenderProcessHost* WebrtcLoggingPrivateFunction::RphFromRequest(
         base::IntToString(tab_id));
     return NULL;
   }
-  GURL visible_origin = contents->GetVisibleURL().GetOrigin();
-  if (visible_origin.spec() != security_origin) {
+  GURL expected_origin = contents->GetLastCommittedURL().GetOrigin();
+  if (expected_origin.spec() != security_origin) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
-        "Invalid security origin. Expected=" + visible_origin.spec() +
+        "Invalid security origin. Expected=" + expected_origin.spec() +
             ", actual=" + security_origin,
         base::IntToString(tab_id));
     return NULL;
