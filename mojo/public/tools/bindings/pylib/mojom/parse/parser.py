@@ -145,15 +145,26 @@ class Parser(object):
     p[0] = p[1]
     p[0].Append(p[3])
 
-  def p_attribute(self, p):
+  def p_attribute_1(self, p):
     """attribute : NAME EQUALS evaled_literal
                  | NAME EQUALS NAME"""
     p[0] = ast.Attribute(p[1], p[3], filename=self.filename, lineno=p.lineno(1))
 
+  def p_attribute_2(self, p):
+    """attribute : NAME"""
+    p[0] = ast.Attribute(p[1], True, filename=self.filename, lineno=p.lineno(1))
+
   def p_evaled_literal(self, p):
     """evaled_literal : literal"""
-    # 'eval' the literal to strip the quotes.
-    p[0] = eval(p[1])
+    # 'eval' the literal to strip the quotes. Handle keywords "true" and "false"
+    # specially since they cannot directly be evaluated to python boolean
+    # values.
+    if p[1] == "true":
+      p[0] = True
+    elif p[1] == "false":
+      p[0] = False
+    else:
+      p[0] = eval(p[1])
 
   def p_struct_1(self, p):
     """struct : attribute_section STRUCT NAME LBRACE struct_body RBRACE SEMI"""

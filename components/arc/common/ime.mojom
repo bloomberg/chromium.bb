@@ -5,7 +5,7 @@
 module arc;
 
 // Represents the type of text input field currently focused.
-[Extensible=True]
+[Extensible]
 enum TextInputType {
   NONE,
   TEXT,

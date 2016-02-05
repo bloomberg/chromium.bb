@@ -8,7 +8,7 @@ import "mojo/public/interfaces/bindings/tests/rect.mojom";
 
 // Used to verify that structs can be declared with no body in mojom.
 
-[Native=True]
+[Native]
 struct PickledStruct;
 
 struct PickleContainer {

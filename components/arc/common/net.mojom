@@ -4,7 +4,7 @@
 
 module arc;
 
-[Extensible=True]
+[Extensible]
 enum NetworkResult {
   SUCCESS = 0,
   FAILURE = 1,

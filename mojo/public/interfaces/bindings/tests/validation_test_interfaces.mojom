@@ -49,7 +49,7 @@ enum EnumA {
   ENUM_A_1
 };
 
-[Extensible=True]
+[Extensible]
 enum EnumB {
   ENUM_B_0,
   ENUM_B_1,

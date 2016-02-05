@@ -225,12 +225,12 @@ def StructFromData(module, data):
     struct.fields_data = data['fields']
   struct.attributes = data.get('attributes')
 
-  # Enforce that a [Native=True] attribute is set to make native-only struct
+  # Enforce that a [Native] attribute is set to make native-only struct
   # declarations more explicit.
   if struct.native_only:
     if not struct.attributes or not struct.attributes.get('Native', False):
       raise Exception("Native-only struct declarations must include a " +
-                      "Native=True attribute.")
+                      "Native attribute.")
 
   return struct
 

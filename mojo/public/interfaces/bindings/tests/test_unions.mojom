@@ -8,7 +8,7 @@ enum AnEnum {
   FIRST, SECOND
 };
 
-[Extensible=True]
+[Extensible]
 enum AnExtensibleEnum {
   FIRST, SECOND, THIRD
 };

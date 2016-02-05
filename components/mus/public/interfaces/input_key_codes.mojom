@@ -8,7 +8,7 @@ module mus.mojom;
 //
 // Because the web has standardized on Win32 keyboard codes, so does mojo.
 // TODO: shouldn't need extensible, see http://crbug.com/582279
-[Extensible=True]
+[Extensible]
 enum KeyboardCode {
   BACK                      = 0x08,
   TAB                       = 0x09,
