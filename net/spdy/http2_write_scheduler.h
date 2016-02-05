@@ -5,15 +5,20 @@
 #ifndef NET_SPDY_HTTP2_WRITE_SCHEDULER_H_
 #define NET_SPDY_HTTP2_WRITE_SCHEDULER_H_
 
+#include <stdint.h>
+
+#include <algorithm>
 #include <cmath>
 #include <deque>
 #include <map>
 #include <queue>
 #include <set>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/containers/linked_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,240 +30,314 @@ namespace net {
 // section 5.3 of RFC 7540:
 // http://tools.ietf.org/html/rfc7540#section-5.3
 //
-// Nodes can be added and removed, and dependencies between them defined.
-// Nodes constitute a tree rooted at node ID 0: each node has a single parent
-// node, and 0 or more child nodes.  Individual nodes can be marked as ready to
-// read/write, and then the whole structure can be queried to pick the next
-// node to read/write out of those that are ready.
+// Streams can be added and removed, and dependencies between them defined.
+// Streams constitute a tree rooted at stream ID 0: each stream has a single
+// parent stream, and 0 or more child streams.  Individual streams can be
+// marked as ready to read/write, and then the whole structure can be queried
+// to pick the next stream to read/write out of those that are ready.
 //
-// The NodeId type must be a POD that supports comparison (most
+// The StreamIdType type must be a POD that supports comparison (most
 // likely, it will be a number).
 
 namespace test {
-template <typename NodeId>
-class SpdyPriorityTreePeer;
+template <typename StreamIdType>
+class Http2PriorityWriteSchedulerPeer;
 }
 
-const int kRootNodeId = 0;
-const int kDefaultWeight = 16;
-const int kMinWeight = 1;
-const int kMaxWeight = 256;
+const unsigned int kHttp2RootStreamId = 0;
+const int kHttp2DefaultStreamWeight = 16;
+const int kHttp2MinStreamWeight = 1;
+const int kHttp2MaxStreamWeight = 256;
 
-template <typename NodeId>
-class SpdyPriorityTree {
+template <typename StreamIdType>
+class Http2PriorityWriteScheduler {
  public:
-  typedef std::pair<NodeId, float> PriorityNode;
-  typedef std::vector<PriorityNode> PriorityList;
+  Http2PriorityWriteScheduler();
 
-  SpdyPriorityTree();
+  friend class test::Http2PriorityWriteSchedulerPeer<StreamIdType>;
 
-  // Orders in descending order of priority.
-  struct NodePriorityComparator {
-    bool operator ()(const std::pair<NodeId, float>& lhs,
-                     const std::pair<NodeId, float>& rhs);
-  };
+  // Return the number of streams currently in the tree.
+  int num_streams() const;
 
-  friend class test::SpdyPriorityTreePeer<NodeId>;
+  // Return true if the tree contains a stream with the given ID.
+  bool StreamRegistered(StreamIdType stream_id) const;
 
-  // Return the number of nodes currently in the tree.
-  int num_nodes() const;
+  // Registers a new stream with the given weight and parent, adding it to the
+  // dependency tree. Non-exclusive streams simply get added below the parent
+  // stream. If exclusive = true, the stream becomes the parent's sole child
+  // and the parent's previous children become the children of the new
+  // stream. If the stream was already registered, logs DFATAL and does
+  // nothing. If the parent stream is not registered, logs DFATAL and uses the
+  // root stream as the parent.
+  void RegisterStream(StreamIdType stream_id,
+                      StreamIdType parent_id,
+                      int weight,
+                      bool exclusive);
 
-  // Return true if the tree contains a node with the given ID.
-  bool NodeExists(NodeId node_id) const;
+  // Unregisters the given stream from the scheduler, removing it from the
+  // dependency tree. If the stream was not previously registered, logs DFATAL
+  // and does nothing.
+  void UnregisterStream(StreamIdType stream_id);
 
-  // Add a new node with the given weight and parent. Non-exclusive nodes
-  // simply get added below the parent node. If exclusive = true, the node
-  // becomes the parent's sole child and the parent's previous children
-  // become the children of the new node.
-  // Returns true on success. Returns false if the node already exists
-  // in the tree, or if the parent node does not exist.
-  bool AddNode(NodeId node_id, NodeId parent_id, int weight, bool exclusive);
+  // Returns the weight value for the specified stream. If the stream is not
+  // registered, logs DFATAL and returns the lowest weight.
+  int GetStreamWeight(StreamIdType stream_id) const;
 
-  // Remove an existing node from the tree.  Returns true on success, or
-  // false if the node doesn't exist.
-  bool RemoveNode(NodeId node_id);
+  // Returns the stream ID for the parent of the given stream. If the stream
+  // isn't registered, logs DFATAL and returns the root stream ID (0).
+  StreamIdType GetStreamParent(StreamIdType stream_id) const;
 
-  // Get the weight of the given node.
-  int GetWeight(NodeId node_id) const;
+  // Returns stream IDs of the children of the given stream, if any. If the
+  // stream isn't registered, logs DFATAL and returns an empty vector.
+  std::vector<StreamIdType> GetStreamChildren(StreamIdType stream_id) const;
 
-  // Get the parent of the given node.  If the node doesn't exist, or is a root
-  // node (and thus has no parent), returns NodeId().
-  NodeId GetParent(NodeId node_id) const;
+  // Sets the weight of the given stream. If the stream isn't registered or is
+  // the root stream, logs DFATAL and does nothing.
+  void SetStreamWeight(StreamIdType stream_id, int weight);
 
-  // Get the children of the given node.  If the node doesn't exist, or has no
-  // child, returns empty vector.
-  std::vector<NodeId> GetChildren(NodeId node_id) const;
+  // Sets the parent of the given stream. If the stream and/or parent aren't
+  // registered, logs DFATAL and does nothing. If the new parent is a
+  // descendant of the stream (i.e. this would have created a cycle) then the
+  // topology of the tree is rearranged as described in section 5.3.3 of RFC
+  // 7540: https://tools.ietf.org/html/rfc7540#section-5.3.3
+  void SetStreamParent(StreamIdType stream_id,
+                       StreamIdType parent_id,
+                       bool exclusive);
 
-  // Set the priority of the given node.
-  bool SetWeight(NodeId node_id, int weight);
+  // Returns true if the stream parent_id has child_id in its children. If
+  // either parent or child stream aren't registered, logs DFATAL and returns
+  // false.
+  bool StreamHasChild(StreamIdType parent_id, StreamIdType child_id) const;
 
-  // Set the parent of the given node.  Returns true on success.
-  // Returns false and has no effect if the node and/or the parent doesn't
-  // exist. If the new parent is a descendant of the node (i.e. this would have
-  // created a cycle) then we rearrange the topology of the tree as described
-  // in section 5.3.3 of RFC 7540:
-  // https://tools.ietf.org/html/rfc7540#section-5.3.3
-  bool SetParent(NodeId node_id, NodeId parent_id, bool exclusive);
+  // Marks the stream as blocked or unblocked. If the stream is not registered,
+  // logs DFATAL and does nothing.
+  void MarkStreamBlocked(StreamIdType stream_id, bool blocked);
 
-  // Returns true if the node parent_id has child_id in its children.
-  bool HasChild(NodeId parent_id, NodeId child_id) const;
+  // Marks the stream as ready or not ready to write; i.e. whether there is
+  // buffered data for the associated stream. If the stream is not registered,
+  // logs DFATAL and does nothing.
+  void MarkStreamReady(StreamIdType stream_id, bool ready);
 
-  // Mark a node as blocked or unblocked. Return true on success, or false
-  // if unable to mark the specified node.
-  bool SetBlocked(NodeId node_id, bool blocked);
+  // Returns true iff the scheduler has one or more usable streams. A stream is
+  // usable if it has ready == true and blocked == false, and is not the direct
+  // or indirect child of another stream that itself has ready == true and
+  // blocked == false. (Note that the root stream always has ready == false.)
+  bool HasUsableStreams() const;
 
-  // Mark whether or not a node is ready to write; i.e. whether there is
-  // buffered data for the associated stream. Return true on success, or false
-  // if unable to mark the specified node.
-  bool SetReady(NodeId node_id, bool ready);
-
-  // Returns an ordered list of writeable nodes and their priorities.
-  // Priority is calculated as:
-  // parent's priority * (node's weight / sum of sibling weights)
-  PriorityList GetPriorityList();
+  // If the scheduler has any usable streams, returns the ID of the next usable
+  // stream, in the process changing its ready state to false. If the scheduler
+  // does not have any usable streams, logs DFATAL and returns the root stream
+  // ID (0). If there are multiple usable streams, precedence is given to the
+  // one with the highest priority (thus preserving SPDY priority semantics),
+  // or, if there are multiple with the highest priority, the one with the
+  // lowest ordinal (ensuring round-robin ordering).
+  StreamIdType PopNextUsableStream();
 
  private:
-  struct Node;
-  typedef std::vector<Node*> NodeVector;
-  typedef std::map<NodeId, Node*> NodeMap;
+  struct StreamInfo;
+  using StreamInfoVector = std::vector<StreamInfo*>;
+  using StreamInfoMap = std::unordered_map<StreamIdType, StreamInfo*>;
 
-  struct Node {
-    // ID for this node.
-    NodeId id;
-    // ID of parent node.
-    Node* parent = nullptr;
+  struct StreamInfo : public base::LinkNode<StreamInfo> {
+    // ID for this stream.
+    StreamIdType id;
+    // ID of parent stream.
+    StreamInfo* parent = nullptr;
     // Weights can range between 1 and 256 (inclusive).
-    int weight = kDefaultWeight;
-    // The total weight of this node's direct descendants.
+    int weight = kHttp2DefaultStreamWeight;
+    // The total weight of this stream's direct descendants.
     int total_child_weights = 0;
-    // The total weight of direct descendants that are writeable
-    // (ready to write and not blocked). This value does not necessarily
-    // reflect the current state of the tree; instead, we lazily update it
-    // on calls to PropagateNodeState().
-    int total_writeable_child_weights = 0;
-    // Pointers to nodes for children, if any.
-    NodeVector children;
+    // Pointers to StreamInfos for children, if any.
+    StreamInfoVector children;
     // Is the associated stream write-blocked?
     bool blocked = false;
     // Does the stream have data ready for writing?
     bool ready = false;
-    // The fraction of resources to dedicate to this node.
+    // Whether the stream is currently present in scheduling_queue_.
+    bool scheduled = false;
+    // The scheduling priority of this stream. Streams with higher priority
+    // values are scheduled first.
     float priority = 0;
+    // Ordinal value for this stream, used to ensure round-robin scheduling:
+    // among streams with the same scheduling priority, streams with lower
+    // ordinal are scheduled first. The ordinal is reset to a new, greater
+    // value when the stream is next inserted into scheduling_queue_.
+    int64_t ordinal = 0;
+
+    // Whether the stream ought to be in scheduling_queue_.
+    bool IsSchedulable() const { return ready && !blocked; }
+
+    // Whether this stream should be scheduled ahead of another stream.
+    bool SchedulesBefore(const StreamInfo& other) const {
+      return (priority != other.priority) ? priority > other.priority
+                                          : ordinal < other.ordinal;
+    }
   };
 
-  static bool Remove(NodeVector* nodes, const Node* node);
+  static bool Remove(StreamInfoVector* stream_infos,
+                     const StreamInfo* stream_info);
 
-  // Update the value of total_writeable_child_weights for the given node
-  // to reflect the current state of the tree.
-  void PropagateNodeState(Node* node);
+  // Clamps weight to a value in [kHttp2MinStreamWeight,
+  // kHttp2MaxStreamWeight].
+  static int ClampWeight(int weight);
 
-  // Get the given node, or return nullptr if it doesn't exist.
-  const Node* FindNode(NodeId node_id) const;
-  Node* FindNode(NodeId node_id);
+  // Returns true iff any direct or transitive parent of the given stream is
+  // currently scheduled.
+  static bool HasScheduledAncestor(const StreamInfo& stream_info);
+
+  // Returns StreamInfo for the given stream, or nullptr if it isn't
+  // registered.
+  const StreamInfo* FindStream(StreamIdType stream_id) const;
+  StreamInfo* FindStream(StreamIdType stream_id);
+
+  // Update all priority values in the subtree rooted at the given stream, not
+  // including the stream itself. If this results in priority value changes for
+  // scheduled streams, those streams are rescheduled to ensure proper ordering
+  // of scheduling_queue_.
+  void UpdatePrioritiesUnder(StreamInfo* stream_info);
+
+  // Adds or removes stream from scheduling_queue_ according to whether it is
+  // schedulable. If stream is newly schedulable, assigns it the next
+  // (increasing) ordinal value.
+  void UpdateScheduling(StreamInfo* stream_info);
+
+  // Inserts stream into scheduling_queue_ at the appropriate location given
+  // its priority and ordinal. Time complexity is O(scheduling_queue.size()).
+  void Schedule(StreamInfo* stream_info);
+
+  // Removes stream from scheduling_queue_.
+  void Unschedule(StreamInfo* stream_info);
 
   // Return true if all internal invariants hold (useful for unit tests).
   // Unless there are bugs, this should always return true.
   bool ValidateInvariantsForTests() const;
 
-  Node* root_node_;    // pointee owned by all_nodes_
-  NodeMap all_nodes_;  // maps from node IDs to Node objects
-  STLValueDeleter<NodeMap> all_nodes_deleter_;
+  // Pointee owned by all_stream_infos_.
+  StreamInfo* root_stream_info_;
+  // Maps from stream IDs to StreamInfo objects.
+  StreamInfoMap all_stream_infos_;
+  STLValueDeleter<StreamInfoMap> all_stream_infos_deleter_;
+  // Queue containing all streams that are ready and unblocked, ordered with
+  // streams of higher priority before streams of lower priority, and, among
+  // streams of equal priority, streams with lower ordinal before those with
+  // higher ordinal. Note that not all streams in scheduling_queue_ are
+  // necessarily usable: some may have ancestor stream(s) that are ready and
+  // unblocked. In these situations the occluded child streams are left in the
+  // queue, to reduce churn.
+  base::LinkedList<StreamInfo> scheduling_queue_;
+  // Ordinal value to assign to next node inserted into
+  // scheduling_queue_. Incremented after each insertion.
+  int64_t next_ordinal_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(SpdyPriorityTree);
+  DISALLOW_COPY_AND_ASSIGN(Http2PriorityWriteScheduler);
 };
 
-template <typename NodeId>
-SpdyPriorityTree<NodeId>::SpdyPriorityTree()
-    : all_nodes_deleter_(&all_nodes_) {
-  root_node_ = new Node();
-  root_node_->id = kRootNodeId;
-  root_node_->weight = kDefaultWeight;
-  root_node_->parent = nullptr;
-  root_node_->priority = 1.0;
-  root_node_->ready = true;
-  all_nodes_[kRootNodeId] = root_node_;
+template <typename StreamIdType>
+Http2PriorityWriteScheduler<StreamIdType>::Http2PriorityWriteScheduler()
+    : all_stream_infos_deleter_(&all_stream_infos_) {
+  root_stream_info_ = new StreamInfo();
+  root_stream_info_->id = kHttp2RootStreamId;
+  root_stream_info_->weight = kHttp2DefaultStreamWeight;
+  root_stream_info_->parent = nullptr;
+  root_stream_info_->priority = 1.0;
+  root_stream_info_->ready = true;
+  all_stream_infos_[kHttp2RootStreamId] = root_stream_info_;
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::NodePriorityComparator::operator()(
-    const std::pair<NodeId, float>& lhs,
-    const std::pair<NodeId, float>& rhs) {
-  return lhs.second > rhs.second;
+template <typename StreamIdType>
+int Http2PriorityWriteScheduler<StreamIdType>::num_streams() const {
+  return all_stream_infos_.size();
 }
 
-template <typename NodeId>
-int SpdyPriorityTree<NodeId>::num_nodes() const {
-  return all_nodes_.size();
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::StreamRegistered(
+    StreamIdType stream_id) const {
+  return ContainsKey(all_stream_infos_, stream_id);
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::NodeExists(NodeId node_id) const {
-  return ContainsKey(all_nodes_, node_id);
-}
-
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::AddNode(NodeId node_id,
-                                       NodeId parent_id,
-                                       int weight,
-                                       bool exclusive) {
-  if (NodeExists(node_id) || weight < kMinWeight || weight > kMaxWeight) {
-    return false;
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
+    StreamIdType stream_id,
+    StreamIdType parent_id,
+    int weight,
+    bool exclusive) {
+  if (StreamRegistered(stream_id)) {
+    LOG(DFATAL) << "Stream " << stream_id << " already registered";
+    return;
   }
-  Node* parent = FindNode(parent_id);
+  weight = ClampWeight(weight);
+
+  StreamInfo* parent = FindStream(parent_id);
   if (parent == nullptr) {
-    return false;
+    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
+    parent = root_stream_info_;
   }
-  Node* new_node = new Node;
-  new_node->id = node_id;
-  new_node->weight = weight;
-  new_node->parent = parent;
-  all_nodes_[node_id] = new_node;
+
+  StreamInfo* new_stream_info = new StreamInfo;
+  new_stream_info->id = stream_id;
+  new_stream_info->weight = weight;
+  new_stream_info->parent = parent;
+  all_stream_infos_[stream_id] = new_stream_info;
   if (exclusive) {
-    // Move the parent's current children below the new node.
+    // Move the parent's current children below the new stream.
     using std::swap;
-    swap(new_node->children, parent->children);
-    new_node->total_child_weights = parent->total_child_weights;
+    swap(new_stream_info->children, parent->children);
+    new_stream_info->total_child_weights = parent->total_child_weights;
     // Update each child's parent.
-    for (Node* child : new_node->children) {
-      child->parent = new_node;
+    for (StreamInfo* child : new_stream_info->children) {
+      child->parent = new_stream_info;
     }
     // Clear parent's old child data.
     DCHECK(parent->children.empty());
     parent->total_child_weights = 0;
   }
-  // Add new node to parent.
-  parent->children.push_back(new_node);
+  // Add new stream to parent.
+  parent->children.push_back(new_stream_info);
   parent->total_child_weights += weight;
-  return true;
+
+  // Update all priorities under parent, since addition of a stream affects
+  // sibling priorities as well.
+  UpdatePrioritiesUnder(parent);
+
+  // Stream starts with ready == false, so no need to schedule it yet.
+  DCHECK(!new_stream_info->IsSchedulable());
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::RemoveNode(NodeId node_id) {
-  if (node_id == kRootNodeId) {
-    return false;
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
+    StreamIdType stream_id) {
+  if (stream_id == kHttp2RootStreamId) {
+    LOG(DFATAL) << "Cannot unregister root stream";
+    return;
   }
-  // Remove the node from table.
-  typename NodeMap::iterator it = all_nodes_.find(node_id);
-  if (it == all_nodes_.end()) {
-    return false;
+  // Remove the stream from table.
+  typename StreamInfoMap::iterator it = all_stream_infos_.find(stream_id);
+  if (it == all_stream_infos_.end()) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return;
   }
-  scoped_ptr<Node> node(it->second);
-  all_nodes_.erase(it);
+  scoped_ptr<StreamInfo> stream_info(std::move(it->second));
+  all_stream_infos_.erase(it);
+  // If scheduled, unschedule.
+  if (stream_info->scheduled) {
+    Unschedule(stream_info.get());
+  }
 
-  Node* parent = node->parent;
-  // Remove the node from parent's child list.
-  Remove(&parent->children, node.get());
-  parent->total_child_weights -= node->weight;
+  StreamInfo* parent = stream_info->parent;
+  // Remove the stream from parent's child list.
+  Remove(&parent->children, stream_info.get());
+  parent->total_child_weights -= stream_info->weight;
 
-  // Move the node's children to the parent's child list.
+  // Move the stream's children to the parent's child list.
   // Update each child's parent and weight.
-  for (Node* child : node->children) {
+  for (StreamInfo* child : stream_info->children) {
     child->parent = parent;
     parent->children.push_back(child);
-    // Divide the removed node's weight among its children, rounding to the
+    // Divide the removed stream's weight among its children, rounding to the
     // nearest valid weight.
-    float float_weight = node->weight * static_cast<float>(child->weight) /
-                         static_cast<float>(node->total_child_weights);
+    float float_weight = stream_info->weight *
+                         static_cast<float>(child->weight) /
+                         static_cast<float>(stream_info->total_child_weights);
     int new_weight = floor(float_weight + 0.5);
     if (new_weight == 0) {
       new_weight = 1;
@@ -266,81 +345,111 @@ bool SpdyPriorityTree<NodeId>::RemoveNode(NodeId node_id) {
     child->weight = new_weight;
     parent->total_child_weights += child->weight;
   }
-
-  return true;
+  UpdatePrioritiesUnder(parent);
 }
 
-template <typename NodeId>
-int SpdyPriorityTree<NodeId>::GetWeight(NodeId node_id) const {
-  const Node* node = FindNode(node_id);
-  return (node == nullptr) ? 0 : node->weight;
+template <typename StreamIdType>
+int Http2PriorityWriteScheduler<StreamIdType>::GetStreamWeight(
+    StreamIdType stream_id) const {
+  const StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return kHttp2MinStreamWeight;
+  }
+  return stream_info->weight;
 }
 
-template <typename NodeId>
-NodeId SpdyPriorityTree<NodeId>::GetParent(NodeId node_id) const {
-  const Node* node = FindNode(node_id);
-  // Root node has null parent.
-  return (node == nullptr || node->parent == nullptr) ? kRootNodeId
-                                                      : node->parent->id;
+template <typename StreamIdType>
+StreamIdType Http2PriorityWriteScheduler<StreamIdType>::GetStreamParent(
+    StreamIdType stream_id) const {
+  const StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return kHttp2RootStreamId;
+  }
+  if (stream_info->parent == nullptr) {  // root stream
+    return kHttp2RootStreamId;
+  }
+  return stream_info->parent->id;
 }
 
-template <typename NodeId>
-std::vector<NodeId> SpdyPriorityTree<NodeId>::GetChildren(
-    NodeId node_id) const {
-  std::vector<NodeId> child_vec;
-  const Node* node = FindNode(node_id);
-  if (node != nullptr) {
-    child_vec.reserve(node->children.size());
-    for (Node* child : node->children) {
+template <typename StreamIdType>
+std::vector<StreamIdType> Http2PriorityWriteScheduler<
+    StreamIdType>::GetStreamChildren(StreamIdType stream_id) const {
+  std::vector<StreamIdType> child_vec;
+  const StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+  } else {
+    child_vec.reserve(stream_info->children.size());
+    for (StreamInfo* child : stream_info->children) {
       child_vec.push_back(child->id);
     }
   }
   return child_vec;
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::SetWeight(
-    NodeId node_id, int weight) {
-  if (!NodeExists(node_id)) {
-    return false;
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::SetStreamWeight(
+    StreamIdType stream_id,
+    int weight) {
+  if (stream_id == kHttp2RootStreamId) {
+    LOG(DFATAL) << "Cannot set weight of root stream";
+    return;
   }
-  if (weight < kMinWeight || weight > kMaxWeight) {
-    return false;
+  StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return;
   }
+  weight = ClampWeight(weight);
+  if (weight == stream_info->weight) {
+    return;
+  }
+  if (stream_info->parent != nullptr) {
+    stream_info->parent->total_child_weights += (weight - stream_info->weight);
+  }
+  stream_info->weight = weight;
 
-  Node* node = all_nodes_[node_id];
-  if (node->parent != nullptr) {
-    node->parent->total_child_weights += (weight - node->weight);
-  }
-  node->weight = weight;
-
-  return true;
+  // Change in weight also affects sibling priorities.
+  UpdatePrioritiesUnder(stream_info->parent);
 }
 
-
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::SetParent(
-    NodeId node_id, NodeId parent_id, bool exclusive) {
-  if (node_id == kRootNodeId || node_id == parent_id) {
-    return false;
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::SetStreamParent(
+    StreamIdType stream_id,
+    StreamIdType parent_id,
+    bool exclusive) {
+  if (stream_id == kHttp2RootStreamId) {
+    LOG(DFATAL) << "Cannot set parent of root stream";
+    return;
   }
-  Node* node = FindNode(node_id);
-  Node* new_parent = FindNode(parent_id);
-  if (node == nullptr || new_parent == nullptr) {
-    return false;
+  if (stream_id == parent_id) {
+    LOG(DFATAL) << "Cannot set stream to be its own parent";
+    return;
+  }
+  StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return;
+  }
+  StreamInfo* new_parent = FindStream(parent_id);
+  if (new_parent == nullptr) {
+    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
+    return;
   }
 
-  // If the new parent is already the node's parent, we're done.
-  if (node->parent == new_parent) {
-    return true;
+  // If the new parent is already the stream's parent, we're done.
+  if (stream_info->parent == new_parent) {
+    return;
   }
 
   // Next, check to see if the new parent is currently a descendant
-  // of the node.
-  Node* last = new_parent->parent;
+  // of the stream.
+  StreamInfo* last = new_parent->parent;
   bool cycle_exists = false;
   while (last != nullptr) {
-    if (last == node) {
+    if (last == stream_info) {
       cycle_exists = true;
       break;
     }
@@ -348,213 +457,280 @@ bool SpdyPriorityTree<NodeId>::SetParent(
   }
 
   if (cycle_exists) {
-    // The new parent moves to the level of the current node.
-    SetParent(parent_id, node->parent->id, false);
+    // The new parent moves to the level of the current stream.
+    SetStreamParent(parent_id, stream_info->parent->id, false);
   }
 
-  // Remove node from old parent's child list.
-  Node* old_parent = node->parent;
-  Remove(&old_parent->children, node);
-  old_parent->total_child_weights -= node->weight;
+  // Remove stream from old parent's child list.
+  StreamInfo* old_parent = stream_info->parent;
+  Remove(&old_parent->children, stream_info);
+  old_parent->total_child_weights -= stream_info->weight;
+  UpdatePrioritiesUnder(old_parent);
 
   if (exclusive) {
-    // Move the new parent's current children below the current node.
-    for (Node* child : new_parent->children) {
-      child->parent = node;
-      node->children.push_back(child);
+    // Move the new parent's current children below the current stream.
+    for (StreamInfo* child : new_parent->children) {
+      child->parent = stream_info;
+      stream_info->children.push_back(child);
     }
-    node->total_child_weights += new_parent->total_child_weights;
+    stream_info->total_child_weights += new_parent->total_child_weights;
     // Clear new parent's old child data.
     new_parent->children.clear();
     new_parent->total_child_weights = 0;
   }
 
   // Make the change.
-  node->parent = new_parent;
-  new_parent->children.push_back(node);
-  new_parent->total_child_weights += node->weight;
-  return true;
+  stream_info->parent = new_parent;
+  new_parent->children.push_back(stream_info);
+  new_parent->total_child_weights += stream_info->weight;
+  UpdatePrioritiesUnder(new_parent);
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::SetBlocked(NodeId node_id, bool blocked) {
-  if (!NodeExists(node_id)) {
-    return false;
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::MarkStreamBlocked(
+    StreamIdType stream_id,
+    bool blocked) {
+  if (stream_id == kHttp2RootStreamId) {
+    LOG(DFATAL) << "Cannot mark root stream blocked or unblocked";
+    return;
   }
-
-  Node* node = all_nodes_[node_id];
-  node->blocked = blocked;
-  return true;
-}
-
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::SetReady(NodeId node_id, bool ready) {
-  if (!NodeExists(node_id)) {
-    return false;
+  StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return;
   }
-  Node* node = all_nodes_[node_id];
-  node->ready = ready;
-  return true;
+  stream_info->blocked = blocked;
+  UpdateScheduling(stream_info);
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::Remove(NodeVector* nodes, const Node* node) {
-  for (typename NodeVector::iterator it = nodes->begin(); it != nodes->end();
-       ++it) {
-    if (*it == node) {
-      nodes->erase(it);
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::MarkStreamReady(
+    StreamIdType stream_id,
+    bool ready) {
+  if (stream_id == kHttp2RootStreamId) {
+    LOG(DFATAL) << "Cannot mark root stream ready or unready";
+    return;
+  }
+  StreamInfo* stream_info = FindStream(stream_id);
+  if (stream_info == nullptr) {
+    LOG(DFATAL) << "Stream " << stream_id << " not registered";
+    return;
+  }
+  stream_info->ready = ready;
+  UpdateScheduling(stream_info);
+}
+
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::Remove(
+    StreamInfoVector* stream_infos,
+    const StreamInfo* stream_info) {
+  for (typename StreamInfoVector::iterator it = stream_infos->begin();
+       it != stream_infos->end(); ++it) {
+    if (*it == stream_info) {
+      stream_infos->erase(it);
       return true;
     }
   }
   return false;
 }
 
-template <typename NodeId>
-void SpdyPriorityTree<NodeId>::PropagateNodeState(Node* node) {
-  // Reset total_writeable_child_weights to its maximum value.
-  node->total_writeable_child_weights = node->total_child_weights;
-  for (Node* child : node->children) {
-    PropagateNodeState(child);
+template <typename StreamIdType>
+int Http2PriorityWriteScheduler<StreamIdType>::ClampWeight(int weight) {
+  if (weight < kHttp2MinStreamWeight) {
+    LOG(DFATAL) << "Invalid weight: " << weight;
+    return kHttp2MinStreamWeight;
   }
-  if (node->total_writeable_child_weights == 0 &&
-      (node->blocked || !node->ready)) {
-    // Tell the parent that this entire subtree is unwriteable.
-    node->parent->total_writeable_child_weights -= node->weight;
+  if (weight > kHttp2MaxStreamWeight) {
+    LOG(DFATAL) << "Invalid weight: " << weight;
+    return kHttp2MaxStreamWeight;
+  }
+  return weight;
+}
+
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::HasScheduledAncestor(
+    const StreamInfo& stream_info) {
+  for (const StreamInfo* parent = stream_info.parent; parent != nullptr;
+       parent = parent->parent) {
+    if (parent->scheduled) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <typename StreamIdType>
+const typename Http2PriorityWriteScheduler<StreamIdType>::StreamInfo*
+Http2PriorityWriteScheduler<StreamIdType>::FindStream(
+    StreamIdType stream_id) const {
+  typename StreamInfoMap::const_iterator it = all_stream_infos_.find(stream_id);
+  return it == all_stream_infos_.end() ? nullptr : it->second;
+}
+
+template <typename StreamIdType>
+typename Http2PriorityWriteScheduler<StreamIdType>::StreamInfo*
+Http2PriorityWriteScheduler<StreamIdType>::FindStream(StreamIdType stream_id) {
+  typename StreamInfoMap::iterator it = all_stream_infos_.find(stream_id);
+  return it == all_stream_infos_.end() ? nullptr : it->second;
+}
+
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::UpdatePrioritiesUnder(
+    StreamInfo* stream_info) {
+  for (StreamInfo* child : stream_info->children) {
+    child->priority = stream_info->priority *
+                      (static_cast<float>(child->weight) /
+                       static_cast<float>(stream_info->total_child_weights));
+    if (child->scheduled) {
+      // Reposition in scheduling_queue_. Use post-order for scheduling, to
+      // benefit from the fact that children have priority <= parent priority.
+      Unschedule(child);
+      UpdatePrioritiesUnder(child);
+      Schedule(child);
+    } else {
+      UpdatePrioritiesUnder(child);
+    }
   }
 }
 
-template <typename NodeId>
-const typename SpdyPriorityTree<NodeId>::Node*
-SpdyPriorityTree<NodeId>::FindNode(NodeId node_id) const {
-  typename NodeMap::const_iterator it = all_nodes_.find(node_id);
-  return (it == all_nodes_.end() ? nullptr : it->second);
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::UpdateScheduling(
+    StreamInfo* stream_info) {
+  if (stream_info->IsSchedulable() != stream_info->scheduled) {
+    if (stream_info->scheduled) {
+      Unschedule(stream_info);
+    } else {
+      stream_info->ordinal = next_ordinal_++;
+      Schedule(stream_info);
+    }
+  }
 }
 
-template <typename NodeId>
-typename SpdyPriorityTree<NodeId>::Node* SpdyPriorityTree<NodeId>::FindNode(
-    NodeId node_id) {
-  typename NodeMap::const_iterator it = all_nodes_.find(node_id);
-  return (it == all_nodes_.end() ? nullptr : it->second);
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::Schedule(
+    StreamInfo* stream_info) {
+  DCHECK(!stream_info->scheduled);
+  for (base::LinkNode<StreamInfo>* s = scheduling_queue_.head();
+       s != scheduling_queue_.end(); s = s->next()) {
+    if (stream_info->SchedulesBefore(*s->value())) {
+      stream_info->InsertBefore(s);
+      stream_info->scheduled = true;
+      break;
+    }
+  }
+  if (!stream_info->scheduled) {
+    stream_info->InsertAfter(scheduling_queue_.tail());
+    stream_info->scheduled = true;
+  }
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::HasChild(NodeId parent_id,
-                                        NodeId child_id) const {
-  const Node* parent = FindNode(parent_id);
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::Unschedule(
+    StreamInfo* stream_info) {
+  DCHECK(stream_info->scheduled);
+  stream_info->RemoveFromList();
+  stream_info->scheduled = false;
+}
+
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::StreamHasChild(
+    StreamIdType parent_id,
+    StreamIdType child_id) const {
+  const StreamInfo* parent = FindStream(parent_id);
   if (parent == nullptr) {
+    LOG(DFATAL) << "Parent stream " << parent_id << " not registered";
     return false;
   }
-  auto found =
-      std::find_if(parent->children.begin(), parent->children.end(),
-                   [child_id](Node* node) { return node->id == child_id; });
+  if (!StreamRegistered(child_id)) {
+    LOG(DFATAL) << "Child stream " << child_id << " not registered";
+    return false;
+  }
+  auto found = std::find_if(parent->children.begin(), parent->children.end(),
+                            [child_id](StreamInfo* stream_info) {
+                              return stream_info->id == child_id;
+                            });
   return found != parent->children.end();
 }
 
-template <typename NodeId>
-std::vector<std::pair<NodeId, float> >
-SpdyPriorityTree<NodeId>::GetPriorityList() {
-  PriorityList priority_list;
-
-  // Update total_writeable_child_weights to reflect the current
-  // state of the tree.
-  PropagateNodeState(root_node_);
-
-  std::deque<Node*> queue;
-  DCHECK(root_node_->priority == 1.0);
-  // Start by examining our top-level nodes.
-  for (Node* child : root_node_->children) {
-    queue.push_back(child);
-  }
-  while (!queue.empty()) {
-    Node* current_node = queue.front();
-    const Node* parent_node = current_node->parent;
-    if (current_node->blocked || !current_node->ready) {
-      if (current_node->total_writeable_child_weights > 0) {
-        // This node isn't writeable, but it has writeable children.
-        // Calculate the total fraction of resources we can allot
-        // to this subtree.
-        current_node->priority = parent_node->priority *
-            (static_cast<float>(current_node->weight) /
-             static_cast<float>(parent_node->total_writeable_child_weights));
-        // Examine the children.
-        for (Node* child : current_node->children) {
-          queue.push_back(child);
-        }
-      } else {
-        // There's nothing to see in this subtree.
-        current_node->priority = 0;
-      }
-    } else {
-      // This node is writeable; calculate its priority.
-      current_node->priority = parent_node->priority *
-          (static_cast<float>(current_node->weight) /
-           static_cast<float>(parent_node->total_writeable_child_weights));
-      // Add this node to the priority list.
-      priority_list.push_back(
-          PriorityNode(current_node->id, current_node->priority));
-    }
-    // Remove this node from the queue.
-    queue.pop_front();
-  }
-
-  // Sort the nodes in descending order of priority.
-  std::sort(priority_list.begin(), priority_list.end(),
-            NodePriorityComparator());
-
-  return priority_list;
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::HasUsableStreams() const {
+  // Even though not every stream in scheduling queue is guaranteed to be
+  // usable (since children are occluded by parents), the presence of any
+  // streams guarantees at least one is usable.
+  return !scheduling_queue_.empty();
 }
 
-template <typename NodeId>
-bool SpdyPriorityTree<NodeId>::ValidateInvariantsForTests() const {
-  int total_nodes = 0;
-  int nodes_visited = 0;
-  // Iterate through all nodes in the map.
-  for (const auto& kv : all_nodes_) {
-    ++total_nodes;
-    ++nodes_visited;
-    const Node& node = *kv.second;
-    // All nodes except the root should have a parent, and should appear in
+template <typename StreamIdType>
+StreamIdType Http2PriorityWriteScheduler<StreamIdType>::PopNextUsableStream() {
+  for (base::LinkNode<StreamInfo>* s = scheduling_queue_.head();
+       s != scheduling_queue_.end(); s = s->next()) {
+    StreamInfo* stream_info = s->value();
+    if (!HasScheduledAncestor(*stream_info)) {
+      stream_info->ready = false;
+      Unschedule(stream_info);
+      return stream_info->id;
+    }
+  }
+  LOG(DFATAL) << "No usable streams";
+  return kHttp2RootStreamId;
+}
+
+template <typename StreamIdType>
+bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
+    const {
+  int total_streams = 0;
+  int streams_visited = 0;
+  // Iterate through all streams in the map.
+  for (const auto& kv : all_stream_infos_) {
+    ++total_streams;
+    ++streams_visited;
+    const StreamInfo& stream_info = *kv.second;
+    // All streams except the root should have a parent, and should appear in
     // the children of that parent.
-    if (node.id != kRootNodeId && !HasChild(node.parent->id, node.id)) {
-      DLOG(INFO) << "Parent node " << node.parent->id
-                 << " does not exist, or does not list node " << node.id
-                 << " as its child.";
+    if (stream_info.id != kHttp2RootStreamId &&
+        !StreamHasChild(stream_info.parent->id, stream_info.id)) {
+      DLOG(INFO) << "Parent stream " << stream_info.parent->id
+                 << " is not registered, or does not list stream "
+                 << stream_info.id << " as its child.";
       return false;
     }
 
-    if (!node.children.empty()) {
+    if (!stream_info.children.empty()) {
       int total_child_weights = 0;
-      // Iterate through the node's children.
-      for (Node* child : node.children) {
-        ++nodes_visited;
-        // Each node in the list should exist and should have this node
+      // Iterate through the stream's children.
+      for (StreamInfo* child : stream_info.children) {
+        ++streams_visited;
+        // Each stream in the list should exist and should have this stream
         // set as its parent.
-        if (!NodeExists(child->id) || node.id != GetParent(child->id)) {
-          DLOG(INFO) << "Child node " << child->id << " does not exist, "
-                     << "or does not list " << node.id << " as its parent.";
+        if (!StreamRegistered(child->id) ||
+            stream_info.id != GetStreamParent(child->id)) {
+          DLOG(INFO) << "Child stream " << child->id << " is not registered, "
+                     << "or does not list " << stream_info.id
+                     << " as its parent.";
           return false;
         }
         total_child_weights += child->weight;
       }
       // Verify that total_child_weights is correct.
-      if (total_child_weights != node.total_child_weights) {
-        DLOG(INFO) << "Child weight totals do not agree. For node " << node.id
-                   << " total_child_weights has value "
-                   << node.total_child_weights
-                   << ", expected " << total_child_weights;
+      if (total_child_weights != stream_info.total_child_weights) {
+        DLOG(INFO) << "Child weight totals do not agree. For stream "
+                   << stream_info.id << " total_child_weights has value "
+                   << stream_info.total_child_weights << ", expected "
+                   << total_child_weights;
         return false;
       }
     }
   }
 
-  // Make sure num_nodes reflects the total number of nodes the map contains.
-  if (total_nodes != num_nodes()) {
-    DLOG(INFO) << "Map contains incorrect number of nodes.";
+  // Make sure num_streams reflects the total number of streams the map
+  // contains.
+  if (total_streams != num_streams()) {
+    DLOG(INFO) << "Map contains incorrect number of streams.";
     return false;
   }
-  // Validate the validation function; we should have visited each node twice
+  // Validate the validation function; we should have visited each stream twice
   // (except for the root)
-  DCHECK(nodes_visited == 2*num_nodes() - 1);
+  DCHECK(streams_visited == 2 * num_streams() - 1);
   return true;
 }
 
