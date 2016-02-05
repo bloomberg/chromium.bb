@@ -27,11 +27,6 @@
 namespace chrome {
 
 extern const char kChromeVersion[];
-
-#if defined(OS_WIN)
-extern const char kChromeVersionEnvVar[];
-#endif
-
 extern const base::FilePath::CharType kBrowserProcessExecutableName[];
 extern const base::FilePath::CharType kHelperProcessExecutableName[];
 extern const base::FilePath::CharType kBrowserProcessExecutablePath[];

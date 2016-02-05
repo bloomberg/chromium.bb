@@ -47,10 +47,10 @@ class MainDllLoader {
   virtual int OnBeforeExit(int return_code, const base::FilePath& dll_path) = 0;
 
  private:
-  // Loads chrome.dll, populating |version| with the version of the DLL loaded
-  // and |module| with the path of the loaded DLL. Returns a reference to the
+  // Loads the appropriate DLL for the process type |process_type_|. Populates
+  // |module| with the path of the loaded DLL. Returns a reference to the
   // module, or null on failure.
-  HMODULE Load(base::string16* version, base::FilePath* module);
+  HMODULE Load(base::FilePath* module);
 
  private:
   HMODULE dll_;

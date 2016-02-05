@@ -13,7 +13,6 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
@@ -30,7 +29,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/upgrade_util_win.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/browser_distribution.h"
@@ -111,15 +109,6 @@ RelaunchMode RelaunchModeStringToEnum(const std::string& relaunch_mode) {
 
 bool RelaunchChromeHelper(const base::CommandLine& command_line,
                           const RelaunchMode& relaunch_mode) {
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string version_str;
-
-  // Get the version variable and remove it from the environment.
-  if (env->GetVar(chrome::kChromeVersionEnvVar, &version_str))
-    env->UnSetVar(chrome::kChromeVersionEnvVar);
-  else
-    version_str.clear();
-
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
     NOTREACHED();

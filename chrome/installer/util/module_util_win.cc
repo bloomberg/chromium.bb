@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 
@@ -36,10 +37,7 @@ bool ModuleCanBeRead(const base::FilePath file_path) {
 
 }  // namespace
 
-base::FilePath GetModulePath(base::StringPiece16 module_name,
-                             base::string16* version) {
-  DCHECK(version);
-
+base::FilePath GetModulePath(base::StringPiece16 module_name) {
   base::FilePath exe_dir;
   const bool has_path = base::PathService::Get(base::DIR_EXE, &exe_dir);
   DCHECK(has_path);
@@ -54,10 +52,9 @@ base::FilePath GetModulePath(base::StringPiece16 module_name,
   // Othwerwise, return the path to the module in a versioned sub-directory of
   // the current executable's directory. This is the expected location of
   // modules for proper installs.
-  *version = GetCurrentExecutableVersion();
-  DCHECK(!version->empty());
-
-  return exe_dir.Append(*version).Append(module_name);
+  const base::string16 version = GetCurrentExecutableVersion();
+  DCHECK(!version.empty());
+  return exe_dir.Append(version).Append(module_name);
 }
 
 }  // namespace installer
