@@ -698,6 +698,8 @@ test("media_unittests") {
     "//url",
   ]
 
+  data_deps = []
+
   if (is_android) {
     isolate_file = "media_unittests.isolate"
     sources -= [
@@ -714,7 +716,7 @@ test("media_unittests") {
   # If ExternalClearKey is built, we can test CdmAdapter.
   if (enable_pepper_cdms) {
     sources += [ "cdm/cdm_adapter_unittest.cc" ]
-    deps += [ "//media/cdm/ppapi:clearkeycdm" ]
+    data_deps += [ "//media/cdm/ppapi:clearkeycdm" ]
   }
 
   if (media_use_ffmpeg) {
