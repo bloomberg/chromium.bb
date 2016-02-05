@@ -383,6 +383,9 @@ leveldb::Status SessionStorageDatabase::TryToOpen(leveldb::DB** db) {
   options.max_open_files = 0;  // Use minimum.
   options.create_if_missing = true;
   options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+  // Default write_buffer_size is 4 MB but that might leave a 3.999
+  // memory allocation in RAM from a log file recovery.
+  options.write_buffer_size = 64 * 1024;
   return leveldb::DB::Open(options, file_path_.AsUTF8Unsafe(), db);
 }
 
