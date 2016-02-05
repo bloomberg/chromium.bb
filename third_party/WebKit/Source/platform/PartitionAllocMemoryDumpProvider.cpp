@@ -137,8 +137,9 @@ bool PartitionAllocMemoryDumpProvider::onMemoryDump(WebMemoryDumpLevelOfDetail l
     return true;
 }
 
+// |m_allocationRegister| should be initialized only when necessary to avoid waste of memory.
 PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider()
-    : m_allocationRegister(adoptPtr(new base::trace_event::AllocationRegister()))
+    : m_allocationRegister(nullptr)
     , m_isHeapProfilingEnabled(false)
 {
 }
@@ -150,6 +151,11 @@ PartitionAllocMemoryDumpProvider::~PartitionAllocMemoryDumpProvider()
 void PartitionAllocMemoryDumpProvider::onHeapProfilingEnabled(bool enabled)
 {
     if (enabled) {
+        {
+            MutexLocker locker(m_allocationRegisterMutex);
+            if (!m_allocationRegister)
+                m_allocationRegister = adoptPtr(new base::trace_event::AllocationRegister());
+        }
         PartitionAllocHooks::setAllocationHook(reportAllocation);
         PartitionAllocHooks::setFreeHook(reportFree);
     } else {
@@ -164,13 +170,15 @@ void PartitionAllocMemoryDumpProvider::insert(void* address, size_t size, const 
     base::trace_event::AllocationContext context = base::trace_event::AllocationContextTracker::GetContextSnapshot();
     context.type_name = typeName;
     MutexLocker locker(m_allocationRegisterMutex);
-    m_allocationRegister->Insert(address, size, context);
+    if (m_allocationRegister)
+        m_allocationRegister->Insert(address, size, context);
 }
 
 void PartitionAllocMemoryDumpProvider::remove(void* address)
 {
     MutexLocker locker(m_allocationRegisterMutex);
-    m_allocationRegister->Remove(address);
+    if (m_allocationRegister)
+        m_allocationRegister->Remove(address);
 }
 
 } // namespace blink
