@@ -47209,6 +47209,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Skia.DrawTiled" enum="BooleanTiled">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Whether a call to drawBitmap(Rect) or drawImage(Rect) used the tiled or
+    non-tiled rasterization path.
+  </summary>
+</histogram>
+
+<histogram name="Skia.LockTexturePath" enum="SkiaLockTexturePath">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    The path taken by Skia when it attempts to lock a texture for use.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.Cleaner.HasCompleted" enum="SRTCompleted">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -58705,6 +58720,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanTerminated" type="int">
   <int value="0" label="Not terminated"/>
   <int value="1" label="Terminated"/>
+</enum>
+
+<enum name="BooleanTiled" type="int">
+  <int value="0" label="Not tiled"/>
+  <int value="1" label="Tiled"/>
 </enum>
 
 <enum name="BooleanTimedOut" type="int">
@@ -78397,6 +78417,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="JSON"/>
   <int value="3" label="Plain"/>
   <int value="4" label="Others"/>
+</enum>
+
+<enum name="SkiaLockTexturePath" type="int">
+  <int value="0" label="Failure"/>
+  <int value="1" label="Pre-Existing"/>
+  <int value="2" label="Native"/>
+  <int value="3" label="Compressed"/>
+  <int value="4" label="YUV"/>
+  <int value="5" label="RGBA"/>
 </enum>
 
 <enum name="SnippetsInteractions" type="int">
