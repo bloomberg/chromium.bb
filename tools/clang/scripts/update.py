@@ -26,7 +26,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '259395'
+CLANG_REVISION = '259396'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -303,6 +303,7 @@ def AddCMakeToPath():
     DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
 
+
 vs_version = None
 def GetVSVersion():
   global vs_version
@@ -391,9 +392,9 @@ def UpdateClang(args):
     # clang needs a libc++ checkout, else -stdlib=libc++ won't find includes
     # (i.e. this is needed for bootstrap builds).
     Checkout('libcxx', LLVM_REPO_URL + '/libcxx/trunk', LIBCXX_DIR)
-    # While we're bundling our own libc++ on OS X, we need to compile libc++abi
-    # into it too (since OS X 10.6 doesn't have libc++abi.dylib either).
-    Checkout('libcxxabi', LLVM_REPO_URL + '/libcxxabi/trunk', LIBCXXABI_DIR)
+    # We used to check out libcxxabi on OS X; we no longer need that.
+    if os.path.exists(LIBCXXABI_DIR):
+      RmTree(LIBCXXABI_DIR)
 
   cc, cxx = None, None
   libstdcpp = None
@@ -414,25 +415,6 @@ def UpdateClang(args):
     os.environ['LD_LIBRARY_PATH'] = os.path.dirname(libstdcpp)
 
   cflags = cxxflags = ldflags = []
-
-  # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
-  # needed, on OS X it requires libc++. clang only automatically links to libc++
-  # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run
-  # on OS X versions as old as 10.7.
-  # TODO(thakis): Some bots are still on 10.6 (nacl...), so for now bundle
-  # libc++.dylib.  Remove this once all bots are on 10.7+, then use
-  # -DLLVM_ENABLE_LIBCXX=ON and change deployment_target to 10.7.
-  deployment_target = ''
-
-  if sys.platform == 'darwin':
-    # When building on 10.9, /usr/include usually doesn't exist, and while
-    # Xcode's clang automatically sets a sysroot, self-built clangs don't.
-    cflags = ['-isysroot', subprocess.check_output(
-        ['xcrun', '--show-sdk-path']).rstrip()]
-    cxxflags = ['-stdlib=libc++', '-nostdinc++',
-                '-I' + os.path.join(LIBCXX_DIR, 'include')] + cflags
-    if args.bootstrap:
-      deployment_target = '10.6'
 
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
@@ -481,51 +463,24 @@ def UpdateClang(args):
       cxxflags = ['--gcc-toolchain=' + args.gcc_toolchain]
     print 'Building final compiler'
 
-  if sys.platform == 'darwin':
-    # Build libc++.dylib while some bots are still on OS X 10.6.
-    libcxxbuild = os.path.join(LLVM_BUILD_DIR, 'libcxxbuild')
-    if os.path.isdir(libcxxbuild):
-      RmTree(libcxxbuild)
-    libcxxflags = ['-O3', '-std=c++11', '-fstrict-aliasing']
+  # LLVM uses C++11 starting in llvm 3.5. On Linux, this means libstdc++4.7+ is
+  # needed, on OS X it requires libc++. clang only automatically links to libc++
+  # when targeting OS X 10.9+, so add stdlib=libc++ explicitly so clang can run
+  # on OS X versions as old as 10.7.
+  deployment_target = ''
 
-    # libcxx and libcxxabi both have a file stdexcept.cpp, so put their .o files
-    # into different subdirectories.
-    os.makedirs(os.path.join(libcxxbuild, 'libcxx'))
-    os.chdir(os.path.join(libcxxbuild, 'libcxx'))
-    RunCommand(['c++', '-c'] + cxxflags + libcxxflags +
-                glob.glob(os.path.join(LIBCXX_DIR, 'src', '*.cpp')))
-
-    os.makedirs(os.path.join(libcxxbuild, 'libcxxabi'))
-    os.chdir(os.path.join(libcxxbuild, 'libcxxabi'))
-    RunCommand(['c++', '-c'] + cxxflags + libcxxflags +
-               glob.glob(os.path.join(LIBCXXABI_DIR, 'src', '*.cpp')) +
-               ['-I' + os.path.join(LIBCXXABI_DIR, 'include')])
-
-    os.chdir(libcxxbuild)
-    libdir = os.path.join(LIBCXX_DIR, 'lib')
-    RunCommand(['cc'] + glob.glob('libcxx/*.o') + glob.glob('libcxxabi/*.o') +
-        ['-o', 'libc++.1.dylib', '-dynamiclib', '-nodefaultlibs',
-         '-current_version', '1', '-compatibility_version', '1', '-lSystem',
-         '-install_name', '@executable_path/libc++.dylib',
-         '-Wl,-unexported_symbols_list,' + libdir + '/libc++unexp.exp',
-         '-Wl,-force_symbols_not_weak_list,' + libdir + '/notweak.exp',
-         '-Wl,-force_symbols_weak_list,' + libdir + '/weak.exp'])
-    if os.path.exists('libc++.dylib'):
-      os.remove('libc++.dylib')
-    os.symlink('libc++.1.dylib', 'libc++.dylib')
-    ldflags += ['-stdlib=libc++', '-L' + libcxxbuild]
-
-    if args.bootstrap:
-      # Now that the libc++ headers have been installed and libc++.dylib is
-      # built, delete the libc++ checkout again so that it's not part of the
-      # main build below -- the libc++(abi) tests don't pass on OS X in
-      # bootstrap builds (http://llvm.org/PR24068)
-      RmTree(LIBCXX_DIR)
-      RmTree(LIBCXXABI_DIR)
-      cxxflags = ['-stdlib=libc++', '-nostdinc++',
-                  '-I' + os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR,
-                                      'include/c++/v1')
-                  ] + cflags
+  if sys.platform == 'darwin' and args.bootstrap:
+    # When building on 10.9, /usr/include usually doesn't exist, and while
+    # Xcode's clang automatically sets a sysroot, self-built clangs don't.
+    cflags = ['-isysroot', subprocess.check_output(
+        ['xcrun', '--show-sdk-path']).rstrip()]
+    cxxflags = ['-stdlib=libc++'] + cflags
+    ldflags += ['-stdlib=libc++']
+    deployment_target = '10.7'
+    # Running libc++ tests takes a long time. Since it was only needed for
+    # the install step above, don't build it as part of the main build.
+    # This makes running package.py over 10% faster (30 min instead of 34 min)
+    RmTree(LIBCXX_DIR)
 
   # Build clang.
   binutils_incdir = ''
@@ -585,8 +540,6 @@ def UpdateClang(args):
     RunCommand(['ninja', 'cr-install'], msvc_arch='x64')
 
   if sys.platform == 'darwin':
-    CopyFile(os.path.join(libcxxbuild, 'libc++.1.dylib'),
-             os.path.join(LLVM_BUILD_DIR, 'bin'))
     # See http://crbug.com/256342
     RunCommand(['strip', '-x', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
   elif sys.platform.startswith('linux'):

@@ -90,11 +90,6 @@ def main():
            log, fail_hard=False)
     TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'projects', 'libcxx')],
            log, fail_hard=False)
-    Tee('Diff in llvm/projects/libcxxabi:\n', log)
-    TeeCmd(['svn', 'stat', os.path.join(LLVM_DIR, 'projects', 'libcxxabi')],
-           log, fail_hard=False)
-    TeeCmd(['svn', 'diff', os.path.join(LLVM_DIR, 'projects', 'libcxxabi')],
-           log, fail_hard=False)
 
     Tee('Starting build\n', log)
 
@@ -131,15 +126,14 @@ def main():
                  'lib/libBlinkGCPlugin.' + so_ext,
                  ])
   if sys.platform == 'darwin':
-    want.extend(['bin/libc++.1.dylib',
-                 # Copy only the OSX (ASan and profile) and iossim (ASan)
+    want.extend([# Copy only the OSX (ASan and profile) and iossim (ASan)
                  # runtime libraries:
                  'lib/clang/*/lib/darwin/*asan_osx*',
                  'lib/clang/*/lib/darwin/*asan_iossim*',
                  'lib/clang/*/lib/darwin/*profile_osx*',
                  ])
   elif sys.platform.startswith('linux'):
-    # Copy the stdlibc++.so.6 we linked Clang against so it can run.
+    # Copy the libstdc++.so.6 we linked Clang against so it can run.
     want.append('lib/libstdc++.so.6')
     # Copy only
     # lib/clang/*/lib/linux/libclang_rt.{[atm]san,san,ubsan,profile}-*.a ,
