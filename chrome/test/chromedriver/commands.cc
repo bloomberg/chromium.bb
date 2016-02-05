@@ -214,8 +214,11 @@ void ExecuteSessionCommandOnSessionThread(
   }
 
   if (IsVLogOn(0)) {
-    VLOG(0) << "COMMAND " << command_name << " "
-            << FormatValueForDisplay(*params);
+    if (!session->driver_log ||
+        session->driver_log->min_level() != Log::Level::kOff) {
+      VLOG(0) << "COMMAND " << command_name << " "
+              << FormatValueForDisplay(*params);
+    }
   }
 
   // Notify |session|'s |CommandListener|s of the command.
@@ -268,8 +271,11 @@ void ExecuteSessionCommandOnSessionThread(
       } else if (value) {
         result = FormatValueForDisplay(*value);
       }
-      VLOG(0) << "RESPONSE " << command_name
-              << (result.length() ? " " + result : "");
+      if (!session->driver_log ||
+          session->driver_log->min_level() != Log::Level::kOff) {
+        VLOG(0) << "RESPONSE " << command_name
+                << (result.length() ? " " + result : "");
+      }
     }
 
     if (status.IsOk() && session->auto_reporting_enabled) {

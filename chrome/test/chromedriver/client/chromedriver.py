@@ -67,9 +67,9 @@ class ChromeDriver(object):
                android_activity=None, android_process=None,
                android_use_running_app=None, chrome_switches=None,
                chrome_extensions=None, chrome_log_path=None,
-               debugger_address=None, browser_log_level=None,
-               performance_log_level=None, mobile_emulation=None,
-               experimental_options=None, download_dir=None):
+               debugger_address=None, logging_prefs=None,
+               mobile_emulation=None, experimental_options=None,
+               download_dir=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -109,14 +109,12 @@ class ChromeDriver(object):
       assert type(debugger_address) is str
       options['debuggerAddress'] = debugger_address
 
-    logging_prefs = {}
-    log_levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'SEVERE', 'OFF']
-    if browser_log_level:
-      assert browser_log_level in log_levels
-      logging_prefs['browser'] = browser_log_level
-    if performance_log_level:
-      assert performance_log_level in log_levels
-      logging_prefs['performance'] = performance_log_level
+    if logging_prefs:
+      log_types = ['client', 'driver', 'browser', 'server', 'performance']
+      log_levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'SEVERE', 'OFF']
+      for log_type, log_level in logging_prefs.iteritems():
+        assert log_type in log_types
+        assert log_level in log_levels
 
     download_prefs = {}
     if download_dir:
