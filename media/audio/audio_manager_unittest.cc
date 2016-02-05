@@ -66,6 +66,16 @@ class AudioManagerTest : public ::testing::Test {
     stream->Close();
   }
 
+  void GetDefaultOutputStreamParameters(media::AudioParameters* params) {
+    *params = audio_manager_->GetDefaultOutputStreamParameters();
+  }
+
+  void GetAssociatedOutputDeviceID(const std::string& input_device_id,
+                                   std::string* output_device_id) {
+    *output_device_id =
+        audio_manager_->GetAssociatedOutputDeviceID(input_device_id);
+  }
+
  protected:
   AudioManagerTest() : audio_manager_(AudioManager::CreateForTesting()) {
     // Wait for audio thread initialization to complete.  Otherwise the
@@ -139,12 +149,26 @@ class AudioManagerTest : public ::testing::Test {
     }
   }
 
+  void HasInputDevicesAvailable(bool* has_devices) {
+    *has_devices = audio_manager_->HasAudioInputDevices();
+  }
+
+  void HasOutputDevicesAvailable(bool* has_devices) {
+    *has_devices = audio_manager_->HasAudioOutputDevices();
+  }
+
   bool InputDevicesAvailable() {
-    return audio_manager_->HasAudioInputDevices();
+    bool has_devices = false;
+    RunOnAudioThread(base::Bind(&AudioManagerTest::HasInputDevicesAvailable,
+                                base::Unretained(this), &has_devices));
+    return has_devices;
   }
 
   bool OutputDevicesAvailable() {
-    return audio_manager_->HasAudioOutputDevices();
+    bool has_devices = false;
+    RunOnAudioThread(base::Bind(&AudioManagerTest::HasOutputDevicesAvailable,
+                                base::Unretained(this), &has_devices));
+    return has_devices;
   }
 
 #if defined(USE_ALSA) || defined(USE_PULSEAUDIO)
@@ -378,7 +402,10 @@ TEST_F(AudioManagerTest, GetDefaultOutputStreamParameters) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
-  AudioParameters params = audio_manager_->GetDefaultOutputStreamParameters();
+  AudioParameters params;
+  RunOnAudioThread(
+      base::Bind(&AudioManagerTest::GetDefaultOutputStreamParameters,
+                 base::Unretained(this), &params));
   EXPECT_TRUE(params.IsValid());
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 }
@@ -388,15 +415,19 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable() && OutputDevicesAvailable());
 
   AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  RunOnAudioThread(base::Bind(&AudioManager::GetAudioInputDeviceNames,
+                              base::Unretained(audio_manager_.get()),
+                              &device_names));
   bool found_an_associated_device = false;
   for (AudioDeviceNames::iterator it = device_names.begin();
        it != device_names.end();
        ++it) {
     EXPECT_FALSE(it->unique_id.empty());
     EXPECT_FALSE(it->device_name.empty());
-    std::string output_device_id(
-        audio_manager_->GetAssociatedOutputDeviceID(it->unique_id));
+    std::string output_device_id;
+    RunOnAudioThread(base::Bind(&AudioManagerTest::GetAssociatedOutputDeviceID,
+                                base::Unretained(this), it->unique_id,
+                                &output_device_id));
     if (!output_device_id.empty()) {
       DVLOG(2) << it->unique_id << " matches with " << output_device_id;
       found_an_associated_device = true;

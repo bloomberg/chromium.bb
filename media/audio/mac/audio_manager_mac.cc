@@ -54,6 +54,7 @@ static OSStatus GetIOBufferFrameSizeRange(AudioDeviceID device_id,
                                           bool is_input,
                                           UInt32* minimum,
                                           UInt32* maximum) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress address = GetAudioObjectPropertyAddress(
       kAudioDevicePropertyBufferFrameSizeRange, is_input);
   AudioValueRange range = {0, 0};
@@ -72,6 +73,7 @@ static OSStatus GetIOBufferFrameSizeRange(AudioDeviceID device_id,
 }
 
 static bool HasAudioHardware(AudioObjectPropertySelector selector) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioDeviceID output_device_id = kAudioObjectUnknown;
   const AudioObjectPropertyAddress property_address = {
     selector,
@@ -91,6 +93,7 @@ static bool HasAudioHardware(AudioObjectPropertySelector selector) {
 
 static std::string GetAudioDeviceNameFromDeviceId(AudioDeviceID device_id,
                                                   bool is_input) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CFStringRef device_name = nullptr;
   UInt32 data_size = sizeof(device_name);
   AudioObjectPropertyAddress property_address = GetAudioObjectPropertyAddress(
@@ -109,6 +112,7 @@ static std::string GetAudioDeviceNameFromDeviceId(AudioDeviceID device_id,
 // device to the list if the list is non-empty.
 static void GetAudioDeviceInfo(bool is_input,
                                media::AudioDeviceNames* device_names) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   // Query the number of total devices.
   AudioObjectPropertyAddress property_address = {
     kAudioHardwarePropertyDevices,
@@ -213,6 +217,7 @@ static void GetAudioDeviceInfo(bool is_input,
 
 static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
                                            const std::string& device_id) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress property_address = {
     kAudioHardwarePropertyDevices,
     kAudioObjectPropertyScopeGlobal,
@@ -263,6 +268,7 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
 }
 
 static bool GetDefaultDevice(AudioDeviceID* device, bool input) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(device);
 
   // Obtain the AudioDeviceID of the default input or output AudioDevice.
@@ -383,6 +389,7 @@ bool AudioManagerMac::HasAudioInputDevices() {
 bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
                                         AudioObjectPropertyScope scope,
                                         int* channels) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CHECK(channels);
   const bool is_input = (scope == kAudioDevicePropertyScopeInput);
   DVLOG(1) << "GetDeviceChannels(id=0x" << std::hex << device
@@ -423,6 +430,7 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
 }
 
 int AudioManagerMac::HardwareSampleRateForDevice(AudioDeviceID device_id) {
+  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   Float64 nominal_sample_rate;
   UInt32 info_size = sizeof(nominal_sample_rate);
 
@@ -504,6 +512,7 @@ AudioParameters AudioManagerMac::GetInputStreamParameters(
 
 std::string AudioManagerMac::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioDeviceID device = GetAudioDeviceIdByUId(true, input_device_id);
   if (device == kAudioObjectUnknown)
     return std::string();
@@ -618,6 +627,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
 }
 
 std::string AudioManagerMac::GetDefaultOutputDeviceID() {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   AudioDeviceID device_id = kAudioObjectUnknown;
   if (!GetDefaultOutputDevice(&device_id))
     return std::string();
@@ -792,6 +802,7 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             size_t desired_buffer_size,
                                             bool* size_was_changed,
                                             size_t* io_buffer_frame_size) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   const bool is_input = (element == 1);
   DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
            << ", is_input=" << is_input << ", desired_buffer_size=" << std::dec
