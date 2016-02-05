@@ -163,7 +163,10 @@ class CustomButtonParams {
                 CustomTabsIntent.EXTRA_ACTION_BAR_ITEMS);
         boolean tinted = IntentUtils.safeGetBooleanExtra(intent,
                 CustomTabsIntent.EXTRA_TINT_ACTION_BUTTON, false);
-        if (singleBundle != null) paramsList.add(fromBundle(context, singleBundle, tinted, false));
+        if (singleBundle != null) {
+            CustomButtonParams singleParams = fromBundle(context, singleBundle, tinted, false);
+            if (singleParams != null) paramsList.add(singleParams);
+        }
         if (bundleList != null) {
             Set<Integer> ids = new HashSet<>();
             for (Bundle bundle : bundleList) {
