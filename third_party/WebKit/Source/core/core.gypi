@@ -3893,6 +3893,7 @@
             'css/CSSFontFaceTest.cpp',
             'css/CSSPageRuleTest.cpp',
             'css/CSSSelectorTest.cpp',
+            'css/CSSStyleDeclarationTest.cpp',
             'css/CSSStyleSheetResourceTest.cpp',
             'css/CSSTestHelper.cpp',
             'css/CSSTestHelper.h',

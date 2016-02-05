@@ -23,6 +23,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
+#include "core/StylePropertyShorthand.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSStyleSheet.h"
@@ -205,6 +206,8 @@ String AbstractPropertySetCSSStyleDeclaration::getPropertyShorthand(const String
 
     // Custom properties don't have shorthands, so we can ignore them here.
     if (!propertyID)
+        return String();
+    if (isShorthandProperty(propertyID))
         return String();
     CSSPropertyID shorthandID = propertySet().getPropertyShorthand(propertyID);
     if (!shorthandID)
