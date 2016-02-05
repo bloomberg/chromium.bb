@@ -23,9 +23,9 @@ html {
 }
 
 /* On iOS with WKWebView, embed the fonts. */
-${robotoRegularFontFace}
-${robotoMediumFontFace}
-${robotoLightFontFace}
+$i18n{robotoRegularFontFace}
+$i18n{robotoMediumFontFace}
+$i18n{robotoLightFontFace}
 
 h1 {
   font-family: Roboto-Light;
