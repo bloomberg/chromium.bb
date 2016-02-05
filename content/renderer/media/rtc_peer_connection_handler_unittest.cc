@@ -19,6 +19,7 @@
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_source.h"
 #include "content/renderer/media/media_stream_video_track.h"
+#include "content/renderer/media/mock_data_channel_impl.h"
 #include "content/renderer/media/mock_media_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/mock_peer_connection_impl.h"
@@ -334,6 +335,47 @@ TEST_F(RTCPeerConnectionHandlerTest, Destruct) {
   EXPECT_CALL(*mock_tracker_.get(), UnregisterPeerConnection(pc_handler_.get()))
       .Times(1);
   pc_handler_.reset(NULL);
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, NoCallbacksToClientAfterStop) {
+  pc_handler_->stop();
+
+  EXPECT_CALL(*mock_client_.get(), negotiationNeeded()).Times(0);
+  pc_handler_->observer()->OnRenegotiationNeeded();
+
+  EXPECT_CALL(*mock_client_.get(), didGenerateICECandidate(_)).Times(0);
+    scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
+          mock_dependency_factory_->CreateIceCandidate("sdpMid", 1, kDummySdp));
+    pc_handler_->observer()->OnIceCandidate(native_candidate.get());
+
+  EXPECT_CALL(*mock_client_.get(), didChangeSignalingState(_)).Times(0);
+  pc_handler_->observer()->OnSignalingChange(
+      webrtc::PeerConnectionInterface::kHaveRemoteOffer);
+
+  EXPECT_CALL(*mock_client_.get(), didChangeICEGatheringState(_)).Times(0);
+  pc_handler_->observer()->OnIceGatheringChange(
+      webrtc::PeerConnectionInterface::kIceGatheringNew);
+
+  EXPECT_CALL(*mock_client_.get(), didChangeICEConnectionState(_)).Times(0);
+  pc_handler_->observer()->OnIceConnectionChange(
+      webrtc::PeerConnectionInterface::kIceConnectionDisconnected);
+
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteStream(_)).Times(0);
+  std::string remote_stream_label("remote_stream");
+  scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
+      AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
+  pc_handler_->observer()->OnAddStream(remote_stream.get());
+
+  EXPECT_CALL(*mock_client_.get(), didRemoveRemoteStream(_)).Times(0);
+  pc_handler_->observer()->OnRemoveStream(remote_stream.get());
+
+  EXPECT_CALL(*mock_client_.get(), didAddRemoteDataChannel(_)).Times(0);
+  webrtc::DataChannelInit config;
+  scoped_refptr<webrtc::DataChannelInterface> remote_data_channel(
+      new rtc::RefCountedObject<MockDataChannel>("dummy", &config));
+  pc_handler_->observer()->OnDataChannel(remote_data_channel.get());
+
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(RTCPeerConnectionHandlerTest, DestructAllHandlers) {
