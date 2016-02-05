@@ -90,6 +90,11 @@ class GclientApi(recipe_api.RecipeApi):
     if self.spec_alias:
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
+    kwargs.setdefault('env', {})
+    kwargs['env'].setdefault('PATH', '%(PATH)s')
+    kwargs['env']['PATH'] = self.m.path.pathsep.join([
+        kwargs['env']['PATH'], str(self._module.PACKAGE_DIRECTORY)])
+
     return self.m.python(prefix + name,
                          self.package_resource('gclient.py'),
                          cmd,

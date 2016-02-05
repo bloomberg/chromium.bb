@@ -9,6 +9,9 @@
       "cache_dir = '[ROOT]/git_cache'\nsolutions = [{'deps_file': '.DEPS.git', 'managed': True, 'name': 'src', 'url': 'https://chromium.googlesource.com/chromium/src.git'}]"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "gclient setup"
   },
   {
@@ -32,6 +35,9 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "gclient sync",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -56,6 +62,9 @@
       "local_bot"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "gclient recurse (git config user.name)"
   },
   {
@@ -70,6 +79,9 @@
       "local_bot@example.com"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "gclient recurse (git config user.email)"
   },
   {
@@ -82,6 +94,9 @@
       "cache_dir = None\nsolutions = [{'deps_file': 'DEPS', 'managed': True, 'name': 'WebKit', 'safesync_url': 'https://blink-status.appspot.com/lkgr', 'url': 'svn://svn.chromium.org/blink/trunk'}]"
     ],
     "cwd": "[SLAVE_BUILD]/src/third_party",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "[spec: WebKit] gclient setup"
   },
   {
@@ -101,6 +116,9 @@
       "/path/to/tmp/json"
     ],
     "cwd": "[SLAVE_BUILD]/src/third_party",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "[spec: WebKit] gclient sync",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -149,6 +167,9 @@
       "runhooks"
     ],
     "cwd": "[SLAVE_BUILD]",
+    "env": {
+      "PATH": "%(PATH)s:RECIPE_PACKAGE[depot_tools]"
+    },
     "name": "gclient runhooks"
   },
   {
