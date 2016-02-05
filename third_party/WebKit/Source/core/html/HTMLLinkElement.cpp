@@ -748,7 +748,9 @@ void LinkStyle::process()
         addPendingSheet(blocking ? Blocking : NonBlocking);
 
         // Load stylesheets that are not needed for the layout immediately with low priority.
-        FetchRequest request = builder.build(blocking);
+        // When the link element is created by scripts, load the stylesheets asynchronously but in high priority.
+        bool lowPriority = !mediaQueryMatches || m_owner->isAlternate();
+        FetchRequest request = builder.build(lowPriority);
         CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(m_owner->fastGetAttribute(HTMLNames::crossoriginAttr));
         if (crossOrigin != CrossOriginAttributeNotSet) {
             request.setCrossOriginAccessControl(document().securityOrigin(), crossOrigin);

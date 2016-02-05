@@ -75,9 +75,9 @@ LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
         m_charset = m_owner->document().characterSet();
 }
 
-FetchRequest LinkRequestBuilder::build(bool blocking) const
+FetchRequest LinkRequestBuilder::build(bool lowPriority) const
 {
-    ResourceLoadPriority priority = blocking ? ResourceLoadPriorityUnresolved : ResourceLoadPriorityVeryLow;
+    ResourceLoadPriority priority = lowPriority ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityUnresolved;
     return FetchRequest(ResourceRequest(m_owner->document().completeURL(m_url)), m_owner->localName(), m_charset, priority);
 }
 

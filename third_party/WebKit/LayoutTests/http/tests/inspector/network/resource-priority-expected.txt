@@ -7,6 +7,6 @@ Request: empty-script.js?async priority: Low
 Request: empty.html?xhr-sync priority: VeryHigh
 Request: empty.html?xhr-async priority: Medium
 Request: abe.png priority: VeryLow
-Request: style.css priority: VeryLow
+Request: style.css priority: High
 Request: empty.html?iframe priority: VeryHigh
 

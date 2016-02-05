@@ -76,7 +76,7 @@ public:
     bool isValid() const { return !m_url.isEmpty() && m_url.isValid(); }
     const KURL& url() const { return m_url; }
     const AtomicString& charset() const { return m_charset; }
-    FetchRequest build(bool blocking) const;
+    FetchRequest build(bool lowPriority) const;
 
 private:
     RawPtrWillBeMember<HTMLLinkElement> m_owner;
