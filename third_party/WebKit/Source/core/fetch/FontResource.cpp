@@ -29,10 +29,10 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCustomPlatformData.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -66,7 +66,8 @@ static FontPackageFormat packageFormatOf(SharedBuffer* buffer)
 
 static void recordPackageFormatHistogram(FontPackageFormat format)
 {
-    Platform::current()->histogramEnumeration("WebFont.PackageFormat", format, PackageFormatEnumMax);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, packageFormatHistogram, new EnumerationHistogram("WebFont.PackageFormat", PackageFormatEnumMax));
+    packageFormatHistogram.count(format);
 }
 
 ResourcePtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)

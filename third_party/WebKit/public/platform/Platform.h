@@ -442,10 +442,6 @@ public:
     // Get a pointer to testing support interfaces. Will not be available in production builds.
     virtual WebUnitTestSupport* unitTestSupport() { return nullptr; }
 
-    // Callbacks for reporting histogram data.
-    // Enumeration histogram buckets are linear, boundaryValue should be larger than any possible sample value.
-    virtual void histogramEnumeration(const char* name, int sample, int boundaryValue) { }
-
     // Record to a RAPPOR privacy-preserving metric, see: https://www.chromium.org/developers/design-documents/rappor.
     // recordRappor records a sample string, while recordRapporURL records the domain and registry of a url.
     virtual void recordRappor(const char* metric, const WebString& sample) { }

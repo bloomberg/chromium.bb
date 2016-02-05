@@ -34,6 +34,7 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBObjectStoreParameters.h"
@@ -128,6 +129,8 @@ public:
     static const char transactionInactiveErrorMessage[];
     static const char transactionReadOnlyErrorMessage[];
     static const char databaseClosedErrorMessage[];
+
+    static void recordApiCallsHistogram(IndexedDatabaseMethods);
 
 protected:
     // EventTarget

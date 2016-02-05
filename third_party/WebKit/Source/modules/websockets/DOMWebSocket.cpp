@@ -48,6 +48,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/websockets/CloseEvent.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/blob/BlobData.h"
 #include "platform/heap/Handle.h"
@@ -391,7 +392,9 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(encodedMessage.length());
         return;
     }
-    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeString, WebSocketSendTypeMax);
+
+    recordSendTypeHistogram(WebSocketSendTypeString);
+
     ASSERT(m_channel);
     m_bufferedAmount += encodedMessage.length();
     m_channel->send(encodedMessage);
@@ -409,7 +412,8 @@ void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionSta
         updateBufferedAmountAfterClose(binaryData->byteLength());
         return;
     }
-    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeArrayBuffer, WebSocketSendTypeMax);
+    recordSendTypeHistogram(WebSocketSendTypeArrayBuffer);
+
     ASSERT(m_channel);
     m_bufferedAmount += binaryData->byteLength();
     m_channel->send(*binaryData, 0, binaryData->byteLength());
@@ -427,7 +431,8 @@ void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exc
         updateBufferedAmountAfterClose(arrayBufferView->byteLength());
         return;
     }
-    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeArrayBufferView, WebSocketSendTypeMax);
+    recordSendTypeHistogram(WebSocketSendTypeArrayBufferView);
+
     ASSERT(m_channel);
     m_bufferedAmount += arrayBufferView->byteLength();
     m_channel->send(*arrayBufferView->buffer(), arrayBufferView->byteOffset(), arrayBufferView->byteLength());
@@ -445,7 +450,8 @@ void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
         updateBufferedAmountAfterClose(binaryData->size());
         return;
     }
-    Platform::current()->histogramEnumeration("WebCore.WebSocket.SendType", WebSocketSendTypeBlob, WebSocketSendTypeMax);
+    recordSendTypeHistogram(WebSocketSendTypeBlob);
+
     unsigned long long size = binaryData->size();
     m_bufferedAmount += size;
     ASSERT(m_channel);
@@ -624,7 +630,8 @@ void DOMWebSocket::didReceiveTextMessage(const String& msg)
     WTF_LOG(Network, "WebSocket %p didReceiveTextMessage() Text message '%s'", this, msg.utf8().data());
     if (m_state != OPEN)
         return;
-    Platform::current()->histogramEnumeration("WebCore.WebSocket.ReceiveType", WebSocketReceiveTypeString, WebSocketReceiveTypeMax);
+    recordReceiveTypeHistogram(WebSocketReceiveTypeString);
+
     m_eventQueue->dispatch(MessageEvent::create(msg, SecurityOrigin::create(m_url)->toString()));
 }
 
@@ -639,14 +646,14 @@ void DOMWebSocket::didReceiveBinaryMessage(PassOwnPtr<Vector<char>> binaryData)
         OwnPtr<BlobData> blobData = BlobData::create();
         blobData->appendData(rawData.release(), 0, BlobDataItem::toEndOfFile);
         Blob* blob = Blob::create(BlobDataHandle::create(blobData.release(), size));
-        Platform::current()->histogramEnumeration("WebCore.WebSocket.ReceiveType", WebSocketReceiveTypeBlob, WebSocketReceiveTypeMax);
+        recordReceiveTypeHistogram(WebSocketReceiveTypeBlob);
         m_eventQueue->dispatch(MessageEvent::create(blob, SecurityOrigin::create(m_url)->toString()));
         break;
     }
 
     case BinaryTypeArrayBuffer:
         RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(binaryData->data(), binaryData->size());
-        Platform::current()->histogramEnumeration("WebCore.WebSocket.ReceiveType", WebSocketReceiveTypeArrayBuffer, WebSocketReceiveTypeMax);
+        recordReceiveTypeHistogram(WebSocketReceiveTypeArrayBuffer);
         m_eventQueue->dispatch(MessageEvent::create(arrayBuffer.release(), SecurityOrigin::create(m_url)->toString()));
         break;
     }
@@ -689,6 +696,18 @@ void DOMWebSocket::didClose(ClosingHandshakeCompletionStatus closingHandshakeCom
 
     m_eventQueue->dispatch(CloseEvent::create(wasClean, code, reason));
     releaseChannel();
+}
+
+void DOMWebSocket::recordSendTypeHistogram(WebSocketSendType type)
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, sendTypeHistogram, new EnumerationHistogram("WebCore.WebSocket.SendType", WebSocketSendTypeMax));
+    sendTypeHistogram.count(type);
+}
+
+void DOMWebSocket::recordReceiveTypeHistogram(WebSocketReceiveType type)
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, receiveTypeHistogram, new EnumerationHistogram("WebCore.WebSocket.ReceiveType", WebSocketReceiveTypeMax));
+    receiveTypeHistogram.count(type);
 }
 
 DEFINE_TRACE(DOMWebSocket)

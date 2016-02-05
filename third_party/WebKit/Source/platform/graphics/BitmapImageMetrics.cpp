@@ -4,7 +4,8 @@
 
 #include "platform/graphics/BitmapImageMetrics.h"
 
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
+#include "wtf/Threading.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -30,12 +31,14 @@ void BitmapImageMetrics::countDecodedImageType(const String& type)
         type == "ico"  ? ImageICO  :
         type == "bmp"  ? ImageBMP  : DecodedImageType::ImageUnknown;
 
-    Platform::current()->histogramEnumeration("Blink.DecodedImageType", decodedImageType, DecodedImageTypeEnumEnd);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, decodedImageTypeHistogram, new EnumerationHistogram("Blink.DecodedImageType", DecodedImageTypeEnumEnd));
+    decodedImageTypeHistogram.count(decodedImageType);
 }
 
 void BitmapImageMetrics::countImageOrientation(const ImageOrientationEnum orientation)
 {
-    Platform::current()->histogramEnumeration("Blink.DecodedImage.Orientation", orientation, ImageOrientationEnumEnd);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, orientationHistogram, new EnumerationHistogram("Blink.DecodedImage.Orientation", ImageOrientationEnumEnd));
+    orientationHistogram.count(orientation);
 }
 
 } // namespace blink

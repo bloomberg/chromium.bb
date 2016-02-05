@@ -109,9 +109,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       blink::WebWaitableEvent::InitialState state) override;
   blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events) override;
-  void histogramEnumeration(const char* name,
-                            int sample,
-                            int boundary_value) override;
   void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp,
                                   const char* name) override;
   void unregisterMemoryDumpProvider(

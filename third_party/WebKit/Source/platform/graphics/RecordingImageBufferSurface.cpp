@@ -4,11 +4,11 @@
 
 #include "platform/graphics/RecordingImageBufferSurface.h"
 
+#include "platform/Histogram.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageBuffer.h"
-#include "public/platform/Platform.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "wtf/PassOwnPtr.h"
@@ -75,7 +75,8 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
         return;
     }
 
-    Platform::current()->histogramEnumeration("Canvas.DisplayListFallbackReason", reason, FallbackReasonCount);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, canvasFallbackHistogram, new EnumerationHistogram("Canvas.DisplayListFallbackReason", FallbackReasonCount));
+    canvasFallbackHistogram.count(reason);
 
     m_fallbackSurface = m_fallbackFactory->createSurface(size(), opacityMode());
     m_fallbackSurface->setImageBuffer(m_imageBuffer);

@@ -17,9 +17,9 @@
 #include "modules/encryptedmedia/MediaKeySystemAccess.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "platform/EncryptedMediaRequest.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/network/ParsedContentType.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebEncryptedMediaClient.h"
 #include "public/platform/WebEncryptedMediaRequest.h"
 #include "public/platform/WebMediaKeySystemConfiguration.h"
@@ -190,8 +190,10 @@ void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const
             break;
     }
 
-    if (hasVideoCapabilities)
-        Platform::current()->histogramEnumeration("Media.EME.Widevine.VideoCapability.HasEmptyRobustness", hasEmptyRobustness, 2);
+    if (hasVideoCapabilities) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, emptyRobustnessHistogram, new EnumerationHistogram("Media.EME.Widevine.VideoCapability.HasEmptyRobustness", 2));
+        emptyRobustnessHistogram.count(hasEmptyRobustness);
+    }
 
     if (hasEmptyRobustness) {
         m_resolver->executionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel,

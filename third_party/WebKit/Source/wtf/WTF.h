@@ -37,7 +37,6 @@
 
 namespace WTF {
 
-typedef void(*HistogramEnumerationFunction)(const char* name, int sample, int boundaryValue);
 typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
 
 // This function must be called exactly once from the main thread before using anything else in WTF.

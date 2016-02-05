@@ -52,9 +52,9 @@
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/style/StyleInheritedData.h"
 #include "platform/ContentType.h"
+#include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -534,6 +534,9 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
     CSSParserContext parserContext(m_owner->document(), 0, baseURL, charset);
 
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheetHistogram, ("Blink.RestoredCachedStyleSheet", 2));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, restoredCachedStyleSheet2Histogram, ("Blink.RestoredCachedStyleSheet2", StyleSheetCacheStatusCount));
+
     if (RefPtrWillBeRawPtr<StyleSheetContents> restoredSheet = const_cast<CSSStyleSheetResource*>(cachedStyleSheet)->restoreParsedStyleSheet(parserContext)) {
         ASSERT(restoredSheet->isCacheable());
         ASSERT(!restoredSheet->isLoading());
@@ -548,13 +551,13 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
         m_loading = false;
         restoredSheet->checkLoaded();
 
-        Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", true, 2);
-        Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet2", StyleSheetInMemoryCache, StyleSheetCacheStatusCount);
+        restoredCachedStyleSheetHistogram.count(true);
+        restoredCachedStyleSheet2Histogram.count(StyleSheetInMemoryCache);
         return;
     }
-    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", false, 2);
+    restoredCachedStyleSheetHistogram.count(false);
     StyleSheetCacheStatus cacheStatus = cachedStyleSheet->response().wasCached() ? StyleSheetInDiskCache : StyleSheetNewEntry;
-    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet2", cacheStatus, StyleSheetCacheStatusCount);
+    restoredCachedStyleSheet2Histogram.count(cacheStatus);
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 

@@ -4,7 +4,7 @@
 
 #include "public/web/WebPageImportanceSignals.h"
 
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
 #include "public/web/WebViewClient.h"
 
 namespace blink {
@@ -33,8 +33,11 @@ void WebPageImportanceSignals::setIssuedNonGetFetchFromScript()
 
 void WebPageImportanceSignals::onCommitLoad()
 {
-    Platform::current()->histogramEnumeration("PageImportanceSignals.HadFormInteraction.OnCommitLoad", m_hadFormInteraction, 2);
-    Platform::current()->histogramEnumeration("PageImportanceSignals.IssuedNonGetFetchFromScript.OnCommitLoad", m_issuedNonGetFetchFromScript, 2);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, hadFormInteractionHistogram, ("PageImportanceSignals.HadFormInteraction.OnCommitLoad", 2));
+    hadFormInteractionHistogram.count(m_hadFormInteraction);
+
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, issuedNonGetHistogram, ("PageImportanceSignals.IssuedNonGetFetchFromScript.OnCommitLoad", 2));
+    issuedNonGetHistogram.count(m_issuedNonGetFetchFromScript);
 
     reset();
 }

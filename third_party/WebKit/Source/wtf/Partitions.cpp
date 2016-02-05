@@ -47,9 +47,9 @@ PartitionAllocatorGeneric Partitions::m_bufferAllocator;
 SizeSpecificPartitionAllocator<3328> Partitions::m_nodeAllocator;
 #endif
 SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
-HistogramEnumerationFunction Partitions::m_histogramEnumeration = nullptr;
+Partitions::ReportPartitionAllocSizeFunction Partitions::m_reportSizeFunction = nullptr;
 
-void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
+void Partitions::initialize(ReportPartitionAllocSizeFunction reportSizeFunction)
 {
     SpinLock::Guard guard(s_initializationLock);
 
@@ -61,7 +61,7 @@ void Partitions::initialize(HistogramEnumerationFunction histogramEnumeration)
         m_nodeAllocator.init();
 #endif
         m_layoutAllocator.init();
-        m_histogramEnumeration = histogramEnumeration;
+        m_reportSizeFunction = reportSizeFunction;
         s_initialized = true;
     }
 }
@@ -99,22 +99,17 @@ void Partitions::decommitFreeableMemory()
 
 void Partitions::reportMemoryUsageHistogram()
 {
-    static size_t supportedMaxSizeInMB = 4 * 1024;
     static size_t observedMaxSizeInMB = 0;
 
-    if (!m_histogramEnumeration)
+    if (!m_reportSizeFunction)
         return;
     // We only report the memory in the main thread.
     if (!isMainThread())
         return;
     // +1 is for rounding up the sizeInMB.
     size_t sizeInMB = Partitions::totalSizeOfCommittedPages() / 1024 / 1024 + 1;
-    if (sizeInMB >= supportedMaxSizeInMB)
-        sizeInMB = supportedMaxSizeInMB - 1;
     if (sizeInMB > observedMaxSizeInMB) {
-        // Send a UseCounter only when we see the highest memory usage
-        // we've ever seen.
-        m_histogramEnumeration("PartitionAlloc.CommittedSize", sizeInMB, supportedMaxSizeInMB);
+        m_reportSizeFunction(sizeInMB);
         observedMaxSizeInMB = sizeInMB;
     }
 }

@@ -43,6 +43,7 @@
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "gin/public/v8_platform.h"
 #include "modules/InitModules.h"
+#include "platform/Histogram.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -143,9 +144,16 @@ static double monotonicallyIncreasingTimeFunction()
     return Platform::current()->monotonicallyIncreasingTimeSeconds();
 }
 
-static void histogramEnumerationFunction(const char* name, int sample, int boundaryValue)
+static void maxObservedSizeFunction(size_t sizeInMB)
 {
-    Platform::current()->histogramEnumeration(name, sample, boundaryValue);
+    const size_t supportedMaxSizeInMB = 4 * 1024;
+    if (sizeInMB >= supportedMaxSizeInMB)
+        sizeInMB = supportedMaxSizeInMB - 1;
+
+    // Send a UseCounter only when we see the highest memory usage
+    // we've ever seen.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, committedSizeHistogram, ("PartitionAlloc.CommittedSize", supportedMaxSizeInMB));
+    committedSizeHistogram.count(sizeInMB);
 }
 
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
@@ -163,7 +171,7 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(!s_webKitInitialized);
     s_webKitInitialized = true;
 
-    WTF::Partitions::initialize(histogramEnumerationFunction);
+    WTF::Partitions::initialize(maxObservedSizeFunction);
     ASSERT(platform);
     Platform::initialize(platform);
 

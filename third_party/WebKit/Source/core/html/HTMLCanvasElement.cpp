@@ -46,6 +46,7 @@
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
@@ -237,8 +238,10 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(const Strin
         return nullptr;
 
     // Log the aliased context type used.
-    if (!m_context)
-        Platform::current()->histogramEnumeration("Canvas.ContextType", contextType, CanvasRenderingContext::ContextTypeCount);
+    if (!m_context) {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, contextTypeHistogram, ("Canvas.ContextType", CanvasRenderingContext::ContextTypeCount));
+        contextTypeHistogram.count(contextType);
+    }
 
     contextType = CanvasRenderingContext::resolveContextTypeAliases(contextType);
 

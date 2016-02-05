@@ -68,11 +68,37 @@ enum SriResourceIntegrityMismatchEvent {
     SriResourceIntegrityMismatchEventCount
 };
 
+#define DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, name)                                                                                                                      \
+    case Resource::name: {                                                                                                                                                  \
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, resourceHistogram, new EnumerationHistogram("Blink.MemoryCache.RevalidationPolicy." prefix #name, Load + 1)); \
+        resourceHistogram.count(policy);                                                                                                                                    \
+        break;                                                                                                                                                              \
+    }
+
+#define DEFINE_RESOURCE_HISTOGRAM(prefix)                        \
+    switch (factory.type()) {                                    \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, CSSStyleSheet)  \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Font)           \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Image)          \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, ImportResource) \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPrefetch)   \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, LinkPreload)    \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, MainResource)   \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Media)          \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)            \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)         \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)    \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, TextTrack)      \
+        DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
+    }
+
 } // namespace
 
 static void RecordSriResourceIntegrityMismatchEvent(SriResourceIntegrityMismatchEvent event)
 {
-    Platform::current()->histogramEnumeration("sri.resource_integrity_mismatch_event", event, SriResourceIntegrityMismatchEventCount);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, integrityHistogram, new EnumerationHistogram("sri.resource_integrity_mismatch_event", SriResourceIntegrityMismatchEventCount));
+    integrityHistogram.count(event);
 }
 
 static ResourceLoadPriority typeToPriority(Resource::Type type)
@@ -389,11 +415,11 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
 
-    String histogramName = "Blink.MemoryCache.RevalidationPolicy.";
-    if (request.forPreload())
-        histogramName.append("Preload.");
-    histogramName.append(Resource::resourceTypeName(factory.type()));
-    Platform::current()->histogramEnumeration(histogramName.utf8().data(), policy, Load + 1);
+    if (request.forPreload()) {
+        DEFINE_RESOURCE_HISTOGRAM("Preload.");
+    } else {
+        DEFINE_RESOURCE_HISTOGRAM("");
+    }
 
     switch (policy) {
     case Reload:

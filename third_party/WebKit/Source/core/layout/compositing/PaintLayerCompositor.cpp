@@ -52,6 +52,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/TransformRecorder.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
@@ -61,7 +62,6 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -588,10 +588,8 @@ void PaintLayerCompositor::frameViewDidScroll()
     else
         m_scrollLayer->setPosition(-scrollPosition);
 
-
-    Platform::current()->histogramEnumeration("Renderer.AcceleratedFixedRootBackground",
-        ScrolledMainFrameBucket,
-        AcceleratedFixedRootBackgroundHistogramMax);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, acceleratedBackgroundHistogram, ("Renderer.AcceleratedFixedRootBackground", AcceleratedFixedRootBackgroundHistogramMax));
+    acceleratedBackgroundHistogram.count(ScrolledMainFrameBucket);
 }
 
 void PaintLayerCompositor::frameViewScrollbarsExistenceDidChange()

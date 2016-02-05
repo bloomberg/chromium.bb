@@ -58,8 +58,8 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "platform/FontFamilyNames.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -602,8 +602,10 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
             m_cssFontFace->addSource(source.release());
     }
 
-    if (m_display)
-        Platform::current()->histogramEnumeration("WebFont.FontDisplayValue", CSSValueToFontDisplay(m_display.get()), FontDisplayEnumMax);
+    if (m_display) {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, fontDisplayHistogram, ("WebFont.FontDisplayValue", FontDisplayEnumMax));
+        fontDisplayHistogram.count(CSSValueToFontDisplay(m_display.get()));
+    }
 }
 
 void FontFace::initCSSFontFace(const unsigned char* data, size_t size)

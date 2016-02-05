@@ -63,6 +63,7 @@
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/FileMetadata.h"
 #include "platform/HTTPNames.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
@@ -71,7 +72,6 @@
 #include "platform/network/ParsedContentType.h"
 #include "platform/network/ResourceError.h"
 #include "platform/network/ResourceRequest.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
@@ -1206,7 +1206,8 @@ void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const At
     if (!normalizedValue.isEmpty() && !isValidHTTPFieldContentRFC7230(normalizedValue))
         headerValueCategory = HeaderValueInvalid;
 
-    Platform::current()->histogramEnumeration("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230", headerValueCategory, HeaderValueCategoryByRFC7230End);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, headerValueCategoryHistogram, ("Blink.XHR.setRequestHeader.HeaderValueCategoryInRFC7230", HeaderValueCategoryByRFC7230End));
+    headerValueCategoryHistogram.count(headerValueCategory);
 }
 
 const AtomicString& XMLHttpRequest::getRequestHeader(const AtomicString& name) const

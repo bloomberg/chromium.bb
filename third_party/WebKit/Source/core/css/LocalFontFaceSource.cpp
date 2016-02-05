@@ -4,10 +4,10 @@
 
 #include "core/css/LocalFontFaceSource.h"
 
+#include "platform/Histogram.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -29,7 +29,8 @@ void LocalFontFaceSource::LocalFontHistograms::record(bool loadSuccess)
     if (m_reported)
         return;
     m_reported = true;
-    Platform::current()->histogramEnumeration("WebFont.LocalFontUsed", loadSuccess ? 1 : 0, 2);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, localFontUsedHistogram, ("WebFont.LocalFontUsed", 2));
+    localFontUsedHistogram.count(loadSuccess ? 1 : 0);
 }
 
 } // namespace blink

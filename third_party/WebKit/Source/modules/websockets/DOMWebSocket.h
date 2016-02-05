@@ -217,6 +217,8 @@ private:
     void reflectBufferedAmountConsumption(Timer<DOMWebSocket>*);
 
     void releaseChannel();
+    void recordSendTypeHistogram(WebSocketSendType);
+    void recordReceiveTypeHistogram(WebSocketReceiveType);
 
     enum BinaryType {
         BinaryTypeBlob,

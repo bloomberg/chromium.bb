@@ -4,13 +4,15 @@
 
 #include "platform/graphics/CanvasMetrics.h"
 
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
+#include "wtf/Threading.h"
 
 namespace blink {
 
 void CanvasMetrics::countCanvasContextUsage(const CanvasContextUsage canvasContextUsage)
 {
-    Platform::current()->histogramEnumeration("WebCore.CanvasContextUsage", canvasContextUsage, CanvasContextUsage::NumberOfUsages);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, usageHistogram, new EnumerationHistogram("WebCore.CanvasContextUsage", CanvasContextUsage::NumberOfUsages));
+    usageHistogram.count(canvasContextUsage);
 }
 
 } // namespace blink

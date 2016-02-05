@@ -12,11 +12,11 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextEncodingRegistry.h"
@@ -25,23 +25,28 @@ namespace blink {
 
 namespace {
 
-const char* startedStreamingHistogramName(ScriptStreamer::Type scriptType)
+void recordStartedStreamingHistogram(ScriptStreamer::Type scriptType, int reason)
 {
     switch (scriptType) {
-    case ScriptStreamer::ParsingBlocking:
-        return "WebCore.Scripts.ParsingBlocking.StartedStreaming";
+    case ScriptStreamer::ParsingBlocking: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, parseBlockingHistogram, ("WebCore.Scripts.ParsingBlocking.StartedStreaming", 2));
+        parseBlockingHistogram.count(reason);
         break;
-    case ScriptStreamer::Deferred:
-        return "WebCore.Scripts.Deferred.StartedStreaming";
+    }
+    case ScriptStreamer::Deferred: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, deferredHistogram, ("WebCore.Scripts.Deferred.StartedStreaming", 2));
+        deferredHistogram.count(reason);
         break;
-    case ScriptStreamer::Async:
-        return "WebCore.Scripts.Async.StartedStreaming";
+    }
+    case ScriptStreamer::Async: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, asyncHistogram, ("WebCore.Scripts.Async.StartedStreaming", 2));
+        asyncHistogram.count(reason);
         break;
+    }
     default:
         ASSERT_NOT_REACHED();
         break;
     }
-    return 0;
 }
 
 // For tracking why some scripts are not streamed. Not streaming is part of
@@ -59,23 +64,28 @@ enum NotStreamingReason {
     NotStreamingReasonEnd
 };
 
-const char* notStreamingReasonHistogramName(ScriptStreamer::Type scriptType)
+void recordNotStreamingReasonHistogram(ScriptStreamer::Type scriptType, NotStreamingReason reason)
 {
     switch (scriptType) {
-    case ScriptStreamer::ParsingBlocking:
-        return "WebCore.Scripts.ParsingBlocking.NotStreamingReason";
+    case ScriptStreamer::ParsingBlocking: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, parseBlockingHistogram, ("WebCore.Scripts.ParsingBlocking.NotStreamingReason", NotStreamingReasonEnd));
+        parseBlockingHistogram.count(reason);
         break;
-    case ScriptStreamer::Deferred:
-        return "WebCore.Scripts.Deferred.NotStreamingReason";
+    }
+    case ScriptStreamer::Deferred: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, deferredHistogram, ("WebCore.Scripts.Deferred.NotStreamingReason", NotStreamingReasonEnd));
+        deferredHistogram.count(reason);
         break;
-    case ScriptStreamer::Async:
-        return "WebCore.Scripts.Async.NotStreamingReason";
+    }
+    case ScriptStreamer::Async: {
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, asyncHistogram, ("WebCore.Scripts.Async.NotStreamingReason", NotStreamingReasonEnd));
+        asyncHistogram.count(reason);
         break;
+    }
     default:
         ASSERT_NOT_REACHED();
         break;
     }
-    return 0;
 }
 
 } // namespace
@@ -384,7 +394,7 @@ void ScriptStreamer::startStreaming(PendingScript* script, Type scriptType, Sett
     // sure negative cases here.
     bool startedStreaming = startStreamingInternal(script, scriptType, settings, scriptState, loadingTaskRunner);
     if (!startedStreaming)
-        Platform::current()->histogramEnumeration(startedStreamingHistogramName(scriptType), 0, 2);
+        recordStartedStreamingHistogram(scriptType, 0);
 }
 
 bool ScriptStreamer::convertEncoding(const char* encodingName, v8::ScriptCompiler::StreamedSource::Encoding* encoding)
@@ -492,8 +502,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // from the decoder.
         if (!convertEncoding(decoder->encoding().name(), &m_encoding)) {
             suppressStreaming();
-            Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), EncodingNotSupported, NotStreamingReasonEnd);
-            Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
+            recordNotStreamingReasonHistogram(m_scriptType, EncodingNotSupported);
+            recordStartedStreamingHistogram(m_scriptType, 0);
             return;
         }
         if (ScriptStreamerThread::shared()->isRunningTask()) {
@@ -502,15 +512,15 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             // because the running task can block and wait for data from the
             // network.
             suppressStreaming();
-            Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ThreadBusy, NotStreamingReasonEnd);
-            Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
+            recordNotStreamingReasonHistogram(m_scriptType, ThreadBusy);
+            recordStartedStreamingHistogram(m_scriptType, 0);
             return;
         }
 
         if (!m_scriptState->contextIsValid()) {
             suppressStreaming();
-            Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ContextNotValid, NotStreamingReasonEnd);
-            Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
+            recordNotStreamingReasonHistogram(m_scriptType, ContextNotValid);
+            recordStartedStreamingHistogram(m_scriptType, 0);
             return;
         }
 
@@ -527,8 +537,8 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             suppressStreaming();
             m_stream = 0;
             m_source.clear();
-            Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), V8CannotStream, NotStreamingReasonEnd);
-            Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
+            recordNotStreamingReasonHistogram(m_scriptType, V8CannotStream);
+            recordStartedStreamingHistogram(m_scriptType, 0);
             return;
         }
 
@@ -537,7 +547,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // the corresponding deref() is in streamingComplete.
         ref();
         ScriptStreamerThread::shared()->postTask(new Task(threadSafeBind(&ScriptStreamerThread::runScriptStreamingTask, scriptStreamingTask.release(), AllowCrossThreadAccess(this))));
-        Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 1, 2);
+        recordStartedStreamingHistogram(m_scriptType, 1);
     }
     if (m_stream)
         m_stream->didReceiveData(this, lengthOfBOM);
@@ -552,8 +562,8 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     // be a "parsing complete" notification either, and we should not wait for
     // it.
     if (!m_haveEnoughDataForStreaming) {
-        Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(m_scriptType), ScriptTooSmall, NotStreamingReasonEnd);
-        Platform::current()->histogramEnumeration(startedStreamingHistogramName(m_scriptType), 0, 2);
+        recordNotStreamingReasonHistogram(m_scriptType, ScriptTooSmall);
+        recordStartedStreamingHistogram(m_scriptType, 0);
         suppressStreaming();
     }
     if (m_stream)
@@ -642,15 +652,15 @@ bool ScriptStreamer::startStreamingInternal(PendingScript* script, Type scriptTy
     ASSERT(scriptState->contextIsValid());
     ScriptResource* resource = script->resource();
     if (resource->isLoaded()) {
-        Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), AlreadyLoaded, NotStreamingReasonEnd);
+        recordNotStreamingReasonHistogram(scriptType, AlreadyLoaded);
         return false;
     }
     if (!resource->url().protocolIsInHTTPFamily()) {
-        Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), NotHTTP, NotStreamingReasonEnd);
+        recordNotStreamingReasonHistogram(scriptType, NotHTTP);
         return false;
     }
     if (resource->isCacheValidator()) {
-        Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), Reload, NotStreamingReasonEnd);
+        recordNotStreamingReasonHistogram(scriptType, Reload);
         // This happens e.g., during reloads. We're actually not going to load
         // the current Resource of the PendingScript but switch to another
         // Resource -> don't stream.

@@ -13,7 +13,6 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
-#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -236,11 +235,13 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
         int histogramValue = font->url().protocolIsData() ? DataUrl
             : font->response().wasCached() ? Hit
             : Miss;
-        Platform::current()->histogramEnumeration("WebFont.CacheHit", histogramValue, CacheHitEnumMax);
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, cacheHitHistogram, ("WebFont.CacheHit", CacheHitEnumMax));
+        cacheHitHistogram.count(histogramValue);
 
         enum { CORSFail, CORSSuccess, CORSEnumMax };
         int corsValue = font->isCORSFailed() ? CORSFail : CORSSuccess;
-        Platform::current()->histogramEnumeration("WebFont.CORSSuccess", corsValue, CORSEnumMax);
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, corsHistogram, ("WebFont.CORSSuccess", CORSEnumMax));
+        corsHistogram.count(corsValue);
     }
 }
 
@@ -288,7 +289,9 @@ void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool tri
     if (triggered)
         interventionResult |= 1 << 1;
     const int boundary = 1 << 2;
-    Platform::current()->histogramEnumeration("WebFont.InterventionResult", interventionResult, boundary);
+
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, interventionHistogram, ("WebFont.InterventionResult", boundary));
+    interventionHistogram.count(interventionResult);
 }
 
 } // namespace blink

@@ -460,7 +460,9 @@ void Heap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType gcType
     totalObjectSpaceHistogram.count(Heap::allocatedObjectSize() / 1024);
     DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, totalAllocatedSpaceHistogram, new CustomCountHistogram("BlinkGC.TotalAllocatedSpace", 0, 4 * 1024 * 1024, 50));
     totalAllocatedSpaceHistogram.count(Heap::allocatedSpace() / 1024);
-    Platform::current()->histogramEnumeration("BlinkGC.GCReason", reason, BlinkGC::NumberOfGCReason);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, gcReasonHistogram, new EnumerationHistogram("BlinkGC.GCReason", BlinkGC::NumberOfGCReason));
+    gcReasonHistogram.count(reason);
+
     Heap::reportMemoryUsageHistogram();
     WTF::Partitions::reportMemoryUsageHistogram();
 
@@ -611,7 +613,8 @@ void Heap::reportMemoryUsageHistogram()
     if (sizeInMB > observedMaxSizeInMB) {
         // Send a UseCounter only when we see the highest memory usage
         // we've ever seen.
-        Platform::current()->histogramEnumeration("BlinkGC.CommittedSize", sizeInMB, supportedMaxSizeInMB);
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, commitedSizeHistogram, new EnumerationHistogram("BlinkGC.CommittedSize", supportedMaxSizeInMB));
+        commitedSizeHistogram.count(sizeInMB);
         observedMaxSizeInMB = sizeInMB;
     }
 }

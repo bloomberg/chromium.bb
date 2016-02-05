@@ -25,6 +25,7 @@
 
 #include "platform/graphics/Canvas2DLayerBridge.h"
 
+#include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/CanvasMetrics.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
@@ -345,7 +346,8 @@ void Canvas2DLayerBridge::disableDeferral(DisableDeferralReason reason)
     if (!m_isDeferralEnabled)
         return;
 
-    Platform::current()->histogramEnumeration("Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason, DisableDeferralReasonCount);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, gpuDisabledHistogram, ("Canvas.GPUAccelerated2DCanvasDisableDeferralReason", DisableDeferralReasonCount));
+    gpuDisabledHistogram.count(reason);
     CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasDeferralDisabled);
     flushRecordingOnly();
     // Because we will be discarding the recorder, if the flush failed
@@ -825,7 +827,8 @@ Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other)
 
 void Canvas2DLayerBridge::Logger::reportHibernationEvent(HibernationEvent event)
 {
-    blink::Platform::current()->histogramEnumeration("Canvas.HibernationEvents", event, HibernationEventCount);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, hibernationHistogram, ("Canvas.HibernationEvents", HibernationEventCount));
+    hibernationHistogram.count(event);
 }
 
 } // namespace blink

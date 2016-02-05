@@ -42,8 +42,8 @@
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutVideo.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -623,7 +623,8 @@ bool MediaControlCastButtonElement::keepEventInNode(Event* event)
 void MediaControlCastButtonElement::recordMetrics(CastOverlayMetrics metric)
 {
     ASSERT(m_isOverlayButton);
-    Platform::current()->histogramEnumeration("Cast.Sender.Overlay", static_cast<int>(metric), static_cast<int>(CastOverlayMetrics::Count));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, overlayHistogram, ("Cast.Sender.Overlay", static_cast<int>(CastOverlayMetrics::Count)));
+    overlayHistogram.count(static_cast<int>(metric));
 }
 
 // ----------------------------

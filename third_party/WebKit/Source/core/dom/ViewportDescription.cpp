@@ -34,7 +34,6 @@
 #include "core/frame/Settings.h"
 #include "platform/Histogram.h"
 #include "platform/weborigin/KURL.h"
-#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -221,18 +220,15 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
     if (!mainFrame->document()->url().protocolIsInHTTPFamily())
         return;
 
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, metaTagTypeHistogram, ("Viewport.MetaTagType", TypeCount));
     if (!isSpecifiedByAuthor()) {
-        if (mainFrame->document()->isMobileDocument())
-            Platform::current()->histogramEnumeration("Viewport.MetaTagType", XhtmlMobileProfile, TypeCount);
-        else
-            Platform::current()->histogramEnumeration("Viewport.MetaTagType", NoViewportTag, TypeCount);
-
+        metaTagTypeHistogram.count(mainFrame->document()->isMobileDocument() ? XhtmlMobileProfile : NoViewportTag);
         return;
     }
 
     if (isMetaViewportType()) {
         if (maxWidth.type() == blink::Fixed) {
-            Platform::current()->histogramEnumeration("Viewport.MetaTagType", ConstantWidth, TypeCount);
+            metaTagTypeHistogram.count(ConstantWidth);
 
             if (mainFrame->view()) {
                 // To get an idea of how "far" the viewport is from the device's ideal width, we
@@ -245,15 +241,15 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
             }
 
         } else if (maxWidth.type() == blink::DeviceWidth || maxWidth.type() == blink::ExtendToZoom) {
-            Platform::current()->histogramEnumeration("Viewport.MetaTagType", DeviceWidth, TypeCount);
+            metaTagTypeHistogram.count(DeviceWidth);
         } else {
             // Overflow bucket for cases we may be unaware of.
-            Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaWidthOther, TypeCount);
+            metaTagTypeHistogram.count(MetaWidthOther);
         }
     } else if (type == ViewportDescription::HandheldFriendlyMeta) {
-        Platform::current()->histogramEnumeration("Viewport.MetaTagType", MetaHandheldFriendly, TypeCount);
+        metaTagTypeHistogram.count(MetaHandheldFriendly);
     } else if (type == ViewportDescription::MobileOptimizedMeta) {
-        Platform::current()->histogramEnumeration("Viewport.MetaTagType", MobileOptimizedMeta, TypeCount);
+        metaTagTypeHistogram.count(MobileOptimizedMeta);
     }
 #endif
 }

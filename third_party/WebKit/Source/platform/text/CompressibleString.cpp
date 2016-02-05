@@ -4,7 +4,7 @@
 
 #include "platform/text/CompressibleString.h"
 
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
 #include "wtf/Assertions.h"
 #include "wtf/WTFThreadData.h"
 #include "wtf/text/WTFString.h"
@@ -97,7 +97,8 @@ enum CompressibleStringCountType {
 
 static void recordCompressibleStringCount(CompressibleStringCountType type)
 {
-    Platform::current()->histogramEnumeration("Memory.CompressibleStringCount", type, CompressibleStringCountTypeMax + 1);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, sringTypeHistogram, new EnumerationHistogram("Memory.CompressibleStringCount", CompressibleStringCountTypeMax + 1));
+    sringTypeHistogram.count(type);
 }
 
 // compressString does nothing but collect UMA so far.

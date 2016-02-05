@@ -42,6 +42,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
+#include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatSize.h"
@@ -49,7 +50,6 @@
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/scroll/Scrollbar.h"
 #include "platform/scroll/ScrollbarThemeOverlay.h"
-#include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebLayerTreeView.h"
@@ -686,7 +686,8 @@ void VisualViewport::sendUMAMetrics()
     if (m_trackPinchZoomStatsForPage) {
         bool didScale = m_maxPageScale > 0;
 
-        Platform::current()->histogramEnumeration("Viewport.DidScalePage", didScale ? 1 : 0, 2);
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, didScaleHistogram, ("Viewport.DidScalePage", 2));
+        didScaleHistogram.count(didScale ? 1 : 0);
 
         if (didScale) {
             int zoomPercentage = floor(m_maxPageScale * 100);
@@ -694,7 +695,8 @@ void VisualViewport::sendUMAMetrics()
             // See the PageScaleFactor enumeration in histograms.xml for the bucket ranges.
             int bucket = floor(zoomPercentage / 25.f);
 
-            Platform::current()->histogramEnumeration("Viewport.MaxPageScale", bucket, 21);
+            DEFINE_STATIC_LOCAL(EnumerationHistogram, maxScaleHistogram, ("Viewport.MaxPageScale", 21));
+            maxScaleHistogram.count(bucket);
         }
     }
 

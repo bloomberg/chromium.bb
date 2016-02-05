@@ -40,11 +40,13 @@ namespace WTF {
 
 class WTF_EXPORT Partitions {
 public:
+    typedef void (*ReportPartitionAllocSizeFunction)(size_t);
+
     // Name of allocator used by tracing for marking sub-allocations while take
     // memory snapshots.
     static const char* const kAllocatedObjectPoolName;
 
-    static void initialize(HistogramEnumerationFunction);
+    static void initialize(ReportPartitionAllocSizeFunction);
     static void shutdown();
     ALWAYS_INLINE static PartitionRootGeneric* bufferPartition()
     {
@@ -160,7 +162,7 @@ private:
     static SizeSpecificPartitionAllocator<3328> m_nodeAllocator;
 #endif
     static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
-    static HistogramEnumerationFunction m_histogramEnumeration;
+    static ReportPartitionAllocSizeFunction m_reportSizeFunction;
 };
 
 } // namespace WTF

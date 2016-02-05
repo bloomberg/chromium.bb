@@ -21,7 +21,7 @@
 #include "modules/fetch/Request.h"
 #include "modules/fetch/Response.h"
 #include "platform/HTTPNames.h"
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
 #include "public/platform/WebPassOwnPtr.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 
@@ -193,7 +193,8 @@ void RecordResponseTypeForAdd(const Member<Response>& response)
         type = ResponseType::OpaqueRedirectType;
         break;
     }
-    Platform::current()->histogramEnumeration("ServiceWorkerCache.Cache.AddResponseType", static_cast<int>(type), static_cast<int>(ResponseType::EnumMax));
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, responseTypeHistogram, new EnumerationHistogram("ServiceWorkerCache.Cache.AddResponseType", static_cast<int>(ResponseType::EnumMax)));
+    responseTypeHistogram.count(static_cast<int>(type));
 };
 
 } // namespace

@@ -66,6 +66,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "platform/ContentType.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
@@ -241,7 +242,8 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
 
 void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric)
 {
-    Platform::current()->histogramEnumeration("Blink.MediaElement.Autoplay", metric, NumberOfAutoplayMetrics);
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplayHistogram, ("Blink.MediaElement.Autoplay", NumberOfAutoplayMetrics));
+    autoplayHistogram.count(metric);
 }
 
 WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)

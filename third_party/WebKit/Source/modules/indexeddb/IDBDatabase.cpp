@@ -35,13 +35,12 @@
 #include "core/events/EventQueue.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBEventDispatcher.h"
-#include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
-#include "public/platform/Platform.h"
+#include "platform/Histogram.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyPath.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "wtf/Atomics.h"
@@ -180,7 +179,8 @@ void IDBDatabase::version(UnsignedLongLongOrString& result) const
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyPath& keyPath, bool autoIncrement, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::createObjectStore");
-    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBCreateObjectStoreCall, IDBMethodsMax);
+    recordApiCallsHistogram(IDBCreateObjectStoreCall);
+
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return nullptr;
@@ -229,7 +229,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const IDBKeyP
 void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::deleteObjectStore");
-    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBDeleteObjectStoreCall, IDBMethodsMax);
+    recordApiCallsHistogram(IDBDeleteObjectStoreCall);
     if (!m_versionChangeTransaction) {
         exceptionState.throwDOMException(InvalidStateError, IDBDatabase::notVersionChangeTransactionErrorMessage);
         return;
@@ -262,7 +262,7 @@ void IDBDatabase::deleteObjectStore(const String& name, ExceptionState& exceptio
 IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringOrStringSequenceOrDOMStringList& storeNames, const String& modeString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBDatabase::transaction");
-    Platform::current()->histogramEnumeration("WebCore.IndexedDB.FrontEndAPICalls", IDBTransactionCall, IDBMethodsMax);
+    recordApiCallsHistogram(IDBTransactionCall);
 
     HashSet<String> scope;
     if (storeNames.isString()) {
@@ -451,6 +451,12 @@ const AtomicString& IDBDatabase::interfaceName() const
 ExecutionContext* IDBDatabase::executionContext() const
 {
     return ActiveDOMObject::executionContext();
+}
+
+void IDBDatabase::recordApiCallsHistogram(IndexedDatabaseMethods method)
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(EnumerationHistogram, apiCallsHistogram, new EnumerationHistogram("WebCore.IndexedDB.FrontEndAPICalls", IDBMethodsMax));
+    apiCallsHistogram.count(method);
 }
 
 } // namespace blink
