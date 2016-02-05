@@ -3546,6 +3546,10 @@ bool Element::supportsStyleSharing() const
         return false;
     if (isHTMLElement() && toHTMLElement(this)->hasDirectionAuto())
         return false;
+    // TODO(kochi): This prevents any slotted elements from sharing styles.
+    // Investigate cases where we share styles to optimize styling performance.
+    if (isChildOfV1ShadowHost())
+        return false;
     if (hasAnimations())
         return false;
     if (Fullscreen::isActiveFullScreenElement(*this))

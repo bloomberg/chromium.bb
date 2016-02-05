@@ -279,11 +279,6 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
             return false;
     }
 
-    // TODO(kochi): Write equivalent of sharingCandidateDistributedToSameInsertionPoint()
-    // for slotted elements.
-    if (element().assignedSlotForBinding())
-        return false;
-
     return true;
 }
 
