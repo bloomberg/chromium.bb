@@ -766,8 +766,6 @@
             'renderer/media/cma_message_filter_proxy.h',
             'renderer/media/cma_renderer.cc',
             'renderer/media/cma_renderer.h',
-            'renderer/media/demuxer_stream_adapter.cc',
-            'renderer/media/demuxer_stream_adapter.h',
             'renderer/media/hole_frame_factory.cc',
             'renderer/media/hole_frame_factory.h',
             'renderer/media/media_channel_proxy.cc',

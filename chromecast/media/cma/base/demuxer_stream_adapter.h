@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
-#define CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
+#ifndef CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_ADAPTER_H_
+#define CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_ADAPTER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -91,4 +91,4 @@ class DemuxerStreamAdapter : public CodedFrameProvider {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_ADAPTER_H_
+#endif  // CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_ADAPTER_H_

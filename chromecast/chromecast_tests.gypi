@@ -315,22 +315,6 @@
       ],  # end of targets
     }, {  # OS!="android"
       'targets': [
-        {
-          'target_name': 'cast_renderer_media_unittests',
-          'type': '<(gtest_target_type)',
-          'dependencies': [
-            'cast_shell_media',
-            '../base/base.gyp:run_all_unittests',
-            '../testing/gmock.gyp:gmock',
-            '../testing/gtest.gyp:gtest',
-          ],
-          'sources': [
-            'renderer/media/demuxer_stream_adapter_unittest.cc',
-            'renderer/media/demuxer_stream_for_test.cc',
-            'renderer/media/demuxer_stream_for_test.h',
-            'renderer/media/multi_demuxer_stream_adapter_unittest.cc',
-          ],
-        },  # end of cast_renderer_media_unittests
         # GN target: //chromecast/browser:test_support
         {
           'target_name': 'cast_shell_test_support',

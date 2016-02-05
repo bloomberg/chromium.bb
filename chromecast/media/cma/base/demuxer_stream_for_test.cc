@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/media/demuxer_stream_for_test.h"
+#include "chromecast/media/cma/base/demuxer_stream_for_test.h"
 
 #include "base/threading/thread.h"
 #include "media/base/media_util.h"

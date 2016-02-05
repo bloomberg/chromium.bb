@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_FOR_TEST_H_
-#define CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_FOR_TEST_H_
+#ifndef CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_FOR_TEST_H_
+#define CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_FOR_TEST_H_
 
 #include <list>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/thread_task_runner_handle.h"
-#include "chromecast/renderer/media/demuxer_stream_adapter.h"
+#include "chromecast/media/cma/base/demuxer_stream_adapter.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 
@@ -73,4 +73,4 @@ class DemuxerStreamForTest : public ::media::DemuxerStream {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_RENDERER_MEDIA_DEMUXER_STREAM_FOR_TEST_H_
+#endif  // CHROMECAST_MEDIA_CMA_BASE_DEMUXER_STREAM_FOR_TEST_H_

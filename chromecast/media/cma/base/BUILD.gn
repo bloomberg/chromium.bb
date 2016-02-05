@@ -24,6 +24,8 @@ source_set("base") {
     "decoder_buffer_base.h",
     "decoder_config_adapter.cc",
     "decoder_config_adapter.h",
+    "demuxer_stream_adapter.cc",
+    "demuxer_stream_adapter.h",
     "media_task_runner.cc",
     "media_task_runner.h",
     "simple_media_task_runner.cc",
