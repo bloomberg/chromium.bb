@@ -112,7 +112,7 @@ void ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread(
                           additional_certs.end());
 
   net::ClientCertStoreNSS::FilterCertsOnWorkerThread(unfiltered_certs, *request,
-                                                     true, selected_certs);
+                                                     selected_certs);
 }
 
 }  // namespace chromeos

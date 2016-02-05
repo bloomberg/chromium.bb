@@ -39,12 +39,9 @@ class NET_EXPORT ClientCertStoreNSS : public ClientCertStore {
   // the client certificate request in |request|, storing the matching
   // certificates in |filtered_certs|. Any previous content of |filtered_certs|
   // will be removed.
-  // If |query_nssdb| is true, NSS will be queried to construct full certificate
-  // chains. If it is false, only the certificate will be considered.
   // Must be called from a worker thread.
   static void FilterCertsOnWorkerThread(const CertificateList& certs,
                                         const SSLCertRequestInfo& request,
-                                        bool query_nssdb,
                                         CertificateList* filtered_certs);
 
   // Retrieves all client certificates that are stored by NSS and adds them to

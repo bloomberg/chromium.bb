@@ -18,7 +18,7 @@ class ClientCertStoreNSSTestDelegate {
     // Filters |input_certs| using the logic being used to filter the system
     // store when GetClientCerts() is called.
     ClientCertStoreNSS::FilterCertsOnWorkerThread(
-        input_certs, cert_request_info, false, selected_certs);
+        input_certs, cert_request_info, selected_certs);
     return true;
   }
 };
