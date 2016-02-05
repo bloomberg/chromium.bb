@@ -21562,18 +21562,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Client.Helper.InitState" enum="NaClHelperStatus">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     When the browser started, what happened with the NaCl helper process?
   </summary>
 </histogram>
 
 <histogram name="NaCl.Client.Helper.StateOnFork" enum="NaClHelperStatus">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     When a NaCl application process was created, what had happened with the NaCl
     helper process when the browser was started?
@@ -21581,17 +21579,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Client.OSArch" enum="NaClOSArchEnum">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The OS/Architecture of a nexe that was loaded.</summary>
 </histogram>
 
 <histogram name="NaCl.HttpStatusCodeClass.Manifest.InstalledApp"
     enum="NaClHttpStatusCodeClass">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The status code returned when trying to load a manifest inside an installed
     app.
@@ -21600,9 +21596,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.HttpStatusCodeClass.Manifest.NotInstalledApp"
     enum="NaClHttpStatusCodeClass">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The status code returned when trying to load a manifest from a source other
     than an installed app.
@@ -21611,9 +21606,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.HttpStatusCodeClass.Nexe.InstalledApp"
     enum="NaClHttpStatusCodeClass">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The status code returned when trying to load a NaCl executable inside an
     installed app.
@@ -21622,9 +21616,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.HttpStatusCodeClass.Nexe.NotInstalledApp"
     enum="NaClHttpStatusCodeClass">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The status code returned when trying to load a NaCl executable from a source
     other than an installed app.
@@ -21632,17 +21625,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.LoadStatus.Plugin" enum="NaClPluginErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The error code returned by NaCl's Chrome plugin.</summary>
 </histogram>
 
 <histogram name="NaCl.LoadStatus.Plugin.InstalledApp"
     enum="NaClPluginErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The error code returned by NaCl's Chrome plugin, but only for installed
     apps.
@@ -21651,9 +21642,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.LoadStatus.Plugin.NotInstalledApp"
     enum="NaClPluginErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The error code returned by NaCl's Chrome plugin, but excluding installed
     apps.
@@ -21661,17 +21651,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.LoadStatus.SelLdr" enum="NaClSelLdrErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The error code returned by NaCl's sel_ldr.</summary>
 </histogram>
 
 <histogram name="NaCl.LoadStatus.SelLdr.InstalledApp"
     enum="NaClSelLdrErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The error code returned by NaCl's sel_ldr, but only for installed apps.
   </summary>
@@ -21679,18 +21667,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.LoadStatus.SelLdr.NotInstalledApp"
     enum="NaClSelLdrErrorCode">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The error code returned by NaCl's sel_ldr, but excluding installed apps.
   </summary>
 </histogram>
 
 <histogram name="NaCl.Manifest.IsDataURI" enum="NaClManifestType">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     Was the manifest specified as a data URI rather than a .nmf file?
   </summary>
@@ -21700,25 +21686,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to download the manifset file for a Native Client module.
   </summary>
 </histogram>
 
 <histogram name="NaCl.ModuleUptime.Crash" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The time a NaCl module ran before it crashed.</summary>
 </histogram>
 
 <histogram name="NaCl.ModuleUptime.Normal" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The time a NaCl module ran without crashing, at shutdown.</summary>
 </histogram>
 
@@ -21726,9 +21709,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to download the main .nexe for a Native Client module.
   </summary>
@@ -21738,9 +21720,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The size of the main .nexe file downloaded for a Native Client module.
   </summary>
@@ -21750,9 +21731,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     proxied execution of the NaCl module begins. This is the general startup
@@ -21764,9 +21744,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     proxied execution of the NaCl module begins. This is the general startup
@@ -21775,9 +21754,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Options.PNaCl.OptLevel" enum="PNaClOptionsOptLevelEnum">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The optimization level set for the initial Portable Native Client
     translation from bitcode to native code.
@@ -21788,16 +21766,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated 6/2011, renamed.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The OS/Architecture of a nexe that was loaded.</summary>
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClCache.IsHit" enum="PNaClTranslationCacheEnum">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     Did the Portable Native Client translation cache find an executable
     translated from bitcode?
@@ -21805,9 +21781,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.CompileKBPerSec" units="KB/s">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The rate for compiling a Portable Native Client bitcode file to an object
     file in Kilobytes per second.
@@ -21815,9 +21790,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.CompileTime" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to compile a Portable Native Client bitcode file to an
     object file.
@@ -21825,9 +21799,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.LinkTime" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to link a Portable Native Client generated object file into
     a Native Client executable.
@@ -21835,18 +21808,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.LoadCompiler" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to load and validate the Portable Native Client compiler.
   </summary>
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.LoadLinker" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to load and validate the Portable Native Client linker.
   </summary>
@@ -21854,9 +21825,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.Perf.PNaClLoadTime.PctCompiledWhenFullyDownloaded"
     units="%">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The percentage of a Portable Native Client application that is compiled by
     the time the application is fully downloaded (compile and download happen in
@@ -21865,9 +21835,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec" units="KB/s">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The rate for completely translating a Portable Native Client bitcode file
     into a Native Client executable and caching the result in Kilobytes per
@@ -21876,9 +21845,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.PNaClLoadTime.TotalUncachedTime" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The total time it took to completely translate a Portable Native Client
     bitcode file into a Native Client executable, and cache the result.
@@ -21886,32 +21854,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.ShutdownTime.Total" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The time it took the NaCl module to shut down.</summary>
 </histogram>
 
 <histogram name="NaCl.Perf.Size.Manifest" units="KB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The size of the manifest file.</summary>
 </histogram>
 
 <histogram name="NaCl.Perf.Size.Nexe" units="KB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The size of the main .nexe file downloaded for a Native Client module.
   </summary>
 </histogram>
 
 <histogram name="NaCl.Perf.Size.Pexe" units="KB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The size of the main .pexe bitcode file downloaded for a Portable Native
     Client module.
@@ -21919,9 +21883,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.Size.PexeNexeSizePct" units="%">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The size of the main .pexe bitcode file divided by the size of the .nexe
     that is the result of translating the bitcode file, times 100.
@@ -21929,9 +21892,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.Size.PNaClTranslatedNexe" units="KB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The size of the main .nexe file that is the result of translating a Portable
     Native Client .pexe bitcode file.  This reflects the amount of cache
@@ -21940,16 +21902,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.LoadModule" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>The time it took to load the NaCl module into sel_ldr.</summary>
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.LoadModulePerMB" units="milliseconds/MB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to load the NaCl module into sel_ldr.  Normalized by the
     size of the .nexe, in megabytes.
@@ -21957,18 +21917,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.ManifestDownload" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to download the manifset file for a Native Client module.
   </summary>
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.NaClOverhead" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     proxied execution of the NaCl module begins. This is the general startup
@@ -21978,9 +21936,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.Perf.StartupTime.NaClOverheadPerMB"
     units="milliseconds/MB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     proxied execution of the NaCl module begins. This is the general startup
@@ -21990,9 +21947,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.NexeDownload" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to download the main .nexe for a Native Client module.
   </summary>
@@ -22000,9 +21956,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NaCl.Perf.StartupTime.NexeDownloadPerMB"
     units="milliseconds/MB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took to download the main .nexe for a Native Client module.
     Normalized by the size of the .nexe, in megabytes.
@@ -22010,9 +21965,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.Total" units="ms">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     the NaCl module is ready to be used.
@@ -22020,9 +21974,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.Perf.StartupTime.TotalPerMB" units="milliseconds/MB">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The time it took between the Native Client plugin initialization and when
     the NaCl module is ready to be used.  Normalized by the size of the .nexe,
@@ -22035,9 +21988,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated 5/2011, data is duplicated by NaCl.NexeStartupTime, and
     normalizing to 'tab opens' is unusual.
   </obsolete>
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     The number of times that Native Client has been started by loading a .nexe
     compared to the number of times that a tab has been opened.
@@ -22045,18 +21997,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NaCl.ValidationCache.Query" enum="NaClValidationCacheEnum">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     Did a validation cache query find a previously known validation result?
   </summary>
 </histogram>
 
 <histogram name="NaCl.ValidationCache.Set" enum="NaClValidationCacheEnum">
-  <owner>jvoung@chromium.org</owner>
-  <owner>mackinlay@google.com</owner>
-  <owner>ncbray@chromium.org</owner>
+  <owner>sehr@chromium.org</owner>
+  <owner>bradnelson@chromium.org</owner>
   <summary>
     Was the validation cache updated with a new validation result?
   </summary>
