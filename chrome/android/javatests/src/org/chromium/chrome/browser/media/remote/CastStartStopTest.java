@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.tab.Tab;
@@ -69,6 +70,7 @@ public class CastStartStopTest extends CastTestBase {
     /*
      * Test that a cast session disconnects when the video ends
      */
+    @DisableIf.Build(sdk_is_less_than = 19, message = "crbug.com/582067")
     @Feature({"VideoFling"})
     @LargeTest
     public void testStopWhenVideoEnds() throws InterruptedException, TimeoutException {
