@@ -117,7 +117,7 @@ void CrossThreadPersistentRegion::prepareForThreadStateTermination(ThreadState* 
             // 'self' is in use, containing the cross-thread persistent wrapper object.
             CrossThreadPersistent<GCObject>* persistent = reinterpret_cast<CrossThreadPersistent<GCObject>*>(slots->m_slot[i].self());
             ASSERT(persistent);
-            void* rawObject = persistent->get();
+            void* rawObject = persistent->atomicGet();
             if (!rawObject)
                 continue;
             BasePage* page = pageFromObject(rawObject);

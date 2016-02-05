@@ -39,6 +39,7 @@
 #include "platform/heap/TraceTraits.h"
 #include "platform/heap/Visitor.h"
 #include "wtf/Allocator.h"
+#include "wtf/Atomics.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/Locker.h"
@@ -210,11 +211,17 @@ public:
     }
 #endif
 
+protected:
+    T* atomicGet() { return reinterpret_cast<T*>(acquireLoad(reinterpret_cast<void* volatile*>(&m_raw))); }
+
 private:
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     void assign(T* ptr)
     {
-        m_raw = ptr;
+        if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
+            releaseStore(reinterpret_cast<void* volatile*>(&m_raw), ptr);
+        else
+            m_raw = ptr;
         checkPointer();
         if (m_raw) {
             if (!m_persistentNode)
@@ -436,6 +443,8 @@ public:
     CrossThreadPersistent(const Member<U>& other) : Parent(other) { }
     template<typename U>
     CrossThreadPersistent(const RawPtr<U>& other) : Parent(other.get()) { }
+
+    T* atomicGet() { return Parent::atomicGet(); }
 
     template<typename U>
     CrossThreadPersistent& operator=(U* other)
