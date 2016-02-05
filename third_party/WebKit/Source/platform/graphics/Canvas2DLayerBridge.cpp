@@ -431,7 +431,8 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
         m_softwareRenderingWhileHidden = false;
         SkSurface* newSurface = getOrCreateSurface(PreferAccelerationAfterVisibilityChange);
         if (newSurface) {
-            oldSurface->draw(newSurface->getCanvas(), 0, 0, &copyPaint);
+            if (oldSurface)
+                oldSurface->draw(newSurface->getCanvas(), 0, 0, &copyPaint);
             if (m_imageBuffer && !m_isDeferralEnabled) {
                 m_imageBuffer->resetCanvas(m_surface->getCanvas());
             }
