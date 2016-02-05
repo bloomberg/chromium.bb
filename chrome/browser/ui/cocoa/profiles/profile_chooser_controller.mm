@@ -1058,18 +1058,20 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [self postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK];
 }
 
+- (void)showSigninUIForMode:(profiles::BubbleViewMode)mode {
+  if (SigninViewController::ShouldShowModalSigninForMode(mode)) {
+    browser_->ShowModalSigninWindow(mode, accessPoint_);
+  } else {
+    [self initMenuContentsWithView:mode];
+  }
+}
+
 - (IBAction)showInlineSigninPage:(id)sender {
-  signin::ManageAccountsParams params;
-  params.service_type = serviceType_;
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, params, accessPoint_);
+  [self showSigninUIForMode:profiles::BUBBLE_VIEW_MODE_GAIA_SIGNIN];
 }
 
 - (IBAction)addAccount:(id)sender {
-  signin::ManageAccountsParams params;
-  params.service_type = serviceType_;
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_ADD_ACCOUNT, params, accessPoint_);
+  [self showSigninUIForMode:profiles::BUBBLE_VIEW_MODE_GAIA_ADD_ACCOUNT];
   [self postActionPerformed:ProfileMetrics::PROFILE_DESKTOP_MENU_ADD_ACCT];
 }
 
@@ -1102,10 +1104,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (IBAction)showAccountReauthenticationView:(id)sender {
   DCHECK(!isGuestSession_);
-  signin::ManageAccountsParams params;
-  params.service_type = serviceType_;
-  browser_->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_REAUTH, params, accessPoint_);
+  [self showSigninUIForMode:profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH];
 }
 
 - (IBAction)removeAccount:(id)sender {
