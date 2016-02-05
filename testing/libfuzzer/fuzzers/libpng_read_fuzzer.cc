@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "base/bind.h"
@@ -10,7 +13,7 @@
 #include "third_party/libpng/png.h"
 
 struct BufState {
-  const unsigned char *data;
+  const uint8_t* data;
   size_t bytes_left;
 };
 
@@ -28,7 +31,7 @@ static const int kPngHeaderSize = 8;
 // Entry point for LibFuzzer.
 // Roughly follows the libpng book example:
 // http://www.libpng.org/pub/png/book/chapter13.html
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < kPngHeaderSize) {
     return 0;
   }
@@ -63,7 +66,9 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   png_set_sig_bytes(png_ptr, kPngHeaderSize);
 
   // libpng error handling.
-  if (setjmp(png_ptr->jmpbuf)) { return 0; }
+  if (setjmp(png_ptr->jmpbuf)) {
+    return 0;
+  }
 
   // Reading
   png_read_info(png_ptr, info_ptr);
@@ -72,7 +77,9 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
         &png_free, png_ptr, row));
 
   // reset error handler to put png_deleter into scope.
-  if (setjmp(png_ptr->jmpbuf)) { return 0; }
+  if (setjmp(png_ptr->jmpbuf)) {
+    return 0;
+  }
 
   png_uint_32 width, height;
   int bit_depth, color_type, interlace_type, compression_type;

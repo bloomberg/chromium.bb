@@ -1,11 +1,12 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // This fuzzer is simplified & cleaned up pdfium/samples/pdfium_test.cc
 
-#include <assert.h>
 #include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -48,8 +49,8 @@ FPDF_BOOL Is_Data_Avail(FX_FILEAVAIL* pThis, size_t offset, size_t size) {
 static void Add_Segment(FX_DOWNLOADHINTS* pThis, size_t offset, size_t size) { }
 
 static bool RenderPage(const FPDF_DOCUMENT& doc,
-    const FPDF_FORMHANDLE& form,
-    const int page_index) {
+                       const FPDF_FORMHANDLE& form,
+                       const int page_index) {
   FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
   if (!page) {
     return false;
@@ -177,7 +178,7 @@ std::string ProgramPath() {
   wcstombs(path, wpath, MAX_PATH);
   return std::string(path, res);
 #else
-  char *path = new char[PATH_MAX + 1];
+  char* path = new char[PATH_MAX + 1];
   assert(path);
   ssize_t sz = readlink("/proc/self/exe", path, PATH_MAX);
   assert(sz > 0);
@@ -214,7 +215,7 @@ struct TestCase {
 
 static TestCase* testCase = new TestCase();
 
-extern "C" int LLVMFuzzerTestOneInput(const unsigned char* data, size_t size) {
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   RenderPdf(reinterpret_cast<const char*>(data), size);
   return 0;
 }
