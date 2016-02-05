@@ -87,8 +87,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Remove the following after roll in ToT WebGL conformance tests.
     self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['mac', 'linux'], bug=570453)
-    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['win', 'release'], bug=570453)
 
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
@@ -221,7 +219,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/const-array-init.html',
         ['win'], bug=1198) # angle bug ID
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['win', 'debug'], bug=1266) # angle bug ID
+        ['win'], bug=1266) # angle bug ID
 
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
