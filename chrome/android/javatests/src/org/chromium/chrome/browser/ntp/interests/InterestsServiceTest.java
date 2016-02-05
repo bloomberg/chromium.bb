@@ -71,7 +71,7 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 SigninManager.get(mContext).onFirstRunCheckDone();
-                SigninManager.get(mContext).startSignIn(null, mAccount, true, null);
+                SigninManager.get(mContext).signIn(mAccount, null, null);
             }
         });
     }

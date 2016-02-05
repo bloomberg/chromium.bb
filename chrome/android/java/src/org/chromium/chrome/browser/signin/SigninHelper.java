@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.sync.AndroidSyncSettings;
 import org.chromium.sync.signin.AccountManagerHelper;
@@ -254,9 +254,9 @@ public class SigninHelper {
         // This is the correct account now.
         final Account account = AccountManagerHelper.createAccountFromName(newName);
 
-        mSigninManager.startSignIn(null, account, true, new SignInFlowObserver() {
+        mSigninManager.signIn(account, null, new SignInCallback() {
             @Override
-            public void onSigninComplete() {
+            public void onSignInComplete() {
                 if (mProfileSyncService != null) {
                     mProfileSyncService.setSetupInProgress(false);
                 }
@@ -264,8 +264,7 @@ public class SigninHelper {
             }
 
             @Override
-            public void onSigninCancelled() {
-            }
+            public void onSignInAborted() {}
         });
     }
 

@@ -255,7 +255,7 @@ public class RecentTabsPromoView extends FrameLayout implements AndroidSyncSetti
             @Override
             public void onAccountSelectionConfirmed(String accountName) {
                 if (mUserActionListener != null) mUserActionListener.onAccountSelectionConfirmed();
-                SigninManager.startInteractiveSignIn(accountName, mActivity);
+                SigninManager.get(mActivity).signIn(accountName, mActivity, null);
             }
 
             @Override

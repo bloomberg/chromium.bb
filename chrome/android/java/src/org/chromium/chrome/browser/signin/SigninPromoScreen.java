@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -23,11 +22,10 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
-import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -103,27 +101,21 @@ public class SigninPromoScreen
 
     @Override
     public void onAccountSelectionConfirmed(String accountName) {
-        final Account account =
-                AccountManagerHelper.get(getContext()).getAccountFromName(accountName);
-        SignInFlowObserver signInCallback = new SignInFlowObserver() {
+        Activity activity = getOwnerActivity();
+        RecordUserAction.record("Signin_Signin_FromSigninPromo");
+        SigninManager.get(activity).signIn(accountName, activity, new SignInCallback() {
             @Override
-            public void onSigninComplete() {
+            public void onSignInComplete() {
                 mAccountFirstRunView.switchToSignedMode();
-                SigninManager.get(getOwnerActivity()).logInSignedInUser();
                 SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_ACCEPTED);
-                RecordUserAction.record("Signin_Signin_Succeed");
             }
 
             @Override
-            public void onSigninCancelled() {
+            public void onSignInAborted() {
                 SigninPromoUma.recordAction(SigninPromoUma.SIGNIN_PROMO_DECLINED);
                 dismiss();
             }
-        };
-        RecordUserAction.record("Signin_Signin_FromSigninPromo");
-        SigninManager.get(getOwnerActivity().getApplicationContext())
-                .signInToSelectedAccount(getOwnerActivity(), account,
-                        SigninManager.SIGNIN_TYPE_INTERACTIVE, signInCallback);
+        });
     }
 
     @Override

@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +19,10 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -84,36 +82,25 @@ public final class FirstRunSignInProcessor {
             return;
         }
 
-        final Account account = AccountManagerHelper.get(activity).getAccountFromName(accountName);
-        if (account == null) {
-            // TODO(aruslan): handle the account being removed during the FRE.
-            requestToFireIntentAndFinish(activity);
-            return;
-        }
-
         final boolean setUpSync = getFirstRunFlowSignInSetupSync(activity);
         RecordUserAction.record("Signin_Signin_FromStartPage");
-        signinManager.signInToSelectedAccount(activity, account,
-                SigninManager.SIGNIN_TYPE_INTERACTIVE, new SignInFlowObserver() {
-                    private void completeSignIn() {
-                        // Show sync settings if user pressed the "Settings" button.
-                        if (setUpSync) {
-                            openSyncSettings(activity);
-                        }
-                        setFirstRunFlowSignInComplete(activity, true);
-                    }
+        signinManager.signIn(accountName, activity, new SignInCallback() {
+            @Override
+            public void onSignInComplete() {
+                // Show sync settings if user pressed the "Settings" button.
+                if (setUpSync) {
+                    openSyncSettings(activity);
+                }
+                setFirstRunFlowSignInComplete(activity, true);
+            }
 
-                    @Override
-                    public void onSigninComplete() {
-                        RecordUserAction.record("Signin_Signin_Succeed");
-                        completeSignIn();
-                    }
-
-                    @Override
-                    public void onSigninCancelled() {
-                        completeSignIn();
-                    }
-                });
+            @Override
+            public void onSignInAborted() {
+                // Set FRE as complete even if signin fails because the user has already seen and
+                // accepted the terms of service.
+                setFirstRunFlowSignInComplete(activity, true);
+            }
+        });
     }
 
     /**

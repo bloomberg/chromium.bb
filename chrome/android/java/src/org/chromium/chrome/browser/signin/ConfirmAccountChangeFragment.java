@@ -107,7 +107,7 @@ class ConfirmAccountChangeFragment
             SigninManager.get(getActivity()).progressSignInFlowCheckPolicy();
         } else if (which == AlertDialog.BUTTON_NEGATIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
-            SigninManager.get(getActivity()).cancelSignIn();
+            SigninManager.get(getActivity()).abortSignIn();
         }
     }
 
@@ -118,7 +118,7 @@ class ConfirmAccountChangeFragment
         prefActivity.startActivity(intent);
 
         // Cancel out of current sign in.
-        SigninManager.get(getActivity()).cancelSignIn();
+        SigninManager.get(getActivity()).abortSignIn();
         dismiss();
 
         RecordUserAction.record("Signin_ImportDataPrompt_DontImport");

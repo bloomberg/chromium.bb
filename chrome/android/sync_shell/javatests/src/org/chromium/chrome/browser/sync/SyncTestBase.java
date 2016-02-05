@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
 import org.chromium.chrome.browser.signin.SigninManager;
-import org.chromium.chrome.browser.signin.SigninManager.SignInFlowObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -179,16 +178,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                SigninManager signinManager = SigninManager.get(mContext);
-                signinManager.startSignIn(null, account, false, new SignInFlowObserver() {
-                    @Override
-                    public void onSigninComplete() {
-                        mProfileSyncService.requestStart();
-                    }
-
-                    @Override
-                    public void onSigninCancelled() {}
-                });
+                SigninManager.get(mContext).signIn(account, null, null);
             }
         });
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);

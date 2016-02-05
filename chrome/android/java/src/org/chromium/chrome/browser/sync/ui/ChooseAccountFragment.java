@@ -44,7 +44,7 @@ public class ChooseAccountFragment extends DialogFragment implements OnClickList
 
     private static void signIn(final Activity activity, String accountName) {
         RecordUserAction.record("Signin_Signin_FromSettings");
-        SigninManager.startInteractiveSignIn(accountName, activity);
+        SigninManager.get(activity).signIn(accountName, activity, null);
     }
 
     @Override
