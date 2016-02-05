@@ -7,8 +7,8 @@
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <unordered_map>
 
-#include "base/containers/hash_tables.h"
 #include "content/common/id_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -88,14 +88,9 @@ TEST(IdType, DerivedClasses) {
   ordered_map[derived_id] = "blah";
   EXPECT_EQ(ordered_map[derived_id], "blah");
 
-  // TODO(lukasza): Enable std::unordered_map and base::hash_map for DerivedId.
-  // Ideally this should be possible without having to repeat std::hash<...>
-  // specialization for each derived class (but then SFINAE + std::enable_if +
-  // std::is_base_of doesn't seem to work for std::hash because std::hash only
-  // has a single template parameter?).
-  // std::unordered_map<DerivedId, std::string> unordered_map;
-  // unordered_map[derived_id] = "blah2";
-  // EXPECT_EQ(unordered_map[derived_id], "blah2");
+  std::unordered_map<DerivedId, std::string, DerivedId::Hasher> unordered_map;
+  unordered_map[derived_id] = "blah2";
+  EXPECT_EQ(unordered_map[derived_id], "blah2");
 }
 
 TEST(IdType, StaticAsserts) {
@@ -173,8 +168,8 @@ TEST_P(IdTypeSpecificValueTest, Copying) {
   EXPECT_EQ(original, copy_via_assignment);
 }
 
-TEST_P(IdTypeSpecificValueTest, BaseHashmap) {
-  base::hash_map<FooId, std::string> map;
+TEST_P(IdTypeSpecificValueTest, StdUnorderedMap) {
+  std::unordered_map<FooId, std::string, FooId::Hasher> map;
 
   map[test_id()] = "test_id";
   map[other_id()] = "other_id";

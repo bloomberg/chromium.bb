@@ -12,9 +12,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -275,7 +275,8 @@ class CONTENT_EXPORT SavePackage
       const SavePackageDownloadCreatedCallback& cb);
 
   // Map from SaveItem::id() (aka save_item_id) into a SaveItem.
-  typedef base::hash_map<SaveItemId, SaveItem*> SaveItemIdMap;
+  using SaveItemIdMap =
+      std::unordered_map<SaveItemId, SaveItem*, SaveItemId::Hasher>;
   // in_progress_items_ is map of all saving job in in-progress state.
   SaveItemIdMap in_progress_items_;
   // saved_failed_items_ is map of all saving job which are failed.
@@ -321,7 +322,7 @@ class CONTENT_EXPORT SavePackage
   static const base::FilePath::CharType* ExtensionForMimeType(
       const std::string& contents_mime_type);
 
-  typedef std::deque<SaveItem*> SaveItemQueue;
+  using SaveItemQueue = std::deque<SaveItem*>;
   // A queue for items we are about to start saving.
   SaveItemQueue waiting_item_queue_;
 
@@ -335,21 +336,22 @@ class CONTENT_EXPORT SavePackage
   // OnSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
   // Note that |frame_tree_node_id_to_save_item_| does NOT own SaveItems - they
   // remain owned by waiting_item_queue_, in_progress_items_, etc.
-  base::hash_map<int, SaveItem*> frame_tree_node_id_to_save_item_;
+  std::unordered_map<int, SaveItem*> frame_tree_node_id_to_save_item_;
 
   // Used to limit which local paths get exposed to which frames
   // (i.e. to prevent information disclosure to oop frames).
   // Note that |frame_tree_node_id_to_contained_save_items_| does NOT own
   // SaveItems - they remain owned by waiting_item_queue_, in_progress_items_,
   // etc.
-  base::hash_map<int, std::vector<SaveItem*>>
+  std::unordered_map<int, std::vector<SaveItem*>>
       frame_tree_node_id_to_contained_save_items_;
 
   // Number of frames that we still need to get a response from.
   int number_of_frames_pending_response_;
 
   // saved_success_items_ is map of all saving job which are successfully saved.
-  base::hash_map<SaveItemId, SaveItem*> saved_success_items_;
+  std::unordered_map<SaveItemId, SaveItem*, SaveItemId::Hasher>
+      saved_success_items_;
 
   // Non-owning pointer for handling file writing on the file thread.
   SaveFileManager* file_manager_;
@@ -394,7 +396,8 @@ class CONTENT_EXPORT SavePackage
   // This set is used to eliminate duplicated file names in saving directory.
   FileNameSet file_name_set_;
 
-  typedef base::hash_map<base::FilePath::StringType, uint32_t> FileNameCountMap;
+  using FileNameCountMap =
+      std::unordered_map<base::FilePath::StringType, uint32_t>;
   // This map is used to track serial number for specified filename.
   FileNameCountMap file_name_count_map_;
 

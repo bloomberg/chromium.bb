@@ -322,9 +322,8 @@ void DownloadManagerImpl::Shutdown() {
   // dangerous downloads which will remain in history if they aren't explicitly
   // accepted or discarded. Canceling will remove the intermediate download
   // file.
-  for (DownloadMap::iterator it = downloads_.begin(); it != downloads_.end();
-       ++it) {
-    DownloadItemImpl* download = it->second;
+  for (const auto& it : downloads_) {
+    DownloadItemImpl* download = it.second;
     if (download->GetState() == DownloadItem::IN_PROGRESS)
       download->Cancel(false);
   }
@@ -426,9 +425,8 @@ void DownloadManagerImpl::StartDownloadWithId(
 
 void DownloadManagerImpl::CheckForHistoryFilesRemoval() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItemImpl* item = it->second;
+  for (const auto& it : downloads_) {
+    DownloadItemImpl* item = it.second;
     CheckForFileRemoval(item);
   }
 }
@@ -690,9 +688,8 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
 
 int DownloadManagerImpl::InProgressCount() const {
   int count = 0;
-  for (DownloadMap::const_iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    if (it->second->GetState() == DownloadItem::IN_PROGRESS)
+  for (const auto& it : downloads_) {
+    if (it.second->GetState() == DownloadItem::IN_PROGRESS)
       ++count;
   }
   return count;
@@ -700,13 +697,12 @@ int DownloadManagerImpl::InProgressCount() const {
 
 int DownloadManagerImpl::NonMaliciousInProgressCount() const {
   int count = 0;
-  for (DownloadMap::const_iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    if (it->second->GetState() == DownloadItem::IN_PROGRESS &&
-        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
-        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
-        it->second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
-        it->second->GetDangerType() !=
+  for (const auto& it : downloads_) {
+    if (it.second->GetState() == DownloadItem::IN_PROGRESS &&
+        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_URL &&
+        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT &&
+        it.second->GetDangerType() != DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST &&
+        it.second->GetDangerType() !=
             DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED) {
       ++count;
     }
@@ -719,17 +715,15 @@ DownloadItem* DownloadManagerImpl::GetDownload(uint32_t download_id) {
 }
 
 void DownloadManagerImpl::GetAllDownloads(DownloadVector* downloads) {
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    downloads->push_back(it->second);
+  for (const auto& it : downloads_) {
+    downloads->push_back(it.second);
   }
 }
 
 void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
   int num_unopened = 0;
-  for (DownloadMap::iterator it = downloads_.begin();
-       it != downloads_.end(); ++it) {
-    DownloadItemImpl* item = it->second;
+  for (const auto& it : downloads_) {
+    DownloadItemImpl* item = it.second;
     if ((item->GetState() == DownloadItem::COMPLETE) &&
         !item->GetOpened())
       ++num_unopened;

@@ -6,10 +6,9 @@
 #define CONTENT_COMMON_ID_TYPE_H_
 
 #include <stdint.h>
+#include <cstddef>
 #include <ostream>
 #include <type_traits>
-
-#include "base/containers/hash_tables.h"
 
 // IdType32<>, IdType64<>, etc. wrap an integer id in a custom, type-safe type.
 //
@@ -32,7 +31,7 @@
 //             a default/invalid value other than zero.
 //
 // IdType32<Foo> behaves just like an int32_t in the following aspects:
-// - it can be used as a key in std::map and/or base::hash_map;
+// - it can be used as a key in std::map and/or std::unordered_map;
 // - it can be used as an argument to DCHECK_EQ or streamed to LOG(ERROR);
 // - it has the same memory footprint and runtime overhead as int32_t;
 // - it can be copied by memcpy.
@@ -60,6 +59,15 @@ class IdType {
   bool operator==(const IdType& other) const { return value_ == other.value_; }
   bool operator!=(const IdType& other) const { return value_ != other.value_; }
   bool operator<(const IdType& other) const { return value_ < other.value_; }
+
+  // Hasher to use in std::unordered_map, std::unordered_set, etc.
+  struct Hasher {
+    using argument_type = IdType;
+    using result_type = std::size_t;
+    result_type operator()(const argument_type& id) const {
+      return std::hash<WrappedType>()(id.GetUnsafeValue());
+    }
+  };
 
  protected:
   explicit IdType(WrappedType val) : value_(val) {}
@@ -95,18 +103,5 @@ std::ostream& operator<<(
 }
 
 }  // namespace content
-
-namespace BASE_HASH_NAMESPACE {
-
-template <typename TypeMarker, typename WrappedType, WrappedType kInvalidValue>
-struct hash<content::IdType<TypeMarker, WrappedType, kInvalidValue>> {
-  using argument_type = content::IdType<TypeMarker, WrappedType, kInvalidValue>;
-  using result_type = std::size_t;
-  result_type operator()(const argument_type& id) const {
-    return BASE_HASH_NAMESPACE::hash<WrappedType>()(id.GetUnsafeValue());
-  }
-};
-
-}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // CONTENT_COMMON_ID_TYPE_H_
