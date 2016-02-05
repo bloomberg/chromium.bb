@@ -16,7 +16,9 @@ static library that should be produced. For example:
 
 import argparse
 import os
+import re
 import subprocess
+import sys
 
 
 class SubprocessError(Exception):
@@ -126,8 +128,14 @@ def link(output, inputs):
     output: file system path to desired output library
     inputs: list of file system paths to input libraries
   """
-  p = subprocess.Popen(['libtool', '-o', output] + inputs)
-  p.communicate()
+  libtool_re = re.compile(r'^.*libtool: (?:for architecture: \S* )?'
+                          r'file: .* has no symbols$')
+  p = subprocess.Popen(
+      ['libtool', '-o', output] + inputs, stderr=subprocess.PIPE)
+  _, err = p.communicate()
+  for line in err.splitlines():
+    if not libtool_re.match(line):
+      print >>sys.stderr, line
   if p.returncode != 0:
     message = "subprocess libtool returned {0}".format(p.returncode)
     raise SubprocessError(message)

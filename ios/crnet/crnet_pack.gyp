@@ -48,7 +48,10 @@
               },
 
               # Actions need an inputs list, even if it's empty.
-              'inputs': [],
+              'inputs': [
+                '<(tool_path)',
+                '<(PRODUCT_DIR)/crnet_dummy.app/crnet_dummy',
+              ],
               # Only specify one output, since this will be libtool's output.
               'outputs': [ '<(PRODUCT_DIR)/libcrnet_standalone.a' ],
               'action': ['<(tool_path)',
