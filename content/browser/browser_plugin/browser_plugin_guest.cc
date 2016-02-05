@@ -250,8 +250,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_CompositorFrameSwappedACK,
-                        OnCompositorFrameSwappedACK)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_DragStatusUpdate,
                         OnDragStatusUpdate)
@@ -264,8 +262,6 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ImeSetComposition,
                         OnImeSetComposition)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_LockMouse_ACK, OnLockMouseAck)
-    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_ReclaimCompositorResources,
-                        OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
@@ -395,24 +391,6 @@ void BrowserPluginGuest::EmbedderVisibilityChanged(bool visible) {
 void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
   SendMessageToEmbedder(
       new BrowserPluginMsg_SetMouseLock(browser_plugin_instance_id(), allow));
-}
-
-// TODO(wjmaclean): Remove this once any remaining users of this pathway
-// are gone.
-void BrowserPluginGuest::SwapCompositorFrame(
-    uint32_t output_surface_id,
-    int host_process_id,
-    int host_routing_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
-  last_pending_frame_.reset(new FrameMsg_CompositorFrameSwapped_Params());
-  frame->AssignTo(&last_pending_frame_->frame);
-  last_pending_frame_->output_surface_id = output_surface_id;
-  last_pending_frame_->producing_route_id = host_routing_id;
-  last_pending_frame_->producing_host_id = host_process_id;
-
-  SendMessageToEmbedder(
-      new BrowserPluginMsg_CompositorFrameSwapped(
-          browser_plugin_instance_id(), *last_pending_frame_));
 }
 
 void BrowserPluginGuest::SetChildFrameSurface(
@@ -752,21 +730,6 @@ void BrowserPluginGuest::Attach(
     WebContentsImpl* embedder_web_contents,
     const BrowserPluginHostMsg_Attach_Params& params) {
   browser_plugin_instance_id_ = browser_plugin_instance_id;
-  // If a guest is detaching from one container and attaching to another
-  // container, then late arriving ACKs may be lost if the mapping from
-  // |browser_plugin_instance_id| to |guest_instance_id| changes. Thus we
-  // ensure that we always get new frames on attachment by ACKing the pending
-  // frame if it's still waiting on the ACK.
-  if (last_pending_frame_) {
-    cc::CompositorFrameAck ack;
-    RenderWidgetHostImpl::SendSwapCompositorFrameAck(
-        last_pending_frame_->producing_route_id,
-        last_pending_frame_->output_surface_id,
-        last_pending_frame_->producing_host_id,
-        ack);
-    last_pending_frame_.reset();
-  }
-
   // The guest is owned by the embedder. Attach is queued up so we cannot
   // change embedders before attach completes. If the embedder goes away,
   // so does the guest and so we will never call WillAttachComplete because
@@ -815,16 +778,6 @@ void BrowserPluginGuest::OnWillAttachComplete(
     has_render_view_ = true;
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
-}
-
-void BrowserPluginGuest::OnCompositorFrameSwappedACK(
-    int browser_plugin_instance_id,
-    const FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(params.producing_route_id,
-                                                   params.output_surface_id,
-                                                   params.producing_host_id,
-                                                   params.ack);
-  last_pending_frame_.reset();
 }
 
 void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
@@ -920,15 +873,6 @@ void BrowserPluginGuest::OnExtendSelectionAndDelete(
       web_contents()->GetFocusedFrame());
   if (rfh)
     rfh->ExtendSelectionAndDelete(before, after);
-}
-
-void BrowserPluginGuest::OnReclaimCompositorResources(
-    int browser_plugin_instance_id,
-    const FrameHostMsg_ReclaimCompositorResources_Params& params) {
-  RenderWidgetHostImpl::SendReclaimCompositorResources(params.route_id,
-                                                       params.output_surface_id,
-                                                       params.renderer_host_id,
-                                                       params.ack);
 }
 
 void BrowserPluginGuest::OnLockMouse(bool user_gesture,

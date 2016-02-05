@@ -195,9 +195,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // The model object.
   RenderWidgetHostImpl* host_;
 
-  // Flag determining whether we render into a compositing Surface.
-  bool use_surfaces_;
-
   // Surface-related state.
   scoped_ptr<cc::SurfaceIdAllocator> id_allocator_;
   scoped_ptr<cc::SurfaceFactory> surface_factory_;

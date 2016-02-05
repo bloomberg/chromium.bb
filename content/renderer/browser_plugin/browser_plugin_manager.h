@@ -64,9 +64,6 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderProcessObserver {
   bool OnControlMessageReceived(const IPC::Message& message) override;
 
  private:
-  // IPC message handlers.
-  void OnCompositorFrameSwappedPluginUnavailable(const IPC::Message& message);
-
   // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
 

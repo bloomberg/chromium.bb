@@ -36,19 +36,16 @@ namespace content {
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
-      use_surfaces_(true),
       next_surface_sequence_(1u),
       last_output_surface_id_(0),
       current_surface_scale_factor_(1.f),
       ack_pending_count_(0),
       frame_connector_(nullptr),
       weak_factory_(this) {
-  if (use_surfaces_) {
-    id_allocator_ = CreateSurfaceIdAllocator();
-    if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-      host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
-          GetSurfaceIdNamespace(), this);
-    }
+  id_allocator_ = CreateSurfaceIdAllocator();
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->AddSurfaceIdNamespaceOwner(
+        GetSurfaceIdNamespace(), this);
   }
 
   host_->SetView(this);
@@ -211,8 +208,7 @@ void RenderWidgetHostViewChildFrame::Destroy() {
     frame_connector_ = NULL;
   }
 
-  if (use_surfaces_ && host_->delegate() &&
-      host_->delegate()->GetInputEventRouter()) {
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
     host_->delegate()->GetInputEventRouter()->RemoveSurfaceIdNamespaceOwner(
         GetSurfaceIdNamespace());
   }
@@ -264,15 +260,6 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
   if (!frame_connector_)
     return;
-
-  // When not using surfaces, the frame just gets proxied to
-  // the embedder's renderer to be composited.
-  if (!frame->delegated_frame_data || !use_surfaces_) {
-    frame_connector_->ChildFrameCompositorFrameSwapped(
-        output_surface_id, host_->GetProcess()->GetID(), host_->GetRoutingID(),
-        std::move(frame));
-    return;
-  }
 
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back().get();
@@ -371,9 +358,6 @@ void RenderWidgetHostViewChildFrame::UnlockMouse() {
 }
 
 uint32_t RenderWidgetHostViewChildFrame::GetSurfaceIdNamespace() {
-  if (!use_surfaces_)
-    return 0;
-
   return id_allocator_->id_namespace();
 }
 
@@ -404,7 +388,7 @@ void RenderWidgetHostViewChildFrame::ProcessMouseWheelEvent(
 
 gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     const gfx::Point& point) {
-  if (!frame_connector_ || !use_surfaces_)
+  if (!frame_connector_)
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(point, surface_id_);

@@ -30,9 +30,6 @@ class CompositorFrame;
 class Layer;
 class SolidColorLayer;
 class SurfaceLayer;
-class DelegatedFrameProvider;
-class DelegatedFrameResourceCollection;
-class DelegatedRendererLayer;
 }
 
 namespace blink {
@@ -57,21 +54,14 @@ class RenderFrameProxy;
 class ThreadSafeSender;
 
 class CONTENT_EXPORT ChildFrameCompositingHelper
-    : public base::RefCounted<ChildFrameCompositingHelper>,
-      public cc::DelegatedFrameResourceCollectionClient {
+    : public base::RefCounted<ChildFrameCompositingHelper> {
  public:
   static ChildFrameCompositingHelper* CreateForBrowserPlugin(
       const base::WeakPtr<BrowserPlugin>& browser_plugin);
   static ChildFrameCompositingHelper* CreateForRenderFrameProxy(
       RenderFrameProxy* render_frame_proxy);
 
-  void DidCommitCompositorFrame();
   void OnContainerDestroy();
-  void OnCompositorFrameSwapped(scoped_ptr<cc::CompositorFrame> frame,
-                                int route_id,
-                                uint32_t output_surface_id,
-                                int host_id,
-                                base::SharedMemoryHandle handle);
   void OnSetSurface(const cc::SurfaceId& surface_id,
                     const gfx::Size& frame_size,
                     float scale_factor,
@@ -80,9 +70,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void ChildFrameGone();
 
   cc::SurfaceId surface_id() const { return surface_id_; }
-
-  // cc::DelegatedFrameProviderClient implementation.
-  void UnusedResourcesAreAvailable() override;
 
  protected:
   // Friend RefCounted so that the dtor can be non-public.
@@ -101,14 +88,9 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   blink::WebPluginContainer* GetContainer();
   int GetInstanceID();
 
-  void SendCompositorFrameSwappedACKToBrowser(
-      FrameHostMsg_CompositorFrameSwappedACK_Params& params);
-  void SendReclaimCompositorResourcesToBrowser(
-      FrameHostMsg_ReclaimCompositorResources_Params& params);
   void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
                                          float device_scale_factor,
                                          cc::Layer* layer);
-  void SendReturnedDelegatedResources();
   static void SatisfyCallback(scoped_refptr<ThreadSafeSender> sender,
                               int host_routing_id,
                               cc::SurfaceSequence sequence);
@@ -130,10 +112,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   void UpdateWebLayer(blink::WebLayer* layer);
 
   int host_routing_id_;
-  int last_route_id_;
-  uint32_t last_output_surface_id_;
-  int last_host_id_;
-  bool ack_pending_;
   bool opaque_;
 
   gfx::Size buffer_size_;
@@ -143,9 +121,6 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   // destruction.
   base::WeakPtr<BrowserPlugin> browser_plugin_;
   RenderFrameProxy* render_frame_proxy_;
-
-  scoped_refptr<cc::DelegatedFrameResourceCollection> resource_collection_;
-  scoped_refptr<cc::DelegatedFrameProvider> frame_provider_;
 
   scoped_ptr<blink::WebLayer> web_layer_;
   cc::SurfaceId surface_id_;

@@ -38,10 +38,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(CrossProcessFrameConnector, msg)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CompositorFrameSwappedACK,
-                        OnCompositorFrameSwappedACK)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ReclaimCompositorResources,
-                        OnReclaimCompositorResources)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardInputEvent, OnForwardInputEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameRectChanged, OnFrameRectChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisibilityChanged, OnVisibilityChanged)
@@ -76,20 +72,6 @@ void CrossProcessFrameConnector::RenderProcessGone() {
       frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
 
-void CrossProcessFrameConnector::ChildFrameCompositorFrameSwapped(
-    uint32_t output_surface_id,
-    int host_id,
-    int route_id,
-    scoped_ptr<cc::CompositorFrame> frame) {
-  FrameMsg_CompositorFrameSwapped_Params params;
-  frame->AssignTo(&params.frame);
-  params.output_surface_id = output_surface_id;
-  params.producing_route_id = route_id;
-  params.producing_host_id = host_id;
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_CompositorFrameSwapped(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), params));
-}
-
 void CrossProcessFrameConnector::SetChildFrameSurface(
     const cc::SurfaceId& surface_id,
     const gfx::Size& frame_size,
@@ -118,22 +100,6 @@ void CrossProcessFrameConnector::OnRequireSequence(
     return;
   }
   surface->AddDestructionDependency(sequence);
-}
-
-void CrossProcessFrameConnector::OnCompositorFrameSwappedACK(
-    const FrameHostMsg_CompositorFrameSwappedACK_Params& params) {
-  RenderWidgetHostImpl::SendSwapCompositorFrameAck(params.producing_route_id,
-                                                   params.output_surface_id,
-                                                   params.producing_host_id,
-                                                   params.ack);
-}
-
-void CrossProcessFrameConnector::OnReclaimCompositorResources(
-    const FrameHostMsg_ReclaimCompositorResources_Params& params) {
-  RenderWidgetHostImpl::SendReclaimCompositorResources(params.route_id,
-                                                       params.output_surface_id,
-                                                       params.renderer_host_id,
-                                                       params.ack);
 }
 
 void CrossProcessFrameConnector::OnInitializeChildFrame(gfx::Rect frame_rect,

@@ -42,22 +42,8 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
  public:
   MockCrossProcessFrameConnector()
-      : CrossProcessFrameConnector(nullptr),
-        last_scale_factor_received_(0.f),
-        received_delegated_frame_(false) {}
+      : CrossProcessFrameConnector(nullptr), last_scale_factor_received_(0.f) {}
   ~MockCrossProcessFrameConnector() override {}
-
-  void ChildFrameCompositorFrameSwapped(
-      uint32_t output_surface_id,
-      int host_id,
-      int route_id,
-      scoped_ptr<cc::CompositorFrame> frame) override {
-    received_delegated_frame_ = true;
-    last_frame_size_received_ =
-        frame->delegated_frame_data->render_pass_list.back()
-            ->output_rect.size();
-    last_scale_factor_received_ = frame->metadata.device_scale_factor;
-  }
 
   void SetChildFrameSurface(const cc::SurfaceId& surface_id,
                             const gfx::Size& frame_size,
@@ -71,8 +57,6 @@ class MockCrossProcessFrameConnector : public CrossProcessFrameConnector {
   cc::SurfaceId last_surface_id_received_;
   gfx::Size last_frame_size_received_;
   float last_scale_factor_received_;
-
-  bool received_delegated_frame_;
 };
 
 }  // namespace

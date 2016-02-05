@@ -12,7 +12,6 @@
 #include "content/common/content_param_traits.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/common/edit_command.h"
-#include "content/common/frame_param_macros.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel_handle.h"
@@ -117,13 +116,6 @@ IPC_MESSAGE_CONTROL3(BrowserPluginHostMsg_HandleInputEvent,
                      gfx::Rect /* guest_window_rect */,
                      IPC::WebInputEventPointer /* event */)
 
-// Notify the guest renderer that some resources given to the embededer
-// are not used any more.
-IPC_MESSAGE_CONTROL2(
-    BrowserPluginHostMsg_ReclaimCompositorResources,
-    int /* browser_plugin_instance_id */,
-    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
-
 // Tells the guest it has been shown or hidden.
 IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SetVisibility,
                      int /* browser_plugin_instance_id */,
@@ -185,10 +177,6 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetCursor,
                      int /* browser_plugin_instance_id */,
                      content::WebCursor /* cursor */)
 
-IPC_MESSAGE_CONTROL2(BrowserPluginMsg_CompositorFrameSwapped,
-                     int /* browser_plugin_instance_id */,
-                     FrameMsg_CompositorFrameSwapped_Params /* params */)
-
 IPC_MESSAGE_CONTROL5(BrowserPluginMsg_SetChildFrameSurface,
                      int /* browser_plugin_instance_id */,
                      cc::SurfaceId /* surface_id */,
@@ -205,8 +193,3 @@ IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetTooltipText,
                      int /* browser_plugin_instance_id */,
                      base::string16 /* tooltip_text */)
-
-// Acknowledge that we presented an ubercomp frame.
-IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_CompositorFrameSwappedACK,
-                     int /* browser_plugin_instance_id */,
-                     FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)

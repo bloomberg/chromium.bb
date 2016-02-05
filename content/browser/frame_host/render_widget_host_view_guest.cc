@@ -243,13 +243,6 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
   }
 
   last_scroll_offset_ = frame->metadata.root_scroll_offset;
-  // When not using surfaces, the frame just gets proxied to
-  // the embedder's renderer to be composited.
-  if (!frame->delegated_frame_data || !use_surfaces_) {
-    guest_->SwapCompositorFrame(output_surface_id, host_->GetProcess()->GetID(),
-                                host_->GetRoutingID(), std::move(frame));
-    return;
-  }
 
   cc::RenderPass* root_pass =
       frame->delegated_frame_data->render_pass_list.back().get();

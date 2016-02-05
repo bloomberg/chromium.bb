@@ -19,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_message_enums.h"
-#include "content/common/frame_param.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
@@ -44,6 +43,8 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -554,15 +555,6 @@ IPC_STRUCT_TRAITS_END()
 
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
-
-// Notifies the embedding frame that a new CompositorFrame is ready to be
-// presented. When the frame finishes presenting, a matching
-// FrameHostMsg_CompositorFrameSwappedACK should be sent back to the
-// RenderViewHost that was produced the CompositorFrame.
-//
-// This is used in the ubercomp compositing path.
-IPC_MESSAGE_ROUTED1(FrameMsg_CompositorFrameSwapped,
-                    FrameMsg_CompositorFrameSwapped_Params /* params */)
 
 IPC_MESSAGE_ROUTED4(FrameMsg_SetChildFrameSurface,
                     cc::SurfaceId /* surface_id */,
@@ -1189,12 +1181,6 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_PluginInstanceThrottleStateChange,
                      bool /* is_throttled */)
 #endif  // defined(ENABLE_PLUGINS)
 
-// Acknowledge that we presented an ubercomp frame.
-//
-// See FrameMsg_CompositorFrameSwapped
-IPC_MESSAGE_ROUTED1(FrameHostMsg_CompositorFrameSwappedACK,
-                    FrameHostMsg_CompositorFrameSwappedACK_Params /* params */)
-
 // Satisfies a Surface destruction dependency associated with |sequence|.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_SatisfySequence,
                     cc::SurfaceSequence /* sequence */)
@@ -1215,9 +1201,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
 
 // Indicates that the current frame has swapped out, after a SwapOut message.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SwapOut_ACK)
-
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ReclaimCompositorResources,
-                    FrameHostMsg_ReclaimCompositorResources_Params /* params */)
 
 // Forwards an input event to a child.
 // TODO(nick): Temporary bridge, revisit once the browser process can route

@@ -207,8 +207,6 @@ void RenderFrameProxy::WillBeginCompositorFrame() {
 }
 
 void RenderFrameProxy::DidCommitCompositorFrame() {
-  if (compositing_helper_.get())
-    compositing_helper_->DidCommitCompositorFrame();
 }
 
 void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
@@ -246,8 +244,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER_GENERIC(FrameMsg_CompositorFrameSwapped,
-                                OnCompositorFrameSwapped(msg))
     IPC_MESSAGE_HANDLER(FrameMsg_SetChildFrameSurface, OnSetChildFrameSurface)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_DidStartLoading, OnDidStartLoading)
@@ -279,32 +275,6 @@ void RenderFrameProxy::OnDeleteProxy() {
 void RenderFrameProxy::OnChildFrameProcessGone() {
   if (compositing_helper_.get())
     compositing_helper_->ChildFrameGone();
-}
-
-void RenderFrameProxy::OnCompositorFrameSwapped(const IPC::Message& message) {
-  // If this WebFrame has already been detached, its parent will be null. This
-  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
-  // message may arrive after the frame was removed from the frame tree, but
-  // before the frame has been destroyed. http://crbug.com/446575.
-  if (!web_frame()->parent())
-    return;
-
-  FrameMsg_CompositorFrameSwapped::Param param;
-  if (!FrameMsg_CompositorFrameSwapped::Read(&message, &param))
-    return;
-
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
-  base::get<0>(param).frame.AssignTo(frame.get());
-
-  if (!compositing_helper_.get()) {
-    compositing_helper_ =
-        ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
-  }
-  compositing_helper_->OnCompositorFrameSwapped(
-      std::move(frame), base::get<0>(param).producing_route_id,
-      base::get<0>(param).output_surface_id,
-      base::get<0>(param).producing_host_id,
-      base::get<0>(param).shared_memory_handle);
 }
 
 void RenderFrameProxy::OnSetChildFrameSurface(

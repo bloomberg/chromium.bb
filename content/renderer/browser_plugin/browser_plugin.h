@@ -152,7 +152,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // IPC message handlers.
   // Please keep in alphabetical order.
   void OnAdvanceFocus(int instance_id, bool reverse);
-  void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnGuestGone(int instance_id);
   void OnSetChildFrameSurface(int instance_id,
                               const cc::SurfaceId& surface_id,
