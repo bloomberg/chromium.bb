@@ -2069,18 +2069,6 @@ template("test_runner_script") {
       assert(false, "Invalid test type: $_test_type.")
     }
 
-    if (defined(invoker.additional_apks)) {
-      foreach(additional_apk, invoker.additional_apks) {
-        deps += [ "${additional_apk}__build_config" ]
-        _build_config = get_label_info(additional_apk, "target_gen_dir") + "/" +
-                        get_label_info(additional_apk, "name") + ".build_config"
-        _rebased_build_config = rebase_path(_build_config, root_build_dir)
-        test_runner_args += [
-          "--additional-apk",
-          "@FileArg($_rebased_build_config:deps_info:apk_path)",
-        ]
-      }
-    }
     if (defined(invoker.isolate_file)) {
       test_runner_args += [
         "--isolate-file-path",

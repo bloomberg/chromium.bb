@@ -32,7 +32,6 @@
 {
   'variables': {
     'variables': {
-      'additional_apks%': [],
       'isolate_file%': '',
     },
     'test_runner_args': ['--output-directory', '<(PRODUCT_DIR)'],
@@ -54,9 +53,6 @@
             ],
           }],
         ],
-      }],
-      ['additional_apks != []', {
-        'test_runner_args': ['--additional-apk-list', '>(additional_apks)'],
       }],
       ['isolate_file != ""', {
         'test_runner_args': ['--isolate-file-path', '<(isolate_file)']

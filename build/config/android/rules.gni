@@ -1938,11 +1938,7 @@ template("instrumentation_test_apk") {
   _test_runner_target_name = "${target_name}__test_runner_script"
 
   test_runner_script(_test_runner_target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "additional_apks",
-                             "isolate_file",
-                           ])
+    forward_variables_from(invoker, [ "isolate_file" ])
     test_name = invoker.target_name
     test_type = "instrumentation"
     apk_target = ":$_apk_target_name"
@@ -1958,9 +1954,6 @@ template("instrumentation_test_apk") {
       "//tools/android/forwarder2",
       "//tools/android/md5sum",
     ]
-    if (defined(invoker.additional_apks)) {
-      data_deps += invoker.additional_apks
-    }
 
     run_findbugs =
         defined(invoker.run_findbugs) && invoker.run_findbugs &&
