@@ -276,7 +276,7 @@ mojo::Array<PluginDataPtr> PluginsHandler::GeneratePluginsData(
 #endif
 
     plugin_data->description = mojo::String::From(active_plugin->desc);
-    plugin_data->name = plugin_files[0]->name;
+    plugin_data->name = base::UTF16ToUTF8(plugin_metadata->name());
     plugin_data->plugin_files = std::move(plugin_files);
     plugin_data->version = mojo::String::From(active_plugin->version);
     plugins_data.push_back(std::move(plugin_data));
