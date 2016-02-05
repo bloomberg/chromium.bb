@@ -12,7 +12,6 @@
 namespace blink {
 
 class ExecutionContext;
-class SyncRegistrationOptions;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;

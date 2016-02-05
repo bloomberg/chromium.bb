@@ -13,7 +13,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/background_sync/SyncCallbacks.h"
-#include "modules/background_sync/SyncRegistrationOptions.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/background_sync/WebSyncProvider.h"

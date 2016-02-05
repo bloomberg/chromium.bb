@@ -7,7 +7,6 @@
 
 #include "modules/EventModules.h"
 #include "modules/background_sync/SyncEventInit.h"
-#include "modules/background_sync/SyncRegistration.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
