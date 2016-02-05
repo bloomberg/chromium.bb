@@ -31,7 +31,7 @@ config("media_config") {
   if (!media_use_ffmpeg) {
     defines += [ "MEDIA_DISABLE_FFMPEG" ]
   }
-  if (current_cpu == "arm" && arm_use_neon) {
+  if (current_cpu == "arm64" || (current_cpu == "arm" && arm_use_neon)) {
     defines += [ "USE_NEON" ]
   }
   if (use_pulseaudio) {
