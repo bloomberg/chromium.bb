@@ -13,10 +13,11 @@ enum VendorIDSource {
 
 [
     GarbageCollected,
+    ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothDevice
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
-// : ServiceEventHandlers 
+// : ServiceEventHandlers
 {
 // Implement BluetoothDevice interface: http://crbug.com/421668
     [DeprecateAs=BluetoothDeviceInstanceId, ImplementedAs=id] readonly attribute DOMString instanceID;

@@ -8,7 +8,6 @@
 
 [
     GarbageCollected,
-    ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
 ] interface BluetoothGATTRemoteServer
 // Implement ServiceEventHandlers interface: http://crbug.com/421670

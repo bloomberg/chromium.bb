@@ -7,8 +7,6 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
-#include "core/dom/ActiveDOMObject.h"
-#include "core/page/PageLifecycleObserver.h"
 #include "platform/heap/Heap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -23,47 +21,18 @@ class ScriptState;
 // BluetoothGATTRemoteServer provides a way to interact with a connected bluetooth peripheral.
 class BluetoothGATTRemoteServer final
     : public GarbageCollectedFinalized<BluetoothGATTRemoteServer>
-    , public ActiveDOMObject
-    , public PageLifecycleObserver
     , public ScriptWrappable {
-    USING_PRE_FINALIZER(BluetoothGATTRemoteServer, dispose);
     DEFINE_WRAPPERTYPEINFO();
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothGATTRemoteServer);
 public:
-    BluetoothGATTRemoteServer(ExecutionContext*, const String& deviceId);
+    BluetoothGATTRemoteServer(const String& deviceId);
 
-    static BluetoothGATTRemoteServer* create(ExecutionContext*, const String& deviceId);
+    static BluetoothGATTRemoteServer* create(const String& deviceId);
 
-    // We should disconnect from the device in all of the following cases:
-    // 1. When the object gets GarbageCollected e.g. it went out of scope.
-    // dispose() is called in this case.
-    // 2. When the parent document gets detached e.g. reloading a page.
-    // stop() is called in this case.
-    // 3. For now (https://crbug.com/579746), when the tab is no longer in the
-    // foreground e.g. change tabs.
-    // pageVisibilityChanged() is called in this case.
-    // TODO(ortuno): Users should be able to turn on notifications listen for
-    // events on navigator.bluetooth and still remain connected even if the
-    // BluetoothGATTRemoteServer object is garbage collected.
-    // TODO(ortuno): Allow connections when the tab is in the background.
-    // This is a short term solution instead of implementing a tab indicator
-    // for bluetooth connections.
-
-    // USING_PRE_FINALIZER interface.
-    // Called before the object gets garbage collected.
-    void dispose();
-
-    // ActiveDOMObject interface.
-    void stop() override;
-
-    // PageLifecycleObserver interface.
-    void pageVisibilityChanged() override;
-
-    void disconnectIfConnected();
+    void disconnectIfConnected(ExecutionContext*);
     void setConnected(bool connected) { m_connected = connected; }
 
     // Interface required by Garbage Collectoin:
-    DECLARE_VIRTUAL_TRACE();
+    DEFINE_INLINE_TRACE() { }
 
     // IDL exposed interface:
     bool connected() { return m_connected; }

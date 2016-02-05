@@ -6,6 +6,8 @@
 #define BluetoothDevice_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "modules/bluetooth/BluetoothAdvertisingData.h"
 #include "modules/bluetooth/BluetoothGATTRemoteServer.h"
 #include "platform/heap/Heap.h"
@@ -28,14 +30,43 @@ class ScriptState;
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final
     : public GarbageCollectedFinalized<BluetoothDevice>
+    , public ActiveDOMObject
+    , public PageLifecycleObserver
     , public ScriptWrappable {
+    USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 public:
     BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDevice>);
 
     // Interface required by CallbackPromiseAdapter:
     using WebType = OwnPtr<WebBluetoothDevice>;
     static BluetoothDevice* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothDevice>);
+
+    // We should disconnect from the device in all of the following cases:
+    // 1. When the object gets GarbageCollected e.g. it went out of scope.
+    // dispose() is called in this case.
+    // 2. When the parent document gets detached e.g. reloading a page.
+    // stop() is called in this case.
+    // 3. For now (https://crbug.com/579746), when the tab is no longer in the
+    // foreground e.g. change tabs.
+    // pageVisibilityChanged() is called in this case.
+    // TODO(ortuno): Users should be able to turn on notifications for
+    // events on navigator.bluetooth and still remain connected even if the
+    // BluetoothDevice object is garbage collected.
+    // TODO(ortuno): Allow connections when the tab is in the background.
+    // This is a short term solution instead of implementing a tab indicator
+    // for bluetooth connections.
+
+    // USING_PRE_FINALIZER interface.
+    // Called before the object gets garbage collected.
+    void dispose();
+
+    // ActiveDOMObject interface.
+    void stop() override;
+
+    // PageLifecycleObserver interface.
+    void pageVisibilityChanged() override;
 
     // Interface required by Garbage Collection:
     DECLARE_VIRTUAL_TRACE();

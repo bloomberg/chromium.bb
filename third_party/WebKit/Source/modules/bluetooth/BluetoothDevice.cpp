@@ -19,21 +19,46 @@
 namespace blink {
 
 BluetoothDevice::BluetoothDevice(ExecutionContext* context, PassOwnPtr<WebBluetoothDevice> webDevice)
-    : m_webDevice(webDevice)
+    : ActiveDOMObject(context)
+    , PageLifecycleObserver(toDocument(context)->page())
+    , m_webDevice(webDevice)
     , m_adData(BluetoothAdvertisingData::create(m_webDevice->txPower,
         m_webDevice->rssi))
-    , m_gatt(BluetoothGATTRemoteServer::create(context, m_webDevice->id))
+    , m_gatt(BluetoothGATTRemoteServer::create(m_webDevice->id))
 {
+    // See example in Source/platform/heap/ThreadState.h
+    ThreadState::current()->registerPreFinalizer(this);
 }
 
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebBluetoothDevice> webDevice)
 {
     ASSERT(webDevice);
-    return new BluetoothDevice(resolver->executionContext(), webDevice);
+    BluetoothDevice* device = new BluetoothDevice(resolver->executionContext(), webDevice);
+    device->suspendIfNeeded();
+    return device;
+}
+
+void BluetoothDevice::dispose()
+{
+    m_gatt->disconnectIfConnected(executionContext());
+}
+
+void BluetoothDevice::stop()
+{
+    m_gatt->disconnectIfConnected(executionContext());
+}
+
+void BluetoothDevice::pageVisibilityChanged()
+{
+    if (!page()->isPageVisible()) {
+        m_gatt->disconnectIfConnected(executionContext());
+    }
 }
 
 DEFINE_TRACE(BluetoothDevice)
 {
+    ActiveDOMObject::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
     visitor->trace(m_adData);
     visitor->trace(m_gatt);
 }
