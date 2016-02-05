@@ -30,6 +30,14 @@ Polymer({
     },
 
     /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * The origin that was selected by the user in the dropdown list.
      */
     selectedOrigin: {
@@ -201,6 +209,13 @@ Polymer({
    */
   onOriginTap_: function(event) {
     this.selectedOrigin = event.model.item.url;
+    var categorySelected = this.computeCategoryTextId(this.category);
+    this.currentRoute = {
+      page: this.currentRoute.page,
+      section: 'privacy',
+      subpage: ['site-settings', 'site-settings-category-' +
+          categorySelected, 'site-details'],
+    };
   },
 
   /**

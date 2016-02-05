@@ -30,16 +30,23 @@ class SiteSettingsHandler
 
   // StorageInfoFetcher::Observer:
   void OnGetUsageInfo(const storage::UsageInfoEntries& entries) override;
+  void OnUsageInfoCleared(storage::QuotaStatusCode code) override;
 
  private:
   // Asynchronously fetches the usage for a given origin. Replies back with
   // OnGetUsageInfo above.
   void HandleFetchUsageTotal(const base::ListValue* args);
 
+  // Deletes the storage being used for a given host.
+  void HandleClearUsage(const base::ListValue* args);
+
   Profile* profile_;
 
   // The host for which to fetch usage.
   std::string usage_host_;
+
+  // The origin for which to clear usage.
+  std::string clearing_origin_;
 
   // The helper object asynchronously fetching storage info.
   scoped_refptr<StorageInfoFetcher> storage_info_fetcher_;

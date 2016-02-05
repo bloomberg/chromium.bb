@@ -43,6 +43,28 @@ Polymer({
       type: String,
       value: '',
     },
+
+    /**
+     * The type of storage for the origin.
+     */
+    storageType_: Number,
+
+    /**
+     * The category the user selected to get to this page.
+     */
+    categorySelected: String,
+
+    /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+  },
+
+  listeners: {
+    'usage-deleted': 'onUsageDeleted',
   },
 
   ready: function() {
@@ -68,7 +90,17 @@ Polymer({
    * Clears all data stored for the current origin.
    */
   onClearStorage_: function() {
-    // TODO(finnur): Implement.
+    this.$.usageApi.clearUsage(this.origin, this.storageType_);
+  },
+
+  /**
+   * Called when usage has been deleted for an origin.
+   */
+  onUsageDeleted: function(event) {
+    if (event.detail.origin == this.origin) {
+      this.storedData_ = '';
+      this.navigateBackIfNoData_();
+    }
   },
 
   /**
@@ -79,6 +111,26 @@ Polymer({
         this.root.querySelectorAll('site-details-permission'),
         function(element) { element.resetPermission(); });
 
-    this.onClearStorage_();
+    if (this.storedData_ != '')
+      this.onClearStorage_();
+    else
+      this.navigateBackIfNoData_();
+  },
+
+  /**
+   * Navigate back if the UI is empty (everything been cleared).
+   */
+  navigateBackIfNoData_: function() {
+    if (this.storedData_ == '' && !this.permissionShowing_())
+      this.fire('subpage-back');
+  },
+
+  /**
+   * Returns true if one or more permission is showing.
+   */
+  permissionShowing_: function() {
+    return Array.prototype.some.call(
+        this.root.querySelectorAll('site-details-permission'),
+        function(element) { return element.offsetHeight > 0; });
   },
 });

@@ -18,6 +18,9 @@ class StorageInfoFetcher :
     // Called when the storage has been calculated.
     virtual void OnGetUsageInfo(const storage::UsageInfoEntries& entries) = 0;
 
+    // Called when the storage has been cleared.
+    virtual void OnUsageInfoCleared(storage::QuotaStatusCode code) = 0;
+
    protected:
     virtual ~Observer() {}
   };
@@ -25,7 +28,13 @@ class StorageInfoFetcher :
   explicit StorageInfoFetcher(storage::QuotaManager* quota_manager);
 
   // Asynchronously fetches the StorageInfo.
-  void Run();
+  void FetchStorageInfo();
+
+  // Asynchronously clears storage for the given host.
+  void ClearStorage(const std::string& host, storage::StorageType type);
+
+  // Called when usage has been cleared.
+  void OnUsageCleared(storage::QuotaStatusCode code);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

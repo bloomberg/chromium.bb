@@ -39,6 +39,14 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * The category selected by the user.
+     */
+    categorySelected: {
+      type: String,
+      notify: true,
+    },
   },
 
   ready: function() {
@@ -92,12 +100,13 @@ Polymer({
    */
   onTapCategory: function(event) {
     var description = event.currentTarget.querySelector('.flex').innerText;
-    var page = this.computeCategoryTextId(
+    this.categorySelected = this.computeCategoryTextId(
         this.computeCategoryFromDesc(description));
     this.currentRoute = {
       page: this.currentRoute.page,
       section: 'privacy',
-      subpage: ['site-settings', 'site-settings-category-' + page],
+      subpage: ['site-settings', 'site-settings-category-' +
+          this.categorySelected],
     };
   },
 });

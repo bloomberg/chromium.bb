@@ -4,8 +4,10 @@
 
 #include "chrome/browser/storage/storage_info_fetcher.h"
 
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 
 StorageInfoFetcher::StorageInfoFetcher(storage::QuotaManager* quota_manager)
@@ -15,13 +17,25 @@ StorageInfoFetcher::StorageInfoFetcher(storage::QuotaManager* quota_manager)
 StorageInfoFetcher::~StorageInfoFetcher() {
 }
 
-void StorageInfoFetcher::Run() {
+void StorageInfoFetcher::FetchStorageInfo() {
   // QuotaManager must be called on IO thread, but the callback must then be
   // called on the UI thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&StorageInfoFetcher::GetUsageInfo, this,
           base::Bind(&StorageInfoFetcher::OnGetUsageInfoInternal, this)));
+}
+
+void StorageInfoFetcher::ClearStorage(
+    const std::string& host, storage::StorageType type) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&storage::QuotaManager::DeleteHostData,
+                 quota_manager_,
+                 host,
+                 type,
+                 storage::QuotaClient::kAllClientsMask,
+                 base::Bind(&StorageInfoFetcher::OnUsageCleared, this)));
 }
 
 void StorageInfoFetcher::AddObserver(Observer* observer) {
@@ -46,6 +60,12 @@ void StorageInfoFetcher::OnGetUsageInfoInternal(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&StorageInfoFetcher::InvokeCallback, this));
+}
+
+void StorageInfoFetcher::OnUsageCleared(storage::QuotaStatusCode code) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnUsageInfoCleared(code));
 }
 
 void StorageInfoFetcher::InvokeCallback() {

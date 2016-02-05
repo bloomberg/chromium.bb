@@ -104,7 +104,7 @@
         <settings-subheader i18n-values="page-title:siteSettings">
         </settings-subheader>
         <settings-site-settings-page current-route="{{currentRoute}}"
-            prefs="{{prefs}}">
+            prefs="{{prefs}}" category-selected="{{categorySelected}}">
         </settings-site-settings-page>
       </neon-animatable>
 
@@ -191,7 +191,9 @@
       </neon-animatable>
 
       <neon-animatable id="site-details">
-        <site-details prefs="{{prefs}}" origin="{{originSelected}}">
+        <site-details prefs="{{prefs}}" origin="{{originSelected}}"
+            current-route="{{currentRoute}}"
+            category-selected="{{categorySelected}}">
         </site-details>
       </neon-animatable>
       <neon-animatable id="clear-browsing-data">

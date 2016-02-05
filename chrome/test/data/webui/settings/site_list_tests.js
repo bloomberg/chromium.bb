@@ -139,6 +139,11 @@ cr.define('site_list', function() {
         testElement.categorySubtype = subtype;
         testElement.categoryEnabled = true;
         testElement.prefs = prefs;
+        testElement.currentRoute = {
+          page: 'dummy',
+          section: 'privacy',
+          subpage: ['site-settings', 'site-settings-category-location'],
+        };
       }
 
       test('Empty list', function() {

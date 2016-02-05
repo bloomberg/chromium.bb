@@ -31,6 +31,14 @@ Polymer({
     },
 
     /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+
+    /**
      * Represents the state of the main toggle shown for the category. For
      * example, the Location category can be set to Block/Ask so false, in that
      * case, represents Block and true represents Ask.
