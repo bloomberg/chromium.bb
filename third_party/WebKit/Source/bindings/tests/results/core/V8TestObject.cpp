@@ -119,7 +119,9 @@ static void FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8SetReturnValueInt(info, 1);
@@ -133,7 +135,9 @@ static void FEATURE1_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8SetReturnValueInt(info, 2);
@@ -147,7 +151,9 @@ static void FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName2Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8SetReturnValueInt(info, 3);
@@ -161,7 +167,9 @@ static void FEATURE2_RUNTIME_AND_EXPERIMENT_ENABLED_CONST2ConstantGetterCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName2Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8SetReturnValueInt(info, 4);
@@ -175,7 +183,9 @@ static void FEATURE3_RUNTIME_AND_EXPERIMENT_ENABLED_CONST1ConstantGetterCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName3Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8SetReturnValueInt(info, 5);
@@ -2870,7 +2880,9 @@ static void experimentRuntimeEnabledLongAttributeAttributeGetter(const v8::Funct
     String memberErrorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8::Local<v8::Object> holder = info.Holder();
@@ -2885,7 +2897,9 @@ static void experimentRuntimeEnabledLongAttributeAttributeGetterCallback(const v
     String memberErrorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeGetter(info);
@@ -5425,7 +5439,9 @@ static void unscopeableExperimentEnabledLongAttributeAttributeGetter(const v8::F
     String memberErrorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     v8::Local<v8::Object> holder = info.Holder();
@@ -5440,7 +5456,9 @@ static void unscopeableExperimentEnabledLongAttributeAttributeGetterCallback(con
     String memberErrorMessage;
     if (!OriginTrials::featureNameEnabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     TestObjectV8Internal::unscopeableExperimentEnabledLongAttributeAttributeGetter(info);
@@ -10743,7 +10761,9 @@ static void experimentEnabledVoidMethodMethodCallback(const v8::FunctionCallback
     String memberErrorMessage;
     if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     TestObjectV8Internal::experimentEnabledVoidMethodMethod(info);
@@ -10763,7 +10783,9 @@ static void perWorldBindingsExperimentEnabledVoidMethodMethodCallback(const v8::
     String memberErrorMessage;
     if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethod(info);
@@ -10783,7 +10805,9 @@ static void perWorldBindingsExperimentEnabledVoidMethodMethodCallbackForMainWorl
     String memberErrorMessage;
     if (!OriginTrials::featureName1Enabled(executionContext, memberErrorMessage)) {
          v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         if (!memberErrorMessage.isEmpty()) {
+             toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
+         }
          return;
     }
     TestObjectV8Internal::perWorldBindingsExperimentEnabledVoidMethodMethodForMainWorld(info);

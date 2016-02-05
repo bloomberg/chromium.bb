@@ -60,7 +60,9 @@ const char* validValues[] = {
 String {{errorName}};
 if (!{{experiment_name}}(executionContext, {{errorName}})) {
      v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-     toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
+     if (!{{errorName}}.isEmpty()) {
+         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, {{errorName}}));
+     }
      return;
 }
 {% endif %}
