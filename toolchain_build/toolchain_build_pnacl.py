@@ -90,9 +90,13 @@ CROSS_MINGW_LIBPATH = '/usr/lib/gcc/i686-w64-mingw32/4.6'
 MINGW_PATH = os.path.join(NACL_DIR, 'mingw32')
 MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 
-CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
-                            'llvm-build', 'Release+Asserts', 'bin', 'clang')
-CHROME_CLANGXX = CHROME_CLANG + '++'
+CHROME_CLANG_DIR = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
+                                'llvm-build', 'Release+Asserts', 'bin')
+CHROME_CLANG = os.path.join(CHROME_CLANG_DIR, 'clang')
+CHROME_CLANGXX = os.path.join(CHROME_CLANG_DIR, 'clang++')
+
+# Use an arbitrary, large enough constant
+GOMA_JOBS = 100
 
 # Required SDK version and target version for Mac builds.
 # See MAC_SDK_FLAGS, below.
@@ -238,6 +242,19 @@ def AflFuzzEnvList(host, options):
   arg_map = AflFuzzEnvMap(host, options)
   return sorted([key + '=' + arg_map[key] for key in arg_map])
 
+def GomaCompilers(host, options):
+  cc, cxx, _, _ = CompilersForHost(host)
+  if not options.goma or (cc, cxx) != (CHROME_CLANG, CHROME_CLANGXX):
+    return (cc, cxx)
+  return (os.path.join(options.goma, 'clang'),
+          os.path.join(options.goma, 'clang++'))
+
+def GomaPathDirs(host, options):
+  cc, cxx, _, _ = CompilersForHost(host)
+  if not options.goma or (cc, cxx) != (CHROME_CLANG, CHROME_CLANGXX):
+    return []
+  return [CHROME_CLANG_DIR]
+
 def GSDJoin(*args):
   return '_'.join([pynacl.gsd_storage.LegalizeName(arg) for arg in args])
 
@@ -328,6 +345,9 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
     cc, cxx, ar, ranlib = CompilersForHost(host)
     hashables += [cc, cxx, ar, ranlib]
 
+    if options.goma:
+      cc, cxx = GomaCompilers(host, options)
+
     # Introduce afl-fuzz compiler wrappers if needed.
     if use_afl_fuzz:
       cc, cxx = AflFuzzCompilers(options.afl_fuzz_dir)
@@ -371,9 +391,11 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
   return configure_args, InputsForCommands(hashables), tool_deps
 
 
-def LibCxxHostArchFlags(host):
+def LibCxxHostArchFlags(host, options):
   cc, cxx, _, _ = CompilersForHost(host)
   hashables = [cc, cxx]
+  if options.goma:
+    cc, cxx = GomaCompilers(host, options)
   cmake_flags = []
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if TripleIsLinux(host) and not TripleIsX8664(host):
@@ -400,6 +422,8 @@ def CmakeHostArchFlags(host, options):
   else:
     cc, cxx, _, _ = CompilersForHost(host)
   hashables = [cc, cxx]
+  if options.goma:
+    cc, cxx = GomaCompilers(host, options)
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if ProgramPath('ccache'):
@@ -456,13 +480,16 @@ def LLVMConfigureAssertionsFlags(options):
     return ['--disable-debug', '--disable-assertions']
 
 
-def MakeCommand(host):
+def MakeCommand(host, options):
   make_command = ['make']
   if not pynacl.platform.IsWindows() or pynacl.platform.IsCygWin():
     # The make that ships with msys sometimes hangs when run with -j.
     # The ming32-make that comes with the compiler itself reportedly doesn't
     # have this problem, but it has issues with pathnames with LLVM's build.
-    make_command.append('-j%(cores)s')
+    if options.goma:
+      make_command.append('-j%s' % GOMA_JOBS)
+    else:
+      make_command.append('-j%(cores)s')
 
   if TripleIsWindows(host):
     # There appears to be nothing we can pass at top-level configure time
@@ -471,6 +498,13 @@ def MakeCommand(host):
     # of the sub-configure runs, which are run via make.
     make_command.append('HAVE_LIBICONV=no')
   return make_command
+
+
+def NinjaCommand(host, options):
+  ninja_command = ['ninja']
+  if options.goma:
+    ninja_command.append('-j%s' % GOMA_JOBS)
+  return ninja_command
 
 
 def CopyWindowsHostLibs(host):
@@ -634,7 +668,7 @@ def HostLibs(host, options):
     })
   elif not options.gcc:
     # Libc++ is only tested with the clang build
-    libcxx_host_arch_flags, libcxx_inputs = LibCxxHostArchFlags(host)
+    libcxx_host_arch_flags, libcxx_inputs = LibCxxHostArchFlags(host, options)
     libs.update({
         H('libcxx'): {
             'dependencies': ['libcxx_src', 'libcxxabi_src'],
@@ -650,8 +684,10 @@ def HostLibs(host, options):
                       '-DLIBCXX_ENABLE_SHARED=ON',
                       '-DCMAKE_INSTALL_PREFIX=',
                       '-DCMAKE_INSTALL_NAME_DIR=@executable_path/../lib',
-                      '%(libcxx_src)s']),
-                command.Command(MakeCommand(host) + ['VERBOSE=1']),
+                      '%(libcxx_src)s'],
+                    path_dirs=GomaPathDirs(host, options)),
+                command.Command(MakeCommand(host, options) + ['VERBOSE=1'],
+                                path_dirs=GomaPathDirs(host, options)),
                 command.Command(MAKE_DESTDIR_CMD + ['VERBOSE=1', 'install']),
             ],
         },
@@ -729,8 +765,10 @@ def HostTools(host, options):
                   '--target=arm-nacl',
                   '--with-sysroot=/le32-nacl',
                   '--without-gas'
-                  ])] + DummyDirCommands(binutils_dummy_dirs) + [
-              command.Command(MakeCommand(host)),
+                  ], path_dirs=GomaPathDirs(host, options))] +
+              DummyDirCommands(binutils_dummy_dirs) + [
+              command.Command(MakeCommand(host, options),
+                              path_dirs=GomaPathDirs(host, options)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               [command.RemoveDirectory(os.path.join('%(output)s', dir))
                for dir in ('lib', 'lib32')] +
@@ -835,11 +873,13 @@ def HostTools(host, options):
                   '-DLLVM_TARGETS_TO_BUILD=X86;ARM;Mips;JSBackend',
                   '-DSUBZERO_TARGETS_TO_BUILD=ARM32;MIPS32;X8632;X8664',
                   '%(llvm_src)s'],
-                  env=llvm_cmake_config_env)] +
+                  env=llvm_cmake_config_env,
+                  path_dirs=GomaPathDirs(host, options))] +
               CopyHostLibcxxForLLVMBuild(host, 'lib', options) +
-              [command.Command(['ninja', '-v'],
+              [command.Command(NinjaCommand(host, options) + ['-v'],
+                               path_dirs=GomaPathDirs(host, options),
                                env=AflFuzzEnvMap(host, options)),
-               command.Command(['ninja', 'install'])] +
+               command.Command(NinjaCommand(host, options) + ['install'])] +
               CreateSymLinksToDirectToNaClTools(host)
       },
   }
@@ -895,18 +935,20 @@ def HostTools(host, options):
                    '--with-binutils-include=%(abs_binutils_pnacl_src)s/include',
                    '--with-clang-srcdir=%(abs_clang_src)s',
                    'ac_cv_have_decl_strerror_s=no',
-                  ] + shared)] +
+                  ] + shared,
+                  path_dirs=GomaPathDirs(host, options))] +
               CopyHostLibcxxForLLVMBuild(
                   host,
                   os.path.join(('Debug+Asserts' if HostIsDebug(options)
                                 else 'Release+Asserts'), 'lib'),
                   options) +
-              [command.Command(MakeCommand(host) +
+              [command.Command(MakeCommand(host, options) +
                   AflFuzzEnvList(host, options) + [
                   'VERBOSE=1',
                   'PNACL_BROWSER_TRANSLATOR=0',
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
-                  'all']),
+                  'all'],
+                  path_dirs=GomaPathDirs(host, options)),
               command.Command(MAKE_DESTDIR_CMD + [
                   'SUBZERO_SRC_ROOT=%(abs_subzero_src)s',
                   'install'])] +
@@ -1007,7 +1049,8 @@ def HostToolsDirectToNacl(host, options):
                                  '-I', os.path.dirname(NACL_DIR),
                                  '-DREDIRECT_DATA="redirector_table_pnacl.txt"',
                                  os.path.join(REDIRECTOR_WIN32_SRC,
-                                              'redirector.c')]),
+                                              'redirector.c')],
+                                path_dirs=GomaPathDirs(host, options)),
             ],
         },
     })
@@ -1048,8 +1091,10 @@ def HostToolsDirectToNacl(host, options):
                    # version we use to build.
                    '--disable-gold',
                    '--enable-targets=x86_64-nacl,i686-nacl',
-                   '--disable-werror']),
-              command.Command(MakeCommand(host)),
+                   '--disable-werror'],
+                  path_dirs=GomaPathDirs(host, options)),
+              command.Command(MakeCommand(host, options),
+                              path_dirs=GomaPathDirs(host, options)),
               command.Command(MAKE_DESTDIR_CMD + ['install-strip'])] +
               # Remove the share dir from this binutils build and leave the one
               # from the newer version used for bitcode linking. Always remove
@@ -1272,6 +1317,8 @@ def main():
   parser.add_argument('--afl-fuzz-dir',
                       help='Compile using afl-fuzz compiler wrappers in'
                       + ' given directory')
+  parser.add_argument('--goma',
+                      help='Compile using goma in given directory')
   args, leftover_args = parser.parse_known_args()
   if '-h' in leftover_args or '--help' in leftover_args:
     print 'The following arguments are specific to toolchain_build_pnacl.py:'
