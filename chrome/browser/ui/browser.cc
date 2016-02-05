@@ -523,21 +523,6 @@ Browser::~Browser() {
   if (tab_restore_service)
     tab_restore_service->BrowserClosed(live_tab_context());
 
-#if !defined(OS_MACOSX)
-  if (!chrome::GetBrowserCount(profile_)) {
-    // We're the last browser window with this profile. We need to nuke the
-    // TabRestoreService, which will start the shutdown of the
-    // NavigationControllers and allow for proper shutdown. If we don't do this
-    // chrome won't shutdown cleanly, and may end up crashing when some
-    // thread tries to use the IO thread (or another thread) that is no longer
-    // valid.
-    // This isn't a valid assumption for Mac OS, as it stays running after
-    // the last browser has closed. The Mac equivalent is in its app
-    // controller.
-    TabRestoreServiceFactory::ResetForProfile(profile_);
-  }
-#endif
-
   profile_pref_registrar_.RemoveAll();
 
   encoding_auto_detect_.Destroy();
