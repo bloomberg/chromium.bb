@@ -46,6 +46,8 @@
         'bluetooth_channel_mac.h',
         'bluetooth_classic_device_mac.mm',
         'bluetooth_classic_device_mac.h',
+        'bluetooth_classic_win.cc',
+        'bluetooth_classic_win.h',
         'bluetooth_device.cc',
         'bluetooth_device.h',
         'bluetooth_device_android.h',

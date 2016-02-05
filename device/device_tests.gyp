@@ -177,6 +177,8 @@
         }],
         ['OS=="win"', {
           'sources': [
+            'bluetooth/bluetooth_classic_win_fake.cc',
+            'bluetooth/bluetooth_classic_win_fake.h',
             'bluetooth/bluetooth_low_energy_win_fake.h',
             'bluetooth/bluetooth_low_energy_win_fake.cc',
           ],
