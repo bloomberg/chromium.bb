@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/cocoa/animation_utils.h"
 #include "ui/base/ui_base_switches.h"
@@ -117,8 +118,32 @@ CALayerTree::ContentLayer::ContentLayer(
       contents_rect(contents_rect),
       rect(rect),
       background_color(background_color),
-      edge_aa_mask(edge_aa_mask),
+      ca_edge_aa_mask(0),
       opacity(opacity) {
+  // Because the root layer has setGeometryFlipped:YES, there is some ambiguity
+  // about what exactly top and bottom mean. This ambiguity is resolved in
+  // different ways for solid color CALayers and for CALayers that have content
+  // (surprise!). For CALayers with IOSurface content, the top edge in the AA
+  // mask refers to what appears as the bottom edge on-screen. For CALayers
+  // without content (solid color layers), the top edge in the AA mask is the
+  // top edge on-screen.
+  // http://crbug.com/567946
+  if (edge_aa_mask & GL_CA_LAYER_EDGE_LEFT_CHROMIUM)
+    ca_edge_aa_mask |= kCALayerLeftEdge;
+  if (edge_aa_mask & GL_CA_LAYER_EDGE_RIGHT_CHROMIUM)
+    ca_edge_aa_mask |= kCALayerRightEdge;
+  if (io_surface) {
+    if (edge_aa_mask & GL_CA_LAYER_EDGE_TOP_CHROMIUM)
+      ca_edge_aa_mask |= kCALayerBottomEdge;
+    if (edge_aa_mask & GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM)
+      ca_edge_aa_mask |= kCALayerTopEdge;
+  } else {
+    if (edge_aa_mask & GL_CA_LAYER_EDGE_TOP_CHROMIUM)
+      ca_edge_aa_mask |= kCALayerTopEdge;
+    if (edge_aa_mask & GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM)
+      ca_edge_aa_mask |= kCALayerBottomEdge;
+  }
+
   // Ensure that the IOSurface be in use as soon as it is added to a
   // ContentLayer, so that, by the time that the call to SwapBuffers completes,
   // all IOSurfaces that can be used as CALayer contents in the future will be
@@ -132,7 +157,7 @@ CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
-      edge_aa_mask(layer.edge_aa_mask),
+      ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
       ca_layer(layer.ca_layer) {
   DCHECK(!layer.ca_layer);
@@ -347,7 +372,7 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_contents_rect = true;
   bool update_rect = true;
   bool update_background_color = true;
-  bool update_edge_aa_mask = true;
+  bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
   if (old_layer) {
     DCHECK(old_layer->ca_layer);
@@ -356,7 +381,7 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
     update_background_color = old_layer->background_color != background_color;
-    update_edge_aa_mask = old_layer->edge_aa_mask != edge_aa_mask;
+    update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
   } else {
     ca_layer.reset([[CALayer alloc] init]);
@@ -366,7 +391,7 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   DCHECK_EQ([ca_layer superlayer], superlayer);
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
-                         update_edge_aa_mask || update_opacity;
+                         update_ca_edge_aa_mask || update_opacity;
 
   if (update_contents) {
     [ca_layer setContents:static_cast<id>(io_surface.get())];
@@ -392,8 +417,8 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
         CGColorSpaceCreateWithName(kCGColorSpaceSRGB), rgba_color_components));
     [ca_layer setBackgroundColor:srgb_background_color];
   }
-  if (update_edge_aa_mask)
-    [ca_layer setEdgeAntialiasingMask:edge_aa_mask];
+  if (update_ca_edge_aa_mask)
+    [ca_layer setEdgeAntialiasingMask:ca_edge_aa_mask];
   if (update_opacity)
     [ca_layer setOpacity:opacity];
 

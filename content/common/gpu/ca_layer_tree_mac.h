@@ -167,7 +167,9 @@ class CALayerTree {
     gfx::RectF contents_rect;
     gfx::Rect rect;
     unsigned background_color = 0;
-    unsigned edge_aa_mask = 0;
+    // Note that the CoreAnimation edge antialiasing mask is not the same as
+    // the edge antialiasing mask passed to the constructor.
+    CAEdgeAntialiasingMask ca_edge_aa_mask = 0;
     float opacity = 1;
     base::scoped_nsobject<CALayer> ca_layer;
 
