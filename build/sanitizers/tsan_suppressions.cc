@@ -277,12 +277,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/569682
 "race:blink::ThreadState::visitStackRoots\n"
 
-// http://crbug.com/571735
-"deadlock:mojo::edk::RawChannel::Init\n"
-
-// http://crbug.com/571735
-"deadlock:mojo::edk::MessagePipeDispatcher::TransportStarted\n"
-
 // http://crbug.com/582274
 "race:usrsctp_close\n"
 
