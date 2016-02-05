@@ -60201,6 +60201,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="5" label="Error: Allocator is corrupt."/>
   <int value="6" label="Error: Allocator is full."/>
   <int value="7" label="Error: Allocator failed (unknown error)."/>
+  <int value="8" label="Error: Unknown histogram type."/>
 </enum>
 
 <enum name="CredentialFilteredType" type="int">

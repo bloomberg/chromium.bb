@@ -43,6 +43,9 @@ enum CreateHistogramResultType {
   // Could not allocate histogram memory due to unknown error.
   CREATE_HISTOGRAM_ALLOCATOR_ERROR,
 
+  // Histogram was of unknown type.
+  CREATE_HISTOGRAM_UNKNOWN_TYPE,
+
   // Always keep this at the end.
   CREATE_HISTOGRAM_MAX
 };
@@ -236,6 +239,7 @@ HistogramBase* CreatePersistentHistogram(
           counts_data,
           histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata);
+      DCHECK(histogram);
       break;
     case LINEAR_HISTOGRAM:
       histogram = LinearHistogram::PersistentGet(
@@ -246,6 +250,7 @@ HistogramBase* CreatePersistentHistogram(
           counts_data,
           histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata);
+      DCHECK(histogram);
       break;
     case BOOLEAN_HISTOGRAM:
       histogram = BooleanHistogram::PersistentGet(
@@ -253,6 +258,7 @@ HistogramBase* CreatePersistentHistogram(
           ranges,
           counts_data,
           &histogram_data_ptr->samples_metadata);
+      DCHECK(histogram);
       break;
     case CUSTOM_HISTOGRAM:
       histogram = CustomHistogram::PersistentGet(
@@ -261,15 +267,20 @@ HistogramBase* CreatePersistentHistogram(
           counts_data,
           histogram_data.bucket_count,
           &histogram_data_ptr->samples_metadata);
+      DCHECK(histogram);
       break;
+    default:
+      NOTREACHED();
   }
 
   if (histogram) {
     DCHECK_EQ(histogram_data.histogram_type, histogram->GetHistogramType());
     histogram->SetFlags(histogram_data.flags);
+    RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
+  } else {
+    RecordCreateHistogramResult(CREATE_HISTOGRAM_UNKNOWN_TYPE);
   }
 
-  RecordCreateHistogramResult(CREATE_HISTOGRAM_SUCCESS);
   return histogram;
 }
 
@@ -395,6 +406,7 @@ HistogramBase* AllocatePersistentHistogram(
     result = CREATE_HISTOGRAM_ALLOCATOR_ERROR;
   }
   RecordCreateHistogramResult(result);
+  NOTREACHED() << "error=" << result;
 
   return nullptr;
 }
