@@ -59,6 +59,7 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
     case SVGParseStatus::ZeroValue:
         return std::make_pair("A value of zero is not valid. (", ")");
     case SVGParseStatus::ParsingFailed:
+        return std::make_pair("Invalid value, ", ".");
     default:
         ASSERT_NOT_REACHED();
         break;
@@ -106,24 +107,16 @@ String SVGParsingError::format(const String& tagName, const QualifiedName& name,
 {
     StringBuilder builder;
 
-    // TODO(fs): Remove this case once enough specific errors have been added.
-    if (status() == SVGParseStatus::ParsingFailed) {
-        builder.appendLiteral("Invalid value for ");
-        appendErrorContextInfo(builder, tagName, name);
-        builder.append('=');
-        appendValue(builder, *this, value);
-    } else {
-        appendErrorContextInfo(builder, tagName, name);
-        builder.appendLiteral(": ");
+    appendErrorContextInfo(builder, tagName, name);
+    builder.appendLiteral(": ");
 
-        if (hasLocus() && locus() == value.length())
-            builder.appendLiteral("Unexpected end of attribute. ");
+    if (hasLocus() && locus() == value.length())
+        builder.appendLiteral("Unexpected end of attribute. ");
 
-        auto message = messageForStatus(status());
-        builder.append(message.first);
-        appendValue(builder, *this, value);
-        builder.append(message.second);
-    }
+    auto message = messageForStatus(status());
+    builder.append(message.first);
+    appendValue(builder, *this, value);
+    builder.append(message.second);
     return builder.toString();
 }
 
