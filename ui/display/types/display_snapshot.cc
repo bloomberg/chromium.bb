@@ -6,6 +6,16 @@
 
 namespace ui {
 
+namespace {
+
+// The display serial number beginning byte position and its length in the
+// EDID number as defined in the spec.
+// https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
+const size_t kSerialNumberBeginingByte = 12U;
+const size_t kSerialNumberLengthInBytes = 4U;
+
+}  // namespace
+
 DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  const gfx::Point& origin,
                                  const gfx::Size& physical_size,
@@ -15,6 +25,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  std::string display_name,
                                  const base::FilePath& sys_path,
                                  const std::vector<const DisplayMode*>& modes,
+                                 const std::vector<uint8_t>& edid,
                                  const DisplayMode* current_mode,
                                  const DisplayMode* native_mode)
     : display_id_(display_id),
@@ -26,9 +37,17 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       display_name_(display_name),
       sys_path_(sys_path),
       modes_(modes),
+      edid_(edid),
       current_mode_(current_mode),
       native_mode_(native_mode),
-      product_id_(kInvalidProductID) {}
+      product_id_(kInvalidProductID) {
+  // We must explicitly clear out the bytes that represent the serial number.
+  const size_t end =
+      std::min(kSerialNumberBeginingByte + kSerialNumberLengthInBytes,
+               edid_.size());
+  for (size_t i = kSerialNumberBeginingByte; i < end; ++i)
+    edid_[i] = 0;
+}
 
 DisplaySnapshot::~DisplaySnapshot() {}
 

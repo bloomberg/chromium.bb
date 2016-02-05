@@ -54,6 +54,8 @@ DisplaySnapshot_Params GetDisplaySnapshotParams(
   for (size_t i = 0; i < display.modes().size(); ++i)
     params.modes.push_back(GetDisplayModeParams(*display.modes()[i]));
 
+  params.edid = display.edid();
+
   params.has_current_mode = display.current_mode() != NULL;
   if (params.has_current_mode)
     params.current_mode = GetDisplayModeParams(*display.current_mode());

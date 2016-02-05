@@ -30,6 +30,7 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
                       params.display_name,
                       params.sys_path,
                       std::vector<const DisplayMode*>(),
+                      params.edid,
                       NULL,
                       NULL),
       string_representation_(params.string_representation) {

@@ -43,6 +43,7 @@ struct OZONE_BASE_EXPORT DisplaySnapshot_Params {
   std::string display_name;
   base::FilePath sys_path;
   std::vector<DisplayMode_Params> modes;
+  std::vector<uint8_t> edid;
   bool has_current_mode = false;
   DisplayMode_Params current_mode;
   bool has_native_mode = false;
