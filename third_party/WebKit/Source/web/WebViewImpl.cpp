@@ -646,6 +646,8 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         WebMouseWheelEvent syntheticWheel;
         const float tickDivisor = WheelEvent::TickMultiplier;
 
+        syntheticWheel.type = WebInputEvent::MouseWheel;
+        syntheticWheel.timeStampSeconds = WTF::monotonicallyIncreasingTime();
         syntheticWheel.deltaX = delta.width;
         syntheticWheel.deltaY = delta.height;
         syntheticWheel.wheelTicksX = delta.width / tickDivisor;
@@ -663,6 +665,7 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta, const WebFloatSize& veloci
         WebGestureEvent syntheticGestureEvent;
 
         syntheticGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        syntheticGestureEvent.timeStampSeconds = WTF::monotonicallyIncreasingTime();
         syntheticGestureEvent.data.scrollUpdate.preventPropagation = true;
         syntheticGestureEvent.data.scrollUpdate.deltaX = delta.width;
         syntheticGestureEvent.data.scrollUpdate.deltaY = delta.height;
