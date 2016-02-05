@@ -247,9 +247,11 @@ class TestAImpl : public TestA {
  public:
   TestAImpl(ApplicationImpl* app_impl,
             TesterContext* test_context,
-            InterfaceRequest<TestA> request)
+            InterfaceRequest<TestA> request,
+            InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
     connection_ = app_impl->ConnectToApplication(kTestBURLString);
+    connection_->AddService<TestC>(factory);
     connection_->ConnectToService(&b_);
   }
 
@@ -363,17 +365,10 @@ class Tester : public ApplicationDelegate,
     return true;
   }
 
-  bool ConfigureOutgoingConnection(ApplicationConnection* connection) override {
-    // If we're connecting to B, then add C.
-    if (connection->GetRemoteApplicationURL() == kTestBURLString)
-      connection->AddService<TestC>(this);
-    return true;
-  }
-
   void Create(ApplicationConnection* connection,
               InterfaceRequest<TestA> request) override {
     a_bindings_.push_back(
-        new TestAImpl(app_.get(), context_, std::move(request)));
+        new TestAImpl(app_.get(), context_, std::move(request), this));
   }
 
   void Create(ApplicationConnection* connection,

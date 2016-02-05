@@ -29,11 +29,6 @@ class ApplicationDelegate {
   // Return false to reject the connection entirely.
   virtual bool ConfigureIncomingConnection(ApplicationConnection* connection);
 
-  // Override this method to configure what services a connection supports when
-  // connecting to another app.
-  // Return false to reject the connection entirely.
-  virtual bool ConfigureOutgoingConnection(ApplicationConnection* connection);
-
   // Called when the shell connection has a connection error.
   //
   // Return true to shutdown the application. Return false to skip shutting

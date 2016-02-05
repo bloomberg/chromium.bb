@@ -87,8 +87,6 @@ scoped_ptr<ApplicationConnection>
                                std::move(remote_services_proxy),
                                std::move(local_services), params->TakeFilter(),
                                registry->GetConnectToApplicationCallback());
-  if (!delegate_->ConfigureOutgoingConnection(registry.get()))
-    return nullptr;
   return std::move(registry);
 }
 

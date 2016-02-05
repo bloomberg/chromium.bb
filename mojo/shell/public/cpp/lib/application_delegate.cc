@@ -19,11 +19,6 @@ bool ApplicationDelegate::ConfigureIncomingConnection(
   return true;
 }
 
-bool ApplicationDelegate::ConfigureOutgoingConnection(
-    ApplicationConnection* connection) {
-  return true;
-}
-
 bool ApplicationDelegate::OnShellConnectionError() {
   return true;
 }
