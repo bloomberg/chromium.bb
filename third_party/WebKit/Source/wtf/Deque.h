@@ -524,14 +524,14 @@ inline void DequeIteratorBase<T, inlineCapacity, Allocator>::decrement()
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::after() const
 {
-    ASSERT(m_index != m_deque->m_end);
+    RELEASE_ASSERT(m_index != m_deque->m_end);
     return &m_deque->m_buffer.buffer()[m_index];
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::before() const
 {
-    ASSERT(m_index != m_deque->m_start);
+    RELEASE_ASSERT(m_index != m_deque->m_start);
     if (!m_index)
         return &m_deque->m_buffer.buffer()[m_deque->m_buffer.capacity() - 1];
     return &m_deque->m_buffer.buffer()[m_index - 1];
