@@ -22,10 +22,8 @@ class Profile;
 //
 // To use this mechanism from a third party tool, perform the following steps:
 //   1) Create (or open) the registry key
-//      HKCU\Software\$PRODUCT_STRING_PATH\TriggeredReset where
-//      $PRODUCT_STRING_PATH is one of the values in
-//      chrome\common\chrome_constants.h, currently either "Google\\Chrome" or
-//      "Chromium".
+//      HKCU\Software\$PRODUCT_NAME\TriggeredReset where $PRODUCT_NAME is one
+//      of the values "Google\\Chrome" or "Chromium".
 //   2) Set a REG_SZ value called "ToolName" to the localized name of the tool.
 //      This string (truncated to kMaxToolNameLength) will be displayed in a
 //      notification UI. The "ToolName" should be just the name of the tool,

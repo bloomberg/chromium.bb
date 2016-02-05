@@ -10,14 +10,23 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/win/registry.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
+#if defined(GOOGLE_CHROME_BUILD)
+#define PRODUCT_NAME L"Google\\Chrome"
+#elif defined(CHROMIUM_BUILD)
+#define PRODUCT_NAME L"Chromium"
+#else
+#error Unknown branding
+#endif
+
 // The registry path where the TriggeredReset values get set. Note that this
-// uses the same path for both SxS (Canary) and non-SxS Chrome.
+// uses the same path for both SxS (Canary) and non-SxS Chrome. This is
+// intended to allow third parties to use the API without needing to be
+// aware of and maintain changes to Chrome's channel logic.
 const wchar_t kTriggeredResetRegistryPath[] =
-    L"Software\\" PRODUCT_STRING_PATH L"\\TriggeredReset";
+    L"Software\\" PRODUCT_NAME L"\\TriggeredReset";
 
 const wchar_t kTriggeredResetToolName[] = L"ToolName";
 const wchar_t kTriggeredResetTimestamp[] = L"Timestamp";
