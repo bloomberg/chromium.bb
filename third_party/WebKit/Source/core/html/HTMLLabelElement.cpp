@@ -203,6 +203,7 @@ bool HTMLLabelElement::willRespondToMouseClickEvents()
 
 void HTMLLabelElement::focus(const FocusParams& params)
 {
+    document().updateLayoutTreeIgnorePendingStylesheets();
     if (isFocusable()) {
         HTMLElement::focus(params);
         return;

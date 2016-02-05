@@ -573,6 +573,7 @@ void DateTimeEditElement::focusByOwner(Element* oldFocusedElement)
     if (oldFocusedElement && oldFocusedElement->isDateTimeFieldElement()) {
         DateTimeFieldElement* oldFocusedField = static_cast<DateTimeFieldElement*>(oldFocusedElement);
         size_t index = fieldIndexOf(*oldFocusedField);
+        document().updateLayoutTreeIgnorePendingStylesheets();
         if (index != invalidFieldIndex && oldFocusedField->isFocusable()) {
             oldFocusedField->focus();
             return;
@@ -604,6 +605,7 @@ void DateTimeEditElement::fieldValueChanged()
 
 bool DateTimeEditElement::focusOnNextFocusableField(size_t startIndex)
 {
+    document().updateLayoutTreeIgnorePendingStylesheets();
     for (size_t fieldIndex = startIndex; fieldIndex < m_fields.size(); ++fieldIndex) {
         if (m_fields[fieldIndex]->isFocusable()) {
             m_fields[fieldIndex]->focus();
@@ -626,6 +628,7 @@ bool DateTimeEditElement::focusOnPreviousField(const DateTimeFieldElement& field
     const size_t startFieldIndex = fieldIndexOf(field);
     if (startFieldIndex == invalidFieldIndex)
         return false;
+    document().updateLayoutTreeIgnorePendingStylesheets();
     size_t fieldIndex = startFieldIndex;
     while (fieldIndex > 0) {
         --fieldIndex;

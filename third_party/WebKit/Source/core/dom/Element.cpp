@@ -258,24 +258,9 @@ bool Element::layoutObjectIsFocusable() const
         return canvas->layoutObject() && canvas->layoutObject()->style()->visibility() == VISIBLE;
     }
 
-    // FIXME: These asserts should be in Node::isFocusable, but there are some
-    // callsites like Document::setFocusedElement that would currently fail on
-    // them. See crbug.com/251163
-    if (!layoutObject()) {
-        // We can't just use needsStyleRecalc() because if the node is in a
-        // display:none tree it might say it needs style recalc but the whole
-        // document is actually up to date.
-        // In addition, style cannot be cleared out for non-active documents,
-        // so in that case the childNeedsStyleRecalc check is invalid.
-        ASSERT(!document().isActive() || !document().childNeedsStyleRecalc());
-    }
-
     // FIXME: Even if we are not visible, we might have a child that is visible.
     // Hyatt wants to fix that some day with a "has visible content" flag or the like.
-    if (!layoutObject() || layoutObject()->style()->visibility() != VISIBLE)
-        return false;
-
-    return true;
+    return layoutObject() && layoutObject()->style()->visibility() == VISIBLE;
 }
 
 PassRefPtrWillBeRawPtr<Node> Element::cloneNode(bool deep)
@@ -2446,6 +2431,12 @@ bool Element::supportsSpatialNavigationFocus() const
 
 bool Element::isFocusable() const
 {
+    // We can't just use needsStyleRecalc() because if the node is in a
+    // display:none tree it might say it needs style recalc but the whole
+    // document is actually up to date.
+    // In addition, style cannot be cleared out for non-active documents, so in
+    // that case the childNeedsStyleRecalc check is invalid.
+    ASSERT(!document().isActive() || !document().childNeedsStyleRecalc());
     return inDocument() && supportsFocus() && !isInert() && layoutObjectIsFocusable();
 }
 

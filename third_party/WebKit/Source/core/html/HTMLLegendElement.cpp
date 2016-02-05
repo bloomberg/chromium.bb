@@ -55,6 +55,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
 
 void HTMLLegendElement::focus(const FocusParams& params)
 {
+    document().updateLayoutTreeIgnorePendingStylesheets();
     if (isFocusable()) {
         Element::focus(params);
         return;

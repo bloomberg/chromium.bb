@@ -3615,9 +3615,6 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
                 focusChangeBlocked = true;
                 newFocusedElement = nullptr;
             }
-            // Event handlers might make newFocusedElement dirty.
-            if (newFocusedElement)
-                updateLayoutTreeIgnorePendingStylesheets();
         }
 
         if (view()) {
@@ -3629,6 +3626,8 @@ bool Document::setFocusedElement(PassRefPtrWillBeRawPtr<Element> prpNewFocusedEl
         }
     }
 
+    if (newFocusedElement)
+        updateLayoutTreeIgnorePendingStylesheets();
     if (newFocusedElement && newFocusedElement->isFocusable()) {
         if (newFocusedElement->isRootEditableElement() && !acceptsEditingFocus(*newFocusedElement)) {
             // delegate blocks focus change
