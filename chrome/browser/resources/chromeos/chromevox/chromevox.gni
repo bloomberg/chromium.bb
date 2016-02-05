@@ -137,6 +137,8 @@ chromevox_modules = [
   "cvox2/background/output.js",
   "cvox2/background/panel.js",
   "cvox2/background/panel_command.js",
+  "cvox2/background/panel_menu.js",
+  "cvox2/background/panel_menu_item.js",
   "cvox2/background/tabs_automation_handler.js",
   "cvox2/background/tree_walker.js",
   "extensions/searchvox/abstract_result.js",

@@ -228,7 +228,8 @@ Output.ROLE_INFO_ = {
     inherits: 'abstractContainer'
   },
   menu: {
-    msgId: 'role_menu'
+    msgId: 'role_menu',
+    earconId: 'LISTBOX',
   },
   menuBar: {
     msgId: 'role_menubar',
@@ -453,8 +454,8 @@ Output.RULES = {
       enter: '$role'
     },
     menu: {
-      enter: '$name $role @@list_with_items($countChildren(menuItem)) ' +
-          '$description'
+      enter: '$name $role',
+      speak: '$name $role @@list_with_items($countChildren(menuItem))'
     },
     menuItem: {
       speak: '$name $role $if($haspopup, @has_submenu) ' +

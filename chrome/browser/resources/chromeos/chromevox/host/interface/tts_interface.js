@@ -110,6 +110,14 @@ cvox.TtsInterface.prototype.increaseOrDecreaseProperty =
 
 
 /**
+ * Converts an engine property value to a percentage from 0.00 to 1.00.
+ * @param {string} property The property to convert.
+ * @return {?number} The percentage of the property.
+ */
+cvox.TtsInterface.prototype.propertyToPercentage = function(property) { };
+
+
+/**
  * Returns the default properties of the first tts that has default properties.
  * @param {string} property Name of property.
  * @return {?number} The default value.

@@ -538,17 +538,6 @@ cvox.TtsBackground.prototype.onError_ = function(errorMessage) {
 };
 
 /**
- * Converts an engine property value to a percentage from 0.00 to 1.00.
- * @param {string} property The property to convert.
- * @return {?number} The percentage of the property.
- */
-cvox.TtsBackground.prototype.propertyToPercentage = function(property) {
-  return (this.ttsProperties[property] - this.propertyMin[property]) /
-         Math.abs(this.propertyMax[property] - this.propertyMin[property]);
-};
-
-
-/**
  * @override
  */
 cvox.TtsBackground.prototype.preprocess = function(text, properties) {
