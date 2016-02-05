@@ -1138,6 +1138,7 @@ struct RecoverLeafCursor {
  */
 static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
   const unsigned char *pPageHeader;  /* Header of *pPage */
+  unsigned nCells;                   /* Number of cells in the page */
 
   /* Release the current page. */
   if( pCursor->pPage ){
@@ -1167,10 +1168,17 @@ static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
     return SQLITE_OK;
   }
 
+  /* Leaf contains no data, skip it.  Empty tables, for instance. */
+  nCells = decodeUnsigned16(pPageHeader + kiPageCellCountOffset);;
+  if( nCells<1 ){
+    sqlite3PagerUnref(pPage);
+    return SQLITE_OK;
+  }
+
   /* Take ownership of the page and start decoding. */
   pCursor->pPage = pPage;
   pCursor->iCell = 0;
-  pCursor->nCells = decodeUnsigned16(pPageHeader + kiPageCellCountOffset);
+  pCursor->nCells = nCells;
   return SQLITE_OK;
 }
 

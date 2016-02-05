@@ -110,6 +110,23 @@ do_test recover-leaf-1.0 {
   execsql {SELECT t, n FROM leaf_recover ORDER BY rowid}
 } {{Leaf-node-generating line 0} 0 {Leaf-node-generating line 1} 1 {Leaf-node-generating line 2} 2 {Leaf-node-generating line 3} 3 {Leaf-node-generating line 4} 4 {Leaf-node-generating line 5} 5 {Leaf-node-generating line 6} 6 {Leaf-node-generating line 7} 7 {Leaf-node-generating line 8} 8 {Leaf-node-generating line 9} 9}
 
+# Empty table gives empty results.
+do_test recover-leaf-2.0 {
+  db close
+  sqlite3 db test.db
+  generate "empty" "Leaf-node-generating line " 0
+
+  db eval {
+    DROP TABLE IF EXISTS temp.leaf_recover;
+    CREATE VIRTUAL TABLE temp.leaf_recover USING recover(
+      empty,
+      t TEXT,
+      n INTEGER
+    );
+  }
+  execsql {SELECT t, n FROM leaf_recover ORDER BY rowid}
+} {}
+
 # Single level of interior node.
 do_test recover-interior-1.0 {
   db close
