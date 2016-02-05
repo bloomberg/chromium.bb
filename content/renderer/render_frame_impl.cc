@@ -96,8 +96,7 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
-#include "content/renderer/media/media_permission_dispatcher_impl.h"
-#include "content/renderer/media/media_permission_dispatcher_proxy.h"
+#include "content/renderer/media/media_permission_dispatcher.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
 #include "content/renderer/media/midi_dispatcher.h"
@@ -5970,16 +5969,9 @@ RendererMediaSessionManager* RenderFrameImpl::GetMediaSessionManager() {
 
 #endif  // defined(OS_ANDROID)
 
-scoped_ptr<media::MediaPermission> RenderFrameImpl::CreateMediaPermissionProxy(
-    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner) {
-  MediaPermissionDispatcherImpl* media_permission =
-      static_cast<MediaPermissionDispatcherImpl*>(GetMediaPermission());
-  return media_permission->CreateProxy(caller_task_runner);
-}
-
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
   if (!media_permission_dispatcher_)
-    media_permission_dispatcher_ = new MediaPermissionDispatcherImpl(this);
+    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
   return media_permission_dispatcher_;
 }
 

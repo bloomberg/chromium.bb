@@ -396,7 +396,17 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   // which means the permission will be granted automatically. This could be the
   // case when either the experiment is not enabled or the preference is not
   // enforced.
-  scoped_ptr<media::MediaPermission> media_permission;
+  //
+  // Note on |media_permission| lifetime: |media_permission| is owned by a frame
+  // (RenderFrameImpl). It is also stored as an indirect member of
+  // RTCPeerConnectionHandler (through PeerConnection/PeerConnectionInterface ->
+  // P2PPortAllocator -> FilteringNetworkManager -> |media_permission|).
+  // The RTCPeerConnectionHandler is owned as RTCPeerConnection::m_peerHandler
+  // in Blink, which will be reset in RTCPeerConnection::stop(). Since
+  // ActiveDOMObject::stop() is guaranteed to be called before a frame is
+  // detached, it is impossible for RTCPeerConnectionHandler to outlive the
+  // frame. Therefore using a raw pointer of |media_permission| is safe here.
+  media::MediaPermission* media_permission = nullptr;
   if (!GetContentClient()
            ->renderer()
            ->ShouldEnforceWebRTCRoutingPreferences()) {
@@ -453,10 +463,8 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
       if (create_media_permission) {
         content::RenderFrameImpl* render_frame =
             content::RenderFrameImpl::FromWebFrame(web_frame);
-        if (render_frame) {
-          media_permission = render_frame->CreateMediaPermissionProxy(
-              chrome_worker_thread_.task_runner());
-        }
+        if (render_frame)
+          media_permission = render_frame->GetMediaPermission();
         DCHECK(media_permission);
       }
     }
@@ -467,11 +475,10 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
 
   scoped_ptr<rtc::NetworkManager> network_manager;
   if (port_config.enable_multiple_routes) {
-    media::MediaPermission* media_permission_ptr = media_permission.get();
     FilteringNetworkManager* filtering_network_manager =
         new FilteringNetworkManager(network_manager_, requesting_origin,
-                                    std::move(media_permission));
-    if (media_permission_ptr) {
+                                    media_permission);
+    if (media_permission) {
       // Start permission check earlier to reduce any impact to call set up
       // time. It's safe to use Unretained here since both destructor and
       // Initialize can only be called on the worker thread.

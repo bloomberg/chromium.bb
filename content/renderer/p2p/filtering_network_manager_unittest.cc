@@ -127,17 +127,15 @@ class FilteringNetworkManagerTest : public testing::Test,
                                     public sigslot::has_slots<> {
  public:
   FilteringNetworkManagerTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : media_permission_(new MockMediaPermission()),
+        task_runner_(new base::TestSimpleTaskRunner()),
         task_runner_handle_(task_runner_) {}
   void SetupNetworkManager(bool multiple_routes_requested) {
     mock_network_manager_.reset(new MockNetworkManager());
-
-    scoped_ptr<MockMediaPermission> media_permission(new MockMediaPermission());
-    media_permission_ = media_permission.get();
     if (multiple_routes_requested) {
       FilteringNetworkManager* filtering_network_manager =
           new FilteringNetworkManager(mock_network_manager_.get(), GURL(),
-                                      std::move(media_permission));
+                                      media_permission_.get());
       filtering_network_manager->Initialize();
       network_manager_.reset(filtering_network_manager);
     } else {
@@ -205,8 +203,7 @@ class FilteringNetworkManagerTest : public testing::Test,
   scoped_ptr<rtc::NetworkManager> network_manager_;
   scoped_ptr<MockNetworkManager> mock_network_manager_;
 
-  // Raw pointer to MockMediaPermission. It's owned by FilteringNetworkManager.
-  MockMediaPermission* media_permission_ = nullptr;
+  scoped_ptr<MockMediaPermission> media_permission_;
 
   NetworkList network_list_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;

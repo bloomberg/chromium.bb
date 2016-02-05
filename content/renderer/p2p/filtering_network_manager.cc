@@ -17,9 +17,9 @@ namespace content {
 FilteringNetworkManager::FilteringNetworkManager(
     rtc::NetworkManager* network_manager,
     const GURL& requesting_origin,
-    scoped_ptr<media::MediaPermission> media_permission)
+    media::MediaPermission* media_permission)
     : network_manager_(network_manager),
-      media_permission_(std::move(media_permission)),
+      media_permission_(media_permission),
       requesting_origin_(requesting_origin),
       weak_ptr_factory_(this) {
   thread_checker_.DetachFromThread();
