@@ -5,12 +5,12 @@
 #ifndef WorkletGlobalScope_h
 #define WorkletGlobalScope_h
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SecurityContext.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
 

@@ -37,13 +37,13 @@
 
 namespace blink {
 
-PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
+PassOwnPtrWillBeRawPtr<WorkerDebuggerAgent> WorkerDebuggerAgent::create(V8Debugger* debugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
 {
-    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(workerThreadDebugger, inspectedWorkerGlobalScope, injectedScriptManager));
+    return adoptPtrWillBeNoop(new WorkerDebuggerAgent(debugger, inspectedWorkerGlobalScope, injectedScriptManager));
 }
 
-WorkerDebuggerAgent::WorkerDebuggerAgent(WorkerThreadDebugger* workerThreadDebugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
-    : InspectorDebuggerAgent(injectedScriptManager, workerThreadDebugger->debugger(), WorkerThreadDebugger::contextGroupId())
+WorkerDebuggerAgent::WorkerDebuggerAgent(V8Debugger* debugger, WorkerGlobalScope* inspectedWorkerGlobalScope, InjectedScriptManager* injectedScriptManager)
+    : InspectorDebuggerAgent(injectedScriptManager, debugger, WorkerThreadDebugger::contextGroupId())
     , m_inspectedWorkerGlobalScope(inspectedWorkerGlobalScope)
 {
 }

@@ -12,12 +12,18 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
+namespace v8 {
+class Isolate;
+}
+
 namespace blink {
+
+class V8DebuggerImpl;
 
 class CORE_EXPORT V8ProfilerAgentImpl : public V8ProfilerAgent {
     WTF_MAKE_NONCOPYABLE(V8ProfilerAgentImpl);
 public:
-    explicit V8ProfilerAgentImpl(v8::Isolate*);
+    explicit V8ProfilerAgentImpl(V8Debugger*);
     ~V8ProfilerAgentImpl() override;
 
     void setInspectorState(PassRefPtr<JSONObject> state) override { m_state = state; }
@@ -46,6 +52,7 @@ private:
 
     bool isRecording() const;
 
+    V8DebuggerImpl* m_debugger;
     v8::Isolate* m_isolate;
     RefPtr<JSONObject> m_state;
     InspectorFrontend::Profiler* m_frontend;

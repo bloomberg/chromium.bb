@@ -30,9 +30,9 @@
 
 #include "core/workers/SharedWorkerGlobalScope.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/events/MessageEvent.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"

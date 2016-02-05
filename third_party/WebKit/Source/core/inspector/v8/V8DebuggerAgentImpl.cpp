@@ -4,24 +4,23 @@
 
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "bindings/core/v8/V8RecursionScope.h"
 #include "core/dom/Microtask.h"
 #include "core/inspector/ContentSearchUtils.h"
-#include "core/inspector/ScriptCallFrame.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/AsyncCallChain.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
+#include "core/inspector/v8/PromiseTracker.h"
 #include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8AsyncCallTracker.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8StackTraceImpl.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
@@ -88,16 +87,16 @@ static String generateBreakpointId(const String& scriptId, int lineNumber, int c
     return scriptId + ':' + String::number(lineNumber) + ':' + String::number(columnNumber) + breakpointIdSuffix(source);
 }
 
-static ScriptCallFrame toScriptCallFrame(JavaScriptCallFrame* callFrame)
+static V8StackTraceImpl::Frame toScriptCallFrame(JavaScriptCallFrame* callFrame)
 {
     String scriptId = String::number(callFrame->sourceID());
     // FIXME(WK62725): Debugger line/column are 0-based, while console ones are 1-based.
     int line = callFrame->line() + 1;
     int column = callFrame->column() + 1;
-    return ScriptCallFrame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column);
+    return V8StackTraceImpl::Frame(callFrame->functionName(), scriptId, callFrame->scriptName(), line, column);
 }
 
-static void toScriptCallFrames(JavaScriptCallFrame* callFrame, Vector<ScriptCallFrame>& frames)
+static void toScriptCallFrames(JavaScriptCallFrame* callFrame, Vector<V8StackTraceImpl::Frame>& frames)
 {
     for (; callFrame; callFrame = callFrame->caller())
         frames.append(toScriptCallFrame(callFrame));
@@ -1141,16 +1140,16 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         const AsyncCallStackVector& callStacks = chain->callStacks();
         ASSERT(!callStacks.isEmpty());
 
-        RefPtr<ScriptCallStack> stack;
+        OwnPtr<V8StackTraceImpl> stack;
         v8::HandleScope scope(m_isolate);
         for (int i = callStacks.size() - 1; i >= 0; --i) {
             v8::Local<v8::Object> callFrames = callStacks.at(i)->callFrames(m_isolate);
             RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), callFrames);
             if (!jsCallFrame)
                 continue;
-            Vector<ScriptCallFrame> frames;
+            Vector<V8StackTraceImpl::Frame> frames;
             toScriptCallFrames(jsCallFrame.get(), frames);
-            stack = ScriptCallStack::create(callStacks.at(i)->description(), frames, stack);
+            stack = V8StackTraceImpl::create(callStacks.at(i)->description(), frames, stack.release());
         }
 
         if (stack) {
@@ -1354,7 +1353,7 @@ PassRefPtr<StackTrace> V8DebuggerAgentImpl::currentAsyncStackTrace()
     return result.release();
 }
 
-PassRefPtr<ScriptCallStack> V8DebuggerAgentImpl::currentAsyncStackTraceForConsole()
+PassOwnPtr<V8StackTraceImpl> V8DebuggerAgentImpl::currentAsyncStackTraceForRuntime()
 {
     if (!trackingAsyncCalls())
         return nullptr;
@@ -1364,15 +1363,15 @@ PassRefPtr<ScriptCallStack> V8DebuggerAgentImpl::currentAsyncStackTraceForConsol
     const AsyncCallStackVector& callStacks = chain->callStacks();
     if (callStacks.isEmpty())
         return nullptr;
-    RefPtr<ScriptCallStack> result;
+    OwnPtr<V8StackTraceImpl> result;
     v8::HandleScope scope(m_isolate);
     for (AsyncCallStackVector::const_reverse_iterator it = callStacks.rbegin(); it != callStacks.rend(); ++it) {
         RefPtr<JavaScriptCallFrame> callFrame = toJavaScriptCallFrame(chain->creationContext(m_isolate), (*it)->callFrames(m_isolate));
         if (!callFrame)
             break;
-        Vector<ScriptCallFrame> frames;
+        Vector<V8StackTraceImpl::Frame> frames;
         toScriptCallFrames(callFrame.get(), frames);
-        result = ScriptCallStack::create((*it)->description(), frames, result.release());
+        result = V8StackTraceImpl::create((*it)->description(), frames, result.release());
     }
     return result.release();
 }

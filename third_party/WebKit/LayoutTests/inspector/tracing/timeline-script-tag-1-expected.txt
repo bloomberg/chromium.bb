@@ -10,12 +10,10 @@ EvaluateScript Properties:
         columnNumber : <number>
         frame : <string>
         lineNumber : <number>
-        stackTrace : <object>
         url : .../inspector/tracing/resources/timeline-iframe-data.html
     }
     endTime : <number>
     frameId : <string>
-    stackTrace : <object>
     startTime : <number>
     type : "EvaluateScript"
 }

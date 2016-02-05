@@ -27,6 +27,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
@@ -34,9 +35,9 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
+#include "platform/JSONValues.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/MainThread.h"
 

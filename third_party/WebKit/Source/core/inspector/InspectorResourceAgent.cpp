@@ -31,7 +31,7 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/FetchInitiatorInfo.h"
@@ -52,7 +52,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/NetworkResourcesData.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
@@ -782,7 +781,7 @@ void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
 
 PassRefPtr<TypeBuilder::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    RefPtr<ScriptCallStack> stackTrace = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+    RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture();
     if (stackTrace) {
         RefPtr<TypeBuilder::Network::Initiator> initiatorObject = TypeBuilder::Network::Initiator::create()
             .setType(TypeBuilder::Network::Initiator::Type::Script);

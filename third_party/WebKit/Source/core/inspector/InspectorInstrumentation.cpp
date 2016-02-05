@@ -30,6 +30,7 @@
 
 #include "core/inspector/InspectorInstrumentation.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/events/EventTarget.h"
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/frame/FrameHost.h"
@@ -39,7 +40,6 @@
 #include "core/inspector/InspectorProfilerAgent.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -123,15 +123,6 @@ bool collectingHTMLParseErrorsImpl(InstrumentingAgents* instrumentingAgents)
 {
     ASSERT(isMainThread());
     return instrumentingAgentsSet().contains(instrumentingAgents);
-}
-
-void appendAsyncCallStack(ExecutionContext* executionContext, ScriptCallStack* callStack)
-{
-    InstrumentingAgents* instrumentingAgents = instrumentingAgentsFor(executionContext);
-    if (!instrumentingAgents)
-        return;
-    if (InspectorDebuggerAgent* debuggerAgent = instrumentingAgents->inspectorDebuggerAgent())
-        callStack->setParent(debuggerAgent->currentAsyncStackTraceForConsole());
 }
 
 bool consoleAgentEnabled(ExecutionContext* executionContext)

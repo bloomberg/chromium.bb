@@ -14,6 +14,7 @@
 namespace blink {
 
 class V8DebuggerClient;
+class V8StackTrace;
 
 class CORE_EXPORT V8Debugger {
     USING_FAST_MALLOC(V8Debugger);
@@ -26,6 +27,9 @@ public:
     // |contextGroupId| must be non-0.
     static void setContextDebugData(v8::Local<v8::Context>, const String& type, int contextGroupId);
     static int contextId(v8::Local<v8::Context>);
+
+    virtual PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) = 0;
+    virtual PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
 };
 
 } // namespace blink

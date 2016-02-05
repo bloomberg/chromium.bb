@@ -11,19 +11,16 @@
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
-namespace v8 {
-class Isolate;
-}
-
 namespace blink {
 
 class JSONObject;
+class V8Debugger;
 
 typedef String ErrorString;
 
 class CORE_EXPORT V8ProfilerAgent {
 public:
-    static PassOwnPtr<V8ProfilerAgent> create(v8::Isolate*);
+    static PassOwnPtr<V8ProfilerAgent> create(V8Debugger*);
     virtual ~V8ProfilerAgent() { }
 
     // State management methods.

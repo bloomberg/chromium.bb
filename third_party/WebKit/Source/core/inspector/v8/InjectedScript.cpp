@@ -30,7 +30,6 @@
 
 #include "core/inspector/v8/InjectedScript.h"
 
-#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/RemoteObjectId.h"
@@ -461,7 +460,6 @@ v8::Local<v8::Value> InjectedScript::callFunctionWithEvalEnabled(V8FunctionCall&
     v8::Local<v8::Value> resultValue = function.call(hadException);
     if (evalIsDisabled)
         localContext->AllowCodeGenerationFromStrings(false);
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data", InspectorUpdateCountersEvent::data());
     return resultValue;
 }
 

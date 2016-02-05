@@ -98,6 +98,10 @@ public:
 
     v8::Local<v8::Script> compileInternalScript(v8::Local<v8::Context>, v8::Local<v8::String>, const String& fileName);
 
+    // V8Debugger implementation
+    PassOwnPtr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
+    PassOwnPtr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
+
 private:
     void enable();
     void disable();

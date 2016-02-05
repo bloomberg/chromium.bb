@@ -4,8 +4,8 @@
 
 #include "core/inspector/v8/PromiseTracker.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/V8DebuggerAgentImpl.h"
+#include "core/inspector/v8/V8StackTraceImpl.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -25,7 +25,7 @@ public:
     ~PromiseWrapper()
     {
         RefPtr<PromiseDetails> promiseDetails = PromiseDetails::create().setId(m_id);
-        m_tracker->m_listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
+        m_tracker->m_agent->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
 private:
@@ -36,11 +36,11 @@ private:
     v8::Global<v8::Object> m_promise;
 };
 
-PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
+PromiseTracker::PromiseTracker(V8DebuggerAgentImpl* agent, v8::Isolate* isolate)
     : m_circularSequentialId(0)
     , m_isEnabled(false)
     , m_captureStacks(false)
-    , m_listener(listener)
+    , m_agent(agent)
     , m_isolate(isolate)
 {
     clear();
@@ -135,25 +135,21 @@ void PromiseTracker::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8
         if (!status) {
             if (isNewPromise) {
                 promiseDetails->setCreationTime(currentTimeMS());
-                RefPtr<ScriptCallStack> stack = currentScriptCallStack(m_captureStacks ? ScriptCallStack::maxCallStackSizeToCapture : 1);
-                if (stack) {
-                    if (stack->size())
-                        promiseDetails->setCallFrame(stack->at(0).buildInspectorObject());
-                    if (m_captureStacks)
-                        promiseDetails->setCreationStack(stack->buildInspectorObject());
-                }
+                OwnPtr<V8StackTraceImpl> stack = V8StackTraceImpl::capture(m_agent, m_captureStacks ? V8StackTraceImpl::maxCallStackSizeToCapture : 1);
+                if (stack)
+                    promiseDetails->setCreationStack(stack->buildInspectorObject());
             }
         } else {
             promiseDetails->setSettlementTime(currentTimeMS());
             if (m_captureStacks) {
-                RefPtr<ScriptCallStack> stack = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+                OwnPtr<V8StackTraceImpl> stack = V8StackTraceImpl::capture(m_agent, V8StackTrace::maxCallStackSizeToCapture);
                 if (stack)
                     promiseDetails->setSettlementStack(stack->buildInspectorObject());
             }
         }
     }
 
-    m_listener->didUpdatePromise(eventType, promiseDetails.release());
+    m_agent->didUpdatePromise(eventType, promiseDetails.release());
 }
 
 v8::Local<v8::Object> PromiseTracker::promiseById(int promiseId)

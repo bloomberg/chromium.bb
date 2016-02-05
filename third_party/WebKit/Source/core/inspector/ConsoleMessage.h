@@ -9,7 +9,6 @@
 #include "core/CoreExport.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"

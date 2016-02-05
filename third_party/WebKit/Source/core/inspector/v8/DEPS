@@ -1,6 +1,10 @@
 include_rules = [
     "-bindings/core",
-    "+bindings/core/v8/ScriptCallStackFactory.h",
     "+bindings/core/v8/ScriptRegexp.h",
     "+bindings/core/v8/V8RecursionScope.h",
+    "-platform",
+    "+platform/JSONParser.h",
+    "+platform/JSONValues.h",
+    "+platform/JSONValuesForV8.h",
+    "+platform/weborigin/KURL.h",
 ]

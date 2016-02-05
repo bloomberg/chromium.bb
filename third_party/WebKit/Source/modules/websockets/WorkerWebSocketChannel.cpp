@@ -30,15 +30,13 @@
 
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/fileapi/Blob.h"
-#include "core/inspector/ScriptCallFrame.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -155,12 +153,12 @@ void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, cons
     if (!m_bridge)
         return;
 
-    RefPtr<ScriptCallStack> callStack = currentScriptCallStack(1);
-    if (callStack && callStack->size())  {
+    RefPtr<ScriptCallStack> callStack = ScriptCallStack::capture(1);
+    if (callStack && !callStack->isEmpty())  {
         // In order to emulate the ConsoleMessage behavior,
         // we should ignore the specified url and line number if
         // we can get the JavaScript context.
-        m_bridge->fail(reason, level, callStack->at(0).sourceURL(), callStack->at(0).lineNumber());
+        m_bridge->fail(reason, level, callStack->topSourceURL(), callStack->topLineNumber());
     } else if (sourceURL.isEmpty() && !lineNumber) {
         // No information is specified by the caller - use the url
         // and the line number at the connection.

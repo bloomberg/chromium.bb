@@ -47,7 +47,7 @@ var test = function ()
             promiseInfo.push("status: " + promise.status);
             if (parentId)
                 promiseInfo.push("parent id: " + parentId);
-            var callFrame = promise.callFrame;
+            var callFrame = promise.creationStack ? promise.creationStack.callFrames[0] : null;
             if (callFrame) {
                 var url = WebInspector.displayNameForURL(callFrame.url);
                 promiseInfo.push(callFrame.functionName + " " + url + ":" + callFrame.lineNumber);

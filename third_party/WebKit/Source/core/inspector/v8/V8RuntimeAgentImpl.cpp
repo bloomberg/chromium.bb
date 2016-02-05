@@ -30,14 +30,13 @@
 
 #include "core/inspector/v8/V8RuntimeAgentImpl.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/inspector/v8/IgnoreExceptionsScope.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/RemoteObjectId.h"
-#include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
+#include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "wtf/Optional.h"
@@ -337,7 +336,7 @@ PassRefPtr<TypeBuilder::Runtime::ExceptionDetails> V8RuntimeAgentImpl::createExc
     exceptionDetails->setColumn(message->GetStartColumn());
     v8::Local<v8::StackTrace> messageStackTrace = message->GetStackTrace();
     if (!messageStackTrace.IsEmpty() && messageStackTrace->GetFrameCount() > 0)
-        exceptionDetails->setStack(createScriptCallStack(isolate, messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorObject());
+        exceptionDetails->setStack(m_debugger->createStackTrace(messageStackTrace, messageStackTrace->GetFrameCount())->buildInspectorObject());
     return exceptionDetails.release();
 }
 

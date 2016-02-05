@@ -251,7 +251,7 @@ ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
 {% endif %}
 {% if method.is_call_with_script_arguments %}
 {# [CallWith=ScriptArguments] #}
-RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, {{method.number_of_arguments}}));
+RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, {{method.number_of_arguments}}));
 {% endif %}
 {% if method.is_call_with_document %}
 {# [ConstructorCallWith=Document] #}

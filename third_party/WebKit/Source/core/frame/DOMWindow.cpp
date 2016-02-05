@@ -4,7 +4,7 @@
 
 #include "core/frame/DOMWindow.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -21,7 +21,6 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/page/ChromeClient.h"
@@ -218,7 +217,7 @@ void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const Mes
         // Capture stack trace only when inspector front-end is loaded as it may be time consuming.
         RefPtr<ScriptCallStack> stackTrace;
         if (InspectorInstrumentation::consoleAgentEnabled(sourceDocument))
-            stackTrace = currentScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
+            stackTrace = ScriptCallStack::capture();
 
         toLocalDOMWindow(this)->schedulePostMessage(event, source, target.get(), stackTrace.release());
     }

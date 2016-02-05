@@ -174,6 +174,14 @@ PassRefPtrWillBeRawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scr
     return adoptRefWillBeNoop(new ScriptArguments(scriptState, arguments));
 }
 
+PassRefPtrWillBeRawPtr<ScriptArguments> ScriptArguments::create(ScriptState* scriptState, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount)
+{
+    Vector<ScriptValue> arguments;
+    for (int i = skipArgumentCount; i < v8arguments.Length(); ++i)
+        arguments.append(ScriptValue(scriptState, v8arguments[i]));
+    return ScriptArguments::create(scriptState, arguments);
+}
+
 ScriptArguments::ScriptArguments(ScriptState* scriptState, Vector<ScriptValue>& arguments)
     : m_scriptState(scriptState)
 {

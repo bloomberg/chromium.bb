@@ -10,6 +10,7 @@ function performActions()
 
 function test()
 {
+    WebInspector.panels.timeline._captureJSProfileSetting.set(false);
     InspectorTest.performActionsAndPrint("performActions()", "FunctionCall");
 }
 

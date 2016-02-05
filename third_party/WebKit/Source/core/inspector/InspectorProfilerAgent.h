@@ -42,6 +42,7 @@ namespace blink {
 
 class ExecutionContext;
 class InspectorFrontend;
+class V8Debugger;
 class V8ProfilerAgent;
 
 typedef String ErrorString;
@@ -57,7 +58,7 @@ public:
         virtual void profilingStopped() { }
     };
 
-    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(v8::Isolate*, Client*);
+    static PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> create(V8Debugger*, Client*);
     ~InspectorProfilerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -82,7 +83,7 @@ public:
     void didLeaveNestedRunLoop();
 
 private:
-    InspectorProfilerAgent(v8::Isolate*, Client*);
+    InspectorProfilerAgent(V8Debugger*, Client*);
 
     Client* m_client;
     OwnPtr<V8ProfilerAgent> m_v8ProfilerAgent;

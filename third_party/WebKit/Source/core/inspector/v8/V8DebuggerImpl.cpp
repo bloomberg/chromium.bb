@@ -35,6 +35,7 @@
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
+#include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
 #include "public/platform/Platform.h"
@@ -807,6 +808,18 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
     if (!v8::ScriptCompiler::Compile(m_isolate->GetCurrentContext(), &source, v8::ScriptCompiler::kNoCompileOptions).ToLocal(&script))
         return  v8::Local<v8::Script>();
     return script;
+}
+
+PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
+{
+    V8DebuggerAgentImpl* agent = getAgentForContext(m_isolate->GetCurrentContext());
+    return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
+}
+
+PassOwnPtr<V8StackTrace> V8DebuggerImpl::captureStackTrace(size_t maxStackSize)
+{
+    V8DebuggerAgentImpl* agent = getAgentForContext(m_isolate->GetCurrentContext());
+    return V8StackTraceImpl::capture(agent, maxStackSize);
 }
 
 } // namespace blink

@@ -8,7 +8,6 @@
 #include "core/CoreExport.h"
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/v8/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
@@ -29,17 +28,17 @@ class InjectedScript;
 class InjectedScriptManager;
 class JavaScriptCallFrame;
 class JSONObject;
+class PromiseTracker;
 class RemoteCallFrameId;
-class ScriptCallStack;
 class ScriptRegexp;
 class V8AsyncCallTracker;
+class V8StackTraceImpl;
 
 typedef String ErrorString;
 
 class CORE_EXPORT V8DebuggerAgentImpl
     : public V8DebuggerAgent
-    , public InspectorBackendDispatcher::DebuggerCommandHandler
-    , public PromiseTracker::Listener {
+    , public InspectorBackendDispatcher::DebuggerCommandHandler {
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
     USING_FAST_MALLOC(V8DebuggerAgentImpl);
 public:
@@ -125,16 +124,13 @@ public:
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) override;
 
     // Async call stacks implementation
-    PassRefPtr<ScriptCallStack> currentAsyncStackTraceForConsole() override;
     int traceAsyncOperationStarting(const String& description) override;
     void traceAsyncCallbackStarting(int operationId) override;
     void traceAsyncCallbackCompleted() override;
     void traceAsyncOperationCompleted(int operationId) override;
     bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
 
-    // PromiseTracker::Listener
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>);
-
     void reset() override;
 
     // Interface for V8DebuggerImpl
@@ -147,6 +143,7 @@ public:
     void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
 
     v8::Isolate* isolate() { return m_isolate; }
+    PassOwnPtr<V8StackTraceImpl> currentAsyncStackTraceForRuntime();
 
 private:
     bool checkEnabled(ErrorString*);

@@ -4,8 +4,8 @@
 
 #include "core/inspector/v8/V8ProfilerAgentImpl.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
-#include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/V8DebuggerImpl.h"
+#include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
 #include "wtf/Atomics.h"
 #include <v8-profiler.h>
@@ -96,14 +96,13 @@ PassRefPtr<TypeBuilder::Profiler::CPUProfile> createCPUProfile(v8::Isolate* isol
     return profile.release();
 }
 
-PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation()
+PassRefPtr<TypeBuilder::Debugger::Location> currentDebugLocation(V8DebuggerImpl* debugger)
 {
-    RefPtr<ScriptCallStack> callStack(currentScriptCallStack(1));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
+    OwnPtr<V8StackTrace> callStack = debugger->captureStackTrace(1);
     RefPtr<TypeBuilder::Debugger::Location> location = TypeBuilder::Debugger::Location::create()
-        .setScriptId(lastCaller.scriptId())
-        .setLineNumber(lastCaller.lineNumber());
-    location->setColumnNumber(lastCaller.columnNumber());
+        .setScriptId(callStack->topScriptId())
+        .setLineNumber(callStack->topLineNumber());
+    location->setColumnNumber(callStack->topColumnNumber());
     return location.release();
 }
 
@@ -120,13 +119,14 @@ public:
     String m_title;
 };
 
-PassOwnPtr<V8ProfilerAgent> V8ProfilerAgent::create(v8::Isolate* isolate)
+PassOwnPtr<V8ProfilerAgent> V8ProfilerAgent::create(V8Debugger* debugger)
 {
-    return adoptPtr(new V8ProfilerAgentImpl(isolate));
+    return adoptPtr(new V8ProfilerAgentImpl(debugger));
 }
 
-V8ProfilerAgentImpl::V8ProfilerAgentImpl(v8::Isolate* isolate)
-    : m_isolate(isolate)
+V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8Debugger* debugger)
+    : m_debugger(static_cast<V8DebuggerImpl*>(debugger))
+    , m_isolate(m_debugger->isolate())
     , m_state(nullptr)
     , m_frontend(nullptr)
     , m_enabled(false)
@@ -144,7 +144,7 @@ void V8ProfilerAgentImpl::consoleProfile(const String& title)
     String id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     startProfiling(id);
-    m_frontend->consoleProfileStarted(id, currentDebugLocation(), title.isNull() ? 0 : &title);
+    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_debugger), title.isNull() ? 0 : &title);
 }
 
 void V8ProfilerAgentImpl::consoleProfileEnd(const String& title)
@@ -174,7 +174,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String& title)
     RefPtr<TypeBuilder::Profiler::CPUProfile> profile = stopProfiling(id, true);
     if (!profile)
         return;
-    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation();
+    RefPtr<TypeBuilder::Debugger::Location> location = currentDebugLocation(m_debugger);
     m_frontend->consoleProfileFinished(id, location, profile, resolvedTitle.isNull() ? 0 : &resolvedTitle);
 }
 

@@ -28,7 +28,7 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/RejectedPromises.h"
 #include "bindings/core/v8/RetainedDOMInfo.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -50,7 +50,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -103,10 +102,9 @@ static PassRefPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Lo
     *scriptId = message->GetScriptOrigin().ScriptID()->Value();
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
-        callStack = createScriptCallStack(isolate, stackTrace, ScriptCallStack::maxCallStackSizeToCapture);
-        bool success = false;
-        int topScriptId = callStack->at(0).scriptId().toInt(&success);
-        if (success && topScriptId == *scriptId)
+        callStack = ScriptCallStack::create(isolate, stackTrace);
+        int topScriptId = stackTrace->GetFrame(0)->GetScriptId();
+        if (topScriptId == *scriptId)
             *scriptId = 0;
     }
     return callStack.release();

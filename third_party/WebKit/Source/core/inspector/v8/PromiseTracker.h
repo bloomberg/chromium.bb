@@ -18,19 +18,15 @@
 
 namespace blink {
 
+class V8DebuggerAgentImpl;
+
 class PromiseTracker final {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
     USING_FAST_MALLOC(PromiseTracker);
 public:
-    class CORE_EXPORT Listener {
-    public:
-        virtual ~Listener() { }
-        virtual void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) = 0;
-    };
-
-    static PassOwnPtr<PromiseTracker> create(Listener* listener, v8::Isolate* isolate)
+    static PassOwnPtr<PromiseTracker> create(V8DebuggerAgentImpl* agent, v8::Isolate* isolate)
     {
-        return adoptPtr(new PromiseTracker(listener, isolate));
+        return adoptPtr(new PromiseTracker(agent, isolate));
     }
 
     ~PromiseTracker();
@@ -45,7 +41,7 @@ private:
     class PromiseWrapper;
     static void weakCallback(const v8::WeakCallbackInfo<PromiseWrapper>& data);
 
-    PromiseTracker(Listener*, v8::Isolate*);
+    PromiseTracker(V8DebuggerAgentImpl*, v8::Isolate*);
 
     int circularSequentialId();
     int promiseId(v8::Local<v8::Object> promise, bool* isNewPromise);
@@ -54,7 +50,7 @@ private:
     int m_circularSequentialId;
     bool m_isEnabled;
     bool m_captureStacks;
-    Listener* m_listener;
+    V8DebuggerAgentImpl* m_agent;
 
     v8::Isolate* m_isolate;
     v8::Persistent<v8::NativeWeakMap> m_promiseToId;

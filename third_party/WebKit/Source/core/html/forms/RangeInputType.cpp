@@ -54,6 +54,7 @@
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutSlider.h"
+#include "platform/JSONValues.h"
 #include "platform/PlatformMouseEvent.h"
 #include "wtf/MathExtras.h"
 #include "wtf/NonCopyingSort.h"

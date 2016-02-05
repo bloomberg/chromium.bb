@@ -84,7 +84,7 @@ def method_context(interface, method, is_visible=True):
 
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
-        includes.update(['bindings/core/v8/ScriptCallStackFactory.h',
+        includes.update(['bindings/core/v8/ScriptCallStack.h',
                          'core/inspector/ScriptArguments.h'])
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     is_call_with_this_value = has_extended_attribute_value(method, 'CallWith', 'ThisValue')

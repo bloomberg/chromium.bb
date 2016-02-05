@@ -5,6 +5,7 @@
 #include "bindings/core/v8/RejectedPromises.h"
 
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"

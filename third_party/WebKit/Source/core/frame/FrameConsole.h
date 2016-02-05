@@ -62,8 +62,6 @@ public:
 
     void reportResourceResponseReceived(DocumentLoader*, unsigned long requestIdentifier, const ResourceResponse&);
 
-    static String formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack>);
-
     static void mute();
     static void unmute();
 

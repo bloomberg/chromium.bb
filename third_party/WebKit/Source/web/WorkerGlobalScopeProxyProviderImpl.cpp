@@ -31,7 +31,6 @@
 #include "web/WorkerGlobalScopeProxyProviderImpl.h"
 
 #include "core/dom/Document.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/DedicatedWorkerMessagingProxy.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"

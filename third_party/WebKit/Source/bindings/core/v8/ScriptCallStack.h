@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,56 +28,41 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/inspector/ScriptCallFrame.h"
+#ifndef ScriptCallStack_h
+#define ScriptCallStack_h
 
-#include "platform/TracedValue.h"
+#include "core/CoreExport.h"
+#include "core/InspectorTypeBuilder.h"
+#include "core/inspector/v8/V8StackTrace.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-ScriptCallFrame::ScriptCallFrame()
-    : m_functionName("undefined")
-    , m_scriptId("")
-    , m_scriptName("undefined")
-    , m_lineNumber(0)
-    , m_column(0)
-{
-}
+class TracedValue;
 
-ScriptCallFrame::ScriptCallFrame(const String& functionName, const String& scriptId, const String& scriptName, unsigned lineNumber, unsigned column)
-    : m_functionName(functionName)
-    , m_scriptId(scriptId)
-    , m_scriptName(scriptName)
-    , m_lineNumber(lineNumber)
-    , m_column(column)
-{
-}
+class CORE_EXPORT ScriptCallStack final : public RefCounted<ScriptCallStack> {
+public:
+    static PassRefPtr<ScriptCallStack> create(v8::Isolate*, v8::Local<v8::StackTrace>, size_t maxStackSize = V8StackTrace::maxCallStackSizeToCapture);
+    static PassRefPtr<ScriptCallStack> capture(size_t maxStackSize = V8StackTrace::maxCallStackSizeToCapture);
+    static PassRefPtr<ScriptCallStack> captureForConsole();
 
-ScriptCallFrame::~ScriptCallFrame()
-{
-}
+    ~ScriptCallStack();
 
-// buildInspectorObject() and toTracedValue() should set the same fields.
-// If either of them is modified, the other should be also modified.
-PassRefPtr<TypeBuilder::Runtime::CallFrame> ScriptCallFrame::buildInspectorObject() const
-{
-    return TypeBuilder::Runtime::CallFrame::create()
-        .setFunctionName(m_functionName)
-        .setScriptId(m_scriptId)
-        .setUrl(m_scriptName)
-        .setLineNumber(m_lineNumber)
-        .setColumnNumber(m_column)
-        .release();
-}
+    bool isEmpty() const;
+    String topSourceURL() const;
+    unsigned topLineNumber() const;
+    unsigned topColumnNumber() const;
 
-void ScriptCallFrame::toTracedValue(TracedValue* value) const
-{
-    value->beginDictionary();
-    value->setString("functionName", m_functionName);
-    value->setString("scriptId", m_scriptId);
-    value->setString("url", m_scriptName);
-    value->setInteger("lineNumber", m_lineNumber);
-    value->setInteger("columnNumber", m_column);
-    value->endDictionary();
-}
+    PassRefPtr<TypeBuilder::Runtime::StackTrace> buildInspectorObject() const;
+    void toTracedValue(TracedValue*, const char* name) const;
+    String toString() const;
+
+private:
+    explicit ScriptCallStack(PassOwnPtr<V8StackTrace>);
+    OwnPtr<V8StackTrace> m_stackTrace;
+};
 
 } // namespace blink
+
+#endif // ScriptCallStack_h

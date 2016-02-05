@@ -44,6 +44,7 @@ class ScriptValue;
 class ScriptArguments final : public RefCountedWillBeGarbageCollectedFinalized<ScriptArguments> {
 public:
     static PassRefPtrWillBeRawPtr<ScriptArguments> create(ScriptState*, Vector<ScriptValue>& arguments);
+    static PassRefPtrWillBeRawPtr<ScriptArguments> create(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& arguments, unsigned skipArgumentCount);
 
     ~ScriptArguments();
 

@@ -47,7 +47,6 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "modules/websockets/CloseEvent.h"
 #include "platform/Logging.h"
 #include "platform/blob/BlobData.h"

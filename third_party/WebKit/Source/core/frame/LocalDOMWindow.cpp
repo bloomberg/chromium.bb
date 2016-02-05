@@ -26,6 +26,7 @@
 
 #include "core/frame/LocalDOMWindow.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSRuleList.h"

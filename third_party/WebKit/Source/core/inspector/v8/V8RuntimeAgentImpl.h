@@ -91,6 +91,8 @@ public:
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>*, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
     void runScript(ErrorString*, const TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
 
+    V8DebuggerImpl* debugger() { return m_debugger; }
+
 private:
     InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
     void reportExecutionContextCreated(v8::Local<v8::Context>, const String& type, const String& origin, const String& humanReadableName, const String& frameId) override;

@@ -32,7 +32,6 @@
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "bindings/modules/v8/V8IDBRequest.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "modules/IndexedDBNames.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBDatabase.h"

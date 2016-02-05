@@ -7,11 +7,9 @@ FunctionCall Properties:
         scriptId : <string>
         scriptLine : <number>
         scriptName : <string>
-        stackTrace : <object>
     }
     endTime : <number>
     frameId : <string>
-    stackTrace : <object>
     startTime : <number>
     type : "FunctionCall"
 }

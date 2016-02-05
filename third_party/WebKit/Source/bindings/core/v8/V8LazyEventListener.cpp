@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8LazyEventListener.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -46,7 +47,6 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {

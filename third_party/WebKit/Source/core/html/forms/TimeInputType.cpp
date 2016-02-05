@@ -37,6 +37,7 @@
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "platform/DateComponents.h"
+#include "platform/JSONValues.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"

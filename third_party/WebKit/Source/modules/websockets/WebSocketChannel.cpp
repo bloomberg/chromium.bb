@@ -30,10 +30,9 @@
 
 #include "modules/websockets/WebSocketChannel.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
@@ -49,10 +48,10 @@ WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketC
 
     String sourceURL;
     unsigned lineNumber = 0;
-    RefPtr<ScriptCallStack> callStack = currentScriptCallStack(1);
-    if (callStack && callStack->size()) {
-        sourceURL = callStack->at(0).sourceURL();
-        lineNumber = callStack->at(0).lineNumber();
+    RefPtr<ScriptCallStack> callStack = ScriptCallStack::capture(1);
+    if (callStack && !callStack->isEmpty()) {
+        sourceURL = callStack->topSourceURL();
+        lineNumber = callStack->topLineNumber();
     }
 
     if (context->isWorkerGlobalScope()) {

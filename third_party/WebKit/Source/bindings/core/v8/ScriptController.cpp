@@ -34,7 +34,7 @@
 
 #include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/NPV8Object.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -61,7 +61,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "core/inspector/ScriptCallStack.h"
+#include "core/inspector/v8/V8StackTrace.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -415,7 +415,7 @@ void ScriptController::clearWindowProxy()
 
 void ScriptController::setCaptureCallStackForUncaughtExceptions(v8::Isolate* isolate, bool value)
 {
-    isolate->SetCaptureStackTraceForUncaughtExceptions(value, ScriptCallStack::maxCallStackSizeToCapture, stackTraceOptions);
+    isolate->SetCaptureStackTraceForUncaughtExceptions(value, V8StackTrace::maxCallStackSizeToCapture, stackTraceOptions);
 }
 
 void ScriptController::collectIsolatedContexts(Vector<std::pair<ScriptState*, SecurityOrigin*>>& result)

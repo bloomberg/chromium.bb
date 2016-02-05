@@ -25,13 +25,13 @@
 
 #include "core/inspector/InspectorConsoleAgent.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptManager.h"
 #include "core/inspector/v8/V8Debugger.h"

@@ -29,11 +29,10 @@
 
 #include "core/inspector/InspectorProfilerAgent.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InstrumentingAgents.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/v8/V8ProfilerAgent.h"
 
 namespace blink {
@@ -42,15 +41,15 @@ namespace ProfilerAgentState {
 static const char profilerEnabled[] = "profilerEnabled";
 }
 
-PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(v8::Isolate* isolate, Client* client)
+PassOwnPtrWillBeRawPtr<InspectorProfilerAgent> InspectorProfilerAgent::create(V8Debugger* debugger, Client* client)
 {
-    return adoptPtrWillBeNoop(new InspectorProfilerAgent(isolate, client));
+    return adoptPtrWillBeNoop(new InspectorProfilerAgent(debugger, client));
 }
 
-InspectorProfilerAgent::InspectorProfilerAgent(v8::Isolate* isolate, Client* client)
+InspectorProfilerAgent::InspectorProfilerAgent(V8Debugger* debugger, Client* client)
     : InspectorBaseAgent<InspectorProfilerAgent, InspectorFrontend::Profiler>("Profiler")
     , m_client(client)
-    , m_v8ProfilerAgent(V8ProfilerAgent::create(isolate))
+    , m_v8ProfilerAgent(V8ProfilerAgent::create(debugger))
 {
 }
 

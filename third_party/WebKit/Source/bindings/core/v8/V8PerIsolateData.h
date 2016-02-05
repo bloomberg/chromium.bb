@@ -42,9 +42,8 @@
 namespace blink {
 
 class DOMDataStore;
-class MainThreadDebugger;
+class ThreadDebugger;
 class StringCache;
-class V8Debugger;
 struct WrapperTypeInfo;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
@@ -123,7 +122,8 @@ public:
     void runEndOfScopeTasks();
     void clearEndOfScopeTasks();
 
-    void setScriptDebugger(PassOwnPtr<MainThreadDebugger>);
+    void setThreadDebugger(PassOwnPtr<ThreadDebugger>);
+    ThreadDebugger* threadDebugger();
 
 private:
     V8PerIsolateData();
@@ -158,7 +158,7 @@ private:
     bool m_performingMicrotaskCheckpoint;
 
     Vector<OwnPtr<EndOfScopeTask>> m_endOfScopeTasks;
-    OwnPtr<MainThreadDebugger> m_scriptDebugger;
+    OwnPtr<ThreadDebugger> m_threadDebugger;
 };
 
 } // namespace blink

@@ -4,6 +4,7 @@
 
 #include "core/workers/WorkerThread.h"
 
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerReportingProxy.h"

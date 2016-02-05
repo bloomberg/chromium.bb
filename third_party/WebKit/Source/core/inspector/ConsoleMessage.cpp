@@ -4,10 +4,9 @@
 
 #include "core/inspector/ConsoleMessage.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/inspector/ScriptArguments.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -98,11 +97,10 @@ PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
 void ConsoleMessage::setCallStack(PassRefPtr<ScriptCallStack> callStack)
 {
     m_callStack = callStack;
-    if (m_callStack && m_callStack->size() && !m_scriptId) {
-        const ScriptCallFrame& frame = m_callStack->at(0);
-        m_url = frame.sourceURL();
-        m_lineNumber = frame.lineNumber();
-        m_columnNumber = frame.columnNumber();
+    if (m_callStack && !m_callStack->isEmpty() && !m_scriptId) {
+        m_url = m_callStack->topSourceURL();
+        m_lineNumber = m_callStack->topLineNumber();
+        m_columnNumber = m_callStack->topColumnNumber();
     }
 }
 
@@ -208,7 +206,7 @@ void ConsoleMessage::collectCallStack()
         return;
 
     if (!m_callStack)
-        setCallStack(currentScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture));
+        setCallStack(ScriptCallStack::captureForConsole());
 }
 
 DEFINE_TRACE(ConsoleMessage)

@@ -71,6 +71,8 @@ public:
     static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
     InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
 
+    bool isWorker() override { return false; }
+
 private:
     MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
 

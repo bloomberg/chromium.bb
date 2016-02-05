@@ -28,7 +28,7 @@
 
 #include "core/frame/Console.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -103,13 +103,12 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtrWillBeRawP
 
 void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    RefPtr<ScriptCallStack> callStack(currentScriptCallStackForConsole(1));
-    const ScriptCallFrame& lastCaller = callStack->at(0);
+    RefPtr<ScriptCallStack> callStack(ScriptCallStack::capture(1));
     // Follow Firebug's behavior of counting with null and undefined title in
     // the same bucket as no argument
     String title;
     arguments->getFirstArgumentAsString(title);
-    String identifier = title.isEmpty() ? String(lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber()))
+    String identifier = title.isEmpty() ? String(callStack->topSourceURL() + ':' + String::number(callStack->topLineNumber()))
         : String(title + '@');
 
     HashCountedSet<String>::AddResult result = m_counts.add(identifier);
@@ -169,7 +168,7 @@ void ConsoleBase::timeEnd(ScriptState* scriptState, const String& title)
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, DebugMessageLevel, message);
     consoleMessage->setType(TimeEndMessageType);
     consoleMessage->setScriptState(scriptState);
-    consoleMessage->setCallStack(currentScriptCallStackForConsole(1));
+    consoleMessage->setCallStack(ScriptCallStack::capture(1));
     reportMessageToConsole(consoleMessage.release());
 }
 
@@ -223,7 +222,7 @@ void ConsoleBase::internalAddMessage(MessageType type, MessageLevel level, Scrip
     consoleMessage->setType(type);
     consoleMessage->setScriptState(scriptState);
     consoleMessage->setScriptArguments(arguments);
-    consoleMessage->setCallStack(currentScriptCallStackForConsole(ScriptCallStack::maxCallStackSizeToCapture));
+    consoleMessage->setCallStack(ScriptCallStack::captureForConsole());
     reportMessageToConsole(consoleMessage.release());
 }
 

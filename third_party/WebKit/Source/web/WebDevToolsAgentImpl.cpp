@@ -119,7 +119,7 @@ public:
         s_instance = instance.get();
         v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
         V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-        data->setScriptDebugger(MainThreadDebugger::create(instance.release(), isolate));
+        data->setThreadDebugger(MainThreadDebugger::create(instance.release(), isolate));
     }
 
     static void webViewImplClosed(WebViewImpl* view)
@@ -508,7 +508,7 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
     m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
 
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    m_agents.append(InspectorProfilerAgent::create(isolate, m_overlay.get()));
+    m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
 
     m_agents.append(InspectorHeapProfilerAgent::create(isolate, injectedScriptManager));
 

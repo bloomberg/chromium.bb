@@ -10,7 +10,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -10551,7 +10551,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodMethod(const v8::Functio
 {
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 0));
+    RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 0));
     impl->callWithScriptStateScriptArgumentsVoidMethod(scriptState, scriptArguments.release());
 }
 
@@ -10576,7 +10576,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
         }
         if (UNLIKELY(numArgsPassed <= 0)) {
             ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-            RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
+            RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 1));
             impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release());
             return;
         }
@@ -10585,7 +10585,7 @@ static void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethod
             return;
     }
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(createScriptArguments(scriptState, info, 1));
+    RefPtrWillBeRawPtr<ScriptArguments> scriptArguments(ScriptArguments::create(scriptState, info, 1));
     impl->callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(scriptState, scriptArguments.release(), optionalBooleanArg);
 }
 

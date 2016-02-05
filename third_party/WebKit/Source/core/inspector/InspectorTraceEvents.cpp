@@ -4,7 +4,7 @@
 
 #include "core/inspector/InspectorTraceEvents.h"
 
-#include "bindings/core/v8/ScriptCallStackFactory.h"
+#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/animation/Animation.h"
 #include "core/animation/KeyframeEffect.h"
@@ -16,7 +16,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutObject.h"
@@ -38,8 +37,6 @@
 
 namespace blink {
 
-static const unsigned maxInvalidationTrackingCallstackSize = 5;
-
 String toHexString(const void* p)
 {
     return String::format("0x%" PRIx64, static_cast<uint64_t>(reinterpret_cast<intptr_t>(p)));
@@ -56,7 +53,7 @@ void setCallStack(TracedValue* value)
     // The CPU profiler stack trace does not include call site line numbers.
     // So we collect the top frame with the currentScriptCallStack to get the
     // binding call site info.
-    if (RefPtr<ScriptCallStack> scriptCallStack = currentScriptCallStack(1))
+    if (RefPtr<ScriptCallStack> scriptCallStack = ScriptCallStack::capture(1))
         scriptCallStack->toTracedValue(value, "stackTrace");
     v8::Isolate::GetCurrent()->GetCpuProfiler()->CollectSample();
 }
@@ -173,7 +170,7 @@ PassRefPtr<TracedValue> fillCommonPart(Element& element, const InvalidationSet& 
     setNodeInfo(value.get(), &element, "nodeId", "nodeName");
     value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
     value->setString("invalidatedSelectorId", invalidatedSelector);
-    if (RefPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
+    if (RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture(1))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -270,7 +267,7 @@ PassRefPtr<TracedValue> InspectorStyleRecalcInvalidationTrackingEvent::data(Node
     setNodeInfo(value.get(), node, "nodeId", "nodeName");
     value->setString("reason", reason.reasonString());
     value->setString("extraData", reason.extraData());
-    if (RefPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
+    if (RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture(1))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -374,7 +371,7 @@ PassRefPtr<TracedValue> InspectorLayoutInvalidationTrackingEvent::data(const Lay
     value->setString("frame", toHexString(layoutObject->frame()));
     setGeneratingNodeInfo(value.get(), layoutObject, "nodeId", "nodeName");
     value->setString("reason", reason);
-    if (RefPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
+    if (RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture(1))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
@@ -397,7 +394,7 @@ PassRefPtr<TracedValue> InspectorScrollInvalidationTrackingEvent::data(const Lay
     value->setString("frame", toHexString(layoutObject.frame()));
     value->setString("reason", ScrollInvalidationReason);
     setGeneratingNodeInfo(value.get(), &layoutObject, "nodeId", "nodeName");
-    if (RefPtr<ScriptCallStack> stackTrace = currentScriptCallStack(maxInvalidationTrackingCallstackSize))
+    if (RefPtr<ScriptCallStack> stackTrace = ScriptCallStack::capture(1))
         stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }

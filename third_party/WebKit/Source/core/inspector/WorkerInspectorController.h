@@ -85,7 +85,7 @@ private:
 
     RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtr<WorkerThreadDebugger> m_workerThreadDebugger;
+    WorkerThreadDebugger* m_workerThreadDebugger;
     OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     InspectorAgentRegistry m_agents;
     OwnPtrWillBeMember<PageInspectorProxy> m_pageInspectorProxy;
