@@ -1441,8 +1441,6 @@
             'editing/commands/DeleteSelectionCommand.h',
             'editing/commands/EditCommand.cpp',
             'editing/commands/EditCommand.h',
-            'editing/commands/EditingState.cpp',
-            'editing/commands/EditingState.h',
             'editing/commands/EditorCommand.cpp',
             'editing/commands/FormatBlockCommand.cpp',
             'editing/commands/FormatBlockCommand.h',
