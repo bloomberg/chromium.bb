@@ -417,7 +417,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
   StartSession(web_contents);
   WaitUntilSinkDiscoveredOnUI();
   ChooseSink(web_contents, kTestSinkName);
-  CheckStartFailed(web_contents, "UnknownError", "No provider supports it");
+  CheckStartFailed(web_contents, "UnknownError",
+      "No provider supports createRoute with source");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
