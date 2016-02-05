@@ -59,8 +59,6 @@ public:
     void attach(const AttachContext& = AttachContext()) override;
     void detach(const AttachContext& = AttachContext()) override;
 
-    bool shouldUseFallbackElements() const;
-
     size_t distributedNodesSize() const { return m_distributedNodes.size(); }
     Node* distributedNodeAt(size_t index)  const { return m_distributedNodes.at(index).get(); }
     Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? 0 : m_distributedNodes.first().get(); }

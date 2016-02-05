@@ -54,11 +54,6 @@ InsertionPoint::~InsertionPoint()
 
 void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes)
 {
-    if (shouldUseFallbackElements()) {
-        for (Node* child = firstChild(); child; child = child->nextSibling())
-            child->lazyReattachIfAttached();
-    }
-
     // Attempt not to reattach nodes that would be distributed to the exact same
     // location by comparing the old and new distributions.
 
@@ -71,11 +66,15 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes)
             // the new distribution that were inserted.
             for ( ; j < distributedNodes.size() && m_distributedNodes.at(i) != distributedNodes.at(j); ++j)
                 distributedNodes.at(j)->lazyReattachIfAttached();
+            if (j == distributedNodes.size())
+                break;
         } else if (m_distributedNodes.size() > distributedNodes.size()) {
             // If the old distribution is larger than the new one, reattach all nodes in
             // the old distribution that were removed.
             for ( ; i < m_distributedNodes.size() && m_distributedNodes.at(i) != distributedNodes.at(j); ++i)
                 m_distributedNodes.at(i)->lazyReattachIfAttached();
+            if (i == m_distributedNodes.size())
+                break;
         } else if (m_distributedNodes.at(i) != distributedNodes.at(j)) {
             // If both distributions are the same length reattach both old and new.
             m_distributedNodes.at(i)->lazyReattachIfAttached();
@@ -128,11 +127,6 @@ void InsertionPoint::willRecalcStyle(StyleRecalcChange change)
         return;
     for (size_t i = 0; i < m_distributedNodes.size(); ++i)
         m_distributedNodes.at(i)->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PropagateInheritChangeToDistributedNodes));
-}
-
-bool InsertionPoint::shouldUseFallbackElements() const
-{
-    return isActive() && !hasDistribution();
 }
 
 bool InsertionPoint::canBeActive() const
