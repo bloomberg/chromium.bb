@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "content/public/browser/notification_database_data.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 
 namespace content {
@@ -25,8 +26,15 @@ class NotificationEventDispatcherImpl : public NotificationEventDispatcher {
       int64_t persistent_notification_id,
       const GURL& origin,
       int action_index,
-      const NotificationClickDispatchCompleteCallback&
-          dispatch_complete_callback) override;
+      const NotificationDispatchCompleteCallback& dispatch_complete_callback)
+      override;
+  void DispatchNotificationCloseEvent(
+      BrowserContext* browser_context,
+      int64_t persistent_notification_id,
+      const GURL& origin,
+      bool by_user,
+      const NotificationDispatchCompleteCallback& dispatch_complete_callback)
+      override;
 
  private:
   NotificationEventDispatcherImpl();

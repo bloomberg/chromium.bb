@@ -150,6 +150,7 @@ mute
 negotiationneeded
 nomatch
 notificationclick
+notificationclose
 notificationerror
 noupdate
 obsolete

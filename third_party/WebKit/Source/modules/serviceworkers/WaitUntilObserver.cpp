@@ -177,6 +177,9 @@ void WaitUntilObserver::decrementPendingActivity()
         m_consumeWindowInteractionTimer.stop();
         consumeWindowInteraction(nullptr);
         break;
+    case NotificationClose:
+        client->didHandleNotificationCloseEvent(m_eventID, result);
+        break;
     case Push:
         client->didHandlePushEvent(m_eventID, result);
         break;

@@ -27,7 +27,7 @@ class CONTENT_EXPORT NotificationEventDispatcher {
  public:
   static NotificationEventDispatcher* GetInstance();
 
-  using NotificationClickDispatchCompleteCallback =
+  using NotificationDispatchCompleteCallback =
       base::Callback<void(PersistentNotificationStatus)>;
 
   // Dispatches the "notificationclick" event on the Service Worker associated
@@ -38,7 +38,19 @@ class CONTENT_EXPORT NotificationEventDispatcher {
       int64_t persistent_notification_id,
       const GURL& origin,
       int action_index,
-      const NotificationClickDispatchCompleteCallback&
+      const NotificationDispatchCompleteCallback&
+          dispatch_complete_callback) = 0;
+
+  // Dispatches the "notificationclose" event on the Service Worker associated
+  // with |persistent_notification_id| belonging to |origin|. The
+  // |dispatch_complete_callback| will be invoked when it's known whether the
+  // event successfully executed.
+  virtual void DispatchNotificationCloseEvent(
+      BrowserContext* browser_context,
+      int64_t persistent_notification_id,
+      const GURL& origin,
+      bool by_user,
+      const NotificationDispatchCompleteCallback&
           dispatch_complete_callback) = 0;
 
  protected:

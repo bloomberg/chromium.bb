@@ -66,8 +66,9 @@ public:
     // the notification to be displayed to the user when the developer-provided data is valid.
     static Notification* create(ExecutionContext*, const String& title, const NotificationOptions&, ExceptionState&);
 
-    // Used for embedder-created Notification objects. Will initialize the Notification's state as showing.
-    static Notification* create(ExecutionContext*, int64_t persistentId, const WebNotificationData&);
+    // Used for embedder-created Notification objects. If |showing| is true, will initialize the
+    // Notification's state as showing, or as closed otherwise.
+    static Notification* create(ExecutionContext*, int64_t persistentId, const WebNotificationData&, bool showing);
 
     ~Notification() override;
 

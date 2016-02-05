@@ -19,3 +19,9 @@ addEventListener('notificationclick', function (event) {
 
   messagePort.postMessage(event.notification.title);
 });
+
+// The notificationclose event will be invoked when a persistent notification
+// has been closed by the user.
+addEventListener('notificationclose', function (event) {
+  messagePort.postMessage('closing notification: ' + event.notification.title);
+});

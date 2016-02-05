@@ -105,11 +105,11 @@ Notification* Notification::create(ExecutionContext* context, const String& titl
     return notification;
 }
 
-Notification* Notification::create(ExecutionContext* context, int64_t persistentId, const WebNotificationData& data)
+Notification* Notification::create(ExecutionContext* context, int64_t persistentId, const WebNotificationData& data, bool showing)
 {
     Notification* notification = new Notification(context, data);
     notification->setPersistentId(persistentId);
-    notification->setState(NotificationStateShowing);
+    notification->setState(showing ? NotificationStateShowing : NotificationStateClosed);
     notification->suspendIfNeeded();
 
     return notification;

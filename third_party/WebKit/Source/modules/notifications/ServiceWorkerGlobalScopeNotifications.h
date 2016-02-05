@@ -14,6 +14,7 @@ class ServiceWorkerGlobalScopeNotifications {
     STATIC_ONLY(ServiceWorkerGlobalScopeNotifications);
 public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(notificationclick);
+    DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(notificationclose);
 };
 
 } // namespace blink

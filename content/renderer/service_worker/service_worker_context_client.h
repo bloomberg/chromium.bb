@@ -141,6 +141,9 @@ class ServiceWorkerContextClient
   void didHandleNotificationClickEvent(
       int request_id,
       blink::WebServiceWorkerEventResult result) override;
+  void didHandleNotificationCloseEvent(
+      int request_id,
+      blink::WebServiceWorkerEventResult result) override;
   void didHandlePushEvent(int request_id,
                           blink::WebServiceWorkerEventResult result) override;
   void didHandleSyncEvent(int request_id,
@@ -202,6 +205,10 @@ class ServiceWorkerContextClient
       const PlatformNotificationData& notification_data,
       int action_index);
   void OnPushEvent(int request_id, const PushEventPayload& payload);
+  void OnNotificationCloseEvent(
+      int request_id,
+      int64_t persistent_notification_id,
+      const PlatformNotificationData& notification_data);
   void OnGeofencingEvent(int request_id,
                          blink::WebGeofencingEventType event_type,
                          const std::string& region_id,

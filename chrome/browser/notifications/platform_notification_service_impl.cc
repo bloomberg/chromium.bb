@@ -69,18 +69,20 @@ namespace {
 // permission without having an associated renderer process yet.
 const int kInvalidRenderProcessId = -1;
 
-// Callback to provide when deleting the data associated with persistent Web
-// Notifications from the notification database.
-void OnPersistentNotificationDataDeleted(bool success) {
-  UMA_HISTOGRAM_BOOLEAN("Notifications.PersistentNotificationDataDeleted",
-      success);
-}
-
 // Persistent notifications fired through the delegate do not care about the
 // lifetime of the Service Worker responsible for executing the event.
-void OnEventDispatchComplete(content::PersistentNotificationStatus status) {
+void OnClickEventDispatchComplete(
+    content::PersistentNotificationStatus status) {
   UMA_HISTOGRAM_ENUMERATION(
       "Notifications.PersistentWebNotificationClickResult", status,
+      content::PersistentNotificationStatus::
+          PERSISTENT_NOTIFICATION_STATUS_MAX);
+}
+
+void OnCloseEventDispatchComplete(
+    content::PersistentNotificationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Notifications.PersistentWebNotificationCloseResult", status,
       content::PersistentNotificationStatus::
           PERSISTENT_NOTIFICATION_STATUS_MAX);
 }
@@ -205,11 +207,8 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
 
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
-            browser_context,
-            persistent_notification_id,
-            origin,
-            action_index,
-            base::Bind(&OnEventDispatchComplete));
+          browser_context, persistent_notification_id, origin, action_index,
+          base::Bind(&OnClickEventDispatchComplete));
 }
 
 void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
@@ -225,19 +224,10 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClose(
     content::RecordAction(base::UserMetricsAction(
         "Notifications.Persistent.ClosedProgrammatically"));
   }
-
-  PlatformNotificationContext* context =
-      BrowserContext::GetStoragePartitionForSite(browser_context, origin)
-          ->GetPlatformNotificationContext();
-
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PlatformNotificationContext::DeleteNotificationData,
-                 context,
-                 persistent_notification_id,
-                 origin,
-                 base::Bind(&OnPersistentNotificationDataDeleted)));
+  content::NotificationEventDispatcher::GetInstance()
+      ->DispatchNotificationCloseEvent(
+          browser_context, persistent_notification_id, origin, by_user,
+          base::Bind(&OnCloseEventDispatchComplete));
 }
 
 blink::WebNotificationPermission

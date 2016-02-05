@@ -29,6 +29,7 @@ public:
         Install,
         Message,
         NotificationClick,
+        NotificationClose,
         Push,
         Sync
     };

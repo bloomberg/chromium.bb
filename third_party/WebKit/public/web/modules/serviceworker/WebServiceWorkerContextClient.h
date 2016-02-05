@@ -128,6 +128,11 @@ public:
     // ServiceWorker's script context.
     virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult result) { }
 
+    // ServiceWorker specific method. Called after NotificationCloseEvent
+    // (dispatched via WebServiceWorkerContextProxy) is handled by the
+    // ServiceWorker's script context.
+    virtual void didHandleNotificationCloseEvent(int eventID, WebServiceWorkerEventResult result) { }
+
     // ServiceWorker specific method. Called after PushEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.

@@ -31,7 +31,7 @@ public:
     {
         HeapVector<Member<Notification>> notifications;
         for (const WebPersistentNotificationInfo& notificationInfo : notificationInfos)
-            notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentId, notificationInfo.data));
+            notifications.append(Notification::create(resolver->executionContext(), notificationInfo.persistentId, notificationInfo.data, true /* showing */));
 
         return notifications;
     }

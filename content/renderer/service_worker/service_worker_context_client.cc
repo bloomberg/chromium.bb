@@ -258,6 +258,8 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationClickEvent,
                         OnNotificationClickEvent)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_NotificationCloseEvent,
+                        OnNotificationCloseEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GeofencingEvent, OnGeofencingEvent)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_MessageToWorker, OnPostMessage)
@@ -534,6 +536,13 @@ void ServiceWorkerContextClient::didHandleNotificationClickEvent(
       GetRoutingID(), request_id, result));
 }
 
+void ServiceWorkerContextClient::didHandleNotificationCloseEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  Send(new ServiceWorkerHostMsg_NotificationCloseEventFinished(
+      GetRoutingID(), request_id, result));
+}
+
 void ServiceWorkerContextClient::didHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
@@ -784,6 +793,17 @@ void ServiceWorkerContextClient::OnNotificationClickEvent(
       persistent_notification_id,
       ToWebNotificationData(notification_data),
       action_index);
+}
+
+void ServiceWorkerContextClient::OnNotificationCloseEvent(
+    int request_id,
+    int64_t persistent_notification_id,
+    const PlatformNotificationData& notification_data) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::OnNotificationCloseEvent");
+  proxy_->dispatchNotificationCloseEvent(
+      request_id, persistent_notification_id,
+      ToWebNotificationData(notification_data));
 }
 
 void ServiceWorkerContextClient::OnPushEvent(int request_id,

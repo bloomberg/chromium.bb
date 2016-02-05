@@ -58,6 +58,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Sync";
     case EventType::NOTIFICATION_CLICK:
       return "Notification Click";
+    case EventType::NOTIFICATION_CLOSE:
+      return "Notification Close";
     case EventType::PUSH:
       return "Push";
     case EventType::GEOFENCING:
@@ -234,6 +236,10 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::NOTIFICATION_CLICK:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NotificationClickEvent.Time",
+                                 time);
+      break;
+    case EventType::NOTIFICATION_CLOSE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NotificationCloseEvent.Time",
                                  time);
       break;
     case EventType::PUSH:

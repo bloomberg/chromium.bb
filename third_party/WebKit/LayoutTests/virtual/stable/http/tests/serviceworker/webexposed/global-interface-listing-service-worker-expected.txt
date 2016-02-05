@@ -756,6 +756,7 @@ global object
     getter oninstall
     getter onmessage
     getter onnotificationclick
+    getter onnotificationclose
     getter onpush
     getter onsync
     getter registration
@@ -768,6 +769,7 @@ global object
     setter oninstall
     setter onmessage
     setter onnotificationclick
+    setter onnotificationclose
     setter onpush
     setter onsync
 This is a testharness.js-based test.

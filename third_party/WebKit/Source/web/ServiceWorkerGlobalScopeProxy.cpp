@@ -152,10 +152,20 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationClickEvent(int eventID, 
 {
     WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::NotificationClick, eventID);
     NotificationEventInit eventInit;
-    eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data));
+    eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, true /* showing */));
     if (0 <= actionIndex && actionIndex < static_cast<int>(data.actions.size()))
         eventInit.setAction(data.actions[actionIndex].action);
     RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclick, eventInit, observer));
+    workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData& data)
+{
+    WaitUntilObserver* observer = WaitUntilObserver::create(workerGlobalScope(), WaitUntilObserver::NotificationClose, eventID);
+    NotificationEventInit eventInit;
+    eventInit.setAction(WTF::String()); // initialize as null.
+    eventInit.setNotification(Notification::create(workerGlobalScope(), notificationID, data, false /* showing */));
+    RefPtrWillBeRawPtr<Event> event(NotificationEvent::create(EventTypeNames::notificationclose, eventInit, observer));
     workerGlobalScope()->dispatchExtendableEvent(event.release(), observer);
 }
 

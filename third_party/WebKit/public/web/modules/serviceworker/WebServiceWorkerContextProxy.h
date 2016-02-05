@@ -66,6 +66,7 @@ public:
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray&) = 0;
 
     virtual void dispatchNotificationClickEvent(int eventID, int64_t notificationID, const WebNotificationData&, int actionIndex) = 0;
+    virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
     virtual void dispatchCrossOriginMessageEvent(const WebCrossOriginServiceWorkerClient&, const WebString& message, const WebMessagePortChannelArray&) = 0;
 

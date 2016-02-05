@@ -31040,6 +31040,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="BooleanSuccess">
   <owner>peter@chromium.org</owner>
   <owner>deepak.m1@samsung.com</owner>
+  <obsolete>
+    Deprecated 01/2016, no longer used.
+  </obsolete>
   <summary>
     Recorded when the data associated with a persistent Web Notification gets
     deleted. The value will be true if data deletion succeeded, and false if
@@ -31054,6 +31057,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Recorded delivery status for persistent notification clicks to a Service
     Worker when handling a click on a persistent WebNotification has finished.
+  </summary>
+</histogram>
+
+<histogram name="Notifications.PersistentWebNotificationCloseResult"
+    enum="PlatformNotificationStatus">
+  <owner>peter@chromium.org</owner>
+  <owner>nsatragno@chromium.org</owner>
+  <summary>
+    Records delivery status for persistent notification close events sent to a
+    Service Worker when the event has been handled.
   </summary>
 </histogram>
 
@@ -44453,6 +44466,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <summary>
     Execution time of ServiceWorkerGlobalScope.onnotificationclick.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.NotificationCloseEvent.Time" units="ms">
+  <owner>nsatragno@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a NotificationCloseEvent to a Service
+    Worker and receiving a message that it finished handling the event. Includes
+    the time for the waitUntil() promise to settle.
   </summary>
 </histogram>
 
