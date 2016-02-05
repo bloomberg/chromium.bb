@@ -366,7 +366,7 @@ class MacTool(object):
         entitlements, substitutions, overrides)
     subprocess.check_call([
         'codesign', '--force', '--sign', key, '--entitlements',
-        entitlements_path, os.path.join(
+        entitlements_path, '--timestamp=none', os.path.join(
             os.environ['TARGET_BUILD_DIR'],
             os.environ['FULL_PRODUCT_NAME'])])
 
