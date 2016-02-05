@@ -1330,6 +1330,10 @@ public:
     };
     MutableForPainting mutableForPainting() const { return MutableForPainting(*this); }
 
+    void setIsScrollAnchorObject() { m_bitfields.setIsScrollAnchorObject(true); }
+    // Clears the IsScrollAnchorObject bit, unless any ScrollAnchor still refers to us.
+    void maybeClearIsScrollAnchorObject();
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,
@@ -1674,6 +1678,7 @@ private:
             , m_alwaysCreateLineBoxesForLayoutInline(false)
             , m_lastBoxDecorationBackgroundObscured(false)
             , m_isBackgroundAttachmentFixedObject(false)
+            , m_isScrollAnchorObject(false)
             , m_positionedState(IsStaticallyPositioned)
             , m_selectionState(SelectionNone)
             , m_boxDecorationBackgroundState(NoBoxDecorationBackground)
@@ -1810,6 +1815,7 @@ private:
         ADD_BOOLEAN_BITFIELD(lastBoxDecorationBackgroundObscured, LastBoxDecorationBackgroundObscured);
 
         ADD_BOOLEAN_BITFIELD(isBackgroundAttachmentFixedObject, IsBackgroundAttachmentFixedObject);
+        ADD_BOOLEAN_BITFIELD(isScrollAnchorObject, IsScrollAnchorObject);
 
     private:
         // This is the cached 'position' value of this object

@@ -897,6 +897,10 @@ void LayoutBlock::layout()
 {
     LayoutAnalyzer::Scope analyzer(*this);
 
+    bool needsScrollAnchoring = RuntimeEnabledFeatures::scrollAnchoringEnabled() && hasOverflowClip();
+    if (needsScrollAnchoring)
+        scrollableArea()->scrollAnchor().save();
+
     // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
     // layoutBlock().
     layoutBlock(false);
@@ -907,6 +911,9 @@ void LayoutBlock::layout()
         clearLayoutOverflow();
 
     invalidateBackgroundObscurationStatus();
+
+    if (needsScrollAnchoring)
+        scrollableArea()->scrollAnchor().restore();
 }
 
 bool LayoutBlock::widthAvailableToChildrenHasChanged()

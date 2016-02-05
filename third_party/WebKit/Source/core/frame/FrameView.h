@@ -31,6 +31,7 @@
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/layout/ScrollAnchor.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -594,6 +595,8 @@ public:
     // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
     FloatSize viewportSizeForViewportUnits() const;
 
+    ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -906,6 +909,7 @@ private:
     RefPtr<ClipPaintPropertyNode> m_contentClip;
 
     bool m_isUpdatingAllLifecyclePhases;
+    ScrollAnchor m_scrollAnchor;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)

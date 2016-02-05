@@ -46,6 +46,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/LayoutBox.h"
+#include "core/layout/ScrollAnchor.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
@@ -333,6 +334,7 @@ public:
     IntRect rectForVerticalScrollbar(const IntRect& borderBoxRect) const;
 
     Widget* widget() override;
+    ScrollAnchor& scrollAnchor() { return m_scrollAnchor; }
     bool isPaintLayerScrollableArea() const override { return true; }
 
     DECLARE_VIRTUAL_TRACE();
@@ -408,6 +410,8 @@ private:
 
     // LayoutObject to hold our custom resizer.
     LayoutScrollbarPart* m_resizer;
+
+    ScrollAnchor m_scrollAnchor;
 
 #if ENABLE(ASSERT)
     bool m_hasBeenDisposed;

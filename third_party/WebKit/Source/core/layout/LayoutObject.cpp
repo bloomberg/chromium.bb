@@ -2644,6 +2644,41 @@ void LayoutObject::insertedIntoTree()
         flowThread->flowThreadDescendantWasInserted(this);
 }
 
+enum FindReferencingScrollAnchorsBehavior {
+    DontClear,
+    Clear
+};
+
+static bool findReferencingScrollAnchors(LayoutObject* layoutObject, FindReferencingScrollAnchorsBehavior behavior)
+{
+    PaintLayer* layer = layoutObject->enclosingLayer();
+    bool found = false;
+
+    // Walk up the layer tree to clear any scroll anchors that reference us.
+    while (layer) {
+        if (PaintLayerScrollableArea* scrollableArea = layer->scrollableArea()) {
+            ScrollAnchor& anchor = scrollableArea->scrollAnchor();
+            if (anchor.anchorObject() == layoutObject) {
+                found = true;
+                if (behavior == Clear)
+                    anchor.clear();
+                else
+                    return true;
+            }
+        }
+        layer = layer->parent();
+    }
+    if (FrameView* view = layoutObject->frameView()) {
+        ScrollAnchor& anchor = view->scrollAnchor();
+        if (anchor.anchorObject() == layoutObject) {
+            found = true;
+            if (behavior == Clear)
+                anchor.clear();
+        }
+    }
+    return found;
+}
+
 void LayoutObject::willBeRemovedFromTree()
 {
     // FIXME: We should ASSERT(isRooted()) but we have some out-of-order removals which would need to be fixed first.
@@ -2671,6 +2706,18 @@ void LayoutObject::willBeRemovedFromTree()
     // Update cached boundaries in SVG layoutObjects if a child is removed.
     if (parent()->isSVG())
         parent()->setNeedsBoundariesUpdate();
+
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && m_bitfields.isScrollAnchorObject()) {
+        // Clear the bit first so that anchor.clear() doesn't recurse into findReferencingScrollAnchors.
+        m_bitfields.setIsScrollAnchorObject(false);
+        findReferencingScrollAnchors(this, Clear);
+    }
+}
+
+void LayoutObject::maybeClearIsScrollAnchorObject()
+{
+    if (m_bitfields.isScrollAnchorObject())
+        m_bitfields.setIsScrollAnchorObject(findReferencingScrollAnchors(this, DontClear));
 }
 
 void LayoutObject::removeFromLayoutFlowThread()

@@ -24,10 +24,10 @@ public:
 
     // The LayoutObject we are currently anchored to. Lazily computed during
     // save() and cached until the next call to clear().
-    const LayoutObject* anchorObject() const { return m_anchorObject; }
+    LayoutObject* anchorObject() const { return m_anchorObject; }
 
     // Invalidates the anchor.
-    void clear() { m_anchorObject = nullptr; }
+    void clear();
 
     // Records the anchor's location in relation to the scroller. Should be
     // called when the scroller is about to be laid out.
@@ -45,7 +45,7 @@ private:
     RawPtrWillBeMember<ScrollableArea> m_scroller;
 
     // The LayoutObject we should anchor to. Lazily computed.
-    const LayoutObject* m_anchorObject;
+    LayoutObject* m_anchorObject;
 
     // Location of m_layoutObject relative to scroller at time of save().
     DoublePoint m_savedRelativeOffset;

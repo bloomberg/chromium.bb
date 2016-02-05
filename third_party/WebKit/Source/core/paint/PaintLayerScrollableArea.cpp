@@ -92,6 +92,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     , m_scrollbarManager(*this)
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
+    , m_scrollAnchor(this)
 #if ENABLE(ASSERT)
     , m_hasBeenDisposed(false)
 #endif
@@ -153,6 +154,9 @@ void PaintLayerScrollableArea::dispose()
 
     clearScrollAnimators();
 
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+        m_scrollAnchor.clear();
+
 #if ENABLE(ASSERT)
     m_hasBeenDisposed = true;
 #endif
@@ -161,6 +165,7 @@ void PaintLayerScrollableArea::dispose()
 DEFINE_TRACE(PaintLayerScrollableArea)
 {
     visitor->trace(m_scrollbarManager);
+    visitor->trace(m_scrollAnchor);
     ScrollableArea::trace(visitor);
 }
 
@@ -327,7 +332,7 @@ void PaintLayerScrollableArea::setScrollOffset(const IntPoint& newScrollOffset, 
     setScrollOffset(DoublePoint(newScrollOffset), scrollType);
 }
 
-void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType)
+void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffset, ScrollType scrollType)
 {
     if (scrollOffset() == toDoubleSize(newScrollOffset))
         return;
@@ -407,6 +412,10 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
 
     // All scrolls clear the fragment anchor.
     frameView->clearFragmentAnchor();
+
+    // Clear the scroll anchor, unless it is the reason for this scroll.
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
+        scrollAnchor().clear();
 }
 
 IntPoint PaintLayerScrollableArea::scrollPosition() const

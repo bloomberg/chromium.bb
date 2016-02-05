@@ -153,6 +153,7 @@ FrameView::FrameView(LocalFrame* frame)
     , m_hiddenForThrottling(false)
     , m_crossOriginForThrottling(false)
     , m_isUpdatingAllLifecyclePhases(false)
+    , m_scrollAnchor(this)
 {
     ASSERT(m_frame);
     init();
@@ -197,6 +198,7 @@ DEFINE_TRACE(FrameView)
     visitor->trace(m_verticalScrollbar);
     visitor->trace(m_children);
     visitor->trace(m_viewportScrollableArea);
+    visitor->trace(m_scrollAnchor);
 #endif
     Widget::trace(visitor);
     ScrollableArea::trace(visitor);
@@ -269,6 +271,9 @@ void FrameView::dispose()
     if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
         scrollAnimator->cancelAnimation();
     cancelProgrammaticScrollAnimation();
+
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+        m_scrollAnchor.clear();
 
     detachScrollbars();
 
@@ -797,6 +802,9 @@ void FrameView::performPreLayoutTasks()
         ASSERT(layoutViewport);
         m_viewportScrollableArea = RootFrameViewport::create(visualViewport, *layoutViewport);
     }
+
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+        m_scrollAnchor.save();
 }
 
 static inline void layoutFromRootObject(LayoutObject& root)
@@ -1536,6 +1544,9 @@ void FrameView::setScrollPosition(const DoublePoint& scrollPoint, ScrollType scr
         scrollBehavior = scrollBehaviorStyle();
 
     ScrollableArea::setScrollPosition(newScrollPosition, scrollType, scrollBehavior);
+
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled() && scrollType != AnchoringScroll)
+        m_scrollAnchor.clear();
 }
 
 void FrameView::didUpdateElasticOverscroll()
@@ -2047,6 +2058,9 @@ void FrameView::performPostLayoutTasks()
         scrollingCoordinator->notifyGeometryChanged();
 
     scrollToFragmentAnchor();
+    // TODO(skobes): Figure out interactions between scroll anchor, fragment anchor, and history restoration.
+    if (RuntimeEnabledFeatures::scrollAnchoringEnabled())
+        m_scrollAnchor.restore();
 
     sendResizeEventIfNeeded();
 }

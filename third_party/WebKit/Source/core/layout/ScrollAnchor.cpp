@@ -4,6 +4,7 @@
 
 #include "core/layout/ScrollAnchor.h"
 
+#include "core/layout/LayoutObject.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "wtf/Assertions.h"
 
@@ -35,11 +36,13 @@ static DoublePoint computeRelativeOffset(const ScrollableArea* scroller, const L
 
 void ScrollAnchor::save()
 {
-    if (!m_anchorObject)
+    if (!m_anchorObject) {
         m_anchorObject = findAnchor(m_scroller);
-
-    if (m_anchorObject)
-        m_savedRelativeOffset = computeRelativeOffset(m_scroller, m_anchorObject);
+        if (!m_anchorObject)
+            return;
+        m_anchorObject->setIsScrollAnchorObject();
+    }
+    m_savedRelativeOffset = computeRelativeOffset(m_scroller, m_anchorObject);
 }
 
 void ScrollAnchor::restore()
@@ -50,6 +53,15 @@ void ScrollAnchor::restore()
     DoubleSize adjustment = computeRelativeOffset(m_scroller, m_anchorObject) - m_savedRelativeOffset;
     if (!adjustment.isZero())
         m_scroller->setScrollPosition(m_scroller->scrollPositionDouble() + adjustment, AnchoringScroll);
+}
+
+void ScrollAnchor::clear()
+{
+    LayoutObject* anchorObject = m_anchorObject;
+    m_anchorObject = nullptr;
+
+    if (anchorObject)
+        anchorObject->maybeClearIsScrollAnchorObject();
 }
 
 } // namespace blink
