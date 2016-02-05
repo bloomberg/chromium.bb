@@ -13,6 +13,8 @@
   template <>                                                \
   struct IPC_MESSAGE_EXPORT ParamTraits<struct_name> {       \
     typedef struct_name param_type;                          \
+    static void GetSize(base::PickleSizer* sizer,            \
+                        const param_type& p);                \
     static void Write(base::Pickle* m, const param_type& p); \
     static bool Read(const base::Pickle* m,                  \
                      base::PickleIterator* iter,             \
@@ -53,6 +55,8 @@
   template <>                                                      \
   struct IPC_MESSAGE_EXPORT ParamTraits<enum_name> {               \
     typedef enum_name param_type;                                  \
+    static void GetSize(base::PickleSizer* sizer,                  \
+                        const param_type& p);                      \
     static void Write(base::Pickle* m, const param_type& p);       \
     static bool Read(const base::Pickle* m,                        \
                      base::PickleIterator* iter,                   \

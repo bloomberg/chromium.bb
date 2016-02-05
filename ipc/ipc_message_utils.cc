@@ -72,6 +72,65 @@ bool ReadValue(const base::Pickle* m,
                base::Value** value,
                int recursion);
 
+void GetValueSize(base::PickleSizer* sizer,
+                  const base::Value* value,
+                  int recursion) {
+  if (recursion > kMaxRecursionDepth) {
+    LOG(WARNING) << "Max recursion depth hit in GetValueSize.";
+    return;
+  }
+
+  sizer->AddInt();
+  switch (value->GetType()) {
+    case base::Value::TYPE_NULL:
+      break;
+    case base::Value::TYPE_BOOLEAN:
+      sizer->AddBool();
+      break;
+    case base::Value::TYPE_INTEGER:
+      sizer->AddInt();
+      break;
+    case base::Value::TYPE_DOUBLE:
+      sizer->AddDouble();
+      break;
+    case base::Value::TYPE_STRING: {
+      const base::StringValue* result;
+      value->GetAsString(&result);
+      DCHECK(result);
+      GetParamSize(sizer, result->GetString());
+      break;
+    }
+    case base::Value::TYPE_BINARY: {
+      const base::BinaryValue* binary =
+          static_cast<const base::BinaryValue*>(value);
+      sizer->AddData(static_cast<int>(binary->GetSize()));
+      break;
+    }
+    case base::Value::TYPE_DICTIONARY: {
+      sizer->AddInt();
+      const base::DictionaryValue* dict =
+          static_cast<const base::DictionaryValue*>(value);
+      for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+           it.Advance()) {
+        GetParamSize(sizer, it.key());
+        GetValueSize(sizer, &it.value(), recursion + 1);
+      }
+      break;
+    }
+    case base::Value::TYPE_LIST: {
+      sizer->AddInt();
+      const base::ListValue* list = static_cast<const base::ListValue*>(value);
+      for (base::ListValue::const_iterator it = list->begin();
+           it != list->end(); ++it) {
+        GetValueSize(sizer, *it, recursion + 1);
+      }
+      break;
+    }
+    default:
+      NOTREACHED() << "Invalid base::Value type.";
+  }
+}
+
 void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
   bool result;
   if (recursion > kMaxRecursionDepth) {
@@ -278,6 +337,11 @@ void ParamTraits<bool>::Log(const param_type& p, std::string* l) {
   l->append(p ? "true" : "false");
 }
 
+void ParamTraits<signed char>::GetSize(base::PickleSizer* sizer,
+                                       const param_type& p) {
+  sizer->AddBytes(sizeof(param_type));
+}
+
 void ParamTraits<signed char>::Write(base::Pickle* m, const param_type& p) {
   m->WriteBytes(&p, sizeof(param_type));
 }
@@ -296,6 +360,11 @@ void ParamTraits<signed char>::Log(const param_type& p, std::string* l) {
   l->append(base::IntToString(p));
 }
 
+void ParamTraits<unsigned char>::GetSize(base::PickleSizer* sizer,
+                                       const param_type& p) {
+  sizer->AddBytes(sizeof(param_type));
+}
+
 void ParamTraits<unsigned char>::Write(base::Pickle* m, const param_type& p) {
   m->WriteBytes(&p, sizeof(param_type));
 }
@@ -312,6 +381,11 @@ bool ParamTraits<unsigned char>::Read(const base::Pickle* m,
 
 void ParamTraits<unsigned char>::Log(const param_type& p, std::string* l) {
   l->append(base::UintToString(p));
+}
+
+void ParamTraits<unsigned short>::GetSize(base::PickleSizer* sizer,
+                                          const param_type& p) {
+  sizer->AddBytes(sizeof(param_type));
 }
 
 void ParamTraits<unsigned short>::Write(base::Pickle* m, const param_type& p) {
@@ -360,6 +434,11 @@ void ParamTraits<float>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("%e", p));
 }
 
+void ParamTraits<double>::GetSize(base::PickleSizer* sizer,
+                                  const param_type& p) {
+  sizer->AddBytes(sizeof(param_type));
+}
+
 void ParamTraits<double>::Write(base::Pickle* m, const param_type& p) {
   m->WriteBytes(reinterpret_cast<const char*>(&p), sizeof(param_type));
 }
@@ -389,6 +468,11 @@ void ParamTraits<base::string16>::Log(const param_type& p, std::string* l) {
   l->append(base::UTF16ToUTF8(p));
 }
 
+void ParamTraits<std::vector<char>>::GetSize(base::PickleSizer* sizer,
+                                             const param_type& p) {
+  sizer->AddData(static_cast<int>(p.size()));
+}
+
 void ParamTraits<std::vector<char>>::Write(base::Pickle* m,
                                            const param_type& p) {
   if (p.empty()) {
@@ -413,6 +497,11 @@ bool ParamTraits<std::vector<char>>::Read(const base::Pickle* m,
 
 void ParamTraits<std::vector<char> >::Log(const param_type& p, std::string* l) {
   LogBytes(p, l);
+}
+
+void ParamTraits<std::vector<unsigned char>>::GetSize(base::PickleSizer* sizer,
+                                                      const param_type& p) {
+  sizer->AddData(static_cast<int>(p.size()));
 }
 
 void ParamTraits<std::vector<unsigned char>>::Write(base::Pickle* m,
@@ -441,6 +530,13 @@ bool ParamTraits<std::vector<unsigned char>>::Read(const base::Pickle* m,
 void ParamTraits<std::vector<unsigned char> >::Log(const param_type& p,
                                                    std::string* l) {
   LogBytes(p, l);
+}
+
+void ParamTraits<std::vector<bool>>::GetSize(base::PickleSizer* sizer,
+                                             const param_type& p) {
+  GetParamSize(sizer, static_cast<int>(p.size()));
+  for (size_t i = 0; i < p.size(); ++i)
+    GetParamSize(sizer, static_cast<bool>(p[i]));
 }
 
 void ParamTraits<std::vector<bool>>::Write(base::Pickle* m,
@@ -498,6 +594,11 @@ bool ParamTraits<BrokerableAttachment::AttachmentId>::Read(
 void ParamTraits<BrokerableAttachment::AttachmentId>::Log(const param_type& p,
                                                           std::string* l) {
   l->append(base::HexEncode(p.nonce, BrokerableAttachment::kNonceSize));
+}
+
+void ParamTraits<base::DictionaryValue>::GetSize(base::PickleSizer* sizer,
+                                                 const param_type& p) {
+  GetValueSize(sizer, &p, 0);
 }
 
 void ParamTraits<base::DictionaryValue>::Write(base::Pickle* m,
@@ -712,6 +813,11 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
+void ParamTraits<base::FilePath>::GetSize(base::PickleSizer* sizer,
+                                          const param_type& p) {
+  p.GetSizeForPickle(sizer);
+}
+
 void ParamTraits<base::FilePath>::Write(base::Pickle* m, const param_type& p) {
   p.WriteToPickle(m);
 }
@@ -724,6 +830,11 @@ bool ParamTraits<base::FilePath>::Read(const base::Pickle* m,
 
 void ParamTraits<base::FilePath>::Log(const param_type& p, std::string* l) {
   ParamTraits<base::FilePath::StringType>::Log(p.value(), l);
+}
+
+void ParamTraits<base::ListValue>::GetSize(base::PickleSizer* sizer,
+                                           const param_type& p) {
+  GetValueSize(sizer, &p, 0);
 }
 
 void ParamTraits<base::ListValue>::Write(base::Pickle* m, const param_type& p) {
@@ -744,6 +855,12 @@ void ParamTraits<base::ListValue>::Log(const param_type& p, std::string* l) {
   std::string json;
   base::JSONWriter::Write(p, &json);
   l->append(json);
+}
+
+void ParamTraits<base::NullableString16>::GetSize(base::PickleSizer* sizer,
+                                                  const param_type& p) {
+  GetParamSize(sizer, p.string());
+  GetParamSize(sizer, p.is_null());
 }
 
 void ParamTraits<base::NullableString16>::Write(base::Pickle* m,
@@ -772,6 +889,15 @@ void ParamTraits<base::NullableString16>::Log(const param_type& p,
   l->append(", ");
   LogParam(p.is_null(), l);
   l->append(")");
+}
+
+void ParamTraits<base::File::Info>::GetSize(base::PickleSizer* sizer,
+                                            const param_type& p) {
+  GetParamSize(sizer, p.size);
+  GetParamSize(sizer, p.is_directory);
+  GetParamSize(sizer, p.last_modified.ToDoubleT());
+  GetParamSize(sizer, p.last_accessed.ToDoubleT());
+  GetParamSize(sizer, p.creation_time.ToDoubleT());
 }
 
 void ParamTraits<base::File::Info>::Write(base::Pickle* m,
@@ -814,6 +940,11 @@ void ParamTraits<base::File::Info>::Log(const param_type& p,
   l->append(")");
 }
 
+void ParamTraits<base::Time>::GetSize(base::PickleSizer* sizer,
+                                      const param_type& p) {
+  sizer->AddInt64();
+}
+
 void ParamTraits<base::Time>::Write(base::Pickle* m, const param_type& p) {
   ParamTraits<int64_t>::Write(m, p.ToInternalValue());
 }
@@ -830,6 +961,11 @@ bool ParamTraits<base::Time>::Read(const base::Pickle* m,
 
 void ParamTraits<base::Time>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
+}
+
+void ParamTraits<base::TimeDelta>::GetSize(base::PickleSizer* sizer,
+                                           const param_type& p) {
+  sizer->AddInt64();
 }
 
 void ParamTraits<base::TimeDelta>::Write(base::Pickle* m, const param_type& p) {
@@ -849,6 +985,11 @@ bool ParamTraits<base::TimeDelta>::Read(const base::Pickle* m,
 
 void ParamTraits<base::TimeDelta>::Log(const param_type& p, std::string* l) {
   ParamTraits<int64_t>::Log(p.ToInternalValue(), l);
+}
+
+void ParamTraits<base::TimeTicks>::GetSize(base::PickleSizer* sizer,
+                                           const param_type& p) {
+  sizer->AddInt64();
 }
 
 void ParamTraits<base::TimeTicks>::Write(base::Pickle* m, const param_type& p) {
@@ -900,6 +1041,19 @@ void ParamTraits<IPC::ChannelHandle>::Log(const param_type& p,
   ParamTraits<base::FileDescriptor>::Log(p.socket, l);
 #endif
   l->append(")");
+}
+
+void ParamTraits<LogData>::GetSize(base::PickleSizer* sizer,
+                                   const param_type& p) {
+  GetParamSize(sizer, p.channel);
+  GetParamSize(sizer, p.routing_id);
+  GetParamSize(sizer, p.type);
+  GetParamSize(sizer, p.flags);
+  GetParamSize(sizer, p.sent);
+  GetParamSize(sizer, p.receive);
+  GetParamSize(sizer, p.dispatch);
+  GetParamSize(sizer, p.message_name);
+  GetParamSize(sizer, p.params);
 }
 
 void ParamTraits<LogData>::Write(base::Pickle* m, const param_type& p) {
@@ -979,6 +1133,11 @@ void ParamTraits<Message>::Log(const Message& p, std::string* l) {
 }
 
 #if defined(OS_WIN)
+void ParamTraits<HANDLE>::GetSize(base::PickleSizer* sizer,
+                                  const param_type& p) {
+  sizer->AddInt();
+}
+
 // Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
 // bit systems. That's why we use the Windows macros to convert to 32 bits.
 void ParamTraits<HANDLE>::Write(base::Pickle* m, const param_type& p) {
@@ -997,6 +1156,11 @@ bool ParamTraits<HANDLE>::Read(const base::Pickle* m,
 
 void ParamTraits<HANDLE>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("0x%p", p));
+}
+
+void ParamTraits<LOGFONT>::GetSize(base::PickleSizer* sizer,
+                                   const param_type& p) {
+  sizer->AddData(sizeof(LOGFONT));
 }
 
 void ParamTraits<LOGFONT>::Write(base::Pickle* m, const param_type& p) {
@@ -1022,6 +1186,10 @@ bool ParamTraits<LOGFONT>::Read(const base::Pickle* m,
 
 void ParamTraits<LOGFONT>::Log(const param_type& p, std::string* l) {
   l->append(base::StringPrintf("<LOGFONT>"));
+}
+
+void ParamTraits<MSG>::GetSize(base::PickleSizer* sizer, const param_type& p) {
+  sizer->AddData(sizeof(MSG));
 }
 
 void ParamTraits<MSG>::Write(base::Pickle* m, const param_type& p) {

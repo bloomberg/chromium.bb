@@ -208,6 +208,39 @@ bool PickleIterator::ReadBytes(const char** data, int length) {
   return true;
 }
 
+PickleSizer::PickleSizer() {}
+
+PickleSizer::~PickleSizer() {}
+
+void PickleSizer::AddString(const StringPiece& value) {
+  AddInt();
+  AddBytes(static_cast<int>(value.size()));
+}
+
+void PickleSizer::AddString16(const StringPiece16& value) {
+  AddInt();
+  AddBytes(static_cast<int>(value.size() * sizeof(char16)));
+}
+
+void PickleSizer::AddData(int length) {
+  CHECK_GE(length, 0);
+  AddInt();
+  AddBytes(length);
+}
+
+void PickleSizer::AddBytes(int length) {
+  payload_size_ += bits::Align(length, sizeof(uint32_t));
+}
+
+template <size_t length> void PickleSizer::AddBytesStatic() {
+  DCHECK_LE(length, static_cast<size_t>(std::numeric_limits<int>::max()));
+  AddBytes(length);
+}
+
+template void PickleSizer::AddBytesStatic<2>();
+template void PickleSizer::AddBytesStatic<4>();
+template void PickleSizer::AddBytesStatic<8>();
+
 Pickle::Attachment::Attachment() {}
 
 Pickle::Attachment::~Attachment() {}

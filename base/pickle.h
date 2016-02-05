@@ -109,6 +109,42 @@ class BASE_EXPORT PickleIterator {
   FRIEND_TEST_ALL_PREFIXES(PickleTest, GetReadPointerAndAdvance);
 };
 
+// This class provides an interface analogous to base::Pickle's WriteFoo()
+// methods and can be used to accurately compute the size of a hypothetical
+// Pickle's payload without having to reference the Pickle implementation.
+class BASE_EXPORT PickleSizer {
+ public:
+  PickleSizer();
+  ~PickleSizer();
+
+  // Returns the computed size of the payload.
+  size_t payload_size() const { return payload_size_; }
+
+  void AddBool() { return AddInt(); }
+  void AddInt() { AddPOD<int>(); }
+  void AddLongUsingDangerousNonPortableLessPersistableForm() { AddPOD<long>(); }
+  void AddUInt16() { return AddPOD<uint16_t>(); }
+  void AddUInt32() { return AddPOD<uint32_t>(); }
+  void AddInt64() { return AddPOD<int64_t>(); }
+  void AddUInt64() { return AddPOD<uint64_t>(); }
+  void AddSizeT() { return AddPOD<uint64_t>(); }
+  void AddFloat() { return AddPOD<float>(); }
+  void AddDouble() { return AddPOD<double>(); }
+  void AddString(const StringPiece& value);
+  void AddString16(const StringPiece16& value);
+  void AddData(int length);
+  void AddBytes(int length);
+
+ private:
+  // Just like AddBytes() but with a compile-time size for performance.
+  template<size_t length> void BASE_EXPORT AddBytesStatic();
+
+  template <typename T>
+  void AddPOD() { AddBytesStatic<sizeof(T)>(); }
+
+  size_t payload_size_ = 0;
+};
+
 // This class provides facilities for basic binary value packing and unpacking.
 //
 // The Pickle class supports appending primitive values (ints, strings, etc.)

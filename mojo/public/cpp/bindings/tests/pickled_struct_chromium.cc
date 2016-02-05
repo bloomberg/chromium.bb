@@ -22,6 +22,13 @@ PickledStructChromium::~PickledStructChromium() {}
 
 namespace IPC {
 
+void ParamTraits<mojo::test::PickledStructChromium>::GetSize(
+    base::PickleSizer* sizer,
+    const param_type& p) {
+  sizer->AddInt();
+  sizer->AddInt();
+}
+
 void ParamTraits<mojo::test::PickledStructChromium>::Write(
     base::Pickle* m,
     const param_type& p) {

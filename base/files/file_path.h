@@ -138,6 +138,7 @@ namespace base {
 
 class Pickle;
 class PickleIterator;
+class PickleSizer;
 
 // An abstraction to isolate users from the differences between native
 // pathnames on different platforms.
@@ -377,6 +378,7 @@ class BASE_EXPORT FilePath {
   // Similar to FromUTF8Unsafe, but accepts UTF-16 instead.
   static FilePath FromUTF16Unsafe(const string16& utf16);
 
+  void GetSizeForPickle(PickleSizer* sizer) const;
   void WriteToPickle(Pickle* pickle) const;
   bool ReadFromPickle(PickleIterator* iter);
 

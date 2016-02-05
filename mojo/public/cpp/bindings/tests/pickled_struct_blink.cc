@@ -25,6 +25,13 @@ PickledStructBlink::~PickledStructBlink() {}
 
 namespace IPC {
 
+void ParamTraits<mojo::test::PickledStructBlink>::GetSize(
+    base::PickleSizer* sizer,
+    const param_type& p) {
+  sizer->AddInt();
+  sizer->AddInt();
+}
+
 void ParamTraits<mojo::test::PickledStructBlink>::Write(base::Pickle* m,
                                                         const param_type& p) {
   m->WriteInt(p.foo());

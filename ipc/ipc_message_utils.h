@@ -100,6 +100,12 @@ struct NoParams {
 };
 
 template <class P>
+static inline void GetParamSize(base::PickleSizer* sizer, const P& p) {
+  typedef typename SimilarTypeTraits<P>::Type Type;
+  ParamTraits<Type>::GetSize(sizer, static_cast<const Type&>(p));
+}
+
+template <class P>
 static inline void WriteParam(base::Pickle* m, const P& p) {
   typedef typename SimilarTypeTraits<P>::Type Type;
   ParamTraits<Type>::Write(m, static_cast<const Type& >(p));
@@ -124,6 +130,9 @@ static inline void LogParam(const P& p, std::string* l) {
 template <>
 struct ParamTraits<bool> {
   typedef bool param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddBool();
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteBool(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -136,6 +145,7 @@ struct ParamTraits<bool> {
 template <>
 struct IPC_EXPORT ParamTraits<signed char> {
   typedef signed char param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -146,6 +156,7 @@ struct IPC_EXPORT ParamTraits<signed char> {
 template <>
 struct IPC_EXPORT ParamTraits<unsigned char> {
   typedef unsigned char param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -156,6 +167,7 @@ struct IPC_EXPORT ParamTraits<unsigned char> {
 template <>
 struct IPC_EXPORT ParamTraits<unsigned short> {
   typedef unsigned short param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -166,6 +178,9 @@ struct IPC_EXPORT ParamTraits<unsigned short> {
 template <>
 struct ParamTraits<int> {
   typedef int param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddInt();
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteInt(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -178,6 +193,9 @@ struct ParamTraits<int> {
 template <>
 struct ParamTraits<unsigned int> {
   typedef unsigned int param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddInt();
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteInt(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -190,6 +208,9 @@ struct ParamTraits<unsigned int> {
 template <>
 struct ParamTraits<long> {
   typedef long param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddLongUsingDangerousNonPortableLessPersistableForm();
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
@@ -204,6 +225,9 @@ struct ParamTraits<long> {
 template <>
 struct ParamTraits<unsigned long> {
   typedef unsigned long param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddLongUsingDangerousNonPortableLessPersistableForm();
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     m->WriteLongUsingDangerousNonPortableLessPersistableForm(p);
   }
@@ -218,6 +242,9 @@ struct ParamTraits<unsigned long> {
 template <>
 struct ParamTraits<long long> {
   typedef long long param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddInt64();
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     m->WriteInt64(static_cast<int64_t>(p));
   }
@@ -232,6 +259,9 @@ struct ParamTraits<long long> {
 template <>
 struct ParamTraits<unsigned long long> {
   typedef unsigned long long param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddInt64();
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteInt64(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -247,6 +277,9 @@ struct ParamTraits<unsigned long long> {
 template <>
 struct IPC_EXPORT ParamTraits<float> {
   typedef float param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddFloat();
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteFloat(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -259,6 +292,7 @@ struct IPC_EXPORT ParamTraits<float> {
 template <>
 struct IPC_EXPORT ParamTraits<double> {
   typedef double param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -271,6 +305,9 @@ struct IPC_EXPORT ParamTraits<double> {
 template <>
 struct ParamTraits<std::string> {
   typedef std::string param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddString(p);
+  }
   static void Write(base::Pickle* m, const param_type& p) { m->WriteString(p); }
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -283,6 +320,9 @@ struct ParamTraits<std::string> {
 template <>
 struct ParamTraits<base::string16> {
   typedef base::string16 param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    sizer->AddString16(p);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     m->WriteString16(p);
   }
@@ -297,6 +337,7 @@ struct ParamTraits<base::string16> {
 template <>
 struct IPC_EXPORT ParamTraits<std::vector<char> > {
   typedef std::vector<char> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle*,
                    base::PickleIterator* iter,
@@ -307,6 +348,7 @@ struct IPC_EXPORT ParamTraits<std::vector<char> > {
 template <>
 struct IPC_EXPORT ParamTraits<std::vector<unsigned char> > {
   typedef std::vector<unsigned char> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -317,6 +359,7 @@ struct IPC_EXPORT ParamTraits<std::vector<unsigned char> > {
 template <>
 struct IPC_EXPORT ParamTraits<std::vector<bool> > {
   typedef std::vector<bool> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -327,6 +370,11 @@ struct IPC_EXPORT ParamTraits<std::vector<bool> > {
 template <class P>
 struct ParamTraits<std::vector<P> > {
   typedef std::vector<P> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, static_cast<int>(p.size()));
+    for (size_t i = 0; i < p.size(); i++)
+      GetParamSize(sizer, p[i]);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.size()));
     for (size_t i = 0; i < p.size(); i++)
@@ -361,6 +409,12 @@ struct ParamTraits<std::vector<P> > {
 template <class P>
 struct ParamTraits<std::set<P> > {
   typedef std::set<P> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, static_cast<int>(p.size()));
+    typename param_type::const_iterator iter;
+    for (iter = p.begin(); iter != p.end(); ++iter)
+      GetParamSize(sizer, *iter);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.size()));
     typename param_type::const_iterator iter;
@@ -389,6 +443,14 @@ struct ParamTraits<std::set<P> > {
 template <class K, class V, class C, class A>
 struct ParamTraits<std::map<K, V, C, A> > {
   typedef std::map<K, V, C, A> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, static_cast<int>(p.size()));
+    typename param_type::const_iterator iter;
+    for (iter = p.begin(); iter != p.end(); ++iter) {
+      GetParamSize(sizer, iter->first);
+      GetParamSize(sizer, iter->second);
+    }
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.size()));
     typename param_type::const_iterator iter;
@@ -421,6 +483,10 @@ struct ParamTraits<std::map<K, V, C, A> > {
 template <class A, class B>
 struct ParamTraits<std::pair<A, B> > {
   typedef std::pair<A, B> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, p.first);
+    GetParamSize(sizer, p.second);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, p.first);
     WriteParam(m, p.second);
@@ -455,6 +521,7 @@ struct IPC_EXPORT ParamTraits<BrokerableAttachment::AttachmentId> {
 template <>
 struct IPC_EXPORT ParamTraits<base::DictionaryValue> {
   typedef base::DictionaryValue param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -504,6 +571,7 @@ struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
 template <>
 struct IPC_EXPORT ParamTraits<base::FilePath> {
   typedef base::FilePath param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -514,6 +582,7 @@ struct IPC_EXPORT ParamTraits<base::FilePath> {
 template <>
 struct IPC_EXPORT ParamTraits<base::ListValue> {
   typedef base::ListValue param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -524,6 +593,7 @@ struct IPC_EXPORT ParamTraits<base::ListValue> {
 template <>
 struct IPC_EXPORT ParamTraits<base::NullableString16> {
   typedef base::NullableString16 param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -534,6 +604,7 @@ struct IPC_EXPORT ParamTraits<base::NullableString16> {
 template <>
 struct IPC_EXPORT ParamTraits<base::File::Info> {
   typedef base::File::Info param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -556,6 +627,7 @@ struct SimilarTypeTraits<HWND> {
 template <>
 struct IPC_EXPORT ParamTraits<base::Time> {
   typedef base::Time param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -566,6 +638,7 @@ struct IPC_EXPORT ParamTraits<base::Time> {
 template <>
 struct IPC_EXPORT ParamTraits<base::TimeDelta> {
   typedef base::TimeDelta param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -576,6 +649,7 @@ struct IPC_EXPORT ParamTraits<base::TimeDelta> {
 template <>
 struct IPC_EXPORT ParamTraits<base::TimeTicks> {
   typedef base::TimeTicks param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -586,6 +660,7 @@ struct IPC_EXPORT ParamTraits<base::TimeTicks> {
 template <>
 struct ParamTraits<base::Tuple<>> {
   typedef base::Tuple<> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {}
   static void Write(base::Pickle* m, const param_type& p) {}
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -599,6 +674,9 @@ struct ParamTraits<base::Tuple<>> {
 template <class A>
 struct ParamTraits<base::Tuple<A>> {
   typedef base::Tuple<A> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, base::get<0>(p));
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, base::get<0>(p));
   }
@@ -615,6 +693,10 @@ struct ParamTraits<base::Tuple<A>> {
 template <class A, class B>
 struct ParamTraits<base::Tuple<A, B>> {
   typedef base::Tuple<A, B> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, base::get<0>(p));
+    GetParamSize(sizer, base::get<1>(p));
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, base::get<0>(p));
     WriteParam(m, base::get<1>(p));
@@ -635,6 +717,11 @@ struct ParamTraits<base::Tuple<A, B>> {
 template <class A, class B, class C>
 struct ParamTraits<base::Tuple<A, B, C>> {
   typedef base::Tuple<A, B, C> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, base::get<0>(p));
+    GetParamSize(sizer, base::get<1>(p));
+    GetParamSize(sizer, base::get<2>(p));
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, base::get<0>(p));
     WriteParam(m, base::get<1>(p));
@@ -659,6 +746,12 @@ struct ParamTraits<base::Tuple<A, B, C>> {
 template <class A, class B, class C, class D>
 struct ParamTraits<base::Tuple<A, B, C, D>> {
   typedef base::Tuple<A, B, C, D> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, base::get<0>(p));
+    GetParamSize(sizer, base::get<1>(p));
+    GetParamSize(sizer, base::get<2>(p));
+    GetParamSize(sizer, base::get<3>(p));
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, base::get<0>(p));
     WriteParam(m, base::get<1>(p));
@@ -687,6 +780,13 @@ struct ParamTraits<base::Tuple<A, B, C, D>> {
 template <class A, class B, class C, class D, class E>
 struct ParamTraits<base::Tuple<A, B, C, D, E>> {
   typedef base::Tuple<A, B, C, D, E> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, base::get<0>(p));
+    GetParamSize(sizer, base::get<1>(p));
+    GetParamSize(sizer, base::get<2>(p));
+    GetParamSize(sizer, base::get<3>(p));
+    GetParamSize(sizer, base::get<4>(p));
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, base::get<0>(p));
     WriteParam(m, base::get<1>(p));
@@ -752,6 +852,11 @@ struct ParamTraits<ScopedVector<P> > {
 template <class P, size_t stack_capacity>
 struct ParamTraits<base::StackVector<P, stack_capacity> > {
   typedef base::StackVector<P, stack_capacity> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, static_cast<int>(p->size()));
+    for (size_t i = 0; i < p->size(); i++)
+      GetParamSize(sizer, p[i]);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p->size()));
     for (size_t i = 0; i < p->size(); i++)
@@ -792,6 +897,14 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
   typedef base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> param_type;
   typedef typename param_type::key_type K;
   typedef typename param_type::data_type V;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    GetParamSize(sizer, static_cast<int>(p.size()));
+    typename param_type::const_iterator iter;
+    for (iter = p.begin(); iter != p.end(); ++iter) {
+      GetParamSize(sizer, iter->first);
+      GetParamSize(sizer, iter->second);
+    }
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     WriteParam(m, static_cast<int>(p.size()));
     typename param_type::const_iterator iter;
@@ -824,6 +937,12 @@ struct ParamTraits<base::SmallMap<NormalMap, kArraySize, EqualKey, MapInit> > {
 template <class P>
 struct ParamTraits<scoped_ptr<P> > {
   typedef scoped_ptr<P> param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p) {
+    bool valid = !!p;
+    GetParamSize(sizer, valid);
+    if (valid)
+      GetParamSize(sizer, *p);
+  }
   static void Write(base::Pickle* m, const param_type& p) {
     bool valid = !!p;
     WriteParam(m, valid);
@@ -875,6 +994,7 @@ struct IPC_EXPORT ParamTraits<IPC::ChannelHandle> {
 template <>
 struct IPC_EXPORT ParamTraits<LogData> {
   typedef LogData param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -897,6 +1017,7 @@ struct IPC_EXPORT ParamTraits<Message> {
 template <>
 struct IPC_EXPORT ParamTraits<HANDLE> {
   typedef HANDLE param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -907,6 +1028,7 @@ struct IPC_EXPORT ParamTraits<HANDLE> {
 template <>
 struct IPC_EXPORT ParamTraits<LOGFONT> {
   typedef LOGFONT param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
@@ -917,6 +1039,7 @@ struct IPC_EXPORT ParamTraits<LOGFONT> {
 template <>
 struct IPC_EXPORT ParamTraits<MSG> {
   typedef MSG param_type;
+  static void GetSize(base::PickleSizer* sizer, const param_type& p);
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

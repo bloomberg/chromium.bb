@@ -29,7 +29,9 @@ struct ShouldUseNativeSerializer { static const bool value = false; };
 
 template <typename T>
 size_t GetSerializedSizeNative_(const T& value) {
-  return IPC::ParamTraits<T>::GetSize(value);
+  base::PickleSizer sizer;
+  IPC::ParamTraits<T>::GetSize(&sizer, value);
+  return sizer.payload_size() + sizeof(ArrayHeader);
 }
 
 template <typename T>
@@ -46,7 +48,23 @@ void SerializeNative_(const T& value,
   base::Pickle* pickle = pickler->pickle();
   const char* data_start = pickle->end_of_payload();
 
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+  const char* payload_base = pickle->payload();
+  size_t size_before_write = pickle->payload_size();
+#endif
+
   IPC::ParamTraits<T>::Write(pickle, value);
+
+#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
+  // Ensure the pickle buffer hasn't moved.
+  DCHECK_EQ(payload_base, pickle->payload());
+  // Explicitly validate that the value returned by GetSize() always equals the
+  // number of bytes actually written by Write().
+  DCHECK_GE(pickle->payload_size(), size_before_write);
+  size_t bytes_written = pickle->payload_size() - size_before_write;
+  DCHECK_EQ(bytes_written + sizeof(ArrayHeader),
+            GetSerializedSizeNative_(value));
+#endif
 
   // Fix up the ArrayHeader so that num_elements contains the length of the
   // pickled data.

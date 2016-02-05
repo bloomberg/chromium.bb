@@ -575,4 +575,106 @@ TEST(PickleTest, ClaimBytes) {
   EXPECT_EQ(42, out_value);
 }
 
+// Checks that PickleSizer and Pickle agree on the size of things.
+TEST(PickleTest, PickleSizer) {
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteBool(true);
+    sizer.AddBool();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteInt(42);
+    sizer.AddInt();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteLongUsingDangerousNonPortableLessPersistableForm(42);
+    sizer.AddLongUsingDangerousNonPortableLessPersistableForm();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteUInt16(42);
+    sizer.AddUInt16();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteUInt32(42);
+    sizer.AddUInt32();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteInt64(42);
+    sizer.AddInt64();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteUInt64(42);
+    sizer.AddUInt64();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteSizeT(42);
+    sizer.AddSizeT();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteFloat(42.0f);
+    sizer.AddFloat();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteDouble(42.0);
+    sizer.AddDouble();
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteString(teststring);
+    sizer.AddString(teststring);
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteString16(teststring16);
+    sizer.AddString16(teststring16);
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteData(testdata, testdatalen);
+    sizer.AddData(testdatalen);
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+  {
+    TestingPickle pickle;
+    base::PickleSizer sizer;
+    pickle.WriteBytes(testdata, testdatalen);
+    sizer.AddBytes(testdatalen);
+    EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+  }
+}
+
 }  // namespace base

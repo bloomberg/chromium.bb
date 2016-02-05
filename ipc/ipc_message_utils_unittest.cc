@@ -90,5 +90,31 @@ TEST(IPCMessageUtilsTest, StackVector) {
     EXPECT_EQ(stack_vector[i], output[i]);
 }
 
+// Tests that PickleSizer and Pickle agree on the size of a complex base::Value.
+TEST(IPCMessageUtilsTest, ValueSize) {
+  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue);
+  value->SetWithoutPathExpansion("foo", new base::FundamentalValue(42));
+  value->SetWithoutPathExpansion("bar", new base::FundamentalValue(3.14));
+  value->SetWithoutPathExpansion("baz", new base::StringValue("hello"));
+  value->SetWithoutPathExpansion("qux", base::Value::CreateNullValue());
+
+  scoped_ptr<base::DictionaryValue> nested_dict(new base::DictionaryValue);
+  nested_dict->SetWithoutPathExpansion("foobar", new base::FundamentalValue(5));
+  value->SetWithoutPathExpansion("nested", std::move(nested_dict));
+
+  scoped_ptr<base::ListValue> list_value(new base::ListValue);
+  list_value->Append(new base::StringValue("im a string"));
+  list_value->Append(new base::StringValue("im another string"));
+  value->SetWithoutPathExpansion("awesome-list", std::move(list_value));
+
+  base::Pickle pickle;
+  IPC::WriteParam(&pickle, *value);
+
+  base::PickleSizer sizer;
+  IPC::GetParamSize(&sizer, *value);
+
+  EXPECT_EQ(sizer.payload_size(), pickle.payload_size());
+}
+
 }  // namespace
 }  // namespace IPC

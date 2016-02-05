@@ -657,6 +657,14 @@ FilePath FilePath::FromUTF16Unsafe(const string16& utf16) {
 }
 #endif
 
+void FilePath::GetSizeForPickle(PickleSizer* sizer) const {
+#if defined(OS_WIN)
+  sizer->AddString16(path_);
+#else
+  sizer->AddString(path_);
+#endif
+}
+
 void FilePath::WriteToPickle(Pickle* pickle) const {
 #if defined(OS_WIN)
   pickle->WriteString16(path_);
