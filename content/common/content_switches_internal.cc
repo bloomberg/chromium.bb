@@ -16,6 +16,10 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "base/sys_info.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -23,6 +27,16 @@ namespace {
 #if defined(OS_WIN)
 static bool g_win32k_renderer_lockdown_disabled = false;
 #endif
+
+bool IsUseZoomForDSFEnabledByDefault() {
+#if defined(OS_CHROMEOS)
+  // TODO(oshima): Device emulation needs to be fixed to pass
+  // all tests on bots. crbug.com/584709.
+  return base::SysInfo::IsRunningOnChromeOS();
+#else
+  return false;
+#endif
+}
 
 }  // namespace
 
@@ -84,10 +98,14 @@ V8CacheOptions GetV8CacheOptions() {
 }
 
 bool IsUseZoomForDSFEnabled() {
+  static bool use_zoom_for_dsf_enabled_by_default =
+      IsUseZoomForDSFEnabledByDefault();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool enabled = command_line->HasSwitch(switches::kEnableUseZoomForDSF) &&
-                 command_line->GetSwitchValueASCII(
-                     switches::kEnableUseZoomForDSF) != "false";
+  bool enabled =
+      (command_line->HasSwitch(switches::kEnableUseZoomForDSF) ||
+       use_zoom_for_dsf_enabled_by_default) &&
+      command_line->GetSwitchValueASCII(
+          switches::kEnableUseZoomForDSF) != "false";
 
   return enabled;
 }
