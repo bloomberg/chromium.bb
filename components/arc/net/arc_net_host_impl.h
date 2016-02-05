@@ -35,6 +35,10 @@ class ArcNetHostImpl : public ArcService,
                    bool visible_only,
                    const GetNetworksCallback& callback) override;
 
+  // Called when a GetWifiEnabledState call is sent from ARC.
+  void GetWifiEnabledState(
+      const GetWifiEnabledStateCallback& callback) override;
+
   // Overridden from ArcBridgeService::Observer:
   void OnNetInstanceReady() override;
 

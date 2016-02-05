@@ -11,6 +11,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
@@ -94,6 +96,16 @@ void ArcNetHostImpl::GetNetworks(bool configured_only,
   }
 
   callback.Run(std::move(data));
+}
+
+void ArcNetHostImpl::GetWifiEnabledState(
+    const GetWifiEnabledStateCallback& callback) {
+  chromeos::NetworkStateHandler* handler =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  bool is_enabled =
+      handler->IsTechnologyEnabled(chromeos::NetworkTypePattern::WiFi());
+
+  callback.Run(is_enabled);
 }
 
 }  // namespace arc

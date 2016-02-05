@@ -30,6 +30,9 @@ interface NetHost {
   // Sends a request to get configured or visible WiFi networks based on the
   // |configured_only| and |visible_only| flags.
   GetNetworks@0(bool configured_only, bool visible_only) => (NetworkData data);
+
+  // Sends a request to get enabled / disabled status of WiFi.
+  GetWifiEnabledState@1() => (bool is_enabled);
 };
 
 interface NetInstance {
