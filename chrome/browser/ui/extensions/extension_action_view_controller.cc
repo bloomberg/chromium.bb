@@ -119,15 +119,17 @@ bool ExtensionActionViewController::IsEnabled(
     return false;
 
   return extension_action_->GetIsVisible(
-      SessionTabHelper::IdForTab(web_contents)) ||
-      extensions::ExtensionActionAPI::Get(browser_->profile())->
-          ExtensionWantsToRun(extension(), web_contents);
+             SessionTabHelper::IdForTab(web_contents)) ||
+         extensions::ExtensionActionAPI::Get(browser_->profile())
+             ->HasBeenBlocked(extension(), web_contents);
 }
 
 bool ExtensionActionViewController::WantsToRun(
     content::WebContents* web_contents) const {
-  return extensions::ExtensionActionAPI::Get(browser_->profile())->
-      ExtensionWantsToRun(extension(), web_contents);
+  extensions::ExtensionActionAPI* action_api =
+      extensions::ExtensionActionAPI::Get(browser_->profile());
+  return action_api->PageActionWantsToRun(extension(), web_contents) ||
+         action_api->HasBeenBlocked(extension(), web_contents);
 }
 
 bool ExtensionActionViewController::HasPopup(
@@ -389,7 +391,14 @@ ExtensionActionViewController::GetIconImageSource(
     // grayscale to color).
     bool is_overflow =
         toolbar_actions_bar_ && toolbar_actions_bar_->in_overflow_mode();
-    image_source->set_paint_decoration(WantsToRun(web_contents) && is_overflow);
+
+    extensions::ExtensionActionAPI* api =
+        extensions::ExtensionActionAPI::Get(browser_->profile());
+    bool has_blocked_actions = api->HasBeenBlocked(extension(), web_contents);
+    image_source->set_paint_blocked_actions_decoration(has_blocked_actions);
+    image_source->set_paint_page_action_decoration(
+        !has_blocked_actions && is_overflow &&
+        api->PageActionWantsToRun(extension(), web_contents));
   }
 
   return image_source;

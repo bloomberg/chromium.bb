@@ -236,24 +236,21 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
       extension->id(), grant_active_tab_permissions);
 }
 
-bool ExtensionActionAPI::ExtensionWantsToRun(
-    const Extension* extension, content::WebContents* web_contents) {
-  // An extension wants to act if it has a visible page action on the given
-  // page...
+bool ExtensionActionAPI::PageActionWantsToRun(
+    const Extension* extension,
+    content::WebContents* web_contents) {
   ExtensionAction* page_action =
       ExtensionActionManager::Get(browser_context_)->GetPageAction(*extension);
-  if (page_action &&
-      page_action->GetIsVisible(SessionTabHelper::IdForTab(web_contents)))
-    return true;
+  return page_action &&
+         page_action->GetIsVisible(SessionTabHelper::IdForTab(web_contents));
+}
 
-  // ... Or if it has pending scripts that need approval for execution.
+bool ExtensionActionAPI::HasBeenBlocked(const Extension* extension,
+                                        content::WebContents* web_contents) {
   ActiveScriptController* active_script_controller =
       ActiveScriptController::GetForWebContents(web_contents);
-  if (active_script_controller &&
-      active_script_controller->WantsToRun(extension))
-    return true;
-
-  return false;
+  return active_script_controller &&
+         active_script_controller->WantsToRun(extension);
 }
 
 void ExtensionActionAPI::NotifyChange(ExtensionAction* extension_action,

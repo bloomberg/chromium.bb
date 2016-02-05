@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -113,7 +114,8 @@ IconWithBadgeImageSource::Badge::~Badge() {}
 IconWithBadgeImageSource::IconWithBadgeImageSource(const gfx::Size& size)
     : gfx::CanvasImageSource(size, false),
       grayscale_(false),
-      paint_decoration_(false) {}
+      paint_page_action_decoration_(false),
+      paint_blocked_actions_decoration_(false) {}
 
 IconWithBadgeImageSource::~IconWithBadgeImageSource() {}
 
@@ -147,8 +149,11 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
   // Draw a badge on the provided browser action icon's canvas.
   PaintBadge(canvas);
 
-  if (paint_decoration_)
-    PaintDecoration(canvas);
+  if (paint_page_action_decoration_)
+    PaintPageActionDecoration(canvas);
+
+  if (paint_blocked_actions_decoration_)
+    PaintBlockedActionDecoration(canvas);
 }
 
 // Paints badge with specified parameters to |canvas|.
@@ -267,7 +272,7 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   canvas->Restore();
 }
 
-void IconWithBadgeImageSource::PaintDecoration(gfx::Canvas* canvas) {
+void IconWithBadgeImageSource::PaintPageActionDecoration(gfx::Canvas* canvas) {
   static const SkColor decoration_color = SkColorSetARGB(255, 70, 142, 226);
 
   int major_radius = std::ceil(size().width() / 5.0);
@@ -281,4 +286,13 @@ void IconWithBadgeImageSource::PaintDecoration(gfx::Canvas* canvas) {
   canvas->DrawCircle(center_point, major_radius, paint);
   paint.setColor(decoration_color);
   canvas->DrawCircle(center_point, minor_radius, paint);
+}
+
+void IconWithBadgeImageSource::PaintBlockedActionDecoration(
+    gfx::Canvas* canvas) {
+  canvas->Save();
+  gfx::ImageSkia img = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_BLOCKED_EXTENSION_SCRIPT);
+  canvas->DrawImageInt(img, size().width() - img.width(), 0);
+  canvas->Restore();
 }

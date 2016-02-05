@@ -78,7 +78,6 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
   void SetBrowserActionVisibility(const std::string& extension_id,
                                   bool visible);
 
-  // BrowserContextKeyedAPI implementation.
   // Executes the action of the given |extension| on the |browser|'s active
   // web contents. If |grant_tab_permissions| is true, this will also grant
   // activeTab to the extension (so this should only be done if this is through
@@ -96,10 +95,15 @@ class ExtensionActionAPI : public BrowserContextKeyedAPI {
                                 Browser* browser,
                                 bool grant_active_tab_permissions);
 
-  // Returns true if the given |extension| wants to run on the tab pointed to
-  // by |web_contents|.
-  bool ExtensionWantsToRun(const Extension* extension,
-                           content::WebContents* web_contents);
+  // Returns true if the |extension| has a visible page action on the given
+  // |web_contents|.
+  bool PageActionWantsToRun(const Extension* extension,
+                            content::WebContents* web_contents);
+
+  // Returns true if the |extension| has a blocked script that wants to inject
+  // on the given |web_contents|.
+  bool HasBeenBlocked(const Extension* extension,
+                      content::WebContents* web_contents);
 
   // Notifies that there has been a change in the given |extension_action|.
   void NotifyChange(ExtensionAction* extension_action,

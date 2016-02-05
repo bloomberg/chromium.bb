@@ -204,8 +204,7 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
 
   ExtensionActionAPI* extension_action_api =
       ExtensionActionAPI::Get(profile());
-  ASSERT_FALSE(extension_action_api->ExtensionWantsToRun(extension,
-                                                         web_contents()));
+  ASSERT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
 
   // Since the extension requests all_hosts, we should require user consent.
   EXPECT_TRUE(RequiresUserConsent(extension));
@@ -214,8 +213,7 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // executed.
   RequestInjection(extension);
   EXPECT_TRUE(controller()->WantsToRun(extension));
-  EXPECT_TRUE(extension_action_api->ExtensionWantsToRun(extension,
-                                                        web_contents()));
+  EXPECT_TRUE(extension_action_api->HasBeenBlocked(extension, web_contents()));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Click to accept the extension executing.
@@ -224,8 +222,7 @@ TEST_F(ActiveScriptControllerUnitTest, RequestPermissionAndExecute) {
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(controller()->WantsToRun(extension));
-  EXPECT_FALSE(extension_action_api->ExtensionWantsToRun(extension,
-                                                         web_contents()));
+  EXPECT_FALSE(extension_action_api->HasBeenBlocked(extension, web_contents()));
 
   // Since we already executed on the given page, we shouldn't need permission
   // for a second time.

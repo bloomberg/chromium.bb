@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "chrome/browser/extensions/active_script_controller.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -10,6 +13,7 @@
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar_unittest.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/common/user_script.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // Tests the icon appearance of extension actions without the toolbar redesign.
@@ -32,22 +36,25 @@ TEST_P(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
   scoped_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
 
   SetActionWantsToRunOnTab(action->extension_action(), web_contents, false);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   toolbar_model()->SetVisibleIconCount(0u);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   SetActionWantsToRunOnTab(action->extension_action(), web_contents, true);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 }
 
 // Tests the icon appearance of extension actions with the toolbar redesign.
@@ -71,12 +78,14 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
   scoped_ptr<IconWithBadgeImageSource> image_source =
       action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_TRUE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   SetActionWantsToRunOnTab(action->extension_action(), web_contents, true);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   toolbar_model()->SetVisibleIconCount(0u);
   EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
@@ -86,12 +95,107 @@ TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
       overflow_bar()->GetActions()[0]);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_FALSE(image_source->grayscale());
-  EXPECT_TRUE(image_source->paint_decoration());
+  EXPECT_TRUE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 
   SetActionWantsToRunOnTab(action->extension_action(), web_contents, false);
   image_source = action->GetIconImageSourceForTesting(web_contents, size);
   EXPECT_TRUE(image_source->grayscale());
-  EXPECT_FALSE(image_source->paint_decoration());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+}
+
+TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionBlockedActions) {
+  scoped_refptr<const extensions::Extension> browser_action_ext =
+      CreateAndAddExtension(
+          "browser action",
+          extensions::extension_action_test_util::BROWSER_ACTION);
+  ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  AddTab(browser(), GURL("https://www.google.com/"));
+
+  ExtensionActionViewController* browser_action =
+      static_cast<ExtensionActionViewController*>(
+          toolbar_actions_bar()->GetActions()[0]);
+  EXPECT_EQ(browser_action_ext.get(), browser_action->extension());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  const gfx::Size kSize(ToolbarActionsBar::IconWidth(false),
+                        ToolbarActionsBar::IconHeight());
+  scoped_ptr<IconWithBadgeImageSource> image_source =
+      browser_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+
+  extensions::ActiveScriptController* script_controller =
+      extensions::ActiveScriptController::GetForWebContents(web_contents);
+  ASSERT_TRUE(script_controller);
+  script_controller->RequestScriptInjectionForTesting(
+      browser_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
+      base::Bind(&base::DoNothing));
+  image_source =
+      browser_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
+
+  script_controller->OnClicked(browser_action_ext.get());
+  image_source =
+      browser_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+
+  scoped_refptr<const extensions::Extension> page_action_ext =
+      CreateAndAddExtension(
+          "page action", extensions::extension_action_test_util::PAGE_ACTION);
+  ASSERT_EQ(2u, toolbar_actions_bar()->GetIconCount());
+  ExtensionActionViewController* page_action =
+      static_cast<ExtensionActionViewController*>(
+          toolbar_actions_bar()->GetActions()[1]);
+  EXPECT_EQ(browser_action_ext.get(), browser_action->extension());
+
+  image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_TRUE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
+
+  script_controller->RequestScriptInjectionForTesting(
+      page_action_ext.get(), extensions::UserScript::DOCUMENT_IDLE,
+      base::Bind(&base::DoNothing));
+  image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
+
+  // Overflow the page action and set the page action as wanting to run. We
+  // shouldn't show the page action decoration because we are showing the
+  // blocked action decoration (and should only show one at a time).
+  toolbar_model()->SetVisibleIconCount(0u);
+  EXPECT_EQ(0u, toolbar_actions_bar()->GetIconCount());
+  EXPECT_EQ(2u, overflow_bar()->GetIconCount());
+  ExtensionActionViewController* overflow_page_action =
+      static_cast<ExtensionActionViewController*>(
+          overflow_bar()->GetActions()[1]);
+  SetActionWantsToRunOnTab(overflow_page_action->extension_action(),
+                           web_contents, true);
+  image_source =
+      overflow_page_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_FALSE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_TRUE(image_source->paint_blocked_actions_decoration());
+
+  SetActionWantsToRunOnTab(overflow_page_action->extension_action(),
+                           web_contents, false);
+  toolbar_model()->SetVisibleIconCount(2u);
+
+  script_controller->OnClicked(page_action_ext.get());
+  image_source = page_action->GetIconImageSourceForTesting(web_contents, kSize);
+  EXPECT_TRUE(image_source->grayscale());
+  EXPECT_FALSE(image_source->paint_page_action_decoration());
+  EXPECT_FALSE(image_source->paint_blocked_actions_decoration());
 }
 
 TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {

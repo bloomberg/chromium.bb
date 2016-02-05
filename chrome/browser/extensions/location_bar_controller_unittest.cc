@@ -166,13 +166,13 @@ TEST_F(LocationBarControllerUnitTest, NavigationClearsState) {
   ExtensionActionAPI* extension_action_api =
       ExtensionActionAPI::Get(profile());
   // By default, extensions shouldn't want to act on a page.
-  EXPECT_FALSE(extension_action_api->ExtensionWantsToRun(extension,
-                                                         web_contents()));
+  EXPECT_FALSE(
+      extension_action_api->PageActionWantsToRun(extension, web_contents()));
   // Showing the page action should indicate that an extension *does* want to
   // run on the page.
   page_action.SetIsVisible(tab_id(), true);
-  EXPECT_TRUE(extension_action_api->ExtensionWantsToRun(extension,
-                                                        web_contents()));
+  EXPECT_TRUE(
+      extension_action_api->PageActionWantsToRun(extension, web_contents()));
 
   EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
@@ -184,16 +184,16 @@ TEST_F(LocationBarControllerUnitTest, NavigationClearsState) {
   EXPECT_EQ("Goodbye", page_action.GetTitle(tab_id()));
   EXPECT_EQ(extension->GetResourceURL("popup.html"),
             page_action.GetPopupUrl(tab_id()));
-  EXPECT_TRUE(extension_action_api->ExtensionWantsToRun(extension,
-                                                        web_contents()));
+  EXPECT_TRUE(
+      extension_action_api->PageActionWantsToRun(extension, web_contents()));
 
   // Should discard the settings, and go back to the defaults.
   NavigateAndCommit(GURL("http://www.yahoo.com"));
 
   EXPECT_EQ("Hello", page_action.GetTitle(tab_id()));
   EXPECT_EQ(GURL(), page_action.GetPopupUrl(tab_id()));
-  EXPECT_FALSE(extension_action_api->ExtensionWantsToRun(extension,
-                                                         web_contents()));
+  EXPECT_FALSE(
+      extension_action_api->PageActionWantsToRun(extension, web_contents()));
 }
 
 }  // namespace
