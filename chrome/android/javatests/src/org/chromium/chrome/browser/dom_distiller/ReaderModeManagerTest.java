@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManagerWrapper;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModeBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
-import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneLayer;
+import org.chromium.chrome.browser.compositor.scene_layer.ReaderModeSceneLayer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel.MockTabModelDelegate;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -77,7 +77,7 @@ public class ReaderModeManagerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public ContextualSearchSceneLayer createNewReaderModeSceneLayer() {
+        public ReaderModeSceneLayer createNewReaderModeSceneLayer() {
             return null;
         }
 

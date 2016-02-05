@@ -65,12 +65,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchTermOpacity,
             ContextualSearchIconSpriteControl spriteControl) {
 
-        // If the sprite control is null, use the reader icon in its place.
-        int readerIconId = 0;
-        if (spriteControl == null) {
-            readerIconId = R.drawable.infobar_mobile_friendly;
-        }
-
         boolean searchPromoVisible = panel.getPromoVisible();
         float searchPromoHeightPx = panel.getPromoHeightPx();
         float searchPromoOpacity = panel.getPromoOpacity();
@@ -129,7 +123,8 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchContextViewId,
                 searchTermViewId,
                 R.drawable.contextual_search_bar_shadow,
-                readerIconId, // If this value is 0, the "G" sprite will be used.
+                R.drawable.google_icon_sprite,
+                R.raw.google_icon_sprite,
                 R.drawable.breadcrumb_arrow,
                 ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background,
@@ -137,8 +132,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 R.id.contextual_search_opt_out_promo,
                 R.drawable.contextual_search_promo_ripple,
                 searchPeekPromoTextViewId,
-                R.drawable.google_icon_sprite,
-                R.raw.google_icon_sprite,
                 mDpToPx,
                 panel.getContentViewCore(),
                 searchPromoVisible,
@@ -199,6 +192,7 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchTermResourceId,
             int searchBarShadowResourceId,
             int panelIconResourceId,
+            int searchProviderIconSpriteMetadataResourceId,
             int arrowUpResourceId,
             int closeIconResourceId,
             int progressBarBackgroundResourceId,
@@ -206,8 +200,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             int searchPromoResourceId,
             int peekPromoRippleResourceId,
             int peekPromoTextResourceId,
-            int searchProviderIconSpriteBitmapResourceId,
-            int searchProviderIconSpriteMetadataResourceId,
             float dpToPx,
             ContentViewCore contentViewCore,
             boolean searchPromoVisible,

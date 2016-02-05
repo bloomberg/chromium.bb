@@ -40,10 +40,6 @@ scoped_refptr<ContextualSearchLayer> ContextualSearchLayer::Create(
 }
 
 scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
-  if (panel_icon_resource_id_ != 0) {
-    return OverlayPanelLayer::GetIconLayer();
-  }
-
   // Search Provider Icon Sprite (Animated)
   if (search_provider_icon_sprite_visible_) {
     if (search_provider_icon_sprite_->layer()->parent() != layer_) {
@@ -51,7 +47,7 @@ scoped_refptr<cc::Layer> ContextualSearchLayer::GetIconLayer() {
     }
     search_provider_icon_sprite_->DrawSpriteFrame(
         resource_manager_,
-        search_provider_icon_sprite_bitmap_resource_id_,
+        panel_icon_resource_id_,
         search_provider_icon_sprite_metadata_resource_id_,
         search_provider_icon_sprite_completion_percentage_);
   } else {
@@ -71,6 +67,7 @@ void ContextualSearchLayer::SetProperties(
     int search_term_resource_id,
     int search_bar_shadow_resource_id,
     int panel_icon_resource_id,
+    int search_provider_icon_sprite_metadata_resource_id,
     int arrow_up_resource_id,
     int close_icon_resource_id,
     int progress_bar_background_resource_id,
@@ -78,8 +75,6 @@ void ContextualSearchLayer::SetProperties(
     int search_promo_resource_id,
     int peek_promo_ripple_resource_id,
     int peek_promo_text_resource_id,
-    int search_provider_icon_sprite_bitmap_resource_id,
-    int search_provider_icon_sprite_metadata_resource_id,
     float dp_to_px,
     content::ContentViewCore* content_view_core,
     bool search_promo_visible,
@@ -114,8 +109,6 @@ void ContextualSearchLayer::SetProperties(
     int progress_bar_completion) {
 
   search_provider_icon_sprite_visible_ = search_provider_icon_sprite_visible;
-  search_provider_icon_sprite_bitmap_resource_id_ =
-      search_provider_icon_sprite_bitmap_resource_id;
   search_provider_icon_sprite_metadata_resource_id_ =
       search_provider_icon_sprite_metadata_resource_id;
   search_provider_icon_sprite_completion_percentage_ =
