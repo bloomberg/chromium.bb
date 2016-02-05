@@ -442,8 +442,6 @@ class QuicNetworkTransactionTest
     test_network_quality_estimator_->AddRTTObserver(&rtt_observer_);
 
     if (use_next_protos) {
-      params_.enable_spdy31 = true;
-      params_.enable_http2 = true;
       params_.parse_alternative_services = true;
       params_.enable_alternative_service_with_different_host = true;
     }

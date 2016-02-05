@@ -11823,8 +11823,6 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
 // This tests the case that a request is issued via http instead of spdy after
 // npn is negotiated.
 TEST_P(HttpNetworkTransactionTest, NpnWithHttpOverSSL) {
-  session_deps_.enable_spdy31 = false;
-  session_deps_.enable_http2 = false;
   session_deps_.parse_alternative_services = true;
   session_deps_.enable_alternative_service_with_different_host = false;
 
