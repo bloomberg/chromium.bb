@@ -61,9 +61,6 @@ class ModernLinker extends Linker {
     // The map of libraries that are currently loaded in this process.
     private HashMap<String, LibInfo> mLoadedLibraries = null;
 
-    // The directory used to hold shared RELRO data files. Set up by prepareLibraryLoad().
-    private String mDataDirectory = null;
-
     // Private singleton constructor, and singleton factory method.
     private ModernLinker() { }
     static Linker create() {
@@ -120,9 +117,6 @@ class ModernLinker extends Linker {
 
             // Create an empty loaded libraries map.
             mLoadedLibraries = new HashMap<String, LibInfo>();
-
-            // Retrieve the data directory from base.
-            mDataDirectory = PathUtils.getDataDirectory(null);
 
             // Start the current load address at the base load address.
             mCurrentLoadAddress = mBaseLoadAddress;
@@ -397,7 +391,7 @@ class ModernLinker extends Linker {
                 // We are in the browser, and with a current load address that indicates that
                 // there is enough address space for shared RELRO to operate. Create the
                 // shared RELRO, and store it in the map.
-                String relroPath = mDataDirectory + "/RELRO:" + libFilePath;
+                String relroPath = PathUtils.getDataDirectory(null) + "/RELRO:" + libFilePath;
                 if (nativeCreateSharedRelro(dlopenExtPath,
                                             mCurrentLoadAddress, relroPath, libInfo)) {
                     mSharedRelros.put(dlopenExtPath, libInfo);

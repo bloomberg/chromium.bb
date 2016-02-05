@@ -18,6 +18,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
@@ -51,6 +52,7 @@ import java.util.Locale;
  */
 public class ChromeBrowserInitializer {
     private static final String TAG = "BrowserInitializer";
+    private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
     private static ChromeBrowserInitializer sChromeBrowserInitiliazer;
 
     private final Handler mHandler;
@@ -111,6 +113,8 @@ public class ChromeBrowserInitializer {
      */
     public void handlePreNativeStartup(final BrowserParts parts) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread";
+
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, mApplication);
 
         preInflationStartup();
         parts.preInflationStartup();
