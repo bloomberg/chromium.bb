@@ -932,7 +932,7 @@ void InputType::stepUpFromLayoutObject(int n)
         setValueAsDecimal(sign > 0 ? stepRange.minimum() : stepRange.maximum(), DispatchChangeEvent, IGNORE_EXCEPTION);
         return;
     }
-    if ((sign > 0 && current > stepRange.maximum()) || (sign < 0 && current < stepRange.minimum()))
+    if ((sign > 0 && current >= stepRange.maximum()) || (sign < 0 && current <= stepRange.minimum()))
         return;
     applyStep(current, n, AnyIsDefaultStep, DispatchChangeEvent, IGNORE_EXCEPTION);
 }
