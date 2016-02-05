@@ -230,7 +230,6 @@ crbug.com/567965 [ Debug ] imported/web-platform-tests/user-timing/test_user_tim
 crbug.com/518993 imported/web-platform-tests/user-timing/test_user_timing_measure_navigation_timing.html [ Skip ]
 
 crbug.com/526594 [ Win ] plugins/webview-plugin-lifecycle.html [ Failure ]
-crbug.com/584194 fast/forms/placeholder-position.html [ NeedsRebaseline ]
 
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
