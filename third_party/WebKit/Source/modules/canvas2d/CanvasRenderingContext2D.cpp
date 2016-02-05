@@ -1955,6 +1955,13 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     if (maxWidth && (!std::isfinite(*maxWidth) || *maxWidth <= 0))
         return;
 
+    // Currently, SkPictureImageFilter does not support subpixel text anti-aliasing, which
+    // is expected when !m_hasAlpha, so we need to fall out of display list mode when
+    // drawing text to an opaque canvas
+    // crbug.com/583809
+    if (!m_hasAlpha && !isAccelerated())
+        canvas()->disableDeferral();
+
     const Font& font = accessFont();
     const FontMetrics& fontMetrics = font.fontMetrics();
 

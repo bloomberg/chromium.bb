@@ -631,6 +631,29 @@ TEST_F(CanvasRenderingContext2DTest, FallbackWithLargeState)
     canvasElement().doDeferredPaintInvalidation(); // To close the current frame
 }
 
+TEST_F(CanvasRenderingContext2DTest, OpaqueDisplayListFallsBackForText)
+{
+    // Verify that drawing text to an opaque canvas, which is expected to
+    // render with subpixel text anti-aliasing, results in falling out
+    // of display list mode because the current diplay list implementation
+    // does not support pixel geometry settings.
+    // See: crbug.com/583809
+    createContext(Opaque);
+    OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectFallback), Opaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
+
+    context2d()->fillText("Text", 0, 5);
+}
+
+TEST_F(CanvasRenderingContext2DTest, NonOpaqueDisplayListDoesNotFallBackForText)
+{
+    createContext(NonOpaque);
+    OwnPtr<RecordingImageBufferSurface> surface = adoptPtr(new RecordingImageBufferSurface(IntSize(10, 10), MockSurfaceFactory::create(MockSurfaceFactory::ExpectNoFallback), NonOpaque));
+    canvasElement().createImageBufferUsingSurfaceForTesting(surface.release());
+
+    context2d()->fillText("Text", 0, 5);
+}
+
 TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime)
 {
     NonThrowableExceptionState nonThrowableExceptionState;
