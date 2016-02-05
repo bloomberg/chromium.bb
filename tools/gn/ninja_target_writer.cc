@@ -74,7 +74,9 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
     CHECK(0) << "Output type of target not handled.";
   }
 
-  WriteFileIfChanged(ninja_file, file.str(), nullptr);
+  std::string contents = file.str();
+  base::WriteFile(ninja_file, contents.c_str(),
+                  static_cast<int>(contents.size()));
 }
 
 void NinjaTargetWriter::WriteEscapedSubstitution(SubstitutionType type) {

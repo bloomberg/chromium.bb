@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
@@ -152,6 +153,26 @@ base::StringPiece FindParentDir(const std::string* path) {
   return base::StringPiece();
 }
 
+bool HasSameContent(std::stringstream& data_1, const base::FilePath& data_2) {
+  // Compare file sizes first. Quick and will save us some time if they are
+  // different sizes.
+  int64_t data_1_len = data_1.tellp();
+
+  int64_t data_2_len;
+  if (!base::GetFileSize(data_2, &data_2_len) || data_1_len != data_2_len)
+    return false;
+
+  std::string data_2_data;
+  data_2_data.resize(data_2_len);
+  if (!base::ReadFileToString(data_2, &data_2_data))
+    return false;
+
+  std::string data_1_data;
+  data_1_data = data_1.str();
+
+  return data_1_data == data_2_data;
+}
+
 }  // namespace
 
 VisualStudioWriter::SolutionEntry::SolutionEntry(const std::string& _name,
@@ -268,13 +289,32 @@ bool VisualStudioWriter::WriteProjectFiles(const Target* target, Err* err) {
   // Only write the content to the file if it's different. That is
   // both a performance optimization and more importantly, prevents
   // Visual Studio from reloading the projects.
-  if (!WriteFileIfChanged(vcxproj_path, vcxproj_string_out.str(), err))
-    return false;
+  if (!HasSameContent(vcxproj_string_out, vcxproj_path)) {
+    std::string content = vcxproj_string_out.str();
+    int size = static_cast<int>(content.size());
+    if (base::WriteFile(vcxproj_path, content.c_str(), size) != size) {
+      *err = Err(Location(), "Couldn't open " + target->label().name() +
+                                 ".vcxproj for writing");
+      return false;
+    }
+  }
 
   base::FilePath filters_path = UTF8ToFilePath(vcxproj_path_str + ".filters");
+
   std::stringstream filters_string_out;
   WriteFiltersFileContents(filters_string_out, target);
-  return WriteFileIfChanged(filters_path, filters_string_out.str(), err);
+
+  if (!HasSameContent(filters_string_out, filters_path)) {
+    std::string content = filters_string_out.str();
+    int size = static_cast<int>(content.size());
+    if (base::WriteFile(filters_path, content.c_str(), size) != size) {
+      *err = Err(Location(), "Couldn't open " + target->label().name() +
+                                 ".vcxproj.filters for writing");
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool VisualStudioWriter::WriteProjectFileContents(
@@ -572,7 +612,17 @@ bool VisualStudioWriter::WriteSolutionFile(Err* err) {
   // Only write the content to the file if it's different. That is
   // both a performance optimization and more importantly, prevents
   // Visual Studio from reloading the projects.
-  return WriteFileIfChanged(sln_path, string_out.str(), err);
+  if (HasSameContent(string_out, sln_path))
+    return true;
+
+  std::string content = string_out.str();
+  int size = static_cast<int>(content.size());
+  if (base::WriteFile(sln_path, content.c_str(), size) != size) {
+    *err = Err(Location(), "Couldn't open all.sln for writing");
+    return false;
+  }
+
+  return true;
 }
 
 void VisualStudioWriter::WriteSolutionFileContents(
