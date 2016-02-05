@@ -24,7 +24,7 @@ SourceListDirective::SourceListDirective(const String& name, const String& value
 
 bool SourceListDirective::allows(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
-    return m_sourceList.matches(url.isEmpty() ? policy()->url() : url, redirectStatus);
+    return m_sourceList.matches(url, redirectStatus);
 }
 
 bool SourceListDirective::allowInline() const

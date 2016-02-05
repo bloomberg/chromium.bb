@@ -26,7 +26,7 @@ window.addEventListener("message", function (e) {
     }
 });
 
-function injectNestedIframe(policy, parent, child, expectation) {
+function injectNestedIframe(policy, parent, child, expectation, isSandboxed) {
     var iframe = document.createElement("iframe");
 
     var url = "/security/contentSecurityPolicy/resources/frame-in-frame.pl?"
@@ -37,6 +37,10 @@ function injectNestedIframe(policy, parent, child, expectation) {
     url = (parent == "same" ? SAMEORIGIN_ORIGIN : CROSSORIGIN_ORIGIN) + url;
 
     iframe.src = url;
+
+    if (isSandboxed)
+        iframe.sandbox = 'allow-scripts';
+
     document.body.appendChild(iframe);
 }
 
@@ -108,6 +112,12 @@ function sameOriginFrameShouldBeAllowed(policy) {
 
 function testNestedIFrame(policy, parent, child, expectation) {
     window.onload = function () {
-        injectNestedIframe(policy, parent == SAME_ORIGIN ? "same" : "cross", child == SAME_ORIGIN ? "same" : "cross", expectation == EXPECT_LOAD ? "Allowed" : "Blocked");
+        injectNestedIframe(policy, parent == SAME_ORIGIN ? "same" : "cross", child == SAME_ORIGIN ? "same" : "cross", expectation == EXPECT_LOAD ? "Allowed" : "Blocked", false /* isSandboxed */);
+    };
+}
+
+function testNestedSandboxedIFrame(policy, parent, child, expectation) {
+    window.onload = function () {
+        injectNestedIframe(policy, parent == SAME_ORIGIN ? "same" : "cross", child == SAME_ORIGIN ? "same" : "cross", expectation == EXPECT_LOAD ? "Allowed" : "Blocked", true /* isSandboxed */);
     };
 }

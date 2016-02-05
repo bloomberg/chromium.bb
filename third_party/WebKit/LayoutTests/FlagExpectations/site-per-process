@@ -40,12 +40,6 @@ http/tests/security/cross-origin-websql-allowed.html [ Failure ]
 # https://crbug.com/582289 - dumpResourceLoadCallbacks test flag is not replicated into OOPIFs.
 http/tests/security/XFrameOptions/x-frame-options-deny-meta-tag-parent-same-origin-deny.html [ Failure ]
 
-# https://crbug.com/582544 - contentSecurityPolicy sometimes blocks too much with OOPIFs.
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-star-allow.html [ Failure ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-cross-in-cross-url-allow.html [ Failure ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-cross-star-allow.html [ Failure ]
-http/tests/security/contentSecurityPolicy/1.1/frame-ancestors/frame-ancestors-nested-same-in-cross-url-allow.html [ Failure ]
-
 # https://crbug.com/582231 - expected an exception for cross-domain window access.
 http/tests/security/cross-frame-access-call.html [ Failure ]
 http/tests/security/cross-frame-access-dispatchEvent.html [ Failure ]

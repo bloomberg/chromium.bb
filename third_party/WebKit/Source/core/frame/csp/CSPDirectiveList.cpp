@@ -136,7 +136,10 @@ bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
 
 bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
-    return !directive || directive->allows(url, redirectStatus);
+    // If |url| is empty, fall back to the policy URL to ensure that <object>'s
+    // without a `src` can be blocked/allowed, as they can still load plugins
+    // even though they don't actually have a URL.
+    return !directive || directive->allows(url.isEmpty() ? m_policy->url() : url, redirectStatus);
 }
 
 bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, LocalFrame* frame) const
@@ -145,8 +148,14 @@ bool CSPDirectiveList::checkAncestors(SourceListDirective* directive, LocalFrame
         return true;
 
     for (Frame* current = frame->tree().parent(); current; current = current->tree().parent()) {
-        // FIXME: To make this work for out-of-process iframes, we need to propagate URL information of ancestor frames across processes.
-        if (!current->isLocalFrame() || !directive->allows(toLocalFrame(current)->document()->url(), ContentSecurityPolicy::DidNotRedirect))
+        // The |current| frame might be a remote frame which has no URL, so use
+        // its origin instead.  This should suffice for this check since it
+        // doesn't do path comparisons.  See https://crbug.com/582544.
+        //
+        // TODO(mkwst): Move this check up into the browser process.  See
+        // https://crbug.com/555418.
+        KURL url(KURL(), current->securityContext()->securityOrigin()->toString());
+        if (!directive->allows(url, ContentSecurityPolicy::DidNotRedirect))
             return false;
     }
     return true;
