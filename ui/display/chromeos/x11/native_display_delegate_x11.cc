@@ -311,12 +311,11 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
     std::set<RRCrtc>* last_used_crtcs,
     int index) {
   int64_t display_id = 0;
-  ui::EDIDParserX11 edid_parser(output);
-  if (!edid_parser.GetDisplayId(static_cast<uint8_t>(index), &display_id))
+  if (!GetDisplayId(output, static_cast<uint8_t>(index), &display_id))
     display_id = index;
 
   bool has_overscan = false;
-  edid_parser.GetOutputOverscanFlag(&has_overscan);
+  GetOutputOverscanFlag(output, &has_overscan);
 
   DisplayConnectionType type = GetDisplayConnectionTypeFromName(info->name);
   if (type == DISPLAY_CONNECTION_TYPE_UNKNOWN)
@@ -368,9 +367,8 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
                              type,
                              IsOutputAspectPreservingScaling(output),
                              has_overscan,
-                             edid_parser.GetDisplayName(),
+                             GetDisplayName(output),
                              display_modes,
-                             edid_parser.edid(),
                              current_mode,
                              native_mode,
                              output,

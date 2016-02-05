@@ -310,8 +310,7 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
           crtc(XRRGetCrtcInfo(xdisplay_, resources.get(), output_info->crtc));
 
       int64_t display_id = -1;
-      if (!ui::EDIDParserX11(output_id).GetDisplayId(static_cast<uint8_t>(i),
-                                                     &display_id)) {
+      if (!ui::GetDisplayId(output_id, static_cast<uint8_t>(i), &display_id)) {
         // It isn't ideal, but if we can't parse the EDID data, fallback on the
         // display number.
         display_id = i;

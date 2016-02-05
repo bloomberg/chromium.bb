@@ -15,7 +15,6 @@ TestDisplaySnapshot::TestDisplaySnapshot()
                       std::string(),
                       base::FilePath(),
                       std::vector<const DisplayMode*>(),
-                      std::vector<uint8_t>(),
                       NULL,
                       NULL) {}
 
@@ -38,7 +37,6 @@ TestDisplaySnapshot::TestDisplaySnapshot(
                       std::string(),
                       base::FilePath(),
                       modes,
-                      std::vector<uint8_t>(),
                       current_mode,
                       native_mode) {
   product_id_ = product_id;

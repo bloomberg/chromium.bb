@@ -4,13 +4,9 @@
 
 #include "ash/display/display_error_observer_chromeos.h"
 
-#include <cinttypes>
 #include <utility>
 
-#include "ash/new_window_delegate.h"
-#include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "base/strings/string_number_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -27,27 +23,6 @@ namespace {
 
 const char kDisplayErrorNotificationId[] = "chrome://settings/display/error";
 
-// A notification delegate that will start the feedback app when the notication
-// is clicked.
-class DisplayErrorNotificationDelegate
-    : public message_center::NotificationDelegate {
- public:
-  DisplayErrorNotificationDelegate() = default;
-
-  // message_center::NotificationDelegate:
-  bool HasClickedListener() override { return true; }
-
-  void Click() override {
-    ash::Shell::GetInstance()->new_window_delegate()->OpenFeedbackPage();
-  }
-
- private:
-  // Private destructor since NotificationDelegate is ref-counted.
-  ~DisplayErrorNotificationDelegate() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayErrorNotificationDelegate);
-};
-
 }  // namespace
 
 DisplayErrorObserver::DisplayErrorObserver() {
@@ -59,14 +34,6 @@ DisplayErrorObserver::~DisplayErrorObserver() {
 void DisplayErrorObserver::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState new_state) {
-  LOG(ERROR) << "Failed to configure the following display(s):";
-  for (const auto& display : displays) {
-    LOG(ERROR) << "- Display with ID = " << display->display_id()
-               << ", and EDID = " << base::HexEncode(display->edid().data(),
-                                                     display->edid().size())
-               << ".";
-  }
-
   // Always remove the notification to make sure the notification appears
   // as a popup in any situation.
   message_center::MessageCenter::Get()->RemoveNotification(
@@ -86,8 +53,7 @@ void DisplayErrorObserver::OnDisplayModeChangeFailed(
       GURL(),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  system_notifier::kNotifierDisplayError),
-      message_center::RichNotificationData(),
-      new DisplayErrorNotificationDelegate));
+      message_center::RichNotificationData(), NULL));
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

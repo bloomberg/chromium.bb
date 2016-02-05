@@ -234,16 +234,16 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
       GetDrmPropertyBlob(fd, info->connector(), "EDID"));
 
   if (edid_blob) {
-    params.edid.assign(
+    std::vector<uint8_t> edid(
         static_cast<uint8_t*>(edid_blob->data),
         static_cast<uint8_t*>(edid_blob->data) + edid_blob->length);
 
-    GetDisplayIdFromEDID(params.edid, connector_index, &params.display_id,
+    GetDisplayIdFromEDID(edid, connector_index, &params.display_id,
                          &params.product_id);
 
-    ParseOutputDeviceData(params.edid, nullptr, nullptr, &params.display_name,
-                          nullptr, nullptr);
-    ParseOutputOverscanFlag(params.edid, &params.has_overscan);
+    ParseOutputDeviceData(edid, nullptr, nullptr, &params.display_name, nullptr,
+                          nullptr);
+    ParseOutputOverscanFlag(edid, &params.has_overscan);
   } else {
     VLOG(1) << "Failed to get EDID blob for connector "
             << info->connector()->connector_id;

@@ -28,7 +28,6 @@ class DISPLAY_EXPORT DisplaySnapshotX11 : public DisplaySnapshot {
                      bool has_overscan,
                      std::string display_name,
                      const std::vector<const DisplayMode*>& modes,
-                     const std::vector<uint8_t>& edid,
                      const DisplayMode* current_mode,
                      const DisplayMode* native_mode,
                      RROutput output,

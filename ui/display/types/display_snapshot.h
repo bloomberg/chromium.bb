@@ -32,7 +32,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   std::string display_name,
                   const base::FilePath& sys_path,
                   const std::vector<const DisplayMode*>& modes,
-                  const std::vector<uint8_t>& edid,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode);
   virtual ~DisplaySnapshot();
@@ -54,7 +53,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   int64_t product_id() const { return product_id_; }
 
   const std::vector<const DisplayMode*>& modes() const { return modes_; }
-  const std::vector<uint8_t>& edid() const { return edid_; }
 
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
@@ -86,10 +84,6 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   base::FilePath sys_path_;
 
   std::vector<const DisplayMode*> modes_;  // Not owned.
-
-  // The display's EDID. It can be empty if nothing extracted such as in the
-  // case of a virtual display.
-  std::vector<uint8_t> edid_;
 
   // Mode currently being used by the output.
   const DisplayMode* current_mode_;
