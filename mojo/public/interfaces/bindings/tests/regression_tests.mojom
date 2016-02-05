@@ -52,3 +52,25 @@ struct A {
 struct B {
   A? a;
 };
+
+// Previously, a field or parameter called |handles| would be shadowed by a
+// method parameter in generated C++ bindings code.
+struct HandlesNameCollisionStruct {
+  EmptyStruct handles;
+};
+
+struct HandlesHandleNameCollisionStruct {
+  handle handles;
+};
+
+union HandlesNameCollisionUnion {
+  int32 handles;
+};
+
+struct HandlesUnionNameCollisionStruct {
+  HandlesNameCollisionUnion handles;
+};
+
+interface HandlesNameCollisionInterface {
+  Method(EmptyStruct handles) => (handle handles);
+};
