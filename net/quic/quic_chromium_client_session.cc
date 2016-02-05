@@ -720,7 +720,7 @@ void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
         "Net.QuicSession.ConnectionCloseErrorCodeClient", error);
   }
 
-  if (error == QUIC_CONNECTION_TIMED_OUT) {
+  if (error == QUIC_NETWORK_IDLE_TIMEOUT) {
     UMA_HISTOGRAM_COUNTS(
         "Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut",
         GetNumOpenOutgoingStreams());

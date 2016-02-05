@@ -251,8 +251,8 @@ const char* QuicUtils::ErrorToString(QuicErrorCode error) {
     RETURN_STRING_LITERAL(QUIC_INVALID_HEADER_ID);
     RETURN_STRING_LITERAL(QUIC_INVALID_NEGOTIATED_VALUE);
     RETURN_STRING_LITERAL(QUIC_DECOMPRESSION_FAILURE);
-    RETURN_STRING_LITERAL(QUIC_CONNECTION_TIMED_OUT);
-    RETURN_STRING_LITERAL(QUIC_CONNECTION_OVERALL_TIMED_OUT);
+    RETURN_STRING_LITERAL(QUIC_NETWORK_IDLE_TIMEOUT);
+    RETURN_STRING_LITERAL(QUIC_HANDSHAKE_TIMEOUT);
     RETURN_STRING_LITERAL(QUIC_ERROR_MIGRATING_ADDRESS);
     RETURN_STRING_LITERAL(QUIC_PACKET_WRITE_ERROR);
     RETURN_STRING_LITERAL(QUIC_PACKET_READ_ERROR);
@@ -459,8 +459,8 @@ void QuicUtils::ClearSerializedPacket(SerializedPacket* serialized_packet) {
   if (!serialized_packet->retransmittable_frames.empty()) {
     DeleteFrames(&serialized_packet->retransmittable_frames);
   }
-  delete serialized_packet->packet;
-  serialized_packet->packet = nullptr;
+  serialized_packet->encrypted_buffer = nullptr;
+  serialized_packet->encrypted_length = 0;
 }
 
 // static
@@ -476,6 +476,12 @@ uint64_t QuicUtils::PackPathIdAndPacketNumber(QuicPathId path_id,
       (static_cast<uint64_t>(path_id) << 56) | packet_number;
   DCHECK(path_id != kDefaultPathId || path_id_packet_number == packet_number);
   return path_id_packet_number;
+}
+
+char* QuicUtils::CopyBuffer(const SerializedPacket& packet) {
+  char* dst_buffer = new char[packet.encrypted_length];
+  memcpy(dst_buffer, packet.encrypted_buffer, packet.encrypted_length);
+  return dst_buffer;
 }
 
 }  // namespace net

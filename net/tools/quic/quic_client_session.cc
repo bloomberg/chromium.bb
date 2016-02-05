@@ -109,7 +109,7 @@ QuicSpdyStream* QuicClientSession::CreateIncomingDynamicStream(
 QuicCryptoClientStreamBase* QuicClientSession::CreateQuicCryptoStream() {
   return new QuicCryptoClientStream(
       server_id_, this, new ProofVerifyContextChromium(0, BoundNetLog()),
-      crypto_config_);
+      crypto_config_, this);
 }
 
 bool QuicClientSession::IsAuthorized(const string& authority) {

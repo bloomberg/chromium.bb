@@ -29,7 +29,9 @@ using QuicPromisedByUrlMap =
 const int64_t kPushPromiseTimeoutSecs = 60;
 
 // Base class for all client-specific QuicSession subclasses.
-class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
+class NET_EXPORT_PRIVATE QuicClientSessionBase
+    : public QuicSpdySession,
+      public QuicCryptoClientStream::ProofHandler {
  public:
   // Caller retains ownership of |promised_by_url|.
   QuicClientSessionBase(QuicConnection* connection,
@@ -37,18 +39,6 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
                         const QuicConfig& config);
 
   ~QuicClientSessionBase() override;
-
-  // Called when the proof in |cached| is marked valid.  If this is a secure
-  // QUIC session, then this will happen only after the proof verifier
-  // completes.
-  virtual void OnProofValid(
-      const QuicCryptoClientConfig::CachedState& cached) = 0;
-
-  // Called when proof verification details become available, either because
-  // proof verification is complete, or when cached details are used. This
-  // will only be called for secure QUIC connections.
-  virtual void OnProofVerifyDetailsAvailable(
-      const ProofVerifyDetails& verify_details) = 0;
 
   // Override base class to set FEC policy before any data is sent by client.
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;

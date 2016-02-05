@@ -1166,7 +1166,7 @@ function painterTestQuicError() {
     },
     {
       'params': {
-        'quic_error': QuicError.QUIC_CONNECTION_TIMED_OUT,
+        'quic_error': QuicError.QUIC_NETWORK_IDLE_TIMEOUT,
       },
       'phase': EventPhase.PHASE_NONE,
       'source': {
@@ -1178,7 +1178,7 @@ function painterTestQuicError() {
     },
     {
       'params': {
-        'quic_error': QuicError.QUIC_CONNECTION_TIMED_OUT
+        'quic_error': QuicError.QUIC_NETWORK_IDLE_TIMEOUT
       },
       'phase': EventPhase.PHASE_END,
       'source': {
@@ -1201,10 +1201,10 @@ function painterTestQuicError() {
 '                            --> stream_id = 1\n' +
 't=1338864774151 [st=257]    QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED\n' +
 '                            --> quic_error = ' +
-        QuicError.QUIC_CONNECTION_TIMED_OUT + ' (QUIC_CONNECTION_TIMED_OUT)\n' +
+        QuicError.QUIC_NETWORK_IDLE_TIMEOUT + ' (QUIC_NETWORK_IDLE_TIMEOUT)\n' +
 't=1338864774369 [st=475] -QUIC_SESSION\n' +
 '                          --> quic_error = ' +
-        QuicError.QUIC_CONNECTION_TIMED_OUT + ' (QUIC_CONNECTION_TIMED_OUT)';
+        QuicError.QUIC_NETWORK_IDLE_TIMEOUT + ' (QUIC_NETWORK_IDLE_TIMEOUT)';
 
   return testCase;
 }

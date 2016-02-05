@@ -523,8 +523,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Returns true if the connection has queued packets or frames.
   bool HasQueuedData() const;
 
-  // Sets the overall and idle state connection timeouts.
-  void SetNetworkTimeouts(QuicTime::Delta overall_timeout,
+  // Sets the handshake and idle state connection timeouts.
+  void SetNetworkTimeouts(QuicTime::Delta handshake_timeout,
                           QuicTime::Delta idle_timeout);
 
   // If the connection has timed out, this will close the connection.
@@ -716,10 +716,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // writer is write blocked.
   bool WritePacket(SerializedPacket* packet);
 
-  // Does the main work of WritePacket, but does not delete the packet or
-  // retransmittable frames upon success.
-  bool WritePacketInner(SerializedPacket* packet);
-
   // Make sure an ack we got from our peer is sane.
   // Returns nullptr for valid acks or an error std::string if it was invalid.
   const char* ValidateAckFrame(const QuicAckFrame& incoming_ack);
@@ -886,8 +882,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool pending_version_negotiation_packet_;
 
   // When packets could not be sent because the socket was not writable,
-  // they are added to this list.  All corresponding frames are in
-  // unacked_packets_ if they are to be retransmitted.
+  // they are added to this std::list.  All corresponding frames are in
+  // unacked_packets_ if they are to be retransmitted.  Packets encrypted_buffer
+  // fields are owned by the QueuedPacketList, in order to ensure they outlast
+  // the original scope of the SerializedPacket.
   QueuedPacketList queued_packets_;
 
   // If true, then crypto packets will be saved as termination packets.
@@ -896,7 +894,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Contains the connection close packets if the connection has been closed.
   scoped_ptr<std::vector<QuicEncryptedPacket*>> termination_packets_;
 
-  // When true, the connection does not send a close packet on timeout.
+  // When true, the connection does not send a close packet on idle timeout due
+  // to lack of network activity.
+  // This is particularly important on mobile, where connections are short.
   bool silent_close_enabled_;
 
   FecGroupMap group_map_;
@@ -951,10 +951,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // An alarm that fires when an FEC packet should be sent.
   QuicArenaScopedPtr<QuicAlarm> fec_alarm_;
 
-  // Network idle time before we kill of this connection.
+  // Network idle time before this connection is closed.
   QuicTime::Delta idle_network_timeout_;
-  // Overall connection timeout.
-  QuicTime::Delta overall_connection_timeout_;
+  // The connection will wait this long for the handshake to complete.
+  QuicTime::Delta handshake_timeout_;
 
   // Statistics for this session.
   QuicConnectionStats stats_;

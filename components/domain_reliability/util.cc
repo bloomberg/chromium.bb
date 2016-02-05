@@ -145,10 +145,10 @@ const struct QuicErrorMapping {
   // There was an error decompressing data.
   { net::QUIC_DECOMPRESSION_FAILURE, "quic.decompression_failure" },
   // We hit our prenegotiated (or default) timeout
-  { net::QUIC_CONNECTION_TIMED_OUT, "quic.connection.timed_out" },
+  { net::QUIC_NETWORK_IDLE_TIMEOUT, "quic.connection.idle_time_out" },
   // We hit our overall connection timeout
-  { net::QUIC_CONNECTION_OVERALL_TIMED_OUT,
-   "quic.connection.overall_timed_out" },
+  { net::QUIC_HANDSHAKE_TIMEOUT,
+   "quic.connection.handshake_timed_out" },
   // There was an error encountered migrating addresses
   { net::QUIC_ERROR_MIGRATING_ADDRESS, "quic.error_migrating_address" },
   // There was an error while writing to the socket.

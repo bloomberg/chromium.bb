@@ -21,7 +21,11 @@ MockCryptoClientStream::MockCryptoClientStream(
     QuicCryptoClientConfig* crypto_config,
     HandshakeMode handshake_mode,
     const ProofVerifyDetails* proof_verify_details)
-    : QuicCryptoClientStream(server_id, session, verify_context, crypto_config),
+    : QuicCryptoClientStream(server_id,
+                             session,
+                             verify_context,
+                             crypto_config,
+                             session),
       handshake_mode_(handshake_mode),
       proof_verify_details_(proof_verify_details) {}
 
@@ -41,7 +45,8 @@ void MockCryptoClientStream::CryptoConnect() {
       crypto_negotiated_params_.key_exchange = kC255;
       crypto_negotiated_params_.aead = kAESG;
       if (proof_verify_details_) {
-        client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
+        reinterpret_cast<QuicClientSessionBase*>(session())
+            ->OnProofVerifyDetailsAvailable(*proof_verify_details_);
       }
       session()->connection()->SetDecrypter(ENCRYPTION_INITIAL,
                                             QuicDecrypter::Create(kNULL));
@@ -59,7 +64,8 @@ void MockCryptoClientStream::CryptoConnect() {
       crypto_negotiated_params_.key_exchange = kC255;
       crypto_negotiated_params_.aead = kAESG;
       if (proof_verify_details_) {
-        client_session()->OnProofVerifyDetailsAvailable(*proof_verify_details_);
+        reinterpret_cast<QuicClientSessionBase*>(session())
+            ->OnProofVerifyDetailsAvailable(*proof_verify_details_);
       }
       SetConfigNegotiated();
       session()->connection()->SetDecrypter(ENCRYPTION_FORWARD_SECURE,
@@ -114,10 +120,6 @@ void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_EQ(QUIC_NO_ERROR, error);
   ASSERT_TRUE(session()->config()->negotiated());
   session()->OnConfigNegotiated();
-}
-
-QuicClientSessionBase* MockCryptoClientStream::client_session() {
-  return reinterpret_cast<QuicClientSessionBase*>(session());
 }
 
 }  // namespace net

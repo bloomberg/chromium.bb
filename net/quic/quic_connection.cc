@@ -304,7 +304,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       fec_alarm_(helper->CreateAlarm(arena_.New<FecAlarm>(&packet_generator_),
                                      &arena_)),
       idle_network_timeout_(QuicTime::Delta::Infinite()),
-      overall_connection_timeout_(QuicTime::Delta::Infinite()),
+      handshake_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
       last_send_for_timeout_(clock_->ApproximateNow()),
@@ -362,6 +362,9 @@ QuicConnection::~QuicConnection() {
 void QuicConnection::ClearQueuedPackets() {
   for (QueuedPacketList::iterator it = queued_packets_.begin();
        it != queued_packets_.end(); ++it) {
+    // Delete the buffer before calling ClearSerializedPacket, which sets
+    // encrypted_buffer to nullptr.
+    delete[] it->encrypted_buffer;
     QuicUtils::ClearSerializedPacket(&(*it));
   }
   queued_packets_.clear();
@@ -369,6 +372,7 @@ void QuicConnection::ClearQueuedPackets() {
 
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.negotiated()) {
+    // Handshake complete, set handshake timeout to Infinite.
     SetNetworkTimeouts(QuicTime::Delta::Infinite(),
                        config.IdleConnectionStateLifetime());
     if (config.SilentClose()) {
@@ -1206,6 +1210,7 @@ void QuicConnection::SendRstStream(QuicStreamId id,
       ++packet_iterator;
       continue;
     }
+    delete[] packet_iterator->encrypted_buffer;
     QuicUtils::ClearSerializedPacket(&(*packet_iterator));
     packet_iterator = queued_packets_.erase(packet_iterator);
   }
@@ -1470,6 +1475,8 @@ void QuicConnection::WriteQueuedPackets() {
   QueuedPacketList::iterator packet_iterator = queued_packets_.begin();
   while (packet_iterator != queued_packets_.end() &&
          WritePacket(&(*packet_iterator))) {
+    delete[] packet_iterator->encrypted_buffer;
+    QuicUtils::ClearSerializedPacket(&(*packet_iterator));
     packet_iterator = queued_packets_.erase(packet_iterator);
   }
 }
@@ -1496,10 +1503,10 @@ void QuicConnection::WritePendingRetransmissions() {
     SerializedPacket serialized_packet =
         packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
     if (FLAGS_quic_retransmit_via_onserializedpacket) {
-      DCHECK(serialized_packet.packet == nullptr);
+      DCHECK(serialized_packet.encrypted_buffer == nullptr);
       continue;
     }
-    if (serialized_packet.packet == nullptr) {
+    if (serialized_packet.encrypted_buffer == nullptr) {
       // We failed to serialize the packet, so close the connection.
       // CloseConnection does not send close packet, so no infinite loop here.
       // TODO(ianswett): This is actually an internal error, not an encryption
@@ -1586,14 +1593,6 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
 }
 
 bool QuicConnection::WritePacket(SerializedPacket* packet) {
-  if (!WritePacketInner(packet)) {
-    return false;
-  }
-  QuicUtils::ClearSerializedPacket(packet);
-  return true;
-}
-
-bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
   if (packet->packet_number < sent_packet_manager_.largest_sent_packet()) {
     QUIC_BUG << "Attempt to write packet:" << packet->packet_number
              << " after:" << sent_packet_manager_.largest_sent_packet();
@@ -1615,15 +1614,17 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
   DCHECK_LE(packet_number_of_last_sent_packet_, packet_number);
   packet_number_of_last_sent_packet_ = packet_number;
 
-  QuicEncryptedPacket* encrypted = packet->packet;
+  QuicPacketLength encrypted_length = packet->encrypted_length;
   // Termination packets are eventually owned by TimeWaitListManager.
   // Others are deleted at the end of this call.
   if (is_termination_packet) {
     if (termination_packets_.get() == nullptr) {
       termination_packets_.reset(new std::vector<QuicEncryptedPacket*>);
     }
-    // Clone the packet so it's owned in the future.
-    termination_packets_->push_back(encrypted->Clone());
+    // Copy the buffer so it's owned in the future.
+    char* buffer_copy = QuicUtils::CopyBuffer(*packet);
+    termination_packets_->push_back(
+        new QuicEncryptedPacket(buffer_copy, encrypted_length, true));
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
     if (writer_->IsWriteBlocked()) {
@@ -1632,8 +1633,8 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
     }
   }
 
-  DCHECK_LE(encrypted->length(), kMaxPacketSize);
-  DCHECK_LE(encrypted->length(), packet_generator_.GetMaxPacketLength());
+  DCHECK_LE(encrypted_length, kMaxPacketSize);
+  DCHECK_LE(encrypted_length, packet_generator_.GetMaxPacketLength());
   DVLOG(1) << ENDPOINT << "Sending packet " << packet_number << " : "
            << (packet->is_fec_packet
                    ? "FEC "
@@ -1642,17 +1643,18 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
                           : " ack only "))
            << ", encryption level: "
            << QuicUtils::EncryptionLevelToString(packet->encryption_level)
-           << ", encrypted length:" << encrypted->length();
+           << ", encrypted length:" << encrypted_length;
   DVLOG(2) << ENDPOINT << "packet(" << packet_number << "): " << std::endl
-           << QuicUtils::StringToHexASCIIDump(encrypted->AsStringPiece());
+           << QuicUtils::StringToHexASCIIDump(
+                  StringPiece(packet->encrypted_buffer, encrypted_length));
 
   // Measure the RTT from before the write begins to avoid underestimating the
   // min_rtt_, especially in cases where the thread blocks or gets swapped out
   // during the WritePacket below.
   QuicTime packet_send_time = clock_->Now();
   WriteResult result = writer_->WritePacket(
-      encrypted->data(), encrypted->length(), self_address().address().bytes(),
-      peer_address(), per_packet_options_);
+      packet->encrypted_buffer, encrypted_length,
+      self_address().address().bytes(), peer_address(), per_packet_options_);
   if (result.error_code == ERR_IO_PENDING) {
     DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
   }
@@ -1670,7 +1672,7 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
   if (result.status != WRITE_STATUS_ERROR && debug_visitor_ != nullptr) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(*packet, packet->original_packet_number,
-                                 packet->transmission_type, encrypted->length(),
+                                 packet->transmission_type, encrypted_length,
                                  packet_send_time);
   }
   if (packet->transmission_type == NOT_RETRANSMISSION) {
@@ -1695,8 +1697,7 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
 
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
       packet, packet->original_packet_number, packet_send_time,
-      encrypted->length(), packet->transmission_type,
-      IsRetransmittable(*packet));
+      encrypted_length, packet->transmission_type, IsRetransmittable(*packet));
 
   if (reset_retransmission_alarm || !retransmission_alarm_->IsSet()) {
     SetRetransmissionAlarm();
@@ -1711,7 +1712,7 @@ bool QuicConnection::WritePacketInner(SerializedPacket* packet) {
 
   if (result.status == WRITE_STATUS_ERROR) {
     OnWriteError(result.error_code);
-    DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted->length()
+    DLOG(ERROR) << ENDPOINT << "failed writing " << encrypted_length
                 << " bytes "
                 << " from host " << (self_address().address().empty()
                                          ? " empty address "
@@ -1762,7 +1763,7 @@ void QuicConnection::OnWriteError(int error_code) {
 
 void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
   DCHECK_NE(kInvalidPathId, serialized_packet->path_id);
-  if (serialized_packet->packet == nullptr) {
+  if (serialized_packet->encrypted_buffer == nullptr) {
     // We failed to serialize the packet, so close the connection.
     // CloseConnection does not send close packet, so no infinite loop here.
     // TODO(ianswett): This is actually an internal error, not an encryption
@@ -1820,8 +1821,8 @@ void QuicConnection::OnHandshakeComplete() {
 
 void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
   // The caller of this function is responsible for checking CanWrite().
-  if (packet->packet == nullptr) {
-    QUIC_BUG << "packet.packet == nullptr in to SendOrQueuePacket";
+  if (packet->encrypted_buffer == nullptr) {
+    QUIC_BUG << "packet.encrypted_buffer == nullptr in to SendOrQueuePacket";
     return;
   }
 
@@ -1831,14 +1832,12 @@ void QuicConnection::SendOrQueuePacket(SerializedPacket* packet) {
   // it's written in sequence number order.
   if (!queued_packets_.empty() || !WritePacket(packet)) {
     // Take ownership of the underlying encrypted packet.
-    if (!packet->packet->owns_buffer()) {
-      scoped_ptr<QuicEncryptedPacket> encrypted_deleter(packet->packet);
-      packet->packet = packet->packet->Clone();
-    }
+    packet->encrypted_buffer = QuicUtils::CopyBuffer(*packet);
     queued_packets_.push_back(*packet);
     packet->retransmittable_frames.clear();
   }
 
+  QuicUtils::ClearSerializedPacket(packet);
   // If a forward-secure encrypter is available but is not being used and the
   // next packet number is the first packet which requires
   // forward security, start using the forward-secure encrypter.
@@ -2059,12 +2058,6 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
   DVLOG(1) << ENDPOINT << "Force closing " << connection_id() << " with error "
            << QuicUtils::ErrorToString(error) << " (" << error << ") "
            << details;
-  // Don't send explicit connection close packets for timeouts.
-  // This is particularly important on mobile, where connections are short.
-  if (silent_close_enabled_ &&
-      error == QuicErrorCode::QUIC_CONNECTION_TIMED_OUT) {
-    return;
-  }
   ClearQueuedPackets();
   ScopedPacketBundler ack_bundler(this, SEND_ACK);
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
@@ -2175,11 +2168,11 @@ bool QuicConnection::CanWriteStreamData() {
   return ShouldGeneratePacket(HAS_RETRANSMITTABLE_DATA, pending_handshake);
 }
 
-void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
+void QuicConnection::SetNetworkTimeouts(QuicTime::Delta handshake_timeout,
                                         QuicTime::Delta idle_timeout) {
-  QUIC_BUG_IF(idle_timeout > overall_timeout)
+  QUIC_BUG_IF(idle_timeout > handshake_timeout)
       << "idle_timeout:" << idle_timeout.ToMilliseconds()
-      << " overall_timeout:" << overall_timeout.ToMilliseconds();
+      << " handshake_timeout:" << handshake_timeout.ToMilliseconds();
   // Adjust the idle timeout on client and server to prevent clients from
   // sending requests to servers which have already closed the connection.
   if (perspective_ == Perspective::IS_SERVER) {
@@ -2187,7 +2180,7 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,
   } else if (idle_timeout > QuicTime::Delta::FromSeconds(1)) {
     idle_timeout = idle_timeout.Subtract(QuicTime::Delta::FromSeconds(1));
   }
-  overall_connection_timeout_ = overall_timeout;
+  handshake_timeout_ = handshake_timeout;
   idle_network_timeout_ = idle_timeout;
 
   SetTimeoutAlarm();
@@ -2216,23 +2209,26 @@ void QuicConnection::CheckForTimeout() {
            << idle_network_timeout_.ToMicroseconds();
   if (idle_duration >= idle_network_timeout_) {
     DVLOG(1) << ENDPOINT << "Connection timedout due to no network activity.";
-    SendConnectionCloseWithDetails(QUIC_CONNECTION_TIMED_OUT,
-                                   "No recent network activity");
+    if (silent_close_enabled_) {
+      // Just clean up local state, don't send a connection close packet.
+      CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, /*from_peer=*/false);
+    } else {
+      SendConnectionCloseWithDetails(QUIC_NETWORK_IDLE_TIMEOUT,
+                                     "No recent network activity");
+    }
     return;
   }
 
-  if (!overall_connection_timeout_.IsInfinite()) {
+  if (!handshake_timeout_.IsInfinite()) {
     QuicTime::Delta connected_duration =
         now.Subtract(stats_.connection_creation_time);
     DVLOG(1) << ENDPOINT
              << "connection time: " << connected_duration.ToMicroseconds()
-             << " overall timeout: "
-             << overall_connection_timeout_.ToMicroseconds();
-    if (connected_duration >= overall_connection_timeout_) {
-      DVLOG(1) << ENDPOINT
-               << "Connection timedout due to overall connection timeout.";
-      SendConnectionCloseWithDetails(QUIC_CONNECTION_OVERALL_TIMED_OUT,
-                                     "Overall timeout expired");
+             << " handshake timeout: " << handshake_timeout_.ToMicroseconds();
+    if (connected_duration >= handshake_timeout_) {
+      DVLOG(1) << ENDPOINT << "Connection timedout due to handshake timeout.";
+      SendConnectionCloseWithDetails(QUIC_HANDSHAKE_TIMEOUT,
+                                     "Handshake timeout expired");
       return;
     }
   }
@@ -2245,10 +2241,9 @@ void QuicConnection::SetTimeoutAlarm() {
       max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
 
   QuicTime deadline = time_of_last_packet.Add(idle_network_timeout_);
-  if (!overall_connection_timeout_.IsInfinite()) {
+  if (!handshake_timeout_.IsInfinite()) {
     deadline =
-        min(deadline,
-            stats_.connection_creation_time.Add(overall_connection_timeout_));
+        min(deadline, stats_.connection_creation_time.Add(handshake_timeout_));
   }
 
   timeout_alarm_->Cancel();

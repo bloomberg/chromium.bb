@@ -295,11 +295,8 @@ PacketSavingConnection::~PacketSavingConnection() {
 }
 
 void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
-  if (!packet->packet->owns_buffer()) {
-    scoped_ptr<QuicEncryptedPacket> encrypted_deleter(packet->packet);
-    packet->packet = packet->packet->Clone();
-  }
-  encrypted_packets_.push_back(packet->packet);
+  encrypted_packets_.push_back(new QuicEncryptedPacket(
+      QuicUtils::CopyBuffer(*packet), packet->encrypted_length, true));
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
   sent_packet_manager_.OnPacketSent(packet, 0, QuicTime::Zero(), 1000,
@@ -357,7 +354,7 @@ TestQuicSpdyClientSession::TestQuicSpdyClientSession(
     : QuicClientSessionBase(connection, &push_promise_index_, config) {
   crypto_stream_.reset(new QuicCryptoClientStream(
       server_id, this, CryptoTestUtils::ProofVerifyContextForTesting(),
-      crypto_config));
+      crypto_config, this));
   Initialize();
 }
 

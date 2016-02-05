@@ -31,6 +31,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using net::test::CryptoTestUtils;
+using net::test::GenerateBody;
 using net::test::MockConnection;
 using net::test::MockConnectionHelper;
 using net::test::QuicConfigPeer;
@@ -174,54 +175,6 @@ class QuicSimpleServerSessionTest
     QuicSpdySessionPeer::SetHeadersStream(session_.get(), headers_stream_);
     // TODO(jri): Remove this line once tests pass.
     FLAGS_quic_cede_correctly = false;
-  }
-
-  // Given |num_resources|, create this number of fake push resources and push
-  // them by sending PUSH_PROMISE for all and sending push responses for as much
-  // as possible(limited by kMaxStreamsForTest).
-  // If |num_resources| > kMaxStreamsForTest, the left over will be queued.
-  void PromisePushResources(size_t num_resources) {
-    // Assume encryption already established.
-    MockQuicCryptoServerStream* crypto_stream =
-        new MockQuicCryptoServerStream(&crypto_config_, session_.get());
-    crypto_stream->set_encryption_established(true);
-    QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
-
-    QuicInMemoryCachePeer::ResetForTests();
-
-    string request_url = "mail.google.com/";
-    SpdyHeaderBlock request_headers;
-    string resource_host = "www.google.com";
-    string partial_push_resource_path = "/server_push_src";
-    string partial_push_response_body =
-        "Push resource body " + partial_push_resource_path;
-    list<QuicInMemoryCache::ServerPushInfo> push_resources;
-    string scheme = "http";
-    for (unsigned int i = 1; i <= num_resources; ++i) {
-      string path = partial_push_resource_path + base::UintToString(i);
-      string url = scheme + "://" + resource_host + path;
-      GURL resource_url = GURL(url);
-      string body = partial_push_response_body + base::UintToString(i);
-      SpdyHeaderBlock response_headers;
-      QuicInMemoryCache::GetInstance()->AddSimpleResponse(resource_host, path,
-                                                          200, body);
-      push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
-          resource_url, response_headers, kDefaultPriority, body));
-      // PUSH_PROMISED are sent for all the resources.
-      EXPECT_CALL(*headers_stream_,
-                  WritePushPromise(kClientDataStreamId1, i * 2, _, nullptr));
-      if (i <= kMaxStreamsForTest) {
-        // |kMaxStreamsForTest| promised responses should be sent.
-        EXPECT_CALL(*headers_stream_,
-                    WriteHeaders(i * 2, _, false, kDefaultPriority, nullptr));
-        // Mock that SendStreamData() returns less than supposed to send to keep
-        // the stream open.
-        EXPECT_CALL(*connection_, SendStreamData(i * 2, _, 0, true, _, nullptr))
-            .WillOnce(Return(QuicConsumedData(0, false)));
-      }
-    }
-    session_->PromisePushResources(request_url, push_resources,
-                                   kClientDataStreamId1, request_headers);
   }
 
   StrictMock<MockQuicServerSessionVisitor> owner_;
@@ -403,7 +356,121 @@ TEST_P(QuicSimpleServerSessionTest, OnStreamFrameWithEvenStreamId) {
   session_->OnStreamFrame(frame);
 }
 
-TEST_P(QuicSimpleServerSessionTest, TestPromisePushResources) {
+TEST_P(QuicSimpleServerSessionTest, GetEvenIncomingError) {
+  // Tests that calling GetOrCreateDynamicStream() on an outgoing stream not
+  // promised yet should result close connection.
+  EXPECT_CALL(*connection_,
+              SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID,
+                                             "Data for nonexistent stream"));
+  EXPECT_EQ(nullptr,
+            QuicSessionPeer::GetOrCreateDynamicStream(session_.get(), 4));
+}
+
+// In order to test the case where server push stream creation goes beyond
+// limit, server push streams need to be hanging there instead of
+// immediately closing after sending back response.
+// To achieve this goal, this class resets flow control windows so that large
+// responses will not be sent fully in order to prevent push streams from being
+// closed immediately.
+// Also adjust connection-level flow control window to ensure a large response
+// can cause stream-level flow control blocked but not connection-level.
+class QuicSimpleServerSessionServerPushTest
+    : public QuicSimpleServerSessionTest {
+ protected:
+  const size_t kStreamFlowControlWindowSize = 32 * 1024;  // 32KB.
+
+  QuicSimpleServerSessionServerPushTest() : QuicSimpleServerSessionTest() {
+    // This flag has to be true for negotiation of max number of outgoing
+    // streams to work correctly.
+    FLAGS_quic_different_max_num_open_streams = true;
+
+    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
+
+    // Reset stream level flow control window to be 32KB.
+    QuicConfigPeer::SetReceivedInitialStreamFlowControlWindow(
+        &config_, kStreamFlowControlWindowSize);
+    // Reset connection level flow control window to be 1.5 MB which is large
+    // enough that it won't block any stream to write before stream level flow
+    // control blocks it.
+    QuicConfigPeer::SetReceivedInitialSessionFlowControlWindow(
+        &config_, kInitialSessionFlowControlWindowForTest);
+
+    connection_ = new StrictMock<MockConnectionWithSendStreamData>(
+        &helper_, Perspective::IS_SERVER, SupportedVersions(GetParam()));
+    session_.reset(new QuicSimpleServerSession(config_, connection_, &owner_,
+                                               &crypto_config_));
+    session_->Initialize();
+    // Needed to make new session flow control window work.
+    session_->OnConfigNegotiated();
+
+    visitor_ = QuicConnectionPeer::GetVisitor(connection_);
+    headers_stream_ = new MockQuicHeadersStream(session_.get());
+    QuicSpdySessionPeer::SetHeadersStream(session_.get(), headers_stream_);
+
+    // Assume encryption already established.
+    MockQuicCryptoServerStream* crypto_stream =
+        new MockQuicCryptoServerStream(&crypto_config_, session_.get());
+    crypto_stream->set_encryption_established(true);
+    QuicSimpleServerSessionPeer::SetCryptoStream(session_.get(), crypto_stream);
+  }
+
+  // Given |num_resources|, create this number of fake push resources and push
+  // them by sending PUSH_PROMISE for all and sending push responses for as much
+  // as possible(limited by kMaxStreamsForTest).
+  // If |num_resources| > kMaxStreamsForTest, the left over will be queued.
+  void PromisePushResources(size_t num_resources) {
+    // To prevent push streams from being closed the response need to be larger
+    // than stream flow control window so stream won't send the full body.
+    size_t body_size = 2 * kStreamFlowControlWindowSize;  // 64KB.
+
+    config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
+
+    QuicInMemoryCachePeer::ResetForTests();
+
+    string request_url = "mail.google.com/";
+    SpdyHeaderBlock request_headers;
+    string resource_host = "www.google.com";
+    string partial_push_resource_path = "/server_push_src";
+    list<QuicInMemoryCache::ServerPushInfo> push_resources;
+    string scheme = "http";
+    for (unsigned int i = 1; i <= num_resources; ++i) {
+      QuicStreamId stream_id = i * 2;
+      string path = partial_push_resource_path + base::UintToString(i);
+      string url = scheme + "://" + resource_host + path;
+      GURL resource_url = GURL(url);
+      string body;
+      GenerateBody(&body, body_size);
+      SpdyHeaderBlock response_headers;
+      QuicInMemoryCache::GetInstance()->AddSimpleResponse(resource_host, path,
+                                                          200, body);
+      push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
+          resource_url, response_headers, kDefaultPriority, body));
+      // PUSH_PROMISED are sent for all the resources.
+      EXPECT_CALL(*headers_stream_, WritePushPromise(kClientDataStreamId1,
+                                                     stream_id, _, nullptr));
+      if (i <= kMaxStreamsForTest) {
+        // |kMaxStreamsForTest| promised responses should be sent.
+        EXPECT_CALL(*headers_stream_, WriteHeaders(stream_id, _, false,
+                                                   kDefaultPriority, nullptr));
+        // Since flow control window is smaller than response body, not the
+        // whole body will be sent.
+        EXPECT_CALL(*connection_,
+                    SendStreamData(stream_id, _, 0, false, _, nullptr))
+            .WillOnce(
+                Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+        EXPECT_CALL(*connection_, SendBlocked(stream_id));
+      }
+    }
+    session_->PromisePushResources(request_url, push_resources,
+                                   kClientDataStreamId1, request_headers);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Tests,
+                        QuicSimpleServerSessionServerPushTest,
+                        ::testing::ValuesIn(QuicSupportedVersions()));
+
+TEST_P(QuicSimpleServerSessionServerPushTest, TestPromisePushResources) {
   // Tests that given more than kMaxOpenStreamForTest resources, all their
   // PUSH_PROMISE's will be sent out and only |kMaxOpenStreamForTest| streams
   // will be opened and send push response.
@@ -412,7 +479,7 @@ TEST_P(QuicSimpleServerSessionTest, TestPromisePushResources) {
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
 }
 
-TEST_P(QuicSimpleServerSessionTest,
+TEST_P(QuicSimpleServerSessionServerPushTest,
        HandlePromisedPushRequestsAfterStreamDraining) {
   // Tests that after promised stream queued up, when an opened stream is marked
   // draining, a queued promised stream will become open and send push response.
@@ -425,25 +492,17 @@ TEST_P(QuicSimpleServerSessionTest,
   EXPECT_CALL(*headers_stream_, WriteHeaders(next_out_going_stream_id, _, false,
                                              kDefaultPriority, nullptr));
   EXPECT_CALL(*connection_,
-              SendStreamData(next_out_going_stream_id, _, 0, true, _, nullptr))
-      .WillOnce(Return(QuicConsumedData(0, false)));
+              SendStreamData(next_out_going_stream_id, _, 0, false, _, nullptr))
+      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+  EXPECT_CALL(*connection_, SendBlocked(next_out_going_stream_id));
   session_->StreamDraining(2);
   // Number of open outgoing streams should still be the same, because a new
   // stream is opened. And the queue should be empty.
   EXPECT_EQ(kMaxStreamsForTest, session_->GetNumOpenOutgoingStreams());
 }
 
-TEST_P(QuicSimpleServerSessionTest, GetEvenIncomingError) {
-  // Tests that calling GetOrCreateDynamicStream() on an outgoing stream not
-  // promised yet should result close connection.
-  EXPECT_CALL(*connection_,
-              SendConnectionCloseWithDetails(QUIC_INVALID_STREAM_ID,
-                                             "Data for nonexistent stream"));
-  EXPECT_EQ(nullptr,
-            QuicSessionPeer::GetOrCreateDynamicStream(session_.get(), 4));
-}
-
-TEST_P(QuicSimpleServerSessionTest, ResetPromisedStreamToCancelServerPush) {
+TEST_P(QuicSimpleServerSessionServerPushTest,
+       ResetPromisedStreamToCancelServerPush) {
   // Tests that after all resources are promised, a RST frame from client can
   // prevent a promised resource to be send out.
 
@@ -467,8 +526,9 @@ TEST_P(QuicSimpleServerSessionTest, ResetPromisedStreamToCancelServerPush) {
   EXPECT_CALL(*headers_stream_, WriteHeaders(stream_not_reset, _, false,
                                              kDefaultPriority, nullptr));
   EXPECT_CALL(*connection_,
-              SendStreamData(stream_not_reset, _, 0, true, _, nullptr))
-      .WillOnce(Return(QuicConsumedData(0, false)));
+              SendStreamData(stream_not_reset, _, 0, false, _, nullptr))
+      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
+  EXPECT_CALL(*connection_, SendBlocked(stream_not_reset));
   EXPECT_CALL(*headers_stream_, WriteHeaders(stream_got_reset, _, false,
                                              kDefaultPriority, nullptr))
       .Times(0);
@@ -477,7 +537,8 @@ TEST_P(QuicSimpleServerSessionTest, ResetPromisedStreamToCancelServerPush) {
   session_->StreamDraining(4);
 }
 
-TEST_P(QuicSimpleServerSessionTest, CloseStreamToHandleMorePromisedStream) {
+TEST_P(QuicSimpleServerSessionServerPushTest,
+       CloseStreamToHandleMorePromisedStream) {
   // Tests that closing a open outgoing stream can trigger a promised resource
   // in the queue to be send out.
   size_t num_resources = kMaxStreamsForTest + 1;
@@ -492,9 +553,10 @@ TEST_P(QuicSimpleServerSessionTest, CloseStreamToHandleMorePromisedStream) {
   EXPECT_CALL(*headers_stream_, WriteHeaders(stream_to_open, _, false,
                                              kDefaultPriority, nullptr));
   EXPECT_CALL(*connection_,
-              SendStreamData(stream_to_open, _, 0, true, _, nullptr))
-      .WillOnce(Return(QuicConsumedData(0, false)));
+              SendStreamData(stream_to_open, _, 0, false, _, nullptr))
+      .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
 
+  EXPECT_CALL(*connection_, SendBlocked(stream_to_open));
   QuicRstStreamFrame rst(stream_got_reset, QUIC_STREAM_CANCELLED, 0);
   visitor_->OnRstStream(rst);
 }

@@ -20,8 +20,9 @@ class DefaultCryptoStreamFactory : public QuicCryptoClientStreamFactory {
       QuicChromiumClientSession* session,
       scoped_ptr<ProofVerifyContext> proof_verify_context,
       QuicCryptoClientConfig* crypto_config) override {
-    return new QuicCryptoClientStream(
-        server_id, session, proof_verify_context.release(), crypto_config);
+    return new QuicCryptoClientStream(server_id, session,
+                                      proof_verify_context.release(),
+                                      crypto_config, session);
   }
 };
 

@@ -2487,7 +2487,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2513,7 +2513,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfTwo) {
   EXPECT_EQ(OK, stream2->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
 
-  session2->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session2->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop2;
@@ -2698,7 +2698,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -2744,7 +2744,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfThree) {
   EXPECT_TRUE(stream3.get());
   EXPECT_EQ(OK, stream3->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
-  session3->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session3->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop3;
@@ -2807,7 +2807,7 @@ TEST_P(QuicStreamFactoryTest, DisableQuicWhenTimeoutsWithOpenStreams) {
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout."
       << "Will disable QUIC.";
-  session->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -3024,7 +3024,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
 
   DVLOG(1)
       << "Created 1st session and initialized a stream. Now trigger timeout";
-  session->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop;
@@ -3087,7 +3087,7 @@ TEST_P(QuicStreamFactoryTest, TimeoutsWithOpenStreamsTwoOfFour) {
   EXPECT_TRUE(stream4.get());
   EXPECT_EQ(OK, stream4->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                           net_log_, CompletionCallback()));
-  session4->connection()->CloseConnection(QUIC_CONNECTION_TIMED_OUT, false);
+  session4->connection()->CloseConnection(QUIC_NETWORK_IDLE_TIMEOUT, false);
   // Need to spin the loop now to ensure that
   // QuicStreamFactory::OnSessionClosed() runs.
   base::RunLoop run_loop4;

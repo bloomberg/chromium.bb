@@ -197,10 +197,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
 
   SerializedPacket CreatePacket(QuicPacketNumber packet_number,
                                 bool retransmittable) {
-    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket packet(kDefaultPathId, packet_number,
-                            PACKET_6BYTE_PACKET_NUMBER, packets_.back(), 0u,
-                            false, false);
+                            PACKET_6BYTE_PACKET_NUMBER, nullptr, kDefaultLength,
+                            0u, false, false);
     if (retransmittable) {
       packet.retransmittable_frames.push_back(
           QuicFrame(new QuicStreamFrame(kStreamId, false, 0, StringPiece())));
@@ -209,10 +208,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
   }
 
   SerializedPacket CreateFecPacket(QuicPacketNumber packet_number) {
-    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
     SerializedPacket serialized(kDefaultPathId, packet_number,
-                                PACKET_6BYTE_PACKET_NUMBER, packets_.back(), 0u,
-                                false, false);
+                                PACKET_6BYTE_PACKET_NUMBER, nullptr,
+                                kDefaultLength, 0u, false, false);
     serialized.is_fec_packet = true;
     return serialized;
   }
@@ -223,7 +221,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(true));
     SerializedPacket packet(CreateDataPacket(packet_number));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.packet->length(),
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   }
 
@@ -237,7 +235,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
     packet.retransmittable_frames.push_back(
         QuicFrame(new QuicStreamFrame(1, false, 0, StringPiece())));
     packet.has_crypto_handshake = IS_HANDSHAKE;
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.packet->length(),
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
                           NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA);
   }
 
@@ -248,7 +246,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(true));
     SerializedPacket packet(CreateFecPacket(packet_number));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.packet->length(),
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
                           NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
   }
 
@@ -259,7 +257,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
         .Times(1)
         .WillOnce(Return(false));
     SerializedPacket packet(CreatePacket(packet_number, false));
-    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.packet->length(),
+    manager_.OnPacketSent(&packet, 0, clock_.Now(), packet.encrypted_length,
                           NOT_RETRANSMISSION, NO_RETRANSMITTABLE_DATA);
   }
 

@@ -17,6 +17,7 @@
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
+#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"

@@ -120,6 +120,10 @@ class NET_EXPORT_PRIVATE QuicUtils {
   static uint64_t PackPathIdAndPacketNumber(QuicPathId path_id,
                                             QuicPacketNumber packet_number);
 
+  // Allocates a new char[] of size |packet.encrypted_length| and copies in
+  // |packet.encrypted_buffer|.
+  static char* CopyBuffer(const SerializedPacket& packet);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicUtils);
 };

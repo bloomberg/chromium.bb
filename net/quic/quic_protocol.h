@@ -493,7 +493,6 @@ AdjustErrorForVersion(QuicRstStreamErrorCode error_code, QuicVersion version);
 // These values must remain stable as they are uploaded to UMA histograms.
 // To add a new error code, use the current value of QUIC_LAST_ERROR and
 // increment QUIC_LAST_ERROR.
-// last value = 80
 enum QuicErrorCode {
   QUIC_NO_ERROR = 0,
 
@@ -563,10 +562,10 @@ enum QuicErrorCode {
   QUIC_INVALID_NEGOTIATED_VALUE = 23,
   // There was an error decompressing data.
   QUIC_DECOMPRESSION_FAILURE = 24,
-  // We hit our prenegotiated (or default) timeout
-  QUIC_CONNECTION_TIMED_OUT = 25,
-  // We hit our overall connection timeout
-  QUIC_CONNECTION_OVERALL_TIMED_OUT = 67,
+  // The connection timed out due to no network activity.
+  QUIC_NETWORK_IDLE_TIMEOUT = 25,
+  // The connection timed out waiting for the handshake to complete.
+  QUIC_HANDSHAKE_TIMEOUT = 67,
   // There was an error encountered migrating addresses
   QUIC_ERROR_MIGRATING_ADDRESS = 26,
   // There was an error while writing to the socket.
@@ -1294,13 +1293,16 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   SerializedPacket(QuicPathId path_id,
                    QuicPacketNumber packet_number,
                    QuicPacketNumberLength packet_number_length,
-                   QuicEncryptedPacket* packet,
+                   const char* encrypted_buffer,
+                   QuicPacketLength encrypted_length,
                    QuicPacketEntropyHash entropy_hash,
                    bool has_ack,
                    bool has_stop_waiting);
   ~SerializedPacket();
 
-  QuicEncryptedPacket* packet;
+  // Not owned.
+  const char* encrypted_buffer;
+  QuicPacketLength encrypted_length;
   QuicFrames retransmittable_frames;
   IsHandshake has_crypto_handshake;
   bool needs_padding;

@@ -102,6 +102,7 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
               next_packet_number_length_,
               nullptr,
               0,
+              0,
               false,
               false),
       should_fec_protect_next_packet_(false),
@@ -115,9 +116,6 @@ QuicPacketCreator::QuicPacketCreator(QuicConnectionId connection_id,
 
 QuicPacketCreator::~QuicPacketCreator() {
   QuicUtils::DeleteFrames(&packet_.retransmittable_frames);
-  if (packet_.packet != nullptr) {
-    delete packet_.packet;
-  }
 }
 
 void QuicPacketCreator::OnBuiltFecProtectedPayload(
@@ -476,7 +474,7 @@ void QuicPacketCreator::Flush() {
 }
 
 void QuicPacketCreator::OnSerializedPacket() {
-  if (packet_.packet == nullptr) {
+  if (packet_.encrypted_buffer == nullptr) {
     QUIC_BUG << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
              << " should_fec_protect_:" << should_fec_protect_next_packet_;
     delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
@@ -502,7 +500,8 @@ void QuicPacketCreator::ClearPacket() {
   packet_.is_fec_packet = false;
   packet_.original_packet_number = 0;
   packet_.transmission_type = NOT_RETRANSMISSION;
-  packet_.packet = nullptr;
+  packet_.encrypted_buffer = nullptr;
+  packet_.encrypted_length = 0;
   DCHECK(packet_.retransmittable_frames.empty());
   packet_.listeners.clear();
 }
@@ -624,8 +623,8 @@ void QuicPacketCreator::SerializePacket(char* encrypted_buffer,
   packet_size_ = 0;
   queued_frames_.clear();
   packet_.entropy_hash = QuicFramer::GetPacketEntropyHash(header);
-  packet_.packet =
-      new QuicEncryptedPacket(encrypted_buffer, encrypted_length, false);
+  packet_.encrypted_buffer = encrypted_buffer;
+  packet_.encrypted_length = encrypted_length;
 }
 
 void QuicPacketCreator::SerializeFec(char* buffer, size_t buffer_len) {
@@ -660,7 +659,8 @@ void QuicPacketCreator::SerializeFec(char* buffer, size_t buffer_len) {
     return;
   }
   packet_.entropy_hash = QuicFramer::GetPacketEntropyHash(header);
-  packet_.packet = new QuicEncryptedPacket(buffer, encrypted_length, false);
+  packet_.encrypted_buffer = buffer;
+  packet_.encrypted_length = encrypted_length;
   packet_.is_fec_packet = true;
 }
 
@@ -677,7 +677,7 @@ QuicEncryptedPacket* QuicPacketCreator::SerializeVersionNegotiationPacket(
 // TODO(jri): Make this a public method of framer?
 SerializedPacket QuicPacketCreator::NoPacket() {
   return SerializedPacket(kInvalidPathId, 0, PACKET_1BYTE_PACKET_NUMBER,
-                          nullptr, 0, false, false);
+                          nullptr, 0, 0, false, false);
 }
 
 void QuicPacketCreator::FillPacketHeader(QuicFecGroupNumber fec_group,

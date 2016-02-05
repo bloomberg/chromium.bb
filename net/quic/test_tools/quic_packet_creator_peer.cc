@@ -126,7 +126,7 @@ SerializedPacket QuicPacketCreatorPeer::SerializeAllFrames(
   creator->SerializePacket(buffer, buffer_len);
   SerializedPacket packet = creator->packet_;
   // The caller takes ownership of the QuicEncryptedPacket.
-  creator->packet_.packet = nullptr;
+  creator->packet_.encrypted_buffer = nullptr;
   DCHECK(packet.retransmittable_frames.empty());
   return packet;
 }

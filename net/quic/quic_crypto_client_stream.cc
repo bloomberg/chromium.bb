@@ -12,7 +12,6 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/null_encrypter.h"
-#include "net/quic/quic_client_session_base.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_session.h"
@@ -42,8 +41,7 @@ void AppendFixed(CryptoHandshakeMessage* message) {
 
 }  // namespace
 
-QuicCryptoClientStreamBase::QuicCryptoClientStreamBase(
-    QuicClientSessionBase* session)
+QuicCryptoClientStreamBase::QuicCryptoClientStreamBase(QuicSession* session)
     : QuicCryptoStream(session) {}
 
 QuicCryptoClientStream::ChannelIDSourceCallbackImpl::
@@ -103,9 +101,10 @@ void QuicCryptoClientStream::ProofVerifierCallbackImpl::Cancel() {
 
 QuicCryptoClientStream::QuicCryptoClientStream(
     const QuicServerId& server_id,
-    QuicClientSessionBase* session,
+    QuicSession* session,
     ProofVerifyContext* verify_context,
-    QuicCryptoClientConfig* crypto_config)
+    QuicCryptoClientConfig* crypto_config,
+    ProofHandler* proof_handler)
     : QuicCryptoClientStreamBase(session),
       next_state_(STATE_IDLE),
       num_client_hellos_(0),
@@ -117,6 +116,7 @@ QuicCryptoClientStream::QuicCryptoClientStream(
       channel_id_source_callback_(nullptr),
       verify_context_(verify_context),
       proof_verify_callback_(nullptr),
+      proof_handler_(proof_handler),
       stateless_reject_received_(false) {
   DCHECK_EQ(Perspective::IS_CLIENT, session->connection()->perspective());
 }
@@ -356,7 +356,7 @@ void QuicCryptoClientStream::DoSendCHLO(
   }
   channel_id_sent_ = (channel_id_key_.get() != nullptr);
   if (cached->proof_verify_details()) {
-    client_session()->OnProofVerifyDetailsAvailable(
+    proof_handler_->OnProofVerifyDetailsAvailable(
         *cached->proof_verify_details());
   }
   next_state_ = STATE_RECV_SHLO;
@@ -486,7 +486,7 @@ void QuicCryptoClientStream::DoVerifyProofComplete(
   }
   if (!verify_ok_) {
     if (verify_details_.get()) {
-      client_session()->OnProofVerifyDetailsAvailable(*verify_details_);
+      proof_handler_->OnProofVerifyDetailsAvailable(*verify_details_);
     }
     if (num_client_hellos_ == 0) {
       cached->Clear();
@@ -649,7 +649,7 @@ void QuicCryptoClientStream::DoInitializeServerConfigUpdate(
 void QuicCryptoClientStream::SetCachedProofValid(
     QuicCryptoClientConfig::CachedState* cached) {
   cached->SetProofValid();
-  client_session()->OnProofValid(*cached);
+  proof_handler_->OnProofValid(*cached);
 }
 
 bool QuicCryptoClientStream::RequiresChannelID(
@@ -674,10 +674,6 @@ bool QuicCryptoClientStream::RequiresChannelID(
     }
   }
   return false;
-}
-
-QuicClientSessionBase* QuicCryptoClientStream::client_session() {
-  return reinterpret_cast<QuicClientSessionBase*>(session());
 }
 
 }  // namespace net
