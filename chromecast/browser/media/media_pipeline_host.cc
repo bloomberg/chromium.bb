@@ -115,8 +115,9 @@ void MediaPipelineHost::AudioInitialize(
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(track_id == kAudioTrackId);
-  media_pipeline_->InitializeAudio(config, client,
-                                   std::move(audio_frame_provider_), status_cb);
+  ::media::PipelineStatus status = media_pipeline_->InitializeAudio(
+      config, client, std::move(audio_frame_provider_));
+  status_cb.Run(status);
 }
 
 void MediaPipelineHost::VideoInitialize(
@@ -126,8 +127,9 @@ void MediaPipelineHost::VideoInitialize(
     const ::media::PipelineStatusCB& status_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
   CHECK(track_id == kVideoTrackId);
-  media_pipeline_->InitializeVideo(configs, client,
-                                   std::move(video_frame_provider_), status_cb);
+  ::media::PipelineStatus status = media_pipeline_->InitializeVideo(
+      configs, client, std::move(video_frame_provider_));
+  status_cb.Run(status);
 }
 
 void MediaPipelineHost::StartPlayingFrom(base::TimeDelta time) {

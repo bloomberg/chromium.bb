@@ -112,38 +112,21 @@ void AudioVideoPipelineImplTest::Initialize(
           provider_delayed_pattern + arraysize(provider_delayed_pattern)),
       std::move(frame_generator_provider));
 
-  ::media::PipelineStatusCB next_task =
-      base::Bind(&AudioVideoPipelineImplTest::StartPlaying,
-                 base::Unretained(this),
-                 done_cb);
-
-  scoped_ptr<CodedFrameProvider> frame_provider_base(frame_provider.release());
-
+  ::media::PipelineStatus pipeline_status = ::media::PIPELINE_OK;
   if (is_audio) {
     AvPipelineClient client;
     client.eos_cb =
         base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
-
-    base::Closure task = base::Bind(&MediaPipelineImpl::InitializeAudio,
-                                    base::Unretained(media_pipeline_.get()),
-                                    audio_config,
-                                    client,
-                                    base::Passed(&frame_provider_base),
-                                    next_task);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+    pipeline_status = media_pipeline_->InitializeAudio(
+        audio_config, client, std::move(frame_provider));
   } else {
     VideoPipelineClient client;
     client.av_pipeline_client.eos_cb =
         base::Bind(&AudioVideoPipelineImplTest::OnEos, base::Unretained(this));
-
-    base::Closure task = base::Bind(&MediaPipelineImpl::InitializeVideo,
-                                    base::Unretained(media_pipeline_.get()),
-                                    video_configs,
-                                    client,
-                                    base::Passed(&frame_provider_base),
-                                    next_task);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
+    pipeline_status = media_pipeline_->InitializeVideo(
+        video_configs, client, std::move(frame_provider));
   }
+  StartPlaying(done_cb, pipeline_status);
 }
 
 void AudioVideoPipelineImplTest::StartPlaying(

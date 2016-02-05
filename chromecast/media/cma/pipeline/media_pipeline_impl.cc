@@ -138,44 +138,40 @@ void MediaPipelineImpl::SetCdm(BrowserCdmCast* cdm) {
     video_pipeline_->SetCdm(cdm);
 }
 
-void MediaPipelineImpl::InitializeAudio(
+::media::PipelineStatus MediaPipelineImpl::InitializeAudio(
     const ::media::AudioDecoderConfig& config,
     const AvPipelineClient& client,
-    scoped_ptr<CodedFrameProvider> frame_provider,
-    const ::media::PipelineStatusCB& status_cb) {
+    scoped_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!audio_decoder_);
 
   MediaPipelineBackend::AudioDecoder* backend_audio_decoder =
       media_pipeline_backend_->CreateAudioDecoder();
   if (!backend_audio_decoder) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
+    return ::media::PIPELINE_ERROR_ABORT;
   }
   audio_decoder_.reset(new AudioDecoderSoftwareWrapper(backend_audio_decoder));
   audio_pipeline_.reset(new AudioPipelineImpl(audio_decoder_.get(), client));
   if (cdm_)
     audio_pipeline_->SetCdm(cdm_);
-  audio_pipeline_->Initialize(config, std::move(frame_provider), status_cb);
+  return audio_pipeline_->Initialize(config, std::move(frame_provider));
 }
 
-void MediaPipelineImpl::InitializeVideo(
+::media::PipelineStatus MediaPipelineImpl::InitializeVideo(
     const std::vector<::media::VideoDecoderConfig>& configs,
     const VideoPipelineClient& client,
-    scoped_ptr<CodedFrameProvider> frame_provider,
-    const ::media::PipelineStatusCB& status_cb) {
+    scoped_ptr<CodedFrameProvider> frame_provider) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!video_decoder_);
 
   video_decoder_ = media_pipeline_backend_->CreateVideoDecoder();
   if (!video_decoder_) {
-    status_cb.Run(::media::PIPELINE_ERROR_ABORT);
-    return;
+    return ::media::PIPELINE_ERROR_ABORT;
   }
   video_pipeline_.reset(new VideoPipelineImpl(video_decoder_, client));
   if (cdm_)
     video_pipeline_->SetCdm(cdm_);
-  video_pipeline_->Initialize(configs, std::move(frame_provider), status_cb);
+  return video_pipeline_->Initialize(configs, std::move(frame_provider));
 }
 
 void MediaPipelineImpl::StartPlayingFrom(base::TimeDelta time) {

@@ -47,14 +47,14 @@ class MediaPipelineImpl {
   void SetClient(const MediaPipelineClient& client);
   void SetCdm(int cdm_id);
 
-  void InitializeAudio(const ::media::AudioDecoderConfig& config,
-                       const AvPipelineClient& client,
-                       scoped_ptr<CodedFrameProvider> frame_provider,
-                       const ::media::PipelineStatusCB& status_cb);
-  void InitializeVideo(const std::vector<::media::VideoDecoderConfig>& configs,
-                       const VideoPipelineClient& client,
-                       scoped_ptr<CodedFrameProvider> frame_provider,
-                       const ::media::PipelineStatusCB& status_cb);
+  ::media::PipelineStatus InitializeAudio(
+      const ::media::AudioDecoderConfig& config,
+      const AvPipelineClient& client,
+      scoped_ptr<CodedFrameProvider> frame_provider);
+  ::media::PipelineStatus InitializeVideo(
+      const std::vector<::media::VideoDecoderConfig>& configs,
+      const VideoPipelineClient& client,
+      scoped_ptr<CodedFrameProvider> frame_provider);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const ::media::PipelineStatusCB& status_cb);
   void Stop();

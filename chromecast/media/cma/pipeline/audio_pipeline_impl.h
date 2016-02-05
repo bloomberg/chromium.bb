@@ -30,9 +30,9 @@ class AudioPipelineImpl : public AvPipelineImpl {
                     const AvPipelineClient& client);
   ~AudioPipelineImpl() override;
 
-  void Initialize(const ::media::AudioDecoderConfig& config,
-                  scoped_ptr<CodedFrameProvider> frame_provider,
-                  const ::media::PipelineStatusCB& status_cb);
+  ::media::PipelineStatus Initialize(
+      const ::media::AudioDecoderConfig& config,
+      scoped_ptr<CodedFrameProvider> frame_provider);
 
   void SetVolume(float volume);
 

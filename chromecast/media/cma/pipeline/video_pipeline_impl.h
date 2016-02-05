@@ -31,10 +31,9 @@ class VideoPipelineImpl : public AvPipelineImpl {
                     const VideoPipelineClient& client);
   ~VideoPipelineImpl() override;
 
-  void Initialize(
+  ::media::PipelineStatus Initialize(
       const std::vector<::media::VideoDecoderConfig>& configs,
-      scoped_ptr<CodedFrameProvider> frame_provider,
-      const ::media::PipelineStatusCB& status_cb);
+      scoped_ptr<CodedFrameProvider> frame_provider);
 
   // AvPipelineImpl implementation:
   void UpdateStatistics() override;

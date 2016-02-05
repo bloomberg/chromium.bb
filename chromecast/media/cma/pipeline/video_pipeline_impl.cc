@@ -37,10 +37,9 @@ VideoPipelineImpl::VideoPipelineImpl(
 VideoPipelineImpl::~VideoPipelineImpl() {
 }
 
-void VideoPipelineImpl::Initialize(
+::media::PipelineStatus VideoPipelineImpl::Initialize(
     const std::vector<::media::VideoDecoderConfig>& configs,
-    scoped_ptr<CodedFrameProvider> frame_provider,
-    const ::media::PipelineStatusCB& status_cb) {
+    scoped_ptr<CodedFrameProvider> frame_provider) {
   DCHECK_GT(configs.size(), 0u);
   for (const auto& config : configs) {
     CMALOG(kLogControl) << __FUNCTION__ << " "
@@ -53,8 +52,7 @@ void VideoPipelineImpl::Initialize(
   }
 
   if (configs.empty()) {
-     status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
-     return;
+    return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
   DCHECK(configs.size() <= 2);
   DCHECK(configs[0].IsValidConfig());
@@ -69,11 +67,10 @@ void VideoPipelineImpl::Initialize(
   }
 
   if (!video_decoder_->SetConfig(video_config)) {
-    status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
-    return;
+    return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
   TransitionToState(kFlushed);
-  status_cb.Run(::media::PIPELINE_OK);
+  return ::media::PIPELINE_OK;
 }
 
 void VideoPipelineImpl::OnVideoResolutionChanged(const Size& size) {

@@ -31,10 +31,9 @@ AudioPipelineImpl::AudioPipelineImpl(
 
 AudioPipelineImpl::~AudioPipelineImpl() {}
 
-void AudioPipelineImpl::Initialize(
+::media::PipelineStatus AudioPipelineImpl::Initialize(
     const ::media::AudioDecoderConfig& audio_config,
-    scoped_ptr<CodedFrameProvider> frame_provider,
-    const ::media::PipelineStatusCB& status_cb) {
+    scoped_ptr<CodedFrameProvider> frame_provider) {
   CMALOG(kLogControl) << __FUNCTION__ << " "
                       << audio_config.AsHumanReadableString();
   if (frame_provider) {
@@ -46,11 +45,10 @@ void AudioPipelineImpl::Initialize(
   AudioConfig cast_audio_config =
       DecoderConfigAdapter::ToCastAudioConfig(kPrimary, audio_config);
   if (!audio_decoder_->SetConfig(cast_audio_config)) {
-    status_cb.Run(::media::PIPELINE_ERROR_INITIALIZATION_FAILED);
-    return;
+    return ::media::PIPELINE_ERROR_INITIALIZATION_FAILED;
   }
   TransitionToState(kFlushed);
-  status_cb.Run(::media::PIPELINE_OK);
+  return ::media::PIPELINE_OK;
 }
 
 void AudioPipelineImpl::SetVolume(float volume) {
