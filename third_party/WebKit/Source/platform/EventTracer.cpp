@@ -69,7 +69,7 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, unsigned long long bindId, double timestamp,
+    const char* name, const char* scope, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char* argNames[], const unsigned char argTypes[],
     const unsigned long long argValues[],
     PassRefPtr<TracedValue> tracedValue1,
@@ -84,24 +84,24 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
         convertables[0] = std::move(tracedValue1->m_tracedValue);
     if (numArgs >= 2 && argTypes[1] == TRACE_VALUE_TYPE_CONVERTABLE)
         convertables[1] = std::move(tracedValue2->m_tracedValue);
-    return addTraceEvent(phase, categoryEnabledFlag, name, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, convertables, flags);
+    return addTraceEvent(phase, categoryEnabledFlag, name, scope, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, convertables, flags);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, unsigned long long bindId, double timestamp,
+    const char* name, const char* scope, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char** argNames, const unsigned char* argTypes,
     const unsigned long long* argValues, unsigned flags)
 {
-    return addTraceEvent(phase, categoryEnabledFlag, name, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, nullptr, flags);
+    return addTraceEvent(phase, categoryEnabledFlag, name, scope, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, nullptr, flags);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, unsigned long long bindId, double timestamp,
+    const char* name, const char* scope, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char** argNames, const unsigned char* argTypes, const unsigned long long* argValues,
     const scoped_refptr<base::trace_event::ConvertableToTraceFormat>* convertables, unsigned flags)
 {
     base::TimeTicks timestampTimeTicks = base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
-    base::trace_event::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase, categoryEnabledFlag, name, trace_event_internal::kGlobalScope, id, bindId, base::PlatformThread::CurrentId(), timestampTimeTicks, numArgs, argNames, argTypes, argValues, convertables, flags);
+    base::trace_event::TraceEventHandle handle = TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(phase, categoryEnabledFlag, name, scope, id, bindId, base::PlatformThread::CurrentId(), timestampTimeTicks, numArgs, argNames, argTypes, argValues, convertables, flags);
     TraceEvent::TraceEventHandle result;
     memcpy(&result, &handle, sizeof(result));
     return result;
