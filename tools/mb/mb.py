@@ -773,7 +773,7 @@ class MetaBuildWrapper(object):
       self.WriteFailureAndRaise('No command line for %s found (test type %s).'
                                 % (target, test_type), output_path=None)
 
-    cmdline += gn_isolate_map[target].get('args', [])
+    cmdline += gn_isolate_map[target_name].get('args', [])
 
     return cmdline, extra_files
 
