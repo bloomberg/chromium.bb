@@ -15,7 +15,7 @@
 
 namespace cronet {
 
-TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
+TEST(URLRequestContextConfigTest, DISABLED_SetQuicExperimentalOptions) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
