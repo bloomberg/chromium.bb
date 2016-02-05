@@ -858,13 +858,13 @@ class XcodeSettings(object):
       # extensions and provide loader and main function.
       # These flags reflect the compilation options used by xcode to compile
       # extensions.
-      ldflags.append('-lpkstart')
       if XcodeVersion() < '0900':
+        ldflags.append('-lpkstart')
         ldflags.append(sdk_root +
             '/System/Library/PrivateFrameworks/PlugInKit.framework/PlugInKit')
+      else:
+        ldflags.append('-e _NSExtensionMain')
       ldflags.append('-fapplication-extension')
-      ldflags.append('-Xlinker -rpath '
-          '-Xlinker @executable_path/../../Frameworks')
 
     self._Appendf(ldflags, 'CLANG_CXX_LIBRARY', '-stdlib=%s')
 
