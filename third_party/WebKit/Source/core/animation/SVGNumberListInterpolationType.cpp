@@ -13,7 +13,7 @@ namespace blink {
 InterpolationValue SVGNumberListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
     size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlying);
-    conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
+    conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
 
     if (underlyingLength == 0)
         return nullptr;

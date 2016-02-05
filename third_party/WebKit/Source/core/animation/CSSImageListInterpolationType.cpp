@@ -17,15 +17,14 @@ class UnderlyingImageListChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingImageListChecker() final {}
 
-    static PassOwnPtr<UnderlyingImageListChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
+    static PassOwnPtr<UnderlyingImageListChecker> create(const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingImageListChecker(type, underlying));
+        return adoptPtr(new UnderlyingImageListChecker(underlying));
     }
 
 private:
-    UnderlyingImageListChecker(const InterpolationType& type, const InterpolationValue& underlying)
-        : ConversionChecker(type)
-        , m_underlying(underlying.clone())
+    UnderlyingImageListChecker(const InterpolationValue& underlying)
+        : m_underlying(underlying.clone())
     { }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -38,7 +37,7 @@ private:
 
 InterpolationValue CSSImageListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    conversionCheckers.append(UnderlyingImageListChecker::create(*this, underlying));
+    conversionCheckers.append(UnderlyingImageListChecker::create(underlying));
     return underlying.clone();
 }
 
@@ -63,15 +62,14 @@ class ParentImageListChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentImageListChecker() final {}
 
-    static PassOwnPtr<ParentImageListChecker> create(const InterpolationType& type, CSSPropertyID property, const StyleImageList& inheritedImageList)
+    static PassOwnPtr<ParentImageListChecker> create(CSSPropertyID property, const StyleImageList& inheritedImageList)
     {
-        return adoptPtr(new ParentImageListChecker(type, property, inheritedImageList));
+        return adoptPtr(new ParentImageListChecker(property, inheritedImageList));
     }
 
 private:
-    ParentImageListChecker(const InterpolationType& type, CSSPropertyID property, const StyleImageList& inheritedImageList)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentImageListChecker(CSSPropertyID property, const StyleImageList& inheritedImageList)
+        : m_property(property)
         , m_inheritedImageList(inheritedImageList)
     { }
 
@@ -93,7 +91,7 @@ InterpolationValue CSSImageListInterpolationType::maybeConvertInherit(const Styl
 
     StyleImageList inheritedImageList;
     ImageListPropertyFunctions::getImageList(cssProperty(), *state.parentStyle(), inheritedImageList);
-    conversionCheckers.append(ParentImageListChecker::create(*this, cssProperty(), inheritedImageList));
+    conversionCheckers.append(ParentImageListChecker::create(cssProperty(), inheritedImageList));
     return maybeConvertStyleImageList(inheritedImageList);
 }
 

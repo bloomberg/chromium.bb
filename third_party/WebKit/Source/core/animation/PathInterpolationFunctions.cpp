@@ -76,15 +76,14 @@ class UnderlyingPathSegTypesChecker : public InterpolationType::ConversionChecke
 public:
     ~UnderlyingPathSegTypesChecker() final {}
 
-    static PassOwnPtr<UnderlyingPathSegTypesChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
+    static PassOwnPtr<UnderlyingPathSegTypesChecker> create(const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingPathSegTypesChecker(type, getPathSegTypes(underlying)));
+        return adoptPtr(new UnderlyingPathSegTypesChecker(getPathSegTypes(underlying)));
     }
 
 private:
-    UnderlyingPathSegTypesChecker(const InterpolationType& type, const Vector<SVGPathSegType>& pathSegTypes)
-        : ConversionChecker(type)
-        , m_pathSegTypes(pathSegTypes)
+    UnderlyingPathSegTypesChecker(const Vector<SVGPathSegType>& pathSegTypes)
+        : m_pathSegTypes(pathSegTypes)
     { }
 
     static const Vector<SVGPathSegType>& getPathSegTypes(const InterpolationValue& underlying)
@@ -100,9 +99,9 @@ private:
     Vector<SVGPathSegType> m_pathSegTypes;
 };
 
-InterpolationValue PathInterpolationFunctions::maybeConvertNeutral(const InterpolationType& type, const InterpolationValue& underlying, InterpolationType::ConversionCheckers& conversionCheckers)
+InterpolationValue PathInterpolationFunctions::maybeConvertNeutral(const InterpolationValue& underlying, InterpolationType::ConversionCheckers& conversionCheckers)
 {
-    conversionCheckers.append(UnderlyingPathSegTypesChecker::create(type, underlying));
+    conversionCheckers.append(UnderlyingPathSegTypesChecker::create(underlying));
     OwnPtr<InterpolableList> result = InterpolableList::create(PathComponentIndexCount);
     result->set(PathArgsIndex, toInterpolableList(*underlying.interpolableValue).get(PathArgsIndex)->cloneAndZero());
     result->set(PathNeutralIndex, InterpolableNumber::create(1));

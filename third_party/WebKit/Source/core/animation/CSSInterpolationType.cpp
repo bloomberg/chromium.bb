@@ -15,15 +15,14 @@ namespace blink {
 
 class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ResolvedVariableChecker> create(const InterpolationType& type, CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
+    static PassOwnPtr<ResolvedVariableChecker> create(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
     {
-        return adoptPtr(new ResolvedVariableChecker(type, property, variableReference, resolvedValue));
+        return adoptPtr(new ResolvedVariableChecker(property, variableReference, resolvedValue));
     }
 
 private:
-    ResolvedVariableChecker(const InterpolationType& type, CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
-        : ConversionChecker(type)
-        , m_property(property)
+    ResolvedVariableChecker(CSSPropertyID property, PassRefPtrWillBeRawPtr<CSSVariableReferenceValue> variableReference, PassRefPtrWillBeRawPtr<CSSValue> resolvedValue)
+        : m_property(property)
         , m_variableReference(variableReference)
         , m_resolvedValue(resolvedValue)
     { }
@@ -50,7 +49,7 @@ InterpolationValue CSSInterpolationType::maybeConvertSingle(const PropertySpecif
 
     if (value->isVariableReferenceValue() && !isShorthandProperty(cssProperty())) {
         resolvedCSSValueOwner = CSSVariableResolver::resolveVariableReferences(environment.state().style()->variables(), cssProperty(), toCSSVariableReferenceValue(*value));
-        conversionCheckers.append(ResolvedVariableChecker::create(*this, cssProperty(), toCSSVariableReferenceValue(const_cast<CSSValue*>(value)), resolvedCSSValueOwner));
+        conversionCheckers.append(ResolvedVariableChecker::create(cssProperty(), toCSSVariableReferenceValue(const_cast<CSSValue*>(value)), resolvedCSSValueOwner));
         value = resolvedCSSValueOwner.get();
     }
 

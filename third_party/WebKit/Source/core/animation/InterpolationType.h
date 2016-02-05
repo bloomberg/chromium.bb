@@ -34,14 +34,14 @@ public:
         WTF_MAKE_NONCOPYABLE(ConversionChecker);
     public:
         virtual ~ConversionChecker() { }
+        void setType(const InterpolationType& type) { m_type = &type; }
+        const InterpolationType& type() const { return *m_type; }
         virtual bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const = 0;
-        const InterpolationType& type() const { return m_type; }
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
     protected:
-        ConversionChecker(const InterpolationType& type)
-            : m_type(type)
+        ConversionChecker()
+            : m_type(nullptr)
         { }
-        const InterpolationType& m_type;
+        const InterpolationType* m_type;
     };
     using ConversionCheckers = Vector<OwnPtr<ConversionChecker>>;
 

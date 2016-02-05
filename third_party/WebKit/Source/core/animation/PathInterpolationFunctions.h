@@ -18,7 +18,7 @@ public:
 
     static InterpolationValue convertValue(const SVGPathByteStream&);
 
-    static InterpolationValue maybeConvertNeutral(const InterpolationType&, const InterpolationValue& underlying, InterpolationType::ConversionCheckers&);
+    static InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying, InterpolationType::ConversionCheckers&);
 
     static PairwiseInterpolationValue mergeSingleConversions(InterpolationValue& start, InterpolationValue& end);
 };

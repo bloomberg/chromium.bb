@@ -23,7 +23,7 @@ CSSLengthListInterpolationType::CSSLengthListInterpolationType(CSSPropertyID pro
 InterpolationValue CSSLengthListInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
     size_t underlyingLength = UnderlyingLengthChecker::getUnderlyingLength(underlying);
-    conversionCheckers.append(UnderlyingLengthChecker::create(*this, underlyingLength));
+    conversionCheckers.append(UnderlyingLengthChecker::create(underlyingLength));
 
     if (underlyingLength == 0)
         return nullptr;
@@ -52,15 +52,14 @@ class ParentLengthListChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentLengthListChecker() final {}
 
-    static PassOwnPtr<ParentLengthListChecker> create(const InterpolationType& type, CSSPropertyID property, PassRefPtr<RefVector<Length>> inheritedLengthList)
+    static PassOwnPtr<ParentLengthListChecker> create(CSSPropertyID property, PassRefPtr<RefVector<Length>> inheritedLengthList)
     {
-        return adoptPtr(new ParentLengthListChecker(type, property, inheritedLengthList));
+        return adoptPtr(new ParentLengthListChecker(property, inheritedLengthList));
     }
 
 private:
-    ParentLengthListChecker(const InterpolationType& type, CSSPropertyID property, PassRefPtr<RefVector<Length>> inheritedLengthList)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentLengthListChecker(CSSPropertyID property, PassRefPtr<RefVector<Length>> inheritedLengthList)
+        : m_property(property)
         , m_inheritedLengthList(inheritedLengthList)
     { }
 
@@ -84,7 +83,7 @@ InterpolationValue CSSLengthListInterpolationType::maybeConvertInherit(const Sty
         return nullptr;
 
     const RefVector<Length>* inheritedLengthList = LengthListPropertyFunctions::getLengthList(cssProperty(), *state.parentStyle());
-    conversionCheckers.append(ParentLengthListChecker::create(*this, cssProperty(),
+    conversionCheckers.append(ParentLengthListChecker::create(cssProperty(),
         const_cast<RefVector<Length>*>(inheritedLengthList))); // Take ref.
     return maybeConvertLengthList(inheritedLengthList, state.parentStyle()->effectiveZoom());
 }

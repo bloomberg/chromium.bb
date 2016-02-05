@@ -25,24 +25,22 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInitial() const
 
 class ParentPaintChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentPaintChecker> create(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property, const StyleColor& color)
     {
-        return adoptPtr(new ParentPaintChecker(type, property, color));
+        return adoptPtr(new ParentPaintChecker(property, color));
     }
-    static PassOwnPtr<ParentPaintChecker> create(const InterpolationType& type, CSSPropertyID property)
+    static PassOwnPtr<ParentPaintChecker> create(CSSPropertyID property)
     {
-        return adoptPtr(new ParentPaintChecker(type, property));
+        return adoptPtr(new ParentPaintChecker(property));
     }
 
 private:
-    ParentPaintChecker(const InterpolationType& type, CSSPropertyID property)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentPaintChecker(CSSPropertyID property)
+        : m_property(property)
         , m_validColor(false)
     { }
-    ParentPaintChecker(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentPaintChecker(CSSPropertyID property, const StyleColor& color)
+        : m_property(property)
         , m_validColor(true)
         , m_color(color)
     { }
@@ -53,11 +51,6 @@ private:
         if (!PaintPropertyFunctions::getColor(m_property, *environment.state().parentStyle(), parentColor))
             return !m_validColor;
         return m_validColor && parentColor == m_color;
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        ConversionChecker::trace(visitor);
     }
 
     const CSSPropertyID m_property;
@@ -71,10 +64,10 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertInherit(const StyleRes
         return nullptr;
     StyleColor parentColor;
     if (!PaintPropertyFunctions::getColor(cssProperty(), *state.parentStyle(), parentColor)) {
-        conversionCheckers.append(ParentPaintChecker::create(*this, cssProperty()));
+        conversionCheckers.append(ParentPaintChecker::create(cssProperty()));
         return nullptr;
     }
-    conversionCheckers.append(ParentPaintChecker::create(*this, cssProperty(), parentColor));
+    conversionCheckers.append(ParentPaintChecker::create(cssProperty(), parentColor));
     return InterpolationValue(CSSColorInterpolationType::createInterpolableColor(parentColor));
 }
 

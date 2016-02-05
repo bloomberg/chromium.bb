@@ -12,9 +12,9 @@ namespace blink {
 
 class UnderlyingLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<UnderlyingLengthChecker> create(const InterpolationType& type, size_t underlyingLength)
+    static PassOwnPtr<UnderlyingLengthChecker> create(size_t underlyingLength)
     {
-        return adoptPtr(new UnderlyingLengthChecker(type, underlyingLength));
+        return adoptPtr(new UnderlyingLengthChecker(underlyingLength));
     }
 
     static size_t getUnderlyingLength(const InterpolationValue& underlying)
@@ -30,9 +30,8 @@ public:
     }
 
 private:
-    UnderlyingLengthChecker(const InterpolationType& type, size_t underlyingLength)
-        : ConversionChecker(type)
-        , m_underlyingLength(underlyingLength)
+    UnderlyingLengthChecker(size_t underlyingLength)
+        : m_underlyingLength(underlyingLength)
     {}
 
     size_t m_underlyingLength;

@@ -135,26 +135,20 @@ Color CSSColorInterpolationType::resolveInterpolableColor(const InterpolableValu
 
 class ParentColorChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentColorChecker> create(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
+    static PassOwnPtr<ParentColorChecker> create(CSSPropertyID property, const StyleColor& color)
     {
-        return adoptPtr(new ParentColorChecker(type, property, color));
+        return adoptPtr(new ParentColorChecker(property, color));
     }
 
 private:
-    ParentColorChecker(const InterpolationType& type, CSSPropertyID property, const StyleColor& color)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentColorChecker(CSSPropertyID property, const StyleColor& color)
+        : m_property(property)
         , m_color(color)
     { }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue& underlying) const final
     {
         return m_color == ColorPropertyFunctions::getUnvisitedColor(m_property, *environment.state().parentStyle());
-    }
-
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        ConversionChecker::trace(visitor);
     }
 
     const CSSPropertyID m_property;
@@ -178,7 +172,7 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(const StyleRes
         return nullptr;
     // Visited color can never explicitly inherit from parent visited color so only use the unvisited color.
     const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(cssProperty(), *state.parentStyle());
-    conversionCheckers.append(ParentColorChecker::create(*this, cssProperty(), inheritedColor));
+    conversionCheckers.append(ParentColorChecker::create(cssProperty(), inheritedColor));
     return convertStyleColorPair(inheritedColor, inheritedColor);
 }
 

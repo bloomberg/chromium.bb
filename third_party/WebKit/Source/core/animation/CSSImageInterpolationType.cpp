@@ -113,15 +113,14 @@ class UnderlyingImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~UnderlyingImageChecker() final {}
 
-    static PassOwnPtr<UnderlyingImageChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
+    static PassOwnPtr<UnderlyingImageChecker> create(const InterpolationValue& underlying)
     {
-        return adoptPtr(new UnderlyingImageChecker(type, underlying));
+        return adoptPtr(new UnderlyingImageChecker(underlying));
     }
 
 private:
-    UnderlyingImageChecker(const InterpolationType& type, const InterpolationValue& underlying)
-        : ConversionChecker(type)
-        , m_underlying(underlying.clone())
+    UnderlyingImageChecker(const InterpolationValue& underlying)
+        : m_underlying(underlying.clone())
     { }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -139,7 +138,7 @@ private:
 
 InterpolationValue CSSImageInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    conversionCheckers.append(UnderlyingImageChecker::create(*this, underlying));
+    conversionCheckers.append(UnderlyingImageChecker::create(underlying));
     return InterpolationValue(underlying.clone());
 }
 
@@ -152,15 +151,14 @@ class ParentImageChecker : public InterpolationType::ConversionChecker {
 public:
     ~ParentImageChecker() final {}
 
-    static PassOwnPtr<ParentImageChecker> create(const InterpolationType& type, CSSPropertyID property, PassRefPtrWillBeRawPtr<StyleImage> inheritedImage)
+    static PassOwnPtr<ParentImageChecker> create(CSSPropertyID property, PassRefPtrWillBeRawPtr<StyleImage> inheritedImage)
     {
-        return adoptPtr(new ParentImageChecker(type, property, inheritedImage));
+        return adoptPtr(new ParentImageChecker(property, inheritedImage));
     }
 
 private:
-    ParentImageChecker(const InterpolationType& type, CSSPropertyID property, PassRefPtrWillBeRawPtr<StyleImage> inheritedImage)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentImageChecker(CSSPropertyID property, PassRefPtrWillBeRawPtr<StyleImage> inheritedImage)
+        : m_property(property)
         , m_inheritedImage(inheritedImage)
     { }
 
@@ -185,7 +183,7 @@ InterpolationValue CSSImageInterpolationType::maybeConvertInherit(const StyleRes
 
     const StyleImage* inheritedImage = ImagePropertyFunctions::getStyleImage(cssProperty(), *state.parentStyle());
     StyleImage* refableImage = const_cast<StyleImage*>(inheritedImage);
-    conversionCheckers.append(ParentImageChecker::create(*this, cssProperty(), refableImage));
+    conversionCheckers.append(ParentImageChecker::create(cssProperty(), refableImage));
     return maybeConvertStyleImage(inheritedImage, true);
 }
 

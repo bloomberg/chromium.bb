@@ -41,15 +41,14 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInitial() const
 
 class ParentShadowListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentShadowListChecker> create(const InterpolationType& type, CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
+    static PassOwnPtr<ParentShadowListChecker> create(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
     {
-        return adoptPtr(new ParentShadowListChecker(type, property, shadowList));
+        return adoptPtr(new ParentShadowListChecker(property, shadowList));
     }
 
 private:
-    ParentShadowListChecker(const InterpolationType& type, CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentShadowListChecker(CSSPropertyID property, PassRefPtr<ShadowList> shadowList)
+        : m_property(property)
         , m_shadowList(shadowList)
     { }
 
@@ -72,7 +71,7 @@ InterpolationValue CSSShadowListInterpolationType::maybeConvertInherit(const Sty
     if (!state.parentStyle())
         return nullptr;
     const ShadowList* parentShadowList = ShadowListPropertyFunctions::getShadowList(cssProperty(), *state.parentStyle());
-    conversionCheckers.append(ParentShadowListChecker::create(*this, cssProperty(), const_cast<ShadowList*>(parentShadowList))); // Take ref.
+    conversionCheckers.append(ParentShadowListChecker::create(cssProperty(), const_cast<ShadowList*>(parentShadowList))); // Take ref.
     return convertShadowList(parentShadowList, state.parentStyle()->effectiveZoom());
 }
 

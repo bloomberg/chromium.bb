@@ -20,7 +20,7 @@ InterpolationValue SVGPathInterpolationType::maybeConvertSVGValue(const SVGPrope
 
 InterpolationValue SVGPathInterpolationType::maybeConvertNeutral(const InterpolationValue& underlying, ConversionCheckers& conversionCheckers) const
 {
-    return PathInterpolationFunctions::maybeConvertNeutral(*this, underlying, conversionCheckers);
+    return PathInterpolationFunctions::maybeConvertNeutral(underlying, conversionCheckers);
 }
 
 PairwiseInterpolationValue SVGPathInterpolationType::mergeSingleConversions(InterpolationValue& start, InterpolationValue& end) const

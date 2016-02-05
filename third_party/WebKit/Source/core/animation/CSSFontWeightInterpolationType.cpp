@@ -57,23 +57,20 @@ static FontWeight doubleToFontWeight(double value)
 
 class ParentFontWeightChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentFontWeightChecker> create(const InterpolationType& type, FontWeight fontWeight)
+    static PassOwnPtr<ParentFontWeightChecker> create(FontWeight fontWeight)
     {
-        return adoptPtr(new ParentFontWeightChecker(type, fontWeight));
+        return adoptPtr(new ParentFontWeightChecker(fontWeight));
     }
 
 private:
-    ParentFontWeightChecker(const InterpolationType& type, FontWeight fontWeight)
-        : ConversionChecker(type)
-        , m_fontWeight(fontWeight)
+    ParentFontWeightChecker(FontWeight fontWeight)
+        : m_fontWeight(fontWeight)
     { }
 
     bool isValid(const InterpolationEnvironment& environment, const InterpolationValue&) const final
     {
         return m_fontWeight == environment.state().parentStyle()->fontWeight();
     }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { ConversionChecker::trace(visitor); }
 
     const double m_fontWeight;
 };
@@ -98,7 +95,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertInherit(const Sty
     if (!state.parentStyle())
         return nullptr;
     FontWeight inheritedFontWeight = state.parentStyle()->fontWeight();
-    conversionCheckers.append(ParentFontWeightChecker::create(*this, inheritedFontWeight));
+    conversionCheckers.append(ParentFontWeightChecker::create(inheritedFontWeight));
     return createFontWeightValue(inheritedFontWeight);
 }
 
@@ -117,7 +114,7 @@ InterpolationValue CSSFontWeightInterpolationType::maybeConvertValue(const CSSVa
     case CSSValueBolder:
     case CSSValueLighter: {
         FontWeight inheritedFontWeight = state.parentStyle()->fontWeight();
-        conversionCheckers.append(ParentFontWeightChecker::create(*this, inheritedFontWeight));
+        conversionCheckers.append(ParentFontWeightChecker::create(inheritedFontWeight));
         if (keyword == CSSValueBolder)
             return createFontWeightValue(FontDescription::bolderWeight(inheritedFontWeight));
         return createFontWeightValue(FontDescription::lighterWeight(inheritedFontWeight));

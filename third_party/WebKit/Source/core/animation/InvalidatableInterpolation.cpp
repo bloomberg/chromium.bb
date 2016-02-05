@@ -30,7 +30,9 @@ PassOwnPtr<PairwisePrimitiveInterpolation> InvalidatableInterpolation::maybeConv
     for (const auto& interpolationType : m_interpolationTypes) {
         if ((m_startKeyframe->isNeutral() || m_endKeyframe->isNeutral()) && (!underlyingValueOwner || underlyingValueOwner.type() != *interpolationType))
             continue;
-        PairwiseInterpolationValue result = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, environment, underlyingValueOwner.value(), m_conversionCheckers);
+        ConversionCheckers conversionCheckers;
+        PairwiseInterpolationValue result = interpolationType->maybeConvertPairwise(*m_startKeyframe, *m_endKeyframe, environment, underlyingValueOwner.value(), conversionCheckers);
+        addConversionCheckers(*interpolationType, conversionCheckers);
         if (result) {
             return PairwisePrimitiveInterpolation::create(*interpolationType,
                 result.startInterpolableValue.release(),
@@ -48,12 +50,22 @@ PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::convertSingleKey
     for (const auto& interpolationType : m_interpolationTypes) {
         if (keyframe.isNeutral() && underlyingValueOwner.type() != *interpolationType)
             continue;
-        InterpolationValue result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValueOwner.value(), m_conversionCheckers);
+        ConversionCheckers conversionCheckers;
+        InterpolationValue result = interpolationType->maybeConvertSingle(keyframe, environment, underlyingValueOwner.value(), conversionCheckers);
+        addConversionCheckers(*interpolationType, conversionCheckers);
         if (result)
             return TypedInterpolationValue::create(*interpolationType, result.interpolableValue.release(), result.nonInterpolableValue.release());
     }
     ASSERT(keyframe.isNeutral());
     return nullptr;
+}
+
+void InvalidatableInterpolation::addConversionCheckers(const InterpolationType& type, ConversionCheckers& conversionCheckers) const
+{
+    for (size_t i = 0; i < conversionCheckers.size(); i++) {
+        conversionCheckers[i]->setType(type);
+        m_conversionCheckers.append(conversionCheckers[i].release());
+    }
 }
 
 PassOwnPtr<TypedInterpolationValue> InvalidatableInterpolation::maybeConvertUnderlyingValue(const InterpolationEnvironment& environment) const

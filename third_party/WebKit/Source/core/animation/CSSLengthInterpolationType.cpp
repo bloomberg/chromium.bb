@@ -133,15 +133,14 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertCSSValue(const CSSVal
 
 class ParentLengthChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentLengthChecker> create(const InterpolationType& type, CSSPropertyID property, const Length& length)
+    static PassOwnPtr<ParentLengthChecker> create(CSSPropertyID property, const Length& length)
     {
-        return adoptPtr(new ParentLengthChecker(type, property, length));
+        return adoptPtr(new ParentLengthChecker(property, length));
     }
 
 private:
-    ParentLengthChecker(const InterpolationType& type, CSSPropertyID property, const Length& length)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentLengthChecker(CSSPropertyID property, const Length& length)
+        : m_property(property)
         , m_length(length)
     { }
 
@@ -177,7 +176,7 @@ InterpolationValue CSSLengthInterpolationType::maybeConvertInherit(const StyleRe
     Length inheritedLength;
     if (!LengthPropertyFunctions::getLength(cssProperty(), *state.parentStyle(), inheritedLength))
         return nullptr;
-    conversionCheckers.append(ParentLengthChecker::create(*this, cssProperty(), inheritedLength));
+    conversionCheckers.append(ParentLengthChecker::create(cssProperty(), inheritedLength));
     return maybeConvertLength(inheritedLength, effectiveZoom(*state.parentStyle()));
 }
 

@@ -12,15 +12,14 @@ namespace blink {
 
 class ParentNumberChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<ParentNumberChecker> create(const InterpolationType& type, CSSPropertyID property, double number)
+    static PassOwnPtr<ParentNumberChecker> create(CSSPropertyID property, double number)
     {
-        return adoptPtr(new ParentNumberChecker(type, property, number));
+        return adoptPtr(new ParentNumberChecker(property, number));
     }
 
 private:
-    ParentNumberChecker(const InterpolationType& type, CSSPropertyID property, double number)
-        : ConversionChecker(type)
-        , m_property(property)
+    ParentNumberChecker(CSSPropertyID property, double number)
+        : m_property(property)
         , m_number(number)
     { }
 
@@ -31,8 +30,6 @@ private:
             return false;
         return parentNumber == m_number;
     }
-
-    DEFINE_INLINE_VIRTUAL_TRACE() { ConversionChecker::trace(visitor); }
 
     const CSSPropertyID m_property;
     const double m_number;
@@ -63,7 +60,7 @@ InterpolationValue CSSNumberInterpolationType::maybeConvertInherit(const StyleRe
     double inheritedNumber;
     if (!NumberPropertyFunctions::getNumber(cssProperty(), *state.parentStyle(), inheritedNumber))
         return nullptr;
-    conversionCheckers.append(ParentNumberChecker::create(*this, cssProperty(), inheritedNumber));
+    conversionCheckers.append(ParentNumberChecker::create(cssProperty(), inheritedNumber));
     return createNumberValue(inheritedNumber);
 }
 

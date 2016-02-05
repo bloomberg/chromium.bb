@@ -182,9 +182,9 @@ bool transformTypesMatch(const InterpolationValue& first, const InterpolationVal
 
 class SVGTransformListChecker : public InterpolationType::ConversionChecker {
 public:
-    static PassOwnPtr<SVGTransformListChecker> create(const InterpolationType& type, const InterpolationValue& underlying)
+    static PassOwnPtr<SVGTransformListChecker> create(const InterpolationValue& underlying)
     {
-        return adoptPtr(new SVGTransformListChecker(type, underlying));
+        return adoptPtr(new SVGTransformListChecker(underlying));
     }
 
     bool isValid(const InterpolationEnvironment&, const InterpolationValue& underlying) const final
@@ -199,9 +199,8 @@ public:
     }
 
 private:
-    SVGTransformListChecker(const InterpolationType& type, const InterpolationValue& underlying)
-        : ConversionChecker(type)
-        , m_underlying(underlying.clone())
+    SVGTransformListChecker(const InterpolationValue& underlying)
+        : m_underlying(underlying.clone())
     { }
 
     const InterpolationValue m_underlying;
@@ -241,7 +240,7 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertSingle(const P
             types.appendVector(getTransformTypes(underlying));
             interpolableParts.append(underlying.interpolableValue->clone());
         }
-        conversionCheckers.append(SVGTransformListChecker::create(*this, underlying));
+        conversionCheckers.append(SVGTransformListChecker::create(underlying));
     } else {
         ASSERT(!keyframe.isNeutral());
     }

@@ -50,6 +50,8 @@ private:
         , m_isCached(false)
     { }
 
+    using ConversionCheckers = InterpolationType::ConversionCheckers;
+
     PassOwnPtr<TypedInterpolationValue> maybeConvertUnderlyingValue(const InterpolationEnvironment&) const;
     const TypedInterpolationValue* ensureValidInterpolation(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     void clearCache() const;
@@ -57,6 +59,7 @@ private:
     bool isNeutralKeyframeActive() const;
     PassOwnPtr<PairwisePrimitiveInterpolation> maybeConvertPairwise(const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
     PassOwnPtr<TypedInterpolationValue> convertSingleKeyframe(const PropertySpecificKeyframe&, const InterpolationEnvironment&, const UnderlyingValueOwner&) const;
+    void addConversionCheckers(const InterpolationType&, ConversionCheckers&) const;
     void setFlagIfInheritUsed(InterpolationEnvironment&) const;
     double underlyingFraction() const;
 
@@ -67,7 +70,7 @@ private:
     double m_currentFraction;
     mutable bool m_isCached;
     mutable OwnPtr<PrimitiveInterpolation> m_cachedPairConversion;
-    mutable InterpolationType::ConversionCheckers m_conversionCheckers;
+    mutable ConversionCheckers m_conversionCheckers;
     mutable OwnPtr<TypedInterpolationValue> m_cachedValue;
 };
 
