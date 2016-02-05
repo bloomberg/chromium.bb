@@ -11,7 +11,7 @@
 <link rel=preload href="../resources/Ahem.ttf" as=font crossorigin>
 <link rel=preload href="../resources/test.mp4" as=video>
 <link rel=preload href="../resources/test.oga" as=audio>
-<link rel=preload href="../resources/security/captions.vtt" as=track>
+<link rel=preload href="../security/resources/captions.vtt" as=track>
 <link rel=preload href="../resources/dummy.xml" as=foobarxmlthing>
 <link rel=preload href="../resources/dummy.xml">
 <script src="../resources/slow-script.pl?delay=200"></script>
@@ -31,17 +31,19 @@
 <script src="../resources/dummy.js"></script>
 <div id="background"></div>
 <img src="../resources/square.png">
+<script src="../resources/slow-script.pl?delay=200"></script>
 <video src="../resources/test.mp4">
-    <track kind=subtitles src="../resources/security/captions.vtt" srclang=en>
+    <track kind=subtitles src="../security/resources/captions.vtt" srclang=en>
 </video>
-<audio src="../resources/test/oga"></audio>
+<audio src="../resources/test.oga"></audio>
 <script>
     var xhr = new XMLHttpRequest();
     xhr.open("GET", "../resources/dummy.xml");
     xhr.send();
 
     window.addEventListener("load", t.step_func(function() {
-        assert_equals(performance.getEntriesByType("resource").length, 12);
+        // Audio and video show 2 extra requests as the main request is followed by a range request
+        assert_equals(performance.getEntriesByType("resource").length, 14);
         t.done();
     }));
 </script>

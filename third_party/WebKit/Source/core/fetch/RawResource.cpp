@@ -46,7 +46,6 @@ ResourcePtr<RawResource> RawResource::fetchImport(FetchRequest& request, Resourc
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextImport);
-    RawResourceFactory factory(Resource::ImportResource);
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::ImportResource)));
 }
 

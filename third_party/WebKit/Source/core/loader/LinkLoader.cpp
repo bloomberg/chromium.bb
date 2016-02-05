@@ -215,7 +215,7 @@ void LinkLoader::createLinkPreloadResourceClient(ResourcePtr<Resource> resource)
     }
 }
 
-static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, LinkCaller caller)
+static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& href, Document& document, const String& as, CrossOriginAttributeValue crossOrigin, LinkCaller caller)
 {
     if (!document.loader() || !relAttribute.isLinkPreload())
         return nullptr;
@@ -234,6 +234,8 @@ static ResourcePtr<Resource> preloadIfNeeded(const LinkRelAttribute& relAttribut
     FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);
 
     linkRequest.setPriority(document.fetcher()->loadPriority(type, linkRequest));
+    if (crossOrigin != CrossOriginAttributeNotSet)
+        linkRequest.setCrossOriginAccessControl(document.securityOrigin(), crossOrigin);
     Settings* settings = document.settings();
     if (settings && settings->logPreload())
         document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, DebugMessageLevel, String("Preload triggered for " + href.host() + href.path())));
@@ -262,7 +264,7 @@ bool LinkLoader::loadLinkFromHeader(const String& headerValue, Document* documen
         }
         if (canLoadResources != DoNotLoadResources) {
             if (RuntimeEnabledFeatures::linkPreloadEnabled())
-                preloadIfNeeded(relAttribute, url, *document, header.as(), LinkCalledFromHeader);
+                preloadIfNeeded(relAttribute, url, *document, header.as(), header.crossOrigin(), LinkCalledFromHeader);
         }
         // TODO(yoav): Add more supported headers as needed.
     }
@@ -280,7 +282,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, CrossOriginAttri
     preconnectIfNeeded(relAttribute, href, document, crossOrigin, networkHintsInterface, LinkCalledFromMarkup);
 
     if (m_client->shouldLoadLink())
-        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, LinkCalledFromMarkup));
+        createLinkPreloadResourceClient(preloadIfNeeded(relAttribute, href, document, as, crossOrigin, LinkCalledFromMarkup));
 
     if (href.isEmpty() || !href.isValid())
         released();
