@@ -503,6 +503,11 @@ bool ExtensionActionSetIconFunction::RunExtensionAction() {
     EXTENSION_FUNCTION_VALIDATE(
         ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon));
 
+    if (icon.isNull()) {
+      error_ = "Icon invalid.";
+      return false;
+    }
+
     extension_action_->SetIcon(tab_id_, gfx::Image(icon));
   } else if (details_->GetInteger("iconIndex", &icon_index)) {
     // Obsolete argument: ignore it.

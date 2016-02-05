@@ -31,6 +31,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "grit/theme_resources.h"
 #include "net/dns/mock_host_resolver.h"
@@ -734,6 +735,19 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopupWithIframe) {
   EXPECT_EQ("DONE", result);
 
   EXPECT_TRUE(actions_bar->HidePopup());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionWithRectangularIcon) {
+  ExtensionTestMessageListener ready_listener("ready", true);
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("browser_action").AppendASCII("rect_icon")));
+  EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
+  gfx::Image first_icon = GetBrowserActionsBar()->GetIcon(0);
+  ResultCatcher catcher;
+  ready_listener.Reply(std::string());
+  EXPECT_TRUE(catcher.GetNextResult());
+  gfx::Image next_icon = GetBrowserActionsBar()->GetIcon(0);
+  EXPECT_FALSE(gfx::test::AreImagesEqual(first_icon, next_icon));
 }
 
 }  // namespace

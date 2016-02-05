@@ -150,10 +150,8 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
     const int kActionIconMaxSize = 10 * extension_misc::EXTENSION_ICON_ACTION;
-    if (bitmap.drawsNothing() || bitmap.width() != bitmap.height() ||
-        bitmap.width() > kActionIconMaxSize) {
+    if (bitmap.drawsNothing() || bitmap.width() > kActionIconMaxSize)
       continue;
-    }
 
     float scale =
         static_cast<float>(bitmap.width()) / ExtensionAction::ActionIconSize();
