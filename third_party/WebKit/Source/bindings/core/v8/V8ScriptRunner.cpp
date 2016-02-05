@@ -36,6 +36,7 @@
 #include "core/fetch/ScriptResource.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -79,19 +80,23 @@ V8CompileHistogram::V8CompileHistogram(V8CompileHistogram::Cacheability cacheabi
 V8CompileHistogram::~V8CompileHistogram()
 {
     int64_t elapsedMicroSeconds = static_cast<int64_t>((WTF::currentTime() - m_timeStamp) * 1000000);
-    const char* name = "";
     switch (m_cacheability) {
-    case Cacheable:
-        name = "V8.CompileCacheableMicroSeconds";
-        break;
-    case Noncacheable:
-        name = "V8.CompileNoncacheableMicroSeconds";
-        break;
-    case InlineScript:
-        name = "V8.CompileInlineScriptMicroSeconds";
+    case Cacheable: {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, compileCacheableHistogram, new CustomCountHistogram("V8.CompileCacheableMicroSeconds", 0, 1000000, 50));
+        compileCacheableHistogram.count(elapsedMicroSeconds);
         break;
     }
-    Platform::current()->histogramCustomCounts(name, elapsedMicroSeconds, 0, 1000000, 50);
+    case Noncacheable: {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, compileNonCacheableHistogram, new CustomCountHistogram("V8.CompileNoncacheableMicroSeconds", 0, 1000000, 50));
+        compileNonCacheableHistogram.count(elapsedMicroSeconds);
+        break;
+    }
+    case InlineScript: {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, compileInlineHistogram, new CustomCountHistogram("V8.CompileInlineScriptMicroSeconds", 0, 1000000, 50));
+        compileInlineHistogram.count(elapsedMicroSeconds);
+        break;
+    }
+    }
 }
 
 // In order to make sure all pending messages to be processed in
@@ -158,7 +163,8 @@ v8::MaybeLocal<v8::Script> compileAndProduceCache(CachedMetadataHandler* cacheHa
         if (length > 1024) {
             // Omit histogram samples for small cache data to avoid outliers.
             int cacheSizeRatio = static_cast<int>(100.0 * length / code->Length());
-            Platform::current()->histogramCustomCounts("V8.CodeCacheSizeRatio", cacheSizeRatio, 0, 10000, 50);
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, codeCacheSizeHistogram, new CustomCountHistogram("V8.CodeCacheSizeRatio", 0, 10000, 50));
+            codeCacheSizeHistogram.count(cacheSizeRatio);
         }
         cacheHandler->clearCachedMetadata(CachedMetadataHandler::CacheLocally);
         cacheHandler->setCachedMetadata(tag, data, length, cacheType);

@@ -63,6 +63,7 @@
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/storage/DOMWindowStorageController.h"
 #include "modules/vr/NavigatorVRDevice.h"
+#include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -497,7 +498,8 @@ void FrameLoaderClientImpl::dispatchDidCommitLoad(HistoryItem* item, HistoryComm
     // Save some histogram data so we can compute the average memory used per
     // page load of the glyphs.
     // TODO(esprehn): Is this ancient uma actually useful?
-    Platform::current()->histogramCustomCounts("Memory.GlyphPagesPerLoad", GlyphPageTreeNode::treeGlyphPageCount(), 1, 10000, 50);
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, gyphsPagesPerLoadHistogram, ("Memory.GlyphPagesPerLoad", 1, 10000, 50));
+    gyphsPagesPerLoadHistogram.count(GlyphPageTreeNode::treeGlyphPageCount());
 
     if (m_webFrame->client())
         m_webFrame->client()->didCommitProvisionalLoad(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType));

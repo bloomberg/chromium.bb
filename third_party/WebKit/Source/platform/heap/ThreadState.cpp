@@ -30,6 +30,7 @@
 
 #include "platform/heap/ThreadState.h"
 
+#include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -485,7 +486,8 @@ void ThreadState::threadLocalWeakProcessing()
 
     if (isMainThread()) {
         double timeForThreadLocalWeakProcessing = WTF::currentTimeMS() - startTime;
-        Platform::current()->histogramCustomCounts("BlinkGC.timeForThreadLocalWeakProcessing", timeForThreadLocalWeakProcessing, 1, 10 * 1000, 50);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForWeakHistogram, ("BlinkGC.timeForThreadLocalWeakProcessing", 1, 10 * 1000, 50));
+        timeForWeakHistogram.count(timeForThreadLocalWeakProcessing);
     }
 }
 
@@ -1100,8 +1102,10 @@ void ThreadState::completeSweep()
         double timeForCompleteSweep = WTF::currentTimeMS() - startTime;
         accumulateSweepingTime(timeForCompleteSweep);
 
-        if (isMainThread())
-            Platform::current()->histogramCustomCounts("BlinkGC.CompleteSweep", timeForCompleteSweep, 1, 10 * 1000, 50);
+        if (isMainThread()) {
+            DEFINE_STATIC_LOCAL(CustomCountHistogram, completeSweepHistogram, ("BlinkGC.CompleteSweep", 1, 10 * 1000, 50));
+            completeSweepHistogram.count(timeForCompleteSweep);
+        }
     }
 
     postSweep();
@@ -1126,10 +1130,14 @@ void ThreadState::postSweep()
         // thread has not yet finished lazy sweeping.
         Heap::setMarkedObjectSizeAtLastCompleteSweep(Heap::markedObjectSize());
 
-        Platform::current()->histogramCustomCounts("BlinkGC.ObjectSizeBeforeGC", Heap::objectSizeAtLastGC() / 1024, 1, 4 * 1024 * 1024, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.ObjectSizeAfterGC", Heap::markedObjectSize() / 1024, 1, 4 * 1024 * 1024, 50);
-        Platform::current()->histogramCustomCounts("BlinkGC.CollectionRate", static_cast<int>(100 * collectionRate), 1, 100, 20);
-        Platform::current()->histogramCustomCounts("BlinkGC.TimeForSweepingAllObjects", m_accumulatedSweepingTime, 1, 10 * 1000, 50);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, objectSizeBeforeGCHistogram, ("BlinkGC.ObjectSizeBeforeGC", 1, 4 * 1024 * 1024, 50));
+        objectSizeBeforeGCHistogram.count(Heap::objectSizeAtLastGC() / 1024);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, objectSizeAfterGCHistogram, ("BlinkGC.ObjectSizeAfterGC", 1, 4 * 1024 * 1024, 50));
+        objectSizeAfterGCHistogram.count(Heap::markedObjectSize() / 1024);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, collectionRateHistogram, ("BlinkGC.CollectionRate", 1, 100, 20));
+        collectionRateHistogram.count(static_cast<int>(100 * collectionRate));
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, timeForSweepHistogram, ("BlinkGC.TimeForSweepingAllObjects", 1, 10 * 1000, 50));
+        timeForSweepHistogram.count(m_accumulatedSweepingTime);
     }
 
     switch (gcState()) {
@@ -1375,7 +1383,8 @@ void ThreadState::invokePreFinalizers()
     }
     if (isMainThread()) {
         double timeForInvokingPreFinalizers = WTF::currentTimeMS() - startTime;
-        Platform::current()->histogramCustomCounts("BlinkGC.TimeForInvokingPreFinalizers", timeForInvokingPreFinalizers, 1, 10 * 1000, 50);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, preFinalizersHistogram, ("BlinkGC.TimeForInvokingPreFinalizers", 1, 10 * 1000, 50));
+        preFinalizersHistogram.count(timeForInvokingPreFinalizers);
     }
 }
 

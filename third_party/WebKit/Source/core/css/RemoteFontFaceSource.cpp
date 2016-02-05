@@ -8,6 +8,7 @@
 #include "core/css/CSSFontFace.h"
 #include "core/css/FontLoader.h"
 #include "core/page/NetworkStateNotifier.h"
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
@@ -219,7 +220,8 @@ void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontReso
     if (m_fallbackPaintTime <= 0)
         return;
     int duration = static_cast<int>(currentTimeMS() - m_fallbackPaintTime);
-    Platform::current()->histogramCustomCounts("WebFont.BlankTextShownTime", duration, 0, 10000, 50);
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, blankTextShownTimeHistogram, ("WebFont.BlankTextShownTime", 0, 10000, 50));
+    blankTextShownTimeHistogram.count(duration);
     m_fallbackPaintTime = -1;
 }
 
@@ -227,7 +229,7 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
 {
     if (m_loadStartTime > 0 && font && !font->isLoading()) {
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
-        Platform::current()->histogramCustomCounts(histogramName(font), duration, 0, 10000, 50);
+        recordLoadTimeHistogram(font, duration);
         m_loadStartTime = -1;
 
         enum { Miss, Hit, DataUrl, CacheHitEnumMax };
@@ -242,21 +244,37 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
     }
 }
 
-const char* RemoteFontFaceSource::FontLoadHistograms::histogramName(const FontResource* font)
+void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(const FontResource* font, int duration)
 {
-    if (font->errorOccurred())
-        return "WebFont.DownloadTime.LoadError";
+    if (font->errorOccurred()) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, loadErrorHistogram, ("WebFont.DownloadTime.LoadError", 0, 10000, 50));
+        loadErrorHistogram.count(duration);
+        return;
+    }
 
     unsigned size = font->encodedSize();
-    if (size < 10 * 1024)
-        return "WebFont.DownloadTime.0.Under10KB";
-    if (size < 50 * 1024)
-        return "WebFont.DownloadTime.1.10KBTo50KB";
-    if (size < 100 * 1024)
-        return "WebFont.DownloadTime.2.50KBTo100KB";
-    if (size < 1024 * 1024)
-        return "WebFont.DownloadTime.3.100KBTo1MB";
-    return "WebFont.DownloadTime.4.Over1MB";
+    if (size < 10 * 1024) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, under10kHistogram, ("WebFont.DownloadTime.0.Under10KB", 0, 10000, 50));
+        under10kHistogram.count(duration);
+        return;
+    }
+    if (size < 50 * 1024) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, under50kHistogram, ("WebFont.DownloadTime.1.10KBTo50KB", 0, 10000, 50));
+        under50kHistogram.count(duration);
+        return;
+    }
+    if (size < 100 * 1024) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, under100kHistogram, ("WebFont.DownloadTime.2.50KBTo100KB", 0, 10000, 50));
+        under100kHistogram.count(duration);
+        return;
+    }
+    if (size < 1024 * 1024) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, under1mbHistogram, ("WebFont.DownloadTime.3.100KBTo1MB", 0, 10000, 50));
+        under1mbHistogram.count(duration);
+        return;
+    }
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, over1mbHistogram, ("WebFont.DownloadTime.4.Over1MB", 0, 10000, 50));
+    over1mbHistogram.count(duration);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool triggered)

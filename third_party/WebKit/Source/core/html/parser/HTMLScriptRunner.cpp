@@ -37,6 +37,7 @@
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
+#include "platform/Histogram.h"
 #include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
@@ -227,7 +228,9 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
     // The exact value doesn't matter; valid time stamps are much bigger than this value.
     const double epsilon = 1;
     if (pendingScriptType == ScriptStreamer::ParsingBlocking && !m_parserBlockingScriptAlreadyLoaded && compilationFinishTime > epsilon && loadFinishTime > epsilon) {
-        Platform::current()->histogramCustomCounts("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", (compilationFinishTime - loadFinishTime) * 1000, 0, 10000, 50);
+        int duration = (compilationFinishTime - loadFinishTime) * 1000;
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, loadAndCompileHistogram, ("WebCore.Scripts.ParsingBlocking.TimeBetweenLoadedAndCompiled", 0, 10000, 50));
+        loadAndCompileHistogram.count(duration);
     }
 
     ASSERT(!isExecutingScript());

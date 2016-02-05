@@ -579,17 +579,6 @@ blink::WebWaitableEvent* BlinkPlatformImpl::waitMultipleEvents(
   return web_events[idx];
 }
 
-void BlinkPlatformImpl::histogramCustomCounts(
-    const char* name, int sample, int min, int max, int bucket_count) {
-  // Copied from histogram macro, but without the static variable caching
-  // the histogram because name is dynamic.
-  base::HistogramBase* counter =
-      base::Histogram::FactoryGet(name, min, max, bucket_count,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-  DCHECK_EQ(name, counter->histogram_name());
-  counter->Add(sample);
-}
-
 void BlinkPlatformImpl::histogramEnumeration(
     const char* name, int sample, int boundary_value) {
   // Copied from histogram macro, but without the static variable caching

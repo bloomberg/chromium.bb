@@ -70,7 +70,7 @@ private:
         void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_fallbackPaintTime; }
     private:
-        const char* histogramName(const FontResource*);
+        void recordLoadTimeHistogram(const FontResource*, int duration);
         void recordInterventionResult(bool triggered);
         double m_loadStartTime;
         double m_fallbackPaintTime;

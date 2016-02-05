@@ -32,6 +32,7 @@
 
 #include "hb.h"
 #include "ots-memory-stream.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -46,17 +47,24 @@ static void recordDecodeSpeedHistogram(SharedBuffer* buffer, double decodeTime, 
     if (decodeTime <= 0)
         return;
 
-    const char* histogramName = "WebFont.DecodeSpeed.SFNT";
+    double kbPerSecond = decodedSize / (1000 * decodeTime);
     if (buffer->size() >= 4) {
         const char* data = buffer->data();
-        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F')
-            histogramName = "WebFont.DecodeSpeed.WOFF";
-        else if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2')
-            histogramName = "WebFont.DecodeSpeed.WOFF2";
+        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woffHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000, 50));
+            woffHistogram.count(kbPerSecond);
+            return;
+        }
+
+        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woff2Histogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000, 50));
+            woff2Histogram.count(kbPerSecond);
+            return;
+        }
     }
 
-    double kbPerSecond = decodedSize / (1000 * decodeTime);
-    Platform::current()->histogramCustomCounts(histogramName, kbPerSecond, 1000, 300000, 50);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, sfntHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
+    sfntHistogram.count(kbPerSecond);
 }
 
 PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()

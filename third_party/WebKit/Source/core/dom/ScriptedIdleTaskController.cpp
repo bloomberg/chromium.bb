@@ -8,6 +8,7 @@
 #include "core/dom/IdleRequestCallback.h"
 #include "core/dom/IdleRequestOptions.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -121,14 +122,18 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSecon
         return;
 
     double allottedTimeMillis = std::max((deadlineSeconds - monotonicallyIncreasingTime()) * 1000, 0.0);
-    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", allottedTimeMillis, 0, 50, 50);
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, idleCallbackDeadlineHistogram, ("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", 0, 50, 50));
+    idleCallbackDeadlineHistogram.count(allottedTimeMillis);
 
     TRACE_EVENT1("devtools.timeline", "FireIdleCallback",
         "data", InspectorIdleCallbackFireEvent::data(executionContext(), id, allottedTimeMillis, callbackType == IdleDeadline::CallbackType::CalledByTimeout));
     callback->handleEvent(IdleDeadline::create(deadlineSeconds, callbackType));
 
     double overrunMillis = std::max((monotonicallyIncreasingTime() - deadlineSeconds) * 1000, 0.0);
-    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackOverrun", overrunMillis, 0, 10000, 50);
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, idleCallbackOverrunHistogram, ("WebCore.ScriptedIdleTaskController.IdleCallbackOverrun", 0, 10000, 50));
+    idleCallbackOverrunHistogram.count(overrunMillis);
 }
 
 void ScriptedIdleTaskController::stop()

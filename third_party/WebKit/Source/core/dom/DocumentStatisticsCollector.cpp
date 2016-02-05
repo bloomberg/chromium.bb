@@ -13,6 +13,7 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMetaElement.h"
+#include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDistillability.h"
 
@@ -244,7 +245,9 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(Documen
     features.openGraph = hasOpenGraphArticle(*head);
 
     double elapsedTime = monotonicallyIncreasingTime() - startTime;
-    Platform::current()->histogramCustomCounts("WebCore.DistillabilityUs", static_cast<int>(1e6 * elapsedTime), 1, 1000000, 50);
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, distillabilityHistogram, ("WebCore.DistillabilityUs", 1, 1000000, 50));
+    distillabilityHistogram.count(static_cast<int>(1e6 * elapsedTime));
 
     return features;
 }

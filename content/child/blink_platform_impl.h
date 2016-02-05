@@ -109,11 +109,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
       blink::WebWaitableEvent::InitialState state) override;
   blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events) override;
-  void histogramCustomCounts(const char* name,
-                             int sample,
-                             int min,
-                             int max,
-                             int bucket_count) override;
   void histogramEnumeration(const char* name,
                             int sample,
                             int boundary_value) override;

@@ -40,6 +40,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/style/StyleInheritedData.h"
+#include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -479,7 +480,8 @@ void FontFaceSet::FontLoadHistogram::record()
 {
     if (!m_recorded) {
         m_recorded = true;
-        Platform::current()->histogramCustomCounts("WebFont.WebFontsInPage", m_count, 1, 100, 50);
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, webFontsInPageHistogram, ("WebFont.WebFontsInPage", 1, 100, 50));
+        webFontsInPageHistogram.count(m_count);
     }
     if (m_status == HadBlankText || m_status == DidNotHaveBlankText) {
         Platform::current()->histogramEnumeration("WebFont.HadBlankText", m_status == HadBlankText ? 1 : 0, 2);

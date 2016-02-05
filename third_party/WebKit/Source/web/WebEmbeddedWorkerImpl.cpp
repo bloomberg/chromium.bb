@@ -46,6 +46,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
@@ -313,9 +314,12 @@ void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
     }
     m_workerContextClient->workerScriptLoaded();
 
-    Platform::current()->histogramCustomCounts("ServiceWorker.ScriptSize", m_mainScriptLoader->script().length(), 1000, 5000000, 50);
-    if (m_mainScriptLoader->cachedMetadata())
-        Platform::current()->histogramCustomCounts("ServiceWorker.ScriptCachedMetadataSize", m_mainScriptLoader->cachedMetadata()->size(), 1000, 50000000, 50);
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptSizeHistogram, ("ServiceWorker.ScriptSize", 1000, 5000000, 50));
+    scriptSizeHistogram.count(m_mainScriptLoader->script().length());
+    if (m_mainScriptLoader->cachedMetadata()) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptCachedMetadataSizeHistogram, ("ServiceWorker.ScriptCachedMetadataSize", 1000, 50000000, 50));
+        scriptCachedMetadataSizeHistogram.count(m_mainScriptLoader->cachedMetadata()->size());
+    }
 
     startWorkerThread();
 }

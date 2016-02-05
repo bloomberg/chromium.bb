@@ -35,6 +35,7 @@
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/UniqueIdentifier.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -1149,12 +1150,12 @@ ResourceFetcher::DeadResourceStatsRecorder::DeadResourceStatsRecorder()
 
 ResourceFetcher::DeadResourceStatsRecorder::~DeadResourceStatsRecorder()
 {
-    Platform::current()->histogramCustomCounts(
-        "WebCore.ResourceFetcher.HitCount", m_useCount, 0, 1000, 50);
-    Platform::current()->histogramCustomCounts(
-        "WebCore.ResourceFetcher.RevalidateCount", m_revalidateCount, 0, 1000, 50);
-    Platform::current()->histogramCustomCounts(
-        "WebCore.ResourceFetcher.LoadCount", m_loadCount, 0, 1000, 50);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, hitCountHistogram, new CustomCountHistogram("WebCore.ResourceFetcher.HitCount", 0, 1000, 50));
+    hitCountHistogram.count(m_useCount);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, revalidateCountHistogram, new CustomCountHistogram("WebCore.ResourceFetcher.RevalidateCount", 0, 1000, 50));
+    revalidateCountHistogram.count(m_revalidateCount);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, loadCountHistogram, new CustomCountHistogram("WebCore.ResourceFetcher.LoadCount", 0, 1000, 50));
+    loadCountHistogram.count(m_loadCount);
 }
 
 void ResourceFetcher::DeadResourceStatsRecorder::update(RevalidationPolicy policy)

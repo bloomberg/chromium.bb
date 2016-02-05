@@ -31,6 +31,7 @@
 
 #include "platform/FontFamilyNames.h"
 
+#include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/AlternateFontFamily.h"
 #include "platform/fonts/FontCacheClient.h"
@@ -285,7 +286,8 @@ static inline void purgeFallbackListShaperCache()
         }
         gFallbackListShaperCache->clear();
     }
-    Platform::current()->histogramCustomCounts("Blink.Fonts.ShapeCache", items, 1, 1000000, 50);
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, shapeCacheHistogram, ("Blink.Fonts.ShapeCache", 1, 1000000, 50));
+    shapeCacheHistogram.count(items);
 }
 
 void FontCache::invalidateShapeCache()
