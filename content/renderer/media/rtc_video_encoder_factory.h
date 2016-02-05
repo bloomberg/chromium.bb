@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoencoderfactory.h"
+#include "third_party/webrtc/media/webrtc/webrtcvideoencoderfactory.h"
 
 namespace media {
 class GpuVideoAcceleratorFactories;

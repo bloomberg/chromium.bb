@@ -11,8 +11,8 @@
 #include "content/browser/renderer_host/p2p/socket_host_udp.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "third_party/libjingle/source/talk/media/base/rtputils.h"
-#include "third_party/libjingle/source/talk/media/base/turnutils.h"
+#include "third_party/webrtc/media/base/rtputils.h"
+#include "third_party/webrtc/media/base/turnutils.h"
 
 namespace {
 

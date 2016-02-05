@@ -19,7 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/libjingle/source/talk/media/base/rtputils.h"
+#include "third_party/webrtc/media/base/rtputils.h"
 
 namespace {
 

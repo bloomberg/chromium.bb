@@ -17,9 +17,9 @@
 #include "net/base/net_errors.h"
 #include "net/udp/udp_server_socket.h"
 #include "remoting/protocol/socket_util.h"
-#include "third_party/libjingle/source/talk/media/base/rtputils.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
 #include "third_party/webrtc/base/nethelpers.h"
+#include "third_party/webrtc/media/base/rtputils.h"
 
 namespace remoting {
 namespace protocol {

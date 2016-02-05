@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
-#include "third_party/libjingle/source/talk/media/webrtc/webrtcvideodecoderfactory.h"
+#include "third_party/webrtc/media/webrtc/webrtcvideodecoderfactory.h"
 #include "third_party/webrtc/modules/video_coding/include/video_codec_interface.h"
 
 namespace webrtc {

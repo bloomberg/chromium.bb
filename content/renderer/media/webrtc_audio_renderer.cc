@@ -23,7 +23,7 @@
 #include "media/audio/sample_rates.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "third_party/libjingle/source/talk/media/base/audiorenderer.h"
+#include "third_party/webrtc/media/base/audiorenderer.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

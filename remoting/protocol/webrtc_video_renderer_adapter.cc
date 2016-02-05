@@ -13,8 +13,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "remoting/protocol/frame_consumer.h"
-#include "third_party/libjingle/source/talk/media/base/videoframe.h"
 #include "third_party/libyuv/include/libyuv/video_common.h"
+#include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {

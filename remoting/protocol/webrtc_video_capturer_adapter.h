@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
-#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
+#include "third_party/webrtc/media/base/videocapturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 
 namespace base {

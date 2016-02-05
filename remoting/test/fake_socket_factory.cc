@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "net/base/io_buffer.h"
 #include "remoting/test/leaky_bucket.h"
-#include "third_party/libjingle/source/talk/media/base/rtputils.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/webrtc/media/base/rtputils.h"
 
 namespace remoting {
 

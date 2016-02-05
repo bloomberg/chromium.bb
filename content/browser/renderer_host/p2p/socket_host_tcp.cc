@@ -23,7 +23,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/libjingle/source/talk/media/base/rtputils.h"
+#include "third_party/webrtc/media/base/rtputils.h"
 
 namespace {
 

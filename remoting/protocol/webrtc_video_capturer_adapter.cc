@@ -6,8 +6,8 @@
 
 #include <utility>
 
-#include "third_party/libjingle/source/talk/media/webrtc/webrtcvideoframe.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/webrtc/media/webrtc/webrtcvideoframe.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {

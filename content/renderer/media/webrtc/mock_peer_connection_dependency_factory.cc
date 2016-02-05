@@ -16,8 +16,8 @@
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
-#include "third_party/libjingle/source/talk/media/base/videocapturer.h"
 #include "third_party/webrtc/base/scoped_ref_ptr.h"
+#include "third_party/webrtc/media/base/videocapturer.h"
 
 using webrtc::AudioSourceInterface;
 using webrtc::AudioTrackInterface;

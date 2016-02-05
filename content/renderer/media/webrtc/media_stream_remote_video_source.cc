@@ -17,7 +17,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
-#include "third_party/libjingle/source/talk/media/base/videoframe.h"
+#include "third_party/webrtc/media/base/videoframe.h"
 #include "third_party/webrtc/system_wrappers/include/tick_util.h"
 
 namespace content {
