@@ -78,6 +78,7 @@ class ResourceRequestInfo {
   // The IPC route identifier for this request (this identifies the RenderView
   // or like-thing in the renderer that the request gets routed to).
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
+  // Don't use this method for new code, as RenderViews are going away.
   virtual int GetRouteID() const = 0;
 
   // The pid of the originating process, if the request is sent on behalf of a

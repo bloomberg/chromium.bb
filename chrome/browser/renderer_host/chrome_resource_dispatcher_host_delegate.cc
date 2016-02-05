@@ -140,12 +140,9 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       content::NotificationService::NoDetails());
 }
 
-prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
-                                                 int render_view_id) {
+prerender::PrerenderManager* GetPrerenderManager(
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
   if (!web_contents)
     return NULL;
 
@@ -160,13 +157,11 @@ prerender::PrerenderManager* GetPrerenderManager(int render_process_id,
   return prerender::PrerenderManagerFactory::GetForProfile(profile);
 }
 
-void UpdatePrerenderNetworkBytesCallback(int render_process_id,
-                                         int render_view_id,
-                                         int64_t bytes) {
+void UpdatePrerenderNetworkBytesCallback(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    int64_t bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_id, render_view_id);
+  content::WebContents* web_contents = web_contents_getter.Run();
   // PrerenderContents::FromWebContents handles the NULL case.
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -175,7 +170,7 @@ void UpdatePrerenderNetworkBytesCallback(int render_process_id,
     prerender_contents->AddNetworkBytes(bytes);
 
   prerender::PrerenderManager* prerender_manager =
-      GetPrerenderManager(render_process_id, render_view_id);
+      GetPrerenderManager(web_contents);
   if (prerender_manager)
     prerender_manager->AddProfileNetworkBytesIfEnabled(bytes);
 }
@@ -716,11 +711,9 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
   const ResourceRequestInfo* info =
       ResourceRequestInfo::ForRequest(url_request);
   if (url_request && !url_request->was_cached()) {
-    BrowserThread::PostTask(BrowserThread::UI,
-                            FROM_HERE,
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             base::Bind(&UpdatePrerenderNetworkBytesCallback,
-                                       info->GetChildID(),
-                                       info->GetRouteID(),
+                                       info->GetWebContentsGetterForRequest(),
                                        url_request->GetTotalReceivedBytes()));
   }
 }
