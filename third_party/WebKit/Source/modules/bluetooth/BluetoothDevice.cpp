@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/events/Event.h"
 #include "core/page/PageVisibilityState.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothGATTRemoteServer.h"
@@ -50,21 +51,34 @@ void BluetoothDevice::stop()
 
 void BluetoothDevice::pageVisibilityChanged()
 {
-    if (!page()->isPageVisible()) {
-        disconnectGATTIfConnected();
+    if (!page()->isPageVisible() && disconnectGATTIfConnected()) {
+        dispatchEvent(Event::create(EventTypeNames::gattserverdisconnected));
     }
 }
 
-void BluetoothDevice::disconnectGATTIfConnected()
+bool BluetoothDevice::disconnectGATTIfConnected()
 {
     if (m_gatt->connected()) {
         m_gatt->setConnected(false);
         BluetoothSupplement::fromExecutionContext(executionContext())->disconnect(id());
+        return true;
     }
+    return false;
+}
+
+const WTF::AtomicString& BluetoothDevice::interfaceName() const
+{
+    return EventTargetNames::BluetoothDevice;
+}
+
+ExecutionContext* BluetoothDevice::executionContext() const
+{
+    return ActiveDOMObject::executionContext();
 }
 
 DEFINE_TRACE(BluetoothDevice)
 {
+    RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothDevice>::trace(visitor);
     ActiveDOMObject::trace(visitor);
     PageLifecycleObserver::trace(visitor);
     visitor->trace(m_adData);

@@ -15,7 +15,7 @@ enum VendorIDSource {
     GarbageCollected,
     ActiveDOMObject,
     RuntimeEnabled=WebBluetooth,
-] interface BluetoothDevice
+] interface BluetoothDevice : EventTarget
 // Implement ServiceEventHandlers interface: http://crbug.com/421670
 // : ServiceEventHandlers
 {
@@ -32,4 +32,6 @@ enum VendorIDSource {
     readonly    attribute BluetoothGATTRemoteServer  gatt;
     readonly    attribute UUID[]                     uuids;
     [CallWith=ScriptState, DeprecateAs=BluetoothDeviceConnectGATT] Promise<BluetoothGATTRemoteServer> connectGATT ();
+
+    attribute EventHandler ongattserverdisconnected;
 };

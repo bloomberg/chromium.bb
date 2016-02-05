@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/page/PageLifecycleObserver.h"
+#include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothAdvertisingData.h"
 #include "modules/bluetooth/BluetoothGATTRemoteServer.h"
 #include "platform/heap/Heap.h"
@@ -30,12 +31,12 @@ class ScriptState;
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final
-    : public GarbageCollectedFinalized<BluetoothDevice>
+    : public RefCountedGarbageCollectedEventTargetWithInlineData<BluetoothDevice>
     , public ActiveDOMObject
-    , public PageLifecycleObserver
-    , public ScriptWrappable {
+    , public PageLifecycleObserver {
     USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();
+    REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(BluetoothDevice);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 public:
     BluetoothDevice(ExecutionContext*, PassOwnPtr<WebBluetoothDevice>);
@@ -70,7 +71,12 @@ public:
     void pageVisibilityChanged() override;
 
     // If gatt is connected then disconnects and sets gatt.connected to false.
-    void disconnectGATTIfConnected();
+    // Returns true if gatt was disconnected.
+    bool disconnectGATTIfConnected();
+
+    // EventTarget methods:
+    const AtomicString& interfaceName() const override;
+    ExecutionContext* executionContext() const override;
 
     // Interface required by Garbage Collection:
     DECLARE_VIRTUAL_TRACE();
@@ -89,6 +95,8 @@ public:
     // TODO(ortuno): Remove connectGATT
     // http://crbug.com/582292
     ScriptPromise connectGATT(ScriptState*);
+
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(gattserverdisconnected);
 
 private:
     OwnPtr<WebBluetoothDevice> m_webDevice;

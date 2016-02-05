@@ -276,6 +276,17 @@ function generate_string(size, char) {
   return char.repeat(size);
 }
 
+class EventCatcher {
+  constructor(object, event) {
+    this.eventFired = false;
+    let event_listener = e => {
+      object.removeEventListener(event, event_listener);
+      this.eventFired = true;
+    }
+    object.addEventListener(event, event_listener);
+  }
+}
+
 // Bluetooth tests sometimes have left-over state that could leak into the
 // next test. add_result_callback which is exposed by testharness.js allows us
 // to clean up this state after each test. In the future we will split tests

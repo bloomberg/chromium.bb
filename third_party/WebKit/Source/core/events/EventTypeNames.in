@@ -101,6 +101,7 @@ fullscreenchange
 fullscreenerror
 gamepadconnected
 gamepaddisconnected
+gattserverdisconnected
 geofenceenter
 geofenceleave
 gesturelongpress

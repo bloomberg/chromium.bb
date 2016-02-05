@@ -305,13 +305,14 @@ interface BluetoothCharacteristicProperties
     getter write
     getter writeWithoutResponse
     method constructor
-interface BluetoothDevice
+interface BluetoothDevice : EventTarget
     getter adData
     getter deviceClass
     getter gatt
     getter id
     getter instanceID
     getter name
+    getter ongattserverdisconnected
     getter productID
     getter productVersion
     getter uuids
@@ -319,6 +320,7 @@ interface BluetoothDevice
     getter vendorIDSource
     method connectGATT
     method constructor
+    setter ongattserverdisconnected
 interface BluetoothGATTCharacteristic : EventTarget
     getter oncharacteristicvaluechanged
     getter properties

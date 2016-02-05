@@ -132,7 +132,10 @@ promise_test(() => {
                          'This is a temporary measure until we are able to ' +
                          'effectively communicate to the user that a page is ' +
                          'connected to a device.',
-                         'SecurityError'));
+                         'SecurityError'))
+       .then(() => {
+         assert_false(device.gatt.connected);
+       });
     })
     .then(() => testRunner.setPageVisibility('visible'))
     .catch(error => {
