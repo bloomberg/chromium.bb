@@ -220,6 +220,8 @@
         'host/host_main.h',
         'host/it2me/it2me_native_messaging_host_main.cc',
         'host/it2me/it2me_native_messaging_host_main.h',
+        'host/security_key/remote_security_key_main.cc',
+        'host/security_key/remote_security_key_main.h',
         'host/setup/me2me_native_messaging_host_main.cc',
         'host/setup/me2me_native_messaging_host_main.h',
         'host/win/chromoting_module.cc',
@@ -343,6 +345,29 @@
         },
       },
     },  # end of target 'remoting_me2me_host'
+    {
+      'target_name': 'remote_security_key',
+      'type': 'executable',
+      'product_name': 'remote_security_key',
+      'variables': { 'enable_wexit_time_destructors': 1, },
+      'defines' : [
+        'BINARY=BINARY_REMOTE_SECURITY_KEY',
+      ],
+      'dependencies': [
+        'remoting_core',
+        'remoting_windows_resources',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/remoting/version.rc',
+        'host/security_key/remote_security_key_entry_point.cc',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'IgnoreAllDefaultLibraries': 'true',
+          'SubSystem': '1', # /SUBSYSTEM:CONSOLE
+        },
+      },
+    },  # end of target 'remote_security_key'
     {
       'target_name': 'remoting_me2me_native_messaging_host',
       'type': 'executable',

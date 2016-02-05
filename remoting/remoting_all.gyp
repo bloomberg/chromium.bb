@@ -31,6 +31,7 @@
       'conditions' : [
         ['OS=="win"', {
           'dependencies': [
+            '../remoting/remoting.gyp:remote_security_key',
             '../remoting/remoting.gyp:remoting_breakpad_tester',
             '../remoting/remoting.gyp:remoting_console',
             '../remoting/remoting.gyp:remoting_core',

@@ -1086,6 +1086,9 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       <message name="IDS_REMOTING_REMOTE_ASSISTANCE_HOST_DESCRIPTION" desc="The file description specified in the version information of remote_assistance_host.exe.">
         Native messaging host for remote assistance
       </message>
+      <message name="IDS_REMOTING_REMOTE_SECURITY_KEY_DESCRIPTION" desc="The file description specified in the version information of remote_security_key.exe.">
+        Security Key Remoting Process
+      </message>
       <message name="IDS_REMOTING_HOST_COMMAND_DESCRIPTION" desc="The file description specified in the version information of remoting_host_command.exe. The Chrome Remote Desktop host allows a user to connect to their computer remotely (it 'hosts' a connection from a remote computer).">
         Application to issue commands to Chrome remote desktop host.
       </message>
