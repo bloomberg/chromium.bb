@@ -6,7 +6,6 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -16,6 +15,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
 
 namespace net {
@@ -55,23 +55,6 @@ bool CloseSocket(int* fd, int tries) {
     }
   }
   return false;
-}
-
-// Sets an FD to be nonblocking.
-void FlipSetNonBlocking(int fd) {
-  DCHECK_GE(fd, 0);
-
-  int fcntl_return = fcntl(fd, F_GETFL, 0);
-  CHECK_NE(fcntl_return, -1) << "error doing fcntl(fd, F_GETFL, 0) fd: " << fd
-                             << " errno=" << errno;
-
-  if (fcntl_return & O_NONBLOCK)
-    return;
-
-  fcntl_return = fcntl(fd, F_SETFL, fcntl_return | O_NONBLOCK);
-  CHECK_NE(fcntl_return, -1)
-      << "error doing fcntl(fd, F_SETFL, fcntl_return) fd: " << fd
-      << " errno=" << errno;
 }
 
 int SetDisableNagle(int fd) {
@@ -267,7 +250,9 @@ int CreateConnectedSocket(int* connect_fd,
     return -1;
   }
 
-  FlipSetNonBlocking(sock);
+  if (!base::SetNonBlocking(sock)) {
+    LOG(FATAL) << "base::SetNonBlocking failed: " << sock;
+  }
 
   if (disable_nagle) {
     if (!SetDisableNagle(sock)) {

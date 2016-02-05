@@ -9,8 +9,6 @@
 
 namespace net {
 
-void FlipSetNonBlocking(int fd);
-
 // Summary:
 //   creates a socket for listening, and bind()s and listen()s it.
 // Args:

@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 
+#include "base/files/file_util.h"
 #include "net/tools/flip_server/create_listener.h"
 
 namespace net {
@@ -73,7 +74,10 @@ FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
     }
   }
 
-  FlipSetNonBlocking(listen_fd_);
+  if (!base::SetNonBlocking(listen_fd_)) {
+    LOG(FATAL) << "base::SetNonBlocking() failed: " << listen_fd_;
+  }
+
   VLOG(1) << "Listening on socket: ";
   if (flip_handler_type == FLIP_HANDLER_PROXY)
     VLOG(1) << "\tType         : Proxy";
