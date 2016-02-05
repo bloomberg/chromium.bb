@@ -40,7 +40,7 @@ struct Derived : public C {
 
 int C::instanceCount = 0;
 
-// Structs are like classes, but don't use a `_` suffix for members.
+// Structs are like classes.
 struct S {
   int m_integerField;
   int google_style_already;
@@ -51,6 +51,7 @@ union U {
   char fourChars[4];
   short twoShorts[2];
   int one_hopefully_four_byte_int;
+  int m_hasPrefix;
 };
 
 }  // namespace blink

@@ -12,7 +12,7 @@ void RunTheThing(int chicken) {}
 struct XmlHTTPRequest {
   void SendSync();
 
-  int ready_state;
+  int ready_state_;
 };
 
 }  // namespace WTF

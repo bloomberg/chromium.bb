@@ -225,12 +225,9 @@ bool GetNameForDecl(const clang::FieldDecl& decl,
     return false;
   name = CamelCaseToUnderscoreCase(
       original_name.substr(strlen(kBlinkFieldPrefix)), false);
-  // The few examples I could find used struct-style naming with no `_` suffix
-  // for unions.
-  bool c = decl.getParent()->isClass();
-  // There appears to be a GCC bug that makes this branch incorrectly if we
-  // don't use a temp variable!! Clang works right. crbug.com/580745
-  if (c)
+  // Assume that prefix of m_ was intentional and always replace it with a
+  // suffix _.
+  if (name.back() != '_')
     name += '_';
   return true;
 }
