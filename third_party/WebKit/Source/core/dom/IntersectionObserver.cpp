@@ -166,22 +166,22 @@ void IntersectionObserver::clearWeakMembers(Visitor* visitor)
 
 LayoutObject* IntersectionObserver::rootLayoutObject() const
 {
-    Node* rootNode = root();
-    if (rootNode->isDocumentNode())
-        return toDocument(rootNode)->layoutView();
-    return toElement(rootNode)->layoutObject();
+    Node* node = rootNode();
+    if (node->isDocumentNode())
+        return toDocument(node)->layoutView();
+    return toElement(node)->layoutObject();
 }
 
 bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
 {
     // Is m_root an ancestor, through the DOM and frame trees, of target?
-    Node* rootNode = root();
-    if (!rootNode || !target || target == rootNode)
+    Node* node = rootNode();
+    if (!node || !target || target == node)
         return false;
-    if (!target->inDocument() || !rootNode->inDocument())
+    if (!target->inDocument() || !node->inDocument())
         return false;
 
-    Document* rootDocument = &rootNode->document();
+    Document* rootDocument = &node->document();
     Document* targetDocument = &target->document();
     while (targetDocument != rootDocument) {
         target = targetDocument->ownerElement();
@@ -189,11 +189,11 @@ bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
             return false;
         targetDocument = &target->document();
     }
-    if (rootNode->isDocumentNode()) {
-        ASSERT(targetDocument == rootNode);
+    if (node->isDocumentNode()) {
+        ASSERT(targetDocument == node);
         return true;
     }
-    return target->isDescendantOf(rootNode);
+    return target->isDescendantOf(node);
 }
 
 void IntersectionObserver::observe(Element* target, ExceptionState& exceptionState)
@@ -216,7 +216,7 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
     }
 
     // TODO(szager): Add a pointer to the spec that describes this policy.
-    bool shouldReportRootBounds = target->document().frame()->securityContext()->securityOrigin()->canAccess(root()->document().frame()->securityContext()->securityOrigin());
+    bool shouldReportRootBounds = target->document().frame()->securityContext()->securityOrigin()->canAccess(rootNode()->document().frame()->securityContext()->securityOrigin());
     if (!shouldReportRootBounds && hasPercentMargin()) {
         exceptionState.throwDOMException(HierarchyRequestError, "Cannot observe a cross-origin target because the observer has a root margin value specified as a percent.");
         return;
@@ -271,6 +271,36 @@ HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords(
     HeapVector<Member<IntersectionObserverEntry>> entries;
     entries.swap(m_entries);
     return entries;
+}
+
+Element* IntersectionObserver::root() const
+{
+    Node* node = rootNode();
+    if (node->isDocumentNode())
+        return nullptr;
+    return toElement(node);
+}
+
+static void appendLength(StringBuilder& stringBuilder, const Length& length)
+{
+    stringBuilder.appendNumber(length.intValue());
+    if (length.type() == Percent)
+        stringBuilder.append('%');
+    else
+        stringBuilder.append("px", 2);
+}
+
+String IntersectionObserver::rootMargin() const
+{
+    StringBuilder stringBuilder;
+    appendLength(stringBuilder, m_topMargin);
+    stringBuilder.append(' ');
+    appendLength(stringBuilder, m_rightMargin);
+    stringBuilder.append(' ');
+    appendLength(stringBuilder, m_bottomMargin);
+    stringBuilder.append(' ');
+    appendLength(stringBuilder, m_leftMargin);
+    return stringBuilder.toString();
 }
 
 void IntersectionObserver::enqueueIntersectionObserverEntry(IntersectionObserverEntry& entry)

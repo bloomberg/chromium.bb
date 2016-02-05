@@ -1,0 +1,15 @@
+Test for observer attribute getters.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS observer.root is null
+PASS observer.thresholds is [0]
+PASS observer.rootMargin is "0px 0px 0px 0px"
+PASS observer.root is rootDiv
+PASS observer.thresholds is [0, 0.25, 0.5, 1.0]
+PASS observer.rootMargin is "10% 20px 10% 20px"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

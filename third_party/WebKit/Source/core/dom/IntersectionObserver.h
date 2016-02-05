@@ -32,8 +32,11 @@ public:
     void observe(Element*, ExceptionState&);
     void unobserve(Element*, ExceptionState&);
     HeapVector<Member<IntersectionObserverEntry>> takeRecords();
+    Element* root() const;
+    String rootMargin() const;
+    const Vector<float>& thresholds() const { return m_thresholds; }
 
-    Node* root() const { return m_root.get(); }
+    Node* rootNode() const { return m_root.get(); }
     LayoutObject* rootLayoutObject() const;
     bool hasPercentMargin() const;
     const Length& topMargin() const { return m_topMargin; }

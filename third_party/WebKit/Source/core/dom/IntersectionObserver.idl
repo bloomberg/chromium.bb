@@ -16,4 +16,7 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
     [RaisesException] void unobserve(Element target);
     void disconnect();
     sequence<IntersectionObserverEntry> takeRecords();
+    readonly attribute Element? root;
+    readonly attribute DOMString rootMargin;
+    readonly attribute double[] thresholds;
 };

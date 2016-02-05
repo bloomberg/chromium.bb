@@ -63,7 +63,7 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
 
 void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry)
 {
-    Node* rootNode = m_observer->root();
+    Node* rootNode = m_observer->rootNode();
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     if (rootLayoutObject->isLayoutView()) {
         geometry.rootRect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());

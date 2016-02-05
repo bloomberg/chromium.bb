@@ -77,7 +77,7 @@ void IntersectionObserverController::removeTrackedObserversForRoot(const Node& r
 {
     HeapVector<Member<IntersectionObserver>> toRemove;
     for (auto& observer : m_trackedIntersectionObservers) {
-        if (observer->root() == &root)
+        if (observer->rootNode() == &root)
             toRemove.append(observer);
     }
     m_trackedIntersectionObservers.removeAll(toRemove);

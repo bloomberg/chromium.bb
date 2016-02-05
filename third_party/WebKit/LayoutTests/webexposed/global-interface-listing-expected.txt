@@ -3143,6 +3143,9 @@ interface InputDeviceCapabilities
     getter firesTouchEvents
     method constructor
 interface IntersectionObserver
+    getter root
+    getter rootMargin
+    getter thresholds
     method constructor
     method disconnect
     method observe
