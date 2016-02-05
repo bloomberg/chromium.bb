@@ -6,7 +6,6 @@
 
 namespace net {
 
-
 QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
     QuicPacketWriter* shared_writer)
     : shared_writer_(shared_writer) {}
@@ -39,6 +38,5 @@ QuicByteCount QuicPerConnectionPacketWriter::GetMaxPacketSize(
     const IPEndPoint& peer_address) const {
   return shared_writer_->GetMaxPacketSize(peer_address);
 }
-
 
 }  // namespace net

@@ -19,7 +19,6 @@
 
 namespace net {
 
-
 using std::make_pair;
 using base::StringPiece;
 

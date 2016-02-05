@@ -346,7 +346,6 @@ void QuicCryptoClientStream::DoSendCHLO(
       session()->connection()->clock()->WallNow(),
       session()->connection()->random_generator(), channel_id_key_.get(),
       &crypto_negotiated_params_, &out, &error_details);
-
   if (error != QUIC_NO_ERROR) {
     // Flush the cached config so that, if it's bad, the server has a
     // chance to send us another in the future.

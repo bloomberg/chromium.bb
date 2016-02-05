@@ -13,7 +13,6 @@
 
 namespace net {
 
-
 // Wraps a writer object to allow dynamically extending functionality. Use
 // cases: replace writer while dispatcher and connections hold on to the
 // wrapper; mix in monitoring; mix in mocks in unit tests.

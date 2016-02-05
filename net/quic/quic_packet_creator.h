@@ -177,8 +177,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator {
   bool AddPaddedSavedFrame(const QuicFrame& frame);
 
   // Adds |listener| to the next serialized packet and notifies the
-  // std::listener
-  // with |length| as the number of acked bytes.
+  // std::listener with |length| as the number of acked bytes.
   void AddAckListener(QuicAckListenerInterface* listener,
                       QuicPacketLength length);
 

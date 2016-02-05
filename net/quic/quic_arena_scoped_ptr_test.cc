@@ -6,7 +6,6 @@
 #include "net/quic/quic_one_block_arena.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-// #include "testing/base/public/gunit.h"
 
 namespace net {
 namespace {

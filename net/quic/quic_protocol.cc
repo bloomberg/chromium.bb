@@ -368,7 +368,9 @@ PacketNumberQueue::const_iterator::const_iterator(
     IntervalSet<QuicPacketNumber>::const_iterator interval_set_iter,
     QuicPacketNumber first,
     QuicPacketNumber last)
-    : interval_set_iter_(interval_set_iter), current_(first), last_(last) {}
+    : interval_set_iter_(std::move(interval_set_iter)),
+      current_(first),
+      last_(last) {}
 
 PacketNumberQueue::const_iterator::const_iterator(const const_iterator& other) =
     default;
@@ -395,8 +397,7 @@ bool PacketNumberQueue::const_iterator::operator==(
 }
 
 PacketNumberQueue::const_iterator::value_type
-    PacketNumberQueue::const_iterator::
-    operator*() const {
+    PacketNumberQueue::const_iterator::operator*() const {
   return current_;
 }
 

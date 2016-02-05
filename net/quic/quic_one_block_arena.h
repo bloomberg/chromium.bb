@@ -40,7 +40,7 @@ class QuicOneBlockArena {
 
   // Actual storage.
   // Subtle/annoying: the value '8' must be coded explicitly into the alignment
-  // declaration.
+  // declaration for MSVC.
   QUIC_ALIGNED(8) char storage_[ArenaSize];
   // Current offset into the storage.
   uint32_t offset_;
@@ -49,8 +49,7 @@ class QuicOneBlockArena {
 };
 
 template <uint32_t ArenaSize>
-QuicOneBlockArena<ArenaSize>::QuicOneBlockArena()
-    : offset_(0) {}
+QuicOneBlockArena<ArenaSize>::QuicOneBlockArena() : offset_(0) {}
 
 template <uint32_t ArenaSize>
 template <typename T, typename... Args>

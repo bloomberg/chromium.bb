@@ -861,8 +861,8 @@ struct NET_EXPORT_PRIVATE QuicStopWaitingFrame {
 // larger new packet numbers are added, with the occasional random access.
 class NET_EXPORT_PRIVATE PacketNumberQueue {
  public:
-  // TODO(jdorfman): remove const_iterator and change the callers to
-  // iterate over the intervals.
+  // TODO(jdorfman): remove const_iterator and change the callers to iterate
+  // over the intervals.
   class NET_EXPORT_PRIVATE const_iterator
       : public std::iterator<std::input_iterator_tag,
                              QuicPacketNumber,

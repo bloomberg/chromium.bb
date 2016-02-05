@@ -87,8 +87,7 @@ enum HandshakeFailureReason {
 };
 
 // These errors will be packed into an uint32_t and we don't want to set the
-// most
-// significant bit, which may be misinterpreted as the sign bit.
+// most significant bit, which may be misinterpreted as the sign bit.
 static_assert(MAX_FAILURE_REASON <= 32, "failure reason out of sync");
 
 // A CrypterPair contains the encrypter and decrypter for an encryption level.

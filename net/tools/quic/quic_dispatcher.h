@@ -29,7 +29,6 @@ class QuicConfig;
 class QuicCryptoServerConfig;
 class QuicServerSessionBase;
 
-
 namespace test {
 class QuicDispatcherPeer;
 }  // namespace test

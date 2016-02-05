@@ -22,8 +22,7 @@
 
 namespace net {
 
-typedef std::pair<net::QuicPathId, net::QuicPacketNumber>
-    QuicPathIdPacketNumber;
+typedef std::pair<QuicPathId, QuicPacketNumber> QuicPathIdPacketNumber;
 
 class NET_EXPORT_PRIVATE QuicMultipathTransmissionsMap {
  public:

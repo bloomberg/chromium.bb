@@ -94,6 +94,7 @@ class TaggingEncrypter : public QuicEncrypter {
     if (max_output_length < len) {
       return false;
     }
+    // Memmove is safe for inplace encryption.
     memmove(output, plaintext.data(), plaintext.size());
     output += plaintext.size();
     memset(output, tag_, kTagSize);
