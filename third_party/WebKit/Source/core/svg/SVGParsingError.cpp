@@ -28,6 +28,8 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
     switch (status) {
     case SVGParseStatus::TrailingGarbage:
         return std::make_pair("Trailing garbage, ", ".");
+    case SVGParseStatus::ExpectedAngle:
+        return std::make_pair("Expected angle, ", ".");
     case SVGParseStatus::ExpectedArcFlag:
         return std::make_pair("Expected arc flag ('0' or '1'), ", ".");
     case SVGParseStatus::ExpectedBoolean:
