@@ -391,15 +391,17 @@ void Surface::OnCompositingDidCommit(ui::Compositor* compositor) {
 
 void Surface::OnCompositingStarted(ui::Compositor* compositor,
                                    base::TimeTicks start_time) {
-  // Run all frame callbacks associated with the compositor's active tree.
-  while (!active_frame_callbacks_.empty()) {
-    active_frame_callbacks_.front().Run(start_time);
-    active_frame_callbacks_.pop_front();
-  }
+  last_compositing_start_time_ = start_time;
 }
 
 void Surface::OnCompositingEnded(ui::Compositor* compositor) {
-  // Nothing to do in here unless this has been set.
+  // Run all frame callbacks associated with the compositor's active tree.
+  while (!active_frame_callbacks_.empty()) {
+    active_frame_callbacks_.front().Run(last_compositing_start_time_);
+    active_frame_callbacks_.pop_front();
+  }
+
+  // Nothing more to do in here unless this has been set.
   if (!update_contents_after_successful_compositing_)
     return;
 

@@ -162,6 +162,10 @@ class Surface : public aura::Window, public ui::CompositorObserver {
   // CommitSurfaceHierarchy() has not yet been called.
   bool needs_commit_surface_hierarchy_;
 
+  // This is set when the compositing starts and passed to active frame
+  // callbacks when compositing successfully ends.
+  base::TimeTicks last_compositing_start_time_;
+
   // This is true when the contents of the surface should be updated next time
   // the compositor successfully ends compositing.
   bool update_contents_after_successful_compositing_;
