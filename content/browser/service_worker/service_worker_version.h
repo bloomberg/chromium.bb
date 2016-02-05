@@ -463,17 +463,20 @@ class CONTENT_EXPORT ServiceWorkerVersion
   template <typename ResponseMessage, typename CallbackType>
   class EventResponseHandler : public EmbeddedWorkerInstance::Listener {
    public:
-    EventResponseHandler(EmbeddedWorkerInstance* worker,
+    EventResponseHandler(const base::WeakPtr<EmbeddedWorkerInstance>& worker,
                          int request_id,
                          const CallbackType& callback)
         : worker_(worker), request_id_(request_id), callback_(callback) {
       worker_->AddListener(this);
     }
-    ~EventResponseHandler() override { worker_->RemoveListener(this); }
+    ~EventResponseHandler() override {
+      if (worker_)
+        worker_->RemoveListener(this);
+    }
     bool OnMessageReceived(const IPC::Message& message) override;
 
    private:
-    EmbeddedWorkerInstance* const worker_;
+    base::WeakPtr<EmbeddedWorkerInstance> const worker_;
     const int request_id_;
     const CallbackType callback_;
   };
@@ -761,7 +764,7 @@ void ServiceWorkerVersion::DispatchEvent(int request_id,
   } else {
     request->listener.reset(
         new EventResponseHandler<ResponseMessage, ResponseCallbackType>(
-            embedded_worker(), request_id, callback));
+            embedded_worker()->AsWeakPtr(), request_id, callback));
   }
 }
 

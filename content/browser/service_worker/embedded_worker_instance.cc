@@ -573,6 +573,10 @@ void EmbeddedWorkerInstance::Detach() {
   OnDetached();
 }
 
+base::WeakPtr<EmbeddedWorkerInstance> EmbeddedWorkerInstance::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 bool EmbeddedWorkerInstance::OnMessageReceived(const IPC::Message& message) {
   ListenerList::Iterator it(&listener_list_);
   while (Listener* listener = it.GetNext()) {

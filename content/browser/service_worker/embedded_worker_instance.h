@@ -167,6 +167,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   void Detach();
 
+  base::WeakPtr<EmbeddedWorkerInstance> AsWeakPtr();
+
  private:
   typedef base::ObserverList<Listener> ListenerList;
   class DevToolsProxy;
