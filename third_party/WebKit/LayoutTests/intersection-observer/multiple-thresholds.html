@@ -15,7 +15,7 @@
       entries.push(changes[i]);
   };
   var observer = new IntersectionObserver(observer_callback, {
-    threshold: [0, 0.25, 0.5, 0.75]
+    threshold: [0, 0.25, 0.5, 0.75, 1]
   });
   observer.observe(target);
 
@@ -92,7 +92,20 @@
 
   function step4() {
     setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 3);
+      shouldBeEqualToNumber("entries.length", 4);
+      shouldBeEqualToNumber("entries[3].boundingClientRect.left", 8);
+      shouldBeEqualToNumber("entries[3].boundingClientRect.right", 108);
+      shouldBeEqualToNumber("entries[3].boundingClientRect.top", 468);
+      shouldBeEqualToNumber("entries[3].boundingClientRect.bottom", 568);
+      shouldBeEqualToNumber("entries[3].intersectionRect.left", 8);
+      shouldBeEqualToNumber("entries[3].intersectionRect.right", 108);
+      shouldBeEqualToNumber("entries[3].intersectionRect.top", 468);
+      shouldBeEqualToNumber("entries[3].intersectionRect.bottom", 568);
+      shouldBeEqualToNumber("entries[3].rootBounds.left", 0);
+      shouldBeEqualToNumber("entries[3].rootBounds.right", 785);
+      shouldBeEqualToNumber("entries[3].rootBounds.top", 0);
+      shouldBeEqualToNumber("entries[3].rootBounds.bottom", 600);
+      shouldEvaluateToSameObject("entries[3].target", target);
       document.scrollingElement.scrollTop = 740;
       requestAnimationFrame(step5);
     });
@@ -100,20 +113,20 @@
 
   function step5() {
     setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 4);
-      shouldBeEqualToNumber("entries[3].boundingClientRect.left", 8);
-      shouldBeEqualToNumber("entries[3].boundingClientRect.right", 108);
-      shouldBeEqualToNumber("entries[3].boundingClientRect.top", -32);
-      shouldBeEqualToNumber("entries[3].boundingClientRect.bottom", 68);
-      shouldBeEqualToNumber("entries[3].intersectionRect.left", 8);
-      shouldBeEqualToNumber("entries[3].intersectionRect.right", 108);
-      shouldBeEqualToNumber("entries[3].intersectionRect.top", 0);
-      shouldBeEqualToNumber("entries[3].intersectionRect.bottom", 68);
-      shouldBeEqualToNumber("entries[3].rootBounds.left", 0);
-      shouldBeEqualToNumber("entries[3].rootBounds.right", 785);
-      shouldBeEqualToNumber("entries[3].rootBounds.top", 0);
-      shouldBeEqualToNumber("entries[3].rootBounds.bottom", 600);
-      shouldEvaluateToSameObject("entries[3].target", target);
+      shouldBeEqualToNumber("entries.length", 5);
+      shouldBeEqualToNumber("entries[4].boundingClientRect.left", 8);
+      shouldBeEqualToNumber("entries[4].boundingClientRect.right", 108);
+      shouldBeEqualToNumber("entries[4].boundingClientRect.top", -32);
+      shouldBeEqualToNumber("entries[4].boundingClientRect.bottom", 68);
+      shouldBeEqualToNumber("entries[4].intersectionRect.left", 8);
+      shouldBeEqualToNumber("entries[4].intersectionRect.right", 108);
+      shouldBeEqualToNumber("entries[4].intersectionRect.top", 0);
+      shouldBeEqualToNumber("entries[4].intersectionRect.bottom", 68);
+      shouldBeEqualToNumber("entries[4].rootBounds.left", 0);
+      shouldBeEqualToNumber("entries[4].rootBounds.right", 785);
+      shouldBeEqualToNumber("entries[4].rootBounds.top", 0);
+      shouldBeEqualToNumber("entries[4].rootBounds.bottom", 600);
+      shouldEvaluateToSameObject("entries[4].target", target);
       document.scrollingElement.scrollTop = 760;
       requestAnimationFrame(step6);
     });
@@ -121,20 +134,20 @@
 
   function step6() {
     setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 5);
-      shouldBeEqualToNumber("entries[4].boundingClientRect.left", 8);
-      shouldBeEqualToNumber("entries[4].boundingClientRect.right", 108);
-      shouldBeEqualToNumber("entries[4].boundingClientRect.top", -52);
-      shouldBeEqualToNumber("entries[4].boundingClientRect.bottom", 48);
-      shouldBeEqualToNumber("entries[4].intersectionRect.left", 8);
-      shouldBeEqualToNumber("entries[4].intersectionRect.right", 108);
-      shouldBeEqualToNumber("entries[4].intersectionRect.top", 0);
-      shouldBeEqualToNumber("entries[4].intersectionRect.bottom", 48);
-      shouldBeEqualToNumber("entries[4].rootBounds.left", 0);
-      shouldBeEqualToNumber("entries[4].rootBounds.right", 785);
-      shouldBeEqualToNumber("entries[4].rootBounds.top", 0);
-      shouldBeEqualToNumber("entries[4].rootBounds.bottom", 600);
-      shouldEvaluateToSameObject("entries[4].target", target);
+      shouldBeEqualToNumber("entries.length", 6);
+      shouldBeEqualToNumber("entries[5].boundingClientRect.left", 8);
+      shouldBeEqualToNumber("entries[5].boundingClientRect.right", 108);
+      shouldBeEqualToNumber("entries[5].boundingClientRect.top", -52);
+      shouldBeEqualToNumber("entries[5].boundingClientRect.bottom", 48);
+      shouldBeEqualToNumber("entries[5].intersectionRect.left", 8);
+      shouldBeEqualToNumber("entries[5].intersectionRect.right", 108);
+      shouldBeEqualToNumber("entries[5].intersectionRect.top", 0);
+      shouldBeEqualToNumber("entries[5].intersectionRect.bottom", 48);
+      shouldBeEqualToNumber("entries[5].rootBounds.left", 0);
+      shouldBeEqualToNumber("entries[5].rootBounds.right", 785);
+      shouldBeEqualToNumber("entries[5].rootBounds.top", 0);
+      shouldBeEqualToNumber("entries[5].rootBounds.bottom", 600);
+      shouldEvaluateToSameObject("entries[5].target", target);
       document.scrollingElement.scrollTop = 800;
       requestAnimationFrame(step7);
     });
@@ -142,20 +155,20 @@
 
   function step7() {
     setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 6);
-      shouldBeEqualToNumber("entries[5].boundingClientRect.left", 8);
-      shouldBeEqualToNumber("entries[5].boundingClientRect.right", 108);
-      shouldBeEqualToNumber("entries[5].boundingClientRect.top", -92);
-      shouldBeEqualToNumber("entries[5].boundingClientRect.bottom", 8);
-      shouldBeEqualToNumber("entries[5].intersectionRect.left", 8);
-      shouldBeEqualToNumber("entries[5].intersectionRect.right", 108);
-      shouldBeEqualToNumber("entries[5].intersectionRect.top", 0);
-      shouldBeEqualToNumber("entries[5].intersectionRect.bottom", 8);
-      shouldBeEqualToNumber("entries[5].rootBounds.left", 0);
-      shouldBeEqualToNumber("entries[5].rootBounds.right", 785);
-      shouldBeEqualToNumber("entries[5].rootBounds.top", 0);
-      shouldBeEqualToNumber("entries[5].rootBounds.bottom", 600);
-      shouldEvaluateToSameObject("entries[5].target", target);
+      shouldBeEqualToNumber("entries.length", 7);
+      shouldBeEqualToNumber("entries[6].boundingClientRect.left", 8);
+      shouldBeEqualToNumber("entries[6].boundingClientRect.right", 108);
+      shouldBeEqualToNumber("entries[6].boundingClientRect.top", -92);
+      shouldBeEqualToNumber("entries[6].boundingClientRect.bottom", 8);
+      shouldBeEqualToNumber("entries[6].intersectionRect.left", 8);
+      shouldBeEqualToNumber("entries[6].intersectionRect.right", 108);
+      shouldBeEqualToNumber("entries[6].intersectionRect.top", 0);
+      shouldBeEqualToNumber("entries[6].intersectionRect.bottom", 8);
+      shouldBeEqualToNumber("entries[6].rootBounds.left", 0);
+      shouldBeEqualToNumber("entries[6].rootBounds.right", 785);
+      shouldBeEqualToNumber("entries[6].rootBounds.top", 0);
+      shouldBeEqualToNumber("entries[6].rootBounds.bottom", 600);
+      shouldEvaluateToSameObject("entries[6].target", target);
       document.scrollingElement.scrollTop = 820;
       requestAnimationFrame(step8);
     });
@@ -163,20 +176,20 @@
 
   function step8() {
     setTimeout(function() {
-      shouldBeEqualToNumber("entries.length", 7);
-      shouldBeEqualToNumber("entries[6].boundingClientRect.left", 8);
-      shouldBeEqualToNumber("entries[6].boundingClientRect.right", 108);
-      shouldBeEqualToNumber("entries[6].boundingClientRect.top", -112);
-      shouldBeEqualToNumber("entries[6].boundingClientRect.bottom", -12);
-      shouldBeEqualToNumber("entries[6].intersectionRect.left", 0);
-      shouldBeEqualToNumber("entries[6].intersectionRect.right", 0);
-      shouldBeEqualToNumber("entries[6].intersectionRect.top", 0);
-      shouldBeEqualToNumber("entries[6].intersectionRect.bottom", 0);
-      shouldBeEqualToNumber("entries[6].rootBounds.left", 0);
-      shouldBeEqualToNumber("entries[6].rootBounds.right", 785);
-      shouldBeEqualToNumber("entries[6].rootBounds.top", 0);
-      shouldBeEqualToNumber("entries[6].rootBounds.bottom", 600);
-      shouldEvaluateToSameObject("entries[6].target", target);
+      shouldBeEqualToNumber("entries.length", 8);
+      shouldBeEqualToNumber("entries[7].boundingClientRect.left", 8);
+      shouldBeEqualToNumber("entries[7].boundingClientRect.right", 108);
+      shouldBeEqualToNumber("entries[7].boundingClientRect.top", -112);
+      shouldBeEqualToNumber("entries[7].boundingClientRect.bottom", -12);
+      shouldBeEqualToNumber("entries[7].intersectionRect.left", 0);
+      shouldBeEqualToNumber("entries[7].intersectionRect.right", 0);
+      shouldBeEqualToNumber("entries[7].intersectionRect.top", 0);
+      shouldBeEqualToNumber("entries[7].intersectionRect.bottom", 0);
+      shouldBeEqualToNumber("entries[7].rootBounds.left", 0);
+      shouldBeEqualToNumber("entries[7].rootBounds.right", 785);
+      shouldBeEqualToNumber("entries[7].rootBounds.top", 0);
+      shouldBeEqualToNumber("entries[7].rootBounds.bottom", 600);
+      shouldEvaluateToSameObject("entries[7].target", target);
       finishJSTest();
       document.scrollingElement.scrollTop = 0;
     });

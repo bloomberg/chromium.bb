@@ -335,7 +335,14 @@ void IntersectionObserver::applyRootMargin(LayoutRect& rect) const
 unsigned IntersectionObserver::firstThresholdGreaterThan(float ratio) const
 {
     unsigned result = 0;
-    while (result < m_thresholds.size() && m_thresholds[result] < ratio)
+
+    // Special handling for zero threshold, which means "any non-zero number of pixels."
+    // If the ratio is zero, then it should be treated as smaller than any threshold,
+    // even a zero threshold.
+    if (!ratio)
+        return 0;
+
+    while (result < m_thresholds.size() && m_thresholds[result] <= ratio)
         ++result;
     return result;
 }
