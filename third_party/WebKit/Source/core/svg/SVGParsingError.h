@@ -48,6 +48,7 @@ enum class SVGParseStatus {
     ExpectedLength,
     ExpectedMoveToCommand,
     ExpectedNumber,
+    ExpectedNumberOrPercentage,
     ExpectedPathCommand,
     ExpectedStartOfArguments,
     ExpectedTransformFunction,

@@ -46,6 +46,8 @@ std::pair<const char*, const char*> messageForStatus(SVGParseStatus status)
         return std::make_pair("Expected moveto path command ('M' or 'm'), ", ".");
     case SVGParseStatus::ExpectedNumber:
         return std::make_pair("Expected number, ", ".");
+    case SVGParseStatus::ExpectedNumberOrPercentage:
+        return std::make_pair("Expected number or percentage, ", ".");
     case SVGParseStatus::ExpectedPathCommand:
         return std::make_pair("Expected path command, ", ".");
     case SVGParseStatus::ExpectedStartOfArguments:

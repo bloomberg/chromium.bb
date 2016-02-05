@@ -106,13 +106,42 @@ PassRefPtrWillBeRawPtr<SVGNumber> SVGNumberAcceptPercentage::clone() const
     return create(m_value);
 }
 
+template<typename CharType>
+static SVGParsingError parseNumberOrPercentage(const CharType*& ptr, const CharType* end, float& number)
+{
+    const CharType* start = ptr;
+    if (!parseNumber(ptr, end, number, AllowLeadingWhitespace))
+        return SVGParsingError(SVGParseStatus::ExpectedNumberOrPercentage, ptr - start);
+    if (ptr < end && *ptr == '%') {
+        number /= 100;
+        ptr++;
+    }
+    if (skipOptionalSVGSpaces(ptr, end))
+        return SVGParsingError(SVGParseStatus::TrailingGarbage, ptr - start);
+    return SVGParseStatus::NoError;
+}
+
 SVGParsingError SVGNumberAcceptPercentage::setValueAsString(const String& string)
 {
-    if (parseNumberOrPercentage(string, m_value))
-        return SVGParseStatus::NoError;
-
     m_value = 0;
-    return SVGParseStatus::ParsingFailed;
+
+    if (string.isEmpty())
+        return SVGParseStatus::ExpectedNumberOrPercentage;
+
+    float number = 0;
+    SVGParsingError error;
+    if (string.is8Bit()) {
+        const LChar* ptr = string.characters8();
+        const LChar* end = ptr + string.length();
+        error = parseNumberOrPercentage(ptr, end, number);
+    } else {
+        const UChar* ptr = string.characters16();
+        const UChar* end = ptr + string.length();
+        error = parseNumberOrPercentage(ptr, end, number);
+    }
+    if (error == SVGParseStatus::NoError)
+        m_value = number;
+    return error;
 }
 
 SVGNumberAcceptPercentage::SVGNumberAcceptPercentage(float value)

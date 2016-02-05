@@ -214,41 +214,4 @@ bool parseNumberOptionalNumber(const String& string, float& x, float& y)
     return genericParseNumberOptionalNumber(ptr, end, x, y);
 }
 
-template<typename CharType>
-bool genericParseNumberOrPercentage(const CharType*& ptr, const CharType* end, float& number)
-{
-    if (genericParseNumber(ptr, end, number, AllowLeadingWhitespace)) {
-        if (ptr == end)
-            return true;
-
-        bool isPercentage = (*ptr == '%');
-        if (isPercentage)
-            ptr++;
-
-        skipOptionalSVGSpaces(ptr, end);
-
-        if (isPercentage)
-            number /= 100.f;
-
-        return ptr == end;
-    }
-
-    return false;
-}
-
-bool parseNumberOrPercentage(const String& string, float& number)
-{
-    if (string.isEmpty())
-        return false;
-
-    if (string.is8Bit()) {
-        const LChar* ptr = string.characters8();
-        const LChar* end = ptr + string.length();
-        return genericParseNumberOrPercentage(ptr, end, number);
-    }
-    const UChar* ptr = string.characters16();
-    const UChar* end = ptr + string.length();
-    return genericParseNumberOrPercentage(ptr, end, number);
-}
-
 } // namespace blink
