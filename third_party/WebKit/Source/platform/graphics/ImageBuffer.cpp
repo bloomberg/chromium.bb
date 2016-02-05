@@ -96,9 +96,9 @@ SkCanvas* ImageBuffer::canvas() const
     return m_surface->canvas();
 }
 
-void ImageBuffer::disableDeferral() const
+void ImageBuffer::disableDeferral(DisableDeferralReason reason) const
 {
-    return m_surface->disableDeferral();
+    return m_surface->disableDeferral(reason);
 }
 
 bool ImageBuffer::writePixels(const SkImageInfo& info, const void* pixels, size_t rowBytes, int x, int y)
@@ -145,19 +145,19 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas) const
         m_client->restoreCanvasMatrixClipStack(canvas);
 }
 
-PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint) const
+PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint, SnapshotReason reason) const
 {
     if (m_snapshotState == InitialSnapshotState)
         m_snapshotState = DidAcquireSnapshot;
 
     if (!isSurfaceValid())
         return nullptr;
-    return m_surface->newImageSnapshot(hint);
+    return m_surface->newImageSnapshot(hint, reason);
 }
 
-PassRefPtr<Image> ImageBuffer::newImageSnapshot(AccelerationHint hint) const
+PassRefPtr<Image> ImageBuffer::newImageSnapshot(AccelerationHint hint, SnapshotReason reason) const
 {
-    RefPtr<SkImage> snapshot = newSkImageSnapshot(hint);
+    RefPtr<SkImage> snapshot = newSkImageSnapshot(hint, reason);
     if (!snapshot)
         return nullptr;
     return StaticBitmapImage::create(snapshot);
@@ -183,7 +183,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3
     if (!isSurfaceValid())
         return false;
 
-    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot(PreferAcceleration);
+    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot(PreferAcceleration, SnapshotReasonCopyToWebGLTexture);
     if (!textureImage)
         return false;
 
@@ -267,17 +267,17 @@ void ImageBuffer::draw(GraphicsContext& context, const FloatRect& destRect, cons
     m_surface->draw(context, destRect, srcRect, op);
 }
 
-void ImageBuffer::flush()
+void ImageBuffer::flush(FlushReason reason)
 {
     if (m_surface->canvas()) {
-        m_surface->flush();
+        m_surface->flush(reason);
     }
 }
 
-void ImageBuffer::flushGpu()
+void ImageBuffer::flushGpu(FlushReason reason)
 {
     if (m_surface->canvas()) {
-        m_surface->flushGpu();
+        m_surface->flushGpu(reason);
     }
 }
 
@@ -296,7 +296,7 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     }
 
     ASSERT(canvas());
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration);
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonGetImageData);
     if (!snapshot)
         return false;
 

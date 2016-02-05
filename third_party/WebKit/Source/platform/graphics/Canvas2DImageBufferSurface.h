@@ -58,7 +58,7 @@ public:
     void finalizeFrame(const FloatRect &dirtyRect) override { m_layerBridge->finalizeFrame(dirtyRect); }
     void willOverwriteCanvas() override { m_layerBridge->willOverwriteCanvas(); }
     SkCanvas* canvas() override { return m_layerBridge->canvas(); }
-    void disableDeferral() override { m_layerBridge->disableDeferral(); }
+    void disableDeferral(DisableDeferralReason reason) override { m_layerBridge->disableDeferral(reason); }
     bool isValid() const override { return m_layerBridge && m_layerBridge->checkSurfaceValid(); }
     bool restore() override { return m_layerBridge->restoreSurface(); }
     WebLayer* layer() const override { return m_layerBridge->layer(); }
@@ -67,12 +67,12 @@ public:
     void setIsHidden(bool hidden) override { m_layerBridge->setIsHidden(hidden); }
     void setImageBuffer(ImageBuffer* imageBuffer) override { m_layerBridge->setImageBuffer(imageBuffer); }
     void didDraw(const FloatRect& rect) override { m_layerBridge->didDraw(rect); }
-    void flush() override { m_layerBridge->flush(); }
-    void flushGpu() override { m_layerBridge->flushGpu(); }
+    void flush(FlushReason) override { m_layerBridge->flush(); }
+    void flushGpu(FlushReason) override { m_layerBridge->flushGpu(); }
     void prepareSurfaceForPaintingIfNeeded() override { m_layerBridge->prepareSurfaceForPaintingIfNeeded(); }
     bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y) override { return m_layerBridge->writePixels(origInfo, pixels, rowBytes, x, y); }
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint hint) override { return m_layerBridge->newImageSnapshot(hint); }
+    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint hint, SnapshotReason reason) override { return m_layerBridge->newImageSnapshot(hint, reason); }
 private:
     RefPtr<Canvas2DLayerBridge> m_layerBridge;
 };

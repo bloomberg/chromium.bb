@@ -438,7 +438,7 @@ void CanvasRenderingContext2D::setFillStyle(const StringOrCanvasGradientOrCanvas
         if (canvas()->originClean() && !canvasPattern->originClean())
             canvas()->setOriginTainted();
         if (canvasPattern->pattern()->isTextureBacked())
-            canvas()->disableDeferral();
+            canvas()->disableDeferral(DisableDeferralReasonUsingTextureBackedPattern);
         canvasStyle = CanvasStyle::createFromPattern(canvasPattern);
     }
 
@@ -1341,14 +1341,21 @@ void CanvasRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource*
     c->restoreToCount(initialSaveCount);
 }
 
-bool shouldDisableDeferral(CanvasImageSource* imageSource)
+bool shouldDisableDeferral(CanvasImageSource* imageSource, DisableDeferralReason* reason)
 {
-    if (imageSource->isVideoElement())
+    ASSERT(reason);
+    ASSERT(*reason == DisableDeferralReasonUnknown);
+
+    if (imageSource->isVideoElement()) {
+        *reason = DisableDeferralReasonDrawImageOfVideo;
         return true;
+    }
     if (imageSource->isCanvasElement()) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(imageSource);
-        if (canvas->isAnimated2D())
+        if (canvas->isAnimated2D()) {
+            *reason = DisableDeferralReasonDrawImageOfAnimated2dCanvas;
             return true;
+        }
     }
     return false;
 }
@@ -1364,7 +1371,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
     if (!imageSource->isVideoElement()) {
         AccelerationHint hint = canvas()->buffer()->isAccelerated() ? PreferAcceleration : PreferNoAcceleration;
-        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint);
+        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint, SnapshotReasonDrawImage);
         if (sourceImageStatus == UndecodableSourceImageStatus)
             exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
         if (!image || !image->width() || !image->height())
@@ -1389,8 +1396,9 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (srcRect.isEmpty())
         return;
 
-    if (shouldDisableDeferral(imageSource) || image->isTextureBacked())
-        canvas()->disableDeferral();
+    DisableDeferralReason reason = DisableDeferralReasonUnknown;
+    if (shouldDisableDeferral(imageSource, &reason) || image->isTextureBacked())
+        canvas()->disableDeferral(reason);
 
     validateStateStack();
 
@@ -1424,7 +1432,7 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     if (imageSource->isCanvasElement() && static_cast<HTMLCanvasElement*>(imageSource)->is3D()) {
         // WebGL to 2D canvas: must flush graphics context to prevent a race
         // FIXME: crbug.com/516331 Fix the underlying synchronization issue so this flush can be eliminated.
-        canvas()->buffer()->flushGpu();
+        canvas()->buffer()->flushGpu(FlushReasonDrawImageOfWebGL);
     }
 
     if (canvas()->originClean() && wouldTaintOrigin(imageSource))
@@ -1472,7 +1480,7 @@ CanvasPattern* CanvasRenderingContext2D::createPattern(const CanvasImageSourceUn
 
     SourceImageStatus status;
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration);
+    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration, SnapshotReasonCreatePattern);
 
     switch (status) {
     case NormalSourceImageStatus:
@@ -1960,7 +1968,7 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, double x, do
     // drawing text to an opaque canvas
     // crbug.com/583809
     if (!m_hasAlpha && !isAccelerated())
-        canvas()->disableDeferral();
+        canvas()->disableDeferral(DisableDeferralReasonSubPixelTextAntiAliasingSupport);
 
     const Font& font = accessFont();
     const FontMetrics& fontMetrics = font.fontMetrics();

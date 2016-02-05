@@ -331,7 +331,7 @@ SkCanvas* Canvas2DLayerBridge::canvas()
     return m_recorder->getRecordingCanvas();
 }
 
-void Canvas2DLayerBridge::disableDeferral()
+void Canvas2DLayerBridge::disableDeferral(DisableDeferralReason reason)
 {
     // Disabling deferral is permanent: once triggered by disableDeferral()
     // we stay in immediate mode indefinitely. This is a performance heuristic
@@ -345,6 +345,7 @@ void Canvas2DLayerBridge::disableDeferral()
     if (!m_isDeferralEnabled)
         return;
 
+    Platform::current()->histogramEnumeration("Canvas.GPUAccelerated2DCanvasDisableDeferralReason", reason, DisableDeferralReasonCount);
     CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasDeferralDisabled);
     flushRecordingOnly();
     // Because we will be discarding the recorder, if the flush failed
@@ -602,7 +603,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
         return false;
     }
 
-    RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration);
+    RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
     if (!image || !image->getTexture())
         return false;
 
@@ -739,7 +740,7 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect)
         IntRect pixelBounds = enclosingIntRect(rect);
         m_recordingPixelCount += pixelBounds.width() * pixelBounds.height();
         if (m_recordingPixelCount >= (m_size.width() * m_size.height() * ExpensiveCanvasHeuristicParameters::ExpensiveOverdrawThreshold)) {
-            disableDeferral();
+            disableDeferral(DisableDeferralReasonExpensiveOverdrawHeuristic);
         }
     }
     if (!m_isRegisteredTaskObserver) {
@@ -795,7 +796,7 @@ void Canvas2DLayerBridge::willProcessTask()
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint)
+PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint, SnapshotReason)
 {
     if (!checkSurfaceValid())
         return nullptr;

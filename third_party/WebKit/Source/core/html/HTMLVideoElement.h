@@ -80,7 +80,7 @@ public:
     KURL posterImageURL() const override;
 
     // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason) const override;
     bool isVideoElement() const override { return true; }
     bool wouldTaintOrigin(SecurityOrigin*) const override;
     FloatSize elementSize() const override;

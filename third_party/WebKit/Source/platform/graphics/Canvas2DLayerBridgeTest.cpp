@@ -157,7 +157,7 @@ protected:
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-            unsigned textureId = bridge->newImageSnapshot(PreferAcceleration)->getTextureHandle(true);
+            unsigned textureId = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown)->getTextureHandle(true);
             EXPECT_EQ(textureId, 0u);
 
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
@@ -199,7 +199,7 @@ protected:
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated());
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
-            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration);
+            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
             EXPECT_TRUE(bridge->isAccelerated());
             EXPECT_TRUE(snapshot->isTextureBacked());
         }
@@ -214,7 +214,7 @@ protected:
             EXPECT_TRUE(bridge->isAccelerated()); // We don't yet know that allocation will fail
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             gr->abandonContext(); // This will cause SkSurface_Gpu creation to fail without Canvas2DLayerBridge otherwise detecting that anything was disabled.
-            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration);
+            RefPtr<SkImage> snapshot = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
             EXPECT_FALSE(bridge->isAccelerated());
             EXPECT_FALSE(snapshot->isTextureBacked());
         }
@@ -306,7 +306,7 @@ protected:
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
-            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration);
+            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferAcceleration, SnapshotReasonUnknown);
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_TRUE(bridge->isAccelerated());
@@ -320,7 +320,7 @@ protected:
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             SkPaint paint;
             bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
-            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration);
+            RefPtr<SkImage> image = bridge->newImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
             ::testing::Mock::VerifyAndClearExpectations(&mainMock);
             EXPECT_TRUE(bridge->checkSurfaceValid());
             EXPECT_FALSE(bridge->isAccelerated());
@@ -514,7 +514,7 @@ TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycleWithDeferredRenderingDisable
     OwnPtr<WebWaitableEvent> bridgeCreatedEvent = adoptPtr(Platform::current()->createWaitableEvent());
     testThread->taskRunner()->postTask(BLINK_FROM_HERE, new CreateBridgeTask(&bridge, &mainMock, this, bridgeCreatedEvent.get()));
     bridgeCreatedEvent->wait();
-    bridge->disableDeferral();
+    bridge->disableDeferral(DisableDeferralReasonUnknown);
     MockImageBuffer mockImageBuffer;
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
     bridge->setImageBuffer(&mockImageBuffer);
@@ -651,7 +651,7 @@ TEST_F(Canvas2DLayerBridgeTest, BackgroundRenderingWhileHibernatingWithDeferredR
     MockImageBuffer mockImageBuffer;
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AnyNumber());
     bridge->setImageBuffer(&mockImageBuffer);
-    bridge->disableDeferral();
+    bridge->disableDeferral(DisableDeferralReasonUnknown);
 
     // Register an alternate Logger for tracking hibernation events
     OwnPtr<MockLogger> mockLogger = adoptPtr(new MockLogger);
@@ -738,7 +738,7 @@ TEST_F(Canvas2DLayerBridgeTest, DisableDeferredRenderingWhileHibernating)
     // Disable deferral while background rendering
     EXPECT_CALL(*mockLoggerPtr, reportHibernationEvent(Canvas2DLayerBridge::HibernationEndedWithSwitchToBackgroundRendering));
     EXPECT_CALL(mockImageBuffer, resetCanvas(_)).Times(AtLeast(1));
-    bridge->disableDeferral();
+    bridge->disableDeferral(DisableDeferralReasonUnknown);
     ::testing::Mock::VerifyAndClearExpectations(mockLoggerPtr);
     ::testing::Mock::VerifyAndClearExpectations(&mockImageBuffer);
     EXPECT_FALSE(bridge->isAccelerated());

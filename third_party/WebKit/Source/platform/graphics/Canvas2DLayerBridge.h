@@ -76,7 +76,7 @@ public:
     void willOverwriteAllPixels();
     void willOverwriteCanvas();
     SkCanvas* canvas();
-    void disableDeferral();
+    void disableDeferral(DisableDeferralReason);
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
@@ -95,7 +95,7 @@ public:
     void hibernate();
     bool isHibernating() const { return m_hibernationImage; }
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint);
+    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason);
 
     // The values of the enum entries must not change because they are used for
     // usage metrics histograms. New values can be added to the end.

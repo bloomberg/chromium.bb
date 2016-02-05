@@ -99,7 +99,7 @@ public:
     virtual void ensurePrimaryContent();
 
     // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason) const override;
     bool isSVGSource() const override;
     bool wouldTaintOrigin(SecurityOrigin*) const override;
     FloatSize elementSize() const override;

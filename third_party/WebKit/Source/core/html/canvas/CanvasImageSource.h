@@ -46,7 +46,7 @@ enum SourceImageStatus {
 
 class CORE_EXPORT CanvasImageSource {
 public:
-    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const = 0;
+    virtual PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason) const = 0;
 
     // IMPORTANT: Result must be independent of whether destinationContext is
     // already tainted because this function may be used to determine whether

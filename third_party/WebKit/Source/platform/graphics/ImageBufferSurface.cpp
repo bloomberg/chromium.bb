@@ -70,7 +70,7 @@ void ImageBufferSurface::clear()
 
 void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
-    RefPtr<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration);
+    RefPtr<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
     if (!snapshot)
         return;
 
@@ -78,7 +78,7 @@ void ImageBufferSurface::draw(GraphicsContext& context, const FloatRect& destRec
     context.drawImage(image.get(), destRect, srcRect, op);
 }
 
-void ImageBufferSurface::flush()
+void ImageBufferSurface::flush(FlushReason)
 {
     canvas()->flush();
 }

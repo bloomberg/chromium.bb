@@ -59,7 +59,7 @@ public:
     virtual ~ImageBufferSurface();
 
     virtual SkCanvas* canvas() = 0;
-    virtual void disableDeferral() { }
+    virtual void disableDeferral(DisableDeferralReason) { }
     virtual void willOverwriteCanvas() { }
     virtual void didDraw(const FloatRect& rect) { }
     virtual bool isValid() const = 0;
@@ -76,13 +76,13 @@ public:
     virtual void draw(GraphicsContext&, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode);
     virtual void setHasExpensiveOp() { }
     virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }
-    virtual void flush(); // Execute all deferred rendering immediately
-    virtual void flushGpu() { flush(); } // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
+    virtual void flush(FlushReason); // Execute all deferred rendering immediately
+    virtual void flushGpu(FlushReason reason) { flush(reason); } // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
     virtual void prepareSurfaceForPaintingIfNeeded() { }
     virtual bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y);
 
     // May return nullptr if the surface is GPU-backed and the GPU context was lost.
-    virtual PassRefPtr<SkImage> newImageSnapshot(AccelerationHint) = 0;
+    virtual PassRefPtr<SkImage> newImageSnapshot(AccelerationHint, SnapshotReason) = 0;
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

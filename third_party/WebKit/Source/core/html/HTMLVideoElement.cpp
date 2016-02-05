@@ -285,7 +285,7 @@ KURL HTMLVideoElement::posterImageURL() const
     return document().completeURL(url);
 }
 
-PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
+PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
 {
     if (!hasAvailableVideoFrame()) {
         *status = InvalidSourceImageStatus;

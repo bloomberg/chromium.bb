@@ -603,7 +603,7 @@ bool HTMLImageElement::isInteractiveContent() const
     return fastHasAttribute(usemapAttr);
 }
 
-PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
+PassRefPtr<Image> HTMLImageElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
 {
     if (!complete() || !cachedImage()) {
         *status = IncompleteSourceImageStatus;

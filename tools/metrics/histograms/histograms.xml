@@ -3780,6 +3780,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Canvas.DisplayListFallbackReason"
+    enum="CanvasDisplayListFallbackReason">
+  <owner>junov@chromium.org</owner>
+  <summary>
+    The reasons why a canvas initially set to display list mode had to fall back
+    to direct rasterization mode.
+  </summary>
+</histogram>
+
+<histogram name="Canvas.GPUAccelerated2DCanvasDisableDeferralReason"
+    enum="CanvasGPUAccelerated2DCanvasDisableDeferralReason">
+  <owner>junov@chromium.org</owner>
+  <summary>
+    The reasons why a GPU accelerated canvas stopped deferring its rendering
+    operations.
+  </summary>
+</histogram>
+
 <histogram name="Canvas.HibernationEvents" enum="CanvasHibernationEvent">
   <owner>junov@chromium.org</owner>
   <summary>
@@ -58839,6 +58857,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7" label="DisplayList2DCanvasFallbackToRaster"/>
   <int value="8" label="GPUAccelerated2DCanvasDeferralDisabled"/>
   <int value="10" label="GPUAccelerated2DCanvasSurfaceCreationFailed"/>
+</enum>
+
+<enum name="CanvasDisplayListFallbackReason" type="int">
+  <int value="0" label="Unknown (Should not be seen in production)."/>
+  <int value="1" label="Canvas not cleared between consecutive frames."/>
+  <int value="2"
+      label="Canvas state stack too large (unbalanced save/restore?)."/>
+  <int value="3" label="Direct pixel write."/>
+  <int value="4" label="Flush for initial clear."/>
+  <int value="5" label="Flush after drawing from a WebGL canvas."/>
+  <int value="6" label="Acquiring snapshot for getImageData()."/>
+  <int value="7" label="Acquiring snapshot for WebGL texture upload."/>
+  <int value="8"
+      label="Acquiring snapshot for direct painting of canvas contents."/>
+  <int value="9" label="Acquiring snapshot for toDataURL()"/>
+  <int value="10" label="Acquiring snapshot for toBlob()."/>
+  <int value="11" label="Acquiring snapshot for capturing to a stream."/>
+  <int value="12" label="Acquiring snapshot for drawImage() source."/>
+  <int value="13" label="Acquiring snapshot for createPattern()."/>
+  <int value="14" label="Expensive overdraw heuristic."/>
+  <int value="15" label="Darwing a texture-backed pattern."/>
+  <int value="16" label="Drawing a video."/>
+  <int value="17" label="Drawing an animated 2D canvas."/>
+  <int value="18" label="Sub-pixel text anti-aliasing support."/>
+</enum>
+
+<enum name="CanvasGPUAccelerated2DCanvasDisableDeferralReason" type="int">
+  <int value="0" label="Unknown (Should not be seen in production)."/>
+  <int value="1" label="Canvas not cleared between consecutive frames."/>
+  <int value="2"
+      label="Canvas state stack too large (unbalanced save/restore?)."/>
+  <int value="3" label="Direct pixel write."/>
+  <int value="4" label="Draw image of animated 2d canvas"/>
+  <int value="5" label="Sub-pixel text anti-aliasing support (expect 0)"/>
 </enum>
 
 <enum name="CanvasHibernationEvent" type="int">

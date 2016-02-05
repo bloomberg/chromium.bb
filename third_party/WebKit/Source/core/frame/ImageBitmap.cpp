@@ -95,9 +95,9 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     IntPoint dstPoint = IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y()));
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
     if (options.imageOrientation() == imageOrientationFlipY)
-        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration).get())));
+        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get())));
     else
-        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
 }
 
@@ -120,7 +120,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         return;
 
     if (srcRect.isEmpty()) {
-        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
         return;
     }
 
@@ -131,9 +131,9 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
         dstPoint.setY(-cropRect.y());
     buffer->putByteArray(Unmultiplied, data->data()->data(), data->size(), srcRect, dstPoint);
     if (options.imageOrientation() == imageOrientationFlipY)
-        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration).get())));
+        m_image = StaticBitmapImage::create(adoptRef(flipSkImageVertically(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown).get())));
     else
-        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
+        m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
@@ -265,7 +265,7 @@ void ImageBitmap::notifyImageSourceChanged()
 {
 }
 
-PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
+PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
 {
     *status = NormalSourceImageStatus;
     return m_image ? m_image : nullptr;

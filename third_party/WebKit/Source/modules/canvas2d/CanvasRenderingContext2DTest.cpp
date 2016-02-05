@@ -36,7 +36,7 @@ class FakeImageSource : public CanvasImageSource {
 public:
     FakeImageSource(IntSize, BitmapOpacity);
 
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason) const override;
 
     bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const override { return false; }
     FloatSize elementSize() const override { return FloatSize(m_size); }
@@ -60,7 +60,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
     m_image = StaticBitmapImage::create(image);
 }
 
-PassRefPtr<Image> FakeImageSource::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
+PassRefPtr<Image> FakeImageSource::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint, SnapshotReason) const
 {
     if (status)
         *status = NormalSourceImageStatus;
