@@ -247,8 +247,22 @@ ContentViewCoreImpl::ContentViewCoreImpl(
   InitWebContents();
 }
 
+void ContentViewCoreImpl::AddObserver(
+    ContentViewCoreImplObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ContentViewCoreImpl::RemoveObserver(
+    ContentViewCoreImplObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 ContentViewCoreImpl::~ContentViewCoreImpl() {
   root_layer_->RemoveFromParent();
+  FOR_EACH_OBSERVER(ContentViewCoreImplObserver,
+                    observer_list_,
+                    OnContentViewCoreDestroyed());
+  observer_list_.Clear();
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

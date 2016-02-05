@@ -1592,6 +1592,7 @@
       'browser/android/composited_touch_handle_drawable.h',
       'browser/android/content_view_core_impl.cc',
       'browser/android/content_view_core_impl.h',
+      'browser/android/content_view_core_impl_observer.h',
       'browser/android/content_view_render_view.cc',
       'browser/android/content_view_render_view.h',
       'browser/android/content_view_statics.cc',

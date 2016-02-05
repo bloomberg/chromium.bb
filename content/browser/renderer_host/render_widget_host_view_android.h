@@ -22,6 +22,7 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
@@ -55,6 +56,7 @@ class WebMouseEvent;
 
 namespace content {
 class ContentViewCoreImpl;
+class ContentViewCoreObserver;
 class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
@@ -72,7 +74,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public ui::WindowAndroidObserver,
       public DelegatedFrameEvictorClient,
       public StylusTextSelectorClient,
-      public ui::TouchSelectionControllerClient {
+      public ui::TouchSelectionControllerClient,
+      public content::ContentViewCoreImplObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -182,6 +185,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnAnimate(base::TimeTicks begin_frame_time) override;
   void OnActivityStopped() override;
   void OnActivityStarted() override;
+
+  // content::ContentViewCoreImplObserver implementation.
+  void OnContentViewCoreDestroyed() override;
+  void OnAttachedToWindow() override;
+  void OnDetachedFromWindow() override;
 
   // DelegatedFrameEvictor implementation
   void EvictDelegatedFrame() override;
@@ -342,13 +350,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;
-
-  // Cache the WindowAndroid instance exposed by ContentViewCore to avoid
-  // calling into ContentViewCore when it is being detached from the
-  // WebContents during destruction. The WindowAndroid has stronger lifetime
-  // guarantees, and should be safe to use for observer detachment.
-  // This will be non-null iff |content_view_core_| is non-null.
-  ui::WindowAndroid* content_view_core_window_android_;
 
   ImeAdapterAndroid ime_adapter_android_;
 

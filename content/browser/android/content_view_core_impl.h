@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process.h"
+#include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -68,6 +69,9 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::Callback<void(const base::string16& content,
                                 int start_offset,
                                 int end_offset)>& callback) override;
+
+  void AddObserver(ContentViewCoreImplObserver* observer);
+  void RemoveObserver(ContentViewCoreImplObserver* observer);
 
   // ViewAndroid implementation
   base::android::ScopedJavaLocalRef<jobject> GetViewAndroidDelegate()
@@ -448,6 +452,9 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;
+
+  // Observer to notify of lifecyle changes.
+  base::ObserverList<ContentViewCoreImplObserver> observer_list_;
 
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.

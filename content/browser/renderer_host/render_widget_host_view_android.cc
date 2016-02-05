@@ -321,7 +321,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       is_window_visible_(true),
       is_window_activity_started_(true),
       content_view_core_(nullptr),
-      content_view_core_window_android_(nullptr),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
@@ -341,6 +340,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
+  if (content_view_core_)
+    content_view_core_->RemoveObserver(this);
   SetContentViewCore(NULL);
   DCHECK(ack_callbacks_.empty());
   DCHECK(!surface_factory_);
@@ -892,9 +893,12 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   scoped_ptr<cc::CopyOutputRequest> request;
   scoped_refptr<cc::Layer> readback_layer;
-  DCHECK(content_view_core_window_android_);
+  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
+    callback.Run(SkBitmap(), READBACK_FAILED);
+    return;
+  }
   ui::WindowAndroidCompositor* compositor =
-      content_view_core_window_android_->GetCompositor();
+      content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(!surface_id_.is_null());
   scoped_refptr<cc::Layer> layer = CreateDelegatedLayer();
@@ -1182,9 +1186,9 @@ bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
 }
 
 void RenderWidgetHostViewAndroid::SetNeedsAnimate() {
-  DCHECK(content_view_core_window_android_);
+  DCHECK(content_view_core_ && content_view_core_->GetWindowAndroid());
   DCHECK(using_browser_compositor_);
-  content_view_core_window_android_->SetNeedsAnimate();
+  content_view_core_->GetWindowAndroid()->SetNeedsAnimate();
 }
 
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::PointF& position) {
@@ -1422,17 +1426,20 @@ void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
   // vsync requests will be pushed if/when we resume observing in
   // |StartObservingRootWindow()|.
   if (observing_root_window_ && should_request_vsync)
-    content_view_core_window_android_->RequestVSyncUpdate();
+    content_view_core_->GetWindowAndroid()->RequestVSyncUpdate();
 }
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
-  DCHECK(content_view_core_window_android_);
+  DCHECK(content_view_core_);
+  // TODO(yusufo): This will need to have a better fallback for cases where
+  // setContentViewCore is called with a valid ContentViewCore without a window.
+  DCHECK(content_view_core_->GetWindowAndroid());
   DCHECK(is_showing_);
   if (observing_root_window_)
     return;
 
   observing_root_window_ = true;
-  content_view_core_window_android_->AddObserver(this);
+  content_view_core_->GetWindowAndroid()->AddObserver(this);
 
   // Clear existing vsync requests to allow a request to the new window.
   uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
@@ -1441,7 +1448,7 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
 }
 
 void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
-  if (!content_view_core_window_android_) {
+  if (!content_view_core_ || !(content_view_core_->GetWindowAndroid())) {
     DCHECK(!observing_root_window_);
     return;
   }
@@ -1453,7 +1460,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   is_window_activity_started_ = true;
   is_window_visible_ = true;
   observing_root_window_ = false;
-  content_view_core_window_android_->RemoveObserver(this);
+  content_view_core_->GetWindowAndroid()->RemoveObserver(this);
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
@@ -1752,12 +1759,15 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     resize = true;
+    if (content_view_core_) {
+      if (!content_view_core)
+        content_view_core_->RemoveObserver(this);
+      else
+        content_view_core->AddObserver(this);
+    }
   }
 
   content_view_core_ = content_view_core;
-  content_view_core_window_android_ =
-      content_view_core_ ? content_view_core_->GetWindowAndroid() : nullptr;
-  DCHECK_EQ(!!content_view_core_, !!content_view_core_window_android_);
 
   BrowserAccessibilityManager* manager = NULL;
   if (host_)
@@ -1785,7 +1795,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     selection_controller_ = CreateSelectionController(this, content_view_core_);
 
   if (!overscroll_controller_ &&
-      content_view_core_window_android_->GetCompositor()) {
+      content_view_core_->GetWindowAndroid()->GetCompositor()) {
     overscroll_controller_ = CreateOverscrollController(content_view_core_);
   }
 
@@ -1820,6 +1830,10 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
   SendGestureEvent(web_gesture);
 }
 
+void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
+  SetContentViewCore(NULL);
+}
+
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
   RunAckCallbacks(cc::SurfaceDrawStatus::DRAWN);
 }
@@ -1838,6 +1852,19 @@ void RenderWidgetHostViewAndroid::OnRootWindowVisibilityChanged(bool visible) {
     ShowInternal();
   else
     HideInternal();
+}
+
+void RenderWidgetHostViewAndroid::OnAttachedToWindow() {
+  if (is_showing_)
+    StartObservingRootWindow();
+  DCHECK(content_view_core_ && content_view_core_->GetWindowAndroid());
+  if (content_view_core_->GetWindowAndroid()->GetCompositor())
+    OnAttachCompositor();
+}
+
+void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
+  StopObservingRootWindow();
+  OnDetachCompositor();
 }
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
