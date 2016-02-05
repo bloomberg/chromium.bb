@@ -5676,11 +5676,13 @@
             ],
           }],
         ],
+        # Add extra include directories here that need to be in front of the
+        # installed and packaged include directories. This may be needed in
+        # order to force a particular SDK version, such as to get VS 2013 to use
+        # the Windows 10 SDK. Beware of making the INCLUDE variable excessively
+        # long, and be sure to make corresponding changes to
+        # build\toolchain\win\setup_toolchain.py
         'msvs_system_include_dirs': [
-          '<(windows_sdk_path)/Include/10.0.10586.0/shared',
-          '<(windows_sdk_path)/Include/10.0.10586.0/um',
-          '<(windows_sdk_path)/Include/10.0.10586.0/winrt',
-          '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_shell': 0,
         'msvs_disabled_warnings': [
