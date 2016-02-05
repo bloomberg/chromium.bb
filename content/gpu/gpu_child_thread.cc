@@ -268,10 +268,6 @@ void GpuChildThread::OnInitialize() {
     return;
   }
 
-#if defined(OS_ANDROID)
-  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
-#endif
-
   // We don't need to pipe log messages if we are running the GPU thread in
   // the browser process.
   if (!in_browser_process_)

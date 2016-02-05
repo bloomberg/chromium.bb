@@ -35,7 +35,7 @@ const struct sched_param kRealTimePrio = {8};
 const ThreadPriorityToNiceValuePair kThreadPriorityToNiceValueMap[4] = {
     {ThreadPriority::BACKGROUND, 10},
     {ThreadPriority::NORMAL, 0},
-    {ThreadPriority::DISPLAY, -6},
+    {ThreadPriority::DISPLAY, -8},
     {ThreadPriority::REALTIME_AUDIO, -10},
 };
 

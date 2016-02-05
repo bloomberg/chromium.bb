@@ -76,7 +76,10 @@ DrmThread::~DrmThread() {
 }
 
 void DrmThread::Start() {
-  if (!StartWithOptions(base::Thread::Options(base::MessageLoop::TYPE_IO, 0)))
+  base::Thread::Options thread_options;
+  thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
+  thread_options.priority = base::ThreadPriority::DISPLAY;
+  if (!StartWithOptions(thread_options))
     LOG(FATAL) << "Failed to create DRM thread";
 }
 

@@ -251,6 +251,11 @@ int GpuMain(const MainFunctionParams& parameters) {
   VaapiWrapper::PreSandboxInitialization();
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+  // Set thread priority before sandbox initialization.
+  base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
+#endif
+
   // Warm up resources that don't need access to GPUInfo.
   if (WarmUpSandbox(command_line)) {
 #if defined(OS_LINUX)

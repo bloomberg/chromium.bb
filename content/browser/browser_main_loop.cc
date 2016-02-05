@@ -1190,7 +1190,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 
 #if !defined(OS_IOS)
   HistogramSynchronizer::GetInstance();
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Up the priority of the UI thread.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
 #endif
