@@ -51,13 +51,22 @@ demo:2[]
 commit, so you know that the line in question has been changed (by an ignored
 commit) since the given person wrote it.
 
+CAVEATS
+-------
+
+When a line skips over an ignored commit, a guess is made as to which commit
+previously modified that line, but it is not always clear where the line came
+from. If the ignored commit makes lots of changes in close proximity, in
+particular adding/removing/reordering lines, then the wrong authors may be
+blamed for nearby edits.
+
+For this reason, `hyper-blame` works best when the ignored commits are be
+limited to minor changes such as formatting and renaming, not refactoring or
+other more invasive changes.
+
 BUGS
 ----
 
-- When a commit is ignored, hyper-blame currently just blames the same line in
-  the previous version of the file. This can be wildly inaccurate if the ignored
-  commit adds or removes lines, resulting in a completely wrong commit being
-  blamed.
 - There is currently no way to pass the ignore list as a file.
 - It should be possible for a git repository to configure an automatic list of
   commits to ignore (like `.gitignore`), so that project owners can maintain a

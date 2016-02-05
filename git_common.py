@@ -374,6 +374,10 @@ def del_config(option, scope='local'):
     pass
 
 
+def diff(oldrev, newrev, *args):
+  return run('diff', oldrev, newrev, *args)
+
+
 def freeze():
   took_action = False
 

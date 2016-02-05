@@ -254,6 +254,23 @@ class GitReadOnlyFunctionsTest(git_test_utils.GitRepoReadOnlyTestBase,
     self.assertEqual(self.repo.run(set, self.gc.branches()),
                      {'master', 'branch_D', 'root_A'})
 
+  def testDiff(self):
+    # Get the names of the blobs being compared (to avoid hard-coding).
+    c_blob_short = self.repo.git('rev-parse', '--short',
+                                 'tag_C:some/files/file2').stdout.strip()
+    d_blob_short = self.repo.git('rev-parse', '--short',
+                                 'tag_D:some/files/file2').stdout.strip()
+    expected_output = [
+        'diff --git a/some/files/file2 b/some/files/file2',
+        'index %s..%s 100755' % (c_blob_short, d_blob_short),
+        '--- a/some/files/file2',
+        '+++ b/some/files/file2',
+        '@@ -1 +1,2 @@',
+        ' file2 - vanilla',
+        '+file2 - merged']
+    self.assertEqual(expected_output,
+                     self.repo.run(self.gc.diff, 'tag_C', 'tag_D').split('\n'))
+
   def testDormant(self):
     self.assertFalse(self.repo.run(self.gc.is_dormant, 'master'))
     self.repo.git('config', 'branch.master.dormant', 'true')

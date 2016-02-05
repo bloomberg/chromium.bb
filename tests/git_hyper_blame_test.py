@@ -279,7 +279,7 @@ class GitHyperBlameSimpleTest(GitHyperBlameTestBase):
 
 class GitHyperBlameLineMotionTest(GitHyperBlameTestBase):
   REPO_SCHEMA = """
-  A B C D E
+  A B C D E F
   """
 
   COMMIT_A = {
@@ -293,44 +293,108 @@ class GitHyperBlameLineMotionTest(GitHyperBlameTestBase):
 
   # Insert 2 lines at the top,
   # Change "yellow" to "red".
+  # Insert 1 line at the bottom.
   COMMIT_C = {
-    'file': {'data': 'X\nY\nA\nred\nblue\n'},
+    'file': {'data': 'X\nY\nA\nred\nblue\nZ\n'},
   }
 
   # Insert 2 more lines at the top.
   COMMIT_D = {
-    'file': {'data': 'earth\nfire\nX\nY\nA\nred\nblue\n'},
+    'file': {'data': 'earth\nfire\nX\nY\nA\nred\nblue\nZ\n'},
   }
 
   # Insert a line before "red", and indent "red" and "blue".
   COMMIT_E = {
-    'file': {'data': 'earth\nfire\nX\nY\nA\ncolors:\n red\n blue\n'},
+    'file': {'data': 'earth\nfire\nX\nY\nA\ncolors:\n red\n blue\nZ\n'},
   }
+
+  # Insert a line between "A" and "colors".
+  COMMIT_F = {
+    'file': {'data': 'earth\nfire\nX\nY\nA\nB\ncolors:\n red\n blue\nZ\n'},
+  }
+
+  def testCacheDiffHunks(self):
+    """Tests the cache_diff_hunks internal function."""
+    expected_hunks = [((0, 0), (1, 2)),
+                      ((2, 1), (4, 1)),
+                      ((3, 0), (6, 1)),
+                      ]
+    hunks = self.repo.run(self.git_hyper_blame.cache_diff_hunks, 'tag_B',
+                          'tag_C')
+    self.assertEqual(expected_hunks, hunks)
+
+  def testApproxLinenoAcrossRevs(self):
+    """Tests the approx_lineno_across_revs internal function."""
+    # Note: For all of these tests, the "old revision" and "new revision" are
+    # reversed, which matches the usage by hyper_blame.
+
+    # Test an unchanged line before any hunks in the diff. Should be unchanged.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_B', 'tag_A', 1)
+    self.assertEqual(1, lineno)
+
+    # Test an unchanged line after all hunks in the diff. Should be matched to
+    # the line's previous position in the file.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_D', 'tag_C', 6)
+    self.assertEqual(4, lineno)
+
+    # Test a line added in a new hunk. Should be matched to the line *before*
+    # where the hunk was inserted in the old version of the file.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_F', 'tag_E', 6)
+    self.assertEqual(5, lineno)
+
+    # Test lines added in a new hunk at the very start of the file. This tests
+    # an edge case: normally it would be matched to the line *before* where the
+    # hunk was inserted (Line 0), but since the hunk is at the start of the
+    # file, we match to Line 1.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_C', 'tag_B', 1)
+    self.assertEqual(1, lineno)
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_C', 'tag_B', 2)
+    self.assertEqual(1, lineno)
+
+    # Test an unchanged line in between hunks in the diff. Should be matched to
+    # the line's previous position in the file.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_C', 'tag_B', 3)
+    self.assertEqual(1, lineno)
+
+    # Test a changed line. Should be matched to the hunk's previous position in
+    # the file.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_C', 'tag_B', 4)
+    self.assertEqual(2, lineno)
+
+    # Test a line added in a new hunk at the very end of the file. Should be
+    # matched to the line *before* where the hunk was inserted (the last line of
+    # the file). Technically same as the case above but good to boundary test.
+    lineno = self.repo.run(self.git_hyper_blame.approx_lineno_across_revs,
+                           'file', 'file', 'tag_C', 'tag_B', 6)
+    self.assertEqual(3, lineno)
 
   def testInterHunkLineMotion(self):
     """Tests a blame with line motion in another hunk in the ignored commit."""
-    # This test was mostly written as a demonstration of the limitations of the
-    # current algorithm (it exhibits non-ideal behaviour).
-
     # Blame from D, ignoring C.
+
     # Lines 1, 2 were added by D.
-    # Lines 3, 4 were added by C (but ignored, so blame A, B, respectively).
-    # TODO(mgiuca): Ideally, this would blame both of these lines on A, because
-    # they add lines nowhere near the changes made by B.
+    # Lines 3, 4 were added by C (but ignored, so blame A).
     # Line 5 was added by A.
-    # Line 6 was modified by C (but ignored, so blame A).
-    # TODO(mgiuca): Ideally, Line 6 would be blamed on B, because that was the
-    # last commit to touch that line (changing "green" to "yellow"), but the
-    # algorithm isn't yet able to figure out that Line 6 in D == Line 4 in C ~=
-    # Line 2 in B.
+    # Line 6 was modified by C (but ignored, so blame B). (Note: This requires
+    # the algorithm to figure out that Line 6 in D == Line 4 in C ~= Line 2 in
+    # B, so it blames B. Otherwise, it would blame A.)
     # Line 7 was added by A.
+    # Line 8 was added by C (but ignored, so blame A).
     expected_output = [self.blame_line('D', ' 1) earth'),
                        self.blame_line('D', ' 2) fire'),
                        self.blame_line('A', '3*) X'),
-                       self.blame_line('B', '4*) Y'),
+                       self.blame_line('A', '4*) Y'),
                        self.blame_line('A', ' 5) A'),
-                       self.blame_line('A', '6*) red'),
+                       self.blame_line('B', '6*) red'),
                        self.blame_line('A', ' 7) blue'),
+                       self.blame_line('A', '8*) Z'),
                        ]
     retval, output = self.run_hyperblame(['C'], 'file', 'tag_D')
     self.assertEqual(0, retval)
@@ -356,6 +420,7 @@ class GitHyperBlameLineMotionTest(GitHyperBlameTestBase):
                        self.blame_line('C', '6*) colors:'),
                        self.blame_line('A', '7*)  red'),
                        self.blame_line('A', '8*)  blue'),
+                       self.blame_line('C', ' 9) Z'),
                        ]
     retval, output = self.run_hyperblame(['E'], 'file', 'tag_E')
     self.assertEqual(0, retval)

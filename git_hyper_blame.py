@@ -149,6 +149,110 @@ def get_parsed_blame(filename, revision='HEAD'):
   return list(parse_blame(blame))
 
 
+# Map from (oldrev, newrev) to hunk list (caching the results of git diff, but
+# only the hunk line numbers, not the actual diff contents).
+# hunk list contains (old, new) pairs, where old and new are (start, length)
+# pairs. A hunk list can also be None (if the diff failed).
+diff_hunks_cache = {}
+
+
+def cache_diff_hunks(oldrev, newrev):
+  def parse_start_length(s):
+    # Chop the '-' or '+'.
+    s = s[1:]
+    # Length is optional (defaults to 1).
+    try:
+      start, length = s.split(',')
+    except ValueError:
+      start = s
+      length = 1
+    return int(start), int(length)
+
+  try:
+    return diff_hunks_cache[(oldrev, newrev)]
+  except KeyError:
+    pass
+
+  # Use -U0 to get the smallest possible hunks.
+  diff = git_common.diff(oldrev, newrev, '-U0')
+
+  # Get all the hunks.
+  hunks = []
+  for line in diff.split('\n'):
+    if not line.startswith('@@'):
+      continue
+    ranges = line.split(' ', 3)[1:3]
+    ranges = tuple(parse_start_length(r) for r in ranges)
+    hunks.append(ranges)
+
+  diff_hunks_cache[(oldrev, newrev)] = hunks
+  return hunks
+
+
+def approx_lineno_across_revs(filename, newfilename, revision, newrevision,
+                              lineno):
+  """Computes the approximate movement of a line number between two revisions.
+
+  Consider line |lineno| in |filename| at |revision|. This function computes the
+  line number of that line in |newfilename| at |newrevision|. This is
+  necessarily approximate.
+
+  Args:
+    filename: The file (within the repo) at |revision|.
+    newfilename: The name of the same file at |newrevision|.
+    revision: A git revision.
+    newrevision: Another git revision. Note: Can be ahead or behind |revision|.
+    lineno: Line number within |filename| at |revision|.
+
+  Returns:
+    Line number within |newfilename| at |newrevision|.
+  """
+  # This doesn't work that well if there are a lot of line changes within the
+  # hunk (demonstrated by GitHyperBlameLineMotionTest.testIntraHunkLineMotion).
+  # A fuzzy heuristic that takes the text of the new line and tries to find a
+  # deleted line within the hunk that mostly matches the new line could help.
+
+  # Use the <revision>:<filename> syntax to diff between two blobs. This is the
+  # only way to diff a file that has been renamed.
+  old = '%s:%s' % (revision, filename)
+  new = '%s:%s' % (newrevision, newfilename)
+  hunks = cache_diff_hunks(old, new)
+
+  cumulative_offset = 0
+
+  # Find the hunk containing lineno (if any).
+  for (oldstart, oldlength), (newstart, newlength) in hunks:
+    cumulative_offset += newlength - oldlength
+
+    if lineno >= oldstart + oldlength:
+      # Not there yet.
+      continue
+
+    if lineno < oldstart:
+      # Gone too far.
+      break
+
+    # lineno is in [oldstart, oldlength] at revision; [newstart, newlength] at
+    # newrevision.
+
+    # If newlength == 0, newstart will be the line before the deleted hunk.
+    # Since the line must have been deleted, just return that as the nearest
+    # line in the new file. Caution: newstart can be 0 in this case.
+    if newlength == 0:
+      return max(1, newstart)
+
+    newend = newstart + newlength - 1
+
+    # Move lineno based on the amount the entire hunk shifted.
+    lineno = lineno + newstart - oldstart
+    # Constrain the output within the range [newstart, newend].
+    return min(newend, max(newstart, lineno))
+
+  # Wasn't in a hunk. Figure out the line motion based on the difference in
+  # length between the hunks seen so far.
+  return lineno + cumulative_offset
+
+
 def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
                 err=sys.stderr):
   # Map from commit to parsed blame from that commit.
@@ -189,23 +293,19 @@ def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
         # ignore this commit.
         break
 
-      # line.lineno_then is the line number in question at line.commit.
-      # TODO(mgiuca): This will be incorrect if line.commit added or removed
-      # lines. Translate that line number so that it refers to the position of
-      # the same line on previouscommit.
-      lineno_previous = line.lineno_then
+      # line.lineno_then is the line number in question at line.commit. We need
+      # to translate that line number so that it refers to the position of the
+      # same line on previouscommit.
+      lineno_previous = approx_lineno_across_revs(
+          line.commit.filename, previousfilename, line.commit.commithash,
+          previouscommit, line.lineno_then)
       logging.debug('ignore commit %s on line p%d/t%d/n%d',
                     line.commit.commithash, lineno_previous, line.lineno_then,
                     line.lineno_now)
 
       # Get the line at lineno_previous in the parent commit.
-      assert lineno_previous > 0
-      try:
-        newline = parent_blame[lineno_previous - 1]
-      except IndexError:
-        # lineno_previous is a guess, so it may be past the end of the file.
-        # Just grab the last line in the file.
-        newline = parent_blame[-1]
+      assert 1 <= lineno_previous <= len(parent_blame)
+      newline = parent_blame[lineno_previous - 1]
 
       # Replace the commit and lineno_then, but not the lineno_now or context.
       logging.debug('    replacing with %r', newline)

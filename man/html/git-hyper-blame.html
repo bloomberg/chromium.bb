@@ -820,17 +820,22 @@ commit) since the given person wrote it.</p></div>
 </div>
 </div>
 <div class="sect1">
+<h2 id="_caveats">CAVEATS</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>When a line skips over an ignored commit, a guess is made as to which commit
+previously modified that line, but it is not always clear where the line came
+from. If the ignored commit makes lots of changes in close proximity, in
+particular adding/removing/reordering lines, then the wrong authors may be
+blamed for nearby edits.</p></div>
+<div class="paragraph"><p>For this reason, <code>hyper-blame</code> works best when the ignored commits are be
+limited to minor changes such as formatting and renaming, not refactoring or
+other more invasive changes.</p></div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_bugs">BUGS</h2>
 <div class="sectionbody">
 <div class="ulist"><ul>
-<li>
-<p>
-When a commit is ignored, hyper-blame currently just blames the same line in
-  the previous version of the file. This can be wildly inaccurate if the ignored
-  commit adds or removes lines, resulting in a completely wrong commit being
-  blamed.
-</p>
-</li>
 <li>
 <p>
 There is currently no way to pass the ignore list as a file.
@@ -864,7 +869,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-28 16:40:21 AEDT
+Last updated 2016-02-05 13:43:52 AEDT
 </div>
 </div>
 </body>
