@@ -118,7 +118,7 @@ public:
 
     static String ToTestString(const std::string& input)
     {
-        String result(String::make16BitFrom8BitSource(0, 0));
+        String result(emptyString16Bit());
         bool inSet = false;
         int seen = 0;
         int code = 0;
@@ -287,7 +287,7 @@ class ScriptRunIteratorTest : public testing::Test {
 protected:
     void CheckRuns(const Vector<TestRun>& runs)
     {
-        String text(String::make16BitFrom8BitSource(0, 0));
+        String text(emptyString16Bit());
         Vector<ExpectedRun> expect;
         for (auto& run : runs) {
             text.append(String::fromUTF8(run.text.c_str()));
@@ -301,7 +301,7 @@ protected:
     // suitable equivalent real codepoint sequences instead.
     void CheckMockRuns(const Vector<TestRun>& runs)
     {
-        String text(String::make16BitFrom8BitSource(0, 0));
+        String text(emptyString16Bit());
         Vector<ExpectedRun> expect;
         for (const TestRun& run : runs) {
             text.append(MockScriptData::ToTestString(run.text));
@@ -332,7 +332,7 @@ protected:
 
 TEST_F(ScriptRunIteratorTest, Empty)
 {
-    String empty(String::make16BitFrom8BitSource(0, 0));
+    String empty(emptyString16Bit());
     ScriptRunIterator scriptRunIterator(empty.characters16(), empty.length());
     unsigned limit = 0;
     UScriptCode code = USCRIPT_INVALID_CODE;

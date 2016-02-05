@@ -37,7 +37,7 @@ protected:
 
     void CheckRuns(const Vector<TestRun>& runs)
     {
-        String text(String::make16BitFrom8BitSource(0, 0));
+        String text(emptyString16Bit());
         Vector<ExpectedRun> expect;
         for (auto& run : runs) {
             text.append(String::fromUTF8(run.text.c_str()));
@@ -73,7 +73,7 @@ protected:
 
 TEST_F(OrientationIteratorTest, Empty)
 {
-    String empty(String::make16BitFrom8BitSource(0, 0));
+    String empty(emptyString16Bit());
     OrientationIterator orientationIterator(empty.characters16(), empty.length(), FontOrientation::VerticalMixed);
     unsigned limit = 0;
     OrientationIterator::RenderOrientation orientation = OrientationIterator::OrientationInvalid;

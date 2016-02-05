@@ -58,7 +58,7 @@ protected:
 
     void CheckRuns(const Vector<SegmenterTestRun>& runs, FontOrientation orientation, FontVariant variant)
     {
-        String text(String::make16BitFrom8BitSource(0, 0));
+        String text(emptyString16Bit());
         Vector<SegmenterExpectedRun> expect;
         for (auto& run : runs) {
             unsigned lengthBefore = text.length();
@@ -113,7 +113,7 @@ protected:
 
 TEST_F(RunSegmenterTest, Empty)
 {
-    String empty(String::make16BitFrom8BitSource(0, 0));
+    String empty(emptyString16Bit());
     RunSegmenter::RunSegmenterRange segmenterRange = { 0, 0, USCRIPT_INVALID_CODE, OrientationIterator::OrientationKeep, SmallCapsIterator::SmallCapsSameCase };
     RunSegmenter runSegmenter(empty.characters16(), empty.length(), FontOrientation::VerticalMixed, FontVariantNormal);
     ASSERT(!runSegmenter.consume(&segmenterRange));
