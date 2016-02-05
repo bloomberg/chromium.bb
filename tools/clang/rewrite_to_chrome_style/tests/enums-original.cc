@@ -31,6 +31,11 @@ class T {
   };
 };
 
+// Already SHOUT_CAPS, so the naming shouldn't change.
+enum AlreadyShouty {
+  ENABLE_DIRECTZ3000_SUPPORT_FOR_HL3E1,
+};
+
 }  // namespace blink
 
 enum EnumOutsideNamespace {

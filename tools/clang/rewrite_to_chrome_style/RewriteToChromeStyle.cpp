@@ -198,6 +198,16 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
                     std::string& name) {
   StringRef original_name = decl.getName();
 
+  bool already_shouty = true;
+  for (char c : original_name) {
+    if (!clang::isUppercase(c) && !clang::isDigit(c) && c != '_') {
+      already_shouty = false;
+      break;
+    }
+  }
+  if (already_shouty)
+    return false;
+
   name = CamelCaseToUnderscoreCase(original_name, true);
   for (auto& c : name)
     c = clang::toUppercase(c);
