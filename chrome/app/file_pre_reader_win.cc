@@ -8,11 +8,15 @@
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/logging.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 
-void PreReadFile(const base::FilePath& file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+namespace {
 
+// Pre-reads |file_path| using ::ReadFile.
+void PreReadFileUsingReadFile(const base::FilePath& file_path) {
   base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                  base::File::FLAG_SEQUENTIAL_SCAN);
   if (!file.IsValid())
@@ -29,12 +33,9 @@ void PreReadFile(const base::FilePath& file_path) {
   ::VirtualFree(buffer, 0, MEM_RELEASE);
 }
 
-void PreReadMemoryMappedFile(const base::MemoryMappedFile& memory_mapped_file,
-                             const base::FilePath& file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  if (!memory_mapped_file.IsValid())
-    return;
-
+// Pre-reads |file_path| using ::PrefetchVirtualMemory, if available. Otherwise,
+// falls back on using ::ReadFile.
+void PreReadFileUsingPrefetchVirtualMemory(const base::FilePath& file_path) {
   // Load ::PrefetchVirtualMemory dynamically, because it is only available on
   // Win8+.
   using PrefetchVirtualMemoryPtr = decltype(::PrefetchVirtualMemory)*;
@@ -42,8 +43,19 @@ void PreReadMemoryMappedFile(const base::MemoryMappedFile& memory_mapped_file,
       reinterpret_cast<PrefetchVirtualMemoryPtr>(::GetProcAddress(
           ::GetModuleHandle(L"kernel32.dll"), "PrefetchVirtualMemory"));
   if (!prefetch_virtual_memory) {
-    // If ::PrefetchVirtualMemory is not available, fall back to PreReadFile.
-    PreReadFile(file_path);
+    // If ::PrefetchVirtualMemory is not available, fall back to
+    // PreReadFileUsingReadFile().
+    PreReadFileUsingReadFile(file_path);
+    return;
+  }
+
+  base::MemoryMappedFile memory_mapped_file;
+  if (!memory_mapped_file.Initialize(file_path)) {
+    // Initializing the memory map should not fail. If it does fail in a debug
+    // build, we want to be warned about it so that we can investigate the
+    // failure.
+    NOTREACHED();
+    PreReadFileUsingReadFile(file_path);
     return;
   }
 
@@ -52,4 +64,30 @@ void PreReadMemoryMappedFile(const base::MemoryMappedFile& memory_mapped_file,
       reinterpret_cast<const void*>(memory_mapped_file.data()));
   memory_range.NumberOfBytes = memory_mapped_file.length();
   prefetch_virtual_memory(::GetCurrentProcess(), 1U, &memory_range, 0);
+}
+
+}  // namespace
+
+void PreReadFile(const base::FilePath& file_path,
+                 const startup_metric_utils::PreReadOptions& pre_read_options) {
+  DCHECK(pre_read_options.pre_read);
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // Increase thread priority if necessary.
+  base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
+  if (pre_read_options.high_priority) {
+    previous_priority = base::PlatformThread::GetCurrentThreadPriority();
+    base::PlatformThread::SetCurrentThreadPriority(
+        base::ThreadPriority::DISPLAY);
+  }
+
+  // Pre-read |file_path|.
+  if (pre_read_options.prefetch_virtual_memory)
+    PreReadFileUsingPrefetchVirtualMemory(file_path);
+  else
+    PreReadFileUsingReadFile(file_path);
+
+  // Reset thread priority.
+  if (pre_read_options.high_priority)
+    base::PlatformThread::SetCurrentThreadPriority(previous_priority);
 }

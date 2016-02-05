@@ -14,7 +14,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
-#include "base/files/memory_mapped_file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
@@ -62,31 +60,11 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
-  // Get pre-read options from the PreRead field trial.
+  // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
   const startup_metric_utils::PreReadOptions pre_read_options =
       startup_metric_utils::GetPreReadOptions();
-
-  // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
-  if (pre_read_options.pre_read) {
-    base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
-    if (pre_read_options.high_priority) {
-      previous_priority = base::PlatformThread::GetCurrentThreadPriority();
-      base::PlatformThread::SetCurrentThreadPriority(
-          base::ThreadPriority::DISPLAY);
-    }
-
-    if (pre_read_options.prefetch_virtual_memory) {
-      base::MemoryMappedFile module_memory_map;
-      const bool map_initialize_success = module_memory_map.Initialize(module);
-      DCHECK(map_initialize_success);
-      PreReadMemoryMappedFile(module_memory_map, module);
-    } else {
-      PreReadFile(module);
-    }
-
-    if (pre_read_options.high_priority)
-      base::PlatformThread::SetCurrentThreadPriority(previous_priority);
-  }
+  if (pre_read_options.pre_read)
+    PreReadFile(module, pre_read_options);
 
   return ::LoadLibraryExW(module.value().c_str(), nullptr,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
