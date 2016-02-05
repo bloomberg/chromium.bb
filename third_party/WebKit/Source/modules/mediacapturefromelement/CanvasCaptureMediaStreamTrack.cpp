@@ -73,6 +73,7 @@ CanvasCaptureMediaStreamTrack::CanvasCaptureMediaStreamTrack(MediaStreamComponen
     suspendIfNeeded();
     if (frameRate == 0) {
         m_drawListener = OnRequestCanvasDrawListener::create(handler);
+        m_drawListener->requestFrame();
     } else {
         TimedCanvasDrawListener* listener = TimedCanvasDrawListener::create(handler, frameRate);
         listener->requestNewFrame();

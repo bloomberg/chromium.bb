@@ -59,6 +59,8 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
         tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release(), frameRate));
     else
         tracks.append(CanvasCaptureMediaStreamTrack::create(track, &element, handler.release()));
+    // We want to capture one frame in the beginning.
+    element.notifyListenersCanvasChanged();
     return MediaStream::create(element.executionContext(), tracks);
 }
 

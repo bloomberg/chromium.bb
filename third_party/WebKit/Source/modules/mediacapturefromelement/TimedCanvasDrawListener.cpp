@@ -15,7 +15,6 @@ TimedCanvasDrawListener::TimedCanvasDrawListener(const PassOwnPtr<WebCanvasCaptu
     : CanvasDrawListener(handler)
 {
     m_frameInterval = 1000 / frameRate;
-    requestNewFrame();
 }
 
 TimedCanvasDrawListener::~TimedCanvasDrawListener() {}
