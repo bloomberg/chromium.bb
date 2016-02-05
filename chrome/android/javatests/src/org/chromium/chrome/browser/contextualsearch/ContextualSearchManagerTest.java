@@ -25,6 +25,7 @@ import android.view.ViewConfiguration;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -200,21 +201,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Waits for the requested search term to match, and asserts.
-     * @param searchTerm A given search term.
-     */
-    public void waitForSearchTermToMatch(
-            final String searchTerm) throws InterruptedException {
-        CriteriaHelper.pollForCriteria(new Criteria("Search term never matched.") {
-            @Override
-            public boolean isSatisfied() {
-                String url = mFakeServer.getLoadedUrl();
-                return !TextUtils.isEmpty(url) && url.contains("q=" + searchTerm);
-            }
-        }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
      * Runs the given Runnable in the main thread.
      * @param runnable The Runnable.
      */
@@ -256,7 +242,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private void simulateTapSearch(String nodeId) throws InterruptedException, TimeoutException {
         ContextualSearchFakeServer.FakeTapSearch search = mFakeServer.getFakeTapSearch(nodeId);
         search.simulate();
-        waitForSearchTermToMatch(search.getSearchTerm());
+        assertLoadedSearchTermMatches(search.getSearchTerm());
         waitForPanelToPeek();
     }
 
@@ -497,8 +483,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         boolean doesMatch = false;
         String message = "but there was no loaded URL!";
         if (mFakeServer != null) {
-            String url = mFakeServer.getLoadedUrl();
-            doesMatch = !TextUtils.isEmpty(url) && url.contains("q=" + searchTerm);
+            doesMatch = mFakeServer.getLoadedUrl().contains("q=" + searchTerm);
             message = "in URL: " + mFakeServer.getLoadedUrl();
         }
         assertTrue("Expected to find searchTerm " + searchTerm + ", " + message, doesMatch);
@@ -2302,6 +2287,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Tests that chained searches load correctly.
      */
+    @DisabledTest // https://crbug.com/551711
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
