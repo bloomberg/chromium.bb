@@ -11,6 +11,7 @@ import os
 import re
 import sys
 
+from pylib import constants
 from pylib.constants import host_paths
 
 # Uses symbol.py from third_party/android_platform, not python's.
@@ -93,7 +94,13 @@ def main():
   parser.add_option('-l', '--logcat',
                     help='File containing adb logcat output with ASan stacks. '
                          'Use stdin if not specified.')
+  parser.add_option('--output-directory',
+                    help='Path to the root build directory.')
   options, _ = parser.parse_args()
+
+  if options.output_directory:
+    constants.SetOutputDirectory(options.output_directory)
+
   if options.logcat:
     asan_input = file(options.logcat, 'r')
   else:
