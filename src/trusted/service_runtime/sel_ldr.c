@@ -16,7 +16,6 @@
 #include "native_client/src/include/nacl_macros.h"
 
 #include "native_client/src/public/nacl_app.h"
-#include "native_client/src/public/secure_service.h"
 
 #include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -25,7 +24,6 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
@@ -52,8 +50,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr_thread_interface.h"
-#include "native_client/src/trusted/simple_service/nacl_simple_rservice.h"
-#include "native_client/src/trusted/simple_service/nacl_simple_service.h"
 #include "native_client/src/trusted/threading/nacl_thread_interface.h"
 #include "native_client/src/trusted/validator/rich_file_info.h"
 

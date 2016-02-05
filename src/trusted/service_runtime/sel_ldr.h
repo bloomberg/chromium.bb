@@ -41,8 +41,6 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-
 #include "native_client/src/trusted/interval_multiset/nacl_interval_multiset.h"
 #include "native_client/src/trusted/interval_multiset/nacl_interval_range_tree.h"
 
@@ -50,7 +48,6 @@
 #include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_resource.h"
-#include "native_client/src/trusted/service_runtime/nacl_secure_service.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_handlers.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"

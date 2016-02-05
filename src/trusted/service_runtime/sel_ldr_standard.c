@@ -24,8 +24,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 
-#include "native_client/src/shared/srpc/nacl_srpc.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/perf_counter/nacl_perf_counter.h"
 

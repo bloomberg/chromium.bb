@@ -38,7 +38,6 @@ LIBRARY_DEPENDENCIES_DEFAULT = {
     'sel': [
         'nacl_error_code',
         'env_cleanser',
-        'simple_service',
         'thread_interface',
         'nonnacl_srpc',
         'nrd_xfer',
