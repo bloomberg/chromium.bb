@@ -288,13 +288,6 @@ void AshWindowTreeHostX11::SetCrOSTapPaused(bool state) {
     }
   }
 }
-#endif
-
-AshWindowTreeHost* AshWindowTreeHost::Create(
-    const AshWindowTreeHostInitParams& init_params) {
-  if (init_params.offscreen)
-    return new AshWindowTreeHostUnified(init_params.initial_bounds);
-  return new AshWindowTreeHostX11(init_params.initial_bounds);
-}
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace ash

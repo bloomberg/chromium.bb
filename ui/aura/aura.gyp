@@ -136,12 +136,6 @@
             '../ozone/ozone.gyp:ozone_base',
           ],
         }],
-        ['OS!="win" and OS!="android" and use_ozone==0', {
-          'sources!': [
-            'window_tree_host_platform.cc',
-            'window_tree_host_platform.h',
-          ],
-        }],
         ['OS=="android"', {
           'dependencies': [
             '../platform_window/android/android_window.gyp:android_window',

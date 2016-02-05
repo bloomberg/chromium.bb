@@ -13,9 +13,8 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/compositor.h"
-#include "ui/events/event_processor.h"
-#include "ui/events/null_event_targeter.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/platform_window/stub/stub_window.h"
 
 namespace ash {
 
@@ -49,23 +48,19 @@ class UnifiedEventTargeter : public aura::WindowTargeter {
 
 AshWindowTreeHostUnified::AshWindowTreeHostUnified(
     const gfx::Rect& initial_bounds)
-    : bounds_(gfx::Rect(initial_bounds.size())), transformer_helper_(this) {
-  CreateCompositor();
-  OnAcceleratedWidgetAvailable();
-  transformer_helper_.Init();
+    : AshWindowTreeHostPlatform() {
+  scoped_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
+  window->SetBounds(initial_bounds);
+  SetPlatformWindow(std::move(window));
 }
 
 AshWindowTreeHostUnified::~AshWindowTreeHostUnified() {
   for (auto* ash_host : mirroring_hosts_)
     ash_host->AsWindowTreeHost()->window()->RemoveObserver(this);
-
-  DestroyCompositor();
-  DestroyDispatcher();
 }
 
 void AshWindowTreeHostUnified::PrepareForShutdown() {
-  window()->SetEventTargeter(
-      scoped_ptr<ui::EventTargeter>(new ui::NullEventTargeter));
+  AshWindowTreeHostPlatform::PrepareForShutdown();
 
   for (auto host : mirroring_hosts_)
     host->PrepareForShutdown();
@@ -82,78 +77,9 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
   mirroring_ash_host->AsWindowTreeHost()->window()->AddObserver(this);
 }
 
-void AshWindowTreeHostUnified::ToggleFullScreen() {
-}
-
-bool AshWindowTreeHostUnified::ConfineCursorToRootWindow() {
-  return true;
-}
-
-void AshWindowTreeHostUnified::UnConfineCursor() {
-}
-
-void AshWindowTreeHostUnified::SetRootWindowTransformer(
-    scoped_ptr<RootWindowTransformer> transformer) {
-  transformer_helper_.SetRootWindowTransformer(std::move(transformer));
-}
-
-gfx::Insets AshWindowTreeHostUnified::GetHostInsets() const {
-  return transformer_helper_.GetHostInsets();
-}
-
-aura::WindowTreeHost* AshWindowTreeHostUnified::AsWindowTreeHost() {
-  return this;
-}
-
-ui::EventSource* AshWindowTreeHostUnified::GetEventSource() {
-  return this;
-}
-
-gfx::AcceleratedWidget AshWindowTreeHostUnified::GetAcceleratedWidget() {
-  return gfx::kNullAcceleratedWidget;
-}
-
-void AshWindowTreeHostUnified::ShowImpl() {
-}
-
-void AshWindowTreeHostUnified::HideImpl() {
-}
-
-gfx::Rect AshWindowTreeHostUnified::GetBounds() const {
-  return bounds_;
-}
-
 void AshWindowTreeHostUnified::SetBounds(const gfx::Rect& bounds) {
-  bounds_.set_size(bounds.size());
-  OnHostResized(bounds_.size());
-}
-
-gfx::Transform AshWindowTreeHostUnified::GetRootTransform() const {
-  return transformer_helper_.GetTransform();
-}
-
-void AshWindowTreeHostUnified::SetRootTransform(
-    const gfx::Transform& transform) {
-  transformer_helper_.SetTransform(transform);
-}
-
-gfx::Transform AshWindowTreeHostUnified::GetInverseRootTransform() const {
-  return transformer_helper_.GetInverseTransform();
-}
-
-void AshWindowTreeHostUnified::UpdateRootWindowSize(
-    const gfx::Size& host_size) {
-  transformer_helper_.UpdateWindowSize(host_size);
-}
-
-void AshWindowTreeHostUnified::SetCapture() {
-}
-
-void AshWindowTreeHostUnified::ReleaseCapture() {
-}
-
-gfx::Point AshWindowTreeHostUnified::GetLocationOnNativeScreen() const {
-  return gfx::Point();
+  AshWindowTreeHostPlatform::SetBounds(bounds);
+  OnHostResized(bounds.size());
 }
 
 void AshWindowTreeHostUnified::SetCursorNative(gfx::NativeCursor cursor) {
@@ -161,13 +87,14 @@ void AshWindowTreeHostUnified::SetCursorNative(gfx::NativeCursor cursor) {
     host->AsWindowTreeHost()->SetCursor(cursor);
 }
 
-void AshWindowTreeHostUnified::MoveCursorToNative(const gfx::Point& location) {
-  // No native cursor in offscreen surface.
-}
-
 void AshWindowTreeHostUnified::OnCursorVisibilityChangedNative(bool show) {
   for (auto host : mirroring_hosts_)
     host->AsWindowTreeHost()->OnCursorVisibilityChanged(show);
+}
+
+void AshWindowTreeHostUnified::OnBoundsChanged(const gfx::Rect& bounds) {
+  if (platform_window())
+    OnHostResized(bounds.size());
 }
 
 void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {
@@ -179,16 +106,6 @@ void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {
   DCHECK(iter != mirroring_hosts_.end());
   window->RemoveObserver(this);
   mirroring_hosts_.erase(iter);
-}
-
-ui::EventDispatchDetails AshWindowTreeHostUnified::DispatchKeyEventPostIME(
-    ui::KeyEvent* event) {
-  input_method_handler()->SetPostIME(true);
-  ui::EventDispatchDetails details =
-      event_processor()->OnEventFromSource(event);
-  if (!details.dispatcher_destroyed)
-    input_method_handler()->SetPostIME(false);
-  return details;
 }
 
 }  // namespace ash

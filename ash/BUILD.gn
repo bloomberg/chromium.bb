@@ -51,6 +51,7 @@ component("ash") {
     "//ui/gfx/geometry",
     "//ui/keyboard",
     "//ui/message_center",
+    "//ui/platform_window/stub",
     "//ui/resources",
     "//ui/strings",
     "//ui/views",
@@ -129,7 +130,6 @@ component("ash") {
 
   if (!use_ozone) {
     sources -= [
-      "host/ash_window_tree_host_ozone.cc",
       "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
       "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
     ]

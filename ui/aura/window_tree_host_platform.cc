@@ -83,7 +83,7 @@ void WindowTreeHostPlatform::HideImpl() {
 }
 
 gfx::Rect WindowTreeHostPlatform::GetBounds() const {
-  return window_->GetBounds();
+  return window_ ? window_->GetBounds() : gfx::Rect();
 }
 
 void WindowTreeHostPlatform::SetBounds(const gfx::Rect& bounds) {
