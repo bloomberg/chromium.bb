@@ -1981,8 +1981,6 @@
             'page/TouchDisambiguation.cpp',
             'page/TouchDisambiguation.h',
             'page/WindowFeatures.cpp',
-            'page/scrolling/ScrollingConstraints.cpp',
-            'page/scrolling/ScrollingConstraints.h',
             'page/scrolling/ScrollingCoordinator.cpp',
             'page/scrolling/ScrollingCoordinator.h',
             'page/scrolling/ScrollCustomizationCallbacks.cpp',
