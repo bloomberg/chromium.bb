@@ -4,128 +4,87 @@
 
 package org.chromium.chrome.browser.toolbar;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint.Align;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.TextPaint;
-import android.util.Property;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
-import java.text.NumberFormat;
+import java.util.Locale;
 
 /**
  * A drawable for the tab switcher icon.
  */
 public class TabSwitcherDrawable extends TintedDrawable {
-
-    private static final int MAX_COUNT_TO_DISPLAY = 99;
-
     private final float mSingleDigitTextSize;
     private final float mDoubleDigitTextSize;
 
-    private Animator mLastRollAnimator;
-    private int mActualCount;
-    private float mDisplayedCount;
-    private TextDrawingCache mUpText;
-    private TextDrawingCache mDownText;
+    private final Rect mTextBounds = new Rect();
+    private final TextPaint mTextPaint;
 
-    private static final Property<TabSwitcherDrawable, Float> COUNT_PROPERTY =
-            new Property<TabSwitcherDrawable, Float>(Float.class, "") {
-        @Override
-        public void set(TabSwitcherDrawable view, Float value) {
-            view.updateDisplayedCount(value);
-        }
-
-        @Override
-        public Float get(TabSwitcherDrawable view) {
-            return view.mDisplayedCount;
-        }
-    };
-
-    private class TextDrawingCache {
-        private int mNumber;
-        private String mString;
-        private final TextPaint mTextPaint = new TextPaint();
-        private final Rect mTextBounds = new Rect();
-
-        private TextDrawingCache() {
-            mTextPaint.setAntiAlias(true);
-            mTextPaint.setTextAlign(Align.LEFT);
-            mTextPaint.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
-        }
-
-        private void draw(Canvas canvas, float alpha, float centerX, float centerY) {
-            int saveCount = canvas.save();
-            canvas.translate(centerX, centerY);
-            canvas.saveLayerAlpha(mTextBounds.left - mTextBounds.centerX(),
-                    mTextBounds.top - mTextBounds.centerY(),
-                    mTextBounds.right - mTextBounds.centerX(),
-                    mTextBounds.bottom - mTextBounds.centerY(),
-                    (int) (256 * alpha), Canvas.ALL_SAVE_FLAG);
-            canvas.drawText(mString, -mTextBounds.centerX(), -mTextBounds.centerY(), mTextPaint);
-            canvas.restoreToCount(saveCount);
-        }
-
-        private void updateTextColor() {
-            mTextPaint.setColor(mTint.getColorForState(getState(), 0));
-        }
-
-        private void updateNumber(int number) {
-            if (mNumber == number && mString != null) return;
-
-            mNumber = number;
-            mString = getDisplayString(mNumber);
-
-            mTextPaint.setTextSize(mString.length() <= 1
-                    ? mSingleDigitTextSize : mDoubleDigitTextSize);
-            mTextPaint.getTextBounds(mString, 0, mString.length(), mTextBounds);
-        }
-    }
+    // Tab Count Label
+    private int mTabCount;
+    private boolean mIncognito;
 
     /**
      * Creates a {@link TabSwitcherDrawable}.
      * @param resources A {@link Resources} instance.
-     * @param tint      Tinting {@link ColorStateList} used for the icon and the count texts.
+     * @param useLight  Whether or not to use light or dark textures and text colors.
+     * @return          A {@link TabSwitcherDrawable} instance.
      */
-    TabSwitcherDrawable(Resources resources, ColorStateList tint) {
-        super(resources, BitmapFactory.decodeResource(resources, R.drawable.btn_tabswitcher));
+    public static TabSwitcherDrawable createTabSwitcherDrawable(
+            Resources resources, boolean useLight) {
+        Bitmap icon = BitmapFactory.decodeResource(resources, R.drawable.btn_tabswitcher);
+        return new TabSwitcherDrawable(resources, useLight, icon);
+    }
+
+    private TabSwitcherDrawable(Resources resources, boolean useLight, Bitmap bitmap) {
+        super(resources, bitmap);
+        setTint(ApiCompatibilityUtils.getColorStateList(resources,
+                useLight ? R.color.light_mode_tint : R.color.dark_mode_tint));
         mSingleDigitTextSize =
                 resources.getDimension(R.dimen.toolbar_tab_count_text_size_1_digit);
         mDoubleDigitTextSize =
                 resources.getDimension(R.dimen.toolbar_tab_count_text_size_2_digit);
 
-        mUpText = new TextDrawingCache();
-        mDownText = new TextDrawingCache();
-
-        setTint(tint);
-        updateDisplayedCount(0);
+        mTextPaint = new TextPaint();
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setTextAlign(Align.CENTER);
+        mTextPaint.setTypeface(Typeface.create("sans-serif-condensed", Typeface.BOLD));
+        mTextPaint.setColor(getColorForState());
     }
 
-    /**
-     * Update the visual state based on the number of tabs present.
-     * @param count The number of tabs.
-     */
-    void setCount(int count) {
-        mActualCount = count;
+    @Override
+    protected boolean onStateChange(int[] state) {
+        boolean retVal = super.onStateChange(state);
+        if (retVal) mTextPaint.setColor(getColorForState());
+        return retVal;
+    }
 
-        if (mLastRollAnimator != null) mLastRollAnimator.cancel();
+    @Override
+    public void draw(Canvas canvas) {
+        super.draw(canvas);
 
-        mLastRollAnimator = ObjectAnimator.ofFloat(this, COUNT_PROPERTY,
-                Math.min(count, MAX_COUNT_TO_DISPLAY + 1));
-        mLastRollAnimator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-        mLastRollAnimator.setDuration((long) (mLastRollAnimator.getDuration()
-                * Math.sqrt(Math.abs(count - mDisplayedCount))));
-        mLastRollAnimator.start();
+        String textString = getTabCountString();
+        if (!textString.isEmpty()) {
+            mTextPaint.getTextBounds(textString, 0, textString.length(), mTextBounds);
+
+            Rect drawableBounds = getBounds();
+            int textX = drawableBounds.width() / 2;
+            int textY = drawableBounds.height() / 2 + (mTextBounds.bottom - mTextBounds.top) / 2
+                    - mTextBounds.bottom;
+
+            canvas.drawText(textString, textX, textY, mTextPaint);
+        }
     }
 
     /**
@@ -133,57 +92,39 @@ public class TabSwitcherDrawable extends TintedDrawable {
      */
     @VisibleForTesting
     public int getTabCount() {
-        return mActualCount;
+        return mTabCount;
     }
 
-    private void updateDisplayedCount(float count) {
-        mDisplayedCount = count;
-        mUpText.updateNumber((int) count);
-        mDownText.updateNumber((int) count + 1);
+    /**
+     * Update the visual state based on the number of tabs present.
+     * @param tabCount The number of tabs.
+     */
+    public void updateForTabCount(int tabCount, boolean incognito) {
+        if (tabCount == mTabCount && incognito == mIncognito) return;
+        mTabCount = tabCount;
+        mIncognito = incognito;
+        float textSizePx = mTabCount > 9 ? mDoubleDigitTextSize : mSingleDigitTextSize;
+        mTextPaint.setTextSize(textSizePx);
         invalidateSelf();
     }
 
-    private String getDisplayString(int number) {
-        if (number <= 0) {
+    private String getTabCountString() {
+        if (mTabCount <= 0) {
             return "";
-        } else if (number > MAX_COUNT_TO_DISPLAY) {
-            return ":D";
+        } else if (mTabCount > 99) {
+            return mIncognito ? ";)" : ":D";
         } else {
-            return NumberFormat.getIntegerInstance().format(number);
+            return String.format(Locale.getDefault(), "%d", mTabCount);
         }
     }
 
-    @Override
-    public void draw(Canvas canvas) {
-        final float fraction = mDisplayedCount % 1.0f;
-        final Rect drawableBounds = getBounds();
-
-        mUpText.draw(canvas, 1.0f - fraction,
-                drawableBounds.centerX(),
-                drawableBounds.centerY() - (drawableBounds.height() / 3.0f * fraction));
-        mDownText.draw(canvas, fraction,
-                drawableBounds.centerX(),
-                drawableBounds.centerY() + (drawableBounds.height() / 3.0f * (1.0f - fraction)));
-
-        super.draw(canvas);
-    }
-
-    @Override
-    protected boolean onStateChange(int[] state) {
-        boolean retVal = super.onStateChange(state);
-        if (retVal) {
-            mUpText.updateTextColor();
-            mDownText.updateTextColor();
-            invalidateSelf();
-        }
-        return retVal;
+    private int getColorForState() {
+        return mTint.getColorForState(getState(), 0);
     }
 
     @Override
     public void setTint(ColorStateList tint) {
         super.setTint(tint);
-        mUpText.updateTextColor();
-        mDownText.updateTextColor();
-        invalidateSelf();
+        if (mTextPaint != null) mTextPaint.setColor(getColorForState());
     }
 }

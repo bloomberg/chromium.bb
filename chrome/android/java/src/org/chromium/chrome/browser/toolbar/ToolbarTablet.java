@@ -48,6 +48,7 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
     private NavigationPopup mNavigationPopup;
 
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
+    private TabSwitcherDrawable mTabSwitcherButtonDrawableLight;
 
     private Boolean mUseLightColorAssets;
     private LocationBar mLocationBar;
@@ -73,8 +74,11 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         mShowTabStack = DeviceClassManager.isAccessibilityModeEnabled(getContext())
                 || CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_TABLET_TAB_STACK);
 
+        mTabSwitcherButtonDrawable =
+                TabSwitcherDrawable.createTabSwitcherDrawable(getResources(), false);
+        mTabSwitcherButtonDrawableLight =
+                TabSwitcherDrawable.createTabSwitcherDrawable(getResources(), true);
 
-        mTabSwitcherButtonDrawable = new TabSwitcherDrawable(getResources(), mDarkModeTint);
         mAccessibilitySwitcherButton = (ImageButton) findViewById(R.id.tab_switcher_button);
         mAccessibilitySwitcherButton.setImageDrawable(mTabSwitcherButtonDrawable);
         updateSwitcherButtonVisibility(mShowTabStack);
@@ -298,7 +302,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             } else {
                 mLocationBar.getContainerView().getBackground().setAlpha(255);
             }
-            mTabSwitcherButtonDrawable.setTint(incognito ? mLightModeTint : mDarkModeTint);
+            mAccessibilitySwitcherButton.setImageDrawable(
+                    incognito ? mTabSwitcherButtonDrawableLight : mTabSwitcherButtonDrawable);
             mLocationBar.updateVisualsForState();
             mUseLightColorAssets = incognito;
         }
@@ -377,7 +382,8 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
         mAccessibilitySwitcherButton.setContentDescription(
                 getResources().getString(R.string.accessibility_toolbar_btn_tabswitcher_toggle,
                         numberOfTabs));
-        mTabSwitcherButtonDrawable.setCount(numberOfTabs);
+        mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
+        mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
     }
 
     @Override
