@@ -286,11 +286,9 @@ void DisplayChangeObserver::OnDisplayModeChangeFailed(
 }
 
 void DisplayChangeObserver::OnAppTerminating() {
-#if defined(USE_ASH)
   // Stop handling display configuration events once the shutdown
   // process starts. crbug.com/177014.
   Shell::GetInstance()->display_configurator()->PrepareForExit();
-#endif
 }
 
 // static
