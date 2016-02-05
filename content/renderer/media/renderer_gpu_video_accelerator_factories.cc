@@ -8,6 +8,7 @@
 #include <GLES2/gl2ext.h>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "cc/output/context_provider.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
@@ -24,6 +25,22 @@
 
 namespace content {
 
+namespace {
+
+// This enum values match ContextProviderPhase in histograms.xml
+enum ContextProviderPhase {
+  CONTEXT_PROVIDER_ACQUIRED = 0,
+  CONTEXT_PROVIDER_RELEASED = 1,
+  CONTEXT_PROVIDER_RELEASED_MAX_VALUE = CONTEXT_PROVIDER_RELEASED,
+};
+
+void RecordContextProviderPhaseUmaEnum(const ContextProviderPhase phase) {
+  UMA_HISTOGRAM_ENUMERATION("Media.GPU.HasEverLostContext", phase,
+                            CONTEXT_PROVIDER_RELEASED_MAX_VALUE + 1);
+}
+
+}  // namespace
+
 // static
 scoped_ptr<RendererGpuVideoAcceleratorFactories>
 RendererGpuVideoAcceleratorFactories::Create(
@@ -34,6 +51,8 @@ RendererGpuVideoAcceleratorFactories::Create(
     bool enable_gpu_memory_buffer_video_frames,
     std::vector<unsigned> image_texture_targets,
     bool enable_video_accelerator) {
+  RecordContextProviderPhaseUmaEnum(
+      ContextProviderPhase::CONTEXT_PROVIDER_ACQUIRED);
   return make_scoped_ptr(new RendererGpuVideoAcceleratorFactories(
       gpu_channel_host, main_thread_task_runner, task_runner, context_provider,
       enable_gpu_memory_buffer_video_frames, image_texture_targets,
@@ -263,6 +282,8 @@ RendererGpuVideoAcceleratorFactories::
 
 void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  RecordContextProviderPhaseUmaEnum(
+      ContextProviderPhase::CONTEXT_PROVIDER_RELEASED);
   context_provider_refptr_ = nullptr;
 }
 

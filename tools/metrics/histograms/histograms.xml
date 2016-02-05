@@ -19274,6 +19274,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.GPU.HasEverLostContext" enum="ContextProviderPhase">
+  <owner>dcastagna@chromium.org</owner>
+  <summary>
+    Records when a context provider is acquired in media, and when it's released
+    because a context loss has been detected.
+  </summary>
+</histogram>
+
 <histogram name="Media.GpuVideoDecoderInitializeStatus" enum="PipelineStatus">
   <owner>posciak@chromium.org</owner>
   <summary>Results of attempts to GpuVideoDecoder::Initialize().</summary>
@@ -59825,6 +59833,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="Audio"/>
   <int value="4" label="Video"/>
   <int value="5" label="Pdf"/>
+</enum>
+
+<enum name="ContextProviderPhase" type="int">
+  <int value="0" label="Acquired"/>
+  <int value="1" label="Released"/>
 </enum>
 
 <enum name="ContextualSearchBasePageProtocol" type="int">
