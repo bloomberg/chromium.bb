@@ -9,11 +9,10 @@
 #include "core/css/cssom/CalcDictionary.h"
 #include "core/css/cssom/SimpleLength.h"
 #include "wtf/Vector.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-StyleCalcLength::StyleCalcLength() : m_values(LengthUnit::Count), m_hasValues(LengthUnit::Count) {}
+StyleCalcLength::StyleCalcLength() : m_values(LengthValue::kNumSupportedUnits), m_hasValues(LengthValue::kNumSupportedUnits) {}
 
 StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
     m_values(other.m_values),
@@ -21,7 +20,7 @@ StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
 {}
 
 StyleCalcLength::StyleCalcLength(const SimpleLength& other) :
-    m_values(LengthUnit::Count), m_hasValues(LengthUnit::Count)
+    m_values(LengthValue::kNumSupportedUnits), m_hasValues(LengthValue::kNumSupportedUnits)
 {
     set(other.value(), other.lengthUnit());
 }
@@ -41,27 +40,27 @@ StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, Excep
     StyleCalcLength* result = new StyleCalcLength();
     int numSet = 0;
 
-#define setFromDictValue(name, camelName) \
+#define setFromDictValue(name, camelName, primitiveName) \
     if (dictionary.has##camelName()) { \
-        result->set(dictionary.name(), LengthValue::camelName); \
+        result->set(dictionary.name(), CSSPrimitiveValue::UnitType::primitiveName); \
         numSet++; \
     }
 
-    setFromDictValue(px, Px)
-    setFromDictValue(percent, Percent)
-    setFromDictValue(em, Em)
-    setFromDictValue(ex, Ex)
-    setFromDictValue(ch, Ch)
-    setFromDictValue(rem, Rem)
-    setFromDictValue(vw, Vw)
-    setFromDictValue(vh, Vh)
-    setFromDictValue(vmin, Vmin)
-    setFromDictValue(vmax, Vmax)
-    setFromDictValue(cm, Cm)
-    setFromDictValue(mm, Mm)
-    setFromDictValue(in, In)
-    setFromDictValue(pc, Pc)
-    setFromDictValue(pt, Pt)
+    setFromDictValue(px, Px, Pixels)
+    setFromDictValue(percent, Percent, Percentage)
+    setFromDictValue(em, Em, Ems)
+    setFromDictValue(ex, Ex, Exs)
+    setFromDictValue(ch, Ch, Chs)
+    setFromDictValue(rem, Rem, Rems)
+    setFromDictValue(vw, Vw, ViewportWidth)
+    setFromDictValue(vh, Vh, ViewportHeight)
+    setFromDictValue(vmin, Vmin, ViewportMin)
+    setFromDictValue(vmax, Vmax, ViewportMax)
+    setFromDictValue(cm, Cm, Centimeters)
+    setFromDictValue(mm, Mm, Millimeters)
+    setFromDictValue(in, In, Inches)
+    setFromDictValue(pc, Pc, Picas)
+    setFromDictValue(pt, Pt, Points)
 
     if (numSet == 0) {
         exceptionState.throwTypeError("Must specify at least one value in CalcDictionary for creating a CalcLength.");
@@ -71,16 +70,15 @@ StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, Excep
 
 bool StyleCalcLength::containsPercent() const
 {
-    return has(LengthValue::Percent);
+    return has(CSSPrimitiveValue::UnitType::Percentage);
 }
 
 LengthValue* StyleCalcLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(other, exceptionState);
-    for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-        LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-        if (has(lengthUnit)) {
-            result->set(m_values[i] + result->get(lengthUnit), lengthUnit);
+    for (int i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+        if (hasAtIndex(i)) {
+            result->setAtIndex(getAtIndex(i) + result->getAtIndex(i), i);
         }
     }
     return result;
@@ -88,19 +86,17 @@ LengthValue* StyleCalcLength::addInternal(const LengthValue* other, ExceptionSta
 
 LengthValue* StyleCalcLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
-
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
     if (other->type() == CalcLengthType) {
         const StyleCalcLength* o = toStyleCalcLength(other);
-        for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-            LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-            if (o->has(lengthUnit)) {
-                result->set(m_values[i] - o->get(lengthUnit), lengthUnit);
+        for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+            if (o->hasAtIndex(i)) {
+                result->setAtIndex(getAtIndex(i) - o->getAtIndex(i), i);
             }
         }
     } else {
         const SimpleLength* o = toSimpleLength(other);
-        result->set(m_values[o->lengthUnit()] - o->value(), o->lengthUnit());
+        result->set(get(o->lengthUnit()) - o->value(), o->lengthUnit());
     }
     return result;
 }
@@ -108,10 +104,9 @@ LengthValue* StyleCalcLength::subtractInternal(const LengthValue* other, Excepti
 LengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
-    for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-        LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-        if (has(lengthUnit)) {
-            result->set(m_values[i] * x, lengthUnit);
+    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+        if (hasAtIndex(i)) {
+            result->setAtIndex(getAtIndex(i) * x, i);
         }
     }
     return result;
@@ -120,10 +115,9 @@ LengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& excepti
 LengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exceptionState)
 {
     StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
-    for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-        LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-        if (has(lengthUnit)) {
-            result->set(m_values[i] / x, lengthUnit);
+    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+        if (hasAtIndex(i)) {
+            result->setAtIndex(getAtIndex(i) / x, i);
         }
     }
     return result;
@@ -133,22 +127,25 @@ PassRefPtrWillBeRawPtr<CSSValue> StyleCalcLength::toCSSValue() const
 {
     // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
     RefPtrWillBeRawPtr<CSSCalcExpressionNode> node = nullptr;
-    for (unsigned i = 0; i < LengthUnit::Count; ++i) {
-        LengthUnit lengthUnit = static_cast<LengthUnit>(i);
-        if (!has(lengthUnit))
+    for (unsigned i = 0; i < LengthValue::kNumSupportedUnits; ++i) {
+        if (!hasAtIndex(i))
             continue;
-        double value = get(lengthUnit);
-        CSSPrimitiveValue::UnitType primitiveUnit = lengthTypeToPrimitiveType(lengthUnit);
+        double value = getAtIndex(i);
         if (node) {
             node = CSSCalcValue::createExpressionNode(
                 node,
-                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(std::abs(value), primitiveUnit)),
+                CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(std::abs(value), unitFromIndex(i))),
                 value >= 0 ? CalcAdd : CalcSubtract);
         } else {
-            node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, primitiveUnit));
+            node = CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(value, unitFromIndex(i)));
         }
     }
     return CSSPrimitiveValue::create(CSSCalcValue::create(node));
+}
+
+int StyleCalcLength::indexForUnit(CSSPrimitiveValue::UnitType unit)
+{
+    return (static_cast<int>(unit) - static_cast<int>(CSSPrimitiveValue::UnitType::Percentage));
 }
 
 } // namespace blink

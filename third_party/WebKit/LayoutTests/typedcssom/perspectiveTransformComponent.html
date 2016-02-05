@@ -21,7 +21,7 @@ test(function() {
   var perspectiveTransformCalc = new PerspectiveTransformComponent(calcLength);
 
   assert_equals(perspectiveTransformSimple.cssString, 'perspective(10px)');
-  assert_equals(perspectiveTransformCalc.cssString,'perspective(calc(10px + 3.2em))');
+  assert_equals(perspectiveTransformCalc.cssString,'perspective(calc(3.2em + 10px))');
 }, "cssString should return a string of form perspective(<LengthValue.cssString()>)");
 
 </script>

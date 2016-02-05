@@ -18,15 +18,15 @@ class CORE_EXPORT SimpleLength final : public LengthValue {
 public:
     static SimpleLength* create(double value, const String& type, ExceptionState& exceptionState)
     {
-        LengthUnit unit = LengthValue::lengthUnitFromName(type);
-        if (unit == LengthUnit::Count) {
-            exceptionState.throwTypeError("Invalid unit for SimpleLength.");
+        CSSPrimitiveValue::UnitType unit = unitFromName(type);
+        if (!isSupportedLengthUnit(unit)) {
+            exceptionState.throwTypeError("Invalid unit for SimpleLength: " + type);
             return nullptr;
         }
         return new SimpleLength(value, unit);
     }
 
-    static SimpleLength* create(double value, LengthUnit type)
+    static SimpleLength* create(double value, CSSPrimitiveValue::UnitType type)
     {
         return new SimpleLength(value, type);
     }
@@ -34,8 +34,8 @@ public:
     bool containsPercent() const override;
 
     double value() const { return m_value; }
-    String unit() const { return LengthValue::lengthTypeToString(m_unit); }
-    LengthUnit lengthUnit() const { return m_unit; }
+    String unit() const { return String(CSSPrimitiveValue::unitTypeToString(m_unit)); }
+    CSSPrimitiveValue::UnitType lengthUnit() const { return m_unit; }
 
     void setValue(double value) { m_value = value; }
 
@@ -50,9 +50,9 @@ protected:
     virtual LengthValue* divideInternal(double, ExceptionState&);
 
 private:
-    SimpleLength(double value, LengthUnit unit) : LengthValue(), m_unit(unit), m_value(value) {}
+    SimpleLength(double value, CSSPrimitiveValue::UnitType unit) : LengthValue(), m_unit(unit), m_value(value) {}
 
-    LengthUnit m_unit;
+    CSSPrimitiveValue::UnitType m_unit;
     double m_value;
 };
 

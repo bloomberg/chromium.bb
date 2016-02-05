@@ -12,12 +12,12 @@ namespace blink {
 
 PassRefPtrWillBeRawPtr<CSSValue> SimpleLength::toCSSValue() const
 {
-    return cssValuePool().createValue(m_value, LengthValue::lengthTypeToPrimitiveType(m_unit));
+    return cssValuePool().createValue(m_value, m_unit);
 }
 
 bool SimpleLength::containsPercent() const
 {
-    return lengthUnit() == LengthValue::Percent;
+    return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
 }
 
 LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)

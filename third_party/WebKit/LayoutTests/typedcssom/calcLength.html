@@ -57,11 +57,11 @@ test(function() {
   var values = [
     {input: new CalcLength({px: 1}), cssString: 'calc(1px)'},
     {input: new CalcLength({px: -1}), cssString: 'calc(-1px)'},
-    {input: new CalcLength({px: 1, percent: 15.6}), cssString: 'calc(1px + 15.6%)'},
-    {input: new CalcLength({px: 1, percent: -15.6}), cssString: 'calc(1px - 15.6%)'},
-    {input: new CalcLength({px: -1, percent: -15.6}), cssString: 'calc(-1px - 15.6%)'},
-    {input: new CalcLength({px: -1, percent: -15.6, vw: 5}), cssString: 'calc((-1px - 15.6%) + 5vw)'},
-    {input: new CalcLength({px: -1, percent: -15.6, vw: -5}), cssString: 'calc((-1px - 15.6%) - 5vw)'},
+    {input: new CalcLength({px: 1, percent: 15.6}), cssString: 'calc(15.6% + 1px)'},
+    {input: new CalcLength({px: 1, percent: -15.6}), cssString: 'calc(-15.6% + 1px)'},
+    {input: new CalcLength({px: -1, percent: -15.6}), cssString: 'calc(-15.6% - 1px)'},
+    {input: new CalcLength({px: -1, percent: -15.6, vw: 5}), cssString: 'calc((-15.6% - 1px) + 5vw)'},
+    {input: new CalcLength({px: -1, percent: -15.6, vw: -5}), cssString: 'calc((-15.6% - 1px) - 5vw)'},
   ];
 
   for (var i = 0; i < values.length; ++i) {
