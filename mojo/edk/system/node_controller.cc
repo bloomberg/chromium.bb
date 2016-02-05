@@ -340,37 +340,40 @@ void NodeController::AddPeer(const ports::NodeName& name,
 
   channel->SetRemoteNodeName(name);
 
-  base::AutoLock lock(peers_lock_);
-  if (peers_.find(name) != peers_.end()) {
-    // This can happen normally if two nodes race to be introduced to each
-    // other. The losing pipe will be silently closed and introduction should
-    // not be affected.
-    DVLOG(1) << "Ignoring duplicate peer name " << name;
-    return;
+  OutgoingMessageQueue pending_messages;
+  {
+    base::AutoLock lock(peers_lock_);
+    if (peers_.find(name) != peers_.end()) {
+      // This can happen normally if two nodes race to be introduced to each
+      // other. The losing pipe will be silently closed and introduction should
+      // not be affected.
+      DVLOG(1) << "Ignoring duplicate peer name " << name;
+      return;
+    }
+
+    auto result = peers_.insert(std::make_pair(name, channel));
+    DCHECK(result.second);
+
+    DVLOG(2) << "Accepting new peer " << name << " on node " << name_;
+
+    RecordPeerCount(peers_.size());
+
+    auto it = pending_peer_messages_.find(name);
+    if (it != pending_peer_messages_.end()) {
+      std::swap(pending_messages, it->second);
+      pending_peer_messages_.erase(it);
+    }
   }
-
-  auto result = peers_.insert(std::make_pair(name, channel));
-  DCHECK(result.second);
-
-  DVLOG(2) << "Accepting new peer " << name << " on node " << name_;
-
-  RecordPeerCount(peers_.size());
 
   if (start_channel)
     channel->Start();
 
   // Flush any queued message we need to deliver to this node.
-  OutgoingMessageQueue pending_messages;
-  auto it = pending_peer_messages_.find(name);
-  if (it != pending_peer_messages_.end()) {
-    auto& message_queue = it->second;
-    while (!message_queue.empty()) {
-      ports::ScopedMessage message = std::move(message_queue.front());
-      channel->PortsMessage(
-          static_cast<PortsMessage*>(message.get())->TakeChannelMessage());
-      message_queue.pop();
-    }
-    pending_peer_messages_.erase(it);
+  while (!pending_messages.empty()) {
+    ports::ScopedMessage message = std::move(pending_messages.front());
+    channel->PortsMessage(
+        static_cast<PortsMessage*>(message.get())->TakeChannelMessage());
+    pending_messages.pop();
   }
 
   // Complete any pending port connections to this peer.
