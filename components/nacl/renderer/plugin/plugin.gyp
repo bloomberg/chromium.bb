@@ -20,7 +20,6 @@
         'pnacl_translate_thread.cc',
         'ppapi_entrypoints.cc',
         'service_runtime.cc',
-        'utility.cc',
       ],
       'dependencies': [
         '<(DEPTH)/media/media.gyp:shared_memory_support',

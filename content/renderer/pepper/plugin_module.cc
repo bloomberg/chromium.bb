@@ -399,12 +399,6 @@ const PPB_Testing_Private testing_interface = {
 // GetInterface ----------------------------------------------------------------
 
 const void* InternalGetInterface(const char* name) {
-  // Allow custom interface factories first stab at the GetInterface call.
-  const void* custom_interface =
-      GetContentClient()->renderer()->CreatePPAPIInterface(name);
-  if (custom_interface)
-    return custom_interface;
-
 // TODO(brettw) put these in a hash map for better performance.
 #define PROXIED_IFACE(iface_str, iface_struct) \
   if (strcmp(name, iface_str) == 0)            \

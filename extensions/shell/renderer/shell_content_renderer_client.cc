@@ -24,8 +24,6 @@
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #include "components/nacl/renderer/nacl_helper.h"
-#include "components/nacl/renderer/ppb_nacl_private.h"
-#include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #endif
 
 using blink::WebFrame;
@@ -104,15 +102,6 @@ bool ShellContentRendererClient::WillSendRequest(
     GURL* new_url) {
   // TODO(jamescook): Cause an error for bad extension scheme requests?
   return false;
-}
-
-const void* ShellContentRendererClient::CreatePPAPIInterface(
-    const std::string& interface_name) {
-#if !defined(DISABLE_NACL)
-  if (interface_name == PPB_NACL_PRIVATE_INTERFACE)
-    return nacl::GetNaClPrivateInterface();
-#endif
-  return NULL;
 }
 
 bool ShellContentRendererClient::IsExternalPepperPlugin(

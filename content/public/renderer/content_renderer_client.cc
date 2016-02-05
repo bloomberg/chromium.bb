@@ -150,11 +150,6 @@ bool ContentRendererClient::ShouldOverridePageVisibilityState(
   return false;
 }
 
-const void* ContentRendererClient::CreatePPAPIInterface(
-    const std::string& interface_name) {
-  return nullptr;
-}
-
 bool ContentRendererClient::IsExternalPepperPlugin(
     const std::string& module_name) {
   return false;

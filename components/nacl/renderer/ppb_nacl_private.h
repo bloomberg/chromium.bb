@@ -28,8 +28,6 @@
 // functions below directly, rather than providing these functions via the
 // PPB_NaCl_Private interface struct.
 
-#define PPB_NACL_PRIVATE_INTERFACE "PPB_NaCl_Private"
-
 /**
  * @addtogroup Enums
  * @{

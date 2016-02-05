@@ -239,10 +239,6 @@ class CONTENT_EXPORT ContentRendererClient {
       const RenderFrame* render_frame,
       blink::WebPageVisibilityState* override_state);
 
-  // Allows an embedder to return custom PPAPI interfaces.
-  virtual const void* CreatePPAPIInterface(
-      const std::string& interface_name);
-
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
   virtual bool IsExternalPepperPlugin(const std::string& module_name);

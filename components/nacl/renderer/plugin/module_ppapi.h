@@ -7,7 +7,6 @@
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_MODULE_PPAPI_H_
 
-#include "components/nacl/renderer/ppb_nacl_private.h"
 #include "ppapi/cpp/module.h"
 
 namespace plugin {
@@ -21,9 +20,6 @@ class ModulePpapi : public pp::Module {
   bool Init() override;
 
   pp::Instance* CreateInstance(PP_Instance pp_instance) override;
-
- private:
-  const PPB_NaCl_Private* private_interface_;
 };
 
 }  // namespace plugin

@@ -4,21 +4,19 @@
  * found in the LICENSE file.
  */
 
-// A collection of debugging related interfaces.
-
 #ifndef COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 #define COMPONENTS_NACL_RENDERER_PLUGIN_UTILITY_H_
 
-#include <stdint.h>
-
 #include "components/nacl/renderer/ppb_nacl_private.h"
-
-#define SRPC_PLUGIN_DEBUG 1
+#include "components/nacl/renderer/ppb_nacl_private_impl.h"
 
 namespace plugin {
 
-const PPB_NaCl_Private* GetNaClInterface();
-void SetNaClInterface(const PPB_NaCl_Private* nacl_interface);
+// TODO(mseaborn): Remove this and replace its uses with direct calls to
+// the functions defined in ppb_nacl_private_impl.cc.
+inline const PPB_NaCl_Private* GetNaClInterface() {
+  return nacl::GetNaClPrivateInterface();
+}
 
 }  // namespace plugin
 

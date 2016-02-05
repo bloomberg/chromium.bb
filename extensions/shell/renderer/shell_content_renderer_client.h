@@ -41,7 +41,6 @@ class ShellContentRendererClient : public content::ContentRendererClient {
                        const GURL& url,
                        const GURL& first_party_for_cookies,
                        GURL* new_url) override;
-  const void* CreatePPAPIInterface(const std::string& interface_name) override;
   bool IsExternalPepperPlugin(const std::string& module_name) override;
   bool ShouldGatherSiteIsolationStats() const override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
