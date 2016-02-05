@@ -31,7 +31,7 @@ template <typename T>
 size_t GetSerializedSizeNative_(const T& value) {
   base::PickleSizer sizer;
   IPC::ParamTraits<T>::GetSize(&sizer, value);
-  return sizer.payload_size() + sizeof(ArrayHeader);
+  return Align(sizer.payload_size() + sizeof(ArrayHeader));
 }
 
 template <typename T>
@@ -62,7 +62,7 @@ void SerializeNative_(const T& value,
   // number of bytes actually written by Write().
   DCHECK_GE(pickle->payload_size(), size_before_write);
   size_t bytes_written = pickle->payload_size() - size_before_write;
-  DCHECK_EQ(bytes_written + sizeof(ArrayHeader),
+  DCHECK_EQ(Align(bytes_written + sizeof(ArrayHeader)),
             GetSerializedSizeNative_(value));
 #endif
 
