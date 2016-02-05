@@ -102,7 +102,12 @@ base::ProcessId GetRealProcessId(int process_host_id) {
   base::ProcessHandle handle = rph->GetHandle();
   if (handle == base::kNullProcessHandle)
     return base::kNullProcessId;
-  return base::Process(handle).Pid();
+  // TODO(nhiroki): On Windows, |rph->GetHandle()| does not duplicate ownership
+  // of the process handle and the render host still retains it. Therefore, we
+  // cannot create a base::Process object, which provides a proper way to get a
+  // process id, from the handle. For a stopgap, we use this deprecated
+  // function that does not require the ownership (http://crbug.com/417532).
+  return base::GetProcId(handle);
 }
 
 void UpdateVersionInfo(const ServiceWorkerVersionInfo& version,
