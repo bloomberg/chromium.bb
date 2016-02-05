@@ -29,18 +29,18 @@ const char kCompanyRe[] =
     "|单位|公司"  // zh-CN
     "|회사|직장";  // ko-KR
 const char kAddressLine1Re[] =
-    "address.*line|address1|addr1|street"
+    "^address$|address.*line|address1|addr1|street"
     "|(?:shipping|billing)address$"
     "|strasse|straße|hausnummer|housenumber"  // de-DE
     "|house.?name"  // en-GB
     "|direccion|dirección"  // es
     "|adresse"  // fr-FR
     "|indirizzo"  // it-IT
-    "|住所1"  // ja-JP
+    "|^住所$|住所1"  // ja-JP
     "|morada|endereço"  // pt-BR, pt-PT
     "|Адрес"  // ru
     "|地址"  // zh-CN
-    "|주소.?1";  // ko-KR
+    "|^주소.?$|주소.?1";  // ko-KR
 const char kAddressLine1LabelRe[] =
     "address"
     "|adresse"  // fr-FR
