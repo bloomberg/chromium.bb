@@ -72,6 +72,7 @@ DocumentInit::DocumentInit(const KURL& url, LocalFrame* frame, WeakPtrWillBeRawP
     , m_importsController(importsController)
     , m_createNewRegistrationContext(false)
     , m_shouldReuseDefaultView(frame && frame->shouldReuseDefaultView(url))
+    , m_shouldInheritSecurityOriginFromOwner(url.isEmpty() || url.protocolIsAbout())
 {
 }
 
@@ -169,6 +170,12 @@ DocumentInit& DocumentInit::withNewRegistrationContext()
 {
     ASSERT(!m_createNewRegistrationContext && !m_registrationContext);
     m_createNewRegistrationContext = true;
+    return *this;
+}
+
+DocumentInit& DocumentInit::withoutInheritingSecurityOrigin()
+{
+    m_shouldInheritSecurityOriginFromOwner = false;
     return *this;
 }
 
