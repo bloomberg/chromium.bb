@@ -817,7 +817,13 @@ class MinidumpWriter {
     // processor_architecture should always be set, do this first
     sys_info->processor_architecture =
 #if defined(__mips__)
+# if _MIPS_SIM == _ABIO32
         MD_CPU_ARCHITECTURE_MIPS;
+# elif _MIPS_SIM == _ABI64
+        MD_CPU_ARCHITECTURE_MIPS64;
+# else
+#  error "This mips ABI is currently not supported (n32)"
+#endif
 #elif defined(__i386__)
         MD_CPU_ARCHITECTURE_X86;
 #else

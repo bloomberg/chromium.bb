@@ -546,7 +546,7 @@ static void PrintStack(const CallStack *stack,
         sequence =
             PrintRegister64("pc", frame_arm64->context.iregs[32], sequence);
       }
-    } else if (cpu == "mips") {
+    } else if ((cpu == "mips") || (cpu == "mips64")) {
       const StackFrameMIPS* frame_mips =
         reinterpret_cast<const StackFrameMIPS*>(frame);
 

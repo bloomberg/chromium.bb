@@ -179,7 +179,13 @@ class MicrodumpWriter {
 #elif defined(__i386__)
     const char kArch[] = "x86";
 #elif defined(__mips__)
+# if _MIPS_SIM == _ABIO32
     const char kArch[] = "mips";
+# elif _MIPS_SIM == _ABI64
+    const char kArch[] = "mips64";
+# else
+#  error "This mips ABI is currently not supported (n32)"
+#endif
 #else
 #error "This code has not been ported to your platform yet"
 #endif

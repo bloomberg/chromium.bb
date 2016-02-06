@@ -27,9 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Original author: Gordana Cmiljanovic <gordana.cmiljanovic@imgtec.com>
+// Original author: Veljko Mihailovic <veljko.mihailovic@imgtec.com>
 
-// stackwalker_mips_unittest.cc: Unit tests for StackwalkerMIPS class.
+// stackwalker_mips64_unittest.cc: Unit tests for StackwalkerMIPS class for
+// mips64 platforms.
 
 #include <string.h>
 #include <string>
@@ -80,7 +81,7 @@ class StackwalkerMIPSFixture {
     system_info.os = "Linux";
     system_info.os_short = "linux";
     system_info.os_version = "Observant Opossum";  // Jealous Jellyfish
-    system_info.cpu = "mips";
+    system_info.cpu = "mips64";
     system_info.cpu_info = "";
 
     // Put distinctive values in the raw CPU context.
@@ -100,7 +101,7 @@ class StackwalkerMIPSFixture {
     EXPECT_CALL(supplier, FreeSymbolData(_)).Times(AnyNumber());
 
     // Reset max_frames_scanned since it's static.
-    Stackwalker::set_max_frames_scanned(1024);    
+    Stackwalker::set_max_frames_scanned(1024);
   }
 
   // Set the Breakpad symbol information that supplier should return for
@@ -145,9 +146,10 @@ class StackwalkerMIPSFixture {
 class SanityCheck: public StackwalkerMIPSFixture, public Test { };
 
 TEST_F(SanityCheck, NoResolver) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   stack_section.start() = 0x80000000;
-  stack_section.D32(0).D32(0x0);
+  stack_section.D64(0).D64(0x0);
   RegionFromSection();
   raw_context.epc = 0x00400020;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_SP] = 0x80000000;
@@ -174,9 +176,10 @@ TEST_F(SanityCheck, NoResolver) {
 class GetContextFrame: public StackwalkerMIPSFixture, public Test { };
 
 TEST_F(GetContextFrame, Simple) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   stack_section.start() = 0x80000000;
-  stack_section.D32(0).D32(0x0);
+  stack_section.D64(0).D64(0x0);
   RegionFromSection();
   raw_context.epc = 0x00400020;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_SP] = 0x80000000;
@@ -201,7 +204,8 @@ TEST_F(GetContextFrame, Simple) {
 // The stackwalker should be able to produce the context frame even
 // without stack memory present.
 TEST_F(GetContextFrame, NoStackMemory) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   raw_context.epc = 0x00400020;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_SP] = 0x80000000;
 
@@ -225,37 +229,38 @@ TEST_F(GetContextFrame, NoStackMemory) {
 class GetCallerFrame: public StackwalkerMIPSFixture, public Test { };
 
 TEST_F(GetCallerFrame, ScanWithoutSymbols) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   // When the stack walker resorts to scanning the stack,
   // only addresses located within loaded modules are
   // considered valid return addresses.
   // Force scanning through three frames to ensure that the
   // stack pointer is set properly in scan-recovered frames.
   stack_section.start() = 0x80000000;
-  uint32_t return_address1 = 0x00400100;
-  uint32_t return_address2 = 0x00400900;
+  uint64_t return_address1 = 0x00400100;
+  uint64_t return_address2 = 0x00400900;
   Label frame1_sp, frame2_sp;
   stack_section
     // frame 0
-    .Append(16, 0)                      // space
+    .Append(32, 0)                      // space
 
-    .D32(0x00490000)                    // junk that's not
-    .D32(0x00600000)                    // a return address
+    .D64(0x00490000)                    // junk that's not
+    .D64(0x00600000)                    // a return address
 
-    .D32(frame1_sp)                     // stack pointer
-    .D32(return_address1)               // actual return address
+    .D64(frame1_sp)                     // stack pointer
+    .D64(return_address1)               // actual return address
     // frame 1
     .Mark(&frame1_sp)
-    .Append(16, 0)                      // space
+    .Append(32, 0)                      // space
 
-    .D32(0xF0000000)                    // more junk
-    .D32(0x0000000D)
+    .D64(0xF0000000)                    // more junk
+    .D64(0x0000000D)
 
-    .D32(frame2_sp)                     // stack pointer
-    .D32(return_address2)               // actual return address
+    .D64(frame2_sp)                     // stack pointer
+    .D64(return_address2)               // actual return address
     // frame 2
     .Mark(&frame2_sp)
-    .Append(32, 0);                     // end of stack
+    .Append(64, 0);                     // end of stack
   RegionFromSection();
 
   raw_context.epc = 0x00405510;
@@ -302,29 +307,30 @@ TEST_F(GetCallerFrame, ScanWithoutSymbols) {
 }
 
 TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   // During stack scanning, if a potential return address
   // is located within a loaded module that has symbols,
   // it is only considered a valid return address if it
   // lies within a function's bounds.
   stack_section.start() = 0x80000000;
-  uint32_t return_address = 0x00500200;
+  uint64_t return_address = 0x00500200;
   Label frame1_sp;
   stack_section
     // frame 0
     .Append(16, 0)                      // space
 
-    .D32(0x00490000)                    // junk that's not
-    .D32(0x00600000)                    // a return address
-    
-    .D32(0x00401000)                    // a couple of plausible addresses
-    .D32(0x0050F000)                    // that are not within functions
+    .D64(0x00490000)                    // junk that's not
+    .D64(0x00600000)                    // a return address
 
-    .D32(frame1_sp)                     // stack pointer
-    .D32(return_address)                // actual return address
+    .D64(0x00401000)                    // a couple of plausible addresses
+    .D64(0x0050F000)                    // that are not within functions
+
+    .D64(frame1_sp)                     // stack pointer
+    .D64(return_address)                // actual return address
     // frame 1
     .Mark(&frame1_sp)
-    .Append(32, 0);                     // end of stack
+    .Append(64, 0);                     // end of stack
   RegionFromSection();
 
   raw_context.epc = 0x00400200;
@@ -371,39 +377,40 @@ TEST_F(GetCallerFrame, ScanWithFunctionSymbols) {
 }
 
 TEST_F(GetCallerFrame, CheckStackFrameSizeLimit) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   // If the stackwalker resorts to stack scanning, it will scan only
   // 1024 bytes of stack which correspondes to maximum size of stack frame.
   stack_section.start() = 0x80000000;
-  uint32_t return_address1 = 0x00500100;
-  uint32_t return_address2 = 0x00500900;
+  uint64_t return_address1 = 0x00500100;
+  uint64_t return_address2 = 0x00500900;
   Label frame1_sp, frame2_sp;
   stack_section
     // frame 0
     .Append(32, 0)                      // space
 
-    .D32(0x00490000)                    // junk that's not
-    .D32(0x00600000)                    // a return address
+    .D64(0x00490000)                    // junk that's not
+    .D64(0x00600000)                    // a return address
 
     .Append(96, 0)                      // more space
 
-    .D32(frame1_sp)                     // stack pointer
-    .D32(return_address1)               // actual return address
+    .D64(frame1_sp)                     // stack pointer
+    .D64(return_address1)               // actual return address
     // frame 1
     .Mark(&frame1_sp)
     .Append(128 * 4, 0)                 // space
 
-    .D32(0x00F00000)                    // more junk
-    .D32(0x0000000D)
+    .D64(0x00F00000)                    // more junk
+    .D64(0x0000000D)
 
     .Append(128 * 4, 0)                 // more space
 
-    .D32(frame2_sp)                     // stack pointer
-    .D32(return_address2)               // actual return address
+    .D64(frame2_sp)                     // stack pointer
+    .D64(return_address2)               // actual return address
                                         // (won't be found)
     // frame 2
     .Mark(&frame2_sp)
-    .Append(32, 0);                     // end of stack
+    .Append(64, 0);                     // end of stack
   RegionFromSection();
 
   raw_context.epc = 0x00405510;
@@ -443,39 +450,40 @@ TEST_F(GetCallerFrame, CheckStackFrameSizeLimit) {
 // Test that set_max_frames_scanned prevents using stack scanning
 // to find caller frames.
 TEST_F(GetCallerFrame, ScanningNotAllowed) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   // When the stack walker resorts to scanning the stack,
   // only fixed number of frames are allowed to be scanned out from stack
   stack_section.start() = 0x80000000;
-  uint32_t return_address1 = 0x00500100;
-  uint32_t return_address2 = 0x00500900;
+  uint64_t return_address1 = 0x00500100;
+  uint64_t return_address2 = 0x00500900;
   Label frame1_sp, frame2_sp;
   stack_section
     // frame 0
     .Append(32, 0)                      // space
 
-    .D32(0x00490000)                    // junk that's not
-    .D32(0x00600000)                    // a return address
+    .D64(0x00490000)                    // junk that's not
+    .D64(0x00600000)                    // a return address
 
     .Append(96, 0)                      // more space
 
-    .D32(frame1_sp)                     // stack pointer
-    .D32(return_address1)               // actual return address
+    .D64(frame1_sp)                     // stack pointer
+    .D64(return_address1)               // actual return address
     // frame 1
     .Mark(&frame1_sp)
     .Append(128 * 4, 0)                 // space
 
-    .D32(0x00F00000)                    // more junk
-    .D32(0x0000000D)
+    .D64(0x00F00000)                    // more junk
+    .D64(0x0000000D)
 
     .Append(128 * 4, 0)                 // more space
 
-    .D32(frame2_sp)                     // stack pointer
-    .D32(return_address2)               // actual return address
+    .D64(frame2_sp)                     // stack pointer
+    .D64(return_address2)               // actual return address
                                         // (won't be found)
     // frame 2
     .Mark(&frame2_sp)
-    .Append(32, 0);                     // end of stack
+    .Append(64, 0);                     // end of stack
   RegionFromSection();
 
   raw_context.epc = 0x00405510;
@@ -486,7 +494,7 @@ TEST_F(GetCallerFrame, ScanningNotAllowed) {
   StackwalkerMIPS walker(&system_info, &raw_context, &stack_region, &modules,
                          &frame_symbolizer);
   Stackwalker::set_max_frames_scanned(0);
-                         
+
   vector<const CodeModule*> modules_without_symbols;
   vector<const CodeModule*> modules_with_corrupt_symbols;
   ASSERT_TRUE(walker.Walk(&call_stack, &modules_without_symbols,
@@ -543,7 +551,7 @@ struct CFIFixture: public StackwalkerMIPSFixture {
                    );
 
     // Provide some distinctive values for the caller's registers.
-    expected.epc = 0x00405508;
+    expected.epc = 0x00405500;
     expected.iregs[MD_CONTEXT_MIPS_REG_S0] = 0x0;
     expected.iregs[MD_CONTEXT_MIPS_REG_S1] = 0x1;
     expected.iregs[MD_CONTEXT_MIPS_REG_S2] = 0x2;
@@ -571,6 +579,7 @@ struct CFIFixture: public StackwalkerMIPSFixture {
                          StackFrameMIPS::CONTEXT_VALID_S7 |
                          StackFrameMIPS::CONTEXT_VALID_SP |
                          StackFrameMIPS::CONTEXT_VALID_FP |
+                         StackFrameMIPS::CONTEXT_VALID_GP |
                          StackFrameMIPS::CONTEXT_VALID_RA);
 
     // By default, context frames provide all registers, as normal.
@@ -635,7 +644,7 @@ struct CFIFixture: public StackwalkerMIPSFixture {
     EXPECT_EQ(expected.epc, frame1->context.epc);
     EXPECT_EQ(expected.epc, frame1->instruction);
     EXPECT_EQ("epictetus", frame1->function_name);
-    EXPECT_EQ(0x00405000U, frame1->function_base);    
+    EXPECT_EQ(0x00405000U, frame1->function_base);
   }
 
   // The values we expect to find for the caller's registers.
@@ -653,13 +662,14 @@ class CFI: public CFIFixture, public Test { };
 // TODO(gordanac): add CFI tests
 
 TEST_F(CFI, At4004) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   Label frame1_sp = expected.iregs[MD_CONTEXT_MIPS_REG_SP];
   stack_section
     // frame0
-    .Append(24, 0)               // space
-    .D32(frame1_sp)              // stack pointer
-    .D32(0x00405510)             // return address
+    .Append(16, 0)               // space
+    .D64(frame1_sp)              // stack pointer
+    .D64(0x00405510)             // return address
     .Mark(&frame1_sp);           // This effectively sets stack_section.start().
   raw_context.epc = 0x00404004;
   CheckWalk();
@@ -668,11 +678,12 @@ TEST_F(CFI, At4004) {
 // Check that we reject rules that would cause the stack pointer to
 // move in the wrong direction.
 TEST_F(CFI, RejectBackwards) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   raw_context.epc = 0x40005000;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_SP] = 0x80000000;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_RA] = 0x00405510;
-  
+
   StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerMIPS walker(&system_info, &raw_context, &stack_region, &modules,
                          &frame_symbolizer);
@@ -688,11 +699,12 @@ TEST_F(CFI, RejectBackwards) {
 
 // Check that we reject rules whose expressions' evaluation fails.
 TEST_F(CFI, RejectBadExpressions) {
-  raw_context.context_flags = raw_context.context_flags | MD_CONTEXT_MIPS_FULL;
+  raw_context.context_flags =
+      raw_context.context_flags | MD_CONTEXT_MIPS64_FULL;
   raw_context.epc = 0x00407000;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_SP] = 0x80000000;
   raw_context.iregs[MD_CONTEXT_MIPS_REG_RA] = 0x00405510;
-  
+
   StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
   StackwalkerMIPS walker(&system_info, &raw_context, &stack_region, &modules,
                          &frame_symbolizer);

@@ -131,7 +131,8 @@ const MDRawContextARM64* DumpContext::GetContextARM64() const {
 }
 
 const MDRawContextMIPS* DumpContext::GetContextMIPS() const {
-  if (GetContextCPU() != MD_CONTEXT_MIPS) {
+  if ((GetContextCPU() != MD_CONTEXT_MIPS) &&
+      (GetContextCPU() != MD_CONTEXT_MIPS64)) {
     BPLOG(ERROR) << "DumpContext cannot get MIPS context";
     return NULL;
   }
@@ -172,6 +173,7 @@ bool DumpContext::GetInstructionPointer(uint64_t* ip) const {
     *ip = GetContextX86()->eip;
     break;
   case MD_CONTEXT_MIPS:
+  case MD_CONTEXT_MIPS64:
     *ip = GetContextMIPS()->epc;
     break;
   default:
@@ -215,6 +217,7 @@ bool DumpContext::GetStackPointer(uint64_t* sp) const {
     *sp = GetContextX86()->esp;
     break;
   case MD_CONTEXT_MIPS:
+  case MD_CONTEXT_MIPS64:
     *sp = GetContextMIPS()->iregs[MD_CONTEXT_MIPS_REG_SP];
     break;
   default:
@@ -292,6 +295,7 @@ void DumpContext::FreeContext() {
       break;
 
     case MD_CONTEXT_MIPS:
+    case MD_CONTEXT_MIPS64:
       delete context_.ctx_mips;
       break;
 
@@ -598,7 +602,8 @@ void DumpContext::Print() {
       break;
     }
 
-    case MD_CONTEXT_MIPS: {
+    case MD_CONTEXT_MIPS:
+    case MD_CONTEXT_MIPS64: {
       const MDRawContextMIPS* context_mips = GetContextMIPS();
       printf("MDRawContextMIPS\n");
       printf("  context_flags        = 0x%x\n",

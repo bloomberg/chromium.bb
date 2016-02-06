@@ -160,6 +160,7 @@
         'stackwalker_arm64_unittest.cc',
         'stackwalker_arm_unittest.cc',
         'stackwalker_mips_unittest.cc',
+        'stackwalker_mips64_unittest.cc',
         'stackwalker_unittest_utils.h',
         'stackwalker_x86_unittest.cc',
         'static_address_map_unittest.cc',

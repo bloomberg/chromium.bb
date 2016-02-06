@@ -384,6 +384,7 @@ check_PROGRAMS += \
 	src/processor/stackwalker_arm64_unittest \
 	src/processor/stackwalker_address_list_unittest \
 	src/processor/stackwalker_mips_unittest \
+	src/processor/stackwalker_mips64_unittest \
 	src/processor/stackwalker_x86_unittest \
 	src/processor/synth_minidump_unittest
 endif
@@ -1050,6 +1051,16 @@ src_processor_stackwalker_mips_unittest_LDADD = \
 	$(TEST_LIBS) \
 	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
 src_processor_stackwalker_mips_unittest_CPPFLAGS = \
+	$(AM_CPPFLAGS) $(TEST_CFLAGS)
+
+src_processor_stackwalker_mips64_unittest_SOURCES = \
+	src/common/test_assembler.cc \
+	src/processor/stackwalker_mips64_unittest.cc
+src_processor_stackwalker_mips64_unittest_LDADD = \
+	src/libbreakpad.a \
+	$(TEST_LIBS) \
+	$(PTHREAD_CFLAGS) $(PTHREAD_LIBS)
+src_processor_stackwalker_mips64_unittest_CPPFLAGS = \
 	$(AM_CPPFLAGS) $(TEST_CFLAGS)
 
 src_processor_stackwalker_x86_unittest_SOURCES = \

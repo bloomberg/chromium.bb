@@ -1009,7 +1009,8 @@ bool MinidumpContext::Read(uint32_t expected_size) {
         break;
       }
 
-      case MD_CONTEXT_MIPS: {
+      case MD_CONTEXT_MIPS:
+      case MD_CONTEXT_MIPS64: {
         if (expected_size != sizeof(MDRawContextMIPS)) {
           BPLOG(ERROR) << "MinidumpContext MIPS size mismatch, "
                        << expected_size
@@ -1155,6 +1156,11 @@ bool MinidumpContext::CheckAgainstSystemInfo(uint32_t context_cpu_type) {
 
     case MD_CONTEXT_MIPS:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_MIPS)
+        return_value = true;
+      break;
+
+    case MD_CONTEXT_MIPS64:
+      if (system_info_cpu_type == MD_CPU_ARCHITECTURE_MIPS64)
         return_value = true;
       break;
   }
@@ -4208,6 +4214,9 @@ bool Minidump::GetContextCPUFlagsFromSystemInfo(uint32_t *context_cpu_flags) {
         break;
       case MD_CPU_ARCHITECTURE_MIPS:
         *context_cpu_flags = MD_CONTEXT_MIPS;
+        break;
+      case MD_CPU_ARCHITECTURE_MIPS64:
+        *context_cpu_flags = MD_CONTEXT_MIPS64;
         break;
       case MD_CPU_ARCHITECTURE_ALPHA:
         *context_cpu_flags = MD_CONTEXT_ALPHA;
