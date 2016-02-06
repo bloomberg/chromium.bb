@@ -58,16 +58,15 @@ namespace printing {
 
 namespace {
 
-#define STATIC_ASSERT_PP_MATCHING_ENUM(a, b)                  \
-    static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                  "mismatching enums: " #a)
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
 
-// Check blink::WebDuplexMode and printing::DuplexMode are kept in sync.
-STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebUnknownDuplexMode,
-                               UNKNOWN_DUPLEX_MODE);
-STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebSimplex, SIMPLEX);
-STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebLongEdge, LONG_EDGE);
-STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebShortEdge, SHORT_EDGE);
+// Check blink and printing enums are kept in sync.
+STATIC_ASSERT_ENUM(blink::WebUnknownDuplexMode, UNKNOWN_DUPLEX_MODE);
+STATIC_ASSERT_ENUM(blink::WebSimplex, SIMPLEX);
+STATIC_ASSERT_ENUM(blink::WebLongEdge, LONG_EDGE);
+STATIC_ASSERT_ENUM(blink::WebShortEdge, SHORT_EDGE);
 
 enum PrintPreviewHelperEvents {
   PREVIEW_EVENT_REQUESTED,

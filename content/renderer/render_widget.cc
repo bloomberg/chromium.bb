@@ -129,6 +129,10 @@ using blink::WebTouchPoint;
 using blink::WebVector;
 using blink::WebWidget;
 
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
 namespace {
 
 typedef std::map<std::string, ui::TextInputMode> TextInputModeMap;
@@ -1986,28 +1990,30 @@ void RenderWidget::UpdateSelectionBounds() {
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.
-#define STATIC_ASSERT_WTIT_ENUM_MATCH(a, b)            \
-    static_assert(int(blink::WebTextInputType##a)      \
-                      == int(ui::TEXT_INPUT_TYPE_##b), \
-                  "mismatching enums: " #a)
-
-STATIC_ASSERT_WTIT_ENUM_MATCH(None,            NONE);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Text,            TEXT);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Password,        PASSWORD);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Search,          SEARCH);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Email,           EMAIL);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Number,          NUMBER);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Telephone,       TELEPHONE);
-STATIC_ASSERT_WTIT_ENUM_MATCH(URL,             URL);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Date,            DATE);
-STATIC_ASSERT_WTIT_ENUM_MATCH(DateTime,        DATE_TIME);
-STATIC_ASSERT_WTIT_ENUM_MATCH(DateTimeLocal,   DATE_TIME_LOCAL);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Month,           MONTH);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Time,            TIME);
-STATIC_ASSERT_WTIT_ENUM_MATCH(Week,            WEEK);
-STATIC_ASSERT_WTIT_ENUM_MATCH(TextArea,        TEXT_AREA);
-STATIC_ASSERT_WTIT_ENUM_MATCH(ContentEditable, CONTENT_EDITABLE);
-STATIC_ASSERT_WTIT_ENUM_MATCH(DateTimeField,   DATE_TIME_FIELD);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeNone, ui::TEXT_INPUT_TYPE_NONE);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeText, ui::TEXT_INPUT_TYPE_TEXT);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypePassword,
+                   ui::TEXT_INPUT_TYPE_PASSWORD);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeSearch, ui::TEXT_INPUT_TYPE_SEARCH);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeEmail, ui::TEXT_INPUT_TYPE_EMAIL);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeNumber, ui::TEXT_INPUT_TYPE_NUMBER);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeTelephone,
+                   ui::TEXT_INPUT_TYPE_TELEPHONE);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeURL, ui::TEXT_INPUT_TYPE_URL);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeDate, ui::TEXT_INPUT_TYPE_DATE);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTime,
+                   ui::TEXT_INPUT_TYPE_DATE_TIME);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTimeLocal,
+                   ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeMonth, ui::TEXT_INPUT_TYPE_MONTH);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeTime, ui::TEXT_INPUT_TYPE_TIME);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeWeek, ui::TEXT_INPUT_TYPE_WEEK);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeTextArea,
+                   ui::TEXT_INPUT_TYPE_TEXT_AREA);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeContentEditable,
+                   ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE);
+STATIC_ASSERT_ENUM(blink::WebTextInputTypeDateTimeField,
+                   ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD);
 
 ui::TextInputType RenderWidget::WebKitToUiTextInputType(
     blink::WebTextInputType type) {
@@ -2170,10 +2176,21 @@ void RenderWidget::hasTouchEventHandlers(bool has_handlers) {
   Send(new ViewHostMsg_HasTouchEventHandlers(routing_id_, has_handlers));
 }
 
-// Check blink::WebTouchAction and  blink::WebTouchActionAuto is kept in sync
-#define STATIC_ASSERT_WTI_ENUM_MATCH(a, b)                                         \
-    static_assert(int(blink::WebTouchAction##a) == int(TOUCH_ACTION_##b), \
-                  "mismatching enums: " #a)
+// Check blink::WebTouchAction and content::TouchAction is kept in sync.
+STATIC_ASSERT_ENUM(blink::WebTouchActionNone, TOUCH_ACTION_NONE);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanLeft, TOUCH_ACTION_PAN_LEFT);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanRight, TOUCH_ACTION_PAN_RIGHT);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanX, TOUCH_ACTION_PAN_X);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanUp, TOUCH_ACTION_PAN_UP);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanDown, TOUCH_ACTION_PAN_DOWN);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPanY, TOUCH_ACTION_PAN_Y);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPan, TOUCH_ACTION_PAN);
+STATIC_ASSERT_ENUM(blink::WebTouchActionPinchZoom, TOUCH_ACTION_PINCH_ZOOM);
+STATIC_ASSERT_ENUM(blink::WebTouchActionManipulation,
+                   TOUCH_ACTION_MANIPULATION);
+STATIC_ASSERT_ENUM(blink::WebTouchActionDoubleTapZoom,
+                   TOUCH_ACTION_DOUBLE_TAP_ZOOM);
+STATIC_ASSERT_ENUM(blink::WebTouchActionAuto, TOUCH_ACTION_AUTO);
 
 void RenderWidget::setTouchAction(
     blink::WebTouchAction web_touch_action) {
@@ -2182,20 +2199,6 @@ void RenderWidget::setTouchAction(
   // when blink is emulating touch with mouse).
   if (input_handler_->handling_event_type() != WebInputEvent::TouchStart)
     return;
-
-  // Verify the same values are used by the types so we can cast between them.
-   STATIC_ASSERT_WTI_ENUM_MATCH(None,      NONE);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanLeft,   PAN_LEFT);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanRight,  PAN_RIGHT);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanX,      PAN_X);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanUp,     PAN_UP);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanDown,   PAN_DOWN);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PanY,      PAN_Y);
-   STATIC_ASSERT_WTI_ENUM_MATCH(Pan,       PAN);
-   STATIC_ASSERT_WTI_ENUM_MATCH(PinchZoom, PINCH_ZOOM);
-   STATIC_ASSERT_WTI_ENUM_MATCH(Manipulation, MANIPULATION);
-   STATIC_ASSERT_WTI_ENUM_MATCH(DoubleTapZoom, DOUBLE_TAP_ZOOM);
-   STATIC_ASSERT_WTI_ENUM_MATCH(Auto,      AUTO);
 
    content::TouchAction content_touch_action =
        static_cast<content::TouchAction>(web_touch_action);

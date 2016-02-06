@@ -67,6 +67,10 @@ using blink::WebSize;
 using blink::WebString;
 using gpu::gles2::GLES2Interface;
 
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
+
 namespace media {
 
 namespace {
@@ -106,14 +110,11 @@ void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
 
 class BufferedDataSourceHostImpl;
 
-#define STATIC_ASSERT_MATCHING_ENUM(name, name2)                    \
-  static_assert(static_cast<int>(WebMediaPlayer::CORSMode##name) == \
-                    static_cast<int>(UrlData::name2),               \
-                "mismatching enum values: " #name)
-STATIC_ASSERT_MATCHING_ENUM(Unspecified, CORS_UNSPECIFIED);
-STATIC_ASSERT_MATCHING_ENUM(Anonymous, CORS_ANONYMOUS);
-STATIC_ASSERT_MATCHING_ENUM(UseCredentials, CORS_USE_CREDENTIALS);
-#undef STATIC_ASSERT_MATCHING_ENUM
+STATIC_ASSERT_ENUM(WebMediaPlayer::CORSModeUnspecified,
+                   UrlData::CORS_UNSPECIFIED);
+STATIC_ASSERT_ENUM(WebMediaPlayer::CORSModeAnonymous, UrlData::CORS_ANONYMOUS);
+STATIC_ASSERT_ENUM(WebMediaPlayer::CORSModeUseCredentials,
+                   UrlData::CORS_USE_CREDENTIALS);
 
 #define BIND_TO_RENDER_LOOP(function) \
   (DCHECK(main_task_runner_->BelongsToCurrentThread()), \
@@ -515,14 +516,10 @@ void WebMediaPlayerImpl::setSinkId(
                  callback));
 }
 
-#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name) \
-    static_assert(static_cast<int>(WebMediaPlayer::webkit_name) == \
-                  static_cast<int>(BufferedDataSource::chromium_name), \
-                  "mismatching enum values: " #webkit_name)
-STATIC_ASSERT_MATCHING_ENUM(PreloadNone, NONE);
-STATIC_ASSERT_MATCHING_ENUM(PreloadMetaData, METADATA);
-STATIC_ASSERT_MATCHING_ENUM(PreloadAuto, AUTO);
-#undef STATIC_ASSERT_MATCHING_ENUM
+STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadNone, BufferedDataSource::NONE);
+STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadMetaData,
+                   BufferedDataSource::METADATA);
+STATIC_ASSERT_ENUM(WebMediaPlayer::PreloadAuto, BufferedDataSource::AUTO);
 
 void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
   DVLOG(1) << __FUNCTION__ << "(" << preload << ")";
@@ -533,15 +530,10 @@ void WebMediaPlayerImpl::setPreload(WebMediaPlayer::Preload preload) {
     data_source_->SetPreload(preload_);
 }
 
-#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, chromium_name)          \
-  static_assert(static_cast<int>(WebMediaPlayer::webkit_name) ==         \
-                    static_cast<int>(BufferedDataSource::chromium_name), \
-                "mismatching enum values: " #webkit_name)
-STATIC_ASSERT_MATCHING_ENUM(BufferingStrategy::Normal,
-                            BUFFERING_STRATEGY_NORMAL);
-STATIC_ASSERT_MATCHING_ENUM(BufferingStrategy::Aggressive,
-                            BUFFERING_STRATEGY_AGGRESSIVE);
-#undef STATIC_ASSERT_MATCHING_ENUM
+STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Normal,
+                   BufferedDataSource::BUFFERING_STRATEGY_NORMAL);
+STATIC_ASSERT_ENUM(WebMediaPlayer::BufferingStrategy::Aggressive,
+                   BufferedDataSource::BUFFERING_STRATEGY_AGGRESSIVE);
 
 void WebMediaPlayerImpl::setBufferingStrategy(
     WebMediaPlayer::BufferingStrategy buffering_strategy) {

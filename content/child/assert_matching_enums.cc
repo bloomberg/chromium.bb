@@ -15,48 +15,45 @@
 
 namespace content {
 
-#define STATIC_ASSERT_MATCHING_ENUM(expected, actual) \
-  static_assert(int(expected) == int(actual), "mismatching enums: " #expected)
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
 
 // ScreenOrientationValues
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockDefault,
-    SCREEN_ORIENTATION_VALUES_DEFAULT);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortraitPrimary,
-    SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortraitSecondary,
-    SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockLandscapePrimary,
-    SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockLandscapeSecondary,
-    SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockAny,
-    SCREEN_ORIENTATION_VALUES_ANY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockLandscape,
-    SCREEN_ORIENTATION_VALUES_LANDSCAPE);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockPortrait,
-    SCREEN_ORIENTATION_VALUES_PORTRAIT);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebScreenOrientationLockNatural,
-    SCREEN_ORIENTATION_VALUES_NATURAL);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockDefault,
+                   SCREEN_ORIENTATION_VALUES_DEFAULT);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortraitPrimary,
+                   SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortraitSecondary,
+                   SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscapePrimary,
+                   SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscapeSecondary,
+                   SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockAny,
+                   SCREEN_ORIENTATION_VALUES_ANY);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockLandscape,
+                   SCREEN_ORIENTATION_VALUES_LANDSCAPE);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockPortrait,
+                   SCREEN_ORIENTATION_VALUES_PORTRAIT);
+STATIC_ASSERT_ENUM(blink::WebScreenOrientationLockNatural,
+                   SCREEN_ORIENTATION_VALUES_NATURAL);
 
 // SupportsType
-STATIC_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::IsNotSupported,
-    media::IsNotSupported);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::IsSupported,
-    media::IsSupported);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebMimeRegistry::MayBeSupported,
-    media::MayBeSupported);
+STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsNotSupported,
+                   media::IsNotSupported);
+STATIC_ASSERT_ENUM(blink::WebMimeRegistry::IsSupported, media::IsSupported);
+STATIC_ASSERT_ENUM(blink::WebMimeRegistry::MayBeSupported,
+                   media::MayBeSupported);
 
 // TargetProperty
-STATIC_ASSERT_MATCHING_ENUM(
-    blink::WebCompositorAnimation::TargetPropertyTransform,
-    cc::Animation::TRANSFORM);
-STATIC_ASSERT_MATCHING_ENUM(
-    blink::WebCompositorAnimation::TargetPropertyOpacity,
-    cc::Animation::OPACITY);
-STATIC_ASSERT_MATCHING_ENUM(blink::WebCompositorAnimation::TargetPropertyFilter,
-                            cc::Animation::FILTER);
-STATIC_ASSERT_MATCHING_ENUM(
-    blink::WebCompositorAnimation::TargetPropertyScrollOffset,
-    cc::Animation::SCROLL_OFFSET);
+STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyTransform,
+                   cc::Animation::TRANSFORM);
+STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyOpacity,
+                   cc::Animation::OPACITY);
+STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyFilter,
+                   cc::Animation::FILTER);
+STATIC_ASSERT_ENUM(blink::WebCompositorAnimation::TargetPropertyScrollOffset,
+                   cc::Animation::SCROLL_OFFSET);
 
 } // namespace content

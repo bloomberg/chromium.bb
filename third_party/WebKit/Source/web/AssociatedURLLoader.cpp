@@ -300,16 +300,17 @@ AssociatedURLLoader::~AssociatedURLLoader()
     cancel();
 }
 
-#define STATIC_ASSERT_MATCHING_ENUM(webkit_name, webcore_name) \
-    static_assert(static_cast<int>(webkit_name) == static_cast<int>(webcore_name), "mismatching enum values")
+#define STATIC_ASSERT_ENUM(a, b)                              \
+    static_assert(static_cast<int>(a) == static_cast<int>(b), \
+        "mismatching enum: " #a)
 
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyDeny, DenyCrossOriginRequests);
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl, UseAccessControl);
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyAllow, AllowCrossOriginRequests);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyDeny, DenyCrossOriginRequests);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl, UseAccessControl);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::CrossOriginRequestPolicyAllow, AllowCrossOriginRequests);
 
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::ConsiderPreflight, ConsiderPreflight);
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::ForcePreflight, ForcePreflight);
-STATIC_ASSERT_MATCHING_ENUM(WebURLLoaderOptions::PreventPreflight, PreventPreflight);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::ConsiderPreflight, ConsiderPreflight);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::ForcePreflight, ForcePreflight);
+STATIC_ASSERT_ENUM(WebURLLoaderOptions::PreventPreflight, PreventPreflight);
 
 void AssociatedURLLoader::loadSynchronously(const WebURLRequest& request, WebURLResponse& response, WebURLError& error, WebData& data)
 {

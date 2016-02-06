@@ -184,27 +184,19 @@ namespace content {
 
 namespace {
 
-#define STATIC_ASSERT_PP_MATCHING_ENUM(a, b)                \
+#define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enums: " #a)
 
 // Check PP_TextInput_Type and ui::TextInputType are kept in sync.
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_NONE,
-                               PP_TEXTINPUT_TYPE_NONE);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_TEXT,
-                               PP_TEXTINPUT_TYPE_TEXT);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_PASSWORD,
-                               PP_TEXTINPUT_TYPE_PASSWORD);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_SEARCH,
-                               PP_TEXTINPUT_TYPE_SEARCH);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_EMAIL,
-                               PP_TEXTINPUT_TYPE_EMAIL);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_NUMBER,
-                               PP_TEXTINPUT_TYPE_NUMBER);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_TELEPHONE,
-                               PP_TEXTINPUT_TYPE_TELEPHONE);
-STATIC_ASSERT_PP_MATCHING_ENUM(ui::TEXT_INPUT_TYPE_URL,
-                               PP_TEXTINPUT_TYPE_URL);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_NONE, PP_TEXTINPUT_TYPE_NONE);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_TEXT, PP_TEXTINPUT_TYPE_TEXT);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_PASSWORD, PP_TEXTINPUT_TYPE_PASSWORD);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_SEARCH, PP_TEXTINPUT_TYPE_SEARCH);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_EMAIL, PP_TEXTINPUT_TYPE_EMAIL);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_NUMBER, PP_TEXTINPUT_TYPE_NUMBER);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_TELEPHONE, PP_TEXTINPUT_TYPE_TELEPHONE);
+STATIC_ASSERT_ENUM(ui::TEXT_INPUT_TYPE_URL, PP_TEXTINPUT_TYPE_URL);
 
 // The default text input type is to regard the plugin always accept text input.
 // This is for allowing users to use input methods even on completely-IME-
@@ -287,14 +279,12 @@ STATIC_ASSERT_MATCHING_ENUM(TypeGrabbing, PP_MOUSECURSOR_TYPE_GRABBING);
 // Do not assert WebCursorInfo::TypeCustom == PP_CURSORTYPE_CUSTOM;
 // PP_CURSORTYPE_CUSTOM is pinned to allow new cursor types.
 
-STATIC_ASSERT_PP_MATCHING_ENUM(blink::WebPrintScalingOptionNone,
-                                           PP_PRINTSCALINGOPTION_NONE);
-STATIC_ASSERT_PP_MATCHING_ENUM(
-    blink::WebPrintScalingOptionFitToPrintableArea,
-    PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
-STATIC_ASSERT_PP_MATCHING_ENUM(
-    blink::WebPrintScalingOptionSourceSize,
-    PP_PRINTSCALINGOPTION_SOURCE_SIZE);
+STATIC_ASSERT_ENUM(blink::WebPrintScalingOptionNone,
+                   PP_PRINTSCALINGOPTION_NONE);
+STATIC_ASSERT_ENUM(blink::WebPrintScalingOptionFitToPrintableArea,
+                   PP_PRINTSCALINGOPTION_FIT_TO_PRINTABLE_AREA);
+STATIC_ASSERT_ENUM(blink::WebPrintScalingOptionSourceSize,
+                   PP_PRINTSCALINGOPTION_SOURCE_SIZE);
 
 // Sets |*security_origin| to be the WebKit security origin associated with the
 // document containing the given plugin instance. On success, returns true. If

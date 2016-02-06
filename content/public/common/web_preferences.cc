@@ -17,51 +17,37 @@ namespace content {
 // "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
 const char kCommonScript[] = "Zyyy";
 
-#define STATIC_ASSERT_MATCHING_ENUMS(content_name, blink_name)         \
-    static_assert(                                                     \
-        static_cast<int>(content_name) == static_cast<int>(blink_name), \
-        "mismatching enums: " #content_name)
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enums: " #a)
 
-STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_MAC,
-                             WebSettings::EditingBehaviorMac);
-STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_WIN,
-                             WebSettings::EditingBehaviorWin);
-STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_UNIX,
-                             WebSettings::EditingBehaviorUnix);
-STATIC_ASSERT_MATCHING_ENUMS(EDITING_BEHAVIOR_ANDROID,
-                             WebSettings::EditingBehaviorAndroid);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_MAC, WebSettings::EditingBehaviorMac);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_WIN, WebSettings::EditingBehaviorWin);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_UNIX, WebSettings::EditingBehaviorUnix);
+STATIC_ASSERT_ENUM(EDITING_BEHAVIOR_ANDROID,
+                   WebSettings::EditingBehaviorAndroid);
 
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_DEFAULT,
-                             WebSettings::V8CacheOptionsDefault);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_NONE,
-                             WebSettings::V8CacheOptionsNone);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_PARSE,
-                             WebSettings::V8CacheOptionsParse);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_CODE,
-                             WebSettings::V8CacheOptionsCode);
-STATIC_ASSERT_MATCHING_ENUMS(V8_CACHE_OPTIONS_LAST,
-                             WebSettings::V8CacheOptionsCode);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
+                   WebSettings::V8CacheOptionsDefault);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::V8CacheOptionsNone);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_PARSE, WebSettings::V8CacheOptionsParse);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::V8CacheOptionsCode);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST, WebSettings::V8CacheOptionsCode);
 
-STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ALLOWED,
-                             WebSettings::ImageAnimationPolicyAllowed);
-STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
-                             WebSettings::ImageAnimationPolicyAnimateOnce);
-STATIC_ASSERT_MATCHING_ENUMS(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
-                             WebSettings::ImageAnimationPolicyNoAnimation);
+STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ALLOWED,
+                   WebSettings::ImageAnimationPolicyAllowed);
+STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_ANIMATION_ONCE,
+                   WebSettings::ImageAnimationPolicyAnimateOnce);
+STATIC_ASSERT_ENUM(IMAGE_ANIMATION_POLICY_NO_ANIMATION,
+                   WebSettings::ImageAnimationPolicyNoAnimation);
 
-STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
-                             blink::PointerTypeNone);
-STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
-                             blink::PointerTypeCoarse);
-STATIC_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_FINE,
-                             blink::PointerTypeFine);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_NONE, blink::PointerTypeNone);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_COARSE, blink::PointerTypeCoarse);
+STATIC_ASSERT_ENUM(ui::POINTER_TYPE_FINE, blink::PointerTypeFine);
 
-STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_NONE,
-                             blink::HoverTypeNone);
-STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_ON_DEMAND,
-                             blink::HoverTypeOnDemand);
-STATIC_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_HOVER,
-                             blink::HoverTypeHover);
+STATIC_ASSERT_ENUM(ui::HOVER_TYPE_NONE, blink::HoverTypeNone);
+STATIC_ASSERT_ENUM(ui::HOVER_TYPE_ON_DEMAND, blink::HoverTypeOnDemand);
+STATIC_ASSERT_ENUM(ui::HOVER_TYPE_HOVER, blink::HoverTypeHover);
 
 WebPreferences::WebPreferences()
     : default_font_size(16),
