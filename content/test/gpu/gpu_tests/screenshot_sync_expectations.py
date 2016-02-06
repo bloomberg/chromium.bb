@@ -11,4 +11,4 @@ class ScreenshotSyncExpectations(GpuTestExpectations):
     super(ScreenshotSyncExpectations, self).__init__(*args, **kwargs)
 
   def SetExpectations(self):
-    self.Skip('ScreenshotSync', ['win', 'mac', 'linux'], bug=459820)
+    pass
