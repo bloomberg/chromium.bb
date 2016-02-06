@@ -18,8 +18,14 @@
   display: none;
 }
 
+#header {
+  margin-bottom: 12px;
+}
+
 #header .title {
-  @apply(--paper-font-body2);
+  color: rgb(104, 113, 116);
+  font-size: 13px;
+  font-weight: 500;
 }
 
 paper-material {
