@@ -6,10 +6,9 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
+import android.app.DialogFragment;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Handler;
-import android.support.v7.app.AlertDialog;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -18,11 +17,13 @@ import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.signin.InvestigatedScenario;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
@@ -39,10 +40,13 @@ import javax.annotation.Nullable;
  * See chrome/browser/signin/signin_manager_android.h for more details.
  */
 public class SigninManager implements AccountTrackerService.OnSystemAccountsSeededListener {
+    private static final String TAG = "SigninManager";
+
+    private static final String CONFIRM_ACCOUNT_CHANGED_DIALOG_TAG =
+            "confirm_account_changed_dialog_tag";
+    @VisibleForTesting
     public static final String CONFIRM_MANAGED_SIGNIN_DIALOG_TAG =
             "confirm_managed_signin_dialog_tag";
-
-    private static final String TAG = "SigninManager";
 
     private static SigninManager sSigninManager;
     private static int sSignInAccessPoint = SigninAccessPoint.UNKNOWN;
@@ -138,7 +142,10 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         public final Activity activity;
         public final SignInCallback callback;
 
-        public ConfirmManagedSigninFragment policyConfirmationDialog = null;
+        /**
+         * The dialog currently being displayed to the user, if any.
+         */
+        public DialogFragment displayedDialog = null;
 
         /**
          * If the system accounts need to be seeded, the sign in flow will block for that to occur.
@@ -373,26 +380,50 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
     }
 
+    /**
+     * If sign-in is interactive and the user is changing accounts, display a confirmation dialog.
+     */
     private void progressSignInFlowInvestigateScenario() {
-        if (mSignInState.isInteractive()) {
-            if (mSignInState.isActivityDestroyed()) {
-                abortSignIn();
-                return;
-            }
-            ConfirmAccountChangeFragment.confirmSyncAccount(
-                    mSignInState.account.name, mSignInState.activity);
+        if (!mSignInState.isInteractive()) {
+            progressSignInFlowCheckPolicy();
+            return;
+        }
+
+        if (mSignInState.isActivityDestroyed()) {
+            abortSignIn();
+            return;
+        }
+
+        // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
+        if (SigninInvestigator.investigate(mSignInState.account.name)
+                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
+            mSignInState.displayedDialog =
+                    ConfirmAccountChangeFragment.newInstance(mSignInState.account.name);
+            mSignInState.displayedDialog.show(
+                    mSignInState.activity.getFragmentManager(), CONFIRM_ACCOUNT_CHANGED_DIALOG_TAG);
         } else {
+            // Do not display dialog, just sign-in.
             progressSignInFlowCheckPolicy();
         }
     }
 
     /**
-     * Continues the signin flow by checking if there is a policy that the account will be subject
-     * to. Unfortunately this method is package protected because Fragments cannot easily be given
-     * callbacks to invoke upon user actions. This allows dialogs presented as part of the signin
-     * investigation to continue the signin flow.
+     * Called from ConfirmAccountChangeFragment if the new account name was confirmed.
      */
-    void progressSignInFlowCheckPolicy() {
+    void progressInteractiveSignInFlowAccountConfirmed() {
+        if (mSignInState == null || mSignInState.displayedDialog == null) {
+            // Stop if sign-in was cancelled or this is a duplicate click event.
+            return;
+        }
+        mSignInState.displayedDialog = null;
+
+        progressSignInFlowCheckPolicy();
+    }
+
+    /**
+     * Continues the signin flow by checking if there is a policy that the account is subject to.
+     */
+    private void progressSignInFlowCheckPolicy() {
         if (mSignInState == null) {
             Log.w(TAG, "Ignoring sign in progress request as no pending sign in.");
             return;
@@ -435,33 +466,23 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
 
         Log.d(TAG, "Account has policy management");
-        mSignInState.policyConfirmationDialog = new ConfirmManagedSigninFragment(
-                managementDomain, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        if (mSignInState == null || mSignInState.policyConfirmationDialog == null) {
-                            // Stop if sign-in was cancelled or this is a duplicate click event.
-                            return;
-                        }
-
-                        mSignInState.policyConfirmationDialog = null;
-
-                        switch (id) {
-                            case AlertDialog.BUTTON_POSITIVE:
-                                Log.d(TAG, "Accepted policy management, proceeding with sign-in.");
-                                // This will call back to onPolicyFetchedBeforeSignIn.
-                                nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
-                                break;
-
-                            default:
-                                Log.d(TAG, "Policy confirmation rejected; abort sign-in.");
-                                abortSignIn();
-                                break;
-                        }
-                    }
-                });
-        mSignInState.policyConfirmationDialog.show(
+        mSignInState.displayedDialog = ConfirmManagedSigninFragment.newInstance(managementDomain);
+        mSignInState.displayedDialog.show(
                 mSignInState.activity.getFragmentManager(), CONFIRM_MANAGED_SIGNIN_DIALOG_TAG);
+    }
+
+    /**
+     * Called from ConfirmManagedSigninFragment if the managed account was confirmed.
+     */
+    void progressInteractiveSignInFlowManagedConfirmed() {
+        if (mSignInState == null || mSignInState.displayedDialog == null) {
+            // Stop if sign-in was cancelled or this is a duplicate click event.
+            return;
+        }
+        mSignInState.displayedDialog = null;
+
+        // This will call back to onPolicyFetchedBeforeSignIn.
+        nativeFetchPolicyBeforeSignIn(mNativeSigninManagerAndroid);
     }
 
     @CalledByNative
@@ -569,7 +590,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
     /**
      * Aborts the current sign in.
      *
-     * Package protected to allow fragments to call into the signin flow.
+     * Package protected to allow dialog fragments to abort the signin flow.
      */
     void abortSignIn() {
         if (mSignInState == null) {
@@ -577,16 +598,19 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (mSignInState.policyConfirmationDialog != null) {
-            mSignInState.policyConfirmationDialog.dismiss();
+        // Ensure this function can only run once per signin flow.
+        SignInState signInState = mSignInState;
+        mSignInState = null;
+
+        if (signInState.displayedDialog != null) {
+            signInState.displayedDialog.dismiss();
         }
 
-        if (mSignInState.callback != null) {
-            mSignInState.callback.onSignInAborted();
+        if (signInState.callback != null) {
+            signInState.callback.onSignInAborted();
         }
 
         Log.d(TAG, "Signin flow aborted.");
-        mSignInState = null;
         notifySignInAllowedChanged();
     }
 

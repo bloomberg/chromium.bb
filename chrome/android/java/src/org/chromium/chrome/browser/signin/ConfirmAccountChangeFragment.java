@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sync.ui.ClearSyncDataPreferences;
-import org.chromium.signin.InvestigatedScenario;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -40,30 +39,12 @@ class ConfirmAccountChangeFragment
     private static final String KEY_OLD_ACCOUNT_NAME = "lastAccountName";
     private static final String KEY_NEW_ACCOUNT_NAME = "newAccountName";
 
-    /**
-     * Prompts the user with a dialog if the user is changing accounts. If there is not a change
-     * of accounts or the user accepts through the dialog, the signin flow is continued. This
-     * means that the signin flow should have been started by the caller of this method.
-     */
-    public static void confirmSyncAccount(String syncAccountName, Activity activity) {
-        // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
-        if (SigninInvestigator.investigate(syncAccountName)
-                == InvestigatedScenario.DIFFERENT_ACCOUNT) {
-            ConfirmAccountChangeFragment dialog = newInstance(
-                    syncAccountName, PrefServiceBridge.getInstance().getSyncLastAccountName());
-            dialog.show(activity.getFragmentManager(), null);
-        } else {
-            // Do not display dialog, just sign-in.
-            SigninManager.get(activity).progressSignInFlowCheckPolicy();
-        }
-    }
-
-    public static ConfirmAccountChangeFragment newInstance(
-            String syncAccountName, String lastSyncAccountName) {
+    public static ConfirmAccountChangeFragment newInstance(String accountName) {
         ConfirmAccountChangeFragment dialogFragment = new ConfirmAccountChangeFragment();
         Bundle args = new Bundle();
-        args.putString(KEY_OLD_ACCOUNT_NAME, lastSyncAccountName);
-        args.putString(KEY_NEW_ACCOUNT_NAME, syncAccountName);
+        args.putString(
+                KEY_OLD_ACCOUNT_NAME, PrefServiceBridge.getInstance().getSyncLastAccountName());
+        args.putString(KEY_NEW_ACCOUNT_NAME, accountName);
         dialogFragment.setArguments(args);
         return dialogFragment;
     }
@@ -104,7 +85,7 @@ class ConfirmAccountChangeFragment
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_ImportData");
-            SigninManager.get(getActivity()).progressSignInFlowCheckPolicy();
+            SigninManager.get(getActivity()).progressInteractiveSignInFlowAccountConfirmed();
         } else if (which == AlertDialog.BUTTON_NEGATIVE) {
             RecordUserAction.record("Signin_ImportDataPrompt_Cancel");
             SigninManager.get(getActivity()).abortSignIn();
