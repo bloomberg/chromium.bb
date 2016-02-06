@@ -62,6 +62,10 @@ static const int kFixedPointDenominator = 1 << kLayoutUnitFractionalBits;
 const int intMaxForLayoutUnit = INT_MAX / kFixedPointDenominator;
 const int intMinForLayoutUnit = INT_MIN / kFixedPointDenominator;
 
+// TODO(thakis): Remove these two lines once http://llvm.org/PR26504 is resolved
+class LayoutUnit;
+inline bool operator<(const LayoutUnit&, const LayoutUnit&);
+
 class LayoutUnit {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
