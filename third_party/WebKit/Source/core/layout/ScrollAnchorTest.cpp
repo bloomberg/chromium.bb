@@ -16,8 +16,16 @@ public:
 
 TEST_F(ScrollAnchorTest, Basic)
 {
-    ScrollAnchor scrollAnchor(document().view()->layoutViewportScrollableArea());
-    scrollAnchor.clear();
-    EXPECT_EQ(nullptr, scrollAnchor.anchorObject());
+    setBodyInnerHTML(
+        "<style> body { height: 1000px } div { height: 100px } </style>"
+        "<div id='block1'>abc</div>"
+        "<div id='block2'>def</div>");
+
+    ScrollableArea* viewport = document().view()->layoutViewportScrollableArea();
+    viewport->scrollBy(DoubleSize(0, 150), UserScroll);
+    document().getElementById("block1")->setAttribute(HTMLNames::styleAttr, "height: 200px");
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_EQ(250, viewport->scrollPosition().y());
 }
+
 }
