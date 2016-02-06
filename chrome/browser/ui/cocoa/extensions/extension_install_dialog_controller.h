@@ -57,7 +57,7 @@ class ExtensionInstallDialogController :
 
   ExtensionInstallPrompt::DoneCallback done_callback_;
   base::scoped_nsobject<ExtensionInstallViewController> view_controller_;
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallDialogController);

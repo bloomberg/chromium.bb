@@ -73,6 +73,10 @@
   [customWindow_ setFrameOrigin:origin];
 }
 
+- (void)resizeWithNewSize:(NSSize)size {
+  // NOOP
+}
+
 - (NSWindow*)sheetWindow {
   return customWindow_;
 }

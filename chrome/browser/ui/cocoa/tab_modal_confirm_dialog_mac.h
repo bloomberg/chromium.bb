@@ -48,7 +48,7 @@ class TabModalConfirmDialogMac : public TabModalConfirmDialog,
 
   bool closing_;
 
-  scoped_ptr<ConstrainedWindowMac> window_;
+  std::unique_ptr<ConstrainedWindowMac> window_;
   scoped_ptr<TabModalConfirmDialogDelegate> delegate_;
   base::scoped_nsobject<ConstrainedWindowAlert> alert_;
   base::scoped_nsobject<TabModalConfirmDialogMacBridge> bridge_;

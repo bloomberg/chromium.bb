@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_CARD_UNMASK_PROMPT_VIEW_BRIDGE_H_
 
 #include "base/mac/scoped_nsobject.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 
@@ -41,7 +40,7 @@ class CardUnmaskPromptViewBridge : public CardUnmaskPromptView,
   void PerformClose();
 
  private:
-  scoped_ptr<ConstrainedWindowMac> constrained_window_;
+  std::unique_ptr<ConstrainedWindowMac> constrained_window_;
   base::scoped_nsobject<CardUnmaskPromptViewCocoa> view_controller_;
 
   // The controller |this| queries for logic and state.
