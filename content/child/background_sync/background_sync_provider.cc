@@ -166,22 +166,6 @@ void BackgroundSyncProvider::releaseRegistration(int64_t handle_id) {
   GetBackgroundSyncServicePtr()->ReleaseRegistration(handle_id);
 }
 
-void BackgroundSyncProvider::notifyWhenFinished(
-    int64_t handle_id,
-    blink::WebSyncNotifyWhenFinishedCallbacks* callbacks) {
-  DCHECK(callbacks);
-
-  scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks_ptr(
-      callbacks);
-
-  // base::Unretained is safe here, as the mojo channel will be deleted (and
-  // will wipe its callbacks) before 'this' is deleted.
-  GetBackgroundSyncServicePtr()->NotifyWhenFinished(
-      handle_id, base::Bind(&BackgroundSyncProvider::NotifyWhenFinishedCallback,
-                            base::Unretained(this),
-                            base::Passed(std::move(callbacks_ptr))));
-}
-
 void BackgroundSyncProvider::DuplicateRegistrationHandle(
     int64_t handle_id,
     const BackgroundSyncService::DuplicateRegistrationHandleCallback&
@@ -313,47 +297,6 @@ void BackgroundSyncProvider::GetRegistrationsCallback(
     case BackgroundSyncError::NOT_ALLOWED:
       // These errors should never be returned from
       // BackgroundSyncManager::GetRegistrations
-      NOTREACHED();
-      break;
-    case BackgroundSyncError::STORAGE:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "Background Sync is disabled."));
-      break;
-    case BackgroundSyncError::NO_SERVICE_WORKER:
-      callbacks->onError(
-          blink::WebSyncError(blink::WebSyncError::ErrorTypeUnknown,
-                              "No service worker is active."));
-      break;
-  }
-}
-
-void BackgroundSyncProvider::NotifyWhenFinishedCallback(
-    scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks,
-    BackgroundSyncError error,
-    BackgroundSyncState state) {
-  switch (error) {
-    case BackgroundSyncError::NONE:
-      switch (state) {
-        case BackgroundSyncState::PENDING:
-        case BackgroundSyncState::FIRING:
-        case BackgroundSyncState::REREGISTERED_WHILE_FIRING:
-        case BackgroundSyncState::UNREGISTERED_WHILE_FIRING:
-          NOTREACHED();
-          break;
-        case BackgroundSyncState::SUCCESS:
-          callbacks->onSuccess();
-          break;
-        case BackgroundSyncState::FAILED:
-        case BackgroundSyncState::UNREGISTERED:
-          callbacks->onError(blink::WebSyncError(
-              blink::WebSyncError::ErrorTypeAbort,
-              "Sync failed, unregistered, or overwritten."));
-          break;
-      }
-      break;
-    case BackgroundSyncError::NOT_FOUND:
-    case BackgroundSyncError::NOT_ALLOWED:
       NOTREACHED();
       break;
     case BackgroundSyncError::STORAGE:

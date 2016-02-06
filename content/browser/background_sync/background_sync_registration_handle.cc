@@ -26,15 +26,6 @@ void BackgroundSyncRegistrationHandle::Unregister(
                                        callback);
 }
 
-void BackgroundSyncRegistrationHandle::NotifyWhenFinished(
-    const StatusAndStateCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(IsValid());
-  DCHECK(background_sync_manager_);
-
-  background_sync_manager_->NotifyWhenFinished(handle_id_, callback);
-}
-
 bool BackgroundSyncRegistrationHandle::IsValid() const {
   return registration_ != nullptr;
 }

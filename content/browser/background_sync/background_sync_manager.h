@@ -53,8 +53,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusAndRegistrationCallback =
       base::Callback<void(BackgroundSyncStatus,
                           scoped_ptr<BackgroundSyncRegistrationHandle>)>;
-  using StatusAndStateCallback =
-      base::Callback<void(BackgroundSyncStatus, BackgroundSyncState)>;
   using StatusAndRegistrationsCallback = base::Callback<void(
       BackgroundSyncStatus,
       scoped_ptr<ScopedVector<BackgroundSyncRegistrationHandle>>)>;
@@ -202,9 +200,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       BackgroundSyncRegistrationHandle::HandleId handle_id);
 
   // Disable the manager. Already queued operations will abort once they start
-  // to run (in their impl methods). Future operations will not queue. The one
-  // exception is already firing events -- their responses will be processed in
-  // order to notify their final state.
+  // to run (in their impl methods). Future operations will not queue.
   // The list of active registrations is cleared and the backend is also cleared
   // (if it's still functioning). The manager will reenable itself once it
   // receives the OnStorageWiped message or on browser restart.
@@ -277,17 +273,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   void UnregisterDidStore(int64_t sw_registration_id,
                           const StatusCallback& callback,
                           ServiceWorkerStatusCode status);
-
-  // NotifyWhenFinished and its callbacks. See
-  // BackgroundSyncRegistrationHandle::NotifyWhenFinished for detailed
-  // documentation.
-  void NotifyWhenFinished(BackgroundSyncRegistrationHandle::HandleId handle_id,
-                          const StatusAndStateCallback& callback);
-  void NotifyWhenFinishedImpl(
-      scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle,
-      const StatusAndStateCallback& callback);
-  void NotifyWhenFinishedInvokeCallback(const StatusAndStateCallback& callback,
-                                        BackgroundSyncState status);
 
   // GetRegistration callbacks
   void GetRegistrationImpl(int64_t sw_registration_id,

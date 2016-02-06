@@ -62,16 +62,6 @@ void ErrorAndRegistrationCallback(bool* called,
   *out_registration = registration.Clone();
 }
 
-void ErrorAndStateCallback(bool* called,
-                           BackgroundSyncError* out_error,
-                           BackgroundSyncState* out_state,
-                           BackgroundSyncError error,
-                           BackgroundSyncState state) {
-  *called = true;
-  *out_error = error;
-  *out_state = state;
-}
-
 void ErrorCallback(bool* called,
                    BackgroundSyncError* out_error,
                    BackgroundSyncError error) {
@@ -219,13 +209,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void NotifyWhenDone(
-      int32_t handle_id,
-      const BackgroundSyncService::NotifyWhenFinishedCallback& callback) {
-    service_impl_->NotifyWhenFinished(handle_id, callback);
-    base::RunLoop().RunUntilIdle();
-  }
-
   scoped_ptr<TestBrowserThreadBundle> thread_bundle_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
   scoped_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
@@ -338,38 +321,6 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
   EXPECT_TRUE(getregistrations_called);
   EXPECT_EQ(BackgroundSyncError::NONE, getregistrations_error);
   EXPECT_EQ(1UL, array_size);
-}
-
-TEST_F(BackgroundSyncServiceImplTest, NotifyWhenFinished) {
-  // Register a sync event.
-  bool register_called = false;
-  BackgroundSyncError register_error;
-  SyncRegistrationPtr reg;
-  Register(default_sync_registration_.Clone(),
-           base::Bind(&ErrorAndRegistrationCallback, &register_called,
-                      &register_error, &reg));
-  EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
-
-  // Unregister it.
-  bool unregister_called = false;
-  BackgroundSyncError unregister_error;
-  Unregister(reg->handle_id,
-             base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
-  EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, unregister_error);
-
-  // Call NotifyWhenDone and verify that it calls back with unregistered.
-  bool notify_done_called = false;
-  BackgroundSyncError notify_done_error = BackgroundSyncError::NONE;
-  BackgroundSyncState notify_done_sync_state = BackgroundSyncState::SUCCESS;
-
-  NotifyWhenDone(reg->handle_id,
-                 base::Bind(&ErrorAndStateCallback, &notify_done_called,
-                            &notify_done_error, &notify_done_sync_state));
-  EXPECT_TRUE(notify_done_called);
-  EXPECT_EQ(BackgroundSyncError::NONE, notify_done_error);
-  EXPECT_EQ(BackgroundSyncState::UNREGISTERED, notify_done_sync_state);
 }
 
 }  // namespace content

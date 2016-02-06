@@ -63,9 +63,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       blink::WebSyncGetRegistrationsCallbacks* callbacks) override;
   // TODO(jkarlin): Rename to releaseRegistrationHandle.
   void releaseRegistration(int64_t handle_id) override;
-  void notifyWhenFinished(
-      int64_t handle_id,
-      blink::WebSyncNotifyWhenFinishedCallbacks* callbacks) override;
 
   void DuplicateRegistrationHandle(
       int64_t handle_id,
@@ -92,10 +89,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
       BackgroundSyncError error,
       const mojo::Array<SyncRegistrationPtr>& registrations);
-  void NotifyWhenFinishedCallback(
-      scoped_ptr<blink::WebSyncNotifyWhenFinishedCallbacks> callbacks,
-      BackgroundSyncError error,
-      BackgroundSyncState state);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
   BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();

@@ -192,22 +192,6 @@ void BackgroundSyncServiceImpl::ReleaseRegistration(
   active_handles_.Remove(handle_id);
 }
 
-void BackgroundSyncServiceImpl::NotifyWhenFinished(
-    BackgroundSyncRegistrationHandle::HandleId handle_id,
-    const NotifyWhenFinishedCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BackgroundSyncRegistrationHandle* registration =
-      active_handles_.Lookup(handle_id);
-  if (!registration) {
-    callback.Run(BackgroundSyncError::NOT_ALLOWED, BackgroundSyncState::FAILED);
-    return;
-  }
-
-  registration->NotifyWhenFinished(
-      base::Bind(&BackgroundSyncServiceImpl::OnNotifyWhenFinishedResult,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
 void BackgroundSyncServiceImpl::OnRegisterResult(
     const RegisterCallback& callback,
     BackgroundSyncStatus status,
@@ -253,14 +237,6 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
 
   callback.Run(static_cast<content::BackgroundSyncError>(status),
                std::move(mojo_registrations));
-}
-
-void BackgroundSyncServiceImpl::OnNotifyWhenFinishedResult(
-    const NotifyWhenFinishedCallback& callback,
-    BackgroundSyncStatus status,
-    BackgroundSyncState sync_state) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(static_cast<content::BackgroundSyncError>(status), sync_state);
 }
 
 }  // namespace content

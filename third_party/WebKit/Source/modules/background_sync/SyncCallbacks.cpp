@@ -46,35 +46,6 @@ void SyncRegistrationCallbacks::onError(const WebSyncError& error)
     m_resolver->reject(SyncError::take(m_resolver.get(), error));
 }
 
-SyncNotifyWhenFinishedCallbacks::SyncNotifyWhenFinishedCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
-    : m_resolver(resolver)
-    , m_serviceWorkerRegistration(serviceWorkerRegistration)
-{
-    ASSERT(m_resolver);
-    ASSERT(m_serviceWorkerRegistration);
-}
-
-SyncNotifyWhenFinishedCallbacks::~SyncNotifyWhenFinishedCallbacks()
-{
-}
-
-void SyncNotifyWhenFinishedCallbacks::onSuccess()
-{
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        return;
-    }
-
-    m_resolver->resolve();
-}
-
-void SyncNotifyWhenFinishedCallbacks::onError(const WebSyncError& error)
-{
-    if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped()) {
-        return;
-    }
-    m_resolver->reject(SyncError::take(m_resolver.get(), error));
-}
-
 SyncUnregistrationCallbacks::SyncUnregistrationCallbacks(ScriptPromiseResolver* resolver, ServiceWorkerRegistration* serviceWorkerRegistration)
     : m_resolver(resolver)
     , m_serviceWorkerRegistration(serviceWorkerRegistration)

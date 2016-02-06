@@ -24,7 +24,6 @@ namespace content {
 class CONTENT_EXPORT BackgroundSyncRegistration {
  public:
   using RegistrationId = int64_t;
-  using StateCallback = base::Callback<void(BackgroundSyncState)>;
 
   static const RegistrationId kInitialId;
 
@@ -33,16 +32,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   bool Equals(const BackgroundSyncRegistration& other) const;
   bool IsValid() const;
-  void AddFinishedCallback(const StateCallback& callback);
-  void RunFinishedCallbacks();
-  bool HasCompleted() const;
   bool IsFiring() const;
-
-  // If the registration is currently firing, sets its state to
-  // BackgroundSyncState::UNREGISTERED_WHILE_FIRING. If it is firing, it sets
-  // the state to BackgroundSyncState::UNREGISTERED and calls
-  // RunFinishedCallbacks.
-  void SetUnregisteredState();
 
   const BackgroundSyncRegistrationOptions* options() const { return &options_; }
   BackgroundSyncRegistrationOptions* options() { return &options_; }
@@ -68,7 +58,6 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   int num_attempts_ = 0;
   base::Time delay_until_;
 
-  std::list<StateCallback> notify_finished_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncRegistration);
 };

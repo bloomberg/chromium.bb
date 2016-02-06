@@ -21,9 +21,6 @@ enum BackgroundSyncState {
   FIRING,
   UNREGISTERED_WHILE_FIRING,
   REREGISTERED_WHILE_FIRING,
-  FAILED,
-  SUCCESS,
-  UNREGISTERED
 };
 
 enum BackgroundSyncEventLastChance {
@@ -44,7 +41,6 @@ interface BackgroundSyncService {
   DuplicateRegistrationHandle(int64 handle_id)
       => (BackgroundSyncError err, SyncRegistration? registration);
   ReleaseRegistration(int64 handle_id);
-  NotifyWhenFinished(int64 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
 };
 
 interface BackgroundSyncServiceClient {

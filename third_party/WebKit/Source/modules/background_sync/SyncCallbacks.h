@@ -42,29 +42,6 @@ private:
     Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-// SyncNotifyWhenDoneCallbacks is an implementation of
-// WebSyncNotifyWhenDoneCallbacks that will resolve the underlying promise
-// depending on the result passed to the callback. It takes a
-// ServiceWorkerRegistration in its constructor and will pass it to the
-// SyncProvider.
-class SyncNotifyWhenFinishedCallbacks final : public WebSyncNotifyWhenFinishedCallbacks {
-    WTF_MAKE_NONCOPYABLE(SyncNotifyWhenFinishedCallbacks);
-    // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-    // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
-    USING_FAST_MALLOC(SyncNotifyWhenFinishedCallbacks);
-
-public:
-    SyncNotifyWhenFinishedCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
-    ~SyncNotifyWhenFinishedCallbacks() override;
-
-    void onSuccess() override;
-    void onError(const WebSyncError&) override;
-
-private:
-    Persistent<ScriptPromiseResolver> m_resolver;
-    Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
-};
-
 // SyncUnregistrationCallbacks is an implementation of
 // WebSyncUnregistrationCallbacks that will resolve the underlying promise
 // depending on the result passed to the callback. It takes a
