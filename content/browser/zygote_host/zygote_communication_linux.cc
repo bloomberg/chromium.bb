@@ -303,9 +303,16 @@ void ZygoteCommunication::Init() {
   // Use the SUID sandbox for adjusting OOM scores when we are using the setuid
   // or namespace sandbox. This is needed beacuse the processes are
   // non-dumpable, so /proc/pid/oom_score_adj can only be written by root.
-  use_suid_sandbox_for_adj_oom_score_ =
-      !ZygoteHostImpl::GetInstance()->SandboxCommand().empty() &&
-      using_suid_sandbox;
+  use_suid_sandbox_for_adj_oom_score_ = using_suid_sandbox;
+
+#if defined(OS_CHROMEOS)
+  // Chrome OS has a kernel patch that restricts oom_score_adj. See
+  // crbug.com/576409 for details.
+  if (!ZygoteHostImpl::GetInstance()->SandboxCommand().empty() &&
+      using_namespace_sandbox) {
+    use_suid_sandbox_for_adj_oom_score_ = true;
+  }
+#endif
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
