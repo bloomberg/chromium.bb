@@ -50,6 +50,11 @@ template("ppapi_cdm_adapter") {
       libs += [ "rt" ]
     }
 
+    if (is_linux && !is_component_build) {
+      # CDM adapter depends on a CDM even in non-component builds.
+      configs += [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+    }
+
     # TODO(jschuh) crbug.com/167187
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
