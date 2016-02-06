@@ -106,13 +106,13 @@ InjectedScriptHost::InspectableObject* InjectedScriptHost::inspectedObject(unsig
 void InjectedScriptHost::debugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::DebugCommandBreakpointSource);
+        m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::undebugFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::DebugCommandBreakpointSource);
+        m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::DebugCommandBreakpointSource);
 }
 
 void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber, int columnNumber, const String& functionName)
@@ -125,13 +125,13 @@ void InjectedScriptHost::monitorFunction(const String& scriptId, int lineNumber,
         builder.append(functionName);
     builder.appendLiteral(" called\" + (arguments.length > 0 ? \" with arguments: \" + Array.prototype.join.call(arguments, \", \") : \"\")) && false");
     if (m_debuggerAgent)
-        m_debuggerAgent->setBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::MonitorCommandBreakpointSource, builder.toString());
+        m_debuggerAgent->setBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource, builder.toString());
 }
 
 void InjectedScriptHost::unmonitorFunction(const String& scriptId, int lineNumber, int columnNumber)
 {
     if (m_debuggerAgent)
-        m_debuggerAgent->removeBreakpoint(scriptId, lineNumber, columnNumber, V8DebuggerAgent::MonitorCommandBreakpointSource);
+        m_debuggerAgent->removeBreakpointAt(scriptId, lineNumber, columnNumber, V8DebuggerAgentImpl::MonitorCommandBreakpointSource);
 }
 
 } // namespace blink

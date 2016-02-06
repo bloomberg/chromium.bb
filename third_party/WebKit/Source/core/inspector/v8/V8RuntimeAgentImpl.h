@@ -32,7 +32,6 @@
 #define V8RuntimeAgentImpl_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
 #include "core/inspector/v8/V8RuntimeAgent.h"
 #include "wtf/Forward.h"
@@ -47,7 +46,7 @@ class V8DebuggerImpl;
 
 typedef String ErrorString;
 
-class CORE_EXPORT V8RuntimeAgentImpl : public V8RuntimeAgent, public InspectorBackendDispatcher::RuntimeCommandHandler {
+class CORE_EXPORT V8RuntimeAgentImpl : public V8RuntimeAgent {
     WTF_MAKE_NONCOPYABLE(V8RuntimeAgentImpl);
 public:
     V8RuntimeAgentImpl(InjectedScriptManager*, V8DebuggerImpl*);
@@ -72,7 +71,7 @@ public:
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
         TypeBuilder::OptOutput<bool>* wasThrown,
-        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
+        RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
     void callFunctionOn(ErrorString*,
         const String& objectId,
         const String& expression,
@@ -81,13 +80,13 @@ public:
         const bool* returnByValue,
         const bool* generatePreview,
         RefPtr<TypeBuilder::Runtime::RemoteObject>& result,
-        TypeBuilder::OptOutput<bool>* wasThrown) final;
-    void releaseObject(ErrorString*, const String& objectId) final;
-    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) final;
-    void releaseObjectGroup(ErrorString*, const String& objectGroup) final;
+        TypeBuilder::OptOutput<bool>* wasThrown) override;
+    void releaseObject(ErrorString*, const String& objectId) override;
+    void getProperties(ErrorString*, const String& objectId, const bool* ownProperties, const bool* accessorPropertiesOnly, const bool* generatePreview, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::PropertyDescriptor>>& result, RefPtr<TypeBuilder::Array<TypeBuilder::Runtime::InternalPropertyDescriptor>>& internalProperties, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
+    void releaseObjectGroup(ErrorString*, const String& objectGroup) override;
     void run(ErrorString*) override;
     void isRunRequired(ErrorString*, bool* out_result) override;
-    void setCustomObjectFormatterEnabled(ErrorString*, bool) final;
+    void setCustomObjectFormatterEnabled(ErrorString*, bool) override;
     void compileScript(ErrorString*, const String& expression, const String& sourceURL, bool persistScript, int executionContextId, TypeBuilder::OptOutput<TypeBuilder::Runtime::ScriptId>*, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
     void runScript(ErrorString*, const TypeBuilder::Runtime::ScriptId&, int executionContextId, const String* objectGroup, const bool* doNotPauseOnExceptionsAndMuteConsole, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, RefPtr<TypeBuilder::Runtime::ExceptionDetails>&) override;
 

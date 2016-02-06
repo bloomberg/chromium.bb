@@ -1567,14 +1567,14 @@ void V8DebuggerAgentImpl::clearBreakDetails()
     m_breakAuxData = nullptr;
 }
 
-void V8DebuggerAgentImpl::setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source, const String& condition)
+void V8DebuggerAgentImpl::setBreakpointAt(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source, const String& condition)
 {
     String breakpointId = generateBreakpointId(scriptId, lineNumber, columnNumber, source);
     ScriptBreakpoint breakpoint(lineNumber, columnNumber, condition);
     resolveBreakpoint(breakpointId, scriptId, breakpoint, source);
 }
 
-void V8DebuggerAgentImpl::removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source)
+void V8DebuggerAgentImpl::removeBreakpointAt(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource source)
 {
     removeBreakpoint(generateBreakpointId(scriptId, lineNumber, columnNumber, source));
 }

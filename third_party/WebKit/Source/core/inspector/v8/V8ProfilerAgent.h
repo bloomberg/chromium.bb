@@ -6,35 +6,15 @@
 #define V8ProfilerAgent_h
 
 #include "core/CoreExport.h"
-#include "core/InspectorFrontend.h"
-#include "wtf/Forward.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
+#include "core/InspectorBackendDispatcher.h"
+#include "core/inspector/v8/V8Debugger.h"
 
 namespace blink {
 
-class JSONObject;
-class V8Debugger;
-
-typedef String ErrorString;
-
-class CORE_EXPORT V8ProfilerAgent {
+class CORE_EXPORT V8ProfilerAgent : public InspectorBackendDispatcher::ProfilerCommandHandler, public V8Debugger::Agent<InspectorFrontend::Profiler> {
 public:
     static PassOwnPtr<V8ProfilerAgent> create(V8Debugger*);
     virtual ~V8ProfilerAgent() { }
-
-    // State management methods.
-    virtual void setInspectorState(PassRefPtr<JSONObject>) = 0;
-    virtual void setFrontend(InspectorFrontend::Profiler*) = 0;
-    virtual void clearFrontend() = 0;
-    virtual void restore() = 0;
-
-    // Protocol methods.
-    virtual void enable(ErrorString*) = 0;
-    virtual void disable(ErrorString*) = 0;
-    virtual void setSamplingInterval(ErrorString*, int) = 0;
-    virtual void start(ErrorString*) = 0;
-    virtual void stop(ErrorString*, RefPtr<TypeBuilder::Profiler::CPUProfile>&) = 0;
 
     // API for the embedder.
     virtual void consoleProfile(const String& title) = 0;
