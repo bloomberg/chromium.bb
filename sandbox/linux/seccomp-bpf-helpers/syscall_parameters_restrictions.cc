@@ -52,10 +52,6 @@
 #define PR_SET_TIMERSLACK_PID 41
 #endif
 
-#ifndef PR_SET_PTRACER
-#define PR_SET_PTRACER 0x59616d61
-#endif
-
 #endif  // defined(OS_ANDROID)
 
 #if defined(__arm__) && !defined(MAP_STACK)
@@ -147,7 +143,7 @@ ResultExpr RestrictPrctl() {
       .CASES((PR_GET_NAME, PR_SET_NAME, PR_GET_DUMPABLE, PR_SET_DUMPABLE
 #if defined(OS_ANDROID)
               ,
-              PR_SET_VMA, PR_SET_TIMERSLACK_PID, PR_SET_PTRACER
+              PR_SET_VMA, PR_SET_TIMERSLACK_PID
 #endif
               ),
              Allow())
