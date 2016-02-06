@@ -3,10 +3,26 @@
 // found in the LICENSE file.
 
 #include "content/common/resize_params.h"
-#include "content/public/test/render_widget_test.h"
+#include "content/public/test/render_view_test.h"
+#include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 
 namespace content {
+
+class RenderWidgetTest : public RenderViewTest {
+ protected:
+  RenderWidget* widget() {
+    return static_cast<RenderViewImpl*>(view_);
+  }
+
+  void OnResize(const ResizeParams& params) {
+    widget()->OnResize(params);
+  }
+
+  bool next_paint_is_resize_ack() {
+    return widget()->next_paint_is_resize_ack();
+  }
+};
 
 TEST_F(RenderWidgetTest, OnResize) {
   // The initial bounds is empty, so setting it to the same thing should do

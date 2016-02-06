@@ -58,8 +58,6 @@
       'public/test/ppapi_test_utils.h',
       'public/test/render_view_test.cc',
       'public/test/render_view_test.h',
-      'public/test/render_widget_test.cc',
-      'public/test/render_widget_test.h',
       'public/test/sandbox_file_system_test_helper.cc',
       'public/test/sandbox_file_system_test_helper.h',
       'public/test/test_browser_context.cc',
