@@ -172,6 +172,7 @@ void WorkerInspectorController::registerModuleAgent(PassOwnPtrWillBeRawPtr<Inspe
 void WorkerInspectorController::connectFrontend()
 {
     ASSERT(!m_frontend);
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     m_pageInspectorProxy = PageInspectorProxy::create(m_workerGlobalScope);
     m_frontend = adoptPtr(new InspectorFrontend(frontendChannel()));
     m_backendDispatcher = InspectorBackendDispatcher::create(frontendChannel());
@@ -184,6 +185,7 @@ void WorkerInspectorController::disconnectFrontend()
 {
     if (!m_frontend)
         return;
+    InspectorTaskRunner::IgnoreInterruptsScope scope(m_inspectorTaskRunner.get());
     m_backendDispatcher->clearFrontend();
     m_backendDispatcher.clear();
     m_agents.clearFrontend();
