@@ -28,6 +28,12 @@ import subprocess
 import symbol
 import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(__file__),
+                                os.pardir, os.pardir, os.pardir, os.pardir,
+                                'build', 'android'))
+from pylib import constants
+
+
 DEFAULT_SYMROOT='/tmp/symbols'
 DEFAULT_APK_DIR='chrome_apk'
 # From: https://source.android.com/source/build-numbers.html
@@ -45,8 +51,10 @@ def PrintUsage():
   print "  --chrome-symbols-dir=path"
   print "       the path to a Chrome symbols dir (can be absolute or relative"
   print "       to src), such as =out/Debug/lib"
-  print "       If not specified, will look for the newest lib in out/Debug or"
-  print "       out/Release"
+  print
+  print "  --output-directory=path"
+  print "       the path to the build output directory, such as out/Debug."
+  print "       Ignored if --chrome-symbols-dir is passed."
   print
   print "  --packed-relocation-adjustments"
   print "  --no-packed-relocation-adjustments"
@@ -139,6 +147,7 @@ def main(argv):
                                         "less-info",
                                         "chrome-symbols-dir=",
                                         "chrome-apk-dir=",
+                                        "output-directory=",
                                         "symbols-dir=",
                                         "symbols-zip=",
                                         "arch=",
@@ -164,6 +173,8 @@ def main(argv):
       symbol.CHROME_SYMBOLS_DIR = os.path.join(symbol.CHROME_SRC, value)
     elif option == "--chrome-apk-dir":
       chrome_apk_dir = os.path.join(symbol.CHROME_SRC, value)
+    elif option == "--output-directory":
+      constants.SetOutputDirectory(value)
     elif option == "--packed-relocation-adjustments":
       packed_relocation_adjustments = True
     elif option == "--no-packed-relocation-adjustments":
