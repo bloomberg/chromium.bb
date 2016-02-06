@@ -974,7 +974,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       handling_select_range_(false),
       notification_permission_dispatcher_(NULL),
       web_user_media_client_(NULL),
-      media_permission_dispatcher_(NULL),
       midi_dispatcher_(NULL),
 #if defined(OS_ANDROID)
       media_player_manager_(NULL),
@@ -5970,9 +5969,12 @@ RendererMediaSessionManager* RenderFrameImpl::GetMediaSessionManager() {
 #endif  // defined(OS_ANDROID)
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
-  if (!media_permission_dispatcher_)
-    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
-  return media_permission_dispatcher_;
+  if (!media_permission_dispatcher_) {
+    media_permission_dispatcher_.reset(new MediaPermissionDispatcher(
+        base::Bind(&RenderFrameImpl::ConnectToService<PermissionService>,
+                   base::Unretained(this))));
+  }
+  return media_permission_dispatcher_.get();
 }
 
 #if defined(ENABLE_MOJO_MEDIA)
@@ -6040,6 +6042,12 @@ void RenderFrameImpl::RegisterMojoServices() {
         base::Bind(&ImageDownloaderImpl::CreateMojoService,
                    base::Unretained(this)));
   }
+}
+
+template <typename Interface>
+void RenderFrameImpl::ConnectToService(
+    mojo::InterfaceRequest<Interface> request) {
+  GetServiceRegistry()->ConnectToRemoteService(std::move(request));
 }
 
 mojo::ServiceProviderPtr RenderFrameImpl::ConnectToApplication(

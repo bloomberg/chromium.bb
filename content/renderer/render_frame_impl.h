@@ -959,6 +959,10 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void RegisterMojoServices();
 
+  // Connect to an interface provided by the service registry.
+  template <typename Interface>
+  void ConnectToService(mojo::InterfaceRequest<Interface> request);
+
   // Connects to a Mojo application and returns a proxy to its exposed
   // ServiceProvider.
   mojo::ServiceProviderPtr ConnectToApplication(const GURL& url);
@@ -1099,9 +1103,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // EncryptedMediaClient attached to this frame; lazily initialized.
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
 
-  // The media permission dispatcher attached to this frame, lazily initialized.
-  // Destroyed via the RenderFrameObserver::OnDestruct() mechanism.
-  MediaPermissionDispatcher* media_permission_dispatcher_;
+  // The media permission dispatcher attached to this frame.
+  scoped_ptr<MediaPermissionDispatcher> media_permission_dispatcher_;
 
 #if defined(ENABLE_MOJO_MEDIA)
   // The media factory attached to this frame, lazily initialized.

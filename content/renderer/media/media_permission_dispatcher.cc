@@ -8,8 +8,6 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/public/common/service_registry.h"
-#include "content/public/renderer/render_frame.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "url/gurl.h"
@@ -35,11 +33,13 @@ content::PermissionName MediaPermissionTypeToPermissionName(Type type) {
 
 namespace content {
 
-MediaPermissionDispatcher::MediaPermissionDispatcher(RenderFrame* render_frame)
-    : RenderFrameObserver(render_frame),
+MediaPermissionDispatcher::MediaPermissionDispatcher(
+    const ConnectToServiceCB& connect_to_service_cb)
+    : connect_to_service_cb_(connect_to_service_cb),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       next_request_id_(0),
       weak_factory_(this) {
+  DCHECK(!connect_to_service_cb_.is_null());
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
@@ -65,10 +65,8 @@ void MediaPermissionDispatcher::HasPermission(
 
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  if (!permission_service_) {
-    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&permission_service_));
-  }
+  if (!permission_service_)
+    connect_to_service_cb_.Run(mojo::GetProxy(&permission_service_));
 
   int request_id = RegisterCallback(permission_status_cb);
   DVLOG(2) << __FUNCTION__ << ": request ID " << request_id;
@@ -93,10 +91,8 @@ void MediaPermissionDispatcher::RequestPermission(
 
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
-  if (!permission_service_) {
-    render_frame()->GetServiceRegistry()->ConnectToRemoteService(
-        mojo::GetProxy(&permission_service_));
-  }
+  if (!permission_service_)
+    connect_to_service_cb_.Run(mojo::GetProxy(&permission_service_));
 
   int request_id = RegisterCallback(permission_status_cb);
   DVLOG(2) << __FUNCTION__ << ": request ID " << request_id;

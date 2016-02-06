@@ -9,12 +9,12 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/common/permission_service.mojom.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "media/base/media_permission.h"
 
 namespace base {
@@ -23,11 +23,14 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-// MediaPermission implementation.
-class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission,
-                                                 public RenderFrameObserver {
+// MediaPermission implementation using content PermissionService.
+class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission {
  public:
-  explicit MediaPermissionDispatcher(RenderFrame* render_frame);
+  using ConnectToServiceCB =
+      base::Callback<void(mojo::InterfaceRequest<PermissionService>)>;
+
+  explicit MediaPermissionDispatcher(
+      const ConnectToServiceCB& connect_to_service_cb);
   ~MediaPermissionDispatcher() override;
 
   // media::MediaPermission implementation.
@@ -52,6 +55,7 @@ class CONTENT_EXPORT MediaPermissionDispatcher : public media::MediaPermission,
   // Callback for |permission_service_| calls.
   void OnPermissionStatus(uint32_t request_id, PermissionStatus status);
 
+  ConnectToServiceCB connect_to_service_cb_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   uint32_t next_request_id_;
   RequestMap requests_;
