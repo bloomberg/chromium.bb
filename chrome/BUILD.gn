@@ -142,8 +142,6 @@ if (!is_android) {
         "//content/public/common:static_switches",
         "//crypto",
         "//sandbox",
-        "//third_party/crashpad/crashpad/handler:handler_lib",
-        "//third_party/kasko",
         "//ui/gfx",
         "//win8/delegate_execute",
       ]

@@ -15,7 +15,6 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/util/google_update_settings.h"
-#include "components/crash/core/common/crash_keys.h"
 
 InstallerCrashReporterClient::InstallerCrashReporterClient(
     bool is_per_user_install)
@@ -24,11 +23,6 @@ InstallerCrashReporterClient::InstallerCrashReporterClient(
 
 InstallerCrashReporterClient::~InstallerCrashReporterClient() = default;
 
-void InstallerCrashReporterClient::SetCrashReporterClientIdFromGUID(
-    const std::string& client_guid) {
-  crash_keys::SetMetricsClientIdFromGUID(client_guid);
-}
-
 bool InstallerCrashReporterClient::ShouldCreatePipeName(
     const base::string16& process_type) {
   return true;
@@ -36,8 +30,6 @@ bool InstallerCrashReporterClient::ShouldCreatePipeName(
 
 bool InstallerCrashReporterClient::GetAlternativeCrashDumpLocation(
     base::FilePath* crash_dir) {
-  // TODO(grt): Is there a reason to support the BREAKPAD_DUMP_LOCATION
-  // environment variable?
   return false;
 }
 
@@ -119,8 +111,6 @@ void InstallerCrashReporterClient::RecordCrashDumpAttemptResult(
 
 bool InstallerCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
-  // TODO(grt): Is there a reason to support the BREAKPAD_DUMP_LOCATION
-  // environment variable?
   return PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 
@@ -142,8 +132,7 @@ bool InstallerCrashReporterClient::GetCollectStatsConsent() {
 #endif
 }
 
-bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(
-    bool* breakpad_enabled) {
+bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(bool* enabled) {
   // From the generated policy/policy/policy_constants.cc:
 #if defined(GOOGLE_CHROME_BUILD)
   static const wchar_t kRegistryChromePolicyKey[] =
@@ -158,7 +147,7 @@ bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(
   // reporter. Since the configuration management infrastructure is not
   // initialized in the installer, the corresponding registry keys are read
   // directly. The return status indicates whether policy data was successfully
-  // read. If it is true, |breakpad_enabled| contains the value set by policy.
+  // read. If it is true, |enabled| contains the value set by policy.
   DWORD value = 0;
   base::win::RegKey policy_key;
   static const HKEY kHives[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
@@ -167,7 +156,7 @@ bool InstallerCrashReporterClient::ReportingIsEnforcedByPolicy(
                         KEY_READ) == ERROR_SUCCESS &&
         policy_key.ReadValueDW(kMetricsReportingEnabled,
                                &value) == ERROR_SUCCESS) {
-      *breakpad_enabled = value != 0;
+      *enabled = value != 0;
       return true;
     }
   }

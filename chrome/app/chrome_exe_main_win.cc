@@ -16,10 +16,8 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
@@ -31,12 +29,13 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome_elf/chrome_elf_main.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/crashpad.h"
+#include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
-#include "third_party/crashpad/crashpad/handler/handler_main.h"
 #include "ui/gfx/win/dpi.h"
 
 namespace {
@@ -142,37 +141,6 @@ void SwitchToLFHeap() {
   }
 }
 
-int RunAsCrashpadHandler(const base::CommandLine& command_line) {
-  std::vector<base::string16> argv = command_line.argv();
-  base::string16 process_type =
-      L"--" + base::UTF8ToUTF16(switches::kProcessType) + L"=";
-  argv.erase(std::remove_if(argv.begin(), argv.end(),
-                            [&process_type](const base::string16& str) {
-                              return str.compare(0, process_type.size(),
-                                                 process_type) == 0;
-                            }),
-             argv.end());
-
-  scoped_ptr<char* []> argv_as_utf8(new char*[argv.size() + 1]);
-  std::vector<std::string> storage;
-  storage.reserve(argv.size());
-
-  size_t arg_append_index = 0;
-  for (size_t i = 0; i < argv.size(); ++i) {
-    // Remove arguments starting with '/' as they are not supported by crashpad.
-    if (!argv[i].empty() && argv[i].front() == L'/')
-      continue;
-
-    storage.push_back(base::UTF16ToUTF8(argv[i]));
-    argv_as_utf8[arg_append_index] = &storage[arg_append_index][0];
-    ++arg_append_index;
-  }
-  argv_as_utf8[arg_append_index] = nullptr;
-
-  return crashpad::HandlerMain(static_cast<int>(storage.size()),
-                               argv_as_utf8.get());
-}
-
 // Returns true if |command_line| contains a /prefetch:# argument where # is in
 // [1, 8].
 bool HasValidWindowsPrefetchArgument(const base::CommandLine& command_line) {
@@ -228,11 +196,14 @@ int main() {
          process_type.empty() ||
          HasValidWindowsPrefetchArgument(*command_line));
 
-  if (process_type == switches::kCrashpadHandler)
-    return RunAsCrashpadHandler(*base::CommandLine::ForCurrentProcess());
+  if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    return crash_reporter::RunAsCrashpadHandler(
+        *base::CommandLine::ForCurrentProcess());
+  }
 
   crash_reporter::SetCrashReporterClient(g_chrome_crash_client.Pointer());
-  crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+  crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
+                                                        process_type);
 
   SwitchToLFHeap();
 

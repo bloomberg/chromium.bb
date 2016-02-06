@@ -23,7 +23,7 @@ class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
   ~ChromeCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient implementation.
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
   void SetCrashReporterClientIdFromGUID(
       const std::string& client_guid) override;
 #endif

@@ -28,10 +28,9 @@ CrashReporterClient* GetCrashReporterClient() {
 CrashReporterClient::CrashReporterClient() {}
 CrashReporterClient::~CrashReporterClient() {}
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_WIN)
 void CrashReporterClient::SetCrashReporterClientIdFromGUID(
-    const std::string& client_guid) {
-}
+    const std::string& client_guid) {}
 #endif
 
 #if defined(OS_WIN)

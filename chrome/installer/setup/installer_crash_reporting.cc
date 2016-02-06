@@ -11,14 +11,17 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "base/win/registry.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/installer/setup/installer_crash_reporter_client.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/installer_state.h"
-#include "components/crash/content/app/breakpad_win.h"
 #include "components/crash/content/app/crash_keys_win.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 
 namespace installer {
@@ -33,22 +36,6 @@ const char kIsMultiInstall[] = "multi-install";
 const char kIsSystemLevel[] = "system-level";
 const char kOperation[] = "operation";
 const char kStateKey[] = "state-key";
-
-#if defined(COMPONENT_BUILD)
-// Installed via base::debug::SetCrashKeyReportingFunctions.
-void SetCrashKeyValue(const base::StringPiece& key,
-                      const base::StringPiece& value) {
-  DCHECK(breakpad::CrashKeysWin::keeper());
-  breakpad::CrashKeysWin::keeper()->SetCrashKeyValue(base::UTF8ToUTF16(key),
-                                                     base::UTF8ToUTF16(value));
-}
-
-// Installed via base::debug::SetCrashKeyReportingFunctions.
-void ClearCrashKey(const base::StringPiece& key) {
-  DCHECK(breakpad::CrashKeysWin::keeper());
-  breakpad::CrashKeysWin::keeper()->ClearCrashKeyValue(base::UTF8ToUTF16(key));
-}
-#endif  // COMPONENT_BUILD
 
 const char *DistributionTypeToString(BrowserDistribution::Type type) {
   switch (type) {
@@ -84,6 +71,20 @@ const char *OperationToString(InstallerState::Operation operation) {
   return "";
 }
 
+// Retrieve the SYSTEM version of TEMP. We do this instead of GetTempPath so
+// that both elevated and SYSTEM runs share the same directory.
+bool GetSystemTemp(base::FilePath* temp) {
+  base::win::RegKey reg_key(
+      HKEY_LOCAL_MACHINE,
+      L"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment",
+      KEY_READ);
+  std::wstring temp_wstring;  // presubmit: allow wstring
+  bool success = reg_key.ReadValue(L"TEMP", &temp_wstring) == ERROR_SUCCESS;
+  if (success)
+    *temp = base::FilePath(temp_wstring);  // presubmit: allow wstring
+  return success;
+}
+
 }  // namespace
 
 void ConfigureCrashReporting(const InstallerState& installer_state) {
@@ -98,30 +99,31 @@ void ConfigureCrashReporting(const InstallerState& installer_state) {
   ANNOTATE_LEAKING_OBJECT_PTR(crash_client);
   crash_reporter::SetCrashReporterClient(crash_client);
 
-  breakpad::InitCrashReporter("Chrome Installer");
+  if (installer_state.system_install()) {
+    base::FilePath temp_dir;
+    if (GetSystemTemp(&temp_dir)) {
+      base::FilePath crash_dir = temp_dir.Append(FILE_PATH_LITERAL("Crashpad"));
+      PathService::OverrideAndCreateIfNeeded(chrome::DIR_CRASH_DUMPS, crash_dir,
+                                             true, true);
+    } else {
+      // Failed to get a temp dir, something's gone wrong.
+      return;
+    }
+  }
 
-  // Set up crash keys and the client id (a la child_process_logging::Init()).
-#if defined(COMPONENT_BUILD)
-  // breakpad::InitCrashReporter takes care of this for static builds but not
-  // component builds due to intricacies of chrome.exe and chrome.dll sharing a
-  // copy of base.dll in that case (for details, see the comment in
-  // components/crash/content/app/breakpad_win.cc).
-  crash_client->RegisterCrashKeys();
-  base::debug::SetCrashKeyReportingFunctions(&SetCrashKeyValue, &ClearCrashKey);
-#endif // COMPONENT_BUILD
+  crash_reporter::InitializeCrashpadWithEmbeddedHandler(true,
+                                                        "Chrome Installer");
 
+  // Set up the metrics client id (a la child_process_logging::Init()).
   scoped_ptr<metrics::ClientInfo> client_info =
       GoogleUpdateSettings::LoadMetricsClientInfo();
   if (client_info)
-    crash_client->SetCrashReporterClientIdFromGUID(client_info->client_id);
-  // TODO(grt): A lack of a client_id at this point generally means that Chrome
-  // has yet to have been launched and picked one. Consider creating it and
-  // setting it here for Chrome to use.
+    crash_keys::SetMetricsClientIdFromGUID(client_info->client_id);
 }
 
 size_t RegisterCrashKeys() {
   const base::debug::CrashKey kFixedKeys[] = {
-    { crash_keys::kClientId, crash_keys::kSmallSize },
+    { crash_keys::kMetricsClientId, crash_keys::kSmallSize },
     { kCurrentVersion, crash_keys::kSmallSize },
     { kDistributionType, crash_keys::kSmallSize },
     { kIsMultiInstall, crash_keys::kSmallSize },

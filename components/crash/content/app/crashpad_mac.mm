@@ -31,8 +31,10 @@ namespace crash_reporter {
 namespace internal {
 
 base::FilePath PlatformCrashpadInitialization(bool initial_client,
-                                              bool browser_process) {
+                                              bool browser_process,
+                                              bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
+  DCHECK(!embedded_handler);  // This is not used on Mac.
 
   if (initial_client) {
     @autoreleasepool {

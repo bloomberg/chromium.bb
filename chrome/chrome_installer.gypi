@@ -220,7 +220,7 @@
             'installer_util_strings',
             '../base/base.gyp:base',
             '../chrome/common_constants.gyp:version_header',
-            '../components/components.gyp:crash_component_breakpad_to_be_deleted',
+            '../components/components.gyp:crash_component',
           ],
           'include_dirs': [
             '..',
@@ -256,8 +256,12 @@
             '../chrome/common_constants.gyp:common_constants',
             '../chrome/common_constants.gyp:version_header',
             '../chrome_elf/chrome_elf.gyp:chrome_elf_constants',
+            '../components/components.gyp:crash_component',
             '../rlz/rlz.gyp:rlz_lib',
             '../third_party/zlib/zlib.gyp:zlib',
+          ],
+          'defines': [
+            'COMPILE_CONTENT_STATICALLY',
           ],
           'include_dirs': [
             '..',
@@ -266,6 +270,7 @@
           ],
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/installer/util/installer_util_strings.rc',
+            '../content/public/common/content_switches.cc',
             'installer/setup/setup.ico',
             'installer/setup/setup.rc',
             'installer/setup/setup_exe_version.rc.version',

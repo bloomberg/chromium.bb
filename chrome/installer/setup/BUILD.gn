@@ -23,7 +23,7 @@ if (is_win) {
     deps = [
       ":lib",
       "//build/config/sanitizers:deps",
-      "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
+      "//components/crash/content/app:app",
     ]
   }
 
@@ -55,9 +55,10 @@ if (is_win) {
       "//chrome/common:version_header",
       "//chrome/installer/util:with_rc_strings",
       "//chrome_elf:constants",
-      "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
+      "//components/crash/content/app:app",
       "//components/crash/content/app:lib",
       "//components/crash/core/common",
+      "//content/public/common:static_switches",
       "//courgette:courgette_lib",
       "//rlz:rlz_lib",
       "//third_party/bspatch",

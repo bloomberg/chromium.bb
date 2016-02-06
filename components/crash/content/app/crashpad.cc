@@ -122,9 +122,9 @@ HMODULE GetModuleInProcess(base::ProcessHandle process,
 }
 #endif  // BUILDFLAG(ENABLE_KASKO)
 
-}  // namespace
-
-void InitializeCrashpad(bool initial_client, const std::string& process_type) {
+void InitializeCrashpadImpl(bool initial_client,
+                            const std::string& process_type,
+                            bool embedded_handler) {
   static bool initialized = false;
   DCHECK(!initialized);
   initialized = true;
@@ -138,16 +138,20 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type) {
     // component can't see Chrome's switches. This is only used for argument
     // sanitization.
     DCHECK(browser_process || process_type == "relauncher");
+#elif defined(OS_WIN)
+    // "Chrome Installer" is the name historically used for installer binaries
+    // as processed by the backend.
+    DCHECK(browser_process || process_type == "Chrome Installer");
 #else
-    DCHECK(browser_process);
+#error Port.
 #endif  // OS_MACOSX
   } else {
     DCHECK(!browser_process);
   }
 
   // database_path is only valid in the browser process.
-  base::FilePath database_path =
-      internal::PlatformCrashpadInitialization(initial_client, browser_process);
+  base::FilePath database_path = internal::PlatformCrashpadInitialization(
+      initial_client, browser_process, embedded_handler);
 
   crashpad::CrashpadInfo* crashpad_info =
       crashpad::CrashpadInfo::GetCrashpadInfo();
@@ -202,7 +206,17 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type) {
   // the same file and line.
   base::debug::SetDumpWithoutCrashingFunction(DumpWithoutCrashing);
 
-  if (browser_process) {
+#if defined(OS_MACOSX)
+  // On Mac, we only want the browser to initialize the database, but not the
+  // relauncher.
+  const bool should_initialize_database_and_set_upload_policy = browser_process;
+#elif defined(OS_WIN)
+  // On Windows, we want both the browser process and the installer and any
+  // other "main, first process" to initialize things. There is no "relauncher"
+  // on Windows, so this is synonymous with initial_client.
+  const bool should_initialize_database_and_set_upload_policy = initial_client;
+#endif
+  if (should_initialize_database_and_set_upload_policy) {
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
@@ -220,6 +234,19 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type) {
     SetUploadsEnabled(enable_uploads);
   }
 }
+
+}  // namespace
+
+void InitializeCrashpad(bool initial_client, const std::string& process_type) {
+  InitializeCrashpadImpl(initial_client, process_type, false);
+}
+
+#if defined(OS_WIN)
+void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
+                                           const std::string& process_type) {
+  InitializeCrashpadImpl(initial_client, process_type, true);
+}
+#endif  // OS_WIN
 
 void SetUploadsEnabled(bool enable_uploads) {
   if (g_database) {

@@ -4,8 +4,6 @@
 
 #include "components/crash/content/app/crashpad.h"
 
-#include <stddef.h>
-
 #include "base/environment.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
+#include "components/crash/content/app/crash_switches.h"
 #include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
@@ -52,14 +51,13 @@ void GetPlatformCrashpadAnnotations(
 }
 
 base::FilePath PlatformCrashpadInitialization(bool initial_client,
-                                              bool browser_process) {
+                                              bool browser_process,
+                                              bool embedded_handler) {
   base::FilePath database_path;  // Only valid in the browser process.
   bool result;
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
   scoped_ptr<base::Environment> env(base::Environment::Create());
-
-  DCHECK_EQ(initial_client, browser_process);
 
   if (initial_client) {
     CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
@@ -74,17 +72,15 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
     std::string url;
 #endif
 
-    std::vector<std::string> arguments;
-
-    // In test binaries, use crashpad_handler directly. Otherwise, we launch
-    // chrome.exe with --type=crashpad-handler.
     base::FilePath exe_file;
     CHECK(PathService::Get(base::FILE_EXE, &exe_file));
-    if (exe_file.BaseName().value() != FILE_PATH_LITERAL("chrome.exe")) {
-      base::FilePath exe_dir = exe_file.DirName();
-      exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
-    } else {
-      arguments.push_back("--type=crashpad-handler");
+
+    // If the handler is embedded in the binary (e.g. chrome, setup), we
+    // reinvoke it with --type=crashpad-handler. Otherwise, we use the
+    // standalone crashpad_handler.exe (for tests, etc.).
+    std::vector<std::string> arguments;
+    if (embedded_handler) {
+      arguments.push_back(std::string("--type=") + switches::kCrashpadHandler);
 
       if (startup_metric_utils::GetPreReadOptions().use_prefetch_argument) {
         // The prefetch argument added here has to be documented in
@@ -92,6 +88,9 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
         // constant can't be used here because crashpad can't depend on Chrome.
         arguments.push_back("/prefetch:7");
       }
+    } else {
+      base::FilePath exe_dir = exe_file.DirName();
+      exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
     }
 
     // TODO(scottmg): See https://crashpad.chromium.org/bug/23.

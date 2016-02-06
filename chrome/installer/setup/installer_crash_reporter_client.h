@@ -17,8 +17,6 @@ class InstallerCrashReporterClient
   ~InstallerCrashReporterClient() override;
 
   // crash_reporter::CrashReporterClient methods:
-  void SetCrashReporterClientIdFromGUID(
-      const std::string& client_guid) override;
   bool ShouldCreatePipeName(const base::string16& process_type) override;
   bool GetAlternativeCrashDumpLocation(base::FilePath* crash_dir) override;
   void GetProductNameAndVersion(const base::FilePath& exe_path,
@@ -42,7 +40,7 @@ class InstallerCrashReporterClient
   size_t RegisterCrashKeys() override;
   bool IsRunningUnattended() override;
   bool GetCollectStatsConsent() override;
-  bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) override;
+  bool ReportingIsEnforcedByPolicy(bool* enabled) override;
   bool EnableBreakpadForProcess(const std::string& process_type) override;
 
  private:

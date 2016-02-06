@@ -69,6 +69,9 @@
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "chrome/installer/util/shell_util.h"
 #include "chrome/installer/util/user_experiment.h"
+#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/content/app/run_as_crashpad_handler_win.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/installer/util/updating_app_registration_data.h"
@@ -1624,6 +1627,15 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   // The exit manager is in charge of calling the dtors of singletons.
   base::AtExitManager exit_manager;
   base::CommandLine::Init(0, NULL);
+
+  std::string process_type =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType);
+
+  if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    return crash_reporter::RunAsCrashpadHandler(
+        *base::CommandLine::ForCurrentProcess());
+  }
 
   // install_util uses chrome paths.
   chrome::RegisterPathProvider();

@@ -104,8 +104,6 @@
             'chrome_watcher_client',
             '../components/components.gyp:browser_watcher_client',
             '../components/components.gyp:crash_component',
-            '../third_party/crashpad/crashpad/handler/handler.gyp:crashpad_handler_lib',
-            '../third_party/kasko/kasko.gyp:kasko',
           ],
           'sources': [
             'app/chrome_crash_reporter_client.cc',
