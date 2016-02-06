@@ -1572,7 +1572,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
     self.assertTrue(driver.capabilities['hasTouchScreen'])
 
 
-class ChromeDriverLogTest(unittest.TestCase):
+class ChromeDriverLogTest(ChromeDriverBaseTest):
   """Tests that chromedriver produces the expected log file."""
 
   UNEXPECTED_CHROMEOPTION_CAP = 'unexpected_chromeoption_capability'
@@ -1599,9 +1599,8 @@ class ChromeDriverLogTest(unittest.TestCase):
     chromedriver_server = server.Server(
         _CHROMEDRIVER_BINARY, log_path=tmp_log_path)
     try:
-      driver = chromedriver.ChromeDriver(
-          chromedriver_server.GetUrl(), chrome_binary=_CHROME_BINARY,
-          logging_prefs={'driver':'OFF'})
+      driver = self.CreateDriver(
+          chromedriver_server.GetUrl(), logging_prefs={'driver':'OFF'})
       driver.Load(
         ChromeDriverTest._http_server.GetUrl() + '/chromedriver/empty.html')
       driver.AddCookie({'name': 'secret_code', 'value': 'bosco'})
