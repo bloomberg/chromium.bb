@@ -1428,10 +1428,7 @@ void WebGL2RenderingContextBase::drawArraysInstanced(GLenum mode, GLint first, G
         return;
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawArraysInstanced", true);
     webContext()->drawArraysInstancedANGLE(mode, first, count, instanceCount);
-    handleTextureCompleteness("drawArraysInstanced", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -1446,10 +1443,7 @@ void WebGL2RenderingContextBase::drawElementsInstanced(GLenum mode, GLsizei coun
     }
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawElementsInstanced", true);
     webContext()->drawElementsInstancedANGLE(mode, count, type, static_cast<GLintptr>(offset), instanceCount);
-    handleTextureCompleteness("drawElementsInstanced", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -1464,10 +1458,7 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GL
     }
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawRangeElements", true);
     webContext()->drawRangeElements(mode, start, end, count, type, static_cast<GLintptr>(offset));
-    handleTextureCompleteness("drawRangeElements", false);
     markContextChanged(CanvasChanged);
 }
 

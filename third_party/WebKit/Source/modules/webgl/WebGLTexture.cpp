@@ -294,18 +294,6 @@ bool WebGLTexture::isNPOT() const
     return m_isNPOT;
 }
 
-bool WebGLTexture::needToUseBlackTexture(TextureExtensionFlag flag, const WebGLSamplerState* samplerState) const
-{
-    ASSERT(samplerState);
-    if (!object())
-        return false;
-    if ((m_isFloatType && !(flag & TextureFloatLinearExtensionEnabled)) || (m_isHalfFloatType && !(flag && TextureHalfFloatLinearExtensionEnabled))) {
-        if (samplerState->magFilter != GL_NEAREST || (samplerState->minFilter != GL_NEAREST && samplerState->minFilter != GL_NEAREST_MIPMAP_NEAREST))
-            return true;
-    }
-    return false;
-}
-
 void WebGLTexture::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     context3d->deleteTexture(m_object);

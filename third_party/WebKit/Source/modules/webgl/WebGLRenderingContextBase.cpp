@@ -1088,8 +1088,6 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_vertexAttribType.resize(m_maxVertexAttribs);
 
-    createFallbackBlackTextures1x1();
-
     webContext()->viewport(0, 0, drawingBufferWidth(), drawingBufferHeight());
     webContext()->scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
 
@@ -1182,9 +1180,6 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
         m_textureUnits[i].m_texture3DBinding = nullptr;
         m_textureUnits[i].m_texture2DArrayBinding = nullptr;
     }
-
-    m_blackTexture2D = nullptr;
-    m_blackTextureCubeMap = nullptr;
 
     detachAndRemoveAllObjects();
 
@@ -2317,10 +2312,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode, GLint first, GLsizei cou
         return;
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawArrays", true);
     webContext()->drawArrays(mode, first, count);
-    handleTextureCompleteness("drawArrays", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -2335,10 +2327,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
     }
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawElements", true);
     webContext()->drawElements(mode, count, type, static_cast<GLintptr>(offset));
-    handleTextureCompleteness("drawElements", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -2348,10 +2337,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode, GLint firs
         return;
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawArraysInstancedANGLE", true);
     webContext()->drawArraysInstancedANGLE(mode, first, count, primcount);
-    handleTextureCompleteness("drawArraysInstancedANGLE", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -2361,10 +2347,7 @@ void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode, GLsizei 
         return;
 
     clearIfComposited();
-
-    handleTextureCompleteness("drawElementsInstancedANGLE", true);
     webContext()->drawElementsInstancedANGLE(mode, count, type, static_cast<GLintptr>(offset), primcount);
-    handleTextureCompleteness("drawElementsInstancedANGLE", false);
     markContextChanged(CanvasChanged);
 }
 
@@ -5444,74 +5427,6 @@ ScriptValue WebGLRenderingContextBase::getWebGLIntArrayParameter(ScriptState* sc
     return WebGLAny(scriptState, DOMInt32Array::create(value, length));
 }
 
-void WebGLRenderingContextBase::handleTextureCompleteness(const char* functionName, bool prepareToDraw)
-{
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
-    // We only handle the situation with float/half_float textures here. Other situations are handled in command buffer.
-    bool resetActiveUnit = false;
-    WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>((extensionEnabled(OESTextureFloatLinearName) ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
-        | ((extensionEnabled(OESTextureHalfFloatLinearName) || isWebGL2OrHigher()) ? WebGLTexture::TextureHalfFloatLinearExtensionEnabled : 0));
-    for (unsigned ii = 0; ii < m_onePlusMaxNonDefaultTextureUnit; ++ii) {
-        const WebGLSamplerState* samplerState2D = getTextureUnitSamplerState(GL_TEXTURE_2D, ii);
-        const WebGLSamplerState* samplerStateCubeMap = getTextureUnitSamplerState(GL_TEXTURE_CUBE_MAP, ii);
-        bool needToUseBlackTex2D = (m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag, samplerState2D));
-        bool needToUseBlackTexCubeMap = (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag, samplerStateCubeMap));
-        if (needToUseBlackTex2D || needToUseBlackTexCubeMap) {
-            if (ii != m_activeTextureUnit) {
-                webContext()->activeTexture(GL_TEXTURE0 + ii);
-                resetActiveUnit = true;
-            } else if (resetActiveUnit) {
-                webContext()->activeTexture(GL_TEXTURE0 + ii);
-                resetActiveUnit = false;
-            }
-            WebGLTexture* tex2D;
-            WebGLTexture* texCubeMap;
-            if (prepareToDraw) {
-                String msg(String("texture bound to texture unit ") + String::number(ii)
-                    + " is not renderable. Texture is Float or Half Float type with linear filtering while OES_float_linear or OES_half_float_linear extension is not enabled.");
-                emitGLWarning(functionName, msg.utf8().data());
-                tex2D = m_blackTexture2D.get();
-                texCubeMap = m_blackTextureCubeMap.get();
-            } else {
-                tex2D = m_textureUnits[ii].m_texture2DBinding.get();
-                texCubeMap = m_textureUnits[ii].m_textureCubeMapBinding.get();
-            }
-            if (needToUseBlackTex2D)
-                webContext()->bindTexture(GL_TEXTURE_2D, objectOrZero(tex2D));
-            if (needToUseBlackTexCubeMap)
-                webContext()->bindTexture(GL_TEXTURE_CUBE_MAP, objectOrZero(texCubeMap));
-        }
-    }
-    if (resetActiveUnit)
-        webContext()->activeTexture(GL_TEXTURE0 + m_activeTextureUnit);
-}
-
-void WebGLRenderingContextBase::createFallbackBlackTextures1x1()
-{
-    // All calling functions check isContextLost, so a duplicate check is not needed here.
-    unsigned char black[] = {0, 0, 0, 255};
-    m_blackTexture2D = createTexture();
-    webContext()->bindTexture(GL_TEXTURE_2D, m_blackTexture2D->object());
-    webContext()->texImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->bindTexture(GL_TEXTURE_2D, 0);
-    m_blackTextureCubeMap = createTexture();
-    webContext()->bindTexture(GL_TEXTURE_CUBE_MAP, m_blackTextureCubeMap->object());
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->texImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA, 1, 1,
-        0, GL_RGBA, GL_UNSIGNED_BYTE, black);
-    webContext()->bindTexture(GL_TEXTURE_CUBE_MAP, 0);
-}
-
 bool WebGLRenderingContextBase::isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat, GLenum colorBufferFormat)
 {
     unsigned need = WebGLImageConversion::getChannelBitsByFormat(texInternalFormat);
@@ -6888,8 +6803,6 @@ DEFINE_TRACE(WebGLRenderingContextBase)
     visitor->trace(m_renderbufferBinding);
     visitor->trace(m_valuebufferBinding);
     visitor->trace(m_textureUnits);
-    visitor->trace(m_blackTexture2D);
-    visitor->trace(m_blackTextureCubeMap);
     visitor->trace(m_extensions);
     CanvasRenderingContext::trace(visitor);
 }

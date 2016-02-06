@@ -53,7 +53,8 @@ struct DisallowedFeatures {
         chromium_color_buffer_float_rgba(false),
         chromium_color_buffer_float_rgb(false),
         ext_color_buffer_float(false),
-        oes_texture_float_linear(false) {
+        oes_texture_float_linear(false),
+        oes_texture_half_float_linear(false) {
   }
 
   void AllowExtensions() {
@@ -61,6 +62,7 @@ struct DisallowedFeatures {
     chromium_color_buffer_float_rgb = false;
     ext_color_buffer_float = false;
     oes_texture_float_linear = false;
+    oes_texture_half_float_linear = false;
   }
 
   bool gpu_memory_manager;
@@ -69,6 +71,7 @@ struct DisallowedFeatures {
   bool chromium_color_buffer_float_rgb;
   bool ext_color_buffer_float;
   bool oes_texture_float_linear;
+  bool oes_texture_half_float_linear;
 };
 
 typedef base::Callback<void(const std::string& key,

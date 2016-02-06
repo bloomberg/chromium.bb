@@ -162,6 +162,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableCHROMIUMColorBufferFloatRGB();
   void EnableEXTColorBufferFloat();
   void EnableOESTextureFloatLinear();
+  void EnableOESTextureHalfFloatLinear();
 
  private:
   friend class base::RefCounted<FeatureInfo>;
@@ -200,6 +201,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   bool chromium_color_buffer_float_rgb_available_;
   bool ext_color_buffer_float_available_;
   bool oes_texture_float_linear_available_;
+  bool oes_texture_half_float_linear_available_;
 
   bool disable_shader_translator_;
   scoped_ptr<gfx::GLVersionInfo> gl_version_info_;

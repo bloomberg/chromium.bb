@@ -243,6 +243,7 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   chromium_color_buffer_float_rgb_available_ = false;
   ext_color_buffer_float_available_ = false;
   oes_texture_float_linear_available_ = false;
+  oes_texture_half_float_linear_available_ = false;
 }
 
 bool FeatureInfo::Initialize(ContextType context_type,
@@ -340,6 +341,7 @@ void FeatureInfo::EnableOESTextureFloatLinear() {
   if (!oes_texture_float_linear_available_)
     return;
   AddExtensionString("GL_OES_texture_float_linear");
+  feature_flags_.enable_texture_float_linear = true;
   validators_.texture_sized_texture_filterable_internal_format.AddValue(
       GL_R32F);
   validators_.texture_sized_texture_filterable_internal_format.AddValue(
@@ -348,6 +350,13 @@ void FeatureInfo::EnableOESTextureFloatLinear() {
       GL_RGB32F);
   validators_.texture_sized_texture_filterable_internal_format.AddValue(
       GL_RGBA32F);
+}
+
+void FeatureInfo::EnableOESTextureHalfFloatLinear() {
+  if (!oes_texture_half_float_linear_available_)
+    return;
+  AddExtensionString("GL_OES_texture_half_float_linear");
+  feature_flags_.enable_texture_half_float_linear = true;
 }
 
 void FeatureInfo::InitializeFeatures() {
@@ -730,7 +739,9 @@ void FeatureInfo::InitializeFeatures() {
     validators_.read_pixel_type.AddValue(GL_HALF_FLOAT_OES);
     AddExtensionString("GL_OES_texture_half_float");
     if (enable_texture_half_float_linear) {
-      AddExtensionString("GL_OES_texture_half_float_linear");
+      oes_texture_half_float_linear_available_ = true;
+      if (!disallowed_features_.oes_texture_half_float_linear)
+        EnableOESTextureHalfFloatLinear();
     }
   }
 
@@ -995,10 +1006,6 @@ void FeatureInfo::InitializeFeatures() {
 
   // TODO(gman): Add support for these extensions.
   //     GL_OES_depth32
-
-  feature_flags_.enable_texture_float_linear |= enable_texture_float_linear;
-  feature_flags_.enable_texture_half_float_linear |=
-      enable_texture_half_float_linear;
 
   if (extensions.Contains("GL_ANGLE_texture_usage")) {
     feature_flags_.angle_texture_usage = true;

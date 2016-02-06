@@ -12346,6 +12346,10 @@ error::Error GLES2DecoderImpl::HandleRequestExtensionCHROMIUM(
   if (feature_str.find("GL_OES_texture_float_linear ") != std::string::npos) {
     feature_info_->EnableOESTextureFloatLinear();
   }
+  if (feature_str.find("GL_OES_texture_half_float_linear ") !=
+      std::string::npos) {
+    feature_info_->EnableOESTextureHalfFloatLinear();
+  }
 
   UpdateCapabilities();
 

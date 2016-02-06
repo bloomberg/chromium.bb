@@ -43,6 +43,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
   DisallowedFeatures adjusted_disallowed_features = disallowed_features;
   if (context_type == CONTEXT_TYPE_WEBGL1) {
     adjusted_disallowed_features.npot_support = true;
+    adjusted_disallowed_features.oes_texture_half_float_linear = true;
   }
   if (context_type == CONTEXT_TYPE_WEBGL1 ||
       context_type == CONTEXT_TYPE_WEBGL2) {

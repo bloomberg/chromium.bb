@@ -393,6 +393,13 @@ class GPU_EXPORT Texture {
                                  GLenum format,
                                  GLenum type);
 
+  static bool ColorRenderable(const FeatureInfo* feature_info,
+                              GLenum internal_format);
+
+  static bool TextureFilterable(const FeatureInfo* feature_info,
+                                GLenum internal_format,
+                                GLenum type);
+
   // Sets the Texture's target
   // Parameters:
   //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP or

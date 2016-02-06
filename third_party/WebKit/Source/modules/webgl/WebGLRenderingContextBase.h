@@ -566,9 +566,6 @@ protected:
     PersistentHeapVectorWillBeHeapVector<TextureUnitState> m_textureUnits;
     unsigned long m_activeTextureUnit;
 
-    PersistentWillBeMember<WebGLTexture> m_blackTexture2D;
-    PersistentWillBeMember<WebGLTexture> m_blackTextureCubeMap;
-
     Vector<GLenum> m_compressedTextureFormats;
 
     // Fixed-size cache of reusable image buffers for video texImage2D calls.
@@ -833,9 +830,6 @@ protected:
     void texImageCanvasByGPU(TexImageByGPUType, WebGLTexture*, GLenum target, GLint level,
         GLint internalformat, GLenum type, GLint xoffset, GLint yoffset, GLint zoffset, HTMLCanvasElement*);
     bool canUseTexImageCanvasByGPU(GLint internalformat, GLenum type);
-
-    void handleTextureCompleteness(const char*, bool);
-    void createFallbackBlackTextures1x1();
 
     virtual WebGLImageConversion::PixelStoreParams getPackPixelStoreParams();
     virtual WebGLImageConversion::PixelStoreParams getUnpackPixelStoreParams();

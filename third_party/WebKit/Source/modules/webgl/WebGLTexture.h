@@ -48,11 +48,6 @@ struct WebGLSamplerState {
 class WebGLTexture final : public WebGLSharedPlatform3DObject {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    enum TextureExtensionFlag {
-        NoTextureExtensionEnabled = 0,
-        TextureFloatLinearExtensionEnabled = 1 << 0,
-        TextureHalfFloatLinearExtensionEnabled = 1 << 1
-    };
     ~WebGLTexture() override;
 
     static WebGLTexture* create(WebGLRenderingContextBase*);
@@ -88,8 +83,6 @@ public:
     static bool isNPOT(GLsizei, GLsizei);
 
     bool isNPOT() const;
-    // Determine if texture sampling should always return [0, 0, 0, 1] (OpenGL ES 2.0 Sec 3.8.2).
-    bool needToUseBlackTexture(TextureExtensionFlag, const WebGLSamplerState*) const;
 
     bool hasEverBeenBound() const { return object() && m_target; }
 
