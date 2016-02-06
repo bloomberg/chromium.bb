@@ -7,8 +7,15 @@ To locally run closure compiler like the bots, do this:
 ```shell
 cd $CHROMIUM_SRC
 # sudo apt-get install openjdk-7-jre # may be required
-GYP_GENERATORS=ninja tools/gyp/gyp --depth . \
-third_party/closure_compiler/compiled_resources.gyp
+GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
+ninja -C out/Default
+```
+
+To run the v2 gyp format, change the last 2 lines to:
+
+```shell
+# notice the 2 in compiled_resources2.gyp
+GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources2.gyp
 ninja -C out/Default
 ```
 
