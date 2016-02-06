@@ -538,6 +538,8 @@ std::string RenderThreadImpl::HistogramCustomizer::HostToCustomHistogramSuffix(
     return ".plus";
   if (host == "inbox.google.com")
     return ".inbox";
+  if (host == "calendar.google.com")
+    return ".calendar";
   if (host == "www.youtube.com")
     return ".youtube";
   if (IsAlexaTop10NonGoogleSite(host))

@@ -87359,13 +87359,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="V8SpecialApps" separator=".">
+  <suffix name="calendar" label="Custom histogram for Calendar"/>
   <suffix name="docs" label="Custom histogram for Google Docs and Drive"/>
   <suffix name="gmail" label="Custom histogram for GMail"/>
   <suffix name="inbox" label="Custom histogram for Inbox"/>
   <suffix name="plus" label="Custom histogram for Google+"/>
-  <suffix name="youtube" label="Custom histogram for Youtube"/>
   <suffix name="top10"
       label="Custom histogram for Alexa's Top10 non-Google sites"/>
+  <suffix name="youtube" label="Custom histogram for Youtube"/>
   <affected-histogram name="V8.MemoryExternalFragmentationTotal"/>
   <affected-histogram name="V8.MemoryHeapCommitted"/>
   <affected-histogram name="V8.MemoryHeapSampleTotalCommitted"/>
