@@ -174,9 +174,6 @@
       <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_JS"
                  file="controls/settings_checkbox.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_CHECKBOX_CSS"
-                 file="controls/settings_checkbox.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_DROPDOWN_MENU_HTML"
                  file="controls/settings_dropdown_menu.html"
                  type="chrome_html" />

@@ -7,9 +7,14 @@
 
 <dom-module id="settings-checkbox">
   <link rel="import" type="css" href="chrome://resources/cr_elements/shared.css">
-  <link rel="import" type="css" href="settings_checkbox.css">
   <template>
     <style is="custom-style">
+      :host {
+        display: block;
+        margin-bottom: 10px;
+        margin-top: 10px;
+      }
+
       paper-checkbox {
         --paper-checkbox-label-spacing: 18px;
         --paper-checkbox-size: 16px;
@@ -21,11 +26,11 @@
     <cr-events id="events"></cr-events>
     <settings-pref-tracker pref="[[pref]]"></settings-pref-tracker>
 
-    <div id="outerDiv" class="layout horizontal center">
+    <div class="layout horizontal center">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           disabled="[[checkboxDisabled_(disabled, pref)]]">
-        <div id="mainLabel">{{label}}</div>
-        <div id="subLabel">{{subLabel}}</div>
+        <div>[[label]]</div>
+        <div class="secondary">[[subLabel]]</div>
       </paper-checkbox>
       <template is="dom-if" if="[[pref.policySource]]">
         <cr-policy-pref-indicator pref="[[pref]]"></cr-policy-pref-indicator>
