@@ -21,6 +21,8 @@
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
+#include "base/rand_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -633,6 +635,52 @@ TEST_F(HistogramTest, BadConstruction) {
   bad_histogram = LinearHistogram::FactoryGet(
       "BadConstructionLinear", 10, 100, 8, HistogramBase::kNoFlags);
   EXPECT_EQ(NULL, bad_histogram);
+}
+
+TEST_F(HistogramTest, FactoryTime) {
+  const int kTestCreateCount = 1 << 14;  // Must be power-of-2.
+  const int kTestLookupCount = 100000;
+
+  // Create all histogram names in advance for accurate timing below.
+  std::vector<std::string> histogram_names;
+  for (int i = 0; i < kTestCreateCount; ++i) {
+    histogram_names.push_back(
+        StringPrintf("TestHistogram.%d", i % kTestCreateCount));
+  }
+
+  // Calculate cost of creating histograms.
+  TimeTicks create_start = TimeTicks::Now();
+  for (int i = 0; i < kTestCreateCount; ++i) {
+    Histogram::FactoryGet(histogram_names[i], 0, 100, 10,
+                          HistogramBase::kNoFlags);
+  }
+  TimeDelta create_ticks = TimeTicks::Now() - create_start;
+  int64_t create_ms = create_ticks.InMilliseconds();
+
+  LOG(INFO) << kTestCreateCount << " histogram creations took " << create_ms
+            << "ms or about "
+            << (create_ms * 1000000) / kTestCreateCount
+            << "ns each.";
+
+  // Calculate cost of looking up existing histograms.
+  TimeTicks lookup_start = TimeTicks::Now();
+  for (int i = 0; i < kTestLookupCount; ++i) {
+    // 6007 is co-prime with kTestCreateCount and so will do lookups in an
+    // order less likely to be cacheable (but still hit them all) should the
+    // underlying storage use the exact histogram name as the key.
+    const int i_mult = 6007;
+    static_assert(i_mult < INT_MAX / kTestCreateCount, "Multiplier too big");
+    int index = (i * i_mult) & (kTestCreateCount - 1);
+    Histogram::FactoryGet(histogram_names[index], 0, 100, 10,
+                          HistogramBase::kNoFlags);
+  }
+  TimeDelta lookup_ticks = TimeTicks::Now() - lookup_start;
+  int64_t lookup_ms = lookup_ticks.InMilliseconds();
+
+  LOG(INFO) << kTestLookupCount << " histogram lookups took " << lookup_ms
+            << "ms or about "
+            << (lookup_ms * 1000000) / kTestLookupCount
+            << "ns each.";
 }
 
 #if GTEST_HAS_DEATH_TEST
