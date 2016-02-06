@@ -51,10 +51,6 @@ public:
     TransformPaintPropertyNode* perspective() const { return m_perspective.get(); }
     TransformPaintPropertyNode* scrollTranslation() const { return m_scrollTranslation.get(); }
 
-    // Transform that applies to layer contents, or nullptr if this object
-    // doesn't define one.
-    TransformPaintPropertyNode* transformForLayerContents() const;
-
     EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
     ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }

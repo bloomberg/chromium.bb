@@ -2056,7 +2056,6 @@
             'paint/NinePieceImageGrid.h',
             'paint/NinePieceImagePainter.cpp',
             'paint/NinePieceImagePainter.h',
-            'paint/ObjectPaintProperties.cpp',
             'paint/ObjectPaintProperties.h',
             'paint/ObjectPainter.cpp',
             'paint/ObjectPainter.h',

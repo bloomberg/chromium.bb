@@ -101,8 +101,6 @@ public:
             printer.addPropertyNode(perspective, "Perspective");
         if (const TransformPaintPropertyNode* scrollTranslation = paintProperties.scrollTranslation())
             printer.addPropertyNode(scrollTranslation, "ScrollTranslation");
-        if (const TransformPaintPropertyNode* transformForLayerContents = paintProperties.transformForLayerContents())
-            printer.addPropertyNode(transformForLayerContents, "TransformForLayerContents");
     }
 
     static void printNodeAsString(const TransformPaintPropertyNode* node, StringBuilder& stringBuilder)

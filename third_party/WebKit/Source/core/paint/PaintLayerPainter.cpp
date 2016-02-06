@@ -93,8 +93,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext& co
 
     LayerFixedPositionRecorder fixedPositionRecorder(context, *m_paintLayer.layoutObject());
 
+    // Transforms will be applied by property nodes directly for SPv2.
     // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.
-    if (m_paintLayer.paintsWithTransform(paintingInfo.globalPaintFlags()) && !(paintFlags & PaintLayerAppliedTransform))
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_paintLayer.paintsWithTransform(paintingInfo.globalPaintFlags()) && !(paintFlags & PaintLayerAppliedTransform))
         return paintLayerWithTransform(context, paintingInfo, paintFlags);
 
     return paintLayerContentsAndReflection(context, paintingInfo, paintFlags);
@@ -326,7 +327,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     if (shouldPaintContent || shouldPaintSelfOutline || isPaintingOverlayScrollbars) {
         // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
-        if (fragmentPolicy == ForceSingleFragment)
+        // TODO(trchen): We haven't decided how to handle visual fragmentation with SPv2.
+        // Related thread https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
+        if (fragmentPolicy == ForceSingleFragment || RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             m_paintLayer.appendSingleFragmentIgnoringPagination(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
         else
             m_paintLayer.collectFragments(layerFragments, localPaintingInfo.rootLayer, localPaintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
@@ -346,14 +349,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
 
         Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            if (const auto* objectProperties = m_paintLayer.layoutObject()->objectPaintProperties()) {
-                PaintChunkProperties properties(context.paintController().currentPaintChunkProperties());
-                if (TransformPaintPropertyNode* transform = objectProperties->transformForLayerContents())
-                    properties.transform = transform;
-                if (EffectPaintPropertyNode* effect = objectProperties->effect())
-                    properties.effect = effect;
-                scopedPaintChunkProperties.emplace(context.paintController(), properties);
-            }
+            ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
+            ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
+            scopedPaintChunkProperties.emplace(context.paintController(),  objectPaintProperties->localBorderBoxProperties()->properties);
         }
 
         bool shouldPaintBackground = isPaintingCompositedBackground && shouldPaintContent && !selectionOnly;
@@ -432,6 +430,9 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(PaintLayerFragmen
 
 PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
+    // Transforms will be applied by property nodes directly for SPv2.
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
     TransformationMatrix layerTransform = m_paintLayer.renderableTransform(paintingInfo.globalPaintFlags());
     // If the transform can't be inverted, then don't paint anything.
     if (!layerTransform.isInvertible())
@@ -500,6 +501,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
 
 PaintLayerPainter::PaintResult PaintLayerPainter::paintFragmentByApplyingTransform(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, const LayoutPoint& fragmentTranslation)
 {
+    // Transforms will be applied by property nodes directly for SPv2.
+    ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
     // This involves subtracting out the position of the layer in our current coordinate space, but preserving
     // the accumulated error for sub-pixel layout.
     LayoutPoint delta;
@@ -622,16 +626,23 @@ void PaintLayerPainter::paintFragmentWithPhase(PaintPhase phase, const PaintLaye
 
     LayoutRect newCullRect(clipRect.rect());
     Optional<ScrollRecorder> scrollRecorder;
-    LayoutPoint paintOffset = toPoint(fragment.layerBounds.location() - m_paintLayer.layoutBoxLocation());
-    if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
-        // As a descendant of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorders
-        // created by BlockPainter of the ancestor layers up to the root layer, so we need to issue ScrollRecorder
-        // for this layer seperately, with the scroll offset accumulated from the root layer to the parent of this
-        // layer, to get the same result as ScrollRecorder in BlockPainter.
-        paintOffset += paintingInfo.scrollOffsetAccumulation;
+    LayoutPoint paintOffset = -m_paintLayer.layoutBoxLocation();
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        ObjectPaintProperties* objectPaintProperties = m_paintLayer.layoutObject()->objectPaintProperties();
+        ASSERT(objectPaintProperties && objectPaintProperties->localBorderBoxProperties());
+        paintOffset += toSize(objectPaintProperties->localBorderBoxProperties()->paintOffset);
+    } else {
+        paintOffset += toSize(fragment.layerBounds.location());
+        if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
+            // As a descendant of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorders
+            // created by BlockPainter of the ancestor layers up to the root layer, so we need to issue ScrollRecorder
+            // for this layer seperately, with the scroll offset accumulated from the root layer to the parent of this
+            // layer, to get the same result as ScrollRecorder in BlockPainter.
+            paintOffset += paintingInfo.scrollOffsetAccumulation;
 
-        newCullRect.move(paintingInfo.scrollOffsetAccumulation);
-        scrollRecorder.emplace(context, *m_paintLayer.layoutObject(), phase, paintingInfo.scrollOffsetAccumulation);
+            newCullRect.move(paintingInfo.scrollOffsetAccumulation);
+            scrollRecorder.emplace(context, *m_paintLayer.layoutObject(), phase, paintingInfo.scrollOffsetAccumulation);
+        }
     }
     PaintInfo paintInfo(context, pixelSnappedIntRect(newCullRect), phase,
         paintingInfo.globalPaintFlags(), paintFlags, paintingInfo.rootLayer->layoutObject());
