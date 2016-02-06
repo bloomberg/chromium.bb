@@ -141,11 +141,6 @@ crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-backgroun
 crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 crbug.com/463358 [ Mac Linux Debug ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Failure ]
 
-crbug.com/231612 svg/animations/keypoints-mismatch.svg [ NeedsRebaseline ]
-crbug.com/231612 svg/custom/animation-values-parsing-error.html [ NeedsRebaseline ]
-crbug.com/231612 svg/custom/keySplines-parsing-error.html [ NeedsRebaseline ]
-crbug.com/231612 svg/custom/keyTimes-parsing-error.html [ NeedsRebaseline ]
-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Failure ]
