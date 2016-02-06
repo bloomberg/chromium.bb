@@ -486,31 +486,29 @@ void Scheduler::BeginImplFrameWithDeadline(const BeginFrameArgs& args) {
       compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
       compositor_timing_history_->ActivateDurationEstimate();
 
-  base::TimeDelta bmf_to_activate_estimate_if_critical =
+  base::TimeDelta bmf_to_activate_estimate_critical =
       bmf_start_to_activate +
       compositor_timing_history_->BeginMainFrameQueueDurationCriticalEstimate();
 
-  bool can_activate_before_deadline_if_critical =
-      CanBeginMainFrameAndActivateBeforeDeadline(
-          adjusted_args, bmf_to_activate_estimate_if_critical);
   state_machine_.SetCriticalBeginMainFrameToActivateIsFast(
-      can_activate_before_deadline_if_critical);
+      bmf_to_activate_estimate_critical < args.interval);
 
   // Update the BeginMainFrame args now that we know whether the main
   // thread will be on the critical path or not.
   begin_main_frame_args_ = adjusted_args;
   begin_main_frame_args_.on_critical_path = !ImplLatencyTakesPriority();
 
-  bool can_activate_before_deadline = can_activate_before_deadline_if_critical;
+  base::TimeDelta bmf_to_activate_estimate = bmf_to_activate_estimate_critical;
   if (!begin_main_frame_args_.on_critical_path) {
-    base::TimeDelta bmf_to_activate_estimate =
+    bmf_to_activate_estimate =
         bmf_start_to_activate +
         compositor_timing_history_
             ->BeginMainFrameQueueDurationNotCriticalEstimate();
-
-    can_activate_before_deadline = CanBeginMainFrameAndActivateBeforeDeadline(
-        adjusted_args, bmf_to_activate_estimate);
   }
+
+  bool can_activate_before_deadline =
+      CanBeginMainFrameAndActivateBeforeDeadline(adjusted_args,
+                                                 bmf_to_activate_estimate);
 
   if (ShouldRecoverMainLatency(adjusted_args, can_activate_before_deadline)) {
     TRACE_EVENT_INSTANT0("cc", "SkipBeginMainFrameToReduceLatency",
@@ -842,6 +840,7 @@ bool Scheduler::ShouldRecoverMainLatency(
     bool can_activate_before_deadline) const {
   DCHECK(!settings_.using_synchronous_renderer_compositor);
 
+  // The main thread is in a low latency mode and there's no need to recover.
   if (!state_machine_.main_thread_missed_last_deadline())
     return false;
 

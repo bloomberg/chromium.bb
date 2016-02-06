@@ -60,6 +60,7 @@ namespace {
 // TODO(brianderson): Fine tune the percentiles below.
 const size_t kDurationHistorySize = 60;
 const double kBeginMainFrameToCommitEstimationPercentile = 90.0;
+const double kBeginMainFrameQueueDurationEstimationPercentile = 90.0;
 const double kBeginMainFrameQueueDurationCriticalEstimationPercentile = 90.0;
 const double kBeginMainFrameQueueDurationNotCriticalEstimationPercentile = 90.0;
 const double kBeginMainFrameStartToCommitEstimationPercentile = 90.0;
@@ -344,6 +345,7 @@ CompositorTimingHistory::CompositorTimingHistory(
       begin_main_frame_committing_continuously_(false),
       compositor_drawing_continuously_(false),
       begin_main_frame_sent_to_commit_duration_history_(kDurationHistorySize),
+      begin_main_frame_queue_duration_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_critical_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_not_critical_history_(
           kDurationHistorySize),
@@ -428,15 +430,27 @@ CompositorTimingHistory::BeginMainFrameToCommitDurationEstimate() const {
 
 base::TimeDelta
 CompositorTimingHistory::BeginMainFrameQueueDurationCriticalEstimate() const {
-  return begin_main_frame_queue_duration_critical_history_.Percentile(
-      kBeginMainFrameQueueDurationCriticalEstimationPercentile);
+  base::TimeDelta all = begin_main_frame_queue_duration_history_.Percentile(
+      kBeginMainFrameQueueDurationEstimationPercentile);
+  base::TimeDelta critical =
+      begin_main_frame_queue_duration_critical_history_.Percentile(
+          kBeginMainFrameQueueDurationCriticalEstimationPercentile);
+  // Return the min since critical BeginMainFrames are likely fast if
+  // the non critical ones are.
+  return std::min(critical, all);
 }
 
 base::TimeDelta
 CompositorTimingHistory::BeginMainFrameQueueDurationNotCriticalEstimate()
     const {
-  return begin_main_frame_queue_duration_not_critical_history_.Percentile(
-      kBeginMainFrameQueueDurationNotCriticalEstimationPercentile);
+  base::TimeDelta all = begin_main_frame_queue_duration_history_.Percentile(
+      kBeginMainFrameQueueDurationEstimationPercentile);
+  base::TimeDelta not_critical =
+      begin_main_frame_queue_duration_not_critical_history_.Percentile(
+          kBeginMainFrameQueueDurationNotCriticalEstimationPercentile);
+  // Return the max since, non critical BeginMainFrames are likely slow if
+  // the critical ones are.
+  return std::max(not_critical, all);
 }
 
 base::TimeDelta
@@ -565,6 +579,8 @@ void CompositorTimingHistory::DidBeginMainFrame() {
   if (enabled_) {
     begin_main_frame_sent_to_commit_duration_history_.InsertSample(
         begin_main_frame_sent_to_commit_duration);
+    begin_main_frame_queue_duration_history_.InsertSample(
+        begin_main_frame_queue_duration);
     if (begin_main_frame_on_critical_path_) {
       begin_main_frame_queue_duration_critical_history_.InsertSample(
           begin_main_frame_queue_duration);

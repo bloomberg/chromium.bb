@@ -91,6 +91,7 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks draw_end_time_prev_;
 
   RollingTimeDeltaHistory begin_main_frame_sent_to_commit_duration_history_;
+  RollingTimeDeltaHistory begin_main_frame_queue_duration_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_critical_history_;
   RollingTimeDeltaHistory begin_main_frame_queue_duration_not_critical_history_;
   RollingTimeDeltaHistory begin_main_frame_start_to_commit_duration_history_;
