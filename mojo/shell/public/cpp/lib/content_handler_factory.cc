@@ -31,7 +31,7 @@ class ApplicationThread : public base::PlatformThread::Delegate {
       scoped_refptr<base::SingleThreadTaskRunner> handler_thread,
       const base::Callback<void(ApplicationThread*)>& termination_callback,
       ContentHandlerFactory::Delegate* handler_delegate,
-      InterfaceRequest<Application> application_request,
+      InterfaceRequest<shell::mojom::Application> application_request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback)
       : handler_thread_(handler_thread),
@@ -56,17 +56,17 @@ class ApplicationThread : public base::PlatformThread::Delegate {
   scoped_refptr<base::SingleThreadTaskRunner> handler_thread_;
   base::Callback<void(ApplicationThread*)> termination_callback_;
   ContentHandlerFactory::Delegate* handler_delegate_;
-  InterfaceRequest<Application> application_request_;
+  InterfaceRequest<shell::mojom::Application> application_request_;
   URLResponsePtr response_;
   Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
 };
 
-class ContentHandlerImpl : public ContentHandler {
+class ContentHandlerImpl : public shell::mojom::ContentHandler {
  public:
   ContentHandlerImpl(ContentHandlerFactory::Delegate* delegate,
-                     InterfaceRequest<ContentHandler> request)
+                     InterfaceRequest<shell::mojom::ContentHandler> request)
       : delegate_(delegate),
         binding_(this, std::move(request)),
         weak_factory_(this) {}
@@ -85,7 +85,7 @@ class ContentHandlerImpl : public ContentHandler {
  private:
   // Overridden from ContentHandler:
   void StartApplication(
-      InterfaceRequest<Application> application_request,
+      InterfaceRequest<shell::mojom::Application> application_request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     ApplicationThread* thread =
@@ -110,7 +110,7 @@ class ContentHandlerImpl : public ContentHandler {
 
   ContentHandlerFactory::Delegate* delegate_;
   std::map<ApplicationThread*, base::PlatformThreadHandle> active_threads_;
-  StrongBinding<ContentHandler> binding_;
+  StrongBinding<shell::mojom::ContentHandler> binding_;
   base::WeakPtrFactory<ContentHandlerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
@@ -126,7 +126,7 @@ ContentHandlerFactory::~ContentHandlerFactory() {
 }
 
 void ContentHandlerFactory::ManagedDelegate::RunApplication(
-    InterfaceRequest<Application> application_request,
+    InterfaceRequest<shell::mojom::Application> application_request,
     URLResponsePtr response) {
   base::MessageLoop loop(common::MessagePumpMojo::Create());
   auto application = this->CreateApplication(std::move(application_request),
@@ -135,8 +135,9 @@ void ContentHandlerFactory::ManagedDelegate::RunApplication(
     loop.Run();
 }
 
-void ContentHandlerFactory::Create(ApplicationConnection* connection,
-                                   InterfaceRequest<ContentHandler> request) {
+void ContentHandlerFactory::Create(
+    ApplicationConnection* connection,
+    InterfaceRequest<shell::mojom::ContentHandler> request) {
   new ContentHandlerImpl(delegate_, std::move(request));
 }
 

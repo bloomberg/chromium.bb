@@ -15,7 +15,7 @@ AndroidHandlerLoader::~AndroidHandlerLoader() {}
 
 void AndroidHandlerLoader::Load(
     const GURL& url,
-    InterfaceRequest<Application> application_request) {
+    InterfaceRequest<mojom::Application> application_request) {
   DCHECK(application_request.is_pending());
   application_.reset(
       new ApplicationImpl(&android_handler_, std::move(application_request)));

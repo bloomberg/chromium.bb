@@ -18,7 +18,7 @@ class DummyLoader : public ApplicationLoader {
 
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {
+            InterfaceRequest<mojom::Application> application_request) override {
     if (simulate_app_quit_)
       base::MessageLoop::current()->QuitWhenIdle();
   }

@@ -64,9 +64,10 @@ class ChildProcessHost {
   // Waits for the child process to terminate, and returns its exit code.
   int Join();
 
-  // See |ChildController|:
-  void StartApp(InterfaceRequest<Application> application_request,
-                const ChildController::StartAppCallback& on_app_complete);
+  // See |mojom::ChildController|:
+  void StartApp(
+      InterfaceRequest<mojom::Application> application_request,
+      const mojom::ChildController::StartAppCallback& on_app_complete);
   void ExitNow(int32_t exit_code);
 
  protected:
@@ -127,9 +128,9 @@ class ChildProcessHost {
   base::Process child_process_;
   // Used for the ChildController binding.
   embedder::PlatformChannelPair platform_channel_pair_;
-  ChildControllerPtr controller_;
+  mojom::ChildControllerPtr controller_;
   embedder::ChannelInfo* channel_info_;
-  ChildController::StartAppCallback on_app_complete_;
+  mojom::ChildController::StartAppCallback on_app_complete_;
   embedder::HandlePassingInformation handle_passing_info_;
 
   // Used only when --use-new-edk is specified. Used to back the NodeChannel

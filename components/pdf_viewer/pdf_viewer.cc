@@ -228,7 +228,7 @@ class PDFView : public mus::WindowTreeDelegate,
 
   scoped_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
 
-  mojo::Shell* shell_;
+  mojo::shell::mojom::Shell* shell_;
   mus::Window* root_;
 
   web_view::mojom::FramePtr frame_;
@@ -244,7 +244,7 @@ class PDFViewerApplicationDelegate
       public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
  public:
   PDFViewerApplicationDelegate(
-      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::ApplicationRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback)
       : app_(this,
@@ -318,29 +318,31 @@ class PDFViewerApplicationDelegate
   DISALLOW_COPY_AND_ASSIGN(PDFViewerApplicationDelegate);
 };
 
-class ContentHandlerImpl : public mojo::ContentHandler {
+class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
  public:
-  ContentHandlerImpl(mojo::InterfaceRequest<ContentHandler> request)
+  ContentHandlerImpl(
+      mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request)
       : binding_(this, std::move(request)) {}
   ~ContentHandlerImpl() override {}
 
  private:
-  // ContentHandler:
+  // mojo::shell::mojom::ContentHandler:
   void StartApplication(
-      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::ApplicationRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override {
     new PDFViewerApplicationDelegate(std::move(request), std::move(response),
                                      destruct_callback);
   }
 
-  mojo::StrongBinding<mojo::ContentHandler> binding_;
+  mojo::StrongBinding<mojo::shell::mojom::ContentHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);
 };
 
-class PDFViewer : public mojo::ApplicationDelegate,
-                  public mojo::InterfaceFactory<mojo::ContentHandler> {
+class PDFViewer
+    : public mojo::ApplicationDelegate,
+      public mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler> {
  public:
   PDFViewer() {
     v8::V8::InitializeICU();
@@ -363,7 +365,8 @@ class PDFViewer : public mojo::ApplicationDelegate,
 
   // InterfaceFactory<ContentHandler>:
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ContentHandler> request) override {
+              mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
+                  request) override {
     new ContentHandlerImpl(std::move(request));
   }
 

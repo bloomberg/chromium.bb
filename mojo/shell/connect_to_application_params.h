@@ -71,10 +71,12 @@ class ConnectToApplicationParams {
     return on_application_end_;
   }
 
-  void set_connect_callback(const Shell::ConnectToApplicationCallback& value) {
+  void set_connect_callback(
+      const shell::mojom::Shell::ConnectToApplicationCallback& value) {
     connect_callback_ = value;
   }
-  const Shell::ConnectToApplicationCallback& connect_callback() const {
+  const shell::mojom::Shell::ConnectToApplicationCallback&
+      connect_callback() const {
     return connect_callback_;
   }
 
@@ -92,7 +94,7 @@ class ConnectToApplicationParams {
   InterfaceRequest<ServiceProvider> services_;
   ServiceProviderPtr exposed_services_;
   base::Closure on_application_end_;
-  Shell::ConnectToApplicationCallback connect_callback_;
+  shell::mojom::Shell::ConnectToApplicationCallback connect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectToApplicationParams);
 };

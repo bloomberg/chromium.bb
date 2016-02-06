@@ -41,8 +41,9 @@ void RunAndroidApplication(JNIEnv* env,
                            jobject j_context,
                            const base::FilePath& app_path,
                            jint j_handle) {
-  InterfaceRequest<Application> application_request =
-      MakeRequest<Application>(MakeScopedHandle(MessagePipeHandle(j_handle)));
+  InterfaceRequest<mojom::Application> application_request =
+      MakeRequest<mojom::Application>(
+          MakeScopedHandle(MessagePipeHandle(j_handle)));
 
   // Load the library, so that we can set the application context there if
   // needed.
@@ -132,7 +133,7 @@ AndroidHandler::AndroidHandler() : content_handler_factory_(this) {}
 AndroidHandler::~AndroidHandler() {}
 
 void AndroidHandler::RunApplication(
-    InterfaceRequest<Application> application_request,
+    InterfaceRequest<mojom::Application> application_request,
     URLResponsePtr response) {
   JNIEnv* env = AttachCurrentThread();
   RunAndroidApplicationFn run_android_application_fn = &RunAndroidApplication;

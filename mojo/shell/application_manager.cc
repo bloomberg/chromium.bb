@@ -129,7 +129,7 @@ ApplicationInstance* ApplicationManager::GetApplicationInstance(
 void ApplicationManager::CreateInstanceForHandle(
     ScopedHandle channel,
     const GURL& url,
-    CapabilityFilterPtr filter,
+    mojom::CapabilityFilterPtr filter,
     InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
   // Instances created by others are considered unique, and thus have no
   // identity. As such they cannot be connected to by anyone else, and so we
@@ -140,7 +140,7 @@ void ApplicationManager::CreateInstanceForHandle(
   CapabilityFilter local_filter = filter->filter.To<CapabilityFilter>();
   Identity target_id(url, std::string(), local_filter);
   ApplicationInstance* instance = nullptr;
-  InterfaceRequest<Application> application_request =
+  InterfaceRequest<mojom::Application> application_request =
       CreateInstance(target_id, base::Closure(), &instance);
   instance->BindPIDReceiver(std::move(pid_receiver));
   scoped_ptr<NativeRunner> runner =
@@ -175,11 +175,12 @@ void ApplicationManager::ApplicationPIDAvailable(
       });
 }
 
-InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
-    scoped_ptr<ConnectToApplicationParams> params,
-    ApplicationInstance** resulting_instance) {
+InterfaceRequest<mojom::Application>
+    ApplicationManager::CreateAndConnectToInstance(
+        scoped_ptr<ConnectToApplicationParams> params,
+        ApplicationInstance** resulting_instance) {
   ApplicationInstance* instance = nullptr;
-  InterfaceRequest<Application> application_request =
+  InterfaceRequest<mojom::Application> application_request =
       CreateInstance(params->target(), params->on_application_end(), &instance);
   instance->ConnectToClient(std::move(params));
   if (resulting_instance)
@@ -187,15 +188,16 @@ InterfaceRequest<Application> ApplicationManager::CreateAndConnectToInstance(
   return application_request;
 }
 
-InterfaceRequest<Application> ApplicationManager::CreateInstance(
+InterfaceRequest<mojom::Application> ApplicationManager::CreateInstance(
     const Identity& target_id,
     const base::Closure& on_application_end,
     ApplicationInstance** resulting_instance) {
-  ApplicationPtr application;
-  InterfaceRequest<Application> application_request = GetProxy(&application);
+  mojom::ApplicationPtr application;
+  InterfaceRequest<mojom::Application> application_request =
+      GetProxy(&application);
   ApplicationInstance* instance = new ApplicationInstance(
-      std::move(application), this, target_id, Shell::kInvalidApplicationID,
-      on_application_end);
+      std::move(application), this, target_id,
+      mojom::Shell::kInvalidApplicationID, on_application_end);
   DCHECK(identity_to_instance_.find(target_id) ==
          identity_to_instance_.end());
   identity_to_instance_[target_id] = instance;
@@ -216,8 +218,8 @@ void ApplicationManager::HandleFetchCallback(
     scoped_ptr<Fetcher> fetcher) {
   if (!fetcher) {
     // Network error. Drop |params| to tell the requestor.
-    params->connect_callback().Run(Shell::kInvalidApplicationID,
-                                   Shell::kInvalidApplicationID);
+    params->connect_callback().Run(mojom::Shell::kInvalidApplicationID,
+                                   mojom::Shell::kInvalidApplicationID);
     return;
   }
 
@@ -244,16 +246,16 @@ void ApplicationManager::HandleFetchCallback(
 
   Identity source = params->source();
   Identity target = params->target();
-  Shell::ConnectToApplicationCallback connect_callback =
+  mojom::Shell::ConnectToApplicationCallback connect_callback =
       params->connect_callback();
   params->set_connect_callback(EmptyConnectCallback());
   ApplicationInstance* app = nullptr;
-  InterfaceRequest<Application> request(
+  InterfaceRequest<mojom::Application> request(
       CreateAndConnectToInstance(std::move(params), &app));
 
   uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
       fetcher.get(), source, target.url(), target.filter(), &request);
-  if (content_handler_id != Shell::kInvalidApplicationID) {
+  if (content_handler_id != mojom::Shell::kInvalidApplicationID) {
     app->set_requesting_content_handler_id(content_handler_id);
     connect_callback.Run(app->id(), content_handler_id);
     return;
@@ -269,7 +271,7 @@ void ApplicationManager::HandleFetchCallback(
                       target.url() == GURL("mojo://html_viewer/");
   }
 
-  connect_callback.Run(app->id(), Shell::kInvalidApplicationID);
+  connect_callback.Run(app->id(), mojom::Shell::kInvalidApplicationID);
 
   fetcher->AsPath(
       task_runner_,
@@ -280,7 +282,7 @@ void ApplicationManager::HandleFetchCallback(
 }
 
 void ApplicationManager::RunNativeApplication(
-    InterfaceRequest<Application> application_request,
+    InterfaceRequest<mojom::Application> application_request,
     bool start_sandboxed,
     scoped_ptr<Fetcher> fetcher,
     ApplicationInstance* instance,
@@ -367,7 +369,7 @@ void ApplicationManager::CleanupRunner(NativeRunner* runner) {
   }
 }
 
-Shell::ConnectToApplicationCallback EmptyConnectCallback() {
+mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback() {
   return base::Bind(&OnEmptyOnConnectCallback);
 }
 

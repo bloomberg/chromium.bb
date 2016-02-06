@@ -23,7 +23,9 @@
 
 namespace mojo {
 
-CapabilityFilterPtr CreatePermissiveCapabilityFilter();
+shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
+
+using ApplicationRequest = InterfaceRequest<shell::mojom::Application>;
 
 // TODO(beng): This comment is hilariously out of date.
 // Utility class for communicating with the Shell, and providing Services
@@ -59,7 +61,7 @@ CapabilityFilterPtr CreatePermissiveCapabilityFilter();
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public Application {
+class ApplicationImpl : public shell::mojom::Application {
  public:
   class ConnectParams {
    public:
@@ -68,12 +70,16 @@ class ApplicationImpl : public Application {
     ~ConnectParams();
 
     URLRequestPtr TakeRequest() { return std::move(request_); }
-    CapabilityFilterPtr TakeFilter() { return std::move(filter_); }
-    void set_filter(CapabilityFilterPtr filter) { filter_ = std::move(filter); }
+    shell::mojom::CapabilityFilterPtr TakeFilter() {
+      return std::move(filter_);
+    }
+    void set_filter(shell::mojom::CapabilityFilterPtr filter) {
+      filter_ = std::move(filter);
+    }
 
    private:
     URLRequestPtr request_;
-    CapabilityFilterPtr filter_;
+    shell::mojom::CapabilityFilterPtr filter_;
 
     DISALLOW_COPY_AND_ASSIGN(ConnectParams);
   };
@@ -83,8 +89,9 @@ class ApplicationImpl : public Application {
     explicit TestApi(ApplicationImpl* application)
         : application_(application) {}
 
-    void UnbindConnections(InterfaceRequest<Application>* application_request,
-                           ShellPtr* shell) {
+    void UnbindConnections(
+        InterfaceRequest<shell::mojom::Application>* application_request,
+        shell::mojom::ShellPtr* shell) {
       application_->UnbindConnections(application_request, shell);
     }
 
@@ -95,19 +102,19 @@ class ApplicationImpl : public Application {
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ApplicationImpl.
   ApplicationImpl(ApplicationDelegate* delegate,
-                  InterfaceRequest<Application> request);
+                  InterfaceRequest<shell::mojom::Application> request);
   // Constructs an ApplicationImpl with a custom termination closure. This
   // closure is invoked on Quit() instead of the default behavior of quitting
   // the current base::MessageLoop.
   ApplicationImpl(ApplicationDelegate* delegate,
-                  InterfaceRequest<Application> request,
+                  InterfaceRequest<shell::mojom::Application> request,
                   const Closure& termination_closure);
   ~ApplicationImpl() override;
 
   // The Mojo shell. This will return a valid pointer after Initialize() has
   // been invoked. It will remain valid until UnbindConnections() is invoked or
   // the ApplicationImpl is destroyed.
-  Shell* shell() const { return shell_.get(); }
+  shell::mojom::Shell* shell() const { return shell_.get(); }
 
   const std::string& url() const { return url_; }
   uint32_t id() const { return id_; }
@@ -146,8 +153,8 @@ class ApplicationImpl : public Application {
   void Quit();
 
  private:
-  // Application implementation.
-  void Initialize(ShellPtr shell,
+  // shell::mojom::Application implementation.
+  void Initialize(shell::mojom::ShellPtr shell,
                   const mojo::String& url,
                   uint32_t id) override;
   void AcceptConnection(const String& requestor_url,
@@ -167,15 +174,16 @@ class ApplicationImpl : public Application {
   // Unbinds the Shell and Application connections. Can be used to re-bind the
   // handles to another implementation of ApplicationImpl, for instance when
   // running apptests.
-  void UnbindConnections(InterfaceRequest<Application>* application_request,
-                         ShellPtr* shell);
+  void UnbindConnections(
+      InterfaceRequest<shell::mojom::Application>* application_request,
+      shell::mojom::ShellPtr* shell);
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
   ScopedVector<ApplicationConnection> incoming_connections_;
   ApplicationDelegate* delegate_;
-  Binding<Application> binding_;
-  ShellPtr shell_;
+  Binding<shell::mojom::Application> binding_;
+  shell::mojom::ShellPtr shell_;
   std::string url_;
   uint32_t id_;
   Closure termination_closure_;

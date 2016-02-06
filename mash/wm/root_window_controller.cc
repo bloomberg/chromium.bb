@@ -68,7 +68,7 @@ void RootWindowController::Destroy() {
   }
 }
 
-mojo::Shell* RootWindowController::GetShell() {
+mojo::shell::mojom::Shell* RootWindowController::GetShell() {
   return app_->app()->shell();
 }
 

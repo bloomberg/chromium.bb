@@ -17,7 +17,11 @@ class Insets;
 }
 
 namespace mojo {
+namespace shell {
+namespace mojom {
 class Shell;
+}
+}
 }
 
 namespace mus {
@@ -33,7 +37,7 @@ class NonClientFrameController : public views::WidgetDelegateView,
                                  public mus::WindowObserver {
  public:
   // NonClientFrameController deletes itself when |window| is destroyed.
-  NonClientFrameController(mojo::Shell* shell,
+  NonClientFrameController(mojo::shell::mojom::Shell* shell,
                            mus::Window* window,
                            mus::WindowManagerClient* window_manager_client);
 

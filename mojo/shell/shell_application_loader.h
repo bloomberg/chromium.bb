@@ -21,7 +21,7 @@ class ShellApplicationLoader : public ApplicationLoader {
   // Overridden from ApplicationLoader:
   void Load(
       const GURL& url,
-      InterfaceRequest<Application> application_request) override;
+      InterfaceRequest<mojom::Application> application_request) override;
 
   scoped_ptr<ApplicationImpl> app_;
 

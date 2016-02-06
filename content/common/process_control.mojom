@@ -7,6 +7,7 @@ module content;
 import "mojo/shell/public/interfaces/application.mojom";
 
 interface ProcessControl {
-  LoadApplication(string url, mojo.Application& request) => (bool success);
+  LoadApplication(string url,
+                  mojo.shell.mojom.Application& request) => (bool success);
 };
 

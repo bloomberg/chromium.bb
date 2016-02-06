@@ -14,11 +14,12 @@ namespace html_viewer {
 
 class GlobalState;
 
-class ContentHandlerImpl : public mojo::ContentHandler {
+class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
  public:
-  ContentHandlerImpl(GlobalState* global_state,
-                     mojo::ApplicationImpl* app,
-                     mojo::InterfaceRequest<ContentHandler> request);
+  ContentHandlerImpl(
+      GlobalState* global_state,
+      mojo::ApplicationImpl* app,
+      mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request);
   ~ContentHandlerImpl() override;
 
  protected:
@@ -26,15 +27,15 @@ class ContentHandlerImpl : public mojo::ContentHandler {
   mojo::ApplicationImpl* app() const { return app_; }
 
  private:
-  // Overridden from ContentHandler:
+  // Overridden from shell::mojom::ContentHandler:
   void StartApplication(
-      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::ApplicationRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override;
 
   GlobalState* global_state_;
   mojo::ApplicationImpl* app_;
-  mojo::StrongBinding<mojo::ContentHandler> binding_;
+  mojo::StrongBinding<mojo::shell::mojom::ContentHandler> binding_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentHandlerImpl);

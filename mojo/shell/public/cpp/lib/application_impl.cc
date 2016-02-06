@@ -29,23 +29,26 @@ void DefaultTerminationClosure() {
 ApplicationImpl::ConnectParams::ConnectParams(const std::string& url)
     : ConnectParams(URLRequest::From(url)) {}
 ApplicationImpl::ConnectParams::ConnectParams(URLRequestPtr request)
-    : request_(std::move(request)), filter_(CapabilityFilter::New()) {
+    : request_(std::move(request)),
+      filter_(shell::mojom::CapabilityFilter::New()) {
   filter_->filter.mark_non_null();
 }
 ApplicationImpl::ConnectParams::~ConnectParams() {}
 
-ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
-                                 InterfaceRequest<Application> request)
+ApplicationImpl::ApplicationImpl(
+    ApplicationDelegate* delegate,
+    InterfaceRequest<shell::mojom::Application> request)
     : ApplicationImpl(delegate,
                       std::move(request),
                       base::Bind(&DefaultTerminationClosure)) {}
 
-ApplicationImpl::ApplicationImpl(ApplicationDelegate* delegate,
-                                 InterfaceRequest<Application> request,
-                                 const Closure& termination_closure)
+ApplicationImpl::ApplicationImpl(
+    ApplicationDelegate* delegate,
+    InterfaceRequest<shell::mojom::Application> request,
+    const Closure& termination_closure)
     : delegate_(delegate),
       binding_(this, std::move(request)),
-      id_(Shell::kInvalidApplicationID),
+      id_(shell::mojom::Shell::kInvalidApplicationID),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
@@ -81,8 +84,9 @@ scoped_ptr<ApplicationConnection>
   InterfaceRequest<ServiceProvider> remote_services_proxy =
       GetProxy(&remote_services);
   scoped_ptr<internal::ServiceRegistry> registry(new internal::ServiceRegistry(
-      application_url, application_url, Shell::kInvalidApplicationID,
-      std::move(remote_services), std::move(local_request), allowed));
+      application_url, application_url,
+      shell::mojom::Shell::kInvalidApplicationID, std::move(remote_services),
+      std::move(local_request), allowed));
   shell_->ConnectToApplication(std::move(request),
                                std::move(remote_services_proxy),
                                std::move(local_services), params->TakeFilter(),
@@ -106,7 +110,7 @@ void ApplicationImpl::Quit() {
   }
 }
 
-void ApplicationImpl::Initialize(ShellPtr shell,
+void ApplicationImpl::Initialize(shell::mojom::ShellPtr shell,
                                  const mojo::String& url,
                                  uint32_t id) {
   shell_ = std::move(shell);
@@ -167,14 +171,15 @@ void ApplicationImpl::QuitNow() {
 }
 
 void ApplicationImpl::UnbindConnections(
-    InterfaceRequest<Application>* application_request,
-    ShellPtr* shell) {
+    InterfaceRequest<shell::mojom::Application>* application_request,
+    shell::mojom::ShellPtr* shell) {
   *application_request = binding_.Unbind();
   shell->Bind(shell_.PassInterface());
 }
 
-CapabilityFilterPtr CreatePermissiveCapabilityFilter() {
-  CapabilityFilterPtr filter(CapabilityFilter::New());
+shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter() {
+  shell::mojom::CapabilityFilterPtr filter(
+      shell::mojom::CapabilityFilter::New());
   Array<String> all_interfaces;
   all_interfaces.push_back("*");
   filter->filter.insert("*", std::move(all_interfaces));

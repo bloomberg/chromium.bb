@@ -44,7 +44,7 @@ class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
 
   // mojo::shell::ApplicationLoader:
   void Load(const GURL& url,
-            mojo::InterfaceRequest<mojo::Application> request) override;
+            InterfaceRequest<mojom::Application> request) override;
 
  private:
   void StopAppThread();

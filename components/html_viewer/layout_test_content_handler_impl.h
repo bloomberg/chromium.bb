@@ -39,7 +39,7 @@ class LayoutTestContentHandlerImpl : public ContentHandlerImpl,
 
   // ContentHandler:
   void StartApplication(
-      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::ApplicationRequest request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override;
 

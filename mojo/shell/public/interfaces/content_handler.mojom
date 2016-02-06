@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/application.mojom";
 import "network/public/interfaces/url_loader.mojom";
@@ -16,5 +16,5 @@ import "network/public/interfaces/url_loader.mojom";
 // implementation to self destruct and release the app reference.
 interface ContentHandler {
   // The callback should be called when the application is destructed.
-  StartApplication(Application& application, URLResponse response) => ();
+  StartApplication(Application& application, mojo.URLResponse response) => ();
 };

@@ -114,7 +114,7 @@ class TestApplicationLoader : public ApplicationLoader,
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {
+            InterfaceRequest<mojom::Application> application_request) override {
     ++num_loads_;
     test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
@@ -144,7 +144,8 @@ class ClosingApplicationLoader : public ApplicationLoader {
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {}
+            InterfaceRequest<mojom::Application> application_request) override {
+  }
 };
 
 class TesterContext {
@@ -345,7 +346,7 @@ class Tester : public ApplicationDelegate,
 
  private:
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {
+            InterfaceRequest<mojom::Application> application_request) override {
     app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
 

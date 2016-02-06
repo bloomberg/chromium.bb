@@ -51,7 +51,8 @@ class ConnectionValidator : public ApplicationLoader,
 
  private:
   // Overridden from ApplicationLoader:
-  void Load(const GURL& url, InterfaceRequest<Application> request) override {
+  void Load(const GURL& url,
+            InterfaceRequest<mojom::Application> request) override {
     app_.reset(new ApplicationImpl(this, std::move(request)));
   }
 
@@ -194,7 +195,7 @@ TestLoader::TestLoader(ApplicationDelegate* delegate) : delegate_(delegate) {}
 TestLoader::~TestLoader() {}
 
 void TestLoader::Load(const GURL& url,
-                      InterfaceRequest<Application> request) {
+                      InterfaceRequest<mojom::Application> request) {
   app_.reset(new ApplicationImpl(delegate_.get(), std::move(request)));
 }
 

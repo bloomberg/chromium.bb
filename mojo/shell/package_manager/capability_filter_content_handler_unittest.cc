@@ -78,8 +78,8 @@ class TestPackageManager : public PackageManagerImpl {
 };
 
 class TestContentHandler : public ApplicationDelegate,
-                           public InterfaceFactory<ContentHandler>,
-                           public ContentHandler {
+                           public InterfaceFactory<mojom::ContentHandler>,
+                           public mojom::ContentHandler {
  public:
   TestContentHandler() : app_(nullptr) {}
   ~TestContentHandler() override {}
@@ -90,19 +90,19 @@ class TestContentHandler : public ApplicationDelegate,
     app_ = app;
   }
   bool AcceptConnection(ApplicationConnection* connection) override {
-    connection->AddService<ContentHandler>(this);
+    connection->AddService<mojom::ContentHandler>(this);
     return true;
   }
 
-  // Overridden from InterfaceFactory<ContentHandler>:
+  // Overridden from InterfaceFactory<mojom::ContentHandler>:
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override {
+              InterfaceRequest<mojom::ContentHandler> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // Overridden from ContentHandler:
+  // Overridden from mojom::ContentHandler:
   void StartApplication(
-      InterfaceRequest<Application> application,
+      InterfaceRequest<mojom::Application> application,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     scoped_ptr<ApplicationDelegate> delegate(new test::TestApplication);
@@ -113,7 +113,7 @@ class TestContentHandler : public ApplicationDelegate,
   }
 
   ApplicationImpl* app_;
-  WeakBindingSet<ContentHandler> bindings_;
+  WeakBindingSet<mojom::ContentHandler> bindings_;
   ScopedVector<ApplicationDelegate> embedded_app_delegates_;
   ScopedVector<ApplicationImpl> embedded_apps_;
 

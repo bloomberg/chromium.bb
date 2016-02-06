@@ -20,7 +20,7 @@ namespace mojo {
 namespace shell {
 
 ApplicationInstance::ApplicationInstance(
-    ApplicationPtr application,
+    mojom::ApplicationPtr application,
     ApplicationManager* manager,
     const Identity& identity,
     uint32_t requesting_content_handler_id,
@@ -79,7 +79,7 @@ void ApplicationInstance::ConnectToApplication(
     URLRequestPtr app_request,
     InterfaceRequest<ServiceProvider> services,
     ServiceProviderPtr exposed_services,
-    CapabilityFilterPtr filter,
+    mojom::CapabilityFilterPtr filter,
     const ConnectToApplicationCallback& callback) {
   std::string url_string = app_request->url.To<std::string>();
   GURL url(url_string);

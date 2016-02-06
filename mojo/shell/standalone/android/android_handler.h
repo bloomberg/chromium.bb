@@ -31,7 +31,7 @@ class AndroidHandler : public ApplicationDelegate,
   bool AcceptConnection(ApplicationConnection* connection) override;
 
   // ContentHandlerFactory::Delegate:
-  void RunApplication(InterfaceRequest<Application> application_request,
+  void RunApplication(InterfaceRequest<mojom::Application> application_request,
                       URLResponsePtr response) override;
 
   ContentHandlerFactory content_handler_factory_;

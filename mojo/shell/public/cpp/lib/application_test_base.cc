@@ -19,20 +19,21 @@ namespace test {
 namespace {
 // Share the application URL with multiple application tests.
 String g_url;
-uint32_t g_id = Shell::kInvalidApplicationID;
+uint32_t g_id = shell::mojom::Shell::kInvalidApplicationID;
 
 // Application request handle passed from the shell in MojoMain, stored in
 // between SetUp()/TearDown() so we can (re-)intialize new ApplicationImpls.
-InterfaceRequest<Application> g_application_request;
+InterfaceRequest<shell::mojom::Application> g_application_request;
 
 // Shell pointer passed in the initial mojo.Application.Initialize() call,
 // stored in between initial setup and the first test and between SetUp/TearDown
 // calls so we can (re-)initialize new ApplicationImpls.
-ShellPtr g_shell;
+shell::mojom::ShellPtr g_shell;
 
-class ShellGrabber : public Application {
+class ShellGrabber : public shell::mojom::Application {
  public:
-  explicit ShellGrabber(InterfaceRequest<Application> application_request)
+  explicit ShellGrabber(
+      InterfaceRequest<shell::mojom::Application> application_request)
       : binding_(this, std::move(application_request)) {}
 
   void WaitForInitialize() {
@@ -42,7 +43,7 @@ class ShellGrabber : public Application {
 
  private:
   // Application implementation.
-  void Initialize(ShellPtr shell,
+  void Initialize(shell::mojom::ShellPtr shell,
                   const mojo::String& url,
                   uint32_t id) override {
     g_url = url;
@@ -76,7 +77,7 @@ MojoResult RunAllTests(MojoHandle application_request_handle) {
 
     // Grab the shell handle.
     ShellGrabber grabber(
-        MakeRequest<Application>(MakeScopedHandle(
+        MakeRequest<shell::mojom::Application>(MakeScopedHandle(
             MessagePipeHandle(application_request_handle))));
     grabber.WaitForInitialize();
     MOJO_CHECK(g_shell);
@@ -117,7 +118,7 @@ TestHelper::TestHelper(ApplicationDelegate* delegate)
           delegate == nullptr ? &default_application_delegate_ : delegate,
           std::move(g_application_request))) {
   // Fake application initialization.
-  Application* application = application_impl_.get();
+  shell::mojom::Application* application = application_impl_.get();
   application->Initialize(std::move(g_shell), g_url, g_id);
 }
 

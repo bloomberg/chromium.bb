@@ -18,7 +18,7 @@ ShellApplicationLoader::~ShellApplicationLoader() {}
 
 void ShellApplicationLoader::Load(
     const GURL& url,
-    InterfaceRequest<Application> application_request) {
+    InterfaceRequest<mojom::Application> application_request) {
   DCHECK(application_request.is_pending());
   app_.reset(new ApplicationImpl(new ShellApplicationDelegate(manager_),
                                  std::move(application_request)));

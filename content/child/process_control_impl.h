@@ -35,9 +35,10 @@ class ProcessControlImpl : public ProcessControl {
       URLToLoaderMap* url_to_loader_map) = 0;
 
   // ProcessControl:
-  void LoadApplication(const mojo::String& url,
-                       mojo::InterfaceRequest<mojo::Application> request,
-                       const LoadApplicationCallback& callback) override;
+  void LoadApplication(
+      const mojo::String& url,
+      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+      const LoadApplicationCallback& callback) override;
 
  private:
   // Called if a LoadApplication request fails.

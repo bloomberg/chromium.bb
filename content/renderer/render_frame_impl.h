@@ -1161,7 +1161,7 @@ class CONTENT_EXPORT RenderFrameImpl
   ServiceRegistryImpl service_registry_;
 
   // The shell proxy used to connect to Mojo applications.
-  mojo::ShellPtr mojo_shell_;
+  mojo::shell::mojom::ShellPtr mojo_shell_;
 
   // The screen orientation dispatcher attached to the frame, lazily
   // initialized.

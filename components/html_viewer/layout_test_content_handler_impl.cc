@@ -49,7 +49,7 @@ class TestHTMLFrame : public HTMLFrame {
 LayoutTestContentHandlerImpl::LayoutTestContentHandlerImpl(
     GlobalState* global_state,
     mojo::ApplicationImpl* app,
-    mojo::InterfaceRequest<mojo::ContentHandler> request,
+    mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request,
     test_runner::WebTestInterfaces* test_interfaces,
     WebTestDelegateImpl* test_delegate)
     : ContentHandlerImpl(global_state, app, std::move(request)),
@@ -62,7 +62,7 @@ LayoutTestContentHandlerImpl::~LayoutTestContentHandlerImpl() {
 }
 
 void LayoutTestContentHandlerImpl::StartApplication(
-    mojo::InterfaceRequest<mojo::Application> request,
+    mojo::ApplicationRequest request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   test_interfaces_->SetTestIsRunning(true);

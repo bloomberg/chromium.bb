@@ -141,7 +141,8 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   void OnMessagePipeCreatedOnMainThread(
       mojo::InterfaceRequest<mojo::shell::mojom::PIDReceiver> request,
       mojo::ScopedMessagePipeHandle pipe) {
-    mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+    mojo::shell::mojom::CapabilityFilterPtr filter(
+        mojo::shell::mojom::CapabilityFilter::New());
     mojo::Array<mojo::String> test_interfaces;
     test_interfaces.push_back(
         mojo::shell::test::mojom::CreateInstanceForHandleTest::Name_);

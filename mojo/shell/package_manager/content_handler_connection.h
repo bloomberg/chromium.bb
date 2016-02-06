@@ -35,7 +35,7 @@ class ContentHandlerConnection {
                            uint32_t id,
                            const ClosedCallback& connection_closed_callback);
 
-  void StartApplication(InterfaceRequest<Application> request,
+  void StartApplication(InterfaceRequest<mojom::Application> request,
                         URLResponsePtr response);
 
   // Closes the connection and destroys |this| object.
@@ -52,7 +52,7 @@ class ContentHandlerConnection {
   ClosedCallback connection_closed_callback_;
   Identity identity_;
 
-  ContentHandlerPtr content_handler_;
+  mojom::ContentHandlerPtr content_handler_;
   bool connection_closed_;
   // The id for this content handler.
   const uint32_t id_;

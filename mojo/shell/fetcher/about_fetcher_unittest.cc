@@ -31,8 +31,8 @@ namespace shell {
 namespace {
 
 class TestContentHandler : public ApplicationDelegate,
-                           public InterfaceFactory<ContentHandler>,
-                           public ContentHandler {
+                           public InterfaceFactory<mojom::ContentHandler>,
+                           public mojom::ContentHandler {
  public:
   TestContentHandler() : response_number_(0) {}
   ~TestContentHandler() override {}
@@ -44,19 +44,19 @@ class TestContentHandler : public ApplicationDelegate,
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
-    connection->AddService<ContentHandler>(this);
+    connection->AddService<mojom::ContentHandler>(this);
     return true;
   }
 
-  // Overridden from InterfaceFactory<ContentHandler>:
+  // Overridden from InterfaceFactory<mojom::ContentHandler>:
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override {
+              InterfaceRequest<mojom::ContentHandler> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // Overridden from ContentHandler:
+  // Overridden from mojom::ContentHandler:
   void StartApplication(
-      InterfaceRequest<Application> application,
+      InterfaceRequest<mojom::Application> application,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     response_number_++;
@@ -72,7 +72,7 @@ class TestContentHandler : public ApplicationDelegate,
 
   size_t response_number_;
   URLResponsePtr latest_response_;
-  WeakBindingSet<ContentHandler> bindings_;
+  WeakBindingSet<mojom::ContentHandler> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
 };
@@ -84,7 +84,8 @@ class TestLoader : public ApplicationLoader {
 
  private:
   // Overridden from ApplicationLoader:
-  void Load(const GURL& url, InterfaceRequest<Application> request) override {
+  void Load(const GURL& url,
+            InterfaceRequest<mojom::Application> request) override {
     app_.reset(new ApplicationImpl(delegate_, std::move(request)));
   }
 

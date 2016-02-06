@@ -88,7 +88,8 @@ ChildProcessHost::ChildProcessHost(ScopedHandle channel)
       weak_factory_(this) {
   CHECK(channel.is_valid());
   ScopedMessagePipeHandle handle(MessagePipeHandle(channel.release().value()));
-  controller_.Bind(InterfacePtrInfo<ChildController>(std::move(handle), 0u));
+  controller_.Bind(
+      InterfacePtrInfo<mojom::ChildController>(std::move(handle), 0u));
 }
 
 ChildProcessHost::~ChildProcessHost() {
@@ -138,7 +139,7 @@ int ChildProcessHost::Join() {
   if (controller_)  // We use this as a signal that Start was called.
     start_child_process_event_.Wait();
 
-  controller_ = ChildControllerPtr();
+  controller_ = mojom::ChildControllerPtr();
   DCHECK(child_process_.IsValid());
 
   // Ensure the child pipe is closed even if it wasn't yet connected to the
@@ -155,8 +156,8 @@ int ChildProcessHost::Join() {
 }
 
 void ChildProcessHost::StartApp(
-    InterfaceRequest<Application> application_request,
-    const ChildController::StartAppCallback& on_app_complete) {
+    InterfaceRequest<mojom::Application> application_request,
+    const mojom::ChildController::StartAppCallback& on_app_complete) {
   DCHECK(controller_);
 
   on_app_complete_ = on_app_complete;
@@ -287,7 +288,7 @@ void ChildProcessHost::DidCreateChannel(embedder::ChannelInfo* channel_info) {
 
 void ChildProcessHost::OnMessagePipeCreated() {
   controller_.Bind(
-      InterfacePtrInfo<ChildController>(pipe_holder_->PassPipe(), 0u));
+      InterfacePtrInfo<mojom::ChildController>(pipe_holder_->PassPipe(), 0u));
   MaybeNotifyProcessReady();
 }
 

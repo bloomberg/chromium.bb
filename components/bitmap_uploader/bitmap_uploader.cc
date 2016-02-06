@@ -51,7 +51,7 @@ BitmapUploader::~BitmapUploader() {
   MojoGLES2DestroyContext(gles2_context_);
 }
 
-void BitmapUploader::Init(mojo::Shell* shell) {
+void BitmapUploader::Init(mojo::shell::mojom::Shell* shell) {
   surface_ = window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
 

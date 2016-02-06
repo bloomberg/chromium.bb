@@ -33,7 +33,7 @@ class ApplicationThread : public base::SimpleThread {
                         core_services_application,
                     const std::string& url,
                     scoped_ptr<mojo::ApplicationDelegate> delegate,
-                    mojo::InterfaceRequest<mojo::Application> request,
+                    mojo::ApplicationRequest request,
                     const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
         core_services_application_(core_services_application),
@@ -73,7 +73,7 @@ class ApplicationThread : public base::SimpleThread {
       core_services_application_task_runner_;
   std::string url_;
   scoped_ptr<mojo::ApplicationDelegate> delegate_;
-  mojo::InterfaceRequest<mojo::Application> request_;
+  mojo::ApplicationRequest request_;
   mojo::Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
@@ -117,12 +117,12 @@ void CoreServicesApplicationDelegate::Quit() {
 
 void CoreServicesApplicationDelegate::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ContentHandler> request) {
+    mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
   handler_bindings_.AddBinding(this, std::move(request));
 }
 
 void CoreServicesApplicationDelegate::StartApplication(
-    mojo::InterfaceRequest<mojo::Application> request,
+    mojo::ApplicationRequest request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   const std::string url = response->url;

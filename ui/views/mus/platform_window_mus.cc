@@ -22,7 +22,7 @@ static uint32_t accelerated_widget_count = 1;
 }  // namespace
 
 PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
-                                     mojo::Shell* shell,
+                                     mojo::shell::mojom::Shell* shell,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),

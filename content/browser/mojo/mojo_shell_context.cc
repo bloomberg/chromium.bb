@@ -66,9 +66,9 @@ class DefaultApplicationLoader : public mojo::shell::ApplicationLoader {
 
  private:
   // mojo::shell::ApplicationLoader:
-  void Load(
-      const GURL& url,
-      mojo::InterfaceRequest<mojo::Application> application_request) override {}
+  void Load(const GURL& url,
+            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+                override {}
 
   DISALLOW_COPY_AND_ASSIGN(DefaultApplicationLoader);
 };
@@ -84,16 +84,16 @@ class UtilityProcessLoader : public mojo::shell::ApplicationLoader {
 
  private:
   // mojo::shell::ApplicationLoader:
-  void Load(
-      const GURL& url,
-      mojo::InterfaceRequest<mojo::Application> application_request) override {
+  void Load(const GURL& url,
+            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+                override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&StartUtilityProcessOnIOThread,
                                        base::Passed(&process_request),
                                        process_name_, use_sandbox_));
-    process_control->LoadApplication(url.spec(), std::move(application_request),
+    process_control->LoadApplication(url.spec(), std::move(request),
                                      base::Bind(&OnApplicationLoaded, url));
   }
 
@@ -129,15 +129,15 @@ class GpuProcessLoader : public mojo::shell::ApplicationLoader {
 
  private:
   // mojo::shell::ApplicationLoader:
-  void Load(
-      const GURL& url,
-      mojo::InterfaceRequest<mojo::Application> application_request) override {
+  void Load(const GURL& url,
+            mojo::InterfaceRequest<mojo::shell::mojom::Application> request)
+                override {
     ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&RequestGpuProcessControl, base::Passed(&process_request)));
-    process_control->LoadApplication(url.spec(), std::move(application_request),
+    process_control->LoadApplication(url.spec(), std::move(request),
                                      base::Bind(&OnApplicationLoaded, url));
   }
 
@@ -161,7 +161,7 @@ class MojoShellContext::Proxy {
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
-      const mojo::Shell::ConnectToApplicationCallback& callback) {
+      const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
     if (task_runner_ == base::ThreadTaskRunnerHandle::Get()) {
       if (shell_context_) {
         shell_context_->ConnectToApplicationOnOwnThread(
@@ -263,7 +263,7 @@ void MojoShellContext::ConnectToApplication(
     mojo::InterfaceRequest<mojo::ServiceProvider> request,
     mojo::ServiceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::Shell::ConnectToApplicationCallback& callback) {
+    const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   proxy_.Get()->ConnectToApplication(url, requestor_url, std::move(request),
                                      std::move(exposed_services), filter,
                                      callback);
@@ -275,7 +275,7 @@ void MojoShellContext::ConnectToApplicationOnOwnThread(
     mojo::InterfaceRequest<mojo::ServiceProvider> request,
     mojo::ServiceProviderPtr exposed_services,
     const mojo::shell::CapabilityFilter& filter,
-    const mojo::Shell::ConnectToApplicationCallback& callback) {
+    const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback) {
   scoped_ptr<mojo::shell::ConnectToApplicationParams> params(
       new mojo::shell::ConnectToApplicationParams);
   params->set_source(

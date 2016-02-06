@@ -42,7 +42,11 @@ class WebEncryptedMediaClientImpl;
 
 namespace mojo {
 class ServiceProvider;
+namespace shell {
+namespace mojom {
 class Shell;
+}
+}
 }
 
 namespace html_viewer {
@@ -54,7 +58,7 @@ class MediaFactory {
  public:
   MediaFactory(
       const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-      mojo::Shell* shell);
+      mojo::shell::mojom::Shell* shell);
   ~MediaFactory();
 
   blink::WebMediaPlayer* CreateMediaPlayer(
@@ -63,7 +67,7 @@ class MediaFactory {
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
       blink::WebContentDecryptionModule* initial_cdm,
-      mojo::Shell* shell);
+      mojo::shell::mojom::Shell* shell);
 
   blink::WebEncryptedMediaClient* GetEncryptedMediaClient();
 
@@ -85,7 +89,7 @@ class MediaFactory {
 
   const bool enable_mojo_media_renderer_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
-  mojo::Shell* shell_;
+  mojo::shell::mojom::Shell* shell_;
 
   // Lazily initialized objects.
   media::interfaces::ServiceFactoryPtr media_service_factory_;

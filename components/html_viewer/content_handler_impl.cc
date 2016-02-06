@@ -13,7 +13,7 @@ namespace html_viewer {
 ContentHandlerImpl::ContentHandlerImpl(
     GlobalState* global_state,
     mojo::ApplicationImpl* app,
-    mojo::InterfaceRequest<mojo::ContentHandler> request)
+    mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request)
     : global_state_(global_state),
       app_(app),
       binding_(this, std::move(request)),
@@ -23,7 +23,7 @@ ContentHandlerImpl::~ContentHandlerImpl() {
 }
 
 void ContentHandlerImpl::StartApplication(
-    mojo::InterfaceRequest<mojo::Application> request,
+    mojo::ApplicationRequest request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   // HTMLDocumentApplicationDelegate deletes itself.

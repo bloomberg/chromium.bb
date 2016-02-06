@@ -23,7 +23,7 @@ class AndroidLoader : public mojo::shell::ApplicationLoader {
   // Overridden from mojo::shell::ApplicationLoader:
   void Load(
       const GURL& url,
-      mojo::InterfaceRequest<mojo::Application> application_request) override;
+      mojo::InterfaceRequest<mojo::shell::mojom::Application> request) override;
 
   scoped_ptr<mojo::ApplicationImpl> app_;
 

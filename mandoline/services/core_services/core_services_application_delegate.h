@@ -23,8 +23,8 @@ class ApplicationThread;
 // instance of the CoreServices ServiceProvider.
 class CoreServicesApplicationDelegate
     : public mojo::ApplicationDelegate,
-      public mojo::InterfaceFactory<mojo::ContentHandler>,
-      public mojo::ContentHandler {
+      public mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler>,
+      public mojo::shell::mojom::ContentHandler {
  public:
   CoreServicesApplicationDelegate();
   ~CoreServicesApplicationDelegate() override;
@@ -38,18 +38,20 @@ class CoreServicesApplicationDelegate
       mojo::ApplicationConnection* connection) override;
   void Quit() override;
 
-  // Overridden from mojo::InterfaceFactory<mojo::ContentHandler>:
-  void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ContentHandler> request) override;
+  // Overridden from mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler>:
+  void Create(
+      mojo::ApplicationConnection* connection,
+      mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
+          request) override;
 
-  // Overridden from mojo::ContentHandler:
+  // Overridden from mojo::shell::mojom::ContentHandler:
   void StartApplication(
-      mojo::InterfaceRequest<mojo::Application> request,
+      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
       mojo::URLResponsePtr response,
       const mojo::Callback<void()>& destruct_callback) override;
 
   // Bindings for all of our connections.
-  mojo::WeakBindingSet<ContentHandler> handler_bindings_;
+  mojo::WeakBindingSet<mojo::shell::mojom::ContentHandler> handler_bindings_;
 
   ScopedVector<ApplicationThread> application_threads_;
   mojo::TracingImpl tracing_;

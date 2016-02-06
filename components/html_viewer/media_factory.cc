@@ -56,7 +56,7 @@ void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 
 MediaFactory::MediaFactory(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    mojo::Shell* shell)
+    mojo::shell::mojom::Shell* shell)
     :
 #if !defined(OS_ANDROID)
       media_thread_("Media"),
@@ -82,7 +82,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
-    mojo::Shell* shell) {
+    mojo::shell::mojom::Shell* shell) {
 #if defined(OS_ANDROID)
   // TODO(xhwang): Get CreateMediaPlayer working on android.
   return nullptr;

@@ -36,7 +36,8 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
                   const std::set<std::string>& allowed_interfaces);
   ~ServiceRegistry() override;
 
-  Shell::ConnectToApplicationCallback GetConnectToApplicationCallback();
+  shell::mojom::Shell::ConnectToApplicationCallback
+      GetConnectToApplicationCallback();
 
   // ApplicationConnection overrides.
   void SetServiceConnector(ServiceConnector* service_connector) override;

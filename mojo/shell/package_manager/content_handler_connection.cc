@@ -38,14 +38,15 @@ ContentHandlerConnection::ContentHandlerConnection(
 
   MessagePipe pipe;
   content_handler_.Bind(
-      InterfacePtrInfo<ContentHandler>(std::move(pipe.handle0), 0u));
-  services->ConnectToService(ContentHandler::Name_, std::move(pipe.handle1));
+      InterfacePtrInfo<mojom::ContentHandler>(std::move(pipe.handle0), 0u));
+  services->ConnectToService(mojom::ContentHandler::Name_,
+                             std::move(pipe.handle1));
   content_handler_.set_connection_error_handler(
       [this]() { CloseConnection(); });
 }
 
 void ContentHandlerConnection::StartApplication(
-    InterfaceRequest<Application> request,
+    InterfaceRequest<mojom::Application> request,
     URLResponsePtr response) {
   content_handler_->StartApplication(
       std::move(request), std::move(response),

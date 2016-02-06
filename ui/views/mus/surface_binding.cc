@@ -46,7 +46,7 @@ void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 class SurfaceBinding::PerConnectionState
     : public base::RefCounted<PerConnectionState> {
  public:
-  static PerConnectionState* Get(mojo::Shell* shell,
+  static PerConnectionState* Get(mojo::shell::mojom::Shell* shell,
                                  mus::WindowTreeConnection* connection);
 
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
@@ -59,7 +59,8 @@ class SurfaceBinding::PerConnectionState
 
   friend class base::RefCounted<PerConnectionState>;
 
-  PerConnectionState(mojo::Shell* shell, mus::WindowTreeConnection* connection);
+  PerConnectionState(mojo::shell::mojom::Shell* shell,
+                     mus::WindowTreeConnection* connection);
   ~PerConnectionState();
 
   void Init();
@@ -67,7 +68,7 @@ class SurfaceBinding::PerConnectionState
   static base::LazyInstance<
       base::ThreadLocalPointer<ConnectionToStateMap>>::Leaky window_states;
 
-  mojo::Shell* shell_;
+  mojo::shell::mojom::Shell* shell_;
   mus::WindowTreeConnection* connection_;
 
   // Set of state needed to create an OutputSurface.
@@ -83,7 +84,7 @@ base::LazyInstance<base::ThreadLocalPointer<
 
 // static
 SurfaceBinding::PerConnectionState* SurfaceBinding::PerConnectionState::Get(
-    mojo::Shell* shell,
+    mojo::shell::mojom::Shell* shell,
     mus::WindowTreeConnection* connection) {
   ConnectionToStateMap* window_map = window_states.Pointer()->Get();
   if (!window_map) {
@@ -113,7 +114,7 @@ SurfaceBinding::PerConnectionState::CreateOutputSurface(
 }
 
 SurfaceBinding::PerConnectionState::PerConnectionState(
-    mojo::Shell* shell,
+    mojo::shell::mojom::Shell* shell,
     mus::WindowTreeConnection* connection)
     : shell_(shell), connection_(connection) {}
 
@@ -141,7 +142,7 @@ void SurfaceBinding::PerConnectionState::Init() {
 
 // SurfaceBinding --------------------------------------------------------------
 
-SurfaceBinding::SurfaceBinding(mojo::Shell* shell,
+SurfaceBinding::SurfaceBinding(mojo::shell::mojom::Shell* shell,
                                mus::Window* window,
                                mus::mojom::SurfaceType surface_type)
     : window_(window),

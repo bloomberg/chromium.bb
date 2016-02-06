@@ -74,7 +74,8 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
                            const base::Closure& on_got_id_callback) {
   DCHECK(!application_connection_);
 
-  mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+  mojo::shell::mojom::CapabilityFilterPtr filter(
+      mojo::shell::mojom::CapabilityFilter::New());
   mojo::Array<mojo::String> resource_provider_interfaces;
   resource_provider_interfaces.push_back(
       resource_provider::ResourceProvider::Name_);
@@ -131,7 +132,8 @@ mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
 }
 
 uint32_t FrameConnection::GetContentHandlerID() const {
-  uint32_t content_handler_id = mojo::Shell::kInvalidApplicationID;
+  uint32_t content_handler_id =
+      mojo::shell::mojom::Shell::kInvalidApplicationID;
   if (!application_connection_->GetRemoteContentHandlerID(&content_handler_id))
     NOTREACHED();
   return content_handler_id;

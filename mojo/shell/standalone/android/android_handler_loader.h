@@ -23,7 +23,7 @@ class AndroidHandlerLoader : public ApplicationLoader {
  private:
   // ApplicationLoader overrides:
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override;
+            InterfaceRequest<mojom::Application> application_request) override;
 
   AndroidHandler android_handler_;
   scoped_ptr<ApplicationImpl> application_;

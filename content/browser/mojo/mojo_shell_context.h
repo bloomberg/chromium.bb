@@ -44,7 +44,7 @@ class CONTENT_EXPORT MojoShellContext {
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
-      const mojo::Shell::ConnectToApplicationCallback& callback);
+      const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback);
 
   static void SetApplicationsForTest(const StaticApplicationMap* apps);
 
@@ -58,7 +58,7 @@ class CONTENT_EXPORT MojoShellContext {
       mojo::InterfaceRequest<mojo::ServiceProvider> request,
       mojo::ServiceProviderPtr exposed_services,
       const mojo::shell::CapabilityFilter& filter,
-      const mojo::Shell::ConnectToApplicationCallback& callback);
+      const mojo::shell::mojom::Shell::ConnectToApplicationCallback& callback);
 
   static base::LazyInstance<scoped_ptr<Proxy>> proxy_;
 

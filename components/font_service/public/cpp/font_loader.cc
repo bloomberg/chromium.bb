@@ -18,7 +18,7 @@ namespace {
 void OnGotRemoteIDs(uint32_t instance_id, uint32_t content_handler_id) {}
 }  // namespace
 
-FontLoader::FontLoader(mojo::Shell* shell) {
+FontLoader::FontLoader(mojo::shell::mojom::Shell* shell) {
   mojo::ServiceProviderPtr font_service_provider;
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:font_service");

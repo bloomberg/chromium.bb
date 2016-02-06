@@ -47,7 +47,7 @@ ServiceRegistry::ServiceRegistry()
 ServiceRegistry::~ServiceRegistry() {
 }
 
-Shell::ConnectToApplicationCallback
+shell::mojom::Shell::ConnectToApplicationCallback
 ServiceRegistry::GetConnectToApplicationCallback() {
   return base::Bind(&ServiceRegistry::OnGotRemoteIDs,
                     weak_factory_.GetWeakPtr());

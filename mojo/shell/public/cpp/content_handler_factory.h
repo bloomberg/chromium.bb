@@ -14,7 +14,8 @@
 
 namespace mojo {
 
-class ContentHandlerFactory : public InterfaceFactory<ContentHandler> {
+class ContentHandlerFactory
+    : public InterfaceFactory<shell::mojom::ContentHandler> {
  public:
   class HandledApplicationHolder {
    public:
@@ -27,7 +28,7 @@ class ContentHandlerFactory : public InterfaceFactory<ContentHandler> {
     // Implement this method to create the Application. This method will be
     // called on a new thread. Leaving this method will quit the application.
     virtual void RunApplication(
-        InterfaceRequest<Application> application_request,
+        InterfaceRequest<shell::mojom::Application> application_request,
         URLResponsePtr response) = 0;
   };
 
@@ -39,12 +40,13 @@ class ContentHandlerFactory : public InterfaceFactory<ContentHandler> {
     // on this new thread, and the returned value will be kept alive until the
     // application ends.
     virtual scoped_ptr<HandledApplicationHolder> CreateApplication(
-        InterfaceRequest<Application> application_request,
+        InterfaceRequest<shell::mojom::Application> application_request,
         URLResponsePtr response) = 0;
 
    private:
-    void RunApplication(InterfaceRequest<Application> application_request,
-                        URLResponsePtr response) override;
+    void RunApplication(
+        InterfaceRequest<shell::mojom::Application> application_request,
+        URLResponsePtr response) override;
   };
 
   explicit ContentHandlerFactory(Delegate* delegate);
@@ -53,7 +55,7 @@ class ContentHandlerFactory : public InterfaceFactory<ContentHandler> {
  private:
   // From InterfaceFactory:
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override;
+              InterfaceRequest<shell::mojom::ContentHandler> request) override;
 
   Delegate* delegate_;
 

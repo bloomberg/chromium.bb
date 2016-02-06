@@ -39,7 +39,7 @@ void SendExternalMojoShellHandleToChild(base::ProcessHandle process_handle,
 // and interfaces the renderer can see. The implementation lives in
 // renderer_capability_filter.cc so that it can be subject to specific security
 // review.
-mojo::CapabilityFilterPtr CreateCapabilityFilterForRenderer();
+mojo::shell::mojom::CapabilityFilterPtr CreateCapabilityFilterForRenderer();
 
 }  // namespace content
 

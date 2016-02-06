@@ -14,10 +14,10 @@ AndroidLoader::~AndroidLoader() {}
 
 void AndroidLoader::Load(
     const GURL& url,
-    mojo::InterfaceRequest<mojo::Application> application_request) {
-  DCHECK(application_request.is_pending());
+    mojo::InterfaceRequest<mojo::shell::mojom::Application> request) {
+  DCHECK(request.is_pending());
   app_.reset(new mojo::ApplicationImpl(new MandolineUIServicesApp,
-                                       std::move(application_request)));
+                                       std::move(request)));
 }
 
 }  // namespace mus

@@ -22,7 +22,7 @@ ProcessControlImpl::~ProcessControlImpl() {
 
 void ProcessControlImpl::LoadApplication(
     const mojo::String& url,
-    mojo::InterfaceRequest<mojo::Application> request,
+    mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
     const LoadApplicationCallback& callback) {
   // Only register loaders when we need it.
   if (!has_registered_loaders_) {

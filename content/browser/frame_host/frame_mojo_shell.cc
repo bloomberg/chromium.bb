@@ -40,7 +40,7 @@ FrameMojoShell::~FrameMojoShell() {
 }
 
 void FrameMojoShell::BindRequest(
-    mojo::InterfaceRequest<mojo::Shell> shell_request) {
+    mojo::InterfaceRequest<mojo::shell::mojom::Shell> shell_request) {
   bindings_.AddBinding(this, std::move(shell_request));
 }
 
@@ -51,7 +51,7 @@ void FrameMojoShell::ConnectToApplication(
     mojo::URLRequestPtr application_url,
     mojo::InterfaceRequest<mojo::ServiceProvider> services,
     mojo::ServiceProviderPtr /* exposed_services */,
-    mojo::CapabilityFilterPtr filter,
+    mojo::shell::mojom::CapabilityFilterPtr filter,
     const ConnectToApplicationCallback& callback) {
   mojo::ServiceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),

@@ -98,7 +98,7 @@ class ApplicationManager {
   void CreateInstanceForHandle(
       ScopedHandle channel,
       const GURL& url,
-      CapabilityFilterPtr filter,
+      mojom::CapabilityFilterPtr filter,
       InterfaceRequest<mojom::PIDReceiver> pid_receiver);
   void AddListener(mojom::ApplicationManagerListenerPtr listener);
   void GetRunningApplications(
@@ -114,10 +114,10 @@ class ApplicationManager {
   bool ConnectToRunningApplication(
       scoped_ptr<ConnectToApplicationParams>* params);
 
-  InterfaceRequest<Application> CreateAndConnectToInstance(
+  InterfaceRequest<mojom::Application> CreateAndConnectToInstance(
       scoped_ptr<ConnectToApplicationParams> params,
       ApplicationInstance** instance);
-  InterfaceRequest<Application> CreateInstance(
+  InterfaceRequest<mojom::Application> CreateInstance(
       const Identity& target_id,
       const base::Closure& on_application_end,
       ApplicationInstance** resulting_instance);
@@ -128,12 +128,13 @@ class ApplicationManager {
   void HandleFetchCallback(scoped_ptr<ConnectToApplicationParams> params,
                            scoped_ptr<Fetcher> fetcher);
 
-  void RunNativeApplication(InterfaceRequest<Application> application_request,
-                            bool start_sandboxed,
-                            scoped_ptr<Fetcher> fetcher,
-                            ApplicationInstance* instance,
-                            const base::FilePath& file_path,
-                            bool path_exists);
+  void RunNativeApplication(
+      InterfaceRequest<mojom::Application> application_request,
+      bool start_sandboxed,
+      scoped_ptr<Fetcher> fetcher,
+      ApplicationInstance* instance,
+      const base::FilePath& file_path,
+      bool path_exists);
 
   // Returns the appropriate loader for |url|, or the default loader if there is
   // no loader configured for the URL.
@@ -162,7 +163,7 @@ class ApplicationManager {
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);
 };
 
-Shell::ConnectToApplicationCallback EmptyConnectCallback();
+mojom::Shell::ConnectToApplicationCallback EmptyConnectCallback();
 
 }  // namespace shell
 }  // namespace mojo

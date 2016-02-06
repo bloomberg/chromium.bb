@@ -19,7 +19,11 @@
 #include "mojo/public/c/gles2/gles2.h"
 
 namespace mojo {
+namespace shell {
+namespace mojom {
 class Shell;
+}
+}
 }
 
 namespace bitmap_uploader {
@@ -34,7 +38,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   explicit BitmapUploader(mus::Window* window);
   ~BitmapUploader() override;
 
-  void Init(mojo::Shell* shell);
+  void Init(mojo::shell::mojom::Shell* shell);
 
   // Sets the color which is RGBA.
   void SetColor(uint32_t color);

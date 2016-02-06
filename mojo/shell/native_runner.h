@@ -33,14 +33,15 @@ class NativeRunner {
   virtual void Start(
       const base::FilePath& app_path,
       bool start_sandboxed,
-      InterfaceRequest<Application> application_request,
+      InterfaceRequest<mojom::Application> application_request,
       const base::Callback<void(base::ProcessId)>& pid_available_callback,
       const base::Closure& app_completed_callback) = 0;
 
   // Like Start(), but used to initialize the host for a child process started
   // by someone else. Provides |application_request| via |channel|.
-  virtual void InitHost(ScopedHandle channel,
-                        InterfaceRequest<Application> application_request) = 0;
+  virtual void InitHost(
+      ScopedHandle channel,
+    InterfaceRequest<mojom::Application> application_request) = 0;
 };
 
 class NativeRunnerFactory {

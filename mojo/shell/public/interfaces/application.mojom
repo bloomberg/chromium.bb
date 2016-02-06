@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/service_provider.mojom";
 import "mojo/shell/public/interfaces/shell.mojom";
@@ -63,8 +63,8 @@ interface Application {
   //
   AcceptConnection(string requestor_url,
                    uint32 requestor_id,
-                   ServiceProvider&? services,
-                   ServiceProvider? exposed_services,
+                   mojo.ServiceProvider&? services,
+                   mojo.ServiceProvider? exposed_services,
                    array<string> allowed_interfaces,
                    string resolved_url);
 

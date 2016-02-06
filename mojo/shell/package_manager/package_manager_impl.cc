@@ -181,7 +181,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
     const Identity& source,
     const GURL& target_url,
     const CapabilityFilter& target_filter,
-    InterfaceRequest<Application>* application_request) {
+    InterfaceRequest<mojom::Application>* application_request) {
   Identity content_handler_identity;
   URLResponsePtr response;
   if (ShouldHandleWithContentHandler(fetcher,
@@ -195,7 +195,7 @@ uint32_t PackageManagerImpl::HandleWithContentHandler(
                                  std::move(response));
     return connection->id();
   }
-  return Shell::kInvalidApplicationID;
+  return mojom::Shell::kInvalidApplicationID;
 }
 
 bool PackageManagerImpl::IsURLInCatalog(const std::string& url) const {

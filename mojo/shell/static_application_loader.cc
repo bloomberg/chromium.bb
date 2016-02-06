@@ -25,7 +25,7 @@ namespace {
 class RunnerThread : public base::SimpleThread {
  public:
   RunnerThread(const GURL& url,
-               InterfaceRequest<Application> request,
+               InterfaceRequest<mojom::Application> request,
                scoped_refptr<base::TaskRunner> exit_task_runner,
                const base::Closure& exit_callback,
                const StaticApplicationLoader::ApplicationFactory& factory)
@@ -44,7 +44,7 @@ class RunnerThread : public base::SimpleThread {
   }
 
  private:
-  InterfaceRequest<Application> request_;
+  InterfaceRequest<mojom::Application> request_;
   scoped_refptr<base::TaskRunner> exit_task_runner_;
   base::Closure exit_callback_;
   StaticApplicationLoader::ApplicationFactory factory_;
@@ -70,8 +70,9 @@ StaticApplicationLoader::~StaticApplicationLoader() {
     StopAppThread();
 }
 
-void StaticApplicationLoader::Load(const GURL& url,
-                                   InterfaceRequest<Application> request) {
+void StaticApplicationLoader::Load(
+    const GURL& url,
+    InterfaceRequest<mojom::Application> request) {
   if (thread_)
     return;
 

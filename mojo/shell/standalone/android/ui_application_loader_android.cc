@@ -26,7 +26,7 @@ UIApplicationLoader::~UIApplicationLoader() {
 
 void UIApplicationLoader::Load(
     const GURL& url,
-    InterfaceRequest<Application> application_request) {
+    InterfaceRequest<mojom::Application> application_request) {
   DCHECK(application_request.is_pending());
   ui_message_loop_->PostTask(
       FROM_HERE,
@@ -36,7 +36,7 @@ void UIApplicationLoader::Load(
 
 void UIApplicationLoader::LoadOnUIThread(
     const GURL& url,
-    InterfaceRequest<Application> application_request) {
+    InterfaceRequest<mojom::Application> application_request) {
   loader_->Load(url, std::move(application_request));
 }
 

@@ -72,15 +72,16 @@ void QuitClosure(bool* value) {
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-class TestContentHandler : public ContentHandler, public ApplicationDelegate {
+class TestContentHandler : public mojom::ContentHandler,
+                           public ApplicationDelegate {
  public:
   TestContentHandler(ApplicationConnection* connection,
-                     InterfaceRequest<ContentHandler> request)
+                     InterfaceRequest<mojom::ContentHandler> request)
       : binding_(this, std::move(request)) {}
 
   // ContentHandler:
   void StartApplication(
-      InterfaceRequest<Application> application_request,
+      InterfaceRequest<mojom::Application> application_request,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
     apps_.push_back(new ApplicationImpl(this, std::move(application_request)));
@@ -88,7 +89,7 @@ class TestContentHandler : public ContentHandler, public ApplicationDelegate {
   }
 
  private:
-  StrongBinding<ContentHandler> binding_;
+  StrongBinding<mojom::ContentHandler> binding_;
   ScopedVector<ApplicationImpl> apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
@@ -96,7 +97,7 @@ class TestContentHandler : public ContentHandler, public ApplicationDelegate {
 
 class TestApplicationLoader : public ApplicationLoader,
                               public ApplicationDelegate,
-                              public InterfaceFactory<ContentHandler> {
+                              public InterfaceFactory<mojom::ContentHandler> {
  public:
   TestApplicationLoader() : num_loads_(0) {}
   ~TestApplicationLoader() override {}
@@ -107,20 +108,20 @@ class TestApplicationLoader : public ApplicationLoader,
  private:
   // ApplicationLoader implementation.
   void Load(const GURL& url,
-            InterfaceRequest<Application> application_request) override {
+            InterfaceRequest<mojom::Application> application_request) override {
     ++num_loads_;
     test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
 
   // ApplicationDelegate implementation.
   bool AcceptConnection(ApplicationConnection* connection) override {
-    connection->AddService<ContentHandler>(this);
+    connection->AddService<mojom::ContentHandler>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
-  // InterfaceFactory<ContentHandler> implementation.
+  // InterfaceFactory<mojom::ContentHandler> implementation.
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override {
+              InterfaceRequest<mojom::ContentHandler> request) override {
     new TestContentHandler(connection, std::move(request));
   }
 
@@ -232,7 +233,7 @@ TEST_F(ContentHandlerTest,
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id);
+    EXPECT_NE(mojom::Shell::kInvalidApplicationID, content_handler_id);
   }
 
   uint32_t content_handler_id2;
@@ -249,7 +250,7 @@ TEST_F(ContentHandlerTest,
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id2);
+    EXPECT_NE(mojom::Shell::kInvalidApplicationID, content_handler_id2);
   }
   EXPECT_EQ(content_handler_id, content_handler_id2);
 }
@@ -274,7 +275,7 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id);
+    EXPECT_NE(mojom::Shell::kInvalidApplicationID, content_handler_id);
   }
 
   const std::string mime_type2 = "test/mime-type2";
@@ -302,7 +303,7 @@ TEST_F(ContentHandlerTest, DifferedContentHandlersGetDifferentIDs) {
     });
     application_manager_->ConnectToApplication(std::move(params));
     run_loop.Run();
-    EXPECT_NE(Shell::kInvalidApplicationID, content_handler_id2);
+    EXPECT_NE(mojom::Shell::kInvalidApplicationID, content_handler_id2);
   }
   EXPECT_NE(content_handler_id, content_handler_id2);
 }

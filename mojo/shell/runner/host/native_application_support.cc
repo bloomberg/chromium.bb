@@ -52,8 +52,9 @@ base::NativeLibrary LoadNativeApplication(const base::FilePath& app_path) {
   return app_library;
 }
 
-bool RunNativeApplication(base::NativeLibrary app_library,
-                          InterfaceRequest<Application> application_request) {
+bool RunNativeApplication(
+    base::NativeLibrary app_library,
+    InterfaceRequest<mojom::Application> application_request) {
   // Tolerate |app_library| being null, to make life easier for callers.
   if (!app_library)
     return false;

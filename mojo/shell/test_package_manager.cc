@@ -22,7 +22,7 @@ uint32_t TestPackageManager::HandleWithContentHandler(
     const Identity& source,
     const GURL& target_url,
     const CapabilityFilter& target_filter,
-    InterfaceRequest<Application>* application_request) {
+    InterfaceRequest<shell::mojom::Application>* application_request) {
   return 0;
 }
 bool TestPackageManager::IsURLInCatalog(const std::string& url) const {

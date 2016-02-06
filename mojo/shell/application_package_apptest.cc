@@ -37,7 +37,7 @@ class ProvidedApplicationDelegate
       public base::SimpleThread {
  public:
   ProvidedApplicationDelegate(const std::string& name,
-                              InterfaceRequest<Application> request,
+                              InterfaceRequest<mojom::Application> request,
                               const Callback<void()>& destruct_callback)
       : base::SimpleThread(name),
         name_(name),
@@ -79,7 +79,7 @@ class ProvidedApplicationDelegate
   }
 
   const std::string name_;
-  InterfaceRequest<Application> request_;
+  InterfaceRequest<mojom::Application> request_;
   const Callback<void()> destruct_callback_;
   WeakBindingSet<test::mojom::ApplicationPackageApptestService> bindings_;
 
@@ -88,9 +88,9 @@ class ProvidedApplicationDelegate
 
 class ApplicationPackageApptestDelegate
     : public ApplicationDelegate,
-      public InterfaceFactory<ContentHandler>,
+      public InterfaceFactory<mojom::ContentHandler>,
       public InterfaceFactory<test::mojom::ApplicationPackageApptestService>,
-      public ContentHandler,
+      public mojom::ContentHandler,
       public test::mojom::ApplicationPackageApptestService {
  public:
   ApplicationPackageApptestDelegate() {}
@@ -105,9 +105,9 @@ class ApplicationPackageApptestDelegate
     return true;
   }
 
-  // InterfaceFactory<ContentHandler>:
+  // InterfaceFactory<mojom::ContentHandler>:
   void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override {
+              InterfaceRequest<mojom::ContentHandler> request) override {
     content_handler_bindings_.AddBinding(this, std::move(request));
   }
 
@@ -118,8 +118,8 @@ class ApplicationPackageApptestDelegate
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // ContentHandler:
-  void StartApplication(InterfaceRequest<Application> request,
+  // mojom::ContentHandler:
+  void StartApplication(InterfaceRequest<mojom::Application> request,
                         URLResponsePtr response,
                         const Callback<void()>& destruct_callback) override {
     const std::string url = response->url;
@@ -138,7 +138,7 @@ class ApplicationPackageApptestDelegate
   }
 
   std::vector<scoped_ptr<ApplicationDelegate>> delegates_;
-  WeakBindingSet<ContentHandler> content_handler_bindings_;
+  WeakBindingSet<mojom::ContentHandler> content_handler_bindings_;
   WeakBindingSet<test::mojom::ApplicationPackageApptestService> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationPackageApptestDelegate);

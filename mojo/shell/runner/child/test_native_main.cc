@@ -60,7 +60,7 @@ int TestNativeMain(mojo::ApplicationDelegate* application_delegate) {
         mojo::embedder::ProcessType::NONE, &process_delegate,
         io_thread.task_runner().get(), mojo::embedder::ScopedPlatformHandle());
 
-    mojo::InterfaceRequest<mojo::Application> application_request;
+    mojo::ApplicationRequest application_request;
     scoped_ptr<mojo::shell::RunnerConnection> connection(
         mojo::shell::RunnerConnection::ConnectToRunner(
             &application_request, ScopedMessagePipeHandle()));

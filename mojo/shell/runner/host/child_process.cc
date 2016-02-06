@@ -194,7 +194,7 @@ class AppContext : public embedder::ProcessDelegate {
 
 // ChildControllerImpl ------------------------------------------------------
 
-class ChildControllerImpl : public ChildController {
+class ChildControllerImpl : public mojom::ChildController {
  public:
   ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -235,7 +235,7 @@ class ChildControllerImpl : public ChildController {
   }
 
   // |ChildController| methods:
-  void StartApp(InterfaceRequest<Application> application_request,
+  void StartApp(InterfaceRequest<mojom::Application> application_request,
                 const StartAppCallback& on_app_complete) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -258,7 +258,7 @@ class ChildControllerImpl : public ChildController {
 
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,
-      InterfaceRequest<Application> application_request) {
+      InterfaceRequest<mojom::Application> application_request) {
     if (!RunNativeApplication(app_library, std::move(application_request))) {
       LOG(ERROR) << "Failure to RunNativeApplication()";
     }

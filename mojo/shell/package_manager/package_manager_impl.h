@@ -98,7 +98,7 @@ class PackageManagerImpl : public PackageManager {
       const Identity& source,
       const GURL& target_url,
       const CapabilityFilter& target_filter,
-      InterfaceRequest<Application>* application_request) override;
+      InterfaceRequest<mojom::Application>* application_request) override;
   bool IsURLInCatalog(const std::string& url) const override;
   std::string GetApplicationName(const std::string& url) const override;
 

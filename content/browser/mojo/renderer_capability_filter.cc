@@ -9,10 +9,11 @@
 
 namespace content {
 
-mojo::CapabilityFilterPtr CreateCapabilityFilterForRenderer() {
+mojo::shell::mojom::CapabilityFilterPtr CreateCapabilityFilterForRenderer() {
   // See https://goo.gl/gkBtCR for a description of what this is and what to
   // think about when changing it.
-  mojo::CapabilityFilterPtr filter(mojo::CapabilityFilter::New());
+  mojo::shell::mojom::CapabilityFilterPtr filter(
+      mojo::shell::mojom::CapabilityFilter::New());
   mojo::Array<mojo::String> window_manager_interfaces;
   window_manager_interfaces.push_back(mus::mojom::Gpu::Name_);
   filter->filter.insert("mojo:mus", std::move(window_manager_interfaces));

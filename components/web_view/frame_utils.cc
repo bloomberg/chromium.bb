@@ -20,7 +20,7 @@ bool AlwaysCreateNewFrameTree() {
 
 bool AreAppIdsEqual(uint32_t app_id1, uint32_t app_id2) {
   return app_id1 == app_id2 &&
-         app_id1 != mojo::Shell::kInvalidApplicationID &&
+         app_id1 != mojo::shell::mojom::Shell::kInvalidApplicationID &&
          !AlwaysCreateNewFrameTree();
 }
 

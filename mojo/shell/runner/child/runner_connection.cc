@@ -72,7 +72,7 @@ class Blocker {
 };
 
 using GotApplicationRequestCallback =
-    base::Callback<void(InterfaceRequest<Application>)>;
+    base::Callback<void(InterfaceRequest<mojom::Application>)>;
 
 void OnCreateMessagePipe(ScopedMessagePipeHandle* result,
                          Blocker::Unblocker unblocker,
@@ -81,8 +81,8 @@ void OnCreateMessagePipe(ScopedMessagePipeHandle* result,
   unblocker.Unblock(base::Bind(&base::DoNothing));
 }
 
-void OnGotApplicationRequest(InterfaceRequest<Application>* out_request,
-                             InterfaceRequest<Application> request) {
+void OnGotApplicationRequest(InterfaceRequest<mojom::Application>* out_request,
+                             InterfaceRequest<mojom::Application> request) {
   *out_request = std::move(request);
 }
 
@@ -102,7 +102,7 @@ class RunnerConnectionImpl : public RunnerConnection {
 
   // Returns true if a connection to the runner has been established and
   // |request| has been modified, false if no connection was established.
-  bool WaitForApplicationRequest(InterfaceRequest<Application>* request,
+  bool WaitForApplicationRequest(InterfaceRequest<mojom::Application>* request,
                                  ScopedMessagePipeHandle handle);
 
   ChildControllerImpl* controller() const { return controller_.get(); }
@@ -134,7 +134,7 @@ class RunnerConnectionImpl : public RunnerConnection {
   DISALLOW_COPY_AND_ASSIGN(RunnerConnectionImpl);
 };
 
-class ChildControllerImpl : public ChildController {
+class ChildControllerImpl : public mojom::ChildController {
  public:
   ~ChildControllerImpl() override {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -172,8 +172,8 @@ class ChildControllerImpl : public ChildController {
     _exit(1);
   }
 
-  // |ChildController| methods:
-  void StartApp(InterfaceRequest<Application> application_request,
+  // |mojom::ChildController| methods:
+  void StartApp(InterfaceRequest<mojom::Application> application_request,
                 const StartAppCallback& on_app_complete) override {
     DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -199,7 +199,7 @@ class ChildControllerImpl : public ChildController {
 
   static void ReturnApplicationRequestOnMainThread(
       const GotApplicationRequestCallback& callback,
-      InterfaceRequest<Application> application_request) {
+      InterfaceRequest<mojom::Application> application_request) {
     callback.Run(std::move(application_request));
   }
 
@@ -215,7 +215,7 @@ class ChildControllerImpl : public ChildController {
 };
 
 bool RunnerConnectionImpl::WaitForApplicationRequest(
-    InterfaceRequest<Application>* request,
+    InterfaceRequest<mojom::Application>* request,
     ScopedMessagePipeHandle handle) {
   // If a valid message pipe to the runner was not provided, look for one on the
   // command line.
@@ -255,7 +255,7 @@ RunnerConnection::~RunnerConnection() {}
 
 // static
 RunnerConnection* RunnerConnection::ConnectToRunner(
-    InterfaceRequest<Application>* request,
+    InterfaceRequest<mojom::Application>* request,
     ScopedMessagePipeHandle handle) {
   RunnerConnectionImpl* connection = new RunnerConnectionImpl;
   if (!connection->WaitForApplicationRequest(request, std::move(handle))) {

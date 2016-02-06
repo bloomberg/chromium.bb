@@ -40,7 +40,7 @@ class ShellApplicationDelegate
   void CreateInstanceForHandle(
       ScopedHandle channel,
       const String& url,
-      CapabilityFilterPtr filter,
+      mojom::CapabilityFilterPtr filter,
       InterfaceRequest<mojom::PIDReceiver> pid_receiver) override;
   void AddListener(
       mojom::ApplicationManagerListenerPtr listener) override;

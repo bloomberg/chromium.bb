@@ -25,7 +25,11 @@ class FontLoader;
 
 namespace mojo {
 class ApplicationImpl;
+namespace shell {
+namespace mojom {
 class Shell;
+}
+}
 }
 
 namespace ui {

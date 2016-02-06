@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo;
+module mojo.shell.mojom;
 
 import "mojo/shell/public/interfaces/service_provider.mojom";
 import "network/public/interfaces/url_loader.mojom";
@@ -61,9 +61,9 @@ interface Shell {
   // |content_handler_id| is the id of the deepest content handler used to
   // establish the connection to |application_url|. If no content handler is
   // used |content_handler_id| is kInvalidApplicationID.
-  ConnectToApplication(URLRequest application_url,
-                       ServiceProvider&? services,
-                       ServiceProvider? exposed_services,
+  ConnectToApplication(mojo.URLRequest application_url,
+                       mojo.ServiceProvider&? services,
+                       mojo.ServiceProvider? exposed_services,
                        CapabilityFilter filter) =>
       (uint32 application_id, uint32 content_handler_id);
 

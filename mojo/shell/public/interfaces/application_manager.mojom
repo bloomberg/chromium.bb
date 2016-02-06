@@ -54,7 +54,7 @@ interface ApplicationManager {
   // request there.
   CreateInstanceForHandle(handle channel,
                           string url,
-                          mojo.CapabilityFilter filter,
+                          CapabilityFilter filter,
                           PIDReceiver& pid_receiver);
 
   // The listener is removed when the pipe is closed.

@@ -27,9 +27,10 @@ class LayoutTestHTMLViewer : public HTMLViewer {
   // Overridden from ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
 
-  // Overridden from InterfaceFactory<ContentHandler>
+  // Overridden from InterfaceFactory<shell::mojom::ContentHandler>
   void Create(mojo::ApplicationConnection* connection,
-              mojo::InterfaceRequest<mojo::ContentHandler> request) override;
+              mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
+                  request) override;
 
   scoped_ptr<test_runner::WebTestInterfaces> test_interfaces_;
   WebTestDelegateImpl test_delegate_;

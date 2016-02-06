@@ -45,7 +45,7 @@ void LayoutTestHTMLViewer::TestFinished() {
 
 void LayoutTestHTMLViewer::Create(
     mojo::ApplicationConnection* connection,
-    mojo::InterfaceRequest<mojo::ContentHandler> request) {
+    mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
   new LayoutTestContentHandlerImpl(global_state(), app(), std::move(request),
                                    test_interfaces_.get(), &test_delegate_);
 }

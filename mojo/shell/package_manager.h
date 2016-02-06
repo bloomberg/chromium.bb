@@ -52,7 +52,7 @@ class PackageManager {
       const Identity& source,
       const GURL& target_url,
       const CapabilityFilter& target_filter,
-      InterfaceRequest<Application>* application_request) = 0;
+      InterfaceRequest<shell::mojom::Application>* application_request) = 0;
 
   // Returns true if a manifest for |url| exists within the PackageManager's
   // application catalog.
