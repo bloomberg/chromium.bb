@@ -19,11 +19,11 @@ TEST(StyleSheetContentsTest, InsertMediaRule)
     EXPECT_EQ(1U, styleSheet->ruleCount());
 
     styleSheet->setMutable();
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@media all { div { color: pink } }"), 0);
+    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet.get(), "@media all { div { color: pink } }"), 0);
     EXPECT_EQ(1U, styleSheet->ruleCount());
     EXPECT_FALSE(styleSheet->hasMediaQueries());
 
-    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet, "@media all { div { color: green } }"), 1);
+    styleSheet->wrapperInsertRule(CSSParser::parseRule(context, styleSheet.get(), "@media all { div { color: green } }"), 1);
     EXPECT_EQ(2U, styleSheet->ruleCount());
     EXPECT_TRUE(styleSheet->hasMediaQueries());
 }
