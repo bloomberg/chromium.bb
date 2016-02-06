@@ -80,7 +80,8 @@ class MacTool(object):
       dest = os.path.join(base, dest)
 
     args = ['xcrun', 'ibtool', '--errors', '--warnings', '--notices',
-        '--output-format', 'human-readable-text', '--compile', dest, source]
+        '--auto-activate-custom-fonts', '--output-format',
+        'human-readable-text', '--compile', dest, source]
     ibtool_section_re = re.compile(r'/\*.*\*/')
     ibtool_re = re.compile(r'.*note:.*is clipping its content')
     ibtoolout = subprocess.Popen(args, stdout=subprocess.PIPE)
