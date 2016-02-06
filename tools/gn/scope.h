@@ -40,7 +40,8 @@ class Template;
 // variables. So you should use a non-const containing scope whenever possible.
 class Scope {
  public:
-  typedef base::hash_map<base::StringPiece, Value> KeyValueMap;
+  typedef base::hash_map<base::StringPiece, Value, base::StringPieceHash>
+      KeyValueMap;
   // Holds an owning list of Items.
   typedef ScopedVector<Item> ItemVector;
 
@@ -329,7 +330,8 @@ class Scope {
   // for more.
   unsigned mode_flags_;
 
-  typedef base::hash_map<base::StringPiece, Record> RecordMap;
+  typedef base::hash_map<base::StringPiece, Record, base::StringPieceHash>
+      RecordMap;
   RecordMap values_;
 
   // Owning pointers. Note that this can't use string pieces since the names

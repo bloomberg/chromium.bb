@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
@@ -27,18 +26,13 @@ namespace base {
 class ListValue;
 }
 
-namespace BASE_HASH_NAMESPACE {
+namespace net {
 
-template <>
-struct hash<net::AlternativeService> {
+struct AlternativeServiceHash {
   size_t operator()(const net::AlternativeService& entry) const {
-    return entry.protocol ^ hash<std::string>()(entry.host) ^ entry.port;
+    return entry.protocol ^ std::hash<std::string>()(entry.host) ^ entry.port;
   }
 };
-
-}  // namespace BASE_HASH_NAMESPACE
-
-namespace net {
 
 // The implementation for setting/retrieving the HTTP server properties.
 class NET_EXPORT HttpServerPropertiesImpl
@@ -151,7 +145,9 @@ class NET_EXPORT HttpServerPropertiesImpl
   // Linked hash map from AlternativeService to expiration time.  This container
   // is a queue with O(1) enqueue and dequeue, and a hash_map with O(1) lookup
   // at the same time.
-  typedef linked_hash_map<AlternativeService, base::TimeTicks>
+  typedef linked_hash_map<AlternativeService,
+                          base::TimeTicks,
+                          AlternativeServiceHash>
       BrokenAlternativeServices;
   // Map to the number of times each alternative service has been marked broken.
   typedef std::map<AlternativeService, int> RecentlyBrokenAlternativeServices;

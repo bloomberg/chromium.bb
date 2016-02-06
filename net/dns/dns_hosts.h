@@ -27,8 +27,7 @@ namespace BASE_HASH_NAMESPACE {
 template<>
 struct hash<net::DnsHostsKey> {
   std::size_t operator()(const net::DnsHostsKey& key) const {
-    hash<base::StringPiece> string_piece_hash;
-    return string_piece_hash(key.first) + key.second;
+    return base::StringPieceHash()(key.first) + key.second;
   }
 };
 

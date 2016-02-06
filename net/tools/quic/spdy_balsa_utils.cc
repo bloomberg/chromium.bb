@@ -20,6 +20,7 @@
 #include "url/gurl.h"
 
 using base::StringPiece;
+using base::StringPieceHash;
 using std::make_pair;
 using std::pair;
 using std::string;
@@ -40,7 +41,7 @@ void PopulateSpdyHeaderBlock(const BalsaHeaders& headers,
                              SpdyHeaderBlock* block,
                              bool allow_empty_values) {
   using HeaderValuesMap =
-      linked_hash_map<StringPiece, std::vector<StringPiece>>;
+      linked_hash_map<StringPiece, std::vector<StringPiece>, StringPieceHash>;
   std::deque<string> names;
   HeaderValuesMap header_values_map;
   // First, gather references to all values for each name.

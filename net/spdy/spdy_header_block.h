@@ -35,7 +35,9 @@ using ::operator<<;
 // It's expected that keys are rarely deleted from a SpdyHeaderBlock.
 class NET_EXPORT SpdyHeaderBlock {
  private:
-  using MapType = linked_hash_map<base::StringPiece, base::StringPiece>;
+  using MapType = linked_hash_map<base::StringPiece,
+                                  base::StringPiece,
+                                  base::StringPieceHash>;
   class Storage;
 
  public:

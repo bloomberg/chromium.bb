@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/hash_tables.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"

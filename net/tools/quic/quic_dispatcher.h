@@ -39,7 +39,10 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                        public QuicFramerVisitorInterface {
  public:
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
-  typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
+  typedef linked_hash_map<QuicBlockedWriterInterface*,
+                          bool,
+                          QuicBlockedWriterInterfacePtrHash>
+      WriteBlockedList;
 
   // Due to the way delete_sessions_closure_ is registered, the Dispatcher must
   // live until server Shutdown. |supported_versions| specifies the std::list

@@ -16,8 +16,8 @@ using base::StringPiece;
 
 size_t HpackHeaderTable::EntryHasher::operator()(
     const HpackEntry* entry) const {
-  return BASE_HASH_NAMESPACE::hash<base::StringPiece>()(entry->name()) ^
-         BASE_HASH_NAMESPACE::hash<base::StringPiece>()(entry->value());
+  return base::StringPieceHash()(entry->name()) ^
+         base::StringPieceHash()(entry->value());
 }
 
 bool HpackHeaderTable::EntriesEq::operator()(const HpackEntry* lhs,

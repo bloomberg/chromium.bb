@@ -9,6 +9,7 @@
 
 #include <tuple>
 
+#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "components/mus/common/types.h"
 #include "components/mus/common/util.h"

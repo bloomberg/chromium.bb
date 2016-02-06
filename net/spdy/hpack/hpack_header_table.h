@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -45,10 +44,9 @@ class NET_EXPORT_PRIVATE HpackHeaderTable {
 
   using UnorderedEntrySet =
       std::unordered_set<HpackEntry*, EntryHasher, EntriesEq>;
-  using NameToEntryMap =
-      std::unordered_map<base::StringPiece,
-                         const HpackEntry*,
-                         BASE_HASH_NAMESPACE::hash<base::StringPiece>>;
+  using NameToEntryMap = std::unordered_map<base::StringPiece,
+                                            const HpackEntry*,
+                                            base::StringPieceHash>;
 
   HpackHeaderTable();
 
