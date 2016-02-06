@@ -249,6 +249,8 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   std::vector<uint8_t> last_spsext_;
   int last_pps_id_;
   std::vector<uint8_t> last_pps_;
+  bool config_changed_;
+  bool missing_idr_logged_;
   media::H264POC poc_;
 
   //

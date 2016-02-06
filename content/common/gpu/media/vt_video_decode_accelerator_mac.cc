@@ -302,6 +302,8 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       session_(nullptr),
       last_sps_id_(-1),
       last_pps_id_(-1),
+      config_changed_(false),
+      missing_idr_logged_(false),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
@@ -610,37 +612,53 @@ void VTVideoDecodeAccelerator::DecodeTask(
   }
 
   // Initialize VideoToolbox.
-  bool config_changed = false;
   if (!sps.empty() && sps != last_sps_) {
     last_sps_.swap(sps);
     last_spsext_.swap(spsext);
-    config_changed = true;
+    config_changed_ = true;
   }
   if (!pps.empty() && pps != last_pps_) {
     last_pps_.swap(pps);
-    config_changed = true;
+    config_changed_ = true;
   }
-  if (config_changed) {
+  if (config_changed_) {
     if (last_sps_.empty()) {
+      config_changed_ = false;
       DLOG(ERROR) << "Invalid configuration; no SPS";
       NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
       return;
     }
     if (last_pps_.empty()) {
+      config_changed_ = false;
       DLOG(ERROR) << "Invalid configuration; no PPS";
       NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
       return;
     }
 
-    // If it's not an IDR frame, we can't reconfigure the decoder anyway. We
-    // assume that any config change not on an IDR must be compatible.
-    if (frame->is_idr && !ConfigureDecoder())
-      return;
+    // Only reconfigure at IDRs to avoid corruption.
+    if (frame->is_idr) {
+      config_changed_ = false;
+
+      // ConfigureDecoder() calls NotifyError() on failure.
+      if (!ConfigureDecoder())
+        return;
+    }
   }
 
-  // If there are no image slices, drop the bitstream buffer by returning an
+  // If no IDR has been seen yet, skip decoding.
+  if (has_slice && !session_ && config_changed_) {
+    if (!missing_idr_logged_) {
+      LOG(ERROR) << "Illegal attempt to decode without IDR. "
+                 << "Discarding decode requests until next IDR.";
+      missing_idr_logged_ = true;
+    }
+    has_slice = false;
+  }
+
+  // If there is nothing to decode, drop the bitstream buffer by returning an
   // empty frame.
   if (!has_slice) {
+    // Keep everything in order by flushing first.
     if (!FinishDelayedFrames())
       return;
     gpu_task_runner_->PostTask(FROM_HERE, base::Bind(
