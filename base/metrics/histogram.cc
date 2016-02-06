@@ -151,7 +151,8 @@ HistogramBase* Histogram::Factory::Build() {
   // been added by other processes and they must be fetched and recognized
   // locally in order to be found by FindHistograms() below. If the persistent
   // memory segment is not shared between processes, this call does nothing.
-  ImportPersistentHistograms();
+  // FIXME(bcwhite): Enable once correct locking is in-place within this method.
+  // ImportPersistentHistograms();
 
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name_);
   if (!histogram) {
