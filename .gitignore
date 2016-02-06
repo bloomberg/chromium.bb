@@ -180,6 +180,7 @@ vs-chromium-project.txt
 /googleurl
 /gpu/gles2_conform_test
 /gyp-mac-tool
+/infra/.recipe_deps
 /internal_gyp
 /ios/build/util/CANARY_VERSION
 /ios/third_party/gcdwebserver/src
