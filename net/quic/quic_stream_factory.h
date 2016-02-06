@@ -153,6 +153,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool disable_quic_on_timeout_with_open_streams,
       int idle_connection_timeout_seconds,
       bool migrate_sessions_on_network_change,
+      bool migrate_sessions_early,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -507,6 +508,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if migration should be attempted on active sessions when primary
   // interface changes.
   const bool migrate_sessions_on_network_change_;
+
+  // Set if early migration should be attempted when the connection
+  // experiences poor connectivity.
+  const bool migrate_sessions_early_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

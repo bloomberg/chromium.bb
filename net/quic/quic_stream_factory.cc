@@ -59,6 +59,7 @@
 #endif
 
 using std::min;
+using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {
 
@@ -591,6 +592,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool disable_quic_on_timeout_with_open_streams,
     int idle_connection_timeout_seconds,
     bool migrate_sessions_on_network_change,
+    bool migrate_sessions_early,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -640,6 +642,8 @@ QuicStreamFactory::QuicStreamFactory(
       migrate_sessions_on_network_change_(
           migrate_sessions_on_network_change &&
           NetworkChangeNotifier::AreNetworkHandlesSupported()),
+      migrate_sessions_early_(migrate_sessions_early &&
+                              migrate_sessions_on_network_change_),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
@@ -680,8 +684,12 @@ QuicStreamFactory::QuicStreamFactory(
         new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
 
-  DCHECK(
-      !(close_sessions_on_ip_change_ && migrate_sessions_on_network_change_));
+  // migrate_sessions_early_ should only be set to true if
+  // migrate_sessions_on_network_change_ is set to true.
+  DCHECK(migrate_sessions_on_network_change_ || !migrate_sessions_early_);
+  // close_sessions_on_ip_change_ and migrate_sessions_on_network_change_ should
+  // never be simultaneously set to true.
+  DCHECK(!close_sessions_on_ip_change_ || !migrate_sessions_on_network_change_);
   if (migrate_sessions_on_network_change_) {
     NetworkChangeNotifier::AddNetworkObserver(this);
   } else if (close_sessions_on_ip_change_) {
@@ -1188,31 +1196,27 @@ void QuicStreamFactory::OnIPAddressChanged() {
   set_require_confirmation(true);
 }
 
-void QuicStreamFactory::OnNetworkConnected(
-    NetworkChangeNotifier::NetworkHandle network) {}
+void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {}
 
-void QuicStreamFactory::OnNetworkMadeDefault(
-    NetworkChangeNotifier::NetworkHandle network) {}
+void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {}
 
-void QuicStreamFactory::OnNetworkDisconnected(
-    NetworkChangeNotifier::NetworkHandle network) {
+void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   MaybeMigrateOrCloseSessions(network, /*force_close=*/true);
   set_require_confirmation(true);
 }
 
 // This method is expected to only be called when migrating from Cellular to
 // WiFi on Android.
-void QuicStreamFactory::OnNetworkSoonToDisconnect(
-    NetworkChangeNotifier::NetworkHandle network) {
+void QuicStreamFactory::OnNetworkSoonToDisconnect(NetworkHandle network) {
   MaybeMigrateOrCloseSessions(network, /*force_close=*/false);
 }
 
-NetworkChangeNotifier::NetworkHandle QuicStreamFactory::FindAlternateNetwork(
-    NetworkChangeNotifier::NetworkHandle old_network) {
+NetworkHandle QuicStreamFactory::FindAlternateNetwork(
+    NetworkHandle old_network) {
   // Find a new network that sessions bound to |old_network| can be migrated to.
   NetworkChangeNotifier::NetworkList network_list;
   NetworkChangeNotifier::GetConnectedNetworks(&network_list);
-  for (NetworkChangeNotifier::NetworkHandle new_network : network_list) {
+  for (NetworkHandle new_network : network_list) {
     if (new_network != old_network) {
       return new_network;
     }
@@ -1220,12 +1224,10 @@ NetworkChangeNotifier::NetworkHandle QuicStreamFactory::FindAlternateNetwork(
   return NetworkChangeNotifier::kInvalidNetworkHandle;
 }
 
-void QuicStreamFactory::MaybeMigrateOrCloseSessions(
-    NetworkChangeNotifier::NetworkHandle network,
-    bool force_close) {
+void QuicStreamFactory::MaybeMigrateOrCloseSessions(NetworkHandle network,
+                                                    bool force_close) {
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
-  NetworkChangeNotifier::NetworkHandle new_network =
-      FindAlternateNetwork(network);
+  NetworkHandle new_network = FindAlternateNetwork(network);
 
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
   while (it != all_sessions_.end()) {
@@ -1261,13 +1263,11 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
 
 void QuicStreamFactory::MaybeMigrateSessionEarly(
     QuicChromiumClientSession* session) {
-  if (session->GetNumActiveStreams() == 0) {
+  if (!migrate_sessions_early_) {
     return;
   }
-  NetworkChangeNotifier::NetworkHandle current_network =
-      session->GetDefaultSocket()->GetBoundNetwork();
-  NetworkChangeNotifier::NetworkHandle new_network =
-      FindAlternateNetwork(current_network);
+  NetworkHandle new_network =
+      FindAlternateNetwork(session->GetDefaultSocket()->GetBoundNetwork());
   if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
     // No alternate network found.
     return;
@@ -1278,7 +1278,7 @@ void QuicStreamFactory::MaybeMigrateSessionEarly(
 
 void QuicStreamFactory::MigrateSessionToNetwork(
     QuicChromiumClientSession* session,
-    NetworkChangeNotifier::NetworkHandle new_network) {
+    NetworkHandle new_network) {
   // Use OS-specified port for socket (DEFAULT_BIND) instead of
   // using the PortSuggester since the connection is being migrated
   // and not being newly created.
@@ -1341,10 +1341,9 @@ bool QuicStreamFactory::HasActiveJob(const QuicServerId& key) const {
   return ContainsKey(active_jobs_, key);
 }
 
-int QuicStreamFactory::ConfigureSocket(
-    DatagramClientSocket* socket,
-    IPEndPoint addr,
-    NetworkChangeNotifier::NetworkHandle network) {
+int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
+                                       IPEndPoint addr,
+                                       NetworkHandle network) {
   if (enable_non_blocking_io_ &&
       client_socket_factory_ == ClientSocketFactory::GetDefaultFactory()) {
 #if defined(OS_WIN)

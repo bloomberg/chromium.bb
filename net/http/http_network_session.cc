@@ -132,6 +132,7 @@ HttpNetworkSession::Params::Params()
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_disable_preconnect_if_0rtt(false),
       quic_migrate_sessions_on_network_change(false),
+      quic_migrate_sessions_early(false),
       proxy_delegate(NULL),
       enable_token_binding(false) {
   quic_supported_versions.push_back(QUIC_VERSION_26);
@@ -186,6 +187,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.disable_quic_on_timeout_with_open_streams,
           params.quic_idle_connection_timeout_seconds,
           params.quic_migrate_sessions_on_network_change,
+          params.quic_migrate_sessions_early,
           params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,

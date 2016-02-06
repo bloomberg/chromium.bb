@@ -801,6 +801,10 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
   QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
+void QuicChromiumClientSession::OnPathDegrading() {
+  stream_factory_->MaybeMigrateSessionEarly(this);
+}
+
 void QuicChromiumClientSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& cached) {
   DCHECK(cached.proof_valid());

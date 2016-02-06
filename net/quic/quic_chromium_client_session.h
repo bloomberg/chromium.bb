@@ -177,6 +177,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // QuicConnectionVisitorInterface methods:
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;
   void OnSuccessfulVersionNegotiation(const QuicVersion& version) override;
+  void OnPathDegrading() override;
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;

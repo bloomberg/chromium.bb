@@ -183,9 +183,12 @@ class NET_EXPORT HttpNetworkSession
     bool quic_disable_preconnect_if_0rtt;
     // List of hosts for which QUIC is explicitly whitelisted.
     std::unordered_set<std::string> quic_host_whitelist;
-    // If true, active QUIC sessions may be migrated onto new IPs when network
-    // changes.
+    // If true, active QUIC sessions may be migrated onto a new network when
+    // the platform indicates that the default network is changing.
     bool quic_migrate_sessions_on_network_change;
+    // If true, active QUIC sessions experiencing poor connectivity may be
+    // migrated onto a new network.
+    bool quic_migrate_sessions_early;
     ProxyDelegate* proxy_delegate;
     // Enable support for Token Binding.
     bool enable_token_binding;
