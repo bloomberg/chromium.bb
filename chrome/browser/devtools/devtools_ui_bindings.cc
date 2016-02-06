@@ -80,7 +80,6 @@ static const char kTitleFormat[] = "Developer Tools - %s";
 
 static const char kDevToolsActionTakenHistogram[] = "DevTools.ActionTaken";
 static const char kDevToolsPanelShownHistogram[] = "DevTools.PanelShown";
-static const char kDevtoolsDrawerShownHistogram[] = "DevTools.DrawerShown";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -929,8 +928,6 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
   if (name == kDevToolsActionTakenHistogram)
     UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
   else if (name == kDevToolsPanelShownHistogram)
-    UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
-  else if (name == kDevtoolsDrawerShownHistogram)
     UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();
