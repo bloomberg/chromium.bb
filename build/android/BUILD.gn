@@ -75,3 +75,21 @@ action("cpplib_stripped") {
     _rebased_input_so,
   ]
 }
+
+group("devil_py") {
+  data = [
+    "devil_chromium.py",
+    "//third_party/catapult/devil/",
+  ]
+}
+
+group("test_runner_py") {
+  data = [
+    "test_runner.py",
+    "pylib/",
+    "//build/util/lib/common/",
+  ]
+  data_deps = [
+    ":devil_py",
+  ]
+}
