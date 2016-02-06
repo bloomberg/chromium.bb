@@ -12,7 +12,7 @@ namespace blink {
 
 class CORE_EXPORT MediaValuesCached final : public MediaValues {
 public:
-    struct MediaValuesCachedData {
+    struct MediaValuesCachedData final {
         DISALLOW_NEW();
         // Members variables must be thread safe, since they're copied to the parser thread
         double viewportWidth;
@@ -50,14 +50,35 @@ public:
             , displayMode(WebDisplayModeBrowser)
         {
         }
+
+        explicit MediaValuesCachedData(Document&);
+
+        MediaValuesCachedData deepCopy() const
+        {
+            MediaValuesCachedData data;
+            data.viewportWidth = viewportWidth;
+            data.viewportHeight = viewportHeight;
+            data.deviceWidth = deviceWidth;
+            data.deviceHeight = deviceHeight;
+            data.devicePixelRatio = devicePixelRatio;
+            data.colorBitsPerComponent = colorBitsPerComponent;
+            data.monochromeBitsPerComponent = monochromeBitsPerComponent;
+            data.primaryPointerType = primaryPointerType;
+            data.availablePointerTypes = availablePointerTypes;
+            data.primaryHoverType = primaryHoverType;
+            data.availableHoverTypes = availableHoverTypes;
+            data.defaultFontSize = defaultFontSize;
+            data.threeDEnabled = threeDEnabled;
+            data.strictMode = strictMode;
+            data.mediaType = mediaType.isolatedCopy();
+            data.displayMode = displayMode;
+            return data;
+        }
     };
 
     static PassRefPtrWillBeRawPtr<MediaValuesCached> create();
-    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(Document&);
-    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(LocalFrame*);
-    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(MediaValuesCachedData&);
+    static PassRefPtrWillBeRawPtr<MediaValuesCached> create(const MediaValuesCachedData&);
     PassRefPtrWillBeRawPtr<MediaValues> copy() const override;
-    bool isSafeToSendToAnotherThread() const;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, int& result) const override;
     bool computeLength(double value, CSSPrimitiveValue::UnitType, double& result) const override;
 
@@ -88,6 +109,11 @@ protected:
     MediaValuesCached(const MediaValuesCachedData&);
 
     MediaValuesCachedData m_data;
+};
+
+template<> struct CrossThreadCopierBase<false, false, false, MediaValuesCached::MediaValuesCachedData> {
+    typedef MediaValuesCached::MediaValuesCachedData Type;
+    static Type copy(const MediaValuesCached::MediaValuesCachedData& data) { return data.deepCopy(); }
 };
 
 } // namespace blink

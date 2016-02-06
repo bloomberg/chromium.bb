@@ -687,9 +687,11 @@ void HTMLDocumentParser::pumpTokenizer()
         // adding paranoia if for speculative crash fix for crbug.com/465478
         if (m_preloader) {
             if (!m_preloadScanner) {
-                m_preloadScanner = adoptPtr(new HTMLPreloadScanner(m_options,
+                m_preloadScanner = HTMLPreloadScanner::create(
+                    m_options,
                     document()->url(),
-                    CachedDocumentParameters::create(document())));
+                    CachedDocumentParameters::create(document()),
+                    MediaValuesCached::MediaValuesCachedData(*document()));
                 m_preloadScanner->appendToEnd(m_input.current());
             }
             m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
@@ -771,9 +773,11 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
         // Check the document.write() output with a separate preload scanner as
         // the main scanner can't deal with insertions.
         if (!m_insertionPreloadScanner) {
-            m_insertionPreloadScanner = adoptPtr(new HTMLPreloadScanner(m_options,
+            m_insertionPreloadScanner = HTMLPreloadScanner::create(
+                m_options,
                 document()->url(),
-                CachedDocumentParameters::create(document())));
+                CachedDocumentParameters::create(document()),
+                MediaValuesCached::MediaValuesCachedData(*document()));
         }
 
         m_insertionPreloadScanner->appendToEnd(source);
@@ -810,7 +814,6 @@ void HTMLDocumentParser::startBackgroundParser()
     config->xssAuditor = adoptPtr(new XSSAuditor);
     config->xssAuditor->init(document(), &m_xssAuditorDelegate);
 
-    config->preloadScanner = adoptPtr(new TokenPreloadScanner(document()->url().copy(), CachedDocumentParameters::create(document())));
     config->decoder = takeDecoder();
     config->parsedChunkQueue = m_parsedChunkQueue.get();
     if (document()->settings()) {
@@ -821,8 +824,13 @@ void HTMLDocumentParser::startBackgroundParser()
     }
 
     ASSERT(config->xssAuditor->isSafeToSendToAnotherThread());
-    ASSERT(config->preloadScanner->isSafeToSendToAnotherThread());
-    HTMLParserThread::shared()->postTask(threadSafeBind(&BackgroundHTMLParser::start, reference.release(), config.release(),
+    HTMLParserThread::shared()->postTask(threadSafeBind(
+        &BackgroundHTMLParser::start,
+        reference.release(),
+        config.release(),
+        document()->url(),
+        CachedDocumentParameters::create(document()),
+        MediaValuesCached::MediaValuesCachedData(*document()),
         adoptPtr(m_loadingTaskRunner->clone())));
 }
 

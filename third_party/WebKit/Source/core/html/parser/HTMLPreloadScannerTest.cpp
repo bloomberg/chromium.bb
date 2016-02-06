@@ -104,7 +104,7 @@ protected:
     {
     }
 
-    PassRefPtrWillBeRawPtr<MediaValuesCached> createMediaValues()
+    MediaValuesCached::MediaValuesCachedData createMediaValuesData()
     {
         MediaValuesCached::MediaValuesCachedData data;
         data.viewportWidth = 500;
@@ -120,7 +120,7 @@ protected:
         data.mediaType = MediaTypeNames::screen;
         data.strictMode = true;
         data.displayMode = WebDisplayModeBrowser;
-        return MediaValuesCached::create(data);
+        return data;
     }
 
     void runSetUp(ViewportState viewportState, PreloadState preloadState = PreloadEnabled)
@@ -130,7 +130,7 @@ protected:
         m_dummyPageHolder->document().settings()->setViewportEnabled(viewportState == ViewportEnabled);
         m_dummyPageHolder->document().settings()->setViewportMetaEnabled(viewportState == ViewportEnabled);
         m_dummyPageHolder->document().settings()->setDoHtmlPreloadScanning(preloadState == PreloadEnabled);
-        m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document(), createMediaValues()));
+        m_scanner = HTMLPreloadScanner::create(options, documentURL, CachedDocumentParameters::create(&m_dummyPageHolder->document()), createMediaValuesData());
     }
 
     void SetUp() override
