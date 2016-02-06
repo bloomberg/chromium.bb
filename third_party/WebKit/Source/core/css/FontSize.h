@@ -29,12 +29,12 @@ namespace blink {
 
 class Document;
 
-enum ESmartMinimumForFontSize { DoNotUseSmartMinimumForFontSize, UseSmartMinimumForFontFize };
+enum ESmartMinimumForFontSize { DoNotUseSmartMinimumForFontSize, UseSmartMinimumForFontSize };
 
 class FontSize {
     STATIC_ONLY(FontSize);
 public:
-    static float getComputedSizeFromSpecifiedSize(const Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontFize);
+    static float getComputedSizeFromSpecifiedSize(const Document*, float zoomFactor, bool isAbsoluteSize, float specifiedSize, ESmartMinimumForFontSize = UseSmartMinimumForFontSize);
 
     // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this function returns
     // values from '1' to '8'.
