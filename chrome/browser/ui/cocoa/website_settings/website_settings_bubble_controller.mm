@@ -16,6 +16,7 @@
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -25,10 +26,12 @@
 #import "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -54,26 +57,26 @@ namespace {
 // fit the content.
 const CGFloat kDefaultWindowWidth = 310;
 
-// Spacing in between sections.
-const CGFloat kVerticalSpacing = 10;
-
 // Padding between the window frame and content.
 const CGFloat kFramePadding = 20;
+
+// Padding between the window frame and content.
+const CGFloat kVerticalSectionMargin = 16;
 
 // Padding between the window frame and content for the internal page bubble.
 const CGFloat kInternalPageFramePadding = 10;
 
-// Spacing between the headlines and description text on the Connection tab.
-const CGFloat kConnectionHeadlineSpacing = 2;
+// Spacing between the identity field and the security summary.
+const CGFloat kSpacingBeforeSecuritySummary = 2;
 
-// Spacing between images on the Connection tab and the text.
-const CGFloat kConnectionImageSpacing = 10;
+// Spacing between the security summary and the reset decisions button.
+const CGFloat kSpacingBeforeResetDecisionsButton = 8;
+
+// Spacing between parts of the site settings section.
+const CGFloat kSiteSettingsSectionSpacing = 2;
 
 // Spacing between the image and text for internal pages.
 const CGFloat kInternalPageImageSpacing = 10;
-
-// Square size of the images on the Connections tab.
-const CGFloat kConnectionImageSize = 30;
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
@@ -97,24 +100,6 @@ const CGFloat kPermissionsHeadlineSpacing = 2;
 // The amount of horizontal space between a permission label and the popup.
 const CGFloat kPermissionPopUpXSpacing = 3;
 
-// The extra space to the left of the first tab in the tab strip.
-const CGFloat kTabStripXPadding = kFramePadding;
-
-// The amount of space between the visual borders of adjacent tabs.
-const CGFloat kTabSpacing = 4;
-
-// The amount of space above the tab strip.
-const CGFloat kTabStripTopSpacing = 14;
-
-// The height of the clickable area of the tab.
-const CGFloat kTabHeight = 28;
-
-// The amount of space above tab labels.
-const CGFloat kTabLabelTopPadding = 6;
-
-// The amount of padding to leave on either side of the tab label.
-const CGFloat kTabLabelXPadding = 12;
-
 // The amount of padding to *remove* when placing
 // |IDS_WEBSITE_SETTINGS_{FIRST,THIRD}_PARTY_SITE_DATA| next to each other.
 const CGFloat kTextLabelXPadding = 5;
@@ -136,205 +121,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 }
 
 }  // namespace
-
-@interface WebsiteSettingsTabSegmentedCell : NSSegmentedCell {
- @private
-  base::scoped_nsobject<NSImage> tabstripCenterImage_;
-  base::scoped_nsobject<NSImage> tabstripLeftImage_;
-  base::scoped_nsobject<NSImage> tabstripRightImage_;
-
-  base::scoped_nsobject<NSImage> tabCenterImage_;
-  base::scoped_nsobject<NSImage> tabLeftImage_;
-  base::scoped_nsobject<NSImage> tabRightImage_;
-
-  // Key track of the index of segment which has keyboard focus. This is not
-  // the same as the currently selected segment.
-  NSInteger keySegment_;
-}
-
-// The text attributes to use for the tab labels.
-+ (NSDictionary*)textAttributes;
-
-@end
-
-@implementation WebsiteSettingsTabSegmentedCell
-
-+ (NSDictionary*)textAttributes {
-  NSFont* smallSystemFont =
-      [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
-  return @{ NSFontAttributeName : smallSystemFont };
-}
-
-- (id)init {
-  if ((self = [super init])) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    tabstripCenterImage_.reset(rb.GetNativeImageNamed(
-        IDR_WEBSITE_SETTINGS_TABSTRIP_CENTER).CopyNSImage());
-    tabstripLeftImage_.reset(rb.GetNativeImageNamed(
-        IDR_WEBSITE_SETTINGS_TABSTRIP_LEFT).CopyNSImage());
-    tabstripRightImage_.reset(rb.GetNativeImageNamed(
-        IDR_WEBSITE_SETTINGS_TABSTRIP_RIGHT).CopyNSImage());
-
-    tabCenterImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_CENTER2).CopyNSImage());
-    tabLeftImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_LEFT2).CopyNSImage());
-    tabRightImage_.reset(
-        rb.GetNativeImageNamed(IDR_WEBSITE_SETTINGS_TAB_RIGHT2).CopyNSImage());
-  }
-  return self;
-}
-
-// Called when keyboard focus in the segmented control is moved forward.
-- (void)makeNextSegmentKey {
-  [super makeNextSegmentKey];
-  keySegment_ = (keySegment_ + 1) % [self segmentCount];
-}
-
-// Called when keyboard focus in the segmented control is moved backwards.
-- (void)makePreviousSegmentKey {
-  [super makePreviousSegmentKey];
-  if (--keySegment_ < 0)
-    keySegment_ += [self segmentCount];
-}
-
-- (void)setSelectedSegment:(NSInteger)selectedSegment {
-  keySegment_ = selectedSegment;
-  [super setSelectedSegment:selectedSegment];
-}
-
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  CGFloat tabstripHeight = [tabCenterImage_ size].height;
-
-  // Draw the tab for the selected segment.
-  NSRect tabRect = [self hitRectForSegment:[self selectedSegment]];
-  tabRect.origin.y = 0;
-  tabRect.size.height = tabstripHeight;
-
-  NSDrawThreePartImage(tabRect,
-                       tabLeftImage_,
-                       tabCenterImage_,
-                       tabRightImage_,
-                       /*vertical=*/ NO,
-                       NSCompositeSourceOver,
-                       1,
-                       /*flipped=*/ YES);
-
-  // Draw the background to the left of the selected tab.
-  NSRect backgroundRect = NSMakeRect(0, 0, NSMinX(tabRect), tabstripHeight);
-  NSDrawThreePartImage(backgroundRect,
-                       nil,
-                       tabstripCenterImage_,
-                       tabstripLeftImage_,
-                       /*vertical=*/ NO,
-                       NSCompositeSourceOver,
-                       1,
-                       /*flipped=*/ YES);
-
-  // Draw the background to the right of the selected tab.
-  backgroundRect.origin.x = NSMaxX(tabRect);
-  backgroundRect.size.width = NSMaxX(cellFrame) - NSMaxX(tabRect);
-  NSDrawThreePartImage(backgroundRect,
-                       tabstripRightImage_,
-                       tabstripCenterImage_,
-                       nil,
-                       /*vertical=*/ NO,
-                       NSCompositeSourceOver,
-                       1,
-                       /*flipped=*/ YES);
-
-  // Call the superclass method to trigger drawing of the tab labels.
-  NSRect interiorFrame = cellFrame;
-  interiorFrame.size.width = 0;
-  for (NSInteger i = 0; i < [self segmentCount]; ++i)
-    interiorFrame.size.width += [self widthForSegment:i];
-  [self drawInteriorWithFrame:interiorFrame inView:controlView];
-
-  if ([[controlView window] firstResponder] == controlView)
-    [self drawFocusRect];
-}
-
-- (void)drawFocusRect {
-  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
-  NSSetFocusRingStyle(NSFocusRingOnly);
-  [[NSColor keyboardFocusIndicatorColor] set];
-  NSFrameRect([self hitRectForSegment:keySegment_]);
-}
-
-// Returns the segment number for the left-most positioned segment.
-// On Right-to-Left languages, segment 0 is on the right.
-- (NSInteger)leftSegment {
-  BOOL isRTL = [self userInterfaceLayoutDirection] ==
-                   NSUserInterfaceLayoutDirectionRightToLeft;
-  return isRTL ? [self segmentCount] - 1 : 0;
-}
-
-// Return the hit rect (i.e., the visual bounds of the tab) for
-// the given segment.
-- (NSRect)hitRectForSegment:(NSInteger)segment {
-  CGFloat tabstripHeight = [tabCenterImage_ size].height;
-  DCHECK_GT(tabstripHeight, kTabHeight);
-  DCHECK([self segmentCount] == 2);  // Assume 2 segments to keep things simple.
-  NSInteger leftSegment = [self leftSegment];
-  CGFloat xOrigin = segment == leftSegment ? kTabStripXPadding
-                                           : [self widthForSegment:leftSegment];
-  NSRect rect = NSMakeRect(xOrigin, tabstripHeight - kTabHeight,
-                           [self widthForSegment:segment] - kTabStripXPadding,
-                           kTabHeight);
-  return NSInsetRect(rect, kTabSpacing / 2, 0);
-}
-
-- (void)drawSegment:(NSInteger)segment
-            inFrame:(NSRect)tabFrame
-           withView:(NSView*)controlView {
-  // Adjust the tab's frame so that the label appears centered in the tab.
-  if (segment == [self leftSegment])
-    tabFrame.origin.x += kTabStripXPadding;
-  tabFrame.size.width -= kTabStripXPadding;
-  tabFrame.origin.y += kTabLabelTopPadding;
-  tabFrame.size.height -= kTabLabelTopPadding;
-
-  // Center the label's frame in the tab's frame.
-  NSString* label = [self labelForSegment:segment];
-  NSDictionary* textAttributes =
-      [WebsiteSettingsTabSegmentedCell textAttributes];
-  NSSize textSize = [label sizeWithAttributes:textAttributes];
-  NSRect labelFrame;
-  labelFrame.size = textSize;
-  labelFrame.origin.x =
-      tabFrame.origin.x + (NSWidth(tabFrame) - textSize.width) / 2.0;
-  labelFrame.origin.y =
-      tabFrame.origin.y + (NSHeight(tabFrame) - textSize.height) / 2.0;
-
-  [label drawInRect:labelFrame withAttributes:textAttributes];
-}
-
-// Overrides the default tracking behavior to only respond to clicks inside the
-// visual borders of the tab.
-- (BOOL)startTrackingAt:(NSPoint)startPoint inView:(NSView *)controlView {
-  NSInteger segmentCount = [self segmentCount];
-  for (NSInteger i = 0; i < segmentCount; ++i) {
-    if (NSPointInRect(startPoint, [self hitRectForSegment:i]))
-      return YES;
-  }
-  return NO;
-}
-
-// Overrides the default cell height to take up the full height of the
-// segmented control. Otherwise, clicks on the lower part of a tab will be
-// ignored.
-- (NSSize)cellSizeForBounds:(NSRect)aRect {
-  return NSMakeSize([super cellSizeForBounds:aRect].width,
-                    [tabstripCenterImage_ size].height);
-}
-
-// Returns the minimum size required to display this cell.
-// It should always be exactly as tall as the tabstrip background image.
-- (NSSize)cellSize {
-  return NSMakeSize([super cellSize].width,
-                    [tabstripCenterImage_ size].height);
-}
-@end
 
 @interface ChosenObjectDeleteButton : HoverImageButton {
  @private
@@ -388,12 +174,15 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 }
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-   websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               webContents:(content::WebContents*)webContents
-            isInternalPage:(BOOL)isInternalPage {
+    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
+                webContents:(content::WebContents*)webContents
+             isInternalPage:(BOOL)isInternalPage
+         isDevToolsDisabled:(BOOL)isDevToolsDisabled {
   DCHECK(parentWindow);
 
   webContents_ = webContents;
+  permissionsPresent_ = NO;
+  isDevToolsDisabled_ = isDevToolsDisabled;
 
   // Use an arbitrary height; it will be changed in performLayout.
   NSRect contentRect = NSMakeRect(0, 0, [self defaultWindowWidth], 1);
@@ -482,130 +271,80 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
 // Create the subviews for the website settings bubble.
 - (void)initializeContents {
-  // Keeps track of the position that the next control should be drawn at.
-  NSPoint controlOrigin = NSMakePoint(
-      kFramePadding,
-      kFramePadding + info_bubble::kBubbleArrowHeight);
+  securitySectionView_ = [self addSecuritySectionToView:contentView_];
+  separatorAfterSecuritySection_ = [self addSeparatorToView:contentView_];
+  siteSettingsSectionView_ = [self addSiteSettingsSectionToView:contentView_];
+
+  [self performLayout];
+}
+
+// Create and return a subview for the security section and add it to the given
+// |superview|. |superview| retains the new view.
+- (NSView*)addSecuritySectionToView:(NSView*)superview {
+  base::scoped_nsobject<NSView> securitySectionView(
+      [[FlippedView alloc] initWithFrame:[superview frame]]);
+  [superview addSubview:securitySectionView];
+
+  // Create a controlOrigin to place the text fields. The y value doesn't
+  // matter, because the correct value is calculated in -performLayout.
+  NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
   // Create a text field (empty for now) to show the site identity.
   identityField_ = [self addText:base::string16()
                         withSize:[NSFont systemFontSize]
                             bold:YES
-                          toView:contentView_
+                          toView:securitySectionView
                          atPoint:controlOrigin];
-  controlOrigin.y +=
-      NSHeight([identityField_ frame]) + kConnectionHeadlineSpacing;
 
-  // Create a text field to identity status (e.g. verified, not verified).
-  identityStatusField_ = [self addText:base::string16()
-                              withSize:[NSFont smallSystemFontSize]
-                                  bold:NO
-                                toView:contentView_
-                               atPoint:controlOrigin];
-  controlOrigin.y +=
-      NSHeight([identityStatusField_ frame]) + kConnectionHeadlineSpacing;
+  // Create a text field for the security summary (private/not private/etc.).
+  securitySummaryField_ = [self addText:base::string16()
+                               withSize:[NSFont smallSystemFontSize]
+                                   bold:NO
+                                 toView:securitySectionView
+                                atPoint:controlOrigin];
+
+  resetDecisionsButton_ = nil;  // This will be created only if necessary.
 
   NSString* securityDetailsButtonText =
       l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
+  // Note: The security details button may be removed from the superview in
+  // -performLayout in order to hide it (depending on the connection).
   securityDetailsButton_ = [self addLinkButtonWithText:securityDetailsButtonText
-                                                toView:contentView_];
+                                                toView:securitySectionView];
   [securityDetailsButton_ setTarget:self];
-  [securityDetailsButton_ setAction:@selector(showSecurityPanel:)];
+  [securityDetailsButton_ setAction:@selector(showSecurityDetails:)];
 
-  // Create the tab view and its two tabs.
-
-  base::scoped_nsobject<WebsiteSettingsTabSegmentedCell> cell(
-      [[WebsiteSettingsTabSegmentedCell alloc] init]);
-  CGFloat tabstripHeight = [cell cellSize].height;
-  NSRect tabstripFrame = NSMakeRect(
-      0, 0, [self defaultWindowWidth], tabstripHeight);
-  segmentedControl_.reset(
-      [[NSSegmentedControl alloc] initWithFrame:tabstripFrame]);
-  [segmentedControl_ setCell:cell];
-  [segmentedControl_ setSegmentCount:WebsiteSettingsUI::NUM_TAB_IDS];
-  [segmentedControl_ setTarget:self];
-  [segmentedControl_ setAction:@selector(tabSelected:)];
-  [segmentedControl_ setAutoresizingMask:NSViewWidthSizable];
-
-  NSDictionary* textAttributes =
-      [WebsiteSettingsTabSegmentedCell textAttributes];
-
-  // Create the "Permissions" tab.
-  NSString* label = l10n_util::GetNSString(
-      IDS_WEBSITE_SETTINGS_TAB_LABEL_PERMISSIONS);
-  [segmentedControl_ setLabel:label
-                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  NSSize textSize = [label sizeWithAttributes:textAttributes];
-  CGFloat tabWidth = textSize.width + 2 * kTabLabelXPadding;
-
-  // Create the "Connection" tab.
-  label = l10n_util::GetNSString(IDS_WEBSITE_SETTINGS_TAB_LABEL_CONNECTION);
-  textSize = [label sizeWithAttributes:textAttributes];
-  [segmentedControl_ setLabel:label
-                   forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
-
-  DCHECK_EQ([segmentedControl_ segmentCount], WebsiteSettingsUI::NUM_TAB_IDS);
-
-  // Make both tabs the width of the widest. The first segment has some
-  // additional padding that is not part of the tab, which is used for drawing
-  // the background of the tab strip.
-  tabWidth = std::max(tabWidth,
-                      textSize.width + 2 * kTabLabelXPadding);
-  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
-                   forSegment:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  [segmentedControl_ setWidth:tabWidth + kTabStripXPadding
-                   forSegment:WebsiteSettingsUI::TAB_ID_CONNECTION];
-
-  [segmentedControl_ setFont:[textAttributes objectForKey:NSFontAttributeName]];
-  [contentView_ addSubview:segmentedControl_];
-
-  NSRect tabFrame = NSMakeRect(0, 0, [self defaultWindowWidth], 300);
-  tabView_.reset([[NSTabView alloc] initWithFrame:tabFrame]);
-  [tabView_ setTabViewType:NSNoTabsNoBorder];
-  [tabView_ setDrawsBackground:NO];
-  [tabView_ setControlSize:NSSmallControlSize];
-  [contentView_ addSubview:tabView_.get()];
-
-  permissionsTabContentView_ = [self addPermissionsTabToTabView:tabView_];
-  connectionTabContentView_ = [self addConnectionTabToTabView:tabView_];
-  [self setSelectedTab:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-
-  [self performLayout];
+  return securitySectionView.get();
 }
 
-// Create the contents of the Permissions tab and add it to the given tab view.
-// Returns a weak reference to the tab view item's view.
-- (NSView*)addPermissionsTabToTabView:(NSTabView*)tabView {
-  base::scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  [tabView_ insertTabViewItem:item.get()
-                      atIndex:WebsiteSettingsUI::TAB_ID_PERMISSIONS];
-  base::scoped_nsobject<NSView> contentView(
-      [[FlippedView alloc] initWithFrame:[tabView_ contentRect]]);
-  [contentView setAutoresizingMask:NSViewWidthSizable];
-  [item setView:contentView.get()];
+// Create and return a subview for the site settings and add it to the given
+// |superview|. |superview| retains the new view.
+- (NSView*)addSiteSettingsSectionToView:(NSView*)superview {
+  base::scoped_nsobject<NSView> siteSettingsSectionView(
+      [[FlippedView alloc] initWithFrame:[superview frame]]);
+  [superview addSubview:siteSettingsSectionView];
 
   // Initialize the two containers that hold the controls. The initial frames
   // are arbitrary, and will be adjusted after the controls are laid out.
-  cookiesView_ = [[[FlippedView alloc]
-      initWithFrame:[tabView_ contentRect]] autorelease];
+  cookiesView_ =
+      [[[FlippedView alloc] initWithFrame:[superview frame]] autorelease];
   [cookiesView_ setAutoresizingMask:NSViewWidthSizable];
+  [siteSettingsSectionView addSubview:cookiesView_];
 
-  permissionsView_ = [[[FlippedView alloc]
-      initWithFrame:[tabView_ contentRect]] autorelease];
-
-  [contentView addSubview:cookiesView_];
-  [contentView addSubview:permissionsView_];
+  permissionsView_ =
+      [[[FlippedView alloc] initWithFrame:[superview frame]] autorelease];
+  [siteSettingsSectionView addSubview:permissionsView_];
 
   // Create the link button to view site settings. Its position will be set in
   // performLayout.
   NSString* siteSettingsButtonText =
       l10n_util::GetNSString(IDS_PAGE_INFO_SITE_SETTINGS_LINK);
-  siteSettingsButton_ =
-      [self addLinkButtonWithText:siteSettingsButtonText toView:contentView];
+  siteSettingsButton_ = [self addLinkButtonWithText:siteSettingsButtonText
+                                             toView:siteSettingsSectionView];
   [siteSettingsButton_ setTarget:self];
   [siteSettingsButton_ setAction:@selector(showSiteSettingsData:)];
 
-  return contentView.get();
+  return siteSettingsSectionView.get();
 }
 
 // Handler for the link button below the list of cookies.
@@ -629,13 +368,20 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 }
 
 // Handler for the site settings button below the list of permissions.
-- (void)showSecurityPanel:(id)sender {
+// TODO(lgarron): Move some of this to the presenter for separation of concerns
+// and platform unification. (https://crbug.com/571533)
+- (void)showSecurityDetails:(id)sender {
   DCHECK(webContents_);
   DCHECK(presenter_);
   presenter_->RecordWebsiteSettingsAction(
       WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
-  DevToolsWindow::OpenDevToolsWindow(webContents_,
-                                     DevToolsToggleAction::ShowSecurityPanel());
+
+  if (isDevToolsDisabled_) {
+    [self showCertificateInfo:sender];
+  } else {
+    DevToolsWindow::OpenDevToolsWindow(
+        webContents_, DevToolsToggleAction::ShowSecurityPanel());
+  }
 }
 
 // Handler for the link button to show certificate information.
@@ -654,72 +400,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [self close];
 }
 
-// Handler for the link to show help information about the connection tab.
-- (void)showHelpPage:(id)sender {
-  presenter_->RecordWebsiteSettingsAction(
-      WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
-  webContents_->OpenURL(content::OpenURLParams(
-      GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK, false));
-}
-
-// Create the contents of the Connection tab and add it to the given tab view.
-// Returns a weak reference to the tab view item's view.
-- (NSView*)addConnectionTabToTabView:(NSTabView*)tabView {
-  base::scoped_nsobject<NSTabViewItem> item([[NSTabViewItem alloc] init]);
-  base::scoped_nsobject<NSView> contentView(
-      [[FlippedView alloc] initWithFrame:[tabView_ contentRect]]);
-  [contentView setAutoresizingMask:NSViewWidthSizable];
-
-  // Place all the text and images at the same position. The positions will be
-  // adjusted in performLayout.
-  NSPoint textPosition = NSMakePoint(
-      kFramePadding + kConnectionImageSize + kConnectionImageSpacing,
-      kFramePadding);
-  NSPoint imagePosition = NSMakePoint(kFramePadding, kFramePadding);
-  NSSize imageSize = NSMakeSize(kConnectionImageSize, kConnectionImageSize);
-
-  identityStatusIcon_ = [self addImageWithSize:imageSize
-                                        toView:contentView
-                                       atPoint:imagePosition];
-  identityStatusDescriptionField_ =
-      [self addText:base::string16()
-           withSize:[NSFont smallSystemFontSize]
-               bold:NO
-             toView:contentView.get()
-            atPoint:textPosition];
-
-  separatorAfterIdentity_ = [self addSeparatorToView:contentView];
-  [separatorAfterIdentity_ setAutoresizingMask:NSViewWidthSizable];
-
-  connectionStatusIcon_ = [self addImageWithSize:imageSize
-                                          toView:contentView
-                                         atPoint:imagePosition];
-  connectionStatusDescriptionField_ =
-      [self addText:base::string16()
-           withSize:[NSFont smallSystemFontSize]
-               bold:NO
-             toView:contentView.get()
-            atPoint:textPosition];
-  certificateInfoButton_ = nil;  // This will be created only if necessary.
-  resetDecisionsButton_ = nil;   // This will be created only if necessary.
-  separatorAfterConnection_ = [self addSeparatorToView:contentView];
-  [separatorAfterConnection_ setAutoresizingMask:NSViewWidthSizable];
-
-  NSString* helpButtonText = l10n_util::GetNSString(
-      IDS_PAGE_INFO_HELP_CENTER_LINK);
-  helpButton_ = [self addLinkButtonWithText:helpButtonText
-                                     toView:contentView];
-  [helpButton_ setTarget:self];
-  [helpButton_ setAction:@selector(showHelpPage:)];
-
-  [item setView:contentView.get()];
-  [tabView_ insertTabViewItem:item.get()
-                      atIndex:WebsiteSettingsUI::TAB_ID_CONNECTION];
-
-  return contentView.get();
-}
-
 // Set the Y position of |view| to the given position, and return the position
 // of its bottom edge.
 - (CGFloat)setYPositionOfView:(NSView*)view to:(CGFloat)position {
@@ -733,6 +413,10 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [view setFrameSize:NSMakeSize(width, NSHeight([view frame]))];
 }
 
+- (void)setHeightOfView:(NSView*)view to:(CGFloat)height {
+  [view setFrameSize:NSMakeSize(NSWidth([view frame]), height)];
+}
+
 // Layout all of the controls in the window. This should be called whenever
 // the content has changed.
 - (void)performLayout {
@@ -742,95 +426,78 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
   // Set the width of the content view now, so that all the text fields will
   // be sized to fit before their heights and vertical positions are adjusted.
-  // The tab view will only resize the currently selected tab, so resize both
-  // tab content views manually.
   [self setWidthOfView:contentView_ to:contentWidth];
-  [self setWidthOfView:permissionsTabContentView_ to:contentWidth];
-  [self setWidthOfView:connectionTabContentView_ to:contentWidth];
+  [self setWidthOfView:securitySectionView_ to:contentWidth];
+  [self setWidthOfView:siteSettingsSectionView_ to:contentWidth];
 
-  // Place the identity status immediately below the identity.
-  [self sizeTextFieldHeightToFit:identityField_];
-  [self sizeTextFieldHeightToFit:identityStatusField_];
-  CGFloat yPos = NSMaxY([identityField_ frame]) + kConnectionHeadlineSpacing;
-  yPos = [self setYPositionOfView:identityStatusField_ to:yPos];
+  CGFloat yPos = info_bubble::kBubbleArrowHeight;
 
-  [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
-  yPos = NSMaxY([identityStatusField_ frame]) + kConnectionHeadlineSpacing;
-  yPos = [self setYPositionOfView:securityDetailsButton_ to:yPos];
+  [self layoutSecuritySection];
+  yPos = [self setYPositionOfView:securitySectionView_ to:yPos + kFramePadding];
 
-  // Lay out the Permissions tab.
+  yPos = [self setYPositionOfView:separatorAfterSecuritySection_
+                               to:yPos + kVerticalSectionMargin];
 
-  yPos = [self setYPositionOfView:cookiesView_ to:kFramePadding];
+  [self layoutSiteSettingsSection];
+  yPos = [self setYPositionOfView:siteSettingsSectionView_
+                               to:yPos + kVerticalSectionMargin];
 
-  // Put the permission info just below the link button.
-  yPos = [self setYPositionOfView:permissionsView_
-                               to:NSMaxY([cookiesView_ frame]) + kFramePadding];
-
-  // Put the link button for site settings just below the permissions.
-  // TODO(palmer): set the position of this based on RTL/LTR.
-  // http://code.google.com/p/chromium/issues/detail?id=525304
-  [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
-
-  // Lay out the Connection tab.
-
-  // Lay out the identity status section.
-  [self sizeTextFieldHeightToFit:identityStatusDescriptionField_];
-  yPos = std::max(NSMaxY([identityStatusDescriptionField_ frame]),
-                  NSMaxY([identityStatusIcon_ frame]));
-  if (certificateInfoButton_) {
-    NSRect certificateButtonFrame = [certificateInfoButton_ frame];
-    certificateButtonFrame.origin.x = NSMinX(
-        [identityStatusDescriptionField_ frame]);
-    certificateButtonFrame.origin.y = yPos + kVerticalSpacing;
-    [certificateInfoButton_ setFrame:certificateButtonFrame];
-    yPos = NSMaxY(certificateButtonFrame);
-  }
-  if (resetDecisionsButton_) {
-    NSRect resetDecisionsButtonFrame = [resetDecisionsButton_ frame];
-    resetDecisionsButtonFrame.origin.x =
-        NSMinX([identityStatusDescriptionField_ frame]);
-    resetDecisionsButtonFrame.origin.y = yPos + kVerticalSpacing;
-    [resetDecisionsButton_ setFrame:resetDecisionsButtonFrame];
-    yPos = NSMaxY(resetDecisionsButtonFrame);
-  }
-  yPos = [self setYPositionOfView:separatorAfterIdentity_
-                               to:yPos + kVerticalSpacing];
-  yPos += kVerticalSpacing;
-
-  // Lay out the connection status section.
-  [self sizeTextFieldHeightToFit:connectionStatusDescriptionField_];
-  [self setYPositionOfView:connectionStatusIcon_ to:yPos];
-  [self setYPositionOfView:connectionStatusDescriptionField_ to:yPos];
-  yPos = std::max(NSMaxY([connectionStatusDescriptionField_ frame]),
-                  NSMaxY([connectionStatusIcon_ frame]));
-  yPos = [self setYPositionOfView:separatorAfterConnection_
-                               to:yPos + kVerticalSpacing];
-  yPos += kVerticalSpacing;
-
-  [self setYPositionOfView:helpButton_ to:yPos];
-
-  // Adjust the tab view size and place it below the identity status.
-
-  yPos = NSMaxY([identityStatusField_ frame]) + kVerticalSpacing;
-  yPos = [self setYPositionOfView:segmentedControl_ to:yPos];
-
-  yPos = NSMaxY([securityDetailsButton_ frame]) + kTabStripTopSpacing;
-  yPos = [self setYPositionOfView:segmentedControl_ to:yPos];
-
-  CGFloat connectionTabHeight = NSMaxY([helpButton_ frame]) + kVerticalSpacing;
-
-  NSRect tabViewFrame = [tabView_ frame];
-  tabViewFrame.origin.y = yPos;
-  tabViewFrame.size.height = std::max(
-      connectionTabHeight, NSMaxY([siteSettingsButton_ frame]) + kFramePadding);
-  tabViewFrame.size.width = contentWidth;
-  [tabView_ setFrame:tabViewFrame];
-
-  // Adjust the contentView to fit everything.
-  [contentView_ setFrame:NSMakeRect(
-      0, 0, NSWidth(tabViewFrame), NSMaxY(tabViewFrame))];
+  [contentView_ setFrame:NSMakeRect(0, 0, NSWidth([contentView_ frame]),
+                                    yPos + kFramePadding)];
 
   [self sizeAndPositionWindow];
+}
+
+- (void)layoutSecuritySection {
+  // Start the layout with the first element. Margins are handled by the caller.
+  CGFloat yPos = 0;
+
+  [self sizeTextFieldHeightToFit:identityField_];
+  yPos = [self setYPositionOfView:identityField_ to:yPos];
+
+  [self sizeTextFieldHeightToFit:securitySummaryField_];
+  yPos = [self setYPositionOfView:securitySummaryField_
+                               to:yPos + kSpacingBeforeSecuritySummary];
+
+  if (isDevToolsDisabled_ && certificateId_ == 0) {
+    // -removeFromSuperview is idempotent.
+    [securityDetailsButton_ removeFromSuperview];
+  } else {
+    // -addSubview is idempotent.
+    [securitySectionView_ addSubview:securityDetailsButton_];
+    yPos = [self setYPositionOfView:securityDetailsButton_ to:yPos];
+  }
+
+  if (resetDecisionsButton_) {
+    yPos = [self setYPositionOfView:resetDecisionsButton_
+                                 to:yPos + kSpacingBeforeResetDecisionsButton];
+  }
+
+  // Resize the height based on contents.
+  [self setHeightOfView:securitySectionView_ to:yPos];
+}
+
+- (void)layoutSiteSettingsSection {
+  // Start the layout with the first element. Margins are handled by the caller.
+  CGFloat yPos = 0;
+
+  yPos = [self setYPositionOfView:cookiesView_ to:yPos];
+
+  if (permissionsPresent_) {
+    // Put the permission info just below the link button.
+    yPos = [self setYPositionOfView:permissionsView_
+                                 to:yPos + kSiteSettingsSectionSpacing];
+  }
+
+  // Put the link button for site settings just below the permissions.
+  // TODO(lgarron): set the position of this based on RTL/LTR.
+  // http://code.google.com/p/chromium/issues/detail?id=525304
+  yPos += kSiteSettingsSectionSpacing;
+  [siteSettingsButton_ setFrameOrigin:NSMakePoint(kFramePadding, yPos)];
+  yPos = NSMaxY([siteSettingsButton_ frame]);
+
+  // Resize the height based on contents.
+  [self setHeightOfView:siteSettingsSectionView_ to:yPos];
 }
 
 // Adjust the size of the window to match the size of the content, and position
@@ -911,12 +578,9 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 
 // Add a separator as a subview of the given view. Return the new view.
 - (NSView*)addSeparatorToView:(NSView*)view {
-  // Take up almost the full width of the container's frame.
-  CGFloat width = NSWidth([view frame]) - 2 * kFramePadding;
-
   // Use an arbitrary position; it will be adjusted in performLayout.
-  NSBox* spacer = [self horizontalSeparatorWithFrame:NSMakeRect(
-      kFramePadding, 0, width, 0)];
+  NSBox* spacer = [self
+      horizontalSeparatorWithFrame:NSMakeRect(0, 0, NSWidth([view frame]), 0)];
   [view addSubview:spacer];
   return spacer;
 }
@@ -939,10 +603,9 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   return button.get();
 }
 
-// Add a button with the given text to |view| setting the max size appropriately
-// for the connection info section.
-- (NSButton*)addButtonWithTextToConnectionSection:(NSString*)text
-                                           toView:(NSView*)view {
+// Create and return a button with the specified text and add it to the given
+// |view|. |view| retains the new button.
+- (NSButton*)addButtonWithText:(NSString*)text toView:(NSView*)view {
   NSRect containerFrame = [view frame];
   // Frame size is arbitrary; it will be adjusted by the layout tweaker.
   NSRect frame = NSMakeRect(kFramePadding, 0, 100, 10);
@@ -952,8 +615,8 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   // Determine the largest possible size for this button. The size is the width
   // of the connection section minus the padding on both sides minus the
   // connection image size and spacing.
-  CGFloat maxTitleWidth = containerFrame.size.width - kFramePadding * 2 -
-                          kConnectionImageSize - kConnectionImageSpacing;
+  // TODO(lgarron): handle this sizing in -performLayout.
+  CGFloat maxTitleWidth = containerFrame.size.width - kFramePadding * 2;
 
   base::scoped_nsobject<NSButtonCell> cell(
       [[NSButtonCell alloc] initTextCell:text]);
@@ -971,6 +634,27 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [view addSubview:button.get()];
 
   return button.get();
+}
+
+// Set the content of the identity and identity status fields.
+- (void)setIdentityInfo:(const WebsiteSettingsUI::IdentityInfo&)identityInfo {
+  [identityField_
+      setStringValue:base::SysUTF8ToNSString(identityInfo.site_identity)];
+  [securitySummaryField_ setStringValue:base::SysUTF16ToNSString(
+                                            identityInfo.GetSecuritySummary())];
+
+  certificateId_ = identityInfo.cert_id;
+
+  if (identityInfo.show_ssl_decision_revoke_button) {
+    NSString* text = l10n_util::GetNSString(
+        IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
+    resetDecisionsButton_ =
+        [self addButtonWithText:text toView:securitySectionView_];
+    [resetDecisionsButton_ setTarget:self];
+    [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
+  }
+
+  [self performLayout];
 }
 
 // Add a pop-up button for |permissionInfo| to the given view.
@@ -1040,24 +724,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
 - (void)onChosenObjectDeleted:(const WebsiteSettingsUI::ChosenObjectInfo&)info {
   if (presenter_)
     presenter_->OnSiteChosenObjectDeleted(info.ui_info, *info.object);
-}
-
-// Called when the user changes the selected segment in the segmented control.
-- (void)tabSelected:(id)sender {
-  NSInteger index = [segmentedControl_ selectedSegment];
-  switch (index) {
-    case WebsiteSettingsUI::TAB_ID_PERMISSIONS:
-      presenter_->RecordWebsiteSettingsAction(
-          WebsiteSettings::WEBSITE_SETTINGS_PERMISSIONS_TAB_SELECTED);
-      break;
-    case WebsiteSettingsUI::TAB_ID_CONNECTION:
-      presenter_->RecordWebsiteSettingsAction(
-          WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_TAB_SELECTED);
-      break;
-    default:
-      NOTREACHED();
-  }
-  [tabView_ selectTabViewItemAtIndex:index];
 }
 
 // Adds a new row to the UI listing the permissions. Returns the NSPoint of the
@@ -1251,53 +917,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [imageView setFrame:frame];
 }
 
-// Set the content of the identity and identity status fields.
-- (void)setIdentityInfo:(const WebsiteSettingsUI::IdentityInfo&)identityInfo {
-  [identityField_ setStringValue:
-      base::SysUTF8ToNSString(identityInfo.site_identity)];
-  [identityStatusField_ setStringValue:base::SysUTF16ToNSString(
-                                           identityInfo.GetSecuritySummary())];
-
-  // If there is a certificate, add a button for viewing the certificate info.
-  certificateId_ = identityInfo.cert_id;
-  if (certificateId_) {
-    if (!certificateInfoButton_) {
-      NSString* text = l10n_util::GetNSString(IDS_PAGEINFO_CERT_INFO_BUTTON);
-      certificateInfoButton_ = [self addLinkButtonWithText:text
-          toView:connectionTabContentView_];
-
-      [certificateInfoButton_ setTarget:self];
-      [certificateInfoButton_ setAction:@selector(showCertificateInfo:)];
-    }
-
-    // Check if a security decision has been made, and if so, add a button to
-    // allow the user to retract their decision.
-    if (identityInfo.show_ssl_decision_revoke_button) {
-      NSString* text = l10n_util::GetNSString(
-          IDS_PAGEINFO_RESET_INVALID_CERTIFICATE_DECISIONS_BUTTON);
-      resetDecisionsButton_ =
-          [self addButtonWithTextToConnectionSection:text
-                                              toView:connectionTabContentView_];
-      [resetDecisionsButton_ setTarget:self];
-      [resetDecisionsButton_ setAction:@selector(resetCertificateDecisions:)];
-    }
-  } else {
-    certificateInfoButton_ = nil;
-  }
-
-  [identityStatusIcon_ setImage:WebsiteSettingsUI::GetIdentityIcon(
-      identityInfo.identity_status).ToNSImage()];
-  [identityStatusDescriptionField_ setStringValue:
-      base::SysUTF8ToNSString(identityInfo.identity_status_description)];
-
-  [connectionStatusIcon_ setImage:WebsiteSettingsUI::GetConnectionIcon(
-      identityInfo.connection_status).ToNSImage()];
-  [connectionStatusDescriptionField_ setStringValue:
-      base::SysUTF8ToNSString(identityInfo.connection_status_description)];
-
-  [self performLayout];
-}
-
 - (void)setCookieInfo:(const CookieInfoList&)cookieInfoList {
   // A result of re-ordering of the permissions (crbug.com/444244) is
   // that sometimes permissions may not be displayed at all, so it's
@@ -1417,6 +1036,8 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
+  permissionsPresent_ = YES;
+
   if (permissionInfoList.size() > 0 || chosenObjectInfoList.size() > 0) {
     base::string16 sectionTitle = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
@@ -1459,12 +1080,6 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [self performLayout];
 }
 
-- (void)setSelectedTab:(WebsiteSettingsUI::TabId)tabId {
-  NSInteger index = static_cast<NSInteger>(tabId);
-  [segmentedControl_ setSelectedSegment:index];
-  [tabView_ selectTabViewItemAtIndex:index];
-}
-
 @end
 
 WebsiteSettingsUIBridge::WebsiteSettingsUIBridge(
@@ -1499,13 +1114,17 @@ void WebsiteSettingsUIBridge::Show(
   // Create the bridge. This will be owned by the bubble controller.
   WebsiteSettingsUIBridge* bridge = new WebsiteSettingsUIBridge(web_contents);
 
+  bool is_devtools_disabled =
+      profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
+
   // Create the bubble controller. It will dealloc itself when it closes.
   WebsiteSettingsBubbleController* bubble_controller =
       [[WebsiteSettingsBubbleController alloc]
-          initWithParentWindow:parent
-       websiteSettingsUIBridge:bridge
-                   webContents:web_contents
-                isInternalPage:is_internal_page];
+             initWithParentWindow:parent
+          websiteSettingsUIBridge:bridge
+                      webContents:web_contents
+                   isInternalPage:is_internal_page
+               isDevToolsDisabled:is_devtools_disabled];
 
   if (!is_internal_page) {
     // Initialize the presenter, which holds the model and controls the UI.
@@ -1545,5 +1164,5 @@ void WebsiteSettingsUIBridge::SetPermissionInfo(
 }
 
 void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {
-  [bubble_controller_ setSelectedTab:tab_id];
+  // TODO(lgarron): Remove this from the interface. (crbug.com/571533)
 }

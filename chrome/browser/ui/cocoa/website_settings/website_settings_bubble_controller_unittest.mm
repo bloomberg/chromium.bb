@@ -13,50 +13,20 @@
 #include "testing/gtest_mac.h"
 
 @interface WebsiteSettingsBubbleController (ExposedForTesting)
-- (NSSegmentedControl*)segmentedControl;
-- (NSTabView*)tabView;
 - (NSView*)permissionsView;
-- (NSView*)connectionTabContentView;
-- (NSImageView*)identityStatusIcon;
-- (NSTextField*)identityStatusDescriptionField;
-- (NSImageView*)connectionStatusIcon;
-- (NSTextField*)connectionStatusDescriptionField;
-- (NSButton*)helpButton;
+- (NSButton*)resetDecisionsButton;
+- (NSButton*)securityDetailsButton;
 @end
 
 @implementation WebsiteSettingsBubbleController (ExposedForTesting)
-- (NSSegmentedControl*)segmentedControl {
-  return segmentedControl_.get();
-}
-- (NSTabView*)tabView {
-  return tabView_.get();
-}
 - (NSView*)permissionsView {
   return permissionsView_;
 }
-
-- (NSView*)connectionTabContentView {
-  return connectionTabContentView_;
+- (NSButton*)resetDecisionsButton {
+  return resetDecisionsButton_;
 }
-
-- (NSImageView*)identityStatusIcon {
-  return identityStatusIcon_;
-}
-
-- (NSTextField*)identityStatusDescriptionField {
-  return identityStatusDescriptionField_;
-}
-
-- (NSImageView*)connectionStatusIcon {
-  return connectionStatusIcon_;
-}
-
-- (NSTextField*)connectionStatusDescriptionField {
-  return connectionStatusDescriptionField_;
-}
-
-- (NSButton*)helpButton {
-  return helpButton_;
+- (NSButton*)securityDetailsButton {
+  return securityDetailsButton_;
 }
 @end
 
@@ -159,9 +129,10 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     controller_ = [WebsiteSettingsBubbleControllerForTesting alloc];
     [controller_ setDefaultWindowWidth:default_width];
     [controller_ initWithParentWindow:test_window()
-                 websiteSettingsUIBridge:bridge_
-                 webContents:nil
-                 isInternalPage:NO];
+              websiteSettingsUIBridge:bridge_
+                          webContents:nil
+                       isInternalPage:NO
+                   isDevToolsDisabled:NO];
     window_ = [controller_ window];
     [controller_ showWindow:nil];
   }
@@ -177,21 +148,20 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     // coordinate origin. It is into this that all views get placed.
     NSArray* window_subviews = [[window_ contentView] subviews];
     EXPECT_EQ(1U, [window_subviews count]);
-    NSArray* subviews = [[window_subviews lastObject] subviews];
+    NSArray* bubble_subviews = [[window_subviews lastObject] subviews];
+    NSArray* security_section_subviews =
+        [[bubble_subviews firstObject] subviews];
 
     /**
-     *Expect 4 views:
+     *Expect 3 views:
      * - the identity
      * - identity status
      * - security details link
-     * -  segmented control (which implements the tab strip),
-     * - and the tab view.
      */
-    EXPECT_EQ(5U, [subviews count]);
+    EXPECT_EQ(3U, [security_section_subviews count]);
 
     bool desired_result = match_type == TEXT_EQUAL;
-
-    for (NSView* view in subviews) {
+    for (NSView* view in security_section_subviews) {
       if ([view isKindOfClass:[NSTextField class]]) {
         NSTextField* text_field = static_cast<NSTextField*>(view);
         if ([[text_field stringValue] isEqual:text] == desired_result)
@@ -264,63 +234,44 @@ TEST_F(WebsiteSettingsBubbleControllerTest, BasicIdentity) {
   EXPECT_NSNE(status, [identity_status_field stringValue]);
 }
 
-TEST_F(WebsiteSettingsBubbleControllerTest, SetIdentityInfo) {
+TEST_F(WebsiteSettingsBubbleControllerTest, SecurityDetailsButton) {
   WebsiteSettingsUI::IdentityInfo info;
-  info.site_identity = std::string("nhl.com");
+  info.site_identity = std::string("example.com");
   info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
-  info.identity_status_description = std::string("Identity1");
-  info.connection_status = WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN;
-  info.connection_status_description = std::string("Connection1");
-  info.cert_id = 0;
 
   CreateBubble();
 
-  // Set the identity, and test that the description fields on the Connection
-  // tab are set properly.
-  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
-  EXPECT_NSEQ(@"Identity1",
-              [[controller_ identityStatusDescriptionField] stringValue]);
-  EXPECT_NSEQ(@"Connection1",
-              [[controller_ connectionStatusDescriptionField] stringValue]);
-
-  // Check the contents of the images, and make sure they change after the
-  // status changes.
-
-  NSImage* identity_icon = [[controller_ identityStatusIcon] image];
-  NSImage* connection_icon = [[controller_ connectionStatusIcon] image];
-  // Icons should be the same when they are both unknown.
-  EXPECT_EQ(identity_icon, connection_icon);
-
-  // Ensure that the link button for certificate info is not there -- the
-  // help link button should be the first one found.
-  NSMutableArray* buttons = FindAllSubviewsOfClass(
-      [controller_ connectionTabContentView], [NSButton class]);
-  ASSERT_EQ(1U, [buttons count]);
-  EXPECT_NSEQ([controller_ helpButton], [buttons objectAtIndex:0]);
-
-  // Check that it has a target and action linked up.
-  NSButton* link_button = static_cast<NSButton*>([buttons objectAtIndex:0]);
-  EXPECT_NSEQ(controller_, [link_button target]);
-  EXPECT_TRUE([link_button action] == @selector(showHelpPage:));
-
-  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_CERT;
-  info.connection_status = WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED;
-  info.cert_id = 1;
   bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
 
-  EXPECT_NE(identity_icon, [[controller_ identityStatusIcon] image]);
-  EXPECT_NE(connection_icon, [[controller_ connectionStatusIcon] image]);
+  EXPECT_EQ([[controller_ securityDetailsButton] action],
+            @selector(showSecurityDetails:));
+}
 
-  // The certificate info button should be there now.
-  buttons = FindAllSubviewsOfClass(
-      [controller_ connectionTabContentView], [NSButton class]);
-  ASSERT_EQ(2U, [buttons count]);
-  EXPECT_NSNE([controller_ helpButton], [buttons objectAtIndex:1]);
+TEST_F(WebsiteSettingsBubbleControllerTest, ResetDecisionsButton) {
+  WebsiteSettingsUI::IdentityInfo info;
+  info.site_identity = std::string("example.com");
+  info.identity_status = WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN;
 
-  // Check that it has a target and action linked up.
-  link_button = static_cast<NSButton*>([buttons objectAtIndex:1]);
-  EXPECT_NSEQ(controller_, [link_button target]);
-  EXPECT_TRUE([link_button action] == @selector(showCertificateInfo:));
+  CreateBubble();
+
+  // Set identity info, specifying that the button should not be shown.
+  info.show_ssl_decision_revoke_button = false;
+  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
+  EXPECT_EQ([controller_ resetDecisionsButton], nil);
+
+  // Set identity info, specifying that the button should be shown.
+  info.show_ssl_decision_revoke_button = true;
+  bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
+  EXPECT_NE([controller_ resetDecisionsButton], nil);
+
+  // Check that clicking the button calls the right selector.
+  EXPECT_EQ([[controller_ resetDecisionsButton] action],
+            @selector(resetCertificateDecisions:));
+
+  // Since the bubble is only created once per identity, we only need to check
+  // the button is *added* when needed. So we don't check that it's removed
+  // when we set an identity with `show_ssl_decision_revoke_button == false`
+  // again.
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
@@ -359,22 +310,6 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
   // 4 of the buttons should be disabled -- the ones that have a setting source
   // of SETTING_SOURCE_POLICY or SETTING_SOURCE_EXTENSION.
   EXPECT_EQ(4, disabled_count);
-}
-
-TEST_F(WebsiteSettingsBubbleControllerTest, SetSelectedTab) {
-  CreateBubble();
-  NSSegmentedControl* segmentedControl = [controller_ segmentedControl];
-  NSTabView* tabView = [controller_ tabView];
-
-  // Test whether SetSelectedTab properly changes both the segmented control
-  // (which implements the tabs) as well as the visible tab contents.
-  // NOTE: This implicitly (and deliberately) tests that the tabs appear in a
-  // specific order: Permissions, Connection.
-  EXPECT_EQ(0, [segmentedControl selectedSegment]);
-  EXPECT_EQ(0, [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
-  bridge_->SetSelectedTab(WebsiteSettingsUI::TAB_ID_CONNECTION);
-  EXPECT_EQ(1, [segmentedControl selectedSegment]);
-  EXPECT_EQ(1, [tabView indexOfTabViewItem:[tabView selectedTabViewItem]]);
 }
 
 TEST_F(WebsiteSettingsBubbleControllerTest, WindowWidth) {

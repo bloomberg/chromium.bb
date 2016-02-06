@@ -28,54 +28,48 @@ class WebContents;
   content::WebContents* webContents_;
 
   base::scoped_nsobject<NSView> contentView_;
-  base::scoped_nsobject<NSSegmentedControl> segmentedControl_;
-  base::scoped_nsobject<NSTabView> tabView_;
+
+  // The main content view for the Permissions tab.
+  NSView* securitySectionView_;
 
   // Displays the web site identity.
   NSTextField* identityField_;
 
-  // Display the identity status (e.g. verified, not verified).
-  NSTextField* identityStatusField_;
+  // Displays the security summary for the page (private/not private/etc.).
+  NSTextField* securitySummaryField_;
 
-  // The link button for opening the DevTools Security panel for details.
+  // The link button for opening security details for the page. This is the
+  // DevTools Security panel for most users, but may be the certificate viewer
+  // for enterprise users with DevTools disabled.
   NSButton* securityDetailsButton_;
 
-  // The main content view for the Permissions tab.
-  NSView* permissionsTabContentView_;
+  // Whether DevTools is disabled for the relevant profile.
+  BOOL isDevToolsDisabled_;
 
-  // The main content view for the Connection tab.
-  NSView* connectionTabContentView_;
-
-  // Container for cookies info on the Permissions tab.
-  NSView* cookiesView_;
-
-  // The link button for showing site settings.
-  NSButton* siteSettingsButton_;
-
-  // The link button for showing certificate information.
-  NSButton* certificateInfoButton_;
+  // The ID of the server certificate from the identity info. This should
+  // always be non-zero on a cryptographic connection, and 0 otherwise.
+  int certificateId_;
 
   // The link button for revoking certificate decisions.
   NSButton* resetDecisionsButton_;
 
-  // The ID of the server certificate from the identity info. This should
-  // always be non-zero on a secure connection, and 0 otherwise.
-  int certificateId_;
+  // Separator line.
+  NSView* separatorAfterSecuritySection_;
 
-  // Container for permission info on the Permissions tab.
+  // Container for the site settings section.
+  NSView* siteSettingsSectionView_;
+
+  // Container for cookies info in the site settings section.
+  NSView* cookiesView_;
+
+  // Container for permission info in the site settings section.
   NSView* permissionsView_;
 
-  NSImageView* identityStatusIcon_;
-  NSTextField* identityStatusDescriptionField_;
-  NSView* separatorAfterIdentity_;
+  // Whether the permissionView_ shows anything.
+  BOOL permissionsPresent_;
 
-  NSImageView* connectionStatusIcon_;
-  NSTextField* connectionStatusDescriptionField_;
-  NSView* separatorAfterConnection_;
-
-  // The link button to launch the Help Center article explaining the
-  // connection info.
-  NSButton* helpButton_;
+  // The link button for showing site settings.
+  NSButton* siteSettingsButton_;
 
   // The UI translates user actions to specific events and forwards them to the
   // |presenter_|. The |presenter_| handles these events and updates the UI.
@@ -90,9 +84,10 @@ class WebContents;
 // is closed. |parentWindow| cannot be nil. |webContents| may be nil for
 // testing purposes.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-   websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
-               webContents:(content::WebContents*)webContents
-            isInternalPage:(BOOL)isInternalPage;
+    websiteSettingsUIBridge:(WebsiteSettingsUIBridge*)bridge
+                webContents:(content::WebContents*)webContents
+             isInternalPage:(BOOL)isInternalPage
+         isDevToolsDisabled:(BOOL)isDevToolsDisabled;
 
 // Return the default width of the window. It may be wider to fit the content.
 // This may be overriden by a subclass for testing purposes.
