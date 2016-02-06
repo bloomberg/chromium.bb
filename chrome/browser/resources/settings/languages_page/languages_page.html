@@ -23,90 +23,92 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="languages_page.css">
   <template>
-    <settings-languages languages="{{languages}}"></settings-languages>
-    <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-        section="languages">
-      <neon-animatable id="main">
-        <div class="settings-box block first">
-          <h2 i18n-content="languagesListTitle"></h2>
-          <div>
-            <array-selector id="languageSelector" selected="{{detailLanguage}}"
-                items="{{languages.enabledLanguages}}"></array-selector>
-            <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-              <paper-item on-tap="onLanguageTap_">
-                <div class="flex" title="[[item.language.nativeDisplayName]]"
-                    >[[item.language.displayName]]</div>
+    <div class="settings-card">
+      <settings-languages languages="{{languages}}"></settings-languages>
+      <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+          section="languages">
+        <neon-animatable id="main">
+          <div class="settings-box block first">
+            <h2 i18n-content="languagesListTitle"></h2>
+            <div>
+              <array-selector id="languageSelector" selected="{{detailLanguage}}"
+                  items="{{languages.enabledLanguages}}"></array-selector>
+              <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+                <paper-item on-tap="onLanguageTap_">
+                  <div class="flex" title="[[item.language.nativeDisplayName]]"
+                      >[[item.language.displayName]]</div>
 <if expr="chromeos or is_win">
-                <iron-icon icon="done"
-                    hidden$="[[!isProspectiveUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
-                </iron-icon>
+                  <iron-icon icon="done"
+                      hidden$="[[!isProspectiveUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+                  </iron-icon>
 </if>
-                <paper-icon-button icon="settings"
-                    on-tap="onShowLanguageDetailTap_"></paper-icon-button>
-              </paper-item>
-            </template>
-          </div>
-          <div class="manage">
-            <paper-button i18n-content="manageLanguages"
-                on-tap="onManageLanguagesTap_"></paper-button>
-          </div>
+                  <paper-icon-button icon="settings"
+                      on-tap="onShowLanguageDetailTap_"></paper-icon-button>
+                </paper-item>
+              </template>
+            </div>
+            <div class="manage">
+              <paper-button i18n-content="manageLanguages"
+                  on-tap="onManageLanguagesTap_"></paper-button>
+            </div>
 <if expr="chromeos">
-          <h2 i18n-content="inputMethodsListTitle"></h2>
-          <div>
-            <template is="dom-repeat" items="{{languages.inputMethods}}">
-              <paper-item>
-                <div class="flex">[[item.name]]</div>
-                <iron-icon icon="done"
-                    hidden$="[[!isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
-                </iron-icon>
-                <paper-icon-button icon="settings"></paper-icon-button>
-              </paper-item>
-            </template>
-          </div>
-          <div class="manage">
-            <paper-button i18n-content="manageInputMethods"></paper-button>
-          </div>
+            <h2 i18n-content="inputMethodsListTitle"></h2>
+            <div>
+              <template is="dom-repeat" items="{{languages.inputMethods}}">
+                <paper-item>
+                  <div class="flex">[[item.name]]</div>
+                  <iron-icon icon="done"
+                      hidden$="[[!isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
+                  </iron-icon>
+                  <paper-icon-button icon="settings"></paper-icon-button>
+                </paper-item>
+              </template>
+            </div>
+            <div class="manage">
+              <paper-button i18n-content="manageInputMethods"></paper-button>
+            </div>
 </if>
 <if expr="not is_macosx">
-          <h2 i18n-content="spellCheckListTitle"></h2>
-          <div class="layout vertical">
-            <template is="dom-repeat" items="{{languages.enabledLanguages}}">
-              <paper-checkbox hidden="[[!item.language.supportsSpellcheck]]"
-                  checked="[[item.state.spellCheckEnabled]]"
-                  on-change="onSpellCheckChange_"
-                  >[[item.language.displayName]]</paper-checkbox>
-            </template>
-          </div>
-          <div class="manage">
-            <paper-button i18n-content="manageSpellCheck"
-                on-tap="onEditDictionaryTap_"></paper-button>
-          </div>
+            <h2 i18n-content="spellCheckListTitle"></h2>
+            <div class="layout vertical">
+              <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+                <paper-checkbox hidden="[[!item.language.supportsSpellcheck]]"
+                    checked="[[item.state.spellCheckEnabled]]"
+                    on-change="onSpellCheckChange_"
+                    >[[item.language.displayName]]</paper-checkbox>
+              </template>
+            </div>
+            <div class="manage">
+              <paper-button i18n-content="manageSpellCheck"
+                  on-tap="onEditDictionaryTap_"></paper-button>
+            </div>
 </if>
-        </div>
-      </neon-animatable>
-      <neon-animatable id="manage-languages">
-        <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">
-        </settings-subheader>
-        <settings-manage-languages-page
-            prefs="{{prefs}}"></settings-manage-languages-page>
-      </neon-animatable>
-      <neon-animatable id="language-detail">
-        <settings-subheader id="language-detail-subheader"
-            page-title="[[detailLanguage.language.displayName]]">
-        </settings-subheader>
-        <settings-language-detail-page id="languageDetailPage"
-            prefs="{{prefs}}" detail="[[detailLanguage]]">
-        </settings-language-detail-page>
-      </neon-animatable>
+          </div>
+        </neon-animatable>
+        <neon-animatable id="manage-languages">
+          <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">
+          </settings-subheader>
+          <settings-manage-languages-page
+              prefs="{{prefs}}"></settings-manage-languages-page>
+        </neon-animatable>
+        <neon-animatable id="language-detail">
+          <settings-subheader id="language-detail-subheader"
+              page-title="[[detailLanguage.language.displayName]]">
+          </settings-subheader>
+          <settings-language-detail-page id="languageDetailPage"
+              prefs="{{prefs}}" detail="[[detailLanguage]]">
+          </settings-language-detail-page>
+        </neon-animatable>
 <if expr="not is_macosx">
-      <neon-animatable id="edit-dictionary">
-        <settings-subheader id="edit-dictionary-subheader"
-            i18n-values="page-title:editDictionaryPageTitle">
-        </settings-subheader>
-        <settings-edit-dictionary-page></settings-edit-dictionary-page>
-      </neon-animatable>
+        <neon-animatable id="edit-dictionary">
+          <settings-subheader id="edit-dictionary-subheader"
+              i18n-values="page-title:editDictionaryPageTitle">
+          </settings-subheader>
+          <settings-edit-dictionary-page></settings-edit-dictionary-page>
+        </neon-animatable>
 </if>
-    </settings-animated-pages>
+      </settings-animated-pages>
+    </div>
   </template>
   <script src="languages_page.js"></script>
 </dom-module>

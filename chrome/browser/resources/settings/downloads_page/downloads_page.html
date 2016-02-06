@@ -9,27 +9,29 @@
       href="chrome://md-settings/settings_shared.css">
   <link rel="import" type="css" href="downloads_page.css">
   <template>
-    <div class="settings-box first">
-      <div class="start">
-        <settings-input id="downloadsPath" always-flow-label readonly
-            i18n-values="label:downloadLocation"
-            pref="{{prefs.download.default_directory}}"
-            aria-labelledby="locationLabel">
-        </settings-input>
+    <div class="settings-card">
+      <div class="settings-box first">
+        <div class="start">
+          <settings-input id="downloadsPath" always-flow-label readonly
+              i18n-values="label:downloadLocation"
+              pref="{{prefs.download.default_directory}}"
+              aria-labelledby="locationLabel">
+          </settings-input>
+        </div>
+        <paper-button id="changeDownloadsPath" on-tap="selectDownloadLocation_"
+            i18n-content="changeDownloadLocation">
+        </paper-button>
       </div>
-      <paper-button id="changeDownloadsPath" on-tap="selectDownloadLocation_"
-          i18n-content="changeDownloadLocation">
-      </paper-button>
-    </div>
-    <div class="settings-box block">
-      <settings-checkbox pref="{{prefs.download.prompt_for_download}}"
-          i18n-values="label:promptForDownload">
-      </settings-checkbox>
+      <div class="settings-box block">
+        <settings-checkbox pref="{{prefs.download.prompt_for_download}}"
+            i18n-values="label:promptForDownload">
+        </settings-checkbox>
 <if expr="chromeos">
-      <settings-checkbox pref="{{prefs.gdata.disabled}}"
-          i18n-values="label:disconnectGoogleDriveAccount">
-      </settings-checkbox>
+        <settings-checkbox pref="{{prefs.gdata.disabled}}"
+            i18n-values="label:disconnectGoogleDriveAccount">
+        </settings-checkbox>
 </if>
+      </div>
     </div>
   </template>
   <script src="downloads_page.js"></script>

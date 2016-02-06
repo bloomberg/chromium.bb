@@ -93,6 +93,10 @@ span ~ a {
   text-transform: none;
 }
 
+.settings-card {
+  padding: 8px 0;
+}
+
 .settings-box {
   @apply(--layout-center);
   border-top: 1px solid #e0e0e0;

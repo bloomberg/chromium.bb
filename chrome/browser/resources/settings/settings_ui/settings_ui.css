@@ -8,21 +8,21 @@
   @apply(--paper-font-body1);
   -webkit-user-select: none;
   background-color: #eceff1;
-  color: rgba(0, 0, 0, .87);
 }
 
 paper-toolbar {
   @apply(--shadow-elevation-4dp);
-  background-color: rgb(63, 85, 102);
+  background-color: rgb(52, 73, 94);
+  height: 56px;
   position: relative;
   z-index: 10;
 }
 
 paper-drawer-panel {
-  @apply(--layout-flex);
+  @apply(--layout-center);
   --paper-drawer-panel-left-drawer-container: {
-    background-color: #f2f2f2;
-    margin-top: 34px;
+    background-color: rgb(236, 239, 241);
+    margin-top: 8px;
   };
   position: relative;
 }

@@ -5,67 +5,69 @@
 <dom-module id="settings-a11y-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <template>
-    <div class="settings-box row first">
-      <span i18n-content="a11yExplanation"></span>
-      <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
-          target="_blank"></a>
-    </div>
-
-    <div class="settings-box block">
-      <settings-checkbox i18n-values="label:optionsInMenuLabel"
-          pref="{{prefs.settings.a11y.enable_menu}}">
-      </settings-checkbox>
-      <settings-checkbox i18n-values="label:largeMouseCursorLabel"
-          pref="{{prefs.settings.a11y.large_cursor_enabled}}">
-      </settings-checkbox>
-      <settings-checkbox i18n-values="label:highContrastLabel"
-          pref="{{prefs.settings.a11y.high_contrast_enabled}}">
-      </settings-checkbox>
-      <settings-checkbox
-          pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
-          i18n-values="label:stickyKeysLabel">
-      </settings-checkbox>
-      <settings-checkbox pref="{{prefs.settings.accessibility}}"
-          i18n-values="label:chromeVoxLabel">
-      </settings-checkbox>
-      <settings-checkbox i18n-values="label:screenMagnifierLabel"
-          pref="{{prefs.settings.a11y.screen_magnifier}}">
-      </settings-checkbox>
-      <settings-checkbox i18n-values="label:tapDraggingLabel"
-          pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
-      </settings-checkbox>
-      <settings-checkbox i18n-values="label:clickOnStopLabel"
-          pref="{{prefs.settings.a11y.autoclick}}">
-      </settings-checkbox>
-
-      <div class="list-frame">
-        <div class="list-item">
-          <div i18n-content="delayBeforeClickLabel"></div>
-          <select
-              value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
-            <option value="200" i18n-content="delayBeforeClickExtremelyShort">
-            </option>
-            <option value="400" i18n-content="delayBeforeClickVeryShort">
-            </option>
-            <option value="600" i18n-content="delayBeforeClickShort">
-            </option>
-            <option value="800" i18n-content="delayBeforeClickLong">
-            </option>
-            <option value="1000" i18n-content="delayBeforeClickVeryLong">
-            </option>
-          </select>
-        </div>
+    <div class="settings-card">
+      <div class="settings-box row first">
+        <span i18n-content="a11yExplanation"></span>
+        <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
+            target="_blank"></a>
       </div>
 
-      <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
-          i18n-values="label:onScreenKeyboardLabel">
-      </settings-checkbox>
-    </div>
+      <div class="settings-box block">
+        <settings-checkbox i18n-values="label:optionsInMenuLabel"
+            pref="{{prefs.settings.a11y.enable_menu}}">
+        </settings-checkbox>
+        <settings-checkbox i18n-values="label:largeMouseCursorLabel"
+            pref="{{prefs.settings.a11y.large_cursor_enabled}}">
+        </settings-checkbox>
+        <settings-checkbox i18n-values="label:highContrastLabel"
+            pref="{{prefs.settings.a11y.high_contrast_enabled}}">
+        </settings-checkbox>
+        <settings-checkbox
+            pref="{{prefs.settings.a11y.sticky_keys_enabled}}"
+            i18n-values="label:stickyKeysLabel">
+        </settings-checkbox>
+        <settings-checkbox pref="{{prefs.settings.accessibility}}"
+            i18n-values="label:chromeVoxLabel">
+        </settings-checkbox>
+        <settings-checkbox i18n-values="label:screenMagnifierLabel"
+            pref="{{prefs.settings.a11y.screen_magnifier}}">
+        </settings-checkbox>
+        <settings-checkbox i18n-values="label:tapDraggingLabel"
+            pref="{{prefs.settings.touchpad.enable_tap_dragging}}">
+        </settings-checkbox>
+        <settings-checkbox i18n-values="label:clickOnStopLabel"
+            pref="{{prefs.settings.a11y.autoclick}}">
+        </settings-checkbox>
 
-    <div class="settings-box">
-      <div class="button-strip">
-        <paper-button i18n-content="moreFeaturesLink"
-            on-tap="onMoreFeaturesTap_"></paper-button>
+        <div class="list-frame">
+          <div class="list-item">
+            <div i18n-content="delayBeforeClickLabel"></div>
+            <select
+                value="{{prefs.settings.a11y.autoclick_delay_ms::change}}">
+              <option value="200" i18n-content="delayBeforeClickExtremelyShort">
+              </option>
+              <option value="400" i18n-content="delayBeforeClickVeryShort">
+              </option>
+              <option value="600" i18n-content="delayBeforeClickShort">
+              </option>
+              <option value="800" i18n-content="delayBeforeClickLong">
+              </option>
+              <option value="1000" i18n-content="delayBeforeClickVeryLong">
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
+            i18n-values="label:onScreenKeyboardLabel">
+        </settings-checkbox>
+      </div>
+
+      <div class="settings-box">
+        <div class="button-strip">
+          <paper-button i18n-content="moreFeaturesLink"
+              on-tap="onMoreFeaturesTap_"></paper-button>
+        </div>
       </div>
     </div>
   </template>

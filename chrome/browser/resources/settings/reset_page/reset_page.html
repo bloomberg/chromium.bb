@@ -8,22 +8,24 @@
 <dom-module id="settings-reset-page">
   <link rel="import" type="css" href="chrome://md-settings/settings_shared.css">
   <template>
-    <div class="settings-box first two-line" id="resetProfile"
-        on-tap="onShowResetProfileDialog_">
-      <div>
-        <div i18n-content="resetPageTitle"></div>
-        <div class="secondary" i18n-content="resetPageDescription"></div>
+    <div class="settings-card">
+      <div class="settings-box first two-line" id="resetProfile"
+          on-tap="onShowResetProfileDialog_">
+        <div>
+          <div i18n-content="resetPageTitle"></div>
+          <div class="secondary" i18n-content="resetPageDescription"></div>
+        </div>
       </div>
-    </div>
 <if expr="chromeos">
-    <div class="settings-box two-line" id="powerwash"
-        on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
-      <div>
-        <div i18n-content="powerwashTitle"></div>
-        <div class="secondary" i18n-content="powerwashDescription"></div>
+      <div class="settings-box two-line" id="powerwash"
+          on-tap="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">
+        <div>
+          <div i18n-content="powerwashTitle"></div>
+          <div class="secondary" i18n-content="powerwashDescription"></div>
+        </div>
       </div>
-    </div>
 </if>
+    </div>
   </template>
   <script src="chrome://md-settings/reset_page/reset_page.js"></script>
 </dom-module>
