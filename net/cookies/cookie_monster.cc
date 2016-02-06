@@ -934,6 +934,11 @@ void CookieMonster::FlushStore(const base::Closure& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
+void CookieMonster::SetForceKeepSessionState() {
+  if (store_)
+    store_->SetForceKeepSessionState();
+}
+
 void CookieMonster::SetAllCookiesAsync(const CookieList& list,
                                        const SetCookiesCallback& callback) {
   scoped_refptr<SetAllCookiesTask> task =
@@ -1045,12 +1050,6 @@ void CookieMonster::SetCookieableSchemes(
 
 void CookieMonster::SetKeepExpiredCookies() {
   keep_expired_cookies_ = true;
-}
-
-void CookieMonster::SetForceKeepSessionState() {
-  if (store_.get()) {
-    store_->SetForceKeepSessionState();
-  }
 }
 
 // This function must be called before the CookieMonster is used.

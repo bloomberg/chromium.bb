@@ -16,4 +16,8 @@ void CookieStore::DeleteAllAsync(const DeleteCallback& callback) {
   DeleteAllCreatedBetweenAsync(base::Time(), base::Time::Max(), callback);
 }
 
+void CookieStore::SetForceKeepSessionState() {
+  // By default, do nothing.
+}
+
 }  // namespace net

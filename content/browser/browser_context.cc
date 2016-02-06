@@ -22,7 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/site_instance.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/channel_id_store.h"
@@ -78,8 +77,7 @@ void SaveSessionStateOnIOThread(
     const scoped_refptr<net::URLRequestContextGetter>& context_getter,
     AppCacheServiceImpl* appcache_service) {
   net::URLRequestContext* context = context_getter->GetURLRequestContext();
-  context->cookie_store()->GetCookieMonster()->
-      SetForceKeepSessionState();
+  context->cookie_store()->SetForceKeepSessionState();
   context->channel_id_service()->GetChannelIDStore()->
       SetForceKeepSessionState();
   appcache_service->set_force_keep_session_state();

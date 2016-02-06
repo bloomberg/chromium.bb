@@ -155,6 +155,11 @@ class NET_EXPORT CookieStore : public base::RefCountedThreadSafe<CookieStore> {
   // https://crbug.com/46185
   virtual void FlushStore(const base::Closure& callback) = 0;
 
+  // Protects session cookies from deletion on shutdown, if the underlying
+  // CookieStore implemention is currently configured to store them to disk.
+  // Otherwise, does nothing.
+  virtual void SetForceKeepSessionState();
+
   // Returns the underlying CookieMonster.
   virtual CookieMonster* GetCookieMonster() = 0;
 

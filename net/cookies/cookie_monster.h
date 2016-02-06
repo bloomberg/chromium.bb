@@ -200,6 +200,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
       const DeleteCallback& callback) override;
   void DeleteSessionCookiesAsync(const DeleteCallback&) override;
   void FlushStore(const base::Closure& callback) override;
+  void SetForceKeepSessionState() override;
 
   CookieMonster* GetCookieMonster() override;
 
@@ -212,9 +213,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   // in cases where the cookie monster is used as a data structure to keep
   // arbitrary cookies.
   void SetKeepExpiredCookies();
-
-  // Protects session cookies from deletion on shutdown.
-  void SetForceKeepSessionState();
 
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
