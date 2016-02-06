@@ -354,36 +354,7 @@ def GetInstallerName():
 
 
 def InstallUniversalCRTIfNeeded(abs_target_dir):
-  installer_name = GetInstallerName()
-  if not installer_name:
-    return
-
-  bitness = platform.architecture()[0]
-  # When running 64-bit python the x64 DLLs will be in System32
-  x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-  x64_path = os.path.join(r'C:\Windows', x64_path)
-  sample_crt_file = os.path.join(x64_path, 'ucrtbase.dll')
-
-  if os.path.exists(sample_crt_file):
-    # Nothing to do.
-    return
-
-  print ('%s does not exist - installing Windows 10 Universal C Runtime' %
-         sample_crt_file)
-
-  installer = os.path.join(abs_target_dir, "installers", installer_name)
-  command = r'wusa.exe /quiet "%s"' % installer
-  print 'Running %s' % command
-
-  try:
-    subprocess.check_call(command)
-  # Trap OSError instead of WindowsError so pylint will succeed on Linux.
-  except OSError as e:
-    if e.winerror == 740: # The requested operation requires elevation
-      print 'Elevation required. You can manually install this update:'
-      print '  %s' % installer
-      return
-    raise e
+  return
 
 
 def main():
