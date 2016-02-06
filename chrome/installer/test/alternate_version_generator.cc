@@ -425,7 +425,8 @@ bool UpdateManifestVersion(const base::FilePath& manifest,
     return false;
   }
   DCHECK(modified);
-  int written = base::WriteFile(manifest, &contents[0], contents.size());
+  int written = base::WriteFile(manifest, &contents[0],
+                                static_cast<int>(contents.size()));
   return written != -1 && static_cast<size_t>(written) == contents.size();
 }
 

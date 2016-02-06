@@ -335,11 +335,9 @@ if (is_win) {
       "//base:i18n",
       "//base/test:test_support",
       "//chrome:other_version",
-      "//chrome/common",
       "//chrome/installer/setup:lib",
       "//chrome/installer/test:alternate_version_generator_lib",
       "//components/variations",
-      "//content/public/common",
       "//testing/gmock",
       "//testing/gtest",
     ]
