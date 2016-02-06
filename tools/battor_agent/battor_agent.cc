@@ -150,6 +150,10 @@ void BattOrAgent::OnConnectionOpened(bool success) {
 
   switch (command_) {
     case Command::START_TRACING:
+      // TODO(charliea): Ideally, we'd just like to send an init, and the BattOr
+      // firmware can handle whether a reset is necessary or not, sending an
+      // init ack regardless. This reset can be removed once this is true.
+      // https://github.com/aschulm/battor/issues/30 tracks this.
       PerformAction(Action::SEND_RESET);
       return;
     case Command::STOP_TRACING:
