@@ -62,6 +62,6 @@ FAIL classList.add should treat \r as a space assert_equals: expected "a b" but 
 FAIL classList.add should treat \n as a space assert_equals: expected "a b" but got "a\nb"
 FAIL classList.add should treat \f as a space assert_equals: expected "a b" but got "a\fb"
 PASS classList.length must be read-only 
-PASS classList must be read-only 
+FAIL classList must have [PutForwards=value] assert_equals: expected 2 but got 1
 Harness: the test ran to completion.
 

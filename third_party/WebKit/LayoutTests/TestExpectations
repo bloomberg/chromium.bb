@@ -466,6 +466,7 @@ crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
 crbug.com/490511 imported/web-platform-tests/html/browsers/history/the-location-interface/location_assign.html [ Timeout ]
+crbug.com/490511 imported/web-platform-tests/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/526898 imported/web-platform-tests/html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-x.xhtml [ Failure ]
 crbug.com/108417 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
 crbug.com/525872 imported/web-platform-tests/html/rendering/non-replaced-elements/tables/table-border-2.html [ Failure ]
@@ -552,11 +553,6 @@ crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
 crbug.com/505364 imported/web-platform-tests/custom-elements/instantiating-custom-elements/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
-
-crbug.com/517836 imported/web-platform-tests/screen-orientation/lock-bad-argument.html [ Failure ]
-crbug.com/517836 imported/web-platform-tests/screen-orientation/orientation-reading.html [ Failure ]
-crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event-subframe.html [ Failure Timeout ]
-crbug.com/517836 imported/web-platform-tests/screen-orientation/onchange-event.html [ Failure Timeout ]
 
 crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 

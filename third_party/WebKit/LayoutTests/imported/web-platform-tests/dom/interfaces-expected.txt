@@ -607,7 +607,7 @@ PASS Element interface: attribute localName
 PASS Element interface: attribute tagName 
 PASS Element interface: attribute id 
 PASS Element interface: attribute className 
-PASS Element interface: attribute classList 
+FAIL Element interface: attribute classList assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
 PASS Element interface: operation hasAttributes() 
 PASS Element interface: attribute attributes 
 PASS Element interface: operation getAttribute(DOMString) 
@@ -1341,6 +1341,9 @@ PASS DOMTokenList interface: operation contains(DOMString)
 PASS DOMTokenList interface: operation add(DOMString) 
 PASS DOMTokenList interface: operation remove(DOMString) 
 PASS DOMTokenList interface: operation toggle(DOMString,boolean) 
+FAIL DOMTokenList interface: operation replace(DOMString,DOMString) assert_own_property: interface prototype object missing non-static operation expected property "replace" missing
+PASS DOMTokenList interface: operation supports(DOMString) 
+FAIL DOMTokenList interface: attribute value assert_true: The prototype object must have a property "value" expected true got false
 FAIL DOMTokenList interface: stringifier assert_true: property is not enumerable expected true got false
 PASS DOMTokenList must be primary interface of document.body.classList 
 PASS Stringification of document.body.classList 
@@ -1355,11 +1358,10 @@ PASS DOMTokenList interface: document.body.classList must inherit property "remo
 PASS DOMTokenList interface: calling remove(DOMString) on document.body.classList with too few arguments must throw TypeError 
 PASS DOMTokenList interface: document.body.classList must inherit property "toggle" with the proper type (5) 
 PASS DOMTokenList interface: calling toggle(DOMString,boolean) on document.body.classList with too few arguments must throw TypeError 
-PASS DOMSettableTokenList interface: existence and properties of interface object 
-PASS DOMSettableTokenList interface object length 
-PASS DOMSettableTokenList interface object name 
-FAIL DOMSettableTokenList interface: existence and properties of interface prototype object assert_equals: class string of DOMSettableTokenList.prototype expected "[object DOMSettableTokenListPrototype]" but got "[object Object]"
-PASS DOMSettableTokenList interface: existence and properties of interface prototype object's "constructor" property 
-PASS DOMSettableTokenList interface: attribute value 
+FAIL DOMTokenList interface: document.body.classList must inherit property "replace" with the proper type (6) assert_inherits: property "replace" not found in prototype chain
+FAIL DOMTokenList interface: calling replace(DOMString,DOMString) on document.body.classList with too few arguments must throw TypeError assert_inherits: property "replace" not found in prototype chain
+PASS DOMTokenList interface: document.body.classList must inherit property "supports" with the proper type (7) 
+PASS DOMTokenList interface: calling supports(DOMString) on document.body.classList with too few arguments must throw TypeError 
+FAIL DOMTokenList interface: document.body.classList must inherit property "value" with the proper type (8) assert_inherits: property "value" not found in prototype chain
 Harness: the test ran to completion.
 

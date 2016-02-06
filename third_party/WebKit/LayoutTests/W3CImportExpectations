@@ -191,6 +191,7 @@ imported/web-platform-tests/resources/docs [ Skip ]
 imported/web-platform-tests/resources/examples [ Skip ]
 imported/web-platform-tests/resources/webidl2/README.md [ Skip ]
 imported/web-platform-tests/resources/webidl2/test [ Skip ]
+imported/web-platform-tests/screen-orientation [ Skip ]
 imported/web-platform-tests/selection [ Skip ]
 imported/web-platform-tests/selectors [ Skip ]
 imported/web-platform-tests/selectors-api [ Skip ]
@@ -201,6 +202,7 @@ imported/web-platform-tests/service-workers [ Skip ]
 ## Owners: kochi@chromium.org crbug.com/505364
 # imported/web-platform-tests/shadow-dom [ Pass ]
 ## Owners: jww@chromium.org
+imported/web-platform-tests/streams [ Skip ]
 imported/web-platform-tests/subresource-integrity [ Skip ]
 imported/web-platform-tests/svg [ Skip ]
 imported/web-platform-tests/tools [ Skip ]
@@ -223,6 +225,23 @@ imported/web-platform-tests/websockets [ Skip ]
 # imported/web-platform-tests/webstorage [ Pass ]
 imported/web-platform-tests/webvtt [ Skip ]
 imported/web-platform-tests/workers [ Skip ]
+
+# Skip OWNERS files in web-platform-tests. crbug.com/584660
+imported/web-platform-tests/user-timing/OWNERS [ Skip ]
+imported/web-platform-tests/custom-elements/OWNERS [ Skip ]
+imported/web-platform-tests/gamepad/OWNERS [ Skip ]
+imported/web-platform-tests/FileAPI/OWNERS [ Skip ]
+imported/web-platform-tests/html/OWNERS [ Skip ]
+imported/web-platform-tests/webrtc/OWNERS [ Skip ]
+imported/web-platform-tests/html-imports/OWNERS [ Skip ]
+imported/web-platform-tests/IndexedDB/OWNERS [ Skip ]
+imported/web-platform-tests/dom/OWNERS [ Skip ]
+imported/web-platform-tests/shadow-dom/OWNERS [ Skip ]
+imported/web-platform-tests/encoding/OWNERS [ Skip ]
+imported/web-platform-tests/hr-time/OWNERS [ Skip ]
+imported/web-platform-tests/pointerevents/OWNERS [ Skip ]
+imported/web-platform-tests/webstorage/OWNERS [ Skip ]
+imported/web-platform-tests/mediacapture-streams/OWNERS [ Skip ]
 
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
@@ -429,6 +448,7 @@ imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-
 imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_multiple.html [ Skip ]
 imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-handler.html [ Skip ]
 imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html [ Skip ]
+imported/web-platform-tests/html/semantics/forms/the-button-element/button-activate.html [ Skip ]
 imported/web-platform-tests/html/webappapis/scripting/events/onerroreventhandler.html [ Skip ]
 
 # crbug.com/493537: Need to support SVG reference tests

@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL <img src="//["> assert_equals: expected "//[" but got ""
+FAIL <img srcset="//["> assert_equals: expected "//[" but got ""
+FAIL <img srcset="//[" src="/images/red.png"> assert_equals: expected "//[" but got ""
+FAIL <img srcset="//[, /images/red.png"> assert_equals: expected "//[" but got ""
+Harness: the test ran to completion.
+
