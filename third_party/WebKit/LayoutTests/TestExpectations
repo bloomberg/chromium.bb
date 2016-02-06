@@ -1123,6 +1123,9 @@ crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/short-scrollba
 crbug.com/443596 media/sources-fallback-codecs.html [ Pass Failure ]
 
 crbug.com/464736 http/tests/xmlhttprequest/ontimeout-event-override-after-failure.html [ Pass Failure ]
+crbug.com/582363 [ Mac10.10 ] tables/mozilla/bugs/bug46368-1.html [ NeedsRebaseline ]
+crbug.com/582363 [ Mac10.10 ] tables/mozilla/bugs/bug46368-2.html [ NeedsRebaseline ]
+crbug.com/582363 [ Mac10.10 ] tables/mozilla/dom/tableDom.html [ NeedsRebaseline ]
 
 crbug.com/521730 [ Win10 ] plugins/windowless_plugin_paint_test.html [ Crash ]
 
