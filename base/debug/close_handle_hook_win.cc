@@ -17,7 +17,6 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/pe_image.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 
 namespace {
@@ -260,19 +259,12 @@ void PatchLoadedModules(HandleHooks* hooks) {
 }  // namespace
 
 void InstallHandleHooks() {
-#if !defined(DISABLE_HANDLE_VERIFIER_HOOKS)
-#if defined(_DEBUG)
-  // Handle hooks cause shutdown asserts in Debug on Windows 7. crbug.com/571304
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return;
-#endif
   HandleHooks* hooks = g_hooks.Pointer();
 
   // Performing EAT interception first is safer in the presence of other
   // threads attempting to call CloseHandle.
   hooks->AddEATPatch();
   PatchLoadedModules(hooks);
-#endif
 }
 
 void RemoveHandleHooks() {

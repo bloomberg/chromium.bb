@@ -194,7 +194,7 @@ bool IsSandboxedProcess() {
   return is_sandboxed_process_func && is_sandboxed_process_func();
 }
 
-bool UseHandleVerifier() {
+bool UseHooks() {
 #if defined(ARCH_CPU_X86_64)
   return false;
 #elif defined(NDEBUG)
@@ -519,7 +519,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     return true;
   }
 
-  if (UseHandleVerifier())
+  if (UseHooks())
     base::debug::InstallHandleHooks();
   else
     base::win::DisableHandleVerifier();

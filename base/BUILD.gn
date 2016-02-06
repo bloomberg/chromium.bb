@@ -24,12 +24,6 @@ import("//build/config/ui.gni")
 import("//build/nocompile.gni")
 import("//testing/test.gni")
 
-declare_args() {
-  # Whether to disable the handle verifier hooks.
-  # Hookless parts of the handle verifier will still function.
-  win_disable_handle_verifier_hooks = false
-}
-
 if (is_android) {
   import("//build/config/android/rules.gni")
 }
@@ -1119,10 +1113,6 @@ component("base") {
 
     deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
 
-    if (is_win && win_disable_handle_verifier_hooks) {
-      defines += [ "DISABLE_HANDLE_VERIFIER_HOOKS" ]
-    }
-
     if (is_component_build) {
       # Copy the VS runtime DLLs into the isolate so that they don't have to be
       # preinstalled on the target machine. The debug runtimes have a "d" at
@@ -1882,11 +1872,6 @@ test("base_unittests") {
     } else if (is_mac) {
       data += [ "$root_out_dir/base_unittests.dSYM/" ]
     }
-  }
-
-  # This disables one of the handle verifier tests.
-  if (is_win && win_disable_handle_verifier_hooks) {
-    defines = [ "DISABLE_HANDLE_VERIFIER_HOOKS" ]
   }
 }
 
