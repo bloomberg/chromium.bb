@@ -15,6 +15,7 @@
 #include "platform/blob/BlobData.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
+#include <algorithm>
 
 namespace blink {
 
@@ -49,38 +50,33 @@ String stateToString(MediaRecorder::State state)
 // here a 90%/10% video/audio is used. In all cases where a value is explicited
 // or calculated, values are clamped in sane ranges.
 // This method throws NotSupportedError.
-void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionContext* context, const MediaRecorderOptions& options, MediaStream* stream, int32_t* audioBitsPerSecond, int32_t* videoBitsPerSecond)
+void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionContext* context, const MediaRecorderOptions& options, MediaStream* stream, int* audioBitsPerSecond, int* videoBitsPerSecond)
 {
-    // Throw if any value would overflow an int32_t.
-    // TODO(mcasas): This section would no be needed if the bit rates are signed, see https://github.com/w3c/mediacapture-record/issues/48.
-    const uint32_t kInt32MaxValueAsULong = std::numeric_limits<int32_t>::max();
-    if (options.bitsPerSecond() >= kInt32MaxValueAsULong) {
-        exceptionState.throwDOMException(NotSupportedError, "Overall bit rate too large " + String::number(options.bitsPerSecond()) + "bps)");
-        return;
-    }
-    if (options.bitsPerSecond() == 0) {
-        if (options.videoBitsPerSecond() >= kInt32MaxValueAsULong) {
-            exceptionState.throwDOMException(NotSupportedError, "Video bit rate too large " + String::number(options.videoBitsPerSecond()) + "bps)");
-            return;
-        }
-        if (options.audioBitsPerSecond() >= kInt32MaxValueAsULong) {
-            exceptionState.throwDOMException(NotSupportedError, "Audio bit rate too large " + String::number(options.audioBitsPerSecond()) + "bps)");
-            return;
-        }
-    }
+    // Clamp incoming values into a signed integer's range.
+    // TODO(mcasas): This section would no be needed if the bit rates are signed or double, see https://github.com/w3c/mediacapture-record/issues/48.
+    const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
 
-    int32_t videoBps = options.videoBitsPerSecond();
-    int32_t audioBps = options.audioBitsPerSecond();
-    bool useVideo = stream->getVideoTracks().size() > 0;
-    bool useAudio = stream->getAudioTracks().size() > 0;
+    ASSERT(options.bitsPerSecond() >= 0);
+    ASSERT(options.bitsPerSecond() < kMaxIntAsUnsigned);
+    const int overallBps = std::min(options.bitsPerSecond(), kMaxIntAsUnsigned);
+
+    // If options.hasBitsPerSecond() is not present, assert than the individual |{video,audio}BitsPerSecond| are smaller than the maximum.
+    ASSERT(!options.hasBitsPerSecond() || options.videoBitsPerSecond() < kMaxIntAsUnsigned);
+    int videoBps = std::min(options.videoBitsPerSecond(), kMaxIntAsUnsigned);
+
+    ASSERT(!options.hasBitsPerSecond() || options.audioBitsPerSecond() < kMaxIntAsUnsigned);
+    int audioBps = std::min(options.audioBitsPerSecond(), kMaxIntAsUnsigned);
+
+    const bool useVideo = !stream->getVideoTracks().isEmpty();
+    const bool useAudio = !stream->getAudioTracks().isEmpty();
 
     if (useAudio) {
-        // |options.bitsPerSecond()| overrides the specific audio and video bit rates.
-        if (options.bitsPerSecond()) {
+        // |overallBps| overrides the specific audio and video bit rates.
+        if (overallBps) {
             if (useVideo)
-                audioBps = options.bitsPerSecond() / 10;
+                audioBps = overallBps / 10;
             else
-                audioBps = options.bitsPerSecond();
+                audioBps = overallBps;
         }
         // Limit audio bitrate values if set explicitly or calculated.
         if (audioBps) {
@@ -98,11 +94,11 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState, ExecutionCont
         audioBps = 0;
     }
     if (useVideo) {
-        // Allocate the remaining overall |options.bitsPerSecond()|, if any, to video.
-        if (options.bitsPerSecond())
-            videoBps = options.bitsPerSecond() - audioBps;
-        // Clamp the video bit rate if the user has set explicitly the video bit rate or has used the overall bitrate.
-        if ((options.videoBitsPerSecond() > 0 || options.bitsPerSecond() > 0) && (videoBps < kSmallestPossibleVpxBitRate)) {
+        // Allocate the remaining |overallBps|, if any, to video.
+        if (overallBps)
+            videoBps = overallBps - audioBps;
+        // Clamp the video bit rate if the user has set it explicitly or has used the overall bitrate.
+        if ((options.videoBitsPerSecond() > 0 || overallBps > 0) && (videoBps < kSmallestPossibleVpxBitRate)) {
             context->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "Clamping calculated video bitrate (" + String::number(videoBps) + "bps) to the minimum (" + String::number(kSmallestPossibleVpxBitRate) + "bps)"));
             videoBps = kSmallestPossibleVpxBitRate;
         }
@@ -140,6 +136,8 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , m_mimeType(options.mimeType())
     , m_stopped(true)
     , m_ignoreMutedMedia(true)
+    , m_audioBitsPerSecond(0)
+    , m_videoBitsPerSecond(0)
     , m_state(State::Inactive)
     , m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaRecorder>::create(this, &MediaRecorder::dispatchScheduledEvent))
 {
@@ -153,12 +151,10 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
         return;
     }
 
-    int32_t audioBitsPerSecond = 0;
-    int32_t videoBitsPerSecond = 0;
-    AllocateVideoAndAudioBitrates(exceptionState, context, options, stream, &audioBitsPerSecond, &videoBitsPerSecond);
+    AllocateVideoAndAudioBitrates(exceptionState, context, options, stream, &m_audioBitsPerSecond, &m_videoBitsPerSecond);
 
     const ContentType contentType(m_mimeType);
-    if (!m_recorderHandler->initialize(this, stream->descriptor(), contentType.type(), contentType.parameter("codecs"), audioBitsPerSecond, videoBitsPerSecond)) {
+    if (!m_recorderHandler->initialize(this, stream->descriptor(), contentType.type(), contentType.parameter("codecs"), m_audioBitsPerSecond, m_videoBitsPerSecond)) {
         exceptionState.throwDOMException(NotSupportedError, "Failed to initialize native MediaRecorder the type provided (" + m_mimeType + ") is not supported.");
         return;
     }

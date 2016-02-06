@@ -67,11 +67,7 @@ gotStream = test.step_func(function(stream) {
                   },
                   "recorder should throw() with unsupported mimeType");
 
-    try {
-        recorder = new MediaRecorder(stream);
-    } catch (e) {
-        assert_unreached('Exception while creating MediaRecorder: ' + e);
-    }
+    recorder = new MediaRecorder(stream);
     assert_equals(recorder.state, "inactive");
 
     assert_throws("InvalidStateError", function() { recorder.stop() },
@@ -94,10 +90,6 @@ gotStream = test.step_func(function(stream) {
     assert_equals(recorder.state, "recording");
 });
 
-try {
-    navigator.webkitGetUserMedia({video:true}, gotStream, recorderOnUnexpectedEvent);
-} catch(e) {
-    assert_unreached('Exception launching getUserMedia(): ' + e);
-}
+navigator.webkitGetUserMedia({video:true}, gotStream, recorderOnUnexpectedEvent);
 
 </script>

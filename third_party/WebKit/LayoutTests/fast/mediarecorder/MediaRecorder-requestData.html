@@ -23,37 +23,30 @@ var checkStreamTracks = function(stream, has_video, has_audio) {
 };
 
 var makeAsyncTest = function(value, expected) {
-    var recorder;
-
-    async_test(function() {
-        const recorderOnDataAvailable = this.step_func_done(function(event) {
+    async_test(function(test) {
+        const recorderOnDataAvailable = test.step_func_done(function(event) {
             assert_equals(event.data.size, 0,
                           'Recorded data size should be == 0');
         });
 
-        const recorderOnStop = this.step_func(function() {
+        const recorderOnStop = test.step_func(function() {
             assert_unreached('Recording stopped.');
         });
 
-        const recorderOnError = this.step_func(function() {
+        const recorderOnError = test.step_func(function() {
             assert_unreached('Recording error.');
         });
 
-        const gotStream = this.step_func_done(function(stream) {
+        const gotStream = test.step_func_done(function(stream) {
             checkStreamTracks(stream, value['video'], value['audio']);
 
-            try {
-                recorder = new MediaRecorder(stream);
-            } catch (e) {
-                assert_unreached('Exception while creating MediaRecorder: ' + e);
-            }
+            var recorder = new MediaRecorder(stream);
 
-            try {
-                recorder.requestData();
-                assert_unreached();
-            } catch (e) {
-                assert_equals(e.name, "InvalidStateError");
-            }
+            assert_throws("InvalidStateError",
+                function() {
+                    recorder.requestData();
+                },
+                "recorder throws InvalidStateError if requestData() while state is not 'recording'");
 
             recorder.ondataavailable = recorderOnDataAvailable;
             recorder.onstop = recorderOnStop;
@@ -64,15 +57,8 @@ var makeAsyncTest = function(value, expected) {
             recorder.requestData();
         });
 
-        const onError = this.step_func(function() {
-            assert_unreached('Error creating MediaRecorder.');
-        });
-
-        try {
-            navigator.webkitGetUserMedia(value, gotStream, onError);
-        } catch(e) {
-            assert_unreached('Exception launching getUserMedia(): ' + e);
-        }
+        const onError = test.unreached_func('Error creating MediaStream.');
+        navigator.webkitGetUserMedia(value, gotStream, onError);
     });
 };
 

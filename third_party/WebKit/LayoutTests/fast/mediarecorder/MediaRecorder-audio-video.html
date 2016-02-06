@@ -25,7 +25,7 @@ var checkStreamTracks = function(stream, has_video, has_audio) {
 var makeAsyncTest = function(value, expected) {
     var recorder;
 
-    async_test(function() {
+    async_test(function(test) {
         const recorderOnDataAvailable = this.step_func(function(event) {
             if (event) {
                 assert_greater_than(event.data.size, 0,
@@ -44,22 +44,13 @@ var makeAsyncTest = function(value, expected) {
 
         const recorderOnStopExpected = this.step_func_done();
 
-        const recorderOnStopUnexpected = this.step_func(function() {
-            assert_unreached('Recording stopped.');
-        });
-
-        const recorderOnError = this.step_func(function() {
-            assert_unreached('Recording error.');
-        });
+        const recorderOnStopUnexpected = test.unreached_func('Recording stopped.');
+        const recorderOnError = test.unreached_func('Recording error.');
 
         const gotStream = this.step_func_done(function(stream) {
             checkStreamTracks(stream, value['video'], value['audio']);
 
-            try {
-                recorder = new MediaRecorder(stream);
-            } catch (e) {
-                assert_unreached('Exception while creating MediaRecorder: ' + e);
-            }
+            recorder = new MediaRecorder(stream);
 
             assert_equals(recorder.state, "inactive");
             recorder.ondataavailable = recorderOnDataAvailable;
@@ -70,15 +61,8 @@ var makeAsyncTest = function(value, expected) {
             assert_equals(recorder.state, "recording");
         });
 
-        const onError = this.step_func(function() {
-            assert_unreached('Error creating MediaRecorder.');
-        });
-
-        try {
-            navigator.webkitGetUserMedia(value, gotStream, onError);
-        } catch(e) {
-            assert_unreached('Exception launching getUserMedia(): ' + e);
-        }
+        const onError = test.unreached_func('Error creating MediaStream.');
+        navigator.webkitGetUserMedia(value, gotStream, onError);
     });
 };
 

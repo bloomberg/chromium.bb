@@ -8,29 +8,20 @@
 // _not_ started in this test, see MediaRecorder-basic-video.html for it.
 
 function makeAsyncTest(constraints, verifyStream, message) {
-    return async_test(function(test) {
+    async_test(function(test) {
 
-        var gotStream = test.step_func(function(stream) {
+        const gotStream = test.step_func(function(stream) {
             verifyStream(stream);
 
-            try {
-                recorder = new MediaRecorder(stream);
-            } catch (e) {
-                assert_unreached('Exception while creating MediaRecorder: ' + e);
-            }
+            var recorder = new MediaRecorder(stream);
             assert_equals(recorder.state, "inactive");
+            assert_equals(recorder.videoBitsPerSecond, 0);
+            assert_equals(recorder.audioBitsPerSecond, 0);
             test.done();
         });
 
-        var onError = test.step_func(function() {
-            assert_unreached('Error creating MediaRecorder.');
-        });
-
-        try {
-            navigator.webkitGetUserMedia(constraints, gotStream, onError);
-        } catch(e) {
-            assert_unreached('Exception launching getUserMedia(): ' + e);
-        }
+        const onError = test.unreached_func('Error creating MediaStream.');
+        navigator.webkitGetUserMedia(constraints, gotStream, onError);
     }, message);
 }
 

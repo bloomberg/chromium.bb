@@ -45,6 +45,8 @@ public:
     String state() const;
     bool ignoreMutedMedia() const { return m_ignoreMutedMedia; }
     void setIgnoreMutedMedia(bool ignoreMutedMedia) { m_ignoreMutedMedia = ignoreMutedMedia; }
+    unsigned long videoBitsPerSecond() const { return m_videoBitsPerSecond; }
+    unsigned long audioBitsPerSecond() const { return m_audioBitsPerSecond; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(stop);
@@ -92,6 +94,8 @@ private:
     String m_mimeType;
     bool m_stopped;
     bool m_ignoreMutedMedia;
+    int m_audioBitsPerSecond;
+    int m_videoBitsPerSecond;
 
     State m_state;
 

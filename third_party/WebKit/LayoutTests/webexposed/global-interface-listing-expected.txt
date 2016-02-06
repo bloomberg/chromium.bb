@@ -3365,6 +3365,7 @@ interface MediaQueryListEvent : Event
     method constructor
 interface MediaRecorder : EventTarget
     static method isTypeSupported
+    getter audioBitsPerSecond
     getter ignoreMutedMedia
     getter mimeType
     getter ondataavailable
@@ -3375,6 +3376,7 @@ interface MediaRecorder : EventTarget
     getter onstop
     getter state
     getter stream
+    getter videoBitsPerSecond
     method constructor
     method pause
     method requestData
