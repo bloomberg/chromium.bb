@@ -89,7 +89,7 @@ class TestContentHandler : public ApplicationDelegate,
   void Initialize(ApplicationImpl* app) override {
     app_ = app;
   }
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<ContentHandler>(this);
     return true;
   }

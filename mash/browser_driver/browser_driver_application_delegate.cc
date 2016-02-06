@@ -55,7 +55,7 @@ void BrowserDriverApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   AddAccelerators();
 }
 
-bool BrowserDriverApplicationDelegate::ConfigureIncomingConnection(
+bool BrowserDriverApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   return true;
 }

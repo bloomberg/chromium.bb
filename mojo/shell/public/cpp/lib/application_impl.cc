@@ -126,7 +126,7 @@ void ApplicationImpl::AcceptConnection(
   scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
       url, requestor_url, requestor_id, std::move(exposed_services),
       std::move(services), allowed_interfaces.To<std::set<std::string>>()));
-  if (!delegate_->ConfigureIncomingConnection(registry.get()))
+  if (!delegate_->AcceptConnection(registry.get()))
     return;
 
   // If we were quitting because we thought there were no more services for this
@@ -153,7 +153,7 @@ void ApplicationImpl::OnConnectionError() {
   // shell connection errors other than immediate termination of the run
   // loop. The application might want to continue servicing connections other
   // than the one to the shell.
-  bool quit_now = delegate_->OnShellConnectionError();
+  bool quit_now = delegate_->ShellConnectionLost();
   if (quit_now)
     QuitNow();
   if (!ptr)

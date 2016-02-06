@@ -36,9 +36,9 @@ class FileSystemApp : public mojo::ApplicationDelegate,
 
   // |ApplicationDelegate| override:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
-  bool OnShellConnectionError() override;
+  bool ShellConnectionLost() override;
 
   // |InterfaceFactory<Files>| implementation:
   void Create(mojo::ApplicationConnection* connection,

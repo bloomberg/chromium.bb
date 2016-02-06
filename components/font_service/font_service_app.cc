@@ -62,7 +62,7 @@ void FontServiceApp::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool FontServiceApp::ConfigureIncomingConnection(
+bool FontServiceApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService(this);
   return true;

@@ -27,7 +27,7 @@ class UpdaterApp : public mojo::ApplicationDelegate,
   void Initialize(mojo::ApplicationImpl* app) override;
 
   // mojo::ApplicationDelegate:
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // InterfaceFactory<Updater> implementation.

@@ -48,7 +48,7 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
 
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   void OnHTMLDocumentDeleted2(HTMLDocument* document);

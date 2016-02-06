@@ -22,7 +22,7 @@ void FileSystemApp::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool FileSystemApp::ConfigureIncomingConnection(
+bool FileSystemApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<FileSystem>(this);
   return true;
@@ -37,7 +37,7 @@ void FileSystemApp::RegisterDirectoryToClient(DirectoryImpl* directory,
   client_mapping_.emplace_back(directory, std::move(client));
 }
 
-bool FileSystemApp::OnShellConnectionError() {
+bool FileSystemApp::ShellConnectionLost() {
   if (client_mapping_.empty()) {
     // If we have no current connections, we can shutdown immediately.
     return true;

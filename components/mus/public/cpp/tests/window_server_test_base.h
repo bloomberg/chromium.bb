@@ -67,7 +67,7 @@ class WindowServerTestBase
   mojo::ApplicationDelegate* GetApplicationDelegate() override;
 
   // ApplicationDelegate:
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // WindowTreeDelegate:

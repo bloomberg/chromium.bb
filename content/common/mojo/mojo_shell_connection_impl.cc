@@ -76,11 +76,11 @@ void MojoShellConnectionImpl::Initialize(mojo::ApplicationImpl* application) {
   initialized_ = true;
 }
 
-bool MojoShellConnectionImpl::ConfigureIncomingConnection(
+bool MojoShellConnectionImpl::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   bool found = false;
   for (auto listener : listeners_)
-    found |= listener->ConfigureIncomingConnection(connection);
+    found |= listener->AcceptConnection(connection);
   return found;
 }
 

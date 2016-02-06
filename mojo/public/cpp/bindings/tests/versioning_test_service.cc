@@ -101,7 +101,7 @@ class HumanResourceSystemServer
   HumanResourceSystemServer() {}
 
   // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<HumanResourceDatabase>(this);
     return true;
   }

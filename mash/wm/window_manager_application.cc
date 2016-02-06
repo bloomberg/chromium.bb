@@ -118,7 +118,7 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
       RootWindowController::CreateUsingWindowTreeHost(this));
 }
 
-bool WindowManagerApplication::ConfigureIncomingConnection(
+bool WindowManagerApplication::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mash::wm::mojom::UserWindowController>(this);
   connection->AddService<mus::mojom::AcceleratorRegistrar>(this);

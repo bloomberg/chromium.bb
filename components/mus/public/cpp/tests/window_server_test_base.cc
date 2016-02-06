@@ -75,7 +75,7 @@ mojo::ApplicationDelegate* WindowServerTestBase::GetApplicationDelegate() {
   return this;
 }
 
-bool WindowServerTestBase::ConfigureIncomingConnection(
+bool WindowServerTestBase::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mojom::WindowTreeClient>(this);
   return true;

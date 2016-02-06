@@ -47,7 +47,7 @@ class BrowserManager : public mojo::ApplicationDelegate,
 
   // Overridden from mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:

@@ -35,8 +35,7 @@ class DevicesApp : public mojo::ApplicationDelegate,
 
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::ApplicationConnection* connection) override;
   void Quit() override;
 
   // mojo::InterfaceFactory<usb::DeviceManager>:

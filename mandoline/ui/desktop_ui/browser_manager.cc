@@ -68,7 +68,7 @@ void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
     CreateBrowser(GURL(kGoogleURL));
 }
 
-bool BrowserManager::ConfigureIncomingConnection(
+bool BrowserManager::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<LaunchHandler>(this);
   return true;

@@ -14,12 +14,11 @@ ApplicationDelegate::~ApplicationDelegate() {
 void ApplicationDelegate::Initialize(ApplicationImpl* app) {
 }
 
-bool ApplicationDelegate::ConfigureIncomingConnection(
-    ApplicationConnection* connection) {
+bool ApplicationDelegate::AcceptConnection(ApplicationConnection* connection) {
   return true;
 }
 
-bool ApplicationDelegate::OnShellConnectionError() {
+bool ApplicationDelegate::ShellConnectionLost() {
   return true;
 }
 

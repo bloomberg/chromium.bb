@@ -34,7 +34,7 @@ class ShellApplicationDelegate
  private:
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // mash::shell::mojom::Shell:

@@ -102,7 +102,7 @@ void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool CoreServicesApplicationDelegate::ConfigureIncomingConnection(
+bool CoreServicesApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService(this);
   return true;

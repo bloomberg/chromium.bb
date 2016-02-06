@@ -53,7 +53,7 @@ class ProvidedApplicationDelegate
  private:
   // ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {}
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
     return true;
   }
@@ -99,7 +99,7 @@ class ApplicationPackageApptestDelegate
  private:
   // ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override {}
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<ContentHandler>(this);
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
     return true;

@@ -26,7 +26,7 @@ void TestRequestTrackerApplication::Initialize(ApplicationImpl* app) {
   app_impl_ = app;
 }
 
-bool TestRequestTrackerApplication::ConfigureIncomingConnection(
+bool TestRequestTrackerApplication::AcceptConnection(
     ApplicationConnection* connection) {
   // Every instance of the service and recorder shares the context.
   // Note, this app is single-threaded, so this is thread safe.

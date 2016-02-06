@@ -288,7 +288,7 @@ class PDFViewerApplicationDelegate
   }
 
   // ApplicationDelegate:
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mus::mojom::WindowTreeClient>(this);
     return true;
@@ -355,7 +355,7 @@ class PDFViewer : public mojo::ApplicationDelegate,
     tracing_.Initialize(app);
   }
 
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;

@@ -46,8 +46,7 @@ class PingableApp : public mojo::ApplicationDelegate,
   // ApplicationDelegate:
   void Initialize(ApplicationImpl* impl) override { app_url_ = impl->url(); }
 
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::ApplicationConnection* connection) override {
     connection->AddService(this);
     return true;
   }

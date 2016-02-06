@@ -56,7 +56,7 @@ class ConnectionValidator : public ApplicationLoader,
   }
 
   // Overridden from ApplicationDelegate:
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<Validator>(this);
     return true;
   }
@@ -123,7 +123,7 @@ class ServiceApplication : public ApplicationDelegate,
     // directly to the validator application.
     app_->ConnectToService("test:validator", &validator_);
   }
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     AddService<Safe>(connection);
     AddService<Unsafe>(connection);
     return true;
@@ -166,7 +166,7 @@ TestApplication::~TestApplication() {}
 void TestApplication::Initialize(ApplicationImpl* app) {
   app_ = app;
 }
-bool TestApplication::ConfigureIncomingConnection(
+bool TestApplication::AcceptConnection(
     ApplicationConnection* connection) {
   // TestApplications receive their Validator via the inbound connection.
   connection->ConnectToService(&validator_);

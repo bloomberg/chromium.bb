@@ -87,8 +87,7 @@ void DevicesApp::Initialize(mojo::ApplicationImpl* app) {
   StartIdleTimer();
 }
 
-bool DevicesApp::ConfigureIncomingConnection(
-    mojo::ApplicationConnection* connection) {
+bool DevicesApp::AcceptConnection(mojo::ApplicationConnection* connection) {
   connection->AddService<usb::DeviceManager>(this);
   return true;
 }

@@ -88,7 +88,7 @@ void OmniboxApplication::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool OmniboxApplication::ConfigureIncomingConnection(
+bool OmniboxApplication::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Omnibox>(this);
   return true;

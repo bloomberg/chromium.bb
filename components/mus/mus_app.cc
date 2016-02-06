@@ -90,7 +90,7 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool MandolineUIServicesApp::ConfigureIncomingConnection(
+bool MandolineUIServicesApp::AcceptConnection(
     ApplicationConnection* connection) {
   connection->AddService<Gpu>(this);
   connection->AddService<mojom::DisplayManager>(this);

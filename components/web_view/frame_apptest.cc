@@ -356,7 +356,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
 
   // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mus::mojom::WindowTreeClient>(this);
     connection->AddService<mojom::FrameClient>(this);

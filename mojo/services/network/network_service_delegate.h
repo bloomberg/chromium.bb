@@ -45,8 +45,8 @@ class NetworkServiceDelegate : public ApplicationDelegate,
 
   // ApplicationDelegate implementation.
   void Initialize(ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
-  bool OnShellConnectionError() override;
+  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool ShellConnectionLost() override;
   void Quit() override;
 
   // InterfaceFactory<NetworkService> implementation.

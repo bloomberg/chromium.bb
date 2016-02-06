@@ -19,7 +19,7 @@ void WebViewApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool WebViewApplicationDelegate::ConfigureIncomingConnection(
+bool WebViewApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mojom::WebViewFactory>(this);
   return true;

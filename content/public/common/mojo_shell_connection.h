@@ -26,7 +26,7 @@ class CONTENT_EXPORT MojoShellConnection {
   // Override to add additional services to inbound connections.
   class Listener {
    public:
-    virtual bool ConfigureIncomingConnection(
+    virtual bool AcceptConnection(
         mojo::ApplicationConnection* connection) = 0;
 
     virtual ~Listener() {}

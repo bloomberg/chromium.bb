@@ -71,7 +71,7 @@ void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   mus::CreateWindowTreeHost(app_, this, &host_, nullptr);
 }
 
-bool TestRunnerApplicationDelegate::ConfigureIncomingConnection(
+bool TestRunnerApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<web_view::LayoutTestRunner>(this);
   return true;

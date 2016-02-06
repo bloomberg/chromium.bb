@@ -25,7 +25,7 @@ void ResourceProviderApp::Initialize(mojo::ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool ResourceProviderApp::ConfigureIncomingConnection(
+bool ResourceProviderApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   const base::FilePath app_path(
       GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));
@@ -41,7 +41,7 @@ void ResourceProviderApp::Create(
     mojo::InterfaceRequest<ResourceProvider> request) {
   const base::FilePath app_path(
       GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));
-  // We validated path at ConfigureIncomingConnection() time, so it should still
+  // We validated path at AcceptConnection() time, so it should still
   // be valid.
   CHECK(!app_path.empty());
   bindings_.AddBinding(

@@ -24,7 +24,7 @@ void TestMojoApp::Initialize(mojo::ApplicationImpl* app) {
   app_ = app;
 }
 
-bool TestMojoApp::ConfigureIncomingConnection(
+bool TestMojoApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   requestor_url_ = GURL(connection->GetRemoteApplicationURL());
   connection->AddService<TestMojoService>(this);

@@ -28,7 +28,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate {
     app->ConnectToService("mojo:mojo_shell_apptests", &service);
     service->SetTargetID(app->id());
   }
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     return true;
   }

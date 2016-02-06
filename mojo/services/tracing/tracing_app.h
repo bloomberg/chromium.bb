@@ -33,7 +33,7 @@ class TracingApp
 
  private:
   // mojo::ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // mojo::InterfaceFactory<TraceCollector> implementation.

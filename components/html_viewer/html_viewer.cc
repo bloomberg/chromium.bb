@@ -23,7 +23,7 @@ void HTMLViewer::Initialize(mojo::ApplicationImpl* app) {
   global_state_.reset(new GlobalState(app));
 }
 
-bool HTMLViewer::ConfigureIncomingConnection(
+bool HTMLViewer::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService(this);
   return true;

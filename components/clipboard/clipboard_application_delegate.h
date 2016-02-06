@@ -26,7 +26,7 @@ class ClipboardApplicationDelegate
 
   // mojo::ApplicationDelegate implementation.
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // mojo::InterfaceFactory<mojo::Clipboard> implementation.

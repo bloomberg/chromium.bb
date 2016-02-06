@@ -46,7 +46,7 @@ void ShelfApplication::Initialize(mojo::ApplicationImpl* app) {
   widget->Show();
 }
 
-bool ShelfApplication::ConfigureIncomingConnection(
+bool ShelfApplication::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   return true;
 }

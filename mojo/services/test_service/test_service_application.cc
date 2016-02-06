@@ -27,7 +27,7 @@ void TestServiceApplication::Initialize(ApplicationImpl* app) {
   app_impl_ = app;
 }
 
-bool TestServiceApplication::ConfigureIncomingConnection(
+bool TestServiceApplication::AcceptConnection(
     ApplicationConnection* connection) {
   connection->AddService<TestService>(this);
   connection->AddService<TestTimeService>(this);

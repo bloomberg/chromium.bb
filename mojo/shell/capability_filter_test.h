@@ -29,7 +29,7 @@ class TestApplication : public ApplicationDelegate {
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(ApplicationConnection* connection) override;
 
   void ConnectionClosed(const std::string& service_url);
 

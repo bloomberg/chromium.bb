@@ -27,14 +27,14 @@ class ApplicationDelegate {
   // Override this method to configure what services a connection supports when
   // being connected to from an app.
   // Return false to reject the connection entirely.
-  virtual bool ConfigureIncomingConnection(ApplicationConnection* connection);
+  virtual bool AcceptConnection(ApplicationConnection* connection);
 
   // Called when the shell connection has a connection error.
   //
   // Return true to shutdown the application. Return false to skip shutting
   // down the connection, but user is then required to call
   // ApplicationImpl::QuitNow() when done.
-  virtual bool OnShellConnectionError();
+  virtual bool ShellConnectionLost();
 
   // Called before ApplicationImpl::Terminate(). After returning from this call
   // the delegate can no longer rely on the main run loop still running.

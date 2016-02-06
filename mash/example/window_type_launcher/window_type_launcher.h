@@ -21,7 +21,7 @@ class WindowTypeLauncher : public mojo::ApplicationDelegate {
  private:
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   scoped_ptr<views::AuraInit> aura_init_;

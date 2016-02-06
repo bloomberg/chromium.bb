@@ -26,7 +26,7 @@ class OmniboxApplication : public mojo::ApplicationDelegate,
  private:
   // Overridden from mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // Overridden from mojo::InterfaceFactory<Omnibox>:

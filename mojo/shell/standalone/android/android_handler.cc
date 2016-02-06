@@ -167,8 +167,7 @@ void AndroidHandler::RunApplication(
 
 void AndroidHandler::Initialize(ApplicationImpl* app) {}
 
-bool AndroidHandler::ConfigureIncomingConnection(
-    ApplicationConnection* connection) {
+bool AndroidHandler::AcceptConnection(ApplicationConnection* connection) {
   connection->AddService(&content_handler_factory_);
   return true;
 }

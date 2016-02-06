@@ -30,7 +30,7 @@ class HTMLViewer : public mojo::ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // Overridden from InterfaceFactory<ContentHandler>

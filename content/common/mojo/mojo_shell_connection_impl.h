@@ -51,7 +51,7 @@ class MojoShellConnectionImpl : public MojoShellConnection,
 
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* application) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // MojoShellConnection:

@@ -27,7 +27,7 @@ class FontServiceApp : public mojo::ApplicationDelegate,
  private:
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // mojo::InterfaceFactory<FontService>:

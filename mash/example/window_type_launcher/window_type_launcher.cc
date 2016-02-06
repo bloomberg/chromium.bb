@@ -355,7 +355,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
 
-bool WindowTypeLauncher::ConfigureIncomingConnection(
+bool WindowTypeLauncher::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   return false;
 }

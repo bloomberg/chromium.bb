@@ -25,7 +25,7 @@ void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   StartQuickLaunch();
 }
 
-bool ShellApplicationDelegate::ConfigureIncomingConnection(
+bool ShellApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<mash::shell::mojom::Shell>(this);
   return true;

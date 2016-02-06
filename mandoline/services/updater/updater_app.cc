@@ -25,7 +25,7 @@ void UpdaterApp::Initialize(mojo::ApplicationImpl* app) {
   app_impl_ = app;
 }
 
-bool UpdaterApp::ConfigureIncomingConnection(
+bool UpdaterApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<Updater>(this);
   return true;

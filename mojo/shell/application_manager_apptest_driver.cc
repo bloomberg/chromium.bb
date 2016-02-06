@@ -109,7 +109,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                                     platform_channel_pair.PassServerHandle());
   }
 
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<Driver>(this);
     return true;

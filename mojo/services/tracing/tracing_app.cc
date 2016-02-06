@@ -22,7 +22,7 @@ TracingApp::TracingApp() : collector_binding_(this), tracing_active_(false) {
 TracingApp::~TracingApp() {
 }
 
-bool TracingApp::ConfigureIncomingConnection(
+bool TracingApp::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<TraceCollector>(this);
   connection->AddService<StartupPerformanceDataCollector>(this);

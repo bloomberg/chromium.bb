@@ -26,7 +26,7 @@ class TestServiceApplication : public ApplicationDelegate,
   void Initialize(ApplicationImpl* app) override;
 
   // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestService> implementation.
   void Create(ApplicationConnection* connection,

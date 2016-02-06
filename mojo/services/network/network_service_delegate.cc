@@ -130,7 +130,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   tracing_.Initialize(app);
 }
 
-bool NetworkServiceDelegate::ConfigureIncomingConnection(
+bool NetworkServiceDelegate::AcceptConnection(
     ApplicationConnection* connection) {
   DCHECK(context_);
   connection->AddService<CookieStore>(this);
@@ -140,7 +140,7 @@ bool NetworkServiceDelegate::ConfigureIncomingConnection(
   return true;
 }
 
-bool NetworkServiceDelegate::OnShellConnectionError() {
+bool NetworkServiceDelegate::ShellConnectionLost() {
   EnsureIOThreadShutdown();
   return true;
 }

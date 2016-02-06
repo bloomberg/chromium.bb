@@ -595,7 +595,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   }
 
   // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService(client_factory_.get());
     return true;
   }

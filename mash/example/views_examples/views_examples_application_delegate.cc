@@ -26,7 +26,7 @@ void ViewsExamplesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
                                       nullptr, nullptr);
 }
 
-bool ViewsExamplesApplicationDelegate::ConfigureIncomingConnection(
+bool ViewsExamplesApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   return false;
 }

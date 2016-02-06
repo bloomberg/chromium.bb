@@ -36,7 +36,7 @@ void DevToolsServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
   service_.reset(new DevToolsService(app));
 }
 
-bool DevToolsServiceDelegate::ConfigureIncomingConnection(
+bool DevToolsServiceDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<DevToolsRegistry>(this);
 

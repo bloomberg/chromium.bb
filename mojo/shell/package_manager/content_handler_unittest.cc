@@ -113,7 +113,7 @@ class TestApplicationLoader : public ApplicationLoader,
   }
 
   // ApplicationDelegate implementation.
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<ContentHandler>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;

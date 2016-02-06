@@ -22,7 +22,7 @@ ShellApplicationDelegate::ShellApplicationDelegate(
 ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
 void ShellApplicationDelegate::Initialize(ApplicationImpl* app) {}
-bool ShellApplicationDelegate::ConfigureIncomingConnection(
+bool ShellApplicationDelegate::AcceptConnection(
     ApplicationConnection* connection) {
   connection->AddService<mojom::ApplicationManager>(this);
   return true;

@@ -50,7 +50,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   mus::CreateWindowTreeHost(app_, this, &host_, nullptr, nullptr);
 }
 
-bool PhoneBrowserApplicationDelegate::ConfigureIncomingConnection(
+bool PhoneBrowserApplicationDelegate::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<LaunchHandler>(this);
   return true;

@@ -28,7 +28,7 @@ class TestRequestTrackerApplication
   void Initialize(ApplicationImpl* app) override;
 
   // ApplicationDelegate methods:
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:
   void Create(ApplicationConnection* connection,

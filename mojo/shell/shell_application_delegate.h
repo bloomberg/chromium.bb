@@ -29,7 +29,7 @@ class ShellApplicationDelegate
  private:
   // Overridden from ApplicationDelegate:
   void Initialize(ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(ApplicationConnection* connection) override;
 
   // Overridden from InterfaceFactory<mojom::ApplicationManager>:
   void Create(

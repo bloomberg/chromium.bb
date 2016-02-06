@@ -35,7 +35,7 @@ void MojoMediaApplication::Initialize(mojo::ApplicationImpl* app) {
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::ConfigureIncomingConnection(
+bool MojoMediaApplication::AcceptConnection(
     mojo::ApplicationConnection* connection) {
   connection->AddService<interfaces::ServiceFactory>(this);
   return true;

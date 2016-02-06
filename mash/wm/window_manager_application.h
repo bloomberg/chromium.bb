@@ -80,7 +80,7 @@ class WindowManagerApplication
 
   // ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override;
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // InterfaceFactory<mash::wm::mojom::UserWindowController>:

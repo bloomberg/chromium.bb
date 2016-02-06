@@ -19,7 +19,7 @@ namespace mojo {
 class ServiceConnector;
 
 // Represents a connection to another application. An instance of this class is
-// passed to ApplicationDelegate's ConfigureIncomingConnection() method each
+// passed to ApplicationDelegate's AcceptConnection() method each
 // time a connection is made to this app.
 //
 // To use, define a class that implements your specific service API (e.g.,

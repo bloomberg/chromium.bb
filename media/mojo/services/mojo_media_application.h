@@ -25,8 +25,7 @@ class MojoMediaApplication
  private:
   // mojo::ApplicationDelegate implementation.
   void Initialize(mojo::ApplicationImpl* app) final;
-  bool ConfigureIncomingConnection(
-      mojo::ApplicationConnection* connection) final;
+  bool AcceptConnection(mojo::ApplicationConnection* connection) final;
 
   // mojo::InterfaceFactory<interfaces::ServiceFactory> implementation.
   void Create(mojo::ApplicationConnection* connection,

@@ -29,7 +29,7 @@ class TargetApplicationDelegate
  private:
   // mojo::ApplicationDelegate:
   void Initialize(mojo::ApplicationImpl* app) override {}
-  bool ConfigureIncomingConnection(
+  bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mojo::shell::test::TestNativeService>(this);
     return true;
