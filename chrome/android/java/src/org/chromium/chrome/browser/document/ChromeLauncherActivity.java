@@ -21,7 +21,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
@@ -35,7 +34,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -282,21 +280,17 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether or not a Custom Tab will be used for the incoming Intent.
      */
     private boolean isIntentHandledByHerb() {
-        if (ChromeVersionInfo.isStableBuild() || ChromeVersionInfo.isBetaBuild()) return false;
-
-        // Allowing disk access for preferences while prototyping.
-        String flavor = null;
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            flavor = ChromePreferenceManager.getInstance(this).getHerbFlavor();
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-        Log.d(TAG, "Herb flavor: " + flavor);
+        String flavor = ChromePreferenceManager.getHerbFlavor();
         if (TextUtils.isEmpty(flavor)) return false;
 
         // Only VIEW Intents are rerouted to Custom Tabs.
         if (!TextUtils.equals(getIntent().getAction(), Intent.ACTION_VIEW)) return false;
+
+        // Don't reroute Chrome Intents.
+        if (TextUtils.equals(getPackageName(),
+                IntentUtils.safeGetStringExtra(getIntent(), Browser.EXTRA_APPLICATION_ID))) {
+            return false;
+        }
 
         if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)) {

@@ -58,4 +58,9 @@ public interface Toolbar {
      * gone to avoid unnecessary layout work.
      */
     void removeAppMenuUpdateBadge();
+
+    /**
+     * Herb: Sets the listener that is told when the "return to previous app" button is clicked.
+     */
+    void setReturnButtonListener(View.OnClickListener listener);
 }

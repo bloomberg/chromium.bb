@@ -856,7 +856,7 @@ public class ChromeApplication extends ContentApplication {
     private void cacheNativeFlags() {
         if (sIsFinishedCachingNativeFlags) return;
 
-        boolean isToastNeeded = ChromePreferenceManager.getInstance(this).cacheHerbFlavor();
+        boolean isToastNeeded = ChromePreferenceManager.cacheHerbFlavor();
         if (isToastNeeded) {
             Toast.makeText(this,
                     R.string.cache_native_flags_requires_restart, Toast.LENGTH_SHORT).show();

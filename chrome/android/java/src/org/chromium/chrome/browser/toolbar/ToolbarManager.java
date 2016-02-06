@@ -972,6 +972,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         Tab currentTab = mToolbarModel.getTab();
         boolean tabCrashed = currentTab != null && currentTab.isShowingSadTab();
 
+        mToolbar.updateButtonVisibility();
         mToolbar.updateBackButtonVisibility(currentTab != null && currentTab.canGoBack());
         mToolbar.updateForwardButtonVisibility(currentTab != null && currentTab.canGoForward());
         updateReloadState(tabCrashed);
@@ -1020,7 +1021,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         updateCurrentTabDisplayStatus();
         if (previousTab != tab || wasIncognito != isIncognito) {
             if (previousTab != tab) {
-                if (previousTab != null) previousTab.removeObserver(mTabObserver);
+                if (previousTab != null) {
+                    previousTab.removeObserver(mTabObserver);
+                    previousTab.setIsAllowedToReturnToExternalApp(false);
+                }
                 if (tab != null) tab.addObserver(mTabObserver);
             }
             int defaultPrimaryColor = isIncognito
@@ -1048,6 +1052,8 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             mLocationBar.setAutocompleteProfile(profile);
             mCurrentProfile = profile;
         }
+
+        updateButtonStatus();
     }
 
     private void updateCurrentTabDisplayStatus() {

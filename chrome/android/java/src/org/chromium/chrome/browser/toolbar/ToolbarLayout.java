@@ -328,6 +328,11 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     public void setCustomTabCloseClickHandler(OnClickListener listener) { }
 
     /**
+     * Tells the Toolbar to update what buttons it is currently displaying.
+     */
+    public void updateButtonVisibility() { }
+
+    /**
      * Gives inheriting classes the chance to update the visibility of the
      * back button.
      * @param canGoBack Whether or not the current tab has any history to go back to.
@@ -639,5 +644,9 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuBadge.setVisibility(View.VISIBLE);
         mMenuButton.setImageBitmap(
                 UpdateMenuItemHelper.getInstance().getBadgedMenuButtonBitmap(getContext()));
+    }
+
+    @Override
+    public void setReturnButtonListener(View.OnClickListener listener) {
     }
 }

@@ -1123,6 +1123,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_TAB_LOADING_DEFAULT_TITLE" desc="The title of a tab when we are still waiting for either the URL or the real title. This generally shows when the page is first loading.">
         Loading…
       </message>
+      <message name="IDS_CLOSE_TAB_AND_RETURN" desc="Button to close the current tab and return to the calling app.">
+        Close the current tab and return to the previous app
+      </message>
 
       <!-- InfoBar -->
       <message name="IDS_INFOBAR_CLOSE" desc="Accessibility label for the dismiss infobar Button">

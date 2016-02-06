@@ -304,6 +304,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
+
+        if (getActivityTab() != null) getActivityTab().setIsAllowedToReturnToExternalApp(false);
+
         mTabModelSelectorImpl.saveState();
         try {
             getConnectionChangeReceiver().unregisterReceiver(ChromeTabbedActivity.this);
@@ -461,6 +464,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl, getFullscreenManager(),
                     mFindToolbarManager, mLayoutManager, mLayoutManager,
                     tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null);
+            getToolbarManager().getToolbar().setReturnButtonListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getActivityTab() != null) closeForegroundTab();
+                }
+            });
 
             removeWindowBackground();
 
@@ -685,7 +694,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     }
                     break;
                 case OPEN_NEW_TAB:
-                    launchIntent(url, referer, headers, externalAppId, true, intent);
+                    Tab newTab = launchIntent(url, referer, headers, externalAppId, true, intent);
+                    newTab.setIsAllowedToReturnToExternalApp(true);
                     RecordUserAction.record("MobileReceivedExternalIntent");
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
@@ -1002,54 +1012,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         if (!getToolbarManager().back()) {
             Log.i(TAG, "handleBackPressed() - no back stack");
-            final TabLaunchType type = currentTab.getLaunchType();
-            final String associatedApp = currentTab.getAppAssociatedWith();
-            final int parentId = currentTab.getParentId();
-            final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
-
-            // If the current tab url is HELP_URL, then the back button should close the tab to
-            // get back to the previous state. The reason for startsWith check is that the
-            // actual redirected URL is a different system language based help url.
-            if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW && helpUrl) {
-                getCurrentTabModel().closeTab(currentTab);
-                Log.i(TAG, "handleBackPressed() - help url");
-                return true;
-            }
-
-            // [true]: Reached the bottom of the back stack on a tab the user did not explicitly
-            // create (i.e. it was created by an external app or opening a link in background, etc).
-            // [false]: Reached the bottom of the back stack on a tab that the user explicitly
-            // created (e.g. selecting "new tab" from menu).
-            final boolean shouldCloseTab = type == TabLaunchType.FROM_LINK
-                    || type == TabLaunchType.FROM_EXTERNAL_APP
-                    || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
-                    || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
-                    || (type == TabLaunchType.FROM_RESTORE && parentId != Tab.INVALID_TAB_ID);
-
-            // Minimize the app if either:
-            // - we decided not to close the tab
-            // - we decided to close the tab, but it was opened by an external app, so we will go
-            //   exit Chrome on top of closing the tab
-            final boolean minimizeApp = !shouldCloseTab || (type == TabLaunchType.FROM_EXTERNAL_APP
-                    && !TextUtils.equals(associatedApp, getPackageName()));
-
-            if (minimizeApp) {
-                Log.i(TAG, "handleBackPressed() - moveTaskToBack");
-                moveTaskToBack(true);
-                if (shouldCloseTab) {
-                    // In the case of closing a tab upon minimalization, don't allow the close
-                    // action to happen until after our app is minimized to make sure we don't get a
-                    // brief glimpse of the newly active tab before we exit Chrome.
-                    mHandler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            getCurrentTabModel().closeTab(currentTab, false, true, false);
-                        }
-                    }, CLOSE_TAB_ON_MINIMIZE_DELAY_MS);
-                }
-            } else if (shouldCloseTab) {
-                getCurrentTabModel().closeTab(currentTab, true, false, false);
-            }
+            if (closeForegroundTab()) return true;
         } else {
             Log.i(TAG, "handleBackPressed() - moving back in navigation");
             RecordUserAction.record("SystemBackForNavigation");
@@ -1058,6 +1021,62 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         RecordUserAction.record("SystemBack");
 
         return true;
+    }
+
+    /**
+     * Closes the foreground tab, potentially sending the user back to the app that launched Chrome.
+     *
+     * @return Whether the tab closed was opened for a help page.
+     */
+    private boolean closeForegroundTab() {
+        final Tab currentTab = getActivityTab();
+        final TabLaunchType type = currentTab.getLaunchType();
+        final int parentId = currentTab.getParentId();
+        final boolean helpUrl = currentTab.getUrl().startsWith(HELP_URL_PREFIX);
+
+        // If the current tab url is HELP_URL, then the back button should close the tab to
+        // get back to the previous state. The reason for startsWith check is that the
+        // actual redirected URL is a different system language based help url.
+        if (type == TabLaunchType.FROM_MENU_OR_OVERVIEW && helpUrl) {
+            getCurrentTabModel().closeTab(currentTab);
+            Log.i(TAG, "closeForegroundTab() - help url");
+            return true;
+        }
+
+        // [true]: Reached the bottom of the back stack on a tab the user did not explicitly
+        // create (i.e. it was created by an external app or opening a link in background, etc).
+        // [false]: Reached the bottom of the back stack on a tab that the user explicitly
+        // created (e.g. selecting "new tab" from menu).
+        final boolean shouldCloseTab = type == TabLaunchType.FROM_LINK
+                || type == TabLaunchType.FROM_EXTERNAL_APP
+                || type == TabLaunchType.FROM_LONGPRESS_FOREGROUND
+                || type == TabLaunchType.FROM_LONGPRESS_BACKGROUND
+                || (type == TabLaunchType.FROM_RESTORE && parentId != Tab.INVALID_TAB_ID);
+
+        // Minimize the app if either:
+        // - we decided not to close the tab
+        // - we decided to close the tab, but it was opened by an external app, so we will go
+        //   exit Chrome on top of closing the tab
+        final boolean minimizeApp = !shouldCloseTab || currentTab.isCreatedForExternalApp();
+
+        if (minimizeApp) {
+            Log.i(TAG, "closeForegroundTab() - moveTaskToBack");
+            moveTaskToBack(true);
+            if (shouldCloseTab) {
+                // In the case of closing a tab upon minimalization, don't allow the close
+                // action to happen until after our app is minimized to make sure we don't get a
+                // brief glimpse of the newly active tab before we exit Chrome.
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        getCurrentTabModel().closeTab(currentTab, false, true, false);
+                    }
+                }, CLOSE_TAB_ON_MINIMIZE_DELAY_MS);
+            }
+        } else if (shouldCloseTab) {
+            getCurrentTabModel().closeTab(currentTab, true, false, false);
+        }
+        return false;
     }
 
     /**
@@ -1071,7 +1090,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
      *                      back to the default behavior for making that determination.
      * @param intent        The original intent.
      */
-    private void launchIntent(String url, String referer, String headers,
+    private Tab launchIntent(String url, String referer, String headers,
             String externalAppId, boolean forceNewTab, Intent intent) {
         if (mUIInitialized) {
             mLayoutManager.hideOverview(false);
@@ -1081,10 +1100,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // If the intent was launched by chrome, open the new tab in the current model.
             // Using FROM_LINK ensures the tab is parented to the current tab, which allows
             // the back button to close these tabs and restore selection to the previous tab.
-            getCurrentTabCreator().launchUrl(url, TabLaunchType.FROM_LINK, intent,
+            return getCurrentTabCreator().launchUrl(url, TabLaunchType.FROM_LINK, intent,
                     mIntentHandlingTimeMs);
         } else {
-            getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
+            return getTabCreator(false).launchUrlFromExternalApp(url, referer, headers,
                     externalAppId, forceNewTab, intent, mIntentHandlingTimeMs);
         }
     }

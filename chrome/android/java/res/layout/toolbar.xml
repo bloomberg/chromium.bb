@@ -23,6 +23,13 @@
         android:background="?attr/selectableItemBackground"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
 
+    <org.chromium.chrome.browser.widget.TintedImageButton
+        android:id="@+id/return_button"
+        style="@style/ToolbarButton"
+        android:src="@drawable/btn_close"
+        android:contentDescription="@string/close_tab_and_return"
+        android:visibility="gone" />
+
     <org.chromium.chrome.browser.toolbar.HomePageButton
         android:id="@+id/home_button"
         style="@style/ToolbarButton"

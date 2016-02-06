@@ -358,6 +358,9 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private LoFiBarPopupController mLoFiBarPopupController;
 
+    /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
+    private boolean mIsAllowedToReturnToExternalApp;
+
     private class TabContentViewClient extends ContentViewClient {
         @Override
         public void onBackgroundColorChanged(int color) {
@@ -2899,6 +2902,29 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (mSwipeRefreshHandler != null) {
             mSwipeRefreshHandler.didStopRefreshing();
         }
+    }
+
+    /**
+     * Set whether closing this Tab should return the user to the app that spawned Chrome.
+     */
+    public void setIsAllowedToReturnToExternalApp(boolean state) {
+        mIsAllowedToReturnToExternalApp = state;
+    }
+
+    /**
+     * @return Whether closing this Tab should return the user to the app that spawned Chrome.
+     */
+    public boolean isAllowedToReturnToExternalApp() {
+        return mIsAllowedToReturnToExternalApp;
+    }
+
+    /**
+     * @return Whether or not the tab was opened by an app other than Chrome.
+     */
+    public boolean isCreatedForExternalApp() {
+        String packageName = ApplicationStatus.getApplicationContext().getPackageName();
+        return getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP
+                && !TextUtils.equals(getAppAssociatedWith(), packageName);
     }
 
     private native void nativeInit();
