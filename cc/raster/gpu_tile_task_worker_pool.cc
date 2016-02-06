@@ -65,8 +65,16 @@ class RasterBufferImpl : public RasterBuffer {
     rasterizer_->RasterizeSource(&lock_, raster_source, raster_full_rect,
                                  playback_rect, scale);
 
+    gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
+    const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+
     // Barrier to sync worker context output to cc context.
-    scoped_context.ContextGL()->OrderingBarrierCHROMIUM();
+    gl->OrderingBarrierCHROMIUM();
+
+    // Generate sync token after the barrier for cross context synchronization.
+    gpu::SyncToken sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    lock_.UpdateResourceSyncToken(sync_token);
   }
 
  private:

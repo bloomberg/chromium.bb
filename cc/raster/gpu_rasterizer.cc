@@ -46,7 +46,7 @@ void GpuRasterizer::RasterizeSource(
     float scale) {
   // Play back raster_source into temp SkPicture.
   SkPictureRecorder recorder;
-  gfx::Size size = write_lock->resource()->size;
+  const gfx::Size size = write_lock->GetResourceSize();
   const int flags = SkPictureRecorder::kComputeSaveLayerInfo_RecordFlag;
   skia::RefPtr<SkCanvas> canvas = skia::SharePtr(
       recorder.beginRecording(size.width(), size.height(), NULL, flags));

@@ -259,6 +259,10 @@ class CC_EXPORT ResourceProvider
 
     unsigned texture_id() const { return texture_id_; }
 
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
+      resource_->mailbox.set_sync_token(sync_token);
+    }
+
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::Resource* resource_;
@@ -335,7 +339,12 @@ class CC_EXPORT ResourceProvider
     void ReleaseSkSurface();
 
     SkSurface* sk_surface() { return sk_surface_.get(); }
-    ResourceProvider::Resource* resource() { return resource_; }
+
+    gfx::Size GetResourceSize() const { return resource_->size; }
+
+    void UpdateResourceSyncToken(const gpu::SyncToken& sync_token) const {
+      resource_->mailbox.set_sync_token(sync_token);
+    }
 
    private:
     ResourceProvider* resource_provider_;
