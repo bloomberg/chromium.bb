@@ -546,7 +546,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   int64_t timestamp = buffer->timestamp().InMicroseconds();
   void* user_priv = reinterpret_cast<void*>(&timestamp);
   {
-    TRACE_EVENT1("video", "vpx_codec_decode", "timestamp", timestamp);
+    TRACE_EVENT1("media", "vpx_codec_decode", "timestamp", timestamp);
     vpx_codec_err_t status =
         vpx_codec_decode(vpx_codec_, buffer->data(), buffer->data_size(),
                          user_priv, 0 /* deadline */);
@@ -611,7 +611,7 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   int64_t timestamp_alpha = buffer->timestamp().InMicroseconds();
   void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
   {
-    TRACE_EVENT1("video", "vpx_codec_decode_alpha", "timestamp_alpha",
+    TRACE_EVENT1("media", "vpx_codec_decode_alpha", "timestamp_alpha",
                  timestamp_alpha);
     vpx_codec_err_t status = vpx_codec_decode(
         vpx_codec_alpha_, buffer->side_data() + 8, buffer->side_data_size() - 8,
