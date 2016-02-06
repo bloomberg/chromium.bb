@@ -74,15 +74,19 @@ def _GetTrybotList(builders):
 
 def _GetBuilderNames(trybot_name, builders):
   """ Return platform and its available bot name as dictionary."""
+  os_names = ['linux', 'android', 'mac', 'win']
   if 'all' not in trybot_name:
     bot = ['%s_perf_bisect' % trybot_name.replace('-', '_')]
-    bot_platform = trybot_name.split('-')[0]
+    try:
+      bot_platform = next(b for b in os_names if b in trybot_name)
+    except StopIteration:
+      raise TrybotError('Trybot "%s" unsupported for tryjobs.' % trybot_name)
     if 'x64' in trybot_name:
       bot_platform += '-x64'
     return {bot_platform: bot}
 
   platform_and_bots = {}
-  for os_name in ['linux', 'android', 'mac', 'win']:
+  for os_name in os_names:
     platform_and_bots[os_name] = [bot for bot in builders if os_name in bot]
 
   # Special case for Windows x64, consider it as separate platform

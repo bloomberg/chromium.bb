@@ -395,6 +395,27 @@ class TrybotCommandTest(unittest.TestCase):
          '  "truncate_percent": "0"\n'
          '}'), config)
 
+  def testConfigWinX64WithNoHyphen(self):
+    config = self._GetConfigForTrybot(
+        'winx64nvidia', 'win-x64', 'currentwork', 'tools/run-perf-test.cfg')
+    self.assertEquals(
+        ('config = {\n'
+         '  "command": "python tools\\\\perf\\\\run_benchmark '
+         '--browser=release_x64 sunspider",\n'
+         '  "max_time_minutes": "120",\n'
+         '  "repeat_count": "1",\n'
+         '  "target_arch": "x64",\n'
+         '  "truncate_percent": "0"\n'
+         '}'), config)
+
+  def testUnsupportedTrybot(self):
+    self.assertRaises(
+        trybot_command.TrybotError,
+        trybot_command._GetBuilderNames,
+        'arms-nvidia',
+        {'win_perf_bisect': 'stuff'}
+    )
+
   def testConfigBlink(self):
     config = self._GetConfigForTrybot(
         'mac-10-9', 'mac', 'blinkbranch',
