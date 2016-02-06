@@ -2502,6 +2502,7 @@ TEST_P(ResourceProviderTest, ShutdownWithExportedResource) {
   child_resource_provider_ = nullptr;
 
   // Since the resource is in the parent, the child considers it lost.
+  EXPECT_FALSE(release_sync_token.HasData());
   EXPECT_TRUE(lost_resource);
 }
 
