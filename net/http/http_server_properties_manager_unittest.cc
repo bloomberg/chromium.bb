@@ -15,7 +15,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -122,7 +122,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
                void(std::vector<std::string>* spdy_servers,
                     SpdySettingsMap* spdy_settings_map,
                     AlternativeServiceMap* alternative_service_map,
-                    IPAddressNumber* last_quic_address,
+                    IPAddress* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map,
                     QuicServerInfoMap* quic_server_info_map,
                     bool detected_corrupted_prefs));
@@ -130,7 +130,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
                void(base::ListValue* spdy_server_list,
                     SpdySettingsMap* spdy_settings_map,
                     AlternativeServiceMap* alternative_service_map,
-                    IPAddressNumber* last_quic_address,
+                    IPAddress* last_quic_address,
                     ServerNetworkStatsMap* server_network_stats_map,
                     QuicServerInfoMap* quic_server_info_map,
                     const base::Closure& completion));
@@ -396,9 +396,9 @@ TEST_P(HttpServerPropertiesManagerTest,
   }
 
   // Verify SupportsQuic.
-  IPAddressNumber last_address;
+  IPAddress last_address;
   EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&last_address));
-  EXPECT_EQ("127.0.0.1", IPAddressToString(last_address));
+  EXPECT_EQ("127.0.0.1", last_address.ToString());
 
   // Verify ServerNetworkStats.
   const ServerNetworkStats* stats2 =
@@ -817,11 +817,11 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   ExpectPrefsUpdate();
   ExpectScheduleUpdatePrefsOnNetworkThread();
 
-  IPAddressNumber address;
+  IPAddress address;
   EXPECT_FALSE(http_server_props_manager_->GetSupportsQuic(&address));
 
-  IPAddressNumber actual_address;
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  IPAddress actual_address;
+  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   // ExpectScheduleUpdatePrefsOnNetworkThread() should be called only once.
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
@@ -888,8 +888,8 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
   AlternativeService alternative_service(NPN_HTTP_2, "mail.google.com", 1234);
   http_server_props_manager_->SetAlternativeService(
       spdy_server_mail, alternative_service, 1.0, one_day_from_now_);
-  IPAddressNumber actual_address;
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  IPAddress actual_address;
+  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
   ServerNetworkStats stats;
   stats.srtt = base::TimeDelta::FromMicroseconds(10);
@@ -912,7 +912,7 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
   EXPECT_TRUE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server_mail));
   EXPECT_TRUE(HasAlternativeService(spdy_server_mail));
-  IPAddressNumber address;
+  IPAddress address;
   EXPECT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
   EXPECT_EQ(actual_address, address);
   const ServerNetworkStats* stats1 =
@@ -1033,9 +1033,9 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   }
 
   // Verify SupportsQuic.
-  IPAddressNumber address;
+  IPAddress address;
   ASSERT_TRUE(http_server_props_manager_->GetSupportsQuic(&address));
-  EXPECT_EQ("127.0.0.1", IPAddressToString(address));
+  EXPECT_EQ("127.0.0.1", address.ToString());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
@@ -1078,8 +1078,8 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
                                                 quic_server_info1);
 
   // Set SupportsQuic.
-  IPAddressNumber actual_address;
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  IPAddress actual_address;
+  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
 
   // Update cache.

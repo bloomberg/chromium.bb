@@ -12913,8 +12913,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPooling) {
       MockRead(ASYNC, 0, 6),
   };
 
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &ip));
+  IPAddress ip;
+  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13013,8 +13013,8 @@ TEST_P(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
       MockRead(ASYNC, 0, 6),
   };
 
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &ip));
+  IPAddress ip;
+  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13144,8 +13144,8 @@ TEST_P(HttpNetworkTransactionTest,
       MockRead(ASYNC, 0, 6),
   };
 
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber("127.0.0.1", &ip));
+  IPAddress ip;
+  ASSERT_TRUE(IPAddress::FromIPLiteral("127.0.0.1", &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect(ASYNC, OK, peer_addr);
   SequencedSocketData spdy_data(connect, spdy_reads, arraysize(spdy_reads),
@@ -13871,8 +13871,8 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionIfCertDoesNotMatch) {
 
   SequencedSocketData data1(reads1, arraysize(reads1), writes1,
                             arraysize(writes1));
-  IPAddressNumber ip;
-  ASSERT_TRUE(ParseIPLiteralToNumber(ip_addr, &ip));
+  IPAddress ip;
+  ASSERT_TRUE(IPAddress::FromIPLiteral(ip_addr, &ip));
   IPEndPoint peer_addr = IPEndPoint(ip, 443);
   MockConnect connect_data1(ASYNC, OK, peer_addr);
   data1.set_connect_data(connect_data1);

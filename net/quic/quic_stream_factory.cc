@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/socket_performance_watcher.h"
 #include "net/base/socket_performance_watcher_factory.h"
@@ -719,7 +720,7 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
   require_confirmation_ = require_confirmation;
   if (!(local_address_ == IPEndPoint())) {
     http_server_properties_->SetSupportsQuic(!require_confirmation,
-                                             local_address_.address().bytes());
+                                             local_address_.address());
   }
 }
 
@@ -1387,9 +1388,9 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   socket->GetLocalAddress(&local_address_);
   if (check_persisted_supports_quic_) {
     check_persisted_supports_quic_ = false;
-    IPAddressNumber last_address;
+    IPAddress last_address;
     if (http_server_properties_->GetSupportsQuic(&last_address) &&
-        last_address == local_address_.address().bytes()) {
+        last_address == local_address_.address()) {
       require_confirmation_ = false;
     }
   }

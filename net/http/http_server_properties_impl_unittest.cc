@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -1263,15 +1263,15 @@ TEST_F(SupportsQuicServerPropertiesTest, Initialize) {
   HostPortPair quic_server_google("www.google.com", 443);
 
   // Check by initializing empty address.
-  IPAddressNumber initial_address;
+  IPAddress initial_address;
   impl_.InitializeSupportsQuic(&initial_address);
 
-  IPAddressNumber address;
+  IPAddress address;
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
   EXPECT_TRUE(address.empty());
 
   // Check by initializing with a valid address.
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &initial_address));
+  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &initial_address));
   impl_.InitializeSupportsQuic(&initial_address);
 
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));
@@ -1279,12 +1279,12 @@ TEST_F(SupportsQuicServerPropertiesTest, Initialize) {
 }
 
 TEST_F(SupportsQuicServerPropertiesTest, SetSupportsQuic) {
-  IPAddressNumber address;
+  IPAddress address;
   EXPECT_FALSE(impl_.GetSupportsQuic(&address));
   EXPECT_TRUE(address.empty());
 
-  IPAddressNumber actual_address;
-  CHECK(ParseIPLiteralToNumber("127.0.0.1", &actual_address));
+  IPAddress actual_address;
+  CHECK(IPAddress::FromIPLiteral("127.0.0.1", &actual_address));
   impl_.SetSupportsQuic(true, actual_address);
 
   EXPECT_TRUE(impl_.GetSupportsQuic(&address));

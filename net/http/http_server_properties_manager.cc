@@ -12,7 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/port_util.h"
 
 namespace net {
@@ -334,19 +334,18 @@ const SpdySettingsMap& HttpServerPropertiesManager::spdy_settings_map()
 }
 
 bool HttpServerPropertiesManager::GetSupportsQuic(
-    IPAddressNumber* last_address) const {
+    IPAddress* last_address) const {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
   return http_server_properties_impl_->GetSupportsQuic(last_address);
 }
 
-void HttpServerPropertiesManager::SetSupportsQuic(
-    bool used_quic,
-    const IPAddressNumber& address) {
+void HttpServerPropertiesManager::SetSupportsQuic(bool used_quic,
+                                                  const IPAddress& address) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  IPAddressNumber old_last_quic_addr;
+  IPAddress old_last_quic_addr;
   http_server_properties_impl_->GetSupportsQuic(&old_last_quic_addr);
   http_server_properties_impl_->SetSupportsQuic(used_quic, address);
-  IPAddressNumber new_last_quic_addr;
+  IPAddress new_last_quic_addr;
   http_server_properties_impl_->GetSupportsQuic(&new_last_quic_addr);
   if (old_last_quic_addr != new_last_quic_addr)
     ScheduleUpdatePrefsOnNetworkThread(SET_SUPPORTS_QUIC);
@@ -496,7 +495,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
     }
   }
 
-  IPAddressNumber* addr = new IPAddressNumber;
+  IPAddress* addr = new IPAddress;
   ReadSupportsQuic(http_server_properties_dict, addr);
 
   // String is host/port pair of spdy server.
@@ -740,7 +739,7 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
 
 bool HttpServerPropertiesManager::ReadSupportsQuic(
     const base::DictionaryValue& http_server_properties_dict,
-    IPAddressNumber* last_quic_address) {
+    IPAddress* last_quic_address) {
   const base::DictionaryValue* supports_quic_dict = nullptr;
   if (!http_server_properties_dict.GetDictionaryWithoutPathExpansion(
           kSupportsQuicKey, &supports_quic_dict)) {
@@ -758,7 +757,7 @@ bool HttpServerPropertiesManager::ReadSupportsQuic(
   std::string address;
   if (!supports_quic_dict->GetStringWithoutPathExpansion(kAddressKey,
                                                          &address) ||
-      !ParseIPLiteralToNumber(address, last_quic_address)) {
+      !IPAddress::FromIPLiteral(address, last_quic_address)) {
     DVLOG(1) << "Malformed SupportsQuic";
     return false;
   }
@@ -838,7 +837,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
     ServerList* spdy_servers,
     SpdySettingsMap* spdy_settings_map,
     AlternativeServiceMap* alternative_service_map,
-    IPAddressNumber* last_quic_address,
+    IPAddress* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
     QuicServerInfoMap* quic_server_info_map,
     bool detected_corrupted_prefs) {
@@ -999,7 +998,7 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
     }
   }
 
-  IPAddressNumber* last_quic_addr = new IPAddressNumber;
+  IPAddress* last_quic_addr = new IPAddress;
   http_server_properties_impl_->GetSupportsQuic(last_quic_addr);
   // Update the preferences on the pref thread.
   pref_task_runner_->PostTask(
@@ -1045,7 +1044,7 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     base::ListValue* spdy_server_list,
     SpdySettingsMap* spdy_settings_map,
     AlternativeServiceMap* alternative_service_map,
-    IPAddressNumber* last_quic_address,
+    IPAddress* last_quic_address,
     ServerNetworkStatsMap* server_network_stats_map,
     QuicServerInfoMap* quic_server_info_map,
     const base::Closure& completion) {
@@ -1213,15 +1212,14 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
 }
 
 void HttpServerPropertiesManager::SaveSupportsQuicToPrefs(
-    const IPAddressNumber* last_quic_address,
+    const IPAddress* last_quic_address,
     base::DictionaryValue* http_server_properties_dict) {
-  if (!last_quic_address || last_quic_address->empty())
+  if (!last_quic_address || !last_quic_address->IsValid())
     return;
 
   base::DictionaryValue* supports_quic_dict = new base::DictionaryValue;
   supports_quic_dict->SetBoolean(kUsedQuicKey, true);
-  supports_quic_dict->SetString(kAddressKey,
-                                IPAddressToString(*last_quic_address));
+  supports_quic_dict->SetString(kAddressKey, last_quic_address->ToString());
   http_server_properties_dict->SetWithoutPathExpansion(kSupportsQuicKey,
                                                        supports_quic_dict);
 }

@@ -152,8 +152,7 @@ void HttpServerPropertiesImpl::InitializeSpdySettingsServers(
   }
 }
 
-void HttpServerPropertiesImpl::InitializeSupportsQuic(
-    IPAddressNumber* last_address) {
+void HttpServerPropertiesImpl::InitializeSupportsQuic(IPAddress* last_address) {
   if (last_address)
     last_quic_address_ = *last_address;
 }
@@ -230,7 +229,7 @@ void HttpServerPropertiesImpl::Clear() {
   alternative_service_map_.Clear();
   canonical_host_to_origin_map_.clear();
   spdy_settings_map_.Clear();
-  last_quic_address_.clear();
+  last_quic_address_ = IPAddress();
   server_network_stats_map_.Clear();
   quic_server_info_map_.Clear();
 }
@@ -615,8 +614,7 @@ HttpServerPropertiesImpl::spdy_settings_map() const {
   return spdy_settings_map_;
 }
 
-bool HttpServerPropertiesImpl::GetSupportsQuic(
-    IPAddressNumber* last_address) const {
+bool HttpServerPropertiesImpl::GetSupportsQuic(IPAddress* last_address) const {
   if (last_quic_address_.empty())
     return false;
 
@@ -625,9 +623,9 @@ bool HttpServerPropertiesImpl::GetSupportsQuic(
 }
 
 void HttpServerPropertiesImpl::SetSupportsQuic(bool used_quic,
-                                               const IPAddressNumber& address) {
+                                               const IPAddress& address) {
   if (!used_quic) {
-    last_quic_address_.clear();
+    last_quic_address_ = IPAddress();
   } else {
     last_quic_address_ = address;
   }

@@ -29,6 +29,8 @@ class SequencedTaskRunner;
 
 namespace net {
 
+class IPAddress;
+
 ////////////////////////////////////////////////////////////////////////////////
 // HttpServerPropertiesManager
 
@@ -145,9 +147,8 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void ClearSpdySettings(const HostPortPair& host_port_pair) override;
   void ClearAllSpdySettings() override;
   const SpdySettingsMap& spdy_settings_map() const override;
-  bool GetSupportsQuic(IPAddressNumber* last_address) const override;
-  void SetSupportsQuic(bool used_quic,
-                       const IPAddressNumber& last_address) override;
+  bool GetSupportsQuic(IPAddress* last_address) const override;
+  void SetSupportsQuic(bool used_quic, const IPAddress& last_address) override;
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
                              ServerNetworkStats stats) override;
   const ServerNetworkStats* GetServerNetworkStats(
@@ -205,7 +206,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       std::vector<std::string>* spdy_servers,
       SpdySettingsMap* spdy_settings_map,
       AlternativeServiceMap* alternative_service_map,
-      IPAddressNumber* last_quic_address,
+      IPAddress* last_quic_address,
       ServerNetworkStatsMap* server_network_stats_map,
       QuicServerInfoMap* quic_server_info_map,
       bool detected_corrupted_prefs);
@@ -236,7 +237,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   void UpdatePrefsOnPrefThread(base::ListValue* spdy_server_list,
                                SpdySettingsMap* spdy_settings_map,
                                AlternativeServiceMap* alternative_service_map,
-                               IPAddressNumber* last_quic_address,
+                               IPAddress* last_quic_address,
                                ServerNetworkStatsMap* server_network_stats_map,
                                QuicServerInfoMap* quic_server_info_map,
                                const base::Closure& completion);
@@ -267,7 +268,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       const base::DictionaryValue& server_dict,
       AlternativeServiceMap* alternative_service_map);
   bool ReadSupportsQuic(const base::DictionaryValue& server_dict,
-                        IPAddressNumber* last_quic_address);
+                        IPAddress* last_quic_address);
   bool AddToNetworkStatsMap(const HostPortPair& server,
                             const base::DictionaryValue& server_dict,
                             ServerNetworkStatsMap* network_stats_map);
@@ -280,7 +281,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
       const AlternativeServiceInfoVector* alternative_service_info_vector,
       base::DictionaryValue* server_pref_dict);
   void SaveSupportsQuicToPrefs(
-      const IPAddressNumber* last_quic_address,
+      const IPAddress* last_quic_address,
       base::DictionaryValue* http_server_properties_dict);
   void SaveNetworkStatsToServerPrefs(
       const ServerNetworkStats* server_network_stats,

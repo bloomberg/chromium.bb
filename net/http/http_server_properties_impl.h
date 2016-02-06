@@ -18,6 +18,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/values.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_address.h"
 #include "net/base/linked_hash_map.h"
 #include "net/base/net_export.h"
 #include "net/http/http_server_properties.h"
@@ -52,7 +53,7 @@ class NET_EXPORT HttpServerPropertiesImpl
 
   void InitializeSpdySettingsServers(SpdySettingsMap* spdy_settings_map);
 
-  void InitializeSupportsQuic(IPAddressNumber* last_address);
+  void InitializeSupportsQuic(IPAddress* last_address);
 
   void InitializeServerNetworkStats(
       ServerNetworkStatsMap* server_network_stats_map);
@@ -117,8 +118,8 @@ class NET_EXPORT HttpServerPropertiesImpl
   void ClearSpdySettings(const HostPortPair& host_port_pair) override;
   void ClearAllSpdySettings() override;
   const SpdySettingsMap& spdy_settings_map() const override;
-  bool GetSupportsQuic(IPAddressNumber* last_address) const override;
-  void SetSupportsQuic(bool used_quic, const IPAddressNumber& address) override;
+  bool GetSupportsQuic(IPAddress* last_address) const override;
+  void SetSupportsQuic(bool used_quic, const IPAddress& address) override;
   void SetServerNetworkStats(const HostPortPair& host_port_pair,
                              ServerNetworkStats stats) override;
   const ServerNetworkStats* GetServerNetworkStats(
@@ -172,7 +173,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   // must also be in recently_broken_alternative_services_.
   RecentlyBrokenAlternativeServices recently_broken_alternative_services_;
 
-  IPAddressNumber last_quic_address_;
+  IPAddress last_quic_address_;
   SpdySettingsMap spdy_settings_map_;
   ServerNetworkStatsMap server_network_stats_map_;
   // Contains a map of servers which could share the same alternate protocol.

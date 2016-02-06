@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_server_id.h"
@@ -31,6 +30,7 @@ class Value;
 
 namespace net {
 
+class IPAddress;
 struct SSLConfig;
 
 enum AlternateProtocolUsage {
@@ -353,10 +353,10 @@ class NET_EXPORT HttpServerProperties {
   // Returns all persistent SPDY settings.
   virtual const SpdySettingsMap& spdy_settings_map() const = 0;
 
-  virtual bool GetSupportsQuic(IPAddressNumber* last_address) const = 0;
+  virtual bool GetSupportsQuic(IPAddress* last_address) const = 0;
 
   virtual void SetSupportsQuic(bool used_quic,
-                               const IPAddressNumber& last_address) = 0;
+                               const IPAddress& last_address) = 0;
 
   // Sets |stats| for |host_port_pair|.
   virtual void SetServerNetworkStats(const HostPortPair& host_port_pair,
