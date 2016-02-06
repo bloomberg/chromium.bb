@@ -28,6 +28,8 @@ remoting.PublicSession = function() {
       new base.DomEventHook(document.getElementById('host-finished-button'),
                             'click', this.exit_.bind(this), false),
       new base.DomEventHook(document.getElementById('cancel-share-button'),
+                            'click', this.exit_.bind(this), false),
+      new base.DomEventHook(document.getElementById('stop-sharing-button'),
                             'click', this.exit_.bind(this), false));
 };
 
