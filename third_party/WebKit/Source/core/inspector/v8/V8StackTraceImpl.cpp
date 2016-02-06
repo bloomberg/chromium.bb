@@ -95,7 +95,7 @@ PassOwnPtr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent
     toCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
 
     OwnPtr<V8StackTraceImpl> callStack;
-    if (agent)
+    if (agent && maxStackSize > 1)
         callStack = agent->currentAsyncStackTraceForRuntime();
     return V8StackTraceImpl::create(String(), scriptCallFrames, callStack.release());
 }
