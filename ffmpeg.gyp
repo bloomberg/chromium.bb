@@ -399,7 +399,7 @@
                     },
                   },
                 }],
-                ['clang == 1 or (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
+                ['MSVS_VERSION == "2013" or MSVS_VERSION == "2013e"', {
                   'defines': [
                     'inline=__inline',
                     'strtoll=_strtoi64',
