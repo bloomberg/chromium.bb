@@ -52,7 +52,9 @@ def print_landmines():
     print "Switched win x64 trybots from VS2010 to VS2012."
   if (platform() == 'win' and builder() == 'ninja' and
       gyp_msvs_version().startswith('2013')):
-    print "Switch to VS2013"
+    print "Switched win from VS2010 to VS2013."
+    print "Update to VS2013 Update 2."
+    print "Update to VS2013 Update 4."
   if (platform() == 'win' and gyp_msvs_version().startswith('2015')):
     print 'Switch to VS2015'
   print 'Need to clobber everything due to an IDL change in r154579 (blink)'
