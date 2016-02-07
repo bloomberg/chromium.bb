@@ -62,7 +62,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     if (key_event.key_code() == ui::VKEY_RETURN) {
       std::string url = Canonicalize(prompt_->text());
-      connections_.push_back(shell_->ConnectToApplication(url));
+      connections_.push_back(shell_->Connect(url));
       prompt_->SetText(base::string16());
     }
     return false;

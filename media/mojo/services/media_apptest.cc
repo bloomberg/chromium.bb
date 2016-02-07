@@ -59,7 +59,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    connection_ = shell()->ConnectToApplication("mojo:media");
+    connection_ = shell()->Connect("mojo:media");
     connection_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 

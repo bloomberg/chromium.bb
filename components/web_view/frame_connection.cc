@@ -119,7 +119,7 @@ void FrameConnection::Init(mojo::Shell* shell,
 
   mojo::Shell::ConnectParams params(std::move(request));
   params.set_filter(std::move(filter));
-  connection_ = shell->ConnectToApplication(&params);
+  connection_ = shell->Connect(&params);
   connection_->ConnectToService(&frame_client_);
   connection_->AddRemoteIDCallback(on_got_id_callback);
 }

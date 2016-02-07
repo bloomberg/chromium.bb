@@ -250,7 +250,7 @@ class TestAImpl : public TestA {
             InterfaceRequest<TestA> request,
             InterfaceFactory<TestC>* factory)
       : test_context_(test_context), binding_(this, std::move(request)) {
-    connection_ = app_impl->ConnectToApplication(kTestBURLString);
+    connection_ = app_impl->Connect(kTestBURLString);
     connection_->AddService<TestC>(factory);
     connection_->ConnectToService(&b_);
   }

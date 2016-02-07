@@ -42,16 +42,14 @@ class Shell {
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.
-  virtual scoped_ptr<Connection> ConnectToApplication(
-      const std::string& url) = 0;
-  virtual scoped_ptr<Connection> ConnectToApplication(
-      ConnectParams* params) = 0;
+  virtual scoped_ptr<Connection> Connect(const std::string& url) = 0;
+  virtual scoped_ptr<Connection> Connect(ConnectParams* params) = 0;
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
   void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
-    scoped_ptr<Connection> connection = ConnectToApplication(params);
+    scoped_ptr<Connection> connection = Connect(params);
     if (!connection.get())
       return;
     connection->ConnectToService(ptr);

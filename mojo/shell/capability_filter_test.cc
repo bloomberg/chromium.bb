@@ -172,12 +172,12 @@ bool TestApplication::AcceptConnection(Connection* connection) {
   // TestApplications receive their Validator via the inbound connection.
   connection->ConnectToService(&validator_);
 
-  connection1_ = shell_->ConnectToApplication("test:service");
+  connection1_ = shell_->Connect("test:service");
   connection1_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service"));
 
-  connection2_ = shell_->ConnectToApplication("test:service2");
+  connection2_ = shell_->Connect("test:service2");
   connection2_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service2"));

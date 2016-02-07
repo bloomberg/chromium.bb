@@ -116,11 +116,11 @@ class Connection {
       const Closure& handler) = 0;
 
   // Returns the id of the remote application. For Connections created via
-  // ApplicationImpl::ConnectToApplication(), this will not be determined until
-  // ConnectToApplication()'s callback is run, and this function will return
-  // false. Use AddRemoteIDCallback() to schedule a callback to be run when the
-  // remote application id is available. A value of Shell::kInvalidApplicationID
-  // indicates no remote application connection has been established.
+  // Shell::Connect(), this will not be determined until Connect()'s callback is
+  // run, and this function will return false. Use AddRemoteIDCallback() to
+  // schedule a callback to be run when the remote application id is available.
+  // A value of Shell::kInvalidApplicationID indicates the connection has not
+  // been established.
   virtual bool GetRemoteApplicationID(uint32_t* remote_id) const = 0;
 
   // Returns the id of the deepest content handler used in connecting to

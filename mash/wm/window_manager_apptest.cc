@@ -39,7 +39,7 @@ TEST_F(WindowManagerAppTest, OpenWindow) {
   WindowTreeDelegateImpl window_tree_delegate;
 
   // Bring up the the desktop_wm.
-  shell()->ConnectToApplication("mojo:desktop_wm");
+  shell()->Connect("mojo:desktop_wm");
 
   // Connect to mus and create a new top level window. The request goes to
   // the |desktop_wm|, but is async.

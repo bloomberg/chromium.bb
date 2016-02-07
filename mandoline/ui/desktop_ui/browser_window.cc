@@ -151,7 +151,7 @@ void BrowserWindow::Close() {
 void BrowserWindow::ShowOmnibox() {
   TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowOmnibox");
   if (!omnibox_.get()) {
-    omnibox_connection_ = shell_->ConnectToApplication("mojo:omnibox");
+    omnibox_connection_ = shell_->Connect("mojo:omnibox");
     omnibox_connection_->AddService<ViewEmbedder>(this);
     omnibox_connection_->ConnectToService(&omnibox_);
     omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(

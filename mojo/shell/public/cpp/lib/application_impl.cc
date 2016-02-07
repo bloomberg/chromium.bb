@@ -62,15 +62,13 @@ void ApplicationImpl::WaitForInitialize() {
   binding_.WaitForIncomingMethodCall();
 }
 
-scoped_ptr<Connection> ApplicationImpl::ConnectToApplication(
-    const std::string& url) {
+scoped_ptr<Connection> ApplicationImpl::Connect(const std::string& url) {
   ConnectParams params(url);
   params.set_filter(CreatePermissiveCapabilityFilter());
-  return ConnectToApplication(&params);
+  return Connect(&params);
 }
 
-scoped_ptr<Connection> ApplicationImpl::ConnectToApplication(
-    ConnectParams* params) {
+scoped_ptr<Connection> ApplicationImpl::Connect(ConnectParams* params) {
   if (!shell_)
     return nullptr;
   DCHECK(params);

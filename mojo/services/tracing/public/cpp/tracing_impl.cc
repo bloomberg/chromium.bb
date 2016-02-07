@@ -53,7 +53,7 @@ void TracingImpl::Initialize(Shell* shell, const std::string& url) {
   // up to something like CoreServices to name its own child threads.
   base::PlatformThread::SetName(url);
 
-  connection_ = shell->ConnectToApplication("mojo:tracing");
+  connection_ = shell->Connect("mojo:tracing");
   connection_->AddService(this);
 
 #ifdef NDEBUG

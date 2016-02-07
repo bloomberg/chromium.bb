@@ -68,7 +68,7 @@ void BrowserDriverApplicationDelegate::OnAccelerator(
     case Accelerator::NewWindow:
     case Accelerator::NewTab:
     case Accelerator::NewIncognitoWindow:
-      shell_->ConnectToApplication("exe:chrome");
+      shell_->Connect("exe:chrome");
       // TODO(beng): have Chrome export a service that allows it to be driven by
       //             this driver, e.g. to open new tabs, incognito windows, etc.
       break;

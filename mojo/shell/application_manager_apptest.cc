@@ -174,7 +174,7 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   //    launches a process. #becauselinkerrors).
   mojo::shell::test::mojom::DriverPtr driver;
   scoped_ptr<Connection> connection =
-      shell()->ConnectToApplication("exe:application_manager_apptest_driver");
+      shell()->Connect("exe:application_manager_apptest_driver");
   connection->ConnectToService(&driver);
 
   // 2. Wait for the target to connect to us. (via

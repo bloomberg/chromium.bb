@@ -31,7 +31,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     mojo_test_helper_.reset(new mojo::test::TestHelper(nullptr));
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    mojo_test_helper_->shell()->ConnectToApplication("mojo:desktop_wm");
+    mojo_test_helper_->shell()->Connect("mojo:desktop_wm");
     WindowManagerConnection::Create(mojo_test_helper_->shell());
   }
 

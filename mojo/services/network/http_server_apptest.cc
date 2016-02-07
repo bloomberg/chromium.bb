@@ -557,7 +557,7 @@ class HttpServerAppTest : public test::ApplicationTestBase {
     ApplicationTestBase::SetUp();
 
     scoped_ptr<Connection> connection =
-        shell()->ConnectToApplication("mojo:network_service");
+        shell()->Connect("mojo:network_service");
     connection->ConnectToService(&network_service_);
     connection->ConnectToService(&web_socket_factory_);
   }

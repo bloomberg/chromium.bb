@@ -258,7 +258,7 @@ class WindowServerTest : public WindowServerTestBase {
   EmbedResult Embed(Window* window, uint32_t access_policy_bitmask) {
     DCHECK(!embed_details_);
     embed_details_.reset(new EmbedDetails);
-    window->Embed(ConnectToApplicationAndGetWindowServerClient(),
+    window->Embed(ConnectAndGetWindowServerClient(),
                   access_policy_bitmask,
                   base::Bind(&WindowServerTest::EmbedCallbackImpl,
                              base::Unretained(this)));
@@ -273,8 +273,7 @@ class WindowServerTest : public WindowServerTestBase {
 
   // Establishes a connection to this application and asks for a
   // WindowTreeClient.
-  mus::mojom::WindowTreeClientPtr
-  ConnectToApplicationAndGetWindowServerClient() {
+  mus::mojom::WindowTreeClientPtr ConnectAndGetWindowServerClient() {
     mus::mojom::WindowTreeClientPtr client;
     shell()->ConnectToService(shell_url(), &client);
     return client;
@@ -974,7 +973,7 @@ TEST_F(WindowServerTest, EmbedRemovesChildren) {
   window1->AddChild(window2);
 
   WindowRemovedFromParentObserver observer(window2);
-  window1->Embed(ConnectToApplicationAndGetWindowServerClient());
+  window1->Embed(ConnectAndGetWindowServerClient());
   EXPECT_TRUE(observer.was_removed());
   EXPECT_EQ(nullptr, window2->parent());
   EXPECT_TRUE(window1->children().empty());

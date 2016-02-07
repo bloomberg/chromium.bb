@@ -79,7 +79,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
       main_thread_(renderer_scheduler->CreateMainThread()) {
   if (shell) {
     scoped_ptr<mojo::Connection> connection =
-        shell->ConnectToApplication("mojo:network_service");
+        shell->Connect("mojo:network_service");
     connection->ConnectToService(&web_socket_factory_);
     connection->ConnectToService(&url_loader_factory_);
 

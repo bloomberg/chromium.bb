@@ -116,8 +116,7 @@ void ShellApplicationDelegate::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  scoped_ptr<mojo::Connection> connection =
-      shell_->ConnectToApplication(url);
+  scoped_ptr<mojo::Connection> connection = shell_->Connect(url);
   connection->SetRemoteServiceProviderConnectionErrorHandler(restart_callback);
   connections_[url] = std::move(connection);
 }

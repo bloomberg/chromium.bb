@@ -83,7 +83,7 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   // Connect to the URL through the mojo:html_viewer content handler.
   scoped_ptr<Connection> connection =
-      shell()->ConnectToApplication(server.GetURL("/test.html").spec());
+      shell()->Connect(server.GetURL("/test.html").spec());
 
   // Embed the html_viewer in a Window.
   mus::mojom::WindowTreeClientPtr tree_client;

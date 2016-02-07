@@ -96,8 +96,8 @@ class ApplicationImpl : public Shell, public shell::mojom::Application {
   void WaitForInitialize();
 
   // Shell.
-  scoped_ptr<Connection> ConnectToApplication(const std::string& url) override;
-  scoped_ptr<Connection> ConnectToApplication(ConnectParams* params) override;
+  scoped_ptr<Connection> Connect(const std::string& url) override;
+  scoped_ptr<Connection> Connect(ConnectParams* params) override;
   void Quit() override;
   scoped_ptr<AppRefCount> CreateAppRefCount() override;
 
