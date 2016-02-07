@@ -222,8 +222,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=1198) # angle bug ID
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win'], bug=1266) # angle bug ID
-    self.Fail('conformance2/textures/misc/copy-texture-image.html',
-        ['win'], bug=577144)
+    self.Skip('conformance2/textures/misc/copy-texture-image.html',
+        ['win'], bug=577144) # crash on debug
 
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
@@ -250,6 +250,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-2d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-2d' +
+        '-with-image-bitmap-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-2d' +
+        '-with-image-bitmap-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-3d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=560555)
@@ -274,6 +280,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/svg_image/tex-image-and-sub-image-3d' +
         '-with-svg-image-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=560555)
+    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-3d' +
+        '-with-image-bitmap-rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap/tex-image-and-sub-image-3d' +
+        '-with-image-bitmap-rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
 
     # Windows Debug. Causing assertions in the GPU process which raise
     # a dialog box, so have to skip them rather than mark them as
