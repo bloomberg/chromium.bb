@@ -30,6 +30,7 @@
 
 #include "core/inspector/v8/V8DebuggerImpl.h"
 
+#include "core/inspector/v8/DebuggerScript.h"
 #include "core/inspector/v8/JavaScriptCallFrame.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
 #include "core/inspector/v8/V8DebuggerAgentImpl.h"
@@ -38,8 +39,6 @@
 #include "core/inspector/v8/V8StackTraceImpl.h"
 #include "core/inspector/v8/V8StringUtil.h"
 #include "platform/JSONValues.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
 #include "wtf/Atomics.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
@@ -718,8 +717,8 @@ void V8DebuggerImpl::compileDebuggerScript()
 
     v8::HandleScope scope(m_isolate);
     v8::Context::Scope contextScope(debuggerContext());
-    const WebData& source = Platform::current()->loadResource("DebuggerScriptSource.js");
-    v8::Local<v8::String> scriptValue = v8::String::NewFromUtf8(m_isolate, source.data(), v8::NewStringType::kInternalized, source.size()).ToLocalChecked();
+
+    v8::Local<v8::String> scriptValue = v8::String::NewFromUtf8(m_isolate, DebuggerScript_js, v8::NewStringType::kInternalized, sizeof(DebuggerScript_js)).ToLocalChecked();
     v8::Local<v8::Value> value;
     if (!m_client->compileAndRunInternalScript(scriptValue).ToLocal(&value))
         return;

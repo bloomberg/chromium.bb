@@ -8,13 +8,13 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         useCapture: false
 [page]         type: "keydown"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page]     1: {
 [page]         listener: function listener2() { }
 [page]         useCapture: true
 [page]         type: "keydown"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] - inner after a removal -
@@ -23,7 +23,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         useCapture: true
 [page]         type: "keydown"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] - outer -
@@ -32,7 +32,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         useCapture: true
 [page]         type: "keydown"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] mousedown: {
@@ -40,7 +40,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener2() { }
 [page]         useCapture: true
 [page]         type: "mousedown"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] mousemove: {
@@ -48,7 +48,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         useCapture: false
 [page]         type: "mousemove"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] - attribute event listeners -
@@ -57,7 +57,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onclick(event) { alert(1) }
 [page]         useCapture: false
 [page]         type: "click"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] mouseover: {
@@ -65,7 +65,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onmouseover(event) { listener2() }
 [page]         useCapture: false
 [page]         type: "mouseover"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] - window -
@@ -74,7 +74,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function onload(event) { runTest() }
 [page]         useCapture: false
 [page]         type: "load"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] popstate: {
@@ -82,7 +82,7 @@ Tests getEventListeners() method of console command line API.
 [page]         listener: function listener1() { }
 [page]         useCapture: false
 [page]         type: "popstate"
-[page]         remove: function () { node.removeEventListener(this.type, this.listener, this.useCapture) }
+[page]         remove: function () {node.removeEventListener(this.type,this.listener,this.useCapture);}
 [page]     }
 [page] }
 [page] - empty -

@@ -33,13 +33,12 @@
 #include "core/inspector/v8/InjectedScript.h"
 #include "core/inspector/v8/InjectedScriptHost.h"
 #include "core/inspector/v8/InjectedScriptNative.h"
+#include "core/inspector/v8/InjectedScriptSource.h"
 #include "core/inspector/v8/RemoteObjectId.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8DebuggerClient.h"
 #include "core/inspector/v8/V8InjectedScriptHost.h"
 #include "core/inspector/v8/V8StringUtil.h"
-#include "public/platform/Platform.h"
-#include "public/platform/WebData.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -135,9 +134,7 @@ InjectedScript* InjectedScriptManager::injectedScriptFor(v8::Local<v8::Context> 
         return nullptr;
 
     RefPtr<InjectedScriptNative> injectedScriptNative = adoptRef(new InjectedScriptNative(context->GetIsolate()));
-
-    const WebData& injectedScriptSourceResource = Platform::current()->loadResource("InjectedScriptSource.js");
-    String injectedScriptSource(injectedScriptSourceResource.data(), injectedScriptSourceResource.size());
+    String injectedScriptSource(reinterpret_cast<const char*>(InjectedScriptSource_js), sizeof(InjectedScriptSource_js));
 
     v8::Local<v8::Object> object = createInjectedScript(injectedScriptSource, context, contextId, injectedScriptNative.get());
     OwnPtr<InjectedScript> result = adoptPtr(new InjectedScript(this, context, object, m_client, injectedScriptNative.release(), contextId));

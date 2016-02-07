@@ -18,7 +18,8 @@ jsbundler_modules = rebase_path([
                                 ],
                                 ".",
                                 "$closure_library_dir/../bin/build")
-jsbundler_modules += [ "//third_party/WebKit/Source/build/scripts/rjsmin.py" ]
+jsbundler_modules +=
+    [ "//third_party/WebKit/Source/devtools/scripts/rjsmin.py" ]
 
 # List of all modules that are included in one or more of the production
 # chromevox scripts.
