@@ -128,10 +128,16 @@ component("printing") {
     configs += [ ":cups" ]
 
     if (is_linux) {
+      # rebase_path does not accept an empty string
+      if (use_sysroot) {
+        cups_sysroot = rebase_path(sysroot)
+      } else {
+        cups_sysroot = ""
+      }
       cups_version = exec_script("cups_config_helper.py",
                                  [
                                    "--api-version",
-                                   rebase_path(sysroot),
+                                   cups_sysroot,
                                  ],
                                  "trim string")
 
@@ -241,10 +247,16 @@ if (use_cups) {
       libs = [ "cups" ]
       lib_dirs = [ "$mac_sdk_path/usr/lib" ]
     } else {
+      # rebase_path does not accept an empty string
+      if (use_sysroot) {
+        cups_sysroot = rebase_path(sysroot)
+      } else {
+        cups_sysroot = ""
+      }
       libs = exec_script("cups_config_helper.py",
                          [
                            "--libs-for-gn",
-                           rebase_path(sysroot),
+                           cups_sysroot,
                          ],
                          "value")
     }
