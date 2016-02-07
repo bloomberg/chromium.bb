@@ -88,7 +88,13 @@ chrome.test.getConfig(function(config) {
       },
 
       function executeJavaScriptCodeShouldFail() {
-        chrome.tabs.update(tabId, { url: testFailureUrl }, function() {
+        var doneListening =
+            chrome.test.listenForever(chrome.tabs.onUpdated, onUpdated);
+        chrome.tabs.update(tabId, {url: testFailureUrl});
+
+        function onUpdated(updatedTabId, changeInfo) {
+          if (updatedTabId !== tabId || changeInfo.url === testFailureUrl)
+            return;
           var script_file = {};
           script_file.code = "document.title = 'executeScript';";
           // The error message should contain the URL of the site for which it
@@ -97,7 +103,8 @@ chrome.test.getConfig(function(config) {
               'Cannot access contents of url "' + testFailureUrl +
               '". Extension manifest must request permission to access this ' +
               'host.'));
-        });
+          doneListening();
+        }
       },
 
       function executeJavaScriptWithNoneValueShouldFail() {

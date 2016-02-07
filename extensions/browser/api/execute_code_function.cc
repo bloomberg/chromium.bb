@@ -8,6 +8,7 @@
 #include "extensions/browser/api/execute_code_function.h"
 
 #include "extensions/browser/component_extension_resource_manager.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/error_utils.h"
@@ -139,8 +140,11 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
 
   ScriptExecutor::FrameScope frame_scope =
       details_->all_frames.get() && *details_->all_frames
-          ? ScriptExecutor::ALL_FRAMES
-          : ScriptExecutor::TOP_FRAME;
+          ? ScriptExecutor::INCLUDE_SUB_FRAMES
+          : ScriptExecutor::SINGLE_FRAME;
+
+  int frame_id = details_->frame_id.get() ? *details_->frame_id
+                                          : ExtensionApiFrameIdMap::kTopFrameId;
 
   ScriptExecutor::MatchAboutBlank match_about_blank =
       details_->match_about_blank.get() && *details_->match_about_blank
@@ -163,18 +167,11 @@ bool ExecuteCodeFunction::Execute(const std::string& code_string) {
   CHECK_NE(UserScript::UNDEFINED, run_at);
 
   executor->ExecuteScript(
-      host_id_,
-      script_type,
-      code_string,
-      frame_scope,
-      match_about_blank,
-      run_at,
-      ScriptExecutor::ISOLATED_WORLD,
+      host_id_, script_type, code_string, frame_scope, frame_id,
+      match_about_blank, run_at, ScriptExecutor::ISOLATED_WORLD,
       IsWebView() ? ScriptExecutor::WEB_VIEW_PROCESS
                   : ScriptExecutor::DEFAULT_PROCESS,
-      GetWebViewSrc(),
-      file_url_,
-      user_gesture_,
+      GetWebViewSrc(), file_url_, user_gesture_,
       has_callback() ? ScriptExecutor::JSON_SERIALIZED_RESULT
                      : ScriptExecutor::NO_RESULT,
       base::Bind(&ExecuteCodeFunction::OnExecuteCodeFinished, this));

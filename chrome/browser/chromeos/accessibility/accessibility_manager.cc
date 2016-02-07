@@ -67,6 +67,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/file_reader.h"
@@ -127,20 +128,21 @@ void ExecuteScriptHelper(
     return;
   if (!extensions::TabHelper::FromWebContents(web_contents))
     extensions::TabHelper::CreateForWebContents(web_contents);
-  extensions::TabHelper::FromWebContents(web_contents)->script_executor()->
-      ExecuteScript(HostID(HostID::EXTENSIONS, extension_id),
-                    extensions::ScriptExecutor::JAVASCRIPT,
-                    code,
-                    extensions::ScriptExecutor::ALL_FRAMES,
-                    extensions::ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
-                    extensions::UserScript::DOCUMENT_IDLE,
-                    extensions::ScriptExecutor::ISOLATED_WORLD,
-                    extensions::ScriptExecutor::DEFAULT_PROCESS,
-                    GURL(),  // No webview src.
-                    GURL(),  // No file url.
-                    false,  // Not user gesture.
-                    extensions::ScriptExecutor::NO_RESULT,
-                    extensions::ScriptExecutor::ExecuteScriptCallback());
+  extensions::TabHelper::FromWebContents(web_contents)
+      ->script_executor()
+      ->ExecuteScript(HostID(HostID::EXTENSIONS, extension_id),
+                      extensions::ScriptExecutor::JAVASCRIPT, code,
+                      extensions::ScriptExecutor::INCLUDE_SUB_FRAMES,
+                      extensions::ExtensionApiFrameIdMap::kTopFrameId,
+                      extensions::ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
+                      extensions::UserScript::DOCUMENT_IDLE,
+                      extensions::ScriptExecutor::ISOLATED_WORLD,
+                      extensions::ScriptExecutor::DEFAULT_PROCESS,
+                      GURL(),  // No webview src.
+                      GURL(),  // No file url.
+                      false,   // Not user gesture.
+                      extensions::ScriptExecutor::NO_RESULT,
+                      extensions::ScriptExecutor::ExecuteScriptCallback());
 }
 
 // Helper class that directly loads an extension's content scripts into

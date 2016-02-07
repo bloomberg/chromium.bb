@@ -24,6 +24,7 @@ base::LazyInstance<ExtensionApiFrameIdMap>::Leaky g_map_instance =
 }  // namespace
 
 const int ExtensionApiFrameIdMap::kInvalidFrameId = -1;
+const int ExtensionApiFrameIdMap::kTopFrameId = 0;
 
 ExtensionApiFrameIdMap::CachedFrameIdPair::CachedFrameIdPair()
     : frame_id(kInvalidFrameId), parent_frame_id(kInvalidFrameId) {}
@@ -75,7 +76,7 @@ int ExtensionApiFrameIdMap::GetFrameId(content::RenderFrameHost* rfh) {
     return kInvalidFrameId;
   if (rfh->GetParent())
     return rfh->GetFrameTreeNodeId();
-  return 0;  // Main frame.
+  return kTopFrameId;
 }
 
 int ExtensionApiFrameIdMap::GetParentFrameId(content::RenderFrameHost* rfh) {
@@ -96,7 +97,7 @@ content::RenderFrameHost* ExtensionApiFrameIdMap::GetRenderFrameHostById(
   if (frame_id == kInvalidFrameId)
     return nullptr;
 
-  if (frame_id == 0)
+  if (frame_id == kTopFrameId)
     return web_contents->GetMainFrame();
 
   DCHECK_GE(frame_id, 1);

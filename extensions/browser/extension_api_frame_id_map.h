@@ -48,6 +48,9 @@ class ExtensionApiFrameIdMap {
   // An invalid extension API frame ID.
   static const int kInvalidFrameId;
 
+  // Extension API frame ID of the top-level frame.
+  static const int kTopFrameId;
+
   static ExtensionApiFrameIdMap* Get();
 
   // Get the extension API frame ID for |rfh|.

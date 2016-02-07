@@ -17,9 +17,10 @@ chrome.test.getConfig(function(config) {
         // the script, so it's still showing a.com, where we don't have
         // permission to run it.
         if (chrome.runtime.lastError) {
-          chrome.test.assertTrue(
-              chrome.runtime.lastError.message.indexOf(
-                  'Cannot access contents of the page.') == 0);
+          chrome.test.assertLastError(
+              'Cannot access contents of url "' + urlA +
+              '". Extension manifest must request permission to access this ' +
+              'host.');
           chrome.test.notifyPass();
         } else {
           // If there were no errors, then the script did run, but it should

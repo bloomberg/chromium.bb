@@ -13,14 +13,15 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/renderer/injection_host.h"
+#include "extensions/renderer/renderer_extension_registry.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
-#include "url/origin.h"
 
 namespace extensions {
 
@@ -31,8 +32,10 @@ ProgrammaticScriptInjector::ProgrammaticScriptInjector(
       url_(
           ScriptContext::GetDataSourceURLForFrame(render_frame->GetWebFrame())),
       finished_(false) {
-  effective_url_ = ScriptContext::GetEffectiveDocumentURL(
-      render_frame->GetWebFrame(), url_, params.match_about_blank);
+  if (url_.SchemeIs(url::kAboutScheme)) {
+    origin_for_about_error_ =
+        render_frame->GetWebFrame()->securityOrigin().toString().utf8();
+  }
 }
 
 ProgrammaticScriptInjector::~ProgrammaticScriptInjector() {
@@ -130,16 +133,15 @@ void ProgrammaticScriptInjector::OnWillNotInject(
   std::string error;
   switch (reason) {
     case NOT_ALLOWED:
-      if (url_.SchemeIs(url::kAboutScheme)) {
+      if (!CanShowUrlInError()) {
+        error = manifest_errors::kCannotAccessPage;
+      } else if (!origin_for_about_error_.empty()) {
         error = ErrorUtils::FormatErrorMessage(
             manifest_errors::kCannotAccessAboutUrl, url_.spec(),
-            url::Origin(effective_url_).Serialize());
+            origin_for_about_error_);
       } else {
-        // TODO(?) It would be nice to show kCannotAccessPageWithUrl here if
-        // this is triggered by an extension with tabs permission. See
-        // https://codereview.chromium.org/1414223005/diff/1/extensions/
-        // common/manifest_constants.cc#newcode269
-        error = manifest_errors::kCannotAccessPage;
+        error = ErrorUtils::FormatErrorMessage(
+            manifest_errors::kCannotAccessPageWithUrl, url_.spec());
       }
       break;
     case EXTENSION_REMOVED:  // no special error here.
@@ -147,6 +149,17 @@ void ProgrammaticScriptInjector::OnWillNotInject(
       break;
   }
   Finish(error, render_frame);
+}
+
+bool ProgrammaticScriptInjector::CanShowUrlInError() const {
+  if (params_->host_id.type() != HostID::EXTENSIONS)
+    return false;
+  const Extension* extension =
+      RendererExtensionRegistry::Get()->GetByID(params_->host_id.id());
+  if (!extension)
+    return false;
+  return extension->permissions_data()->active_permissions().HasAPIPermission(
+      APIPermission::kTab);
 }
 
 UserScript::RunLocation ProgrammaticScriptInjector::GetRunLocation() const {

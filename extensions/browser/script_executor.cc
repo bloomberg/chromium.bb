@@ -13,6 +13,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/script_execution_observer.h"
 #include "extensions/common/extension_messages.h"
@@ -28,6 +29,7 @@ namespace extensions {
 namespace {
 
 const char* kRendererDestroyed = "The tab was closed.";
+const char* kFrameRemoved = "The frame was removed.";
 
 // A handler for a single injection request. On creation this will send the
 // injection request to the renderer, and it will be destroyed after either the
@@ -38,18 +40,28 @@ class Handler : public content::WebContentsObserver {
           content::WebContents* web_contents,
           const ExtensionMsg_ExecuteCode_Params& params,
           ScriptExecutor::FrameScope scope,
+          int frame_id,
           const ScriptExecutor::ExecuteScriptCallback& callback)
       : content::WebContentsObserver(web_contents),
         script_observers_(AsWeakPtr(script_observers)),
         host_id_(params.host_id),
         request_id_(params.request_id),
+        include_sub_frames_(scope == ScriptExecutor::INCLUDE_SUB_FRAMES),
+        root_rfh_(ExtensionApiFrameIdMap::GetRenderFrameHostById(web_contents,
+                                                                 frame_id)),
+        root_is_main_frame_(root_rfh_ ? !root_rfh_->GetParent() : false),
         callback_(callback) {
-    if (scope == ScriptExecutor::ALL_FRAMES) {
-      web_contents->ForEachFrame(base::Bind(&Handler::SendExecuteCode,
-                                            base::Unretained(this), params));
-    } else {
-      SendExecuteCode(params, web_contents->GetMainFrame());
+    if (root_rfh_) {
+      if (include_sub_frames_) {
+        web_contents->ForEachFrame(base::Bind(&Handler::SendExecuteCode,
+                                              base::Unretained(this), params));
+      } else {
+        SendExecuteCode(params, root_rfh_);
+      }
     }
+
+    if (pending_render_frames_.empty())
+      Finish();
   }
 
  private:
@@ -92,8 +104,23 @@ class Handler : public content::WebContentsObserver {
   // the number of pending messages.
   void SendExecuteCode(const ExtensionMsg_ExecuteCode_Params& params,
                        content::RenderFrameHost* frame) {
+    if (!frame->IsRenderFrameLive())
+      return;
+    DCHECK(!root_is_main_frame_ || ShouldIncludeFrame(frame));
+    if (!root_is_main_frame_ && !ShouldIncludeFrame(frame))
+      return;
     pending_render_frames_.insert(frame);
     frame->Send(new ExtensionMsg_ExecuteCode(frame->GetRoutingID(), params));
+  }
+
+  // Returns whether a frame is the root frame or a descendant of it.
+  bool ShouldIncludeFrame(content::RenderFrameHost* frame) {
+    while (frame) {
+      if (frame == root_rfh_)
+        return true;
+      frame = frame->GetParent();
+    }
+    return false;
   }
 
   // Handles the ExecuteCodeFinished message.
@@ -106,22 +133,22 @@ class Handler : public content::WebContentsObserver {
     DCHECK(!pending_render_frames_.empty());
     bool erased = pending_render_frames_.erase(render_frame_host) == 1;
     DCHECK(erased);
-    bool is_main_frame = web_contents()->GetMainFrame() == render_frame_host;
+    bool is_root_frame = root_rfh_ == render_frame_host;
 
     // Set the result, if there is one.
     const base::Value* script_value = nullptr;
     if (result_list.Get(0u, &script_value)) {
       // If this is the main result, we put it at index 0. Otherwise, we just
       // append it at the end.
-      if (is_main_frame && !results_.empty())
+      if (is_root_frame && !results_.empty())
         CHECK(results_.Insert(0u, script_value->DeepCopy()));
       else
         results_.Append(script_value->DeepCopy());
     }
 
-    if (is_main_frame) {  // Only use the main frame's error and url.
-      main_frame_error_ = error;
-      main_frame_url_ = on_url;
+    if (is_root_frame) {  // Only use the root frame's error and url.
+      root_frame_error_ = error;
+      root_frame_url_ = on_url;
     }
 
     // Wait until the final request finishes before reporting back.
@@ -130,23 +157,24 @@ class Handler : public content::WebContentsObserver {
   }
 
   void Finish() {
-    if (main_frame_url_.is_empty()) {
-      // We never finished the main frame injection.
-      main_frame_error_ = kRendererDestroyed;
+    if (root_frame_url_.is_empty()) {
+      // We never finished the root frame injection.
+      root_frame_error_ =
+          root_is_main_frame_ ? kRendererDestroyed : kFrameRemoved;
       results_.Clear();
     }
 
-    if (script_observers_.get() && main_frame_error_.empty() &&
+    if (script_observers_.get() && root_frame_error_.empty() &&
         host_id_.type() == HostID::EXTENSIONS) {
       ScriptExecutionObserver::ExecutingScriptsMap id_map;
       id_map[host_id_.id()] = std::set<std::string>();
       FOR_EACH_OBSERVER(
           ScriptExecutionObserver, *script_observers_,
-          OnScriptsExecuted(web_contents(), id_map, main_frame_url_));
+          OnScriptsExecuted(web_contents(), id_map, root_frame_url_));
     }
 
     if (!callback_.is_null())
-      callback_.Run(main_frame_error_, main_frame_url_, results_);
+      callback_.Run(root_frame_error_, root_frame_url_, results_);
     delete this;
   }
 
@@ -158,17 +186,27 @@ class Handler : public content::WebContentsObserver {
   // The request id of the injection.
   int request_id_;
 
+  // Whether to inject in |root_rfh_| and all of its descendant frames.
+  bool include_sub_frames_;
+
+  // The frame (and optionally its descendant frames) where the injection will
+  // occur.
+  content::RenderFrameHost* root_rfh_;
+
+  // Whether |root_rfh_| is the main frame of a tab.
+  bool root_is_main_frame_;
+
   // The hosts of the still-running injections.
   std::set<content::RenderFrameHost*> pending_render_frames_;
 
   // The results of the injection.
   base::ListValue results_;
 
-  // The error from injecting into the main frame.
-  std::string main_frame_error_;
+  // The error from injecting into the root frame.
+  std::string root_frame_error_;
 
-  // The url of the main frame.
-  GURL main_frame_url_;
+  // The url of the root frame.
+  GURL root_frame_url_;
 
   // The callback to run after all injections complete.
   ScriptExecutor::ExecuteScriptCallback callback_;
@@ -197,6 +235,7 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
                                    ScriptExecutor::ScriptType script_type,
                                    const std::string& code,
                                    ScriptExecutor::FrameScope frame_scope,
+                                   int frame_id,
                                    ScriptExecutor::MatchAboutBlank about_blank,
                                    UserScript::RunLocation run_at,
                                    ScriptExecutor::WorldType world_type,
@@ -232,7 +271,8 @@ void ScriptExecutor::ExecuteScript(const HostID& host_id,
   params.user_gesture = user_gesture;
 
   // Handler handles IPCs and deletes itself on completion.
-  new Handler(script_observers_, web_contents_, params, frame_scope, callback);
+  new Handler(script_observers_, web_contents_, params, frame_scope, frame_id,
+              callback);
 }
 
 }  // namespace extensions

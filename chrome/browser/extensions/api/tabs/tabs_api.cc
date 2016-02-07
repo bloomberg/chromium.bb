@@ -71,6 +71,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_util.h"
 #include "extensions/browser/extension_host.h"
@@ -1359,10 +1360,10 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
             net::UnescapeURLComponent(url.GetContent(),
                                       net::UnescapeRule::URL_SPECIAL_CHARS |
                                           net::UnescapeRule::SPACES),
-            ScriptExecutor::TOP_FRAME, ScriptExecutor::DONT_MATCH_ABOUT_BLANK,
-            UserScript::DOCUMENT_IDLE, ScriptExecutor::MAIN_WORLD,
-            ScriptExecutor::DEFAULT_PROCESS, GURL(), GURL(), user_gesture_,
-            ScriptExecutor::NO_RESULT,
+            ScriptExecutor::SINGLE_FRAME, ExtensionApiFrameIdMap::kTopFrameId,
+            ScriptExecutor::DONT_MATCH_ABOUT_BLANK, UserScript::DOCUMENT_IDLE,
+            ScriptExecutor::MAIN_WORLD, ScriptExecutor::DEFAULT_PROCESS, GURL(),
+            GURL(), user_gesture_, ScriptExecutor::NO_RESULT,
             base::Bind(&TabsUpdateFunction::OnExecuteCodeFinished, this));
 
     *is_async = true;
@@ -1898,13 +1899,45 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage() {
 
   CHECK(contents);
 
+  int frame_id = details_->frame_id ? *details_->frame_id
+                                    : ExtensionApiFrameIdMap::kTopFrameId;
+  content::RenderFrameHost* rfh =
+      ExtensionApiFrameIdMap::GetRenderFrameHostById(contents, frame_id);
+  if (!rfh) {
+    error_ = ErrorUtils::FormatErrorMessage(keys::kFrameNotFoundError,
+                                            base::IntToString(frame_id),
+                                            base::IntToString(execute_tab_id_));
+    return false;
+  }
+
+  // Content scripts declared in manifest.json can access frames at about:-URLs
+  // if the extension has permission to access the frame's origin, so also allow
+  // programmatic content scripts at about:-URLs for allowed origins.
+  GURL effective_document_url(rfh->GetLastCommittedURL());
+  bool is_about_url = effective_document_url.SchemeIs(url::kAboutScheme);
+  if (is_about_url && details_->match_about_blank &&
+      *details_->match_about_blank) {
+    effective_document_url = GURL(rfh->GetLastCommittedOrigin().Serialize());
+  }
+
+  if (!effective_document_url.is_valid()) {
+    // Unknown URL, e.g. because no load was committed yet. Allow for now, the
+    // renderer will check again and fail the injection if needed.
+    return true;
+  }
+
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
   if (!extension()->permissions_data()->CanAccessPage(
-          extension(),
-          contents->GetURL(),
-          execute_tab_id_,
-          &error_)) {
+          extension(), effective_document_url, execute_tab_id_, &error_)) {
+    if (is_about_url &&
+        extension()->permissions_data()->active_permissions().HasAPIPermission(
+            APIPermission::kTab)) {
+      error_ = ErrorUtils::FormatErrorMessage(
+          manifest_errors::kCannotAccessAboutUrl,
+          rfh->GetLastCommittedURL().spec(),
+          rfh->GetLastCommittedOrigin().Serialize());
+    }
     return false;
   }
 

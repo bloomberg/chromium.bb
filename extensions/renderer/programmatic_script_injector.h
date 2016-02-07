@@ -50,6 +50,9 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   void OnWillNotInject(InjectFailureReason reason,
                        content::RenderFrame* render_frame) override;
 
+  // Whether it is safe to include information about the URL in error messages.
+  bool CanShowUrlInError() const;
+
   // Return the run location for this injector.
   UserScript::RunLocation GetRunLocation() const;
 
@@ -63,10 +66,9 @@ class ProgrammaticScriptInjector : public ScriptInjector {
   // The url of the frame into which we are injecting.
   GURL url_;
 
-  // The URL of the frame's origin. This is usually identical to |url_|, but
-  // could be different for e.g. about:blank URLs. Do not use this value to make
-  // security decisions, to avoid race conditions (e.g. due to navigation).
-  GURL effective_url_;
+  // The serialization of the frame's origin if the frame is an about:-URL. This
+  // is used to provide user-friendly messages.
+  std::string origin_for_about_error_;
 
   // The results of the script execution.
   base::ListValue results_;

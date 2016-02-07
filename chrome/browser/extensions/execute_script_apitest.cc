@@ -37,6 +37,12 @@ IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptInFrame) {
   ASSERT_TRUE(RunExtensionTest("executescript/in_frame")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(ExecuteScriptApiTest, ExecuteScriptByFrameId) {
+  SetupDelayedHostResolver();
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("executescript/frame_id")) << message_;
+}
+
 // Fails often on Windows.
 // http://crbug.com/174715
 #if defined(OS_WIN)
