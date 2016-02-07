@@ -5,7 +5,6 @@
 #include "platform/scheduler/CancellableTaskFactory.h"
 
 #include "public/platform/Platform.h"
-#include "wtf/InstanceCounter.h"
 
 namespace blink {
 

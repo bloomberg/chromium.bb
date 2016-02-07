@@ -49,6 +49,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {

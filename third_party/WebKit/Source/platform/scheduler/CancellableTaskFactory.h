@@ -7,13 +7,12 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebScheduler.h"
+#include "public/platform/WebTaskRunner.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/WeakPtr.h"
 #include <type_traits>
 

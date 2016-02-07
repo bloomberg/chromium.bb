@@ -39,6 +39,7 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebProcessMemoryDump.h"
+#include "public/platform/WebScheduler.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -46,8 +47,6 @@
 #include "wtf/WeakPtr.h"
 #include "wtf/text/CString.h"
 #include <algorithm>
-
-using namespace WTF;
 
 namespace blink {
 
@@ -838,7 +837,7 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProcess
         ResourceClientWalker<ResourceClient> walker3(m_finishedClients);
         while (ResourceClient* client = walker3.next())
             clientNames.append("(finished) " + client->debugName());
-        std::sort(clientNames.begin(), clientNames.end(), codePointCompareLessThan);
+        std::sort(clientNames.begin(), clientNames.end(), WTF::codePointCompareLessThan);
 
         StringBuilder builder;
         for (size_t i = 0; i < clientNames.size() && i < kMaxResourceClientToShowInMemoryInfra; ++i) {
