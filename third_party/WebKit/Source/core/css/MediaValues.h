@@ -59,22 +59,22 @@ public:
     virtual bool hasValues() const = 0;
 
 protected:
-    static double calculateViewportWidth(LocalFrame*);
-    static double calculateViewportHeight(LocalFrame*);
-    static int calculateDeviceWidth(LocalFrame*);
-    static int calculateDeviceHeight(LocalFrame*);
-    static bool calculateStrictMode(LocalFrame*);
-    static float calculateDevicePixelRatio(LocalFrame*);
-    static int calculateColorBitsPerComponent(LocalFrame*);
-    static int calculateMonochromeBitsPerComponent(LocalFrame*);
-    static int calculateDefaultFontSize(LocalFrame*);
-    static const String calculateMediaType(LocalFrame*);
-    static WebDisplayMode calculateDisplayMode(LocalFrame*);
-    static bool calculateThreeDEnabled(LocalFrame*);
-    static PointerType calculatePrimaryPointerType(LocalFrame*);
-    static int calculateAvailablePointerTypes(LocalFrame*);
-    static HoverType calculatePrimaryHoverType(LocalFrame*);
-    static int calculateAvailableHoverTypes(LocalFrame*);
+    double calculateViewportWidth(LocalFrame*) const;
+    double calculateViewportHeight(LocalFrame*) const;
+    int calculateDeviceWidth(LocalFrame*) const;
+    int calculateDeviceHeight(LocalFrame*) const;
+    bool calculateStrictMode(LocalFrame*) const;
+    float calculateDevicePixelRatio(LocalFrame*) const;
+    int calculateColorBitsPerComponent(LocalFrame*) const;
+    int calculateMonochromeBitsPerComponent(LocalFrame*) const;
+    int calculateDefaultFontSize(LocalFrame*) const;
+    const String calculateMediaType(LocalFrame*) const;
+    WebDisplayMode calculateDisplayMode(LocalFrame*) const;
+    bool calculateThreeDEnabled(LocalFrame*) const;
+    PointerType calculatePrimaryPointerType(LocalFrame*) const;
+    int calculateAvailablePointerTypes(LocalFrame*) const;
+    HoverType calculatePrimaryHoverType(LocalFrame*) const;
+    int calculateAvailableHoverTypes(LocalFrame*) const;
     static LocalFrame* frameFrom(Document&);
 
 };

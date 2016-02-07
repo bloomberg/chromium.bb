@@ -48,25 +48,26 @@ class SegmentedString;
 struct CORE_EXPORT CachedDocumentParameters {
     USING_FAST_MALLOC(CachedDocumentParameters);
 public:
-    static PassOwnPtr<CachedDocumentParameters> create(Document* document)
+    static PassOwnPtr<CachedDocumentParameters> create(Document* document, PassRefPtrWillBeRawPtr<MediaValuesCached> mediaValues = nullptr)
     {
-        return adoptPtr(new CachedDocumentParameters(document));
+        return adoptPtr(new CachedDocumentParameters(document, mediaValues));
     }
 
     bool doHtmlPreloadScanning;
+    RefPtrWillBeCrossThreadPersistent<MediaValuesCached> mediaValues;
     Length defaultViewportMinWidth;
     bool viewportMetaZeroValuesQuirk;
     bool viewportMetaEnabled;
     ReferrerPolicy referrerPolicy;
 
 private:
-    explicit CachedDocumentParameters(Document*);
+    CachedDocumentParameters(Document*, PassRefPtrWillBeRawPtr<MediaValuesCached>);
 };
 
 class TokenPreloadScanner {
     WTF_MAKE_NONCOPYABLE(TokenPreloadScanner); USING_FAST_MALLOC(TokenPreloadScanner);
 public:
-    TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
+    TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>);
     ~TokenPreloadScanner();
 
     void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
@@ -78,6 +79,12 @@ public:
     // at which point all outstanding checkpoints are invalidated.
     TokenPreloadScannerCheckpoint createCheckpoint();
     void rewindTo(TokenPreloadScannerCheckpoint);
+
+    bool isSafeToSendToAnotherThread()
+    {
+        return m_documentURL.isSafeToSendToAnotherThread()
+            && m_predictedBaseElementURL.isSafeToSendToAnotherThread();
+    }
 
 private:
     class StartTagScanner;
@@ -128,7 +135,6 @@ private:
     PictureData m_pictureData;
     size_t m_templateCount;
     OwnPtr<CachedDocumentParameters> m_documentParameters;
-    RefPtrWillBePersistent<MediaValuesCached> m_mediaValues;
     ClientHintsPreferences m_clientHintsPreferences;
 
     Vector<Checkpoint> m_checkpoints;
@@ -137,20 +143,19 @@ private:
 class CORE_EXPORT HTMLPreloadScanner {
     WTF_MAKE_NONCOPYABLE(HTMLPreloadScanner); USING_FAST_MALLOC(HTMLPreloadScanner);
 public:
-    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters, const MediaValuesCached::MediaValuesCachedData& mediaValuesCachedData)
+    static PassOwnPtr<HTMLPreloadScanner> create(const HTMLParserOptions& options, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters> documentParameters)
     {
-        return adoptPtr(new HTMLPreloadScanner(options, documentURL, documentParameters, mediaValuesCachedData));
+        return adoptPtr(new HTMLPreloadScanner(options, documentURL, documentParameters));
     }
 
 
+    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>);
     ~HTMLPreloadScanner();
 
     void appendToEnd(const SegmentedString&);
     void scan(ResourcePreloader*, const KURL& documentBaseElementURL);
 
 private:
-    HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
-
     TokenPreloadScanner m_scanner;
     SegmentedString m_source;
     HTMLToken m_token;
