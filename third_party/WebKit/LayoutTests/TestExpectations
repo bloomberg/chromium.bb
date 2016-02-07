@@ -110,12 +110,6 @@ crbug.com/536138 virtual/spv2/paint/invalidation/repaint-subsequence-on-ancestor
 crbug.com/537172 [ Mac10.6 Win10 ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure ]
 crbug.com/564443 [ Mac10.7 Mac10.8 Mac10.9 Mac10.10 Win7 Linux ] virtual/spv2/paint/invalidation/spv2/background-image-paint-invalidation.html [ Failure Pass ]
 
-# SK_SUPPORT_LEGCAY_INSERT_NEW_EDGES, SK_SUPPORT_LEGACY_VERTICAL_EDGE
-crbug.com/573166 svg/batik/text/smallFonts.svg [ NeedsRebaseline ]
-crbug.com/573166 svg/batik/text/textFeatures.svg [ NeedsRebaseline ]
-crbug.com/573166 svg/carto.net/tabgroup.svg [ NeedsRebaseline ]
-crbug.com/573166 svg/repaint/repaint-paintorder.svg [ NeedsRebaseline ]
-
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ Failure ]
