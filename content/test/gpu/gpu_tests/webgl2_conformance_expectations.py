@@ -79,14 +79,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
-    self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
     # Note that this test fails on ['win', 'intel'] with bug=483282
     self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
 
-    # Remove the following after roll in ToT WebGL conformance tests.
-    self.Fail('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
-        ['mac', 'linux'], bug=570453)
+    # The following two entries are due to validation of TEXTURE_3D target on
+    # 2D texture calls.
+    # compressed-tex-image.html fails on Mac with bug ID 565438.
+    self.Fail('conformance2/textures/misc/compressed-tex-image.html',
+        bug=483282)
+    # tex-input-validation fails on Win and ['mac', ('nvidia', 0xfe9)].
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
+        bug=483282)
 
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
@@ -210,8 +214,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
-        ['win'], bug=483282)
     self.Skip('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
     self.Skip('conformance2/transform_feedback/transform_feedback.html',
@@ -220,6 +222,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=1198) # angle bug ID
     self.Skip('conformance2/reading/read-pixels-into-pixel-pack-buffer.html',
         ['win'], bug=1266) # angle bug ID
+    self.Fail('conformance2/textures/misc/copy-texture-image.html',
+        ['win'], bug=577144)
 
     # Windows 8 only.
     self.Fail('conformance2/textures/image_data/tex-image-and-sub-image-2d' +
@@ -278,6 +282,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-canvas-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
 
+    # Windows AMD/ATI only.
+    self.Fail('deqp/functional/gles3/fbostencilbuffer.html',
+        ['win', 'amd'], bug=483282)
+
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -327,15 +335,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/renderbuffers/readbuffer.html',
         ['mac'], bug=570453)
-    self.Fail('conformance2/textures/misc/compressed-tex-image.html',
-        ['mac'], bug=565438)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/textures/misc/copy-texture-image.html',
+        ['mac'], bug=577144)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
-        ['mac', ('nvidia', 0xfe9)], bug=483282)
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
 
     # Linux only.
