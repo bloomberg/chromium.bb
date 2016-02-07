@@ -21,8 +21,8 @@ json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 import gyp
 
 
-# Use MSVS2013 as the default toolchain.
-CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2013'
+# Use MSVS2015 as the default toolchain.
+CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2015'
 
 
 def SetEnvironmentAndGetRuntimeDllDirs():
@@ -274,7 +274,6 @@ def _GetDesiredVsToolchainHashes():
     # Update 1 with Debuggers, UCRT installers and ucrtbased.dll
     return ['523b6c2d3df300b2c8538cdc0beac404726af051']
   else:
-    # Default to VS2013.
     return ['4087e065abebdca6dbd0caca2910c6718d2ec67f']
 
 
@@ -308,6 +307,9 @@ def Update(force=False):
         depot_tools_win_toolchain):
     import find_depot_tools
     depot_tools_path = find_depot_tools.add_depot_tools_to_path()
+    # Necessary so that get_toolchain_if_necessary.py will put the VS toolkit
+    # in the correct directory.
+    os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()
     get_toolchain_args = [
         sys.executable,
         os.path.join(depot_tools_path,
