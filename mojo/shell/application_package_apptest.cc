@@ -30,7 +30,7 @@ using GetNameCallback =
     test::mojom::ApplicationPackageApptestService::GetNameCallback;
 
 class ProvidedApplicationDelegate
-    : public ApplicationDelegate,
+    : public ShellClient,
       public InterfaceFactory<test::mojom::ApplicationPackageApptestService>,
       public test::mojom::ApplicationPackageApptestService,
       public base::SimpleThread {
@@ -50,16 +50,16 @@ class ProvidedApplicationDelegate
   }
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
     return true;
   }
 
   // InterfaceFactory<test::mojom::ApplicationPackageApptestService>:
   void Create(
-      ApplicationConnection* connection,
+      Connection* connection,
       InterfaceRequest<test::mojom::ApplicationPackageApptestService> request)
           override {
     bindings_.AddBinding(this, std::move(request));
@@ -86,7 +86,7 @@ class ProvidedApplicationDelegate
 };
 
 class ApplicationPackageApptestDelegate
-    : public ApplicationDelegate,
+    : public ShellClient,
       public InterfaceFactory<mojom::ContentHandler>,
       public InterfaceFactory<test::mojom::ApplicationPackageApptestService>,
       public mojom::ContentHandler,
@@ -96,22 +96,22 @@ class ApplicationPackageApptestDelegate
   ~ApplicationPackageApptestDelegate() override {}
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<ContentHandler>(this);
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
     return true;
   }
 
   // InterfaceFactory<mojom::ContentHandler>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<mojom::ContentHandler> request) override {
     content_handler_bindings_.AddBinding(this, std::move(request));
   }
 
   // InterfaceFactory<test::mojom::ApplicationPackageApptestService>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<test::mojom::ApplicationPackageApptestService>
                   request) override {
     bindings_.AddBinding(this, std::move(request));
@@ -136,7 +136,7 @@ class ApplicationPackageApptestDelegate
     callback.Run("ROOT");
   }
 
-  std::vector<scoped_ptr<ApplicationDelegate>> delegates_;
+  std::vector<scoped_ptr<ShellClient>> delegates_;
   WeakBindingSet<mojom::ContentHandler> content_handler_bindings_;
   WeakBindingSet<test::mojom::ApplicationPackageApptestService> bindings_;
 
@@ -159,7 +159,7 @@ class ApplicationPackageApptest : public mojo::test::ApplicationTestBase {
 
  private:
   // test::ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override {
+  ShellClient* GetShellClient() override {
     delegate_ = new ApplicationPackageApptestDelegate;
     return delegate_;
   }

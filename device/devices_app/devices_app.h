@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 class Shell;
@@ -24,7 +24,7 @@ namespace usb {
 class DeviceManager;
 }
 
-class DevicesApp : public mojo::ApplicationDelegate,
+class DevicesApp : public mojo::ShellClient,
                    public mojo::InterfaceFactory<usb::DeviceManager> {
  public:
   DevicesApp();
@@ -33,15 +33,15 @@ class DevicesApp : public mojo::ApplicationDelegate,
  private:
   class USBServiceInitializer;
 
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell,
                   const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
   void Quit() override;
 
   // mojo::InterfaceFactory<usb::DeviceManager>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<usb::DeviceManager> request) override;
 
   // Mojo error handler to track device manager count.

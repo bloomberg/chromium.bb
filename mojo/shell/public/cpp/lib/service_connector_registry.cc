@@ -42,17 +42,17 @@ void ServiceConnectorRegistry::RemoveServiceConnectorForName(
 }
 
 void ServiceConnectorRegistry::ConnectToService(
-    ApplicationConnection* application_connection,
+    Connection* connection,
     const std::string& interface_name,
     ScopedMessagePipeHandle client_handle) {
   auto iter = name_to_service_connector_.find(interface_name);
   if (iter != name_to_service_connector_.end()) {
-    iter->second->ConnectToService(application_connection, interface_name,
+    iter->second->ConnectToService(connection, interface_name,
                                    std::move(client_handle));
     return;
   }
   if (service_connector_) {
-    service_connector_->ConnectToService(application_connection, interface_name,
+    service_connector_->ConnectToService(connection, interface_name,
                                          std::move(client_handle));
   }
 }

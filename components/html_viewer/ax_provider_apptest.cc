@@ -82,7 +82,7 @@ TEST_F(AXProviderTest, HelloWorld) {
   ASSERT_TRUE(server.Start());
 
   // Connect to the URL through the mojo:html_viewer content handler.
-  scoped_ptr<ApplicationConnection> connection =
+  scoped_ptr<Connection> connection =
       shell()->ConnectToApplication(server.GetURL("/test.html").spec());
 
   // Embed the html_viewer in a Window.

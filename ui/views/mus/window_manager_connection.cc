@@ -12,7 +12,7 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/network/network_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"

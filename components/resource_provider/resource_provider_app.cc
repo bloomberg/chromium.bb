@@ -8,7 +8,7 @@
 
 #include "components/resource_provider/file_utils.h"
 #include "components/resource_provider/resource_provider_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
 namespace resource_provider {
@@ -26,8 +26,7 @@ void ResourceProviderApp::Initialize(mojo::Shell* shell, const std::string& url,
   tracing_.Initialize(shell, url);
 }
 
-bool ResourceProviderApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool ResourceProviderApp::AcceptConnection(mojo::Connection* connection) {
   const base::FilePath app_path(
       GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));
   if (app_path.empty())
@@ -38,7 +37,7 @@ bool ResourceProviderApp::AcceptConnection(
 }
 
 void ResourceProviderApp::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<ResourceProvider> request) {
   const base::FilePath app_path(
       GetPathForApplicationUrl(connection->GetRemoteApplicationURL()));

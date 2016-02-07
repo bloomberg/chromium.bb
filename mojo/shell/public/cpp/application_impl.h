@@ -15,10 +15,9 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/lib/service_registry.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
@@ -77,12 +76,12 @@ class ApplicationImpl : public Shell, public shell::mojom::Application {
 
   // Does not take ownership of |delegate|, which must remain valid for the
   // lifetime of ApplicationImpl.
-  ApplicationImpl(ApplicationDelegate* delegate,
+  ApplicationImpl(ShellClient* client,
                   InterfaceRequest<shell::mojom::Application> request);
   // Constructs an ApplicationImpl with a custom termination closure. This
   // closure is invoked on Quit() instead of the default behavior of quitting
   // the current base::MessageLoop.
-  ApplicationImpl(ApplicationDelegate* delegate,
+  ApplicationImpl(ShellClient* client,
                   InterfaceRequest<shell::mojom::Application> request,
                   const Closure& termination_closure);
   ~ApplicationImpl() override;
@@ -97,10 +96,8 @@ class ApplicationImpl : public Shell, public shell::mojom::Application {
   void WaitForInitialize();
 
   // Shell.
-  scoped_ptr<ApplicationConnection> ConnectToApplication(
-      const std::string& url) override;
-  scoped_ptr<ApplicationConnection> ConnectToApplication(
-      ConnectParams* params) override;
+  scoped_ptr<Connection> ConnectToApplication(const std::string& url) override;
+  scoped_ptr<Connection> ConnectToApplication(ConnectParams* params) override;
   void Quit() override;
   scoped_ptr<AppRefCount> CreateAppRefCount() override;
 
@@ -132,8 +129,8 @@ class ApplicationImpl : public Shell, public shell::mojom::Application {
 
   // We track the lifetime of incoming connection registries as it more
   // convenient for the client.
-  ScopedVector<ApplicationConnection> incoming_connections_;
-  ApplicationDelegate* delegate_;
+  ScopedVector<Connection> incoming_connections_;
+  ShellClient* client_;
   Binding<shell::mojom::Application> binding_;
   shell::mojom::ShellPtr shell_;
   Closure termination_closure_;

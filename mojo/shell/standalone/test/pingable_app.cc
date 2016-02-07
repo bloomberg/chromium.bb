@@ -6,10 +6,10 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/standalone/test/pingable.mojom.h"
 
 namespace mojo {
@@ -36,25 +36,25 @@ class PingableImpl : public Pingable {
   std::string connection_url_;
 };
 
-class PingableApp : public mojo::ApplicationDelegate,
+class PingableApp : public mojo::ShellClient,
                     public mojo::InterfaceFactory<Pingable> {
  public:
   PingableApp() {}
   ~PingableApp() override {}
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
     app_url_ = url;
   }
 
-  bool AcceptConnection(mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // InterfaceFactory<Pingable>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<Pingable> request) override {
     new PingableImpl(std::move(request), app_url_,
                      connection->GetConnectionURL());

@@ -17,20 +17,20 @@ class SimpleThread;
 }
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 }
 
 namespace mojo {
 namespace shell {
 
 // An ApplicationLoader which loads a single type of app from a given
-// ApplicationDelegate factory. A Load() request is fulfilled by creating an
+// mojo::ShellClient factory. A Load() request is fulfilled by creating an
 // instance of the app on a new thread. Only one instance of the app will run at
 // a time. Any Load requests received while the app is running will be dropped.
 class StaticApplicationLoader : public mojo::shell::ApplicationLoader {
  public:
   using ApplicationFactory =
-      base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>;
+      base::Callback<scoped_ptr<mojo::ShellClient>()>;
 
   // Constructs a static loader for |factory|.
   explicit StaticApplicationLoader(const ApplicationFactory& factory);

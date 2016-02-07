@@ -7,9 +7,9 @@
 
 #include <jni.h>
 
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/content_handler_factory.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace base {
@@ -19,16 +19,16 @@ class FilePath;
 namespace mojo {
 namespace shell {
 
-class AndroidHandler : public ApplicationDelegate,
+class AndroidHandler : public ShellClient,
                        public ContentHandlerFactory::Delegate {
  public:
   AndroidHandler();
   ~AndroidHandler();
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
-  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(Connection* connection) override;
 
   // ContentHandlerFactory::Delegate:
   void RunApplication(InterfaceRequest<mojom::Application> application_request,

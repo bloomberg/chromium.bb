@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "mandoline/services/updater/updater_impl.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace updater {
@@ -26,13 +26,12 @@ void UpdaterApp::Initialize(mojo::Shell* shell, const std::string& url,
   shell_ = shell;
 }
 
-bool UpdaterApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool UpdaterApp::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<Updater>(this);
   return true;
 }
 
-void UpdaterApp::Create(mojo::ApplicationConnection* connection,
+void UpdaterApp::Create(mojo::Connection* connection,
                         mojo::InterfaceRequest<Updater> request) {
   new UpdaterImpl(this, std::move(request));
 }

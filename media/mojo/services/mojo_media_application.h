@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -14,23 +14,23 @@ class MediaLog;
 class MojoMediaClient;
 
 class MojoMediaApplication
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<interfaces::ServiceFactory> {
  public:
-  static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
+  static scoped_ptr<mojo::ShellClient> CreateApp();
 
   explicit MojoMediaApplication(scoped_ptr<MojoMediaClient> mojo_media_client);
   ~MojoMediaApplication() final;
 
  private:
-  // mojo::ApplicationDelegate implementation.
+  // mojo::ShellClient implementation.
   void Initialize(mojo::Shell* shell,
                   const std::string& url,
                   uint32_t id) final;
-  bool AcceptConnection(mojo::ApplicationConnection* connection) final;
+  bool AcceptConnection(mojo::Connection* connection) final;
 
   // mojo::InterfaceFactory<interfaces::ServiceFactory> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
 
   scoped_ptr<MojoMediaClient> mojo_media_client_;

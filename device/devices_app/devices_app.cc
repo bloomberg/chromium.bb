@@ -18,7 +18,7 @@
 #include "device/devices_app/usb/device_manager_impl.h"
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
@@ -88,7 +88,7 @@ void DevicesApp::Initialize(mojo::Shell* shell,
   StartIdleTimer();
 }
 
-bool DevicesApp::AcceptConnection(mojo::ApplicationConnection* connection) {
+bool DevicesApp::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<usb::DeviceManager>(this);
   return true;
 }
@@ -98,7 +98,7 @@ void DevicesApp::Quit() {
   shell_ = nullptr;
 }
 
-void DevicesApp::Create(mojo::ApplicationConnection* connection,
+void DevicesApp::Create(mojo::Connection* connection,
                         mojo::InterfaceRequest<usb::DeviceManager> request) {
   // Bind the new device manager to the connecting application's permission
   // provider.

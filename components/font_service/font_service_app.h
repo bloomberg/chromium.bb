@@ -11,13 +11,13 @@
 #include "components/font_service/public/interfaces/font_service.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "skia/ext/skia_utils_base.h"
 
 namespace font_service {
 
-class FontServiceApp : public mojo::ApplicationDelegate,
+class FontServiceApp : public mojo::ShellClient,
                        public mojo::InterfaceFactory<FontService>,
                        public FontService {
  public:
@@ -25,14 +25,13 @@ class FontServiceApp : public mojo::ApplicationDelegate,
   ~FontServiceApp() override;
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<FontService>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<FontService> request) override;
 
   // FontService:

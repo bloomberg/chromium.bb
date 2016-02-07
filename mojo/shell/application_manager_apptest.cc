@@ -26,7 +26,7 @@ namespace shell {
 namespace {
 
 class ApplicationManagerAppTestDelegate
-    : public ApplicationDelegate,
+    : public ShellClient,
       public InterfaceFactory<CreateInstanceForHandleTest>,
       public CreateInstanceForHandleTest {
  public:
@@ -38,17 +38,16 @@ class ApplicationManagerAppTestDelegate
   uint32_t target_id() const { return target_id_; }
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<CreateInstanceForHandleTest>(this);
     return true;
   }
 
   // InterfaceFactory<CreateInstanceForHandleTest>:
-  void Create(
-      ApplicationConnection* connection,
-      InterfaceRequest<CreateInstanceForHandleTest> request) override {
+  void Create(Connection* connection,
+              InterfaceRequest<CreateInstanceForHandleTest> request) override {
     binding_.Bind(std::move(request));
   }
 
@@ -123,7 +122,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
  private:
   // test::ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override {
+  ShellClient* GetShellClient() override {
     delegate_ = new ApplicationManagerAppTestDelegate;
     return delegate_;
   }
@@ -174,7 +173,7 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   // 1. Launch a process. (Actually, have the runner launch a process that
   //    launches a process. #becauselinkerrors).
   mojo::shell::test::mojom::DriverPtr driver;
-  scoped_ptr<ApplicationConnection> connection =
+  scoped_ptr<Connection> connection =
       shell()->ConnectToApplication("exe:application_manager_apptest_driver");
   connection->ConnectToService(&driver);
 

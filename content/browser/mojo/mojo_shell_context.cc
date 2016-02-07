@@ -27,7 +27,7 @@
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/static_application_loader.h"
 
 namespace content {

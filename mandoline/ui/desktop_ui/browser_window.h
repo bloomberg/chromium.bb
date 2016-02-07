@@ -22,7 +22,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 class Shell;
 }
 
@@ -101,7 +101,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   void Embed(mojo::URLRequestPtr request) override;
 
   // Overridden from mojo::InterfaceFactory<ViewEmbedder>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<ViewEmbedder> request) override;
 
 
@@ -141,7 +141,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
   web_view::WebView web_view_;
 
   OmniboxPtr omnibox_;
-  scoped_ptr<mojo::ApplicationConnection> omnibox_connection_;
+  scoped_ptr<mojo::Connection> omnibox_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWindow);
 };

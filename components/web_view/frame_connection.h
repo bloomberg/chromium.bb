@@ -17,7 +17,7 @@
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 class Shell;
 }
 
@@ -51,9 +51,7 @@ class FrameConnection : public FrameUserData {
 
   mojom::FrameClient* frame_client() { return frame_client_.get(); }
 
-  mojo::ApplicationConnection* application_connection() {
-    return application_connection_.get();
-  }
+  mojo::Connection* connection() { return connection_.get(); }
 
   // Asks the remote application for a WindowTreeClient.
   mus::mojom::WindowTreeClientPtr GetWindowTreeClient();
@@ -65,7 +63,7 @@ class FrameConnection : public FrameUserData {
  private:
   mojom::FrameClientPtr frame_client_;
 
-  scoped_ptr<mojo::ApplicationConnection> application_connection_;
+  scoped_ptr<mojo::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameConnection);
 };

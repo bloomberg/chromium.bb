@@ -20,7 +20,7 @@
 #include "mojo/services/network/network_service_impl.h"
 #include "mojo/services/network/url_loader_factory_impl.h"
 #include "mojo/services/network/web_socket_factory_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 
@@ -131,8 +131,7 @@ void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
   tracing_.Initialize(shell_, url);
 }
 
-bool NetworkServiceDelegate::AcceptConnection(
-    ApplicationConnection* connection) {
+bool NetworkServiceDelegate::AcceptConnection(Connection* connection) {
   DCHECK(context_);
   connection->AddService<CookieStore>(this);
   connection->AddService<NetworkService>(this);
@@ -155,12 +154,12 @@ void NetworkServiceDelegate::Quit() {
   context_.reset();
 }
 
-void NetworkServiceDelegate::Create(ApplicationConnection* connection,
+void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<NetworkService> request) {
   new NetworkServiceImpl(shell_->CreateAppRefCount(), std::move(request));
 }
 
-void NetworkServiceDelegate::Create(ApplicationConnection* connection,
+void NetworkServiceDelegate::Create(Connection* connection,
                                     InterfaceRequest<CookieStore> request) {
   new CookieStoreImpl(
       context_.get(), GURL(connection->GetRemoteApplicationURL()).GetOrigin(),
@@ -168,14 +167,14 @@ void NetworkServiceDelegate::Create(ApplicationConnection* connection,
 }
 
 void NetworkServiceDelegate::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<WebSocketFactory> request) {
   new WebSocketFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
                            std::move(request));
 }
 
 void NetworkServiceDelegate::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<URLLoaderFactory> request) {
   new URLLoaderFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
                            std::move(request));

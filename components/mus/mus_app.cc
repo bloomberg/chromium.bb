@@ -16,7 +16,7 @@
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -30,7 +30,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-using mojo::ApplicationConnection;
+using mojo::Connection;
 using mojo::InterfaceRequest;
 using mus::mojom::WindowTreeHostFactory;
 using mus::mojom::Gpu;
@@ -90,8 +90,7 @@ void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
   tracing_.Initialize(shell, url);
 }
 
-bool MandolineUIServicesApp::AcceptConnection(
-    ApplicationConnection* connection) {
+bool MandolineUIServicesApp::AcceptConnection(Connection* connection) {
   connection->AddService<Gpu>(this);
   connection->AddService<mojom::DisplayManager>(this);
   connection->AddService<mojom::WindowManagerFactoryService>(this);
@@ -130,7 +129,7 @@ MandolineUIServicesApp::CreateClientConnectionForEmbedAtWindow(
 }
 
 void MandolineUIServicesApp::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojom::DisplayManager> request) {
   if (!connection_manager_->has_tree_host_connections()) {
     scoped_ptr<PendingRequest> pending_request(new PendingRequest);
@@ -143,13 +142,13 @@ void MandolineUIServicesApp::Create(
 }
 
 void MandolineUIServicesApp::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojom::WindowManagerFactoryService> request) {
   connection_manager_->CreateWindowManagerFactoryService(std::move(request));
 }
 
 void MandolineUIServicesApp::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<mojom::WindowTreeFactory> request) {
   if (!connection_manager_->has_tree_host_connections()) {
     scoped_ptr<PendingRequest> pending_request(new PendingRequest);
@@ -167,12 +166,12 @@ void MandolineUIServicesApp::Create(
 }
 
 void MandolineUIServicesApp::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<WindowTreeHostFactory> request) {
   factory_bindings_.AddBinding(this, std::move(request));
 }
 
-void MandolineUIServicesApp::Create(mojo::ApplicationConnection* connection,
+void MandolineUIServicesApp::Create(mojo::Connection* connection,
                                     mojo::InterfaceRequest<Gpu> request) {
   DCHECK(gpu_state_);
   new GpuImpl(std::move(request), gpu_state_);

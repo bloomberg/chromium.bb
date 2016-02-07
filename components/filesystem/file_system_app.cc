@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace filesystem {
@@ -23,8 +23,7 @@ void FileSystemApp::Initialize(mojo::Shell* shell, const std::string& url,
   tracing_.Initialize(shell, url);
 }
 
-bool FileSystemApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool FileSystemApp::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<FileSystem>(this);
   return true;
 }
@@ -57,7 +56,7 @@ bool FileSystemApp::ShellConnectionLost() {
 }
 
 // |InterfaceFactory<Files>| implementation:
-void FileSystemApp::Create(mojo::ApplicationConnection* connection,
+void FileSystemApp::Create(mojo::Connection* connection,
                            mojo::InterfaceRequest<FileSystem> request) {
   new FileSystemImpl(this, connection, std::move(request));
 }

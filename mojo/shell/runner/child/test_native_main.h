@@ -6,10 +6,10 @@
 #define MOJO_SHELL_RUNNER_CHILD_TEST_NATIVE_MAIN_H_
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 namespace shell {
 
-int TestNativeMain(mojo::ApplicationDelegate* application_delegate);
+int TestNativeMain(mojo::ShellClient* application_delegate);
 
 }  // namespace shell
 }  // namespace mojo

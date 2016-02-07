@@ -9,13 +9,13 @@
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace web_view {
 
 class WebViewApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojom::WebViewFactory,
       public mojo::InterfaceFactory<mojom::WebViewFactory> {
  public:
@@ -23,18 +23,17 @@ class WebViewApplicationDelegate
   ~WebViewApplicationDelegate() override;
 
  private:
-  // Overridden from mojo::ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // Overridden from mojom::WebViewFactory:
   void CreateWebView(mojom::WebViewClientPtr client,
                      mojo::InterfaceRequest<mojom::WebView> web_view) override;
 
   // Overridden from mojo::InterfaceFactory<mojom::WebView>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::WebViewFactory> request) override;
 
   mojo::Shell* shell_;

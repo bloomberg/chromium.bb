@@ -12,7 +12,7 @@
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
 namespace mojo {
@@ -24,7 +24,7 @@ namespace mandoline {
 class BrowserWindow;
 
 // BrowserManager creates and manages the lifetime of Browsers.
-class BrowserManager : public mojo::ApplicationDelegate,
+class BrowserManager : public mojo::ShellClient,
                        public LaunchHandler,
                        public mojo::InterfaceFactory<LaunchHandler> {
  public:
@@ -43,14 +43,13 @@ class BrowserManager : public mojo::ApplicationDelegate,
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
 
-  // Overridden from mojo::ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::Shell* shell_;

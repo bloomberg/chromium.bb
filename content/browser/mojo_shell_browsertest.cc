@@ -25,8 +25,8 @@ class MojoShellTest : public ContentBrowserTest {
   }
 
  private:
-  static scoped_ptr<mojo::ApplicationDelegate> CreateTestApp() {
-    return scoped_ptr<mojo::ApplicationDelegate>(new TestMojoApp);
+  static scoped_ptr<mojo::ShellClient> CreateTestApp() {
+    return scoped_ptr<mojo::ShellClient>(new TestMojoApp);
   }
 
   MojoShellContext::StaticApplicationMap test_apps_;

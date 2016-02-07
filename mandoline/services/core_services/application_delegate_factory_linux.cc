@@ -8,7 +8,7 @@
 
 namespace core_services {
 
-scoped_ptr<mojo::ApplicationDelegate> CreatePlatformSpecificApplicationDelegate(
+scoped_ptr<mojo::ShellClient> CreatePlatformSpecificApplicationDelegate(
     const std::string& url) {
   return url == "mojo://font_service/"
              ? make_scoped_ptr(new font_service::FontServiceApp)

@@ -14,7 +14,7 @@ MojoResult MojoMain(MojoHandle mojo_handle) {
   mojo::ApplicationRunner::InitBaseCommandLine();
   mojo::InitLogging();
 
-  scoped_ptr<mojo::ApplicationDelegate> app_delegate =
+  scoped_ptr<mojo::ShellClient> app_delegate =
       media::MojoMediaApplication::CreateApp();
   mojo::ApplicationRunner runner(app_delegate.release());
   return runner.Run(mojo_handle, false /* init_base */);

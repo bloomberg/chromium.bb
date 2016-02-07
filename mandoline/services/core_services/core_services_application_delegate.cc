@@ -19,8 +19,8 @@
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/tracing_app.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
 namespace core_services {
@@ -32,7 +32,7 @@ class ApplicationThread : public base::SimpleThread {
       const base::WeakPtr<CoreServicesApplicationDelegate>
           core_services_application,
       const std::string& url,
-      scoped_ptr<mojo::ApplicationDelegate> delegate,
+      scoped_ptr<mojo::ShellClient> delegate,
       mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
       const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
@@ -72,7 +72,7 @@ class ApplicationThread : public base::SimpleThread {
   scoped_refptr<base::SingleThreadTaskRunner>
       core_services_application_task_runner_;
   std::string url_;
-  scoped_ptr<mojo::ApplicationDelegate> delegate_;
+  scoped_ptr<mojo::ShellClient> delegate_;
   mojo::InterfaceRequest<mojo::shell::mojom::Application> request_;
   mojo::Callback<void()> destruct_callback_;
 
@@ -105,7 +105,7 @@ void CoreServicesApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool CoreServicesApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   connection->AddService(this);
   return true;
 }
@@ -118,7 +118,7 @@ void CoreServicesApplicationDelegate::Quit() {
 }
 
 void CoreServicesApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
   handler_bindings_.AddBinding(this, std::move(request));
 }
@@ -129,7 +129,7 @@ void CoreServicesApplicationDelegate::StartApplication(
     const mojo::Callback<void()>& destruct_callback) {
   const std::string url = response->url;
 
-  scoped_ptr<mojo::ApplicationDelegate> delegate;
+  scoped_ptr<mojo::ShellClient> delegate;
   if (url == "mojo://clipboard/") {
     delegate.reset(new clipboard::ClipboardApplicationDelegate);
   } else if (url == "mojo://filesystem/") {

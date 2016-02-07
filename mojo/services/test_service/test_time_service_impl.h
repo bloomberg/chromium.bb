@@ -14,8 +14,7 @@
 #include "mojo/services/test_service/test_service.mojom.h"
 
 namespace mojo {
-
-class ApplicationConnection;
+class Connection;
 class Shell;
 
 namespace test {

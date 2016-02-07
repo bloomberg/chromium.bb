@@ -113,9 +113,9 @@ MojoResult RunAllTests(MojoHandle application_request_handle) {
   return (result == 0) ? MOJO_RESULT_OK : MOJO_RESULT_UNKNOWN;
 }
 
-TestHelper::TestHelper(ApplicationDelegate* delegate)
+TestHelper::TestHelper(ShellClient* client)
     : application_impl_(new ApplicationImpl(
-          delegate == nullptr ? &default_application_delegate_ : delegate,
+          client == nullptr ? &default_shell_client_ : client,
           std::move(g_application_request))),
       url_(g_url) {
   // Fake application initialization.
@@ -129,7 +129,7 @@ TestHelper::~TestHelper() {
   // ApplicationImpl::TestApi test_api(application_impl_);
   // test_api.UnbindConnections(&g_application_request, &g_shell);
   // }
-  // We may have supplied a member as the delegate. Delete |application_impl_|
+  // We may have supplied a member as the client. Delete |application_impl_|
   // while still valid.
   application_impl_.reset();
 }
@@ -139,7 +139,7 @@ ApplicationTestBase::ApplicationTestBase() : test_helper_(nullptr) {}
 ApplicationTestBase::~ApplicationTestBase() {
 }
 
-ApplicationDelegate* ApplicationTestBase::GetApplicationDelegate() {
+ShellClient* ApplicationTestBase::GetShellClient() {
   return nullptr;
 }
 
@@ -153,7 +153,7 @@ void ApplicationTestBase::SetUp() {
   MOJO_CHECK(g_shell);
 
   // New applications are constructed for each test to avoid persisting state.
-  test_helper_.reset(new TestHelper(GetApplicationDelegate()));
+  test_helper_.reset(new TestHelper(GetShellClient()));
 }
 
 void ApplicationTestBase::TearDown() {

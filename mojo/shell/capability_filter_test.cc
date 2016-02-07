@@ -13,9 +13,8 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/package_manager.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/service_provider_impl.h"
 
@@ -27,7 +26,7 @@ namespace test {
 // Listens for services exposed/blocked and for application connections being
 // closed. Quits |loop| when all expectations are met.
 class ConnectionValidator : public ApplicationLoader,
-                            public ApplicationDelegate,
+                            public ShellClient,
                             public InterfaceFactory<Validator>,
                             public Validator {
  public:
@@ -56,14 +55,14 @@ class ConnectionValidator : public ApplicationLoader,
     app_.reset(new ApplicationImpl(this, std::move(request)));
   }
 
-  // Overridden from ApplicationDelegate:
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  // Overridden from ShellClient:
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<Validator>(this);
     return true;
   }
 
   // Overridden from InterfaceFactory<Validator>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<Validator> request) override {
     validator_bindings_.AddBinding(this, std::move(request));
   }
@@ -107,7 +106,7 @@ class ConnectionValidator : public ApplicationLoader,
 
 // This class models a system service that exposes two interfaces, Safe and
 // Unsafe. The interface Unsafe is not to be exposed to untrusted applications.
-class ServiceApplication : public ApplicationDelegate,
+class ServiceApplication : public ShellClient,
                            public InterfaceFactory<Safe>,
                            public InterfaceFactory<Unsafe>,
                            public Safe,
@@ -117,33 +116,33 @@ class ServiceApplication : public ApplicationDelegate,
   ~ServiceApplication() override {}
 
  private:
-  // Overridden from ApplicationDelegate:
+  // Overridden from ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
     shell_ = shell;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
     shell_->ConnectToService("test:validator", &validator_);
   }
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     AddService<Safe>(connection);
     AddService<Unsafe>(connection);
     return true;
   }
 
   // Overridden from InterfaceFactory<Safe>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<Safe> request) override {
     safe_bindings_.AddBinding(this, std::move(request));
   }
 
   // Overridden from InterfaceFactory<Unsafe>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<Unsafe> request) override {
     unsafe_bindings_.AddBinding(this, std::move(request));
   }
 
   template <typename Interface>
-  void AddService(ApplicationConnection* connection) {
+  void AddService(Connection* connection) {
     validator_->AddServiceCalled(connection->GetRemoteApplicationURL(),
                                  connection->GetConnectionURL(),
                                  Interface::Name_,
@@ -169,8 +168,7 @@ void TestApplication::Initialize(Shell* shell, const std::string& url,
   shell_ = shell;
   url_ = url;
 }
-bool TestApplication::AcceptConnection(
-    ApplicationConnection* connection) {
+bool TestApplication::AcceptConnection(Connection* connection) {
   // TestApplications receive their Validator via the inbound connection.
   connection->ConnectToService(&validator_);
 
@@ -193,7 +191,7 @@ void TestApplication::ConnectionClosed(const std::string& service_url) {
 ////////////////////////////////////////////////////////////////////////////////
 // TestLoader:
 
-TestLoader::TestLoader(ApplicationDelegate* delegate) : delegate_(delegate) {}
+TestLoader::TestLoader(ShellClient* delegate) : delegate_(delegate) {}
 TestLoader::~TestLoader() {}
 
 void TestLoader::Load(const GURL& url,

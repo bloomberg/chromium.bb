@@ -4,11 +4,11 @@
 
 #include "mandoline/services/core_services/application_delegate_factory.h"
 
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace core_services {
 
-scoped_ptr<mojo::ApplicationDelegate> CreatePlatformSpecificApplicationDelegate(
+scoped_ptr<mojo::ShellClient> CreatePlatformSpecificApplicationDelegate(
     const std::string& url) {
   return nullptr;
 }

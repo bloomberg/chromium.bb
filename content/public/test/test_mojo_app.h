@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -18,7 +18,7 @@ extern const char kTestMojoAppUrl[];
 
 // Simple Mojo app which provides a TestMojoService impl. The app terminates
 // itself after its TestService fulfills a single DoSomething call.
-class TestMojoApp : public mojo::ApplicationDelegate,
+class TestMojoApp : public mojo::ShellClient,
                     public mojo::InterfaceFactory<TestMojoService>,
                     public TestMojoService {
  public:
@@ -26,14 +26,13 @@ class TestMojoApp : public mojo::ApplicationDelegate,
   ~TestMojoApp() override;
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<TestMojoService>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<TestMojoService> request) override;
 
   // TestMojoService:

@@ -8,7 +8,7 @@
 #include "content/common/content_export.h"
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 class Shell;
 }
 
@@ -24,10 +24,10 @@ namespace content {
 class CONTENT_EXPORT MojoShellConnection {
  public:
   // Override to add additional services to inbound connections.
+  // TODO(beng): This should just be ShellClient.
   class Listener {
    public:
-    virtual bool AcceptConnection(
-        mojo::ApplicationConnection* connection) = 0;
+    virtual bool AcceptConnection(mojo::Connection* connection) = 0;
 
     virtual ~Listener() {}
   };

@@ -9,10 +9,9 @@
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -39,7 +38,7 @@ class Wallpaper : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(Wallpaper);
 };
 
-class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
+class WallpaperApplicationDelegate : public mojo::ShellClient {
  public:
   WallpaperApplicationDelegate() {}
   ~WallpaperApplicationDelegate() override {}
@@ -49,7 +48,7 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
   }
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     tracing_.Initialize(shell, url);

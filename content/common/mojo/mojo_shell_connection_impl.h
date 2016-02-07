@@ -11,7 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 namespace shell {
@@ -25,7 +26,7 @@ namespace content {
 bool IsRunningInMojoShell();
 
 class MojoShellConnectionImpl : public MojoShellConnection,
-                                public mojo::ApplicationDelegate {
+                                public mojo::ShellClient {
  public:
   // Creates an instance of this class and stuffs it in TLS on the calling
   // thread. Retrieve it using MojoShellConnection::Get().
@@ -49,11 +50,10 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   MojoShellConnectionImpl();
   ~MojoShellConnectionImpl() override;
 
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // MojoShellConnection:
   mojo::Shell* GetShell() override;

@@ -25,14 +25,12 @@
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
-#include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
-#include "mojo/shell/public/cpp/service_provider_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
@@ -55,7 +53,7 @@ class PDFView : public mus::WindowTreeDelegate,
   using DeleteCallback = base::Callback<void(PDFView*)>;
 
   PDFView(mojo::Shell* shell,
-          mojo::ApplicationConnection* connection,
+          mojo::Connection* connection,
           FPDF_DOCUMENT doc,
           const DeleteCallback& delete_callback)
       : app_ref_(shell->CreateAppRefCount()),
@@ -216,7 +214,7 @@ class PDFView : public mus::WindowTreeDelegate,
 
   // mojo::InterfaceFactory<web_view::mojom::FrameClient>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<web_view::mojom::FrameClient> request) override {
     frame_client_binding_.Bind(std::move(request));
   }
@@ -240,7 +238,7 @@ class PDFView : public mus::WindowTreeDelegate,
 
 // Responsible for managing all the views for displaying a PDF document.
 class PDFViewerApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<mus::mojom::WindowTreeClient> {
  public:
   PDFViewerApplicationDelegate(
@@ -277,7 +275,7 @@ class PDFViewerApplicationDelegate
   }
 
   // Callback from the quit closure. We key off this rather than
-  // ApplicationDelegate::Quit() as we don't want to shut down the messageloop
+  // ShellClient::Quit() as we don't want to shut down the messageloop
   // when we quit (the messageloop is shared among multiple PDFViews).
   void OnTerminate() { delete this; }
 
@@ -287,16 +285,15 @@ class PDFViewerApplicationDelegate
     pdf_views_.erase(std::find(pdf_views_.begin(), pdf_views_.end(), pdf_view));
   }
 
-  // ApplicationDelegate:
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  // mojo::ShellClient:
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService<mus::mojom::WindowTreeClient>(this);
     return true;
   }
 
   // mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
     PDFView* pdf_view = new PDFView(
         &app_, connection, doc_,
@@ -341,7 +338,7 @@ class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
 };
 
 class PDFViewer
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler> {
  public:
   PDFViewer() {
@@ -352,20 +349,19 @@ class PDFViewer
   ~PDFViewer() override { FPDF_DestroyLibrary(); }
 
  private:
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     tracing_.Initialize(shell, url);
   }
 
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService(this);
     return true;
   }
 
   // InterfaceFactory<ContentHandler>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
                   request) override {
     new ContentHandlerImpl(std::move(request));

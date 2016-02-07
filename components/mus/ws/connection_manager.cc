@@ -17,7 +17,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace mus {

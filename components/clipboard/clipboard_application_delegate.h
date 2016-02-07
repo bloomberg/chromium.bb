@@ -8,30 +8,25 @@
 #include "base/macros.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-
-namespace mojo {
-class ApplicationConnection;
-}
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace clipboard {
 
 class ClipboardApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<mojo::Clipboard> {
  public:
   ClipboardApplicationDelegate();
   ~ClipboardApplicationDelegate() override;
 
-  // mojo::ApplicationDelegate implementation.
+  // mojo::ShellClient implementation.
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<mojo::Clipboard> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::Clipboard> request) override;
 
  private:

@@ -9,7 +9,7 @@
 
 namespace mojo {
 
-class ApplicationConnection;
+class Connection;
 template <typename Interface>
 class InterfaceRequest;
 
@@ -21,7 +21,7 @@ template <typename Interface>
 class InterfaceFactory {
  public:
   virtual ~InterfaceFactory() {}
-  virtual void Create(ApplicationConnection* connection,
+  virtual void Create(Connection* connection,
                       InterfaceRequest<Interface> request) = 0;
 };
 

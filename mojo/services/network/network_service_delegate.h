@@ -14,9 +14,9 @@
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace sql {
 class ScopedMojoFilesystemVFS;
@@ -25,7 +25,7 @@ class ScopedMojoFilesystemVFS;
 namespace mojo {
 class NetworkServiceDelegateObserver;
 
-class NetworkServiceDelegate : public ApplicationDelegate,
+class NetworkServiceDelegate : public ShellClient,
                                public InterfaceFactory<NetworkService>,
                                public InterfaceFactory<CookieStore>,
                                public InterfaceFactory<WebSocketFactory>,
@@ -43,26 +43,26 @@ class NetworkServiceDelegate : public ApplicationDelegate,
   // multiple times.
   void EnsureIOThreadShutdown();
 
-  // ApplicationDelegate implementation.
+  // mojo::ShellClient implementation.
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
-  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(Connection* connection) override;
   bool ShellConnectionLost() override;
   void Quit() override;
 
   // InterfaceFactory<NetworkService> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<NetworkService> request) override;
 
   // InterfaceFactory<CookieStore> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<CookieStore> request) override;
 
   // InterfaceFactory<WebSocketFactory> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<WebSocketFactory> request) override;
 
   // InterfaceFactory<URLLoaderFactory> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<URLLoaderFactory> request) override;
 
   // Overridden from FileSystemClient:

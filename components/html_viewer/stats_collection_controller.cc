@@ -82,7 +82,7 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
 
   v8::Context::Scope context_scope(context);
 
-  scoped_ptr<mojo::ApplicationConnection> connection =
+  scoped_ptr<mojo::Connection> connection =
       shell->ConnectToApplication("mojo:tracing");
   if (!connection)
     return nullptr;

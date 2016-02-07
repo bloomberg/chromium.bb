@@ -6,7 +6,7 @@
 #define MOJO_SHELL_PUBLIC_CPP_SHELL_H_
 
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
@@ -42,16 +42,16 @@ class Shell {
   // Requests a new connection to an application. Returns a pointer to the
   // connection if the connection is permitted by this application's delegate,
   // or nullptr otherwise. Caller takes ownership.
-  virtual scoped_ptr<ApplicationConnection> ConnectToApplication(
+  virtual scoped_ptr<Connection> ConnectToApplication(
       const std::string& url) = 0;
-  virtual scoped_ptr<ApplicationConnection> ConnectToApplication(
+  virtual scoped_ptr<Connection> ConnectToApplication(
       ConnectParams* params) = 0;
 
   // Connect to application identified by |request->url| and connect to the
   // service implementation of the interface identified by |Interface|.
   template <typename Interface>
   void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
-    scoped_ptr<ApplicationConnection> connection = ConnectToApplication(params);
+    scoped_ptr<Connection> connection = ConnectToApplication(params);
     if (!connection.get())
       return;
     connection->ConnectToService(ptr);

@@ -17,8 +17,8 @@
 // TODO(beng): move this file somewhere common.
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mus {
 class View;
@@ -27,7 +27,7 @@ class View;
 namespace mandoline {
 
 class PhoneBrowserApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public LaunchHandler,
       public mus::WindowTreeDelegate,
       public mus::WindowObserver,
@@ -38,11 +38,10 @@ class PhoneBrowserApplicationDelegate
   ~PhoneBrowserApplicationDelegate() override;
 
  private:
-  // Overridden from mojo::ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // Overridden from LaunchHandler:
   void LaunchURL(const mojo::String& url) override;
@@ -70,7 +69,7 @@ class PhoneBrowserApplicationDelegate
                                   int32_t active_match_ordinal) override {}
 
   // Overridden from mojo::InterfaceFactory<LaunchHandler>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
   mojo::Shell* shell_;

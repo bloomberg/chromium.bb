@@ -9,7 +9,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 static_assert(static_cast<uint32_t>(SkTypeface::kNormal) ==
                   static_cast<uint32_t>(font_service::TypefaceStyle::NORMAL),
@@ -63,13 +63,12 @@ void FontServiceApp::Initialize(mojo::Shell* shell, const std::string& url,
   tracing_.Initialize(shell, url);
 }
 
-bool FontServiceApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool FontServiceApp::AcceptConnection(mojo::Connection* connection) {
   connection->AddService(this);
   return true;
 }
 
-void FontServiceApp::Create(mojo::ApplicationConnection* connection,
+void FontServiceApp::Create(mojo::Connection* connection,
                             mojo::InterfaceRequest<FontService> request) {
   bindings_.AddBinding(this, std::move(request));
 }

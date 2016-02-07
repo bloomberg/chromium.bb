@@ -15,7 +15,7 @@
 #include "base/threading/platform_thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/content_handler_factory.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
 
@@ -134,7 +134,7 @@ void ContentHandlerFactory::ManagedDelegate::RunApplication(
 }
 
 void ContentHandlerFactory::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<shell::mojom::ContentHandler> request) {
   new ContentHandlerImpl(delegate_, std::move(request));
 }

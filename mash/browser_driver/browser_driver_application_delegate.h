@@ -14,27 +14,22 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
-
-namespace mojo {
-class ApplicationConnection;
-}
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mash {
 namespace browser_driver {
 
-class BrowserDriverApplicationDelegate : public mojo::ApplicationDelegate,
+class BrowserDriverApplicationDelegate : public mojo::ShellClient,
                                          public mus::mojom::AcceleratorHandler {
  public:
   BrowserDriverApplicationDelegate();
   ~BrowserDriverApplicationDelegate() override;
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mus::mojom::AcceleratorHandler:
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;

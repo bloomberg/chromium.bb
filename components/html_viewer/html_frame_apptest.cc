@@ -52,12 +52,11 @@ void OnGotContentHandlerForRoot(bool* got_callback) {
   ignore_result(WindowServerTestBase::QuitRunLoop());
 }
 
-mojo::ApplicationConnection* ApplicationConnectionForFrame(Frame* frame) {
-  return static_cast<FrameConnection*>(frame->user_data())
-      ->application_connection();
+mojo::Connection* ConnectionForFrame(Frame* frame) {
+  return static_cast<FrameConnection*>(frame->user_data())->connection();
 }
 
-std::string GetFrameText(ApplicationConnection* connection) {
+std::string GetFrameText(Connection* connection) {
   html_viewer::TestHTMLViewerPtr test_html_viewer;
   connection->ConnectToService(&test_html_viewer);
   std::string result;
@@ -71,7 +70,7 @@ std::string GetFrameText(ApplicationConnection* connection) {
   return result;
 }
 
-scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
+scoped_ptr<base::Value> ExecuteScript(Connection* connection,
                                       const std::string& script) {
   html_viewer::TestHTMLViewerPtr test_html_viewer;
   connection->ConnectToService(&test_html_viewer);
@@ -182,8 +181,7 @@ class HTMLFrameTest : public WindowServerTestBase {
       ADD_FAILURE() << "unable to establish root connection";
       return nullptr;
     }
-    const std::string frame_text =
-        GetFrameText(root_connection->application_connection());
+    const std::string frame_text = GetFrameText(root_connection->connection());
     if (frame_text != "child2") {
       ADD_FAILURE() << "unexpected text " << frame_text;
       return nullptr;
@@ -195,7 +193,7 @@ class HTMLFrameTest : public WindowServerTestBase {
   Frame* CreateEmptyChildFrame(Frame* parent) {
     const size_t initial_frame_count = parent->children().size();
     // Dynamically add a new frame.
-    ExecuteScript(ApplicationConnectionForFrame(parent),
+    ExecuteScript(ConnectionForFrame(parent),
                   AddPortToString(kAddFrameWithEmptyPageScript));
 
     frame_tree_delegate_->WaitForChildFrameCount(parent,
@@ -278,7 +276,7 @@ TEST_F(HTMLFrameTest, MAYBE_PageWithSingleFrame) {
   ASSERT_TRUE(root_connection);
 
   ASSERT_EQ("Page with single frame",
-            GetFrameText(root_connection->application_connection()));
+            GetFrameText(root_connection->connection()));
 
   ASSERT_NO_FATAL_FAILURE(
       frame_tree_delegate_->WaitForChildFrameCount(frame_tree_->root(), 1u));
@@ -290,7 +288,7 @@ TEST_F(HTMLFrameTest, MAYBE_PageWithSingleFrame) {
 
   ASSERT_EQ("child",
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
-                             ->application_connection()));
+                             ->connection()));
 }
 
 // Creates two frames. The parent navigates the child frame by way of changing
@@ -316,14 +314,14 @@ TEST_F(HTMLFrameTest, MAYBE_ChangeLocationOfChildFrame) {
 
   ASSERT_EQ("child",
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
-                             ->application_connection()));
+                             ->connection()));
 
   // Change the location and wait for the navigation to occur.
   const char kNavigateFrame[] =
       "window.frames[0].location = "
       "'http://127.0.0.1:%u/empty_page2.html'";
   frame_tree_delegate_->ClearGotNavigate(child_frame);
-  ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+  ExecuteScript(ConnectionForFrame(frame_tree_->root()),
                 AddPortToString(kNavigateFrame));
   ASSERT_TRUE(frame_tree_delegate_->WaitForFrameNavigation(child_frame));
 
@@ -334,15 +332,14 @@ TEST_F(HTMLFrameTest, MAYBE_ChangeLocationOfChildFrame) {
   ASSERT_TRUE(child_frame->user_data());
   ASSERT_EQ("child2",
             GetFrameText(static_cast<FrameConnection*>(child_frame->user_data())
-                             ->application_connection()));
+                             ->connection()));
 }
 
 TEST_F(HTMLFrameTest, DynamicallyAddFrameAndVerifyParent) {
   Frame* child_frame = LoadEmptyPageAndCreateFrame();
   ASSERT_TRUE(child_frame);
 
-  mojo::ApplicationConnection* child_frame_connection =
-      ApplicationConnectionForFrame(child_frame);
+  mojo::Connection* child_frame_connection = ConnectionForFrame(child_frame);
 
   ASSERT_EQ("child", GetFrameText(child_frame_connection));
   // The child's parent should not be itself:
@@ -363,8 +360,7 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
   Frame* child_frame = LoadEmptyPageAndCreateFrame();
   ASSERT_TRUE(child_frame);
 
-  mojo::ApplicationConnection* child_frame_connection =
-      ApplicationConnectionForFrame(child_frame);
+  mojo::Connection* child_frame_connection = ConnectionForFrame(child_frame);
 
   // Change the name of the child's window.
   ExecuteScript(child_frame_connection, "window.name = 'new_child';");
@@ -377,7 +373,7 @@ TEST_F(HTMLFrameTest, DynamicallyAddFrameAndSeeNameChange) {
   do {
     find_window_result.clear();
     scoped_ptr<base::Value> script_value(
-        ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+        ExecuteScript(ConnectionForFrame(frame_tree_->root()),
                       "window.frames['new_child'] != null ? 'found frame' : "
                       "'unable to find frame';"));
     if (script_value->IsType(base::Value::TYPE_LIST)) {
@@ -414,7 +410,7 @@ TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
   do {
     child_child_frame_count.clear();
     scoped_ptr<base::Value> script_value(
-        ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+        ExecuteScript(ConnectionForFrame(frame_tree_->root()),
                       kGetChildChildFrameCount));
     if (script_value->IsType(base::Value::TYPE_LIST)) {
       base::ListValue* script_value_as_list;
@@ -431,11 +427,11 @@ TEST_F(HTMLFrameTest, FrameTreeOfThreeLevels) {
   // Remove the child's child and make sure the root doesn't see it anymore.
   const char kRemoveLastIFrame[] =
       "document.body.removeChild(document.body.lastChild);";
-  ExecuteScript(ApplicationConnectionForFrame(child_frame), kRemoveLastIFrame);
+  ExecuteScript(ConnectionForFrame(child_frame), kRemoveLastIFrame);
   do {
     child_child_frame_count.clear();
     scoped_ptr<base::Value> script_value(
-        ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+        ExecuteScript(ConnectionForFrame(frame_tree_->root()),
                       kGetChildChildFrameCount));
     if (script_value->IsType(base::Value::TYPE_LIST)) {
       base::ListValue* script_value_as_list;
@@ -455,8 +451,7 @@ TEST_F(HTMLFrameTest, PostMessage) {
   Frame* child_frame = LoadEmptyPageAndCreateFrame();
   ASSERT_TRUE(child_frame);
 
-  mojo::ApplicationConnection* child_frame_connection =
-      ApplicationConnectionForFrame(child_frame);
+  mojo::Connection* child_frame_connection = ConnectionForFrame(child_frame);
   ASSERT_EQ("child", GetFrameText(child_frame_connection));
 
   // Register an event handler in the child frame.
@@ -471,7 +466,7 @@ TEST_F(HTMLFrameTest, PostMessage) {
   // Post a message from the parent to the child.
   const char kPostMessageFromParent[] =
       "window.frames[0].postMessage('hello from parent', '*');";
-  ExecuteScript(ApplicationConnectionForFrame(frame_tree_->root()),
+  ExecuteScript(ConnectionForFrame(frame_tree_->root()),
                 kPostMessageFromParent);
 
   // Wait for the child frame to see the message.

@@ -5,7 +5,7 @@
 #include "mash/shell/shell_application_delegate.h"
 
 #include "base/bind.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace mash {
@@ -27,8 +27,7 @@ void ShellApplicationDelegate::Initialize(mojo::Shell* shell,
   StartQuickLaunch();
 }
 
-bool ShellApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool ShellApplicationDelegate::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<mash::shell::mojom::Shell>(this);
   return true;
 }
@@ -61,7 +60,7 @@ void ShellApplicationDelegate::UnlockScreen() {
 }
 
 void ShellApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mash::shell::mojom::Shell> r) {
   bindings_.AddBinding(this, std::move(r));
 }
@@ -117,7 +116,7 @@ void ShellApplicationDelegate::StartRestartableService(
     const base::Closure& restart_callback) {
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
-  scoped_ptr<mojo::ApplicationConnection> connection =
+  scoped_ptr<mojo::Connection> connection =
       shell_->ConnectToApplication(url);
   connection->SetRemoteServiceProviderConnectionErrorHandler(restart_callback);
   connections_[url] = std::move(connection);

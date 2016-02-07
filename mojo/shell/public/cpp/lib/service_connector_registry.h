@@ -12,7 +12,7 @@
 
 namespace mojo {
 
-class ApplicationConnection;
+class Connection;
 class ServiceConnector;
 
 namespace internal {
@@ -42,7 +42,7 @@ class ServiceConnectorRegistry {
                                   const std::string& interface_name);
   void RemoveServiceConnectorForName(const std::string& interface_name);
 
-  void ConnectToService(ApplicationConnection* application_connection,
+  void ConnectToService(Connection* connection,
                         const std::string& interface_name,
                         ScopedMessagePipeHandle client_handle);
 

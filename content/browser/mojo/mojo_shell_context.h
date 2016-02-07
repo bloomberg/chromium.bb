@@ -19,7 +19,7 @@
 class GURL;
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 }
 
 namespace content {
@@ -29,7 +29,7 @@ namespace content {
 class CONTENT_EXPORT MojoShellContext {
  public:
   using StaticApplicationMap =
-      std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
+      std::map<GURL, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
   MojoShellContext();
   ~MojoShellContext();

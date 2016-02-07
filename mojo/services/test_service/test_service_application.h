@@ -6,33 +6,32 @@
 #define SERVICES_TEST_SERVICE_TEST_SERVICE_APPLICATION_H_
 
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
-class ApplicationConnection;
-
+class Connection;
 namespace test {
 class TestService;
 class TestTimeService;
 
-class TestServiceApplication : public ApplicationDelegate,
+class TestServiceApplication : public ShellClient,
                                public InterfaceFactory<TestService>,
                                public InterfaceFactory<TestTimeService> {
  public:
   TestServiceApplication();
   ~TestServiceApplication() override;
 
-  // ApplicationDelegate implementation.
+  // mojo::ShellClient implementation.
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
-  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(Connection* connection) override;
 
   // InterfaceFactory<TestService> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestService> request) override;
 
   // InterfaceFactory<TestTimeService> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestTimeService> request) override;
 
   void AddRef();

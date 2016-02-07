@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "components/web_view/web_view_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace web_view {
 
@@ -22,7 +22,7 @@ void WebViewApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool WebViewApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   connection->AddService<mojom::WebViewFactory>(this);
   return true;
 }
@@ -34,7 +34,7 @@ void WebViewApplicationDelegate::CreateWebView(
 }
 
 void WebViewApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojom::WebViewFactory> request) {
   factory_bindings_.AddBinding(this, std::move(request));
 }

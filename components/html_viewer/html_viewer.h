@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace html_viewer {
@@ -16,7 +16,7 @@ namespace html_viewer {
 class GlobalState;
 
 class HTMLViewer
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler> {
  public:
   HTMLViewer();
@@ -26,17 +26,17 @@ class HTMLViewer
   GlobalState* global_state() const { return global_state_.get(); }
   mojo::Shell* shell() const { return shell_; }
 
-  // Overridden from ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
 
  private:
-  // Overridden from ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+      mojo::Connection* connection) override;
 
   // Overridden from InterfaceFactory<shell::mojom::ContentHandler>
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
                   request) override;
 

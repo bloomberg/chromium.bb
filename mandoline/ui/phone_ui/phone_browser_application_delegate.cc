@@ -10,7 +10,7 @@
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -34,7 +34,7 @@ PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PhoneBrowserApplicationDelegate, mojo::ApplicationDelegate implementation:
+// PhoneBrowserApplicationDelegate, mojo::ShellClient implementation:
 
 void PhoneBrowserApplicationDelegate::Initialize(mojo::Shell* shell,
                                                  const std::string& url,
@@ -53,7 +53,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool PhoneBrowserApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   connection->AddService<LaunchHandler>(this);
   return true;
 }
@@ -127,7 +127,7 @@ void PhoneBrowserApplicationDelegate::TitleChanged(const mojo::String& title) {
 //       mojo::InterfaceFactory<LaunchHandler> implementation:
 
 void PhoneBrowserApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<LaunchHandler> request) {
   launch_handler_bindings_.AddBinding(this, request.Pass());
 }

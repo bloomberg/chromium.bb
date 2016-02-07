@@ -8,10 +8,10 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/child/test_native_service.mojom.h"
 #include "mojo/shell/runner/init.h"
@@ -19,7 +19,7 @@
 namespace {
 
 class TargetApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::shell::test::TestNativeService,
       public mojo::InterfaceFactory<mojo::shell::test::TestNativeService> {
  public:
@@ -27,11 +27,10 @@ class TargetApplicationDelegate
   ~TargetApplicationDelegate() override {}
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {}
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService<mojo::shell::test::TestNativeService>(this);
     return true;
   }
@@ -42,7 +41,7 @@ class TargetApplicationDelegate
   }
 
   // mojo::InterfaceFactory<mojo::shell::test::TestNativeService>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::shell::test::TestNativeService>
                   request) override {
     bindings_.AddBinding(this, std::move(request));

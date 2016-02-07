@@ -8,15 +8,15 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/devtools_service/public/interfaces/devtools_service.mojom.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace devtools_service {
 
 class DevToolsService;
 
 class DevToolsServiceDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<DevToolsRegistry>,
       public mojo::InterfaceFactory<DevToolsCoordinator> {
  public:
@@ -24,19 +24,18 @@ class DevToolsServiceDelegate
   ~DevToolsServiceDelegate() override;
 
  private:
-  // mojo::ApplicationDelegate implementation.
+  // mojo::Connection implementation.
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
   void Quit() override;
 
   // mojo::InterfaceFactory<DevToolsRegistry> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<DevToolsRegistry> request) override;
 
   // mojo::InterfaceFactory<DevToolsCoordinator> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<DevToolsCoordinator> request) override;
 
   scoped_ptr<DevToolsService> service_;

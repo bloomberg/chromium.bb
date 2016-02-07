@@ -16,13 +16,13 @@
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/services/tracing/trace_data_sink.h"
 #include "mojo/services/tracing/trace_recorder_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace tracing {
 
 class TracingApp
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<TraceCollector>,
       public TraceCollector,
       public mojo::InterfaceFactory<StartupPerformanceDataCollector>,
@@ -32,17 +32,16 @@ class TracingApp
   ~TracingApp() override;
 
  private:
-  // mojo::ApplicationDelegate implementation.
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  // mojo::ShellClient implementation.
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mojo::InterfaceFactory<TraceCollector> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<TraceCollector> request) override;
 
   // mojo::InterfaceFactory<StartupPerformanceDataCollector> implementation.
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<StartupPerformanceDataCollector> request) override;
 
   // tracing::TraceCollector implementation.

@@ -11,7 +11,7 @@
 
 namespace mojo {
 
-class ApplicationDelegate;
+class ShellClient;
 
 // A utility for running a chromium based mojo Application. The typical use
 // case is to use when writing your MojoMain:
@@ -27,7 +27,7 @@ class ApplicationDelegate;
 class ApplicationRunner {
  public:
   // Takes ownership of |delegate|.
-  explicit ApplicationRunner(ApplicationDelegate* delegate);
+  explicit ApplicationRunner(ShellClient* client);
   ~ApplicationRunner();
 
   static void InitBaseCommandLine();
@@ -47,7 +47,7 @@ class ApplicationRunner {
   MojoResult Run(MojoHandle shell_handle);
 
  private:
-  scoped_ptr<ApplicationDelegate> delegate_;
+  scoped_ptr<ShellClient> client_;
 
   // MessageLoop type. TYPE_CUSTOM is default (MessagePumpMojo will be used as
   // the underlying message pump).

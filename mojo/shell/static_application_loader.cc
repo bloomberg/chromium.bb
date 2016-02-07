@@ -13,8 +13,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 
 namespace mojo {

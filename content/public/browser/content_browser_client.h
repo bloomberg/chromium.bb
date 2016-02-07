@@ -62,7 +62,7 @@ class CdmFactory;
 }
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 }
 
 namespace net {
@@ -658,7 +658,7 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host) {}
 
   using StaticMojoApplicationMap =
-      std::map<GURL, base::Callback<scoped_ptr<mojo::ApplicationDelegate>()>>;
+      std::map<GURL, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
   // Registers Mojo applications to be loaded in the browser process by the
   // browser's global Mojo shell.

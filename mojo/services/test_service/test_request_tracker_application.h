@@ -7,8 +7,8 @@
 
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/services/test_service/test_request_tracker_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 class ApplicationImpl;
@@ -17,7 +17,7 @@ class TestTimeService;
 
 // Embeds TestRequestTracker mojo services into an application.
 class TestRequestTrackerApplication
-    : public ApplicationDelegate,
+    : public ShellClient,
       public InterfaceFactory<TestTimeService>,
       public InterfaceFactory<TestRequestTracker>,
       public InterfaceFactory<TestTrackedRequestService> {
@@ -25,20 +25,20 @@ class TestRequestTrackerApplication
   TestRequestTrackerApplication();
   ~TestRequestTrackerApplication() override;
 
-  // ApplicationDelegate methods:
+  // mojo::ShellClient methods:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
-  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(Connection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestTimeService> request) override;
 
   // InterfaceFactory<TestRequestTracker> methods:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestRequestTracker> request) override;
 
   // InterfaceFactory<TestTrackedRequestService> methods:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestTrackedRequestService> request) override;
 
  private:

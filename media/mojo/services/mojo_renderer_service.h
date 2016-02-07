@@ -17,7 +17,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 }
 
 namespace media {
@@ -27,7 +27,7 @@ class CdmContextProvider;
 class Renderer;
 
 // A interfaces::Renderer implementation that uses media::AudioRenderer to
-// decode and render audio to a sink obtained from the ApplicationConnection.
+// decode and render audio to a sink obtained from the Connection.
 class MojoRendererService : interfaces::Renderer {
  public:
   // |cdm_context_provider| can be used to find the CdmContext to support

@@ -24,7 +24,7 @@
 #include "components/test_runner/blink_test_platform_support.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -61,7 +61,7 @@ void TestRunnerApplicationDelegate::Terminate() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// mojo::ApplicationDelegate implementation:
+// mojo::ShellClient implementation:
 
 void TestRunnerApplicationDelegate::Initialize(mojo::Shell* shell,
                                                const std::string& url,
@@ -74,7 +74,7 @@ void TestRunnerApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool TestRunnerApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   connection->AddService<web_view::LayoutTestRunner>(this);
   return true;
 }
@@ -158,7 +158,7 @@ void TestRunnerApplicationDelegate::TestFinished() {
 // mojo::InterfaceFactory<LayoutTestRunner> implementation:
 
 void TestRunnerApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<web_view::LayoutTestRunner> request) {
   layout_test_runner_.AddBinding(this, std::move(request));
 }

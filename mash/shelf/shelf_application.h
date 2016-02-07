@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace views {
 class AuraInit;
@@ -17,13 +17,13 @@ class AuraInit;
 namespace mash {
 namespace shelf {
 
-class ShelfApplication : public mojo::ApplicationDelegate {
+class ShelfApplication : public mojo::ShellClient {
  public:
   ShelfApplication();
   ~ShelfApplication() override;
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
 

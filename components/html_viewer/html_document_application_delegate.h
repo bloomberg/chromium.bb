@@ -13,17 +13,17 @@
 #include "components/html_viewer/html_factory.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace html_viewer {
 
 class GlobalState;
 class HTMLDocument;
 
-// ApplicationDelegate created by the content handler for a specific url.
-class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
+// mojo::ShellClient created by the content handler for a specific url.
+class HTMLDocumentApplicationDelegate : public mojo::ShellClient,
                                         public HTMLFactory {
  public:
   HTMLDocumentApplicationDelegate(
@@ -42,21 +42,20 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
   ~HTMLDocumentApplicationDelegate() override;
 
   // Callback from the quit closure. We key off this rather than
-  // ApplicationDelegate::Quit() as we don't want to shut down the messageloop
+  // ShellClient::Quit() as we don't want to shut down the messageloop
   // when we quit (the messageloop is shared among multiple
   // HTMLDocumentApplicationDelegates).
   void OnTerminate();
 
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   void OnHTMLDocumentDeleted2(HTMLDocument* document);
   void OnResponseReceived(scoped_ptr<mojo::AppRefCount> app_refcount,
                           mojo::URLLoaderPtr loader,
-                          mojo::ApplicationConnection* connection,
+                          mojo::Connection* connection,
                           scoped_ptr<ServiceConnectorQueue> connector_queue,
                           mojo::URLResponsePtr response);
 

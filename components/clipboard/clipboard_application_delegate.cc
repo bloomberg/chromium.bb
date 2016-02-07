@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "components/clipboard/clipboard_standalone_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace clipboard {
 
@@ -22,13 +22,13 @@ void ClipboardApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool ClipboardApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   connection->AddService(this);
   return true;
 }
 
 void ClipboardApplicationDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojo::Clipboard> request) {
   // TODO(erg): Write native implementations of the clipboard. For now, we
   // just build a clipboard which doesn't interact with the system.

@@ -24,10 +24,10 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/common/switches.h"
@@ -38,7 +38,7 @@ using mojo::shell::test::mojom::Driver;
 
 namespace {
 
-class TargetApplicationDelegate : public mojo::ApplicationDelegate,
+class TargetApplicationDelegate : public mojo::ShellClient,
                                   public mojo::InterfaceFactory<Driver>,
                                   public Driver {
  public:
@@ -46,7 +46,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   ~TargetApplicationDelegate() override {}
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     shell_ = shell;
@@ -110,13 +110,13 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                                     platform_channel_pair.PassServerHandle());
   }
 
-  bool AcceptConnection(mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService<Driver>(this);
     return true;
   }
 
   // mojo::InterfaceFactory<Driver>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<Driver> request) override {
     bindings_.AddBinding(this, std::move(request));
   }

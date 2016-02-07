@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/file_system_app.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -46,7 +46,7 @@ const char kUserDataDir[] = "user-data-dir";
 }  // namespace filesystem
 
 FileSystemImpl::FileSystemImpl(FileSystemApp* app,
-                               mojo::ApplicationConnection* connection,
+                               mojo::Connection* connection,
                                mojo::InterfaceRequest<FileSystem> request)
     : app_(app),
       remote_application_url_(connection->GetRemoteApplicationURL()),

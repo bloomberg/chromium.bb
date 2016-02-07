@@ -28,7 +28,6 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -95,7 +94,7 @@ void HTMLDocument::TransferableState::Move(TransferableState* other) {
 }
 
 HTMLDocument::HTMLDocument(mojo::Shell* html_document_shell,
-                           mojo::ApplicationConnection* connection,
+                           mojo::Connection* connection,
                            mojo::URLResponsePtr response,
                            GlobalState* global_state,
                            const DeleteCallback& delete_callback,
@@ -271,7 +270,7 @@ void HTMLDocument::OnFrameDestroyed() {
     delete this;
 }
 
-void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+void HTMLDocument::Create(mojo::Connection* connection,
                           mojo::InterfaceRequest<AxProvider> request) {
   if (!did_finish_local_frame_load_) {
     // Cache AxProvider interface requests until the document finishes loading.
@@ -284,7 +283,7 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
   }
 }
 
-void HTMLDocument::Create(mojo::ApplicationConnection* connection,
+void HTMLDocument::Create(mojo::Connection* connection,
                           mojo::InterfaceRequest<TestHTMLViewer> request) {
   CHECK(IsTestInterfaceEnabled());
   if (!did_finish_local_frame_load_) {
@@ -298,7 +297,7 @@ void HTMLDocument::Create(mojo::ApplicationConnection* connection,
 }
 
 void HTMLDocument::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<web_view::mojom::FrameClient> request) {
   if (frame_) {
     DVLOG(1) << "Request for FrameClient after one already vended.";
@@ -308,7 +307,7 @@ void HTMLDocument::Create(
 }
 
 void HTMLDocument::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) {
   if (frame_) {
     if (frame_->devtools_agent())
@@ -319,7 +318,7 @@ void HTMLDocument::Create(
 }
 
 void HTMLDocument::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
   DCHECK(!transferable_state_.window_tree_delegate_impl);
   transferable_state_.window_tree_delegate_impl.reset(

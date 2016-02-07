@@ -10,8 +10,8 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/test_service/test_service_impl.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace mojo {
 namespace test {
@@ -28,20 +28,19 @@ void TestServiceApplication::Initialize(Shell* shell, const std::string& url,
   shell_ = shell;
 }
 
-bool TestServiceApplication::AcceptConnection(
-    ApplicationConnection* connection) {
+bool TestServiceApplication::AcceptConnection(Connection* connection) {
   connection->AddService<TestService>(this);
   connection->AddService<TestTimeService>(this);
   return true;
 }
 
-void TestServiceApplication::Create(ApplicationConnection* connection,
+void TestServiceApplication::Create(Connection* connection,
                                     InterfaceRequest<TestService> request) {
   new TestServiceImpl(shell_, this, std::move(request));
   AddRef();
 }
 
-void TestServiceApplication::Create(ApplicationConnection* connection,
+void TestServiceApplication::Create(Connection* connection,
                                     InterfaceRequest<TestTimeService> request) {
   new TestTimeServiceImpl(shell_, std::move(request));
 }

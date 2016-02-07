@@ -54,7 +54,7 @@ class ContentHandlerFactory
 
  private:
   // From InterfaceFactory:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<shell::mojom::ContentHandler> request) override;
 
   Delegate* delegate_;

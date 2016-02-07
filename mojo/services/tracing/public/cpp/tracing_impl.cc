@@ -66,7 +66,7 @@ void TracingImpl::Initialize(Shell* shell, const std::string& url) {
 #endif
 }
 
-void TracingImpl::Create(ApplicationConnection* connection,
+void TracingImpl::Create(Connection* connection,
                          InterfaceRequest<tracing::TraceProvider> request) {
   provider_impl_.Bind(std::move(request));
 }

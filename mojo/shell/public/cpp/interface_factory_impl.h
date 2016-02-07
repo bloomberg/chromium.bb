@@ -17,7 +17,7 @@ class InterfaceFactoryImpl : public InterfaceFactory<Interface> {
  public:
   virtual ~InterfaceFactoryImpl() {}
 
-  virtual void Create(ApplicationConnection* connection,
+  virtual void Create(Connection* connection,
                       InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(), &request);
   }
@@ -35,7 +35,7 @@ class InterfaceFactoryImplWithContext : public InterfaceFactory<Interface> {
       : context_(context) {}
   virtual ~InterfaceFactoryImplWithContext() {}
 
-  virtual void Create(ApplicationConnection* connection,
+  virtual void Create(Connection* connection,
                       InterfaceRequest<Interface> request) override {
     BindToRequest(new Impl(context_), &request);
   }

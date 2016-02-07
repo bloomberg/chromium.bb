@@ -20,7 +20,7 @@ namespace mojo {
 class NetworkServiceDelegate;
 
 // A PersistentCookieStore that listens to NetworkContext's and tries to
-// gracefully shutdown when our ApplicationConnection is about to be closed.
+// gracefully shutdown when our Connection is about to be closed.
 class MojoPersistentCookieStore
     : public net::CookieMonster::PersistentCookieStore,
       public NetworkServiceDelegateObserver {

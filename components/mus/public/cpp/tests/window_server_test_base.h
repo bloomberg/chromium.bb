@@ -11,7 +11,6 @@
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 
@@ -23,7 +22,7 @@ namespace mus {
 // established as part of SetUp().
 class WindowServerTestBase
     : public mojo::test::ApplicationTestBase,
-      public mojo::ApplicationDelegate,
+      public mojo::ShellClient,
       public WindowTreeDelegate,
       public WindowManagerDelegate,
       public mojo::InterfaceFactory<mojom::WindowTreeClient> {
@@ -64,11 +63,10 @@ class WindowServerTestBase
   void SetUp() override;
 
   // test::ApplicationTestBase:
-  mojo::ApplicationDelegate* GetApplicationDelegate() override;
+  mojo::ShellClient* GetShellClient() override;
 
-  // ApplicationDelegate:
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  // mojo::ShellClient:
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // WindowTreeDelegate:
   void OnEmbed(Window* root) override;
@@ -85,7 +83,7 @@ class WindowServerTestBase
   void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
 
   // InterfaceFactory<WindowTreeClient>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
   // Used to receive the most recent window tree connection loaded by an embed

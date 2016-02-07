@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 }
 
 namespace device {
@@ -20,7 +20,7 @@ class DevicesAppFactory {
   // Creates a DevicesApp delegate which can be used to launch a new instance
   // of the devices app on a mojo application runner. The caller owns the
   // delegate.
-  static scoped_ptr<mojo::ApplicationDelegate> CreateApp();
+  static scoped_ptr<mojo::ShellClient> CreateApp();
 };
 
 }  // namespace device

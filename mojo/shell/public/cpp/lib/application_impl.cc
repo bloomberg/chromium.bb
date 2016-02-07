@@ -10,9 +10,9 @@
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/environment/logging.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/lib/service_registry.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 
@@ -36,17 +36,17 @@ ApplicationImpl::ConnectParams::ConnectParams(URLRequestPtr request)
 ApplicationImpl::ConnectParams::~ConnectParams() {}
 
 ApplicationImpl::ApplicationImpl(
-    ApplicationDelegate* delegate,
+    ShellClient* client,
     InterfaceRequest<shell::mojom::Application> request)
-    : ApplicationImpl(delegate,
+    : ApplicationImpl(client,
                       std::move(request),
                       base::Bind(&DefaultTerminationClosure)) {}
 
 ApplicationImpl::ApplicationImpl(
-    ApplicationDelegate* delegate,
+    ShellClient* client,
     InterfaceRequest<shell::mojom::Application> request,
     const Closure& termination_closure)
-    : delegate_(delegate),
+    : client_(client),
       binding_(this, std::move(request)),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
@@ -62,15 +62,15 @@ void ApplicationImpl::WaitForInitialize() {
   binding_.WaitForIncomingMethodCall();
 }
 
-scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
+scoped_ptr<Connection> ApplicationImpl::ConnectToApplication(
     const std::string& url) {
   ConnectParams params(url);
   params.set_filter(CreatePermissiveCapabilityFilter());
   return ConnectToApplication(&params);
 }
 
-scoped_ptr<ApplicationConnection>
-    ApplicationImpl::ConnectToApplication(ConnectParams* params) {
+scoped_ptr<Connection> ApplicationImpl::ConnectToApplication(
+    ConnectParams* params) {
   if (!shell_)
     return nullptr;
   DCHECK(params);
@@ -118,7 +118,7 @@ void ApplicationImpl::Initialize(shell::mojom::ShellPtr shell,
                                  uint32_t id) {
   shell_ = std::move(shell);
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
-  delegate_->Initialize(this, url, id);
+  client_->Initialize(this, url, id);
 }
 
 void ApplicationImpl::AcceptConnection(
@@ -128,10 +128,10 @@ void ApplicationImpl::AcceptConnection(
     ServiceProviderPtr exposed_services,
     Array<String> allowed_interfaces,
     const String& url) {
-  scoped_ptr<ApplicationConnection> registry(new internal::ServiceRegistry(
+  scoped_ptr<Connection> registry(new internal::ServiceRegistry(
       url, requestor_url, requestor_id, std::move(exposed_services),
       std::move(services), allowed_interfaces.To<std::set<std::string>>()));
-  if (!delegate_->AcceptConnection(registry.get()))
+  if (!client_->AcceptConnection(registry.get()))
     return;
 
   // If we were quitting because we thought there were no more services for this
@@ -154,11 +154,11 @@ void ApplicationImpl::OnQuitRequested(const Callback<void(bool)>& callback) {
 void ApplicationImpl::OnConnectionError() {
   base::WeakPtr<ApplicationImpl> ptr(weak_factory_.GetWeakPtr());
 
-  // We give the delegate notice first, since it might want to do something on
+  // We give the client notice first, since it might want to do something on
   // shell connection errors other than immediate termination of the run
   // loop. The application might want to continue servicing connections other
   // than the one to the shell.
-  bool quit_now = delegate_->ShellConnectionLost();
+  bool quit_now = client_->ShellConnectionLost();
   if (quit_now)
     QuitNow();
   if (!ptr)
@@ -167,7 +167,7 @@ void ApplicationImpl::OnConnectionError() {
 }
 
 void ApplicationImpl::QuitNow() {
-  delegate_->Quit();
+  client_->Quit();
   termination_closure_.Run();
 }
 

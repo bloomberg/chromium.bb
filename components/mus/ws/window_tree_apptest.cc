@@ -16,15 +16,14 @@
 #include "components/mus/ws/test_change_tracker.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
-using mojo::ApplicationConnection;
-using mojo::ApplicationDelegate;
 using mojo::Array;
 using mojo::Callback;
+using mojo::Connection;
 using mojo::InterfaceRequest;
 using mojo::RectPtr;
+using mojo::ShellClient;
 using mojo::String;
 using mus::mojom::ErrorCode;
 using mus::mojom::EventPtr;
@@ -449,7 +448,7 @@ class WindowTreeClientFactory
 
  private:
   // InterfaceFactory<WindowTreeClient>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<WindowTreeClient> request) override {
     client_impl_.reset(new TestWindowTreeClientImpl());
     client_impl_->Bind(std::move(request));
@@ -466,7 +465,7 @@ class WindowTreeClientFactory
 }  // namespace
 
 class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
-                          public ApplicationDelegate {
+                          public mojo::ShellClient {
  public:
   WindowTreeAppTest()
       : connection_id_1_(0), connection_id_2_(0), root_window_id_(0) {}
@@ -561,7 +560,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   }
 
   // ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override { return this; }
+  mojo::ShellClient* GetShellClient() override { return this; }
   void SetUp() override {
     ApplicationTestBase::SetUp();
     client_factory_.reset(new WindowTreeClientFactory());
@@ -592,8 +591,8 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     changes1()->clear();
   }
 
-  // ApplicationDelegate implementation.
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  // mojo::ShellClient implementation.
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService(client_factory_.get());
     return true;
   }

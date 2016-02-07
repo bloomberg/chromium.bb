@@ -12,7 +12,7 @@
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace views {
 class AuraInit;
@@ -21,14 +21,14 @@ class AuraInit;
 namespace mash {
 namespace screenlock {
 
-class Screenlock : public mojo::ApplicationDelegate,
+class Screenlock : public mojo::ShellClient,
                    public shell::mojom::ScreenlockStateListener {
  public:
   Screenlock();
   ~Screenlock() override;
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
 

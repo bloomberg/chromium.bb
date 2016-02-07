@@ -80,8 +80,7 @@ void WebViewImpl::OnLoad(const GURL& pending_url) {
   Frame::ClientPropertyMap client_properties;
   if (devtools_agent_) {
     devtools_service::DevToolsAgentPtr forward_agent;
-    frame_connection->application_connection()->ConnectToService(
-        &forward_agent);
+    frame_connection->connection()->ConnectToService(&forward_agent);
     devtools_agent_->AttachFrame(std::move(forward_agent), &client_properties);
   }
 

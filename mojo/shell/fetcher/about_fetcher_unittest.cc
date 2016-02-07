@@ -18,10 +18,9 @@
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/util/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,7 +29,7 @@ namespace mojo {
 namespace shell {
 namespace {
 
-class TestContentHandler : public ApplicationDelegate,
+class TestContentHandler : public ShellClient,
                            public InterfaceFactory<mojom::ContentHandler>,
                            public mojom::ContentHandler {
  public:
@@ -41,15 +40,15 @@ class TestContentHandler : public ApplicationDelegate,
   const URLResponse* latest_response() const { return latest_response_.get(); }
 
  private:
-  // Overridden from ApplicationDelegate:
+  // Overridden from ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<mojom::ContentHandler>(this);
     return true;
   }
 
   // Overridden from InterfaceFactory<mojom::ContentHandler>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<mojom::ContentHandler> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -79,7 +78,7 @@ class TestContentHandler : public ApplicationDelegate,
 
 class TestLoader : public ApplicationLoader {
  public:
-  explicit TestLoader(ApplicationDelegate* delegate) : delegate_(delegate) {}
+  explicit TestLoader(ShellClient* delegate) : delegate_(delegate) {}
   ~TestLoader() override {}
 
  private:
@@ -89,7 +88,7 @@ class TestLoader : public ApplicationLoader {
     app_.reset(new ApplicationImpl(delegate_, std::move(request)));
   }
 
-  ApplicationDelegate* delegate_;
+  ShellClient* delegate_;
   scoped_ptr<ApplicationImpl> app_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLoader);

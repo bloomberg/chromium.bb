@@ -13,8 +13,8 @@ namespace content {
 
 namespace {
 
-scoped_ptr<mojo::ApplicationDelegate> CreateTestApp() {
-  return scoped_ptr<mojo::ApplicationDelegate>(new TestMojoApp);
+scoped_ptr<mojo::ShellClient> CreateTestApp() {
+  return scoped_ptr<mojo::ShellClient>(new TestMojoApp);
 }
 
 }  // namespace

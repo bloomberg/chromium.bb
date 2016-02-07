@@ -7,9 +7,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/shell.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -79,18 +79,18 @@ class QuickLaunchUI : public views::WidgetDelegateView,
 
   mojo::Shell* shell_;
   views::Textfield* prompt_;
-  std::vector<scoped_ptr<mojo::ApplicationConnection>> connections_;
+  std::vector<scoped_ptr<mojo::Connection>> connections_;
 
   DISALLOW_COPY_AND_ASSIGN(QuickLaunchUI);
 };
 
-class QuickLaunchApplicationDelegate : public mojo::ApplicationDelegate {
+class QuickLaunchApplicationDelegate : public mojo::ShellClient {
  public:
   QuickLaunchApplicationDelegate() {}
   ~QuickLaunchApplicationDelegate() override {}
 
  private:
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     tracing_.Initialize(shell, url);

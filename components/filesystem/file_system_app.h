@@ -10,8 +10,8 @@
 #include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 class Shell;
@@ -19,7 +19,7 @@ class Shell;
 
 namespace filesystem {
 
-class FileSystemApp : public mojo::ApplicationDelegate,
+class FileSystemApp : public mojo::ShellClient,
                       public mojo::InterfaceFactory<FileSystem> {
  public:
   FileSystemApp();
@@ -34,15 +34,14 @@ class FileSystemApp : public mojo::ApplicationDelegate,
   // that we can QuitNow() once the last DirectoryImpl has closed itself.
   void OnDirectoryConnectionError(DirectoryImpl* directory);
 
-  // |ApplicationDelegate| override:
+  // |mojo::ShellClient| override:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
   bool ShellConnectionLost() override;
 
   // |InterfaceFactory<Files>| implementation:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<FileSystem> request) override;
 
   // Use a vector to work around map not letting us use FileSystemClientPtr as

@@ -12,10 +12,9 @@
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,7 +76,7 @@ class TestPackageManager : public PackageManagerImpl {
   DISALLOW_COPY_AND_ASSIGN(TestPackageManager);
 };
 
-class TestContentHandler : public ApplicationDelegate,
+class TestContentHandler : public ShellClient,
                            public InterfaceFactory<mojom::ContentHandler>,
                            public mojom::ContentHandler {
  public:
@@ -85,15 +84,15 @@ class TestContentHandler : public ApplicationDelegate,
   ~TestContentHandler() override {}
 
  private:
-  // Overridden from ApplicationDelegate:
+  // Overridden from ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<mojom::ContentHandler>(this);
     return true;
   }
 
   // Overridden from InterfaceFactory<mojom::ContentHandler>:
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<mojom::ContentHandler> request) override {
     bindings_.AddBinding(this, std::move(request));
   }
@@ -103,7 +102,7 @@ class TestContentHandler : public ApplicationDelegate,
       InterfaceRequest<mojom::Application> application,
       URLResponsePtr response,
       const Callback<void()>& destruct_callback) override {
-    scoped_ptr<ApplicationDelegate> delegate(new test::TestApplication);
+    scoped_ptr<ShellClient> delegate(new test::TestApplication);
     embedded_apps_.push_back(
         new ApplicationImpl(delegate.get(), std::move(application)));
     embedded_app_delegates_.push_back(std::move(delegate));
@@ -111,7 +110,7 @@ class TestContentHandler : public ApplicationDelegate,
   }
 
   WeakBindingSet<mojom::ContentHandler> bindings_;
-  ScopedVector<ApplicationDelegate> embedded_app_delegates_;
+  ScopedVector<ShellClient> embedded_app_delegates_;
   ScopedVector<ApplicationImpl> embedded_apps_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContentHandler);

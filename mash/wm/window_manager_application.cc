@@ -15,7 +15,7 @@
 #include "mash/wm/root_windows_observer.h"
 #include "mash/wm/user_window_controller_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
@@ -120,15 +120,14 @@ void WindowManagerApplication::Initialize(mojo::Shell* shell,
       RootWindowController::CreateUsingWindowTreeHost(this));
 }
 
-bool WindowManagerApplication::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool WindowManagerApplication::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<mash::wm::mojom::UserWindowController>(this);
   connection->AddService<mus::mojom::AcceleratorRegistrar>(this);
   return true;
 }
 
 void WindowManagerApplication::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
     user_window_controller_binding_.AddBinding(user_window_controller_.get(),
@@ -141,7 +140,7 @@ void WindowManagerApplication::Create(
 }
 
 void WindowManagerApplication::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request) {
   static int accelerator_registrar_count = 0;
   if (accelerator_registrar_count == std::numeric_limits<int>::max()) {

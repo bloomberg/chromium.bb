@@ -37,7 +37,7 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
                     public Omnibox {
  public:
   OmniboxImpl(mojo::Shell* shell,
-              mojo::ApplicationConnection* connection,
+              mojo::Connection* connection,
               mojo::InterfaceRequest<Omnibox> request);
   ~OmniboxImpl() override;
 
@@ -81,7 +81,7 @@ OmniboxApplication::OmniboxApplication() : shell_(nullptr) {}
 OmniboxApplication::~OmniboxApplication() {}
 
 ////////////////////////////////////////////////////////////////////////////////
-// OmniboxApplication, mojo::ApplicationDelegate implementation:
+// OmniboxApplication, mojo::ShellClient implementation:
 
 void OmniboxApplication::Initialize(mojo::Shell* shell, const std::string& url,
                                     uint32_t id) {
@@ -89,8 +89,7 @@ void OmniboxApplication::Initialize(mojo::Shell* shell, const std::string& url,
   tracing_.Initialize(shell, url);
 }
 
-bool OmniboxApplication::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool OmniboxApplication::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<Omnibox>(this);
   return true;
 }
@@ -98,7 +97,7 @@ bool OmniboxApplication::AcceptConnection(
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxApplication, mojo::InterfaceFactory<Omnibox> implementation:
 
-void OmniboxApplication::Create(mojo::ApplicationConnection* connection,
+void OmniboxApplication::Create(mojo::Connection* connection,
                                 mojo::InterfaceRequest<Omnibox> request) {
   new OmniboxImpl(shell_, connection, std::move(request));
 }
@@ -107,7 +106,7 @@ void OmniboxApplication::Create(mojo::ApplicationConnection* connection,
 // OmniboxImpl, public:
 
 OmniboxImpl::OmniboxImpl(mojo::Shell* shell,
-                         mojo::ApplicationConnection* connection,
+                         mojo::Connection* connection,
                          mojo::InterfaceRequest<Omnibox> request)
     : shell_(shell),
       root_(nullptr),

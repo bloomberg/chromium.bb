@@ -22,7 +22,7 @@
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
@@ -50,7 +50,7 @@ void OnGotContentHandlerForFrame(
 
 }  // namespace
 
-FrameConnection::FrameConnection() : application_connection_(nullptr) {
+FrameConnection::FrameConnection() : connection_(nullptr) {
 }
 
 FrameConnection::~FrameConnection() {
@@ -72,7 +72,7 @@ void FrameConnection::CreateConnectionForCanNavigateFrame(
 void FrameConnection::Init(mojo::Shell* shell,
                            mojo::URLRequestPtr request,
                            const base::Closure& on_got_id_callback) {
-  DCHECK(!application_connection_);
+  DCHECK(!connection_);
 
   mojo::shell::mojom::CapabilityFilterPtr filter(
       mojo::shell::mojom::CapabilityFilter::New());
@@ -119,22 +119,22 @@ void FrameConnection::Init(mojo::Shell* shell,
 
   mojo::Shell::ConnectParams params(std::move(request));
   params.set_filter(std::move(filter));
-  application_connection_ = shell->ConnectToApplication(&params);
-  application_connection_->ConnectToService(&frame_client_);
-  application_connection_->AddRemoteIDCallback(on_got_id_callback);
+  connection_ = shell->ConnectToApplication(&params);
+  connection_->ConnectToService(&frame_client_);
+  connection_->AddRemoteIDCallback(on_got_id_callback);
 }
 
 mus::mojom::WindowTreeClientPtr FrameConnection::GetWindowTreeClient() {
-  DCHECK(application_connection_);
+  DCHECK(connection_);
   mus::mojom::WindowTreeClientPtr window_tree_client;
-  application_connection_->ConnectToService(&window_tree_client);
+  connection_->ConnectToService(&window_tree_client);
   return window_tree_client;
 }
 
 uint32_t FrameConnection::GetContentHandlerID() const {
   uint32_t content_handler_id =
       mojo::shell::mojom::Shell::kInvalidApplicationID;
-  if (!application_connection_->GetRemoteContentHandlerID(&content_handler_id))
+  if (!connection_->GetRemoteContentHandlerID(&content_handler_id))
     NOTREACHED();
   return content_handler_id;
 }

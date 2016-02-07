@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "components/mus/public/cpp/event_matcher.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace mash {
@@ -58,7 +58,7 @@ void BrowserDriverApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool BrowserDriverApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   return true;
 }
 

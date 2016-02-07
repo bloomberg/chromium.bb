@@ -16,7 +16,6 @@
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/geometry/geometry_util.h"

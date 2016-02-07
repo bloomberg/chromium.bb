@@ -12,7 +12,7 @@
 
 namespace mojo {
 
-class ApplicationConnection;
+class Connection;
 class Shell;
 
 // Connects to mojo:tracing during your Application's Initialize() call once
@@ -36,10 +36,10 @@ class TracingImpl : public InterfaceFactory<tracing::TraceProvider> {
 
  private:
   // InterfaceFactory<tracing::TraceProvider> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<tracing::TraceProvider> request) override;
 
-  scoped_ptr<ApplicationConnection> connection_;
+  scoped_ptr<Connection> connection_;
   TraceProviderImpl provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingImpl);

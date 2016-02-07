@@ -8,7 +8,7 @@
 
 #include "components/html_viewer/content_handler_impl.h"
 #include "components/html_viewer/global_state.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace html_viewer {
 
@@ -24,14 +24,13 @@ void HTMLViewer::Initialize(mojo::Shell* shell, const std::string& url,
   global_state_.reset(new GlobalState(shell, url));
 }
 
-bool HTMLViewer::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool HTMLViewer::AcceptConnection(mojo::Connection* connection) {
   connection->AddService(this);
   return true;
 }
 
 void HTMLViewer::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
   new ContentHandlerImpl(global_state_.get(), shell_, std::move(request));
 }

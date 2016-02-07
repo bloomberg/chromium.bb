@@ -17,10 +17,9 @@
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/test.mojom.h"
 #include "mojo/shell/test_package_manager.h"
@@ -95,7 +94,7 @@ class TestClient {
 };
 
 class TestApplicationLoader : public ApplicationLoader,
-                              public ApplicationDelegate,
+                              public ShellClient,
                               public InterfaceFactory<TestService> {
  public:
   TestApplicationLoader()
@@ -119,15 +118,15 @@ class TestApplicationLoader : public ApplicationLoader,
     test_app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
 
-  // ApplicationDelegate implementation.
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  // mojo::ShellClient implementation.
+  bool AcceptConnection(Connection* connection) override {
     connection->AddService<TestService>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
 
   // InterfaceFactory<TestService> implementation.
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestService> request) override {
     new TestServiceImpl(context_, std::move(request));
   }
@@ -277,7 +276,7 @@ class TestAImpl : public TestA {
     test_context_->QuitSoon();
   }
 
-  scoped_ptr<ApplicationConnection> connection_;
+  scoped_ptr<Connection> connection_;
   TesterContext* test_context_;
   TestBPtr b_;
   StrongBinding<TestA> binding_;
@@ -285,7 +284,7 @@ class TestAImpl : public TestA {
 
 class TestBImpl : public TestB {
  public:
-  TestBImpl(ApplicationConnection* connection,
+  TestBImpl(Connection* connection,
             TesterContext* test_context,
             InterfaceRequest<TestB> request)
       : test_context_(test_context), binding_(this, std::move(request)) {
@@ -317,7 +316,7 @@ class TestBImpl : public TestB {
 
 class TestCImpl : public TestC {
  public:
-  TestCImpl(ApplicationConnection* connection,
+  TestCImpl(Connection* connection,
             TesterContext* test_context,
             InterfaceRequest<TestC> request)
       : test_context_(test_context), binding_(this, std::move(request)) {}
@@ -334,7 +333,7 @@ class TestCImpl : public TestC {
   StrongBinding<TestC> binding_;
 };
 
-class Tester : public ApplicationDelegate,
+class Tester : public ShellClient,
                public ApplicationLoader,
                public InterfaceFactory<TestA>,
                public InterfaceFactory<TestB>,
@@ -350,7 +349,7 @@ class Tester : public ApplicationDelegate,
     app_.reset(new ApplicationImpl(this, std::move(application_request)));
   }
 
-  bool AcceptConnection(ApplicationConnection* connection) override {
+  bool AcceptConnection(Connection* connection) override {
     if (!requestor_url_.empty() &&
         requestor_url_ != connection->GetRemoteApplicationURL()) {
       context_->set_tester_called_quit();
@@ -366,18 +365,18 @@ class Tester : public ApplicationDelegate,
     return true;
   }
 
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestA> request) override {
     a_bindings_.push_back(
         new TestAImpl(app_.get(), context_, std::move(request), this));
   }
 
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestB> request) override {
     new TestBImpl(connection, context_, std::move(request));
   }
 
-  void Create(ApplicationConnection* connection,
+  void Create(Connection* connection,
               InterfaceRequest<TestC> request) override {
     new TestCImpl(connection, context_, std::move(request));
   }

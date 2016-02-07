@@ -9,8 +9,8 @@
 
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace mojo {
 namespace test {
@@ -25,8 +25,7 @@ void TestRequestTrackerApplication::Initialize(Shell* shell,
   shell_ = shell;
 }
 
-bool TestRequestTrackerApplication::AcceptConnection(
-    ApplicationConnection* connection) {
+bool TestRequestTrackerApplication::AcceptConnection(Connection* connection) {
   // Every instance of the service and recorder shares the context.
   // Note, this app is single-threaded, so this is thread safe.
   connection->AddService<TestTimeService>(this);
@@ -36,19 +35,19 @@ bool TestRequestTrackerApplication::AcceptConnection(
 }
 
 void TestRequestTrackerApplication::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<TestTimeService> request) {
   new TestTimeServiceImpl(shell_, std::move(request));
 }
 
 void TestRequestTrackerApplication::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<TestRequestTracker> request) {
   new TestRequestTrackerImpl(std::move(request), &context_);
 }
 
 void TestRequestTrackerApplication::Create(
-    ApplicationConnection* connection,
+    Connection* connection,
     InterfaceRequest<TestTrackedRequestService> request) {
   new TestTrackedRequestServiceImpl(std::move(request), &context_);
 }

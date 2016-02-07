@@ -71,12 +71,11 @@ void WindowServerTestBase::SetUp() {
   std::swap(window_manager_, most_recent_connection_);
 }
 
-mojo::ApplicationDelegate* WindowServerTestBase::GetApplicationDelegate() {
+mojo::ShellClient* WindowServerTestBase::GetShellClient() {
   return this;
 }
 
-bool WindowServerTestBase::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool WindowServerTestBase::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<mojom::WindowTreeClient>(this);
   return true;
 }
@@ -124,7 +123,7 @@ void WindowServerTestBase::OnAccelerator(uint32_t id, mojom::EventPtr event) {
 }
 
 void WindowServerTestBase::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<mojom::WindowTreeClient> request) {
   WindowTreeConnection::Create(
       this, std::move(request),

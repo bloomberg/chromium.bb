@@ -19,9 +19,8 @@
 #include "components/mus/ws/connection_manager_delegate.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/app_lifetime_helper.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 class Shell;
@@ -43,7 +42,7 @@ class WindowTreeFactory;
 }
 
 class MandolineUIServicesApp
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public ws::ConnectionManagerDelegate,
       public mojo::InterfaceFactory<mojom::DisplayManager>,
       public mojo::InterfaceFactory<mojom::WindowManagerFactoryService>,
@@ -60,11 +59,10 @@ class MandolineUIServicesApp
   // has been established.
   struct PendingRequest;
 
-  // ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // ConnectionManagerDelegate:
   void OnFirstRootConnectionCreated() override;
@@ -77,26 +75,26 @@ class MandolineUIServicesApp
       mojom::WindowTreeClientPtr client) override;
 
   // mojo::InterfaceFactory<mojom::DisplayManager> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::DisplayManager> request) override;
 
   // mojo::InterfaceFactory<mojom::WindowManagerFactoryService> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::WindowManagerFactoryService>
                   request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeFactory>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mojom::WindowTreeFactory> request) override;
 
   // mojo::InterfaceFactory<mojom::WindowTreeHostFactory>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mojom::WindowTreeHostFactory> request) override;
 
   // mojo::InterfaceFactory<mojom::Gpu> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::Gpu> request) override;
 
   // mojom::WindowTreeHostFactory implementation.

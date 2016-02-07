@@ -70,13 +70,12 @@ void BrowserManager::Initialize(mojo::Shell* shell, const std::string& url,
     CreateBrowser(GURL(kGoogleURL));
 }
 
-bool BrowserManager::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool BrowserManager::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<LaunchHandler>(this);
   return true;
 }
 
-void BrowserManager::Create(mojo::ApplicationConnection* connection,
+void BrowserManager::Create(mojo::Connection* connection,
                             mojo::InterfaceRequest<LaunchHandler> request) {
   launch_handler_bindings_.AddBinding(this, std::move(request));
 }

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/shell/public/cpp/application_connection.h"
 
 namespace tracing {
 
@@ -22,8 +21,7 @@ TracingApp::TracingApp() : collector_binding_(this), tracing_active_(false) {
 TracingApp::~TracingApp() {
 }
 
-bool TracingApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool TracingApp::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<TraceCollector>(this);
   connection->AddService<StartupPerformanceDataCollector>(this);
 
@@ -44,13 +42,13 @@ bool TracingApp::AcceptConnection(
   return true;
 }
 
-void TracingApp::Create(mojo::ApplicationConnection* connection,
+void TracingApp::Create(mojo::Connection* connection,
                         mojo::InterfaceRequest<TraceCollector> request) {
   collector_binding_.Bind(std::move(request));
 }
 
 void TracingApp::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<StartupPerformanceDataCollector> request) {
   startup_performance_data_collector_bindings_.AddBinding(this,
                                                           std::move(request));

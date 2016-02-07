@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -354,11 +354,6 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
 
 WindowTypeLauncher::WindowTypeLauncher() {}
 WindowTypeLauncher::~WindowTypeLauncher() {}
-
-bool WindowTypeLauncher::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
-  return false;
-}
 
 void WindowTypeLauncher::Initialize(mojo::Shell* shell, const std::string& url,
                                     uint32_t id) {

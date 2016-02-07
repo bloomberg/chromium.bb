@@ -10,7 +10,7 @@
 
 namespace core_services {
 
-scoped_ptr<mojo::ApplicationDelegate> CreateApplicationDelegateNotAndroid(
+scoped_ptr<mojo::ShellClient> CreateApplicationDelegateNotAndroid(
     const std::string& url) {
   if (url == "mojo://network_service/")
     return make_scoped_ptr(new mojo::NetworkServiceDelegate);

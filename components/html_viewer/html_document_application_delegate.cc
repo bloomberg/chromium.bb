@@ -10,9 +10,7 @@
 #include "base/macros.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace html_viewer {
 
@@ -25,7 +23,7 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
   ServiceConnectorQueue() {}
   ~ServiceConnectorQueue() override {}
 
-  void PushRequestsTo(mojo::ApplicationConnection* connection) {
+  void PushRequestsTo(mojo::Connection* connection) {
     ScopedVector<Request> requests;
     requests_.swap(requests);
     for (Request* request : requests) {
@@ -41,7 +39,7 @@ class HTMLDocumentApplicationDelegate::ServiceConnectorQueue
   };
 
   // mojo::ServiceConnector:
-  void ConnectToService(mojo::ApplicationConnection* application_connection,
+  void ConnectToService(mojo::Connection* connection,
                         const std::string& interface_name,
                         mojo::ScopedMessagePipeHandle handle) override {
     scoped_ptr<Request> request(new Request);
@@ -85,14 +83,14 @@ HTMLDocumentApplicationDelegate::~HTMLDocumentApplicationDelegate() {
 }
 
 // Callback from the quit closure. We key off this rather than
-// ApplicationDelegate::Quit() as we don't want to shut down the messageloop
+// mojo::ShellClient::Quit() as we don't want to shut down the messageloop
 // when we quit (the messageloop is shared among multiple
 // HTMLDocumentApplicationDelegates).
 void HTMLDocumentApplicationDelegate::OnTerminate() {
   delete this;
 }
 
-// ApplicationDelegate;
+// mojo::ShellClient;
 void HTMLDocumentApplicationDelegate::Initialize(mojo::Shell* shell,
                                                  const std::string& url,
                                                  uint32_t id) {
@@ -100,7 +98,7 @@ void HTMLDocumentApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool HTMLDocumentApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   if (initial_response_) {
     OnResponseReceived(nullptr, mojo::URLLoaderPtr(), connection, nullptr,
                        std::move(initial_response_));
@@ -157,7 +155,7 @@ void HTMLDocumentApplicationDelegate::OnHTMLDocumentDeleted2(
 void HTMLDocumentApplicationDelegate::OnResponseReceived(
     scoped_ptr<mojo::AppRefCount> app_refcount,
     mojo::URLLoaderPtr loader,
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     scoped_ptr<ServiceConnectorQueue> connector_queue,
     mojo::URLResponsePtr response) {
   // HTMLDocument is destroyed when the hosting view is destroyed, or

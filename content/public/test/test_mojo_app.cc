@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace content {
@@ -25,14 +25,13 @@ void TestMojoApp::Initialize(mojo::Shell* shell, const std::string& url,
   shell_ = shell;
 }
 
-bool TestMojoApp::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool TestMojoApp::AcceptConnection(mojo::Connection* connection) {
   requestor_url_ = GURL(connection->GetRemoteApplicationURL());
   connection->AddService<TestMojoService>(this);
   return true;
 }
 
-void TestMojoApp::Create(mojo::ApplicationConnection* connection,
+void TestMojoApp::Create(mojo::Connection* connection,
                          mojo::InterfaceRequest<TestMojoService> request) {
   DCHECK(!service_binding_.is_bound());
   service_binding_.Bind(std::move(request));

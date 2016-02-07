@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_CONNECTION_H_
-#define MOJO_SHELL_PUBLIC_CPP_APPLICATION_CONNECTION_H_
+#ifndef MOJO_SHELL_PUBLIC_CPP_CONNECTION_H_
+#define MOJO_SHELL_PUBLIC_CPP_CONNECTION_H_
 
 #include <stdint.h>
 
@@ -19,7 +19,7 @@ namespace mojo {
 class ServiceConnector;
 
 // Represents a connection to another application. An instance of this class is
-// passed to ApplicationDelegate's AcceptConnection() method each
+// passed to ShellClient's AcceptConnection() method each
 // time a connection is made to this app.
 //
 // To use, define a class that implements your specific service API (e.g.,
@@ -35,32 +35,29 @@ class ServiceConnector;
 //   connection->AddService<Foo>(&my_foo_and_bar_factory_);
 //   connection->AddService<Bar>(&my_foo_and_bar_factory_);
 //
-// The InterfaceFactory must outlive the ApplicationConnection.
+// The InterfaceFactory must outlive the Connection.
 //
 // Additionally you specify a ServiceConnector. If a ServiceConnector has
 // been set and an InterfaceFactory has not been registered for the interface
 // request, than the interface request is sent to the ServiceConnector.
 //
-// Just as with InterfaceFactory, ServiceConnector must outlive
-// ApplicationConnection.
+// Just as with InterfaceFactory, ServiceConnector must outlive Connection.
 //
-// An ApplicationConnection's lifetime is managed by an ApplicationImpl. To
-// close a connection, call CloseConnection which will destroy this object.
-class ApplicationConnection {
+// An Connection's lifetime is managed by an ApplicationImpl. To close a
+// connection, call CloseConnection which will destroy this object.
+class Connection {
  public:
-  virtual ~ApplicationConnection() {}
+  virtual ~Connection() {}
 
   class TestApi {
    public:
-    explicit TestApi(ApplicationConnection* connection)
-        : connection_(connection) {
-    }
-    base::WeakPtr<ApplicationConnection> GetWeakPtr() {
+    explicit TestApi(Connection* connection) : connection_(connection) {}
+    base::WeakPtr<Connection> GetWeakPtr() {
       return connection_->GetWeakPtr();
     }
 
    private:
-    ApplicationConnection* connection_;
+    Connection* connection_;
   };
 
   // See class description for details.
@@ -92,13 +89,13 @@ class ApplicationConnection {
   // Returns the URL that was used by the source application to establish a
   // connection to the destination application.
   //
-  // When ApplicationConnection is representing an incoming connection this can
-  // be different than the URL the application was initially loaded from, if the
+  // When Connection is representing an incoming connection this can be
+  // different than the URL the application was initially loaded from, if the
   // application handles multiple URLs. Note that this is the URL after all
   // URL rewriting and HTTP redirects have been performed.
   //
-  // When ApplicationConnection is representing and outgoing connection, this
-  // will be the same as the value returned by GetRemoveApplicationURL().
+  // When Connection is representing and outgoing connection, this will be the
+  // same as the value returned by GetRemoveApplicationURL().
   virtual const std::string& GetConnectionURL() = 0;
 
   // Returns the URL identifying the remote application on this connection.
@@ -118,13 +115,12 @@ class ApplicationConnection {
   virtual void SetRemoteServiceProviderConnectionErrorHandler(
       const Closure& handler) = 0;
 
-  // Returns the id of the remote application. For ApplicationConnections
-  // created via ApplicationImpl::ConnectToApplication(), this will not be
-  // determined until ConnectToApplication()'s callback is run, and this
-  // function will return false. Use AddRemoteIDCallback() to schedule a
-  // callback to be run when the remote application id is available. A value of
-  // Shell::kInvalidApplicationID indicates no remote application connection
-  // has been established.
+  // Returns the id of the remote application. For Connections created via
+  // ApplicationImpl::ConnectToApplication(), this will not be determined until
+  // ConnectToApplication()'s callback is run, and this function will return
+  // false. Use AddRemoteIDCallback() to schedule a callback to be run when the
+  // remote application id is available. A value of Shell::kInvalidApplicationID
+  // indicates no remote application connection has been established.
   virtual bool GetRemoteApplicationID(uint32_t* remote_id) const = 0;
 
   // Returns the id of the deepest content handler used in connecting to
@@ -144,9 +140,9 @@ class ApplicationConnection {
   virtual bool SetServiceConnectorForName(ServiceConnector* service_connector,
                                           const std::string& name) = 0;
 
-  virtual base::WeakPtr<ApplicationConnection> GetWeakPtr() = 0;
+  virtual base::WeakPtr<Connection> GetWeakPtr() = 0;
 };
 
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_PUBLIC_CPP_APPLICATION_CONNECTION_H_
+#endif  // MOJO_SHELL_PUBLIC_CPP_CONNECTION_H_

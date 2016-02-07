@@ -10,20 +10,20 @@
 #include "base/memory/scoped_ptr.h"
 
 namespace mojo {
-class ApplicationDelegate;
+class ShellClient;
 }
 
 namespace core_services {
 
-// This is always called to create a platform specific ApplicationDelegate.
-scoped_ptr<mojo::ApplicationDelegate> CreatePlatformSpecificApplicationDelegate(
+// This is always called to create a platform specific ShellClient.
+scoped_ptr<mojo::ShellClient> CreatePlatformSpecificApplicationDelegate(
     const std::string& url);
 
 // The following are conditionally called. You do not need to call these from
 // CreatePlatformSpecificApplicationDelegate(), they are called (if appropriate)
 // before CreatePlatformSpecificApplicationDelegate().
 #if !defined(OS_ANDROID)
-scoped_ptr<mojo::ApplicationDelegate> CreateApplicationDelegateNotAndroid(
+scoped_ptr<mojo::ShellClient> CreateApplicationDelegateNotAndroid(
     const std::string& url);
 #endif
 

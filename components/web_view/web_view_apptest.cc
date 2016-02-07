@@ -96,7 +96,7 @@ class WebViewTest : public mus::WindowServerTestBase,
     }
   }
 
-  // Overridden from ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override {
     WindowServerTestBase::Initialize(shell, url, id);

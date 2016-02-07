@@ -16,7 +16,7 @@ class TestConnector : public ServiceConnector {
  public:
   explicit TestConnector(int* delete_count) : delete_count_(delete_count) {}
   ~TestConnector() override { (*delete_count_)++; }
-  void ConnectToService(ApplicationConnection* application_connection,
+  void ConnectToService(Connection* connection,
                         const std::string& interface_name,
                         ScopedMessagePipeHandle client_handle) override {}
 

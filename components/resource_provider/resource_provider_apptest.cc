@@ -15,9 +15,7 @@
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
-#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 namespace resource_provider {
 namespace {

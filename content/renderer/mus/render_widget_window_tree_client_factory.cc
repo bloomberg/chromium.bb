@@ -13,7 +13,7 @@
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "url/gurl.h"
 
@@ -37,14 +37,13 @@ class RenderWidgetWindowTreeClientFactoryImpl
 
  private:
   // MojoShellConnection::Listener implementation:
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService<mojom::RenderWidgetWindowTreeClientFactory>(this);
     return true;
   }
 
   // mojo::InterfaceFactory<mojom::RenderWidgetWindowTreeClientFactory>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::RenderWidgetWindowTreeClientFactory>
                   request) override {
     bindings_.AddBinding(this, std::move(request));

@@ -15,7 +15,7 @@ class FilePath;
 }
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 }
 
 namespace filesystem {
@@ -24,7 +24,7 @@ class FileSystemApp;
 class FileSystemImpl : public FileSystem {
  public:
   FileSystemImpl(FileSystemApp* app,
-                 mojo::ApplicationConnection* connection,
+                 mojo::Connection* connection,
                  mojo::InterfaceRequest<FileSystem> request);
   ~FileSystemImpl() override;
 

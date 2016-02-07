@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/service_connector.h"
 
 namespace mojo {
@@ -106,7 +106,7 @@ void ServiceRegistry::AddRemoteIDCallback(const Closure& callback) {
   remote_id_callbacks_.push_back(callback);
 }
 
-base::WeakPtr<ApplicationConnection> ServiceRegistry::GetWeakPtr() {
+base::WeakPtr<Connection> ServiceRegistry::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 

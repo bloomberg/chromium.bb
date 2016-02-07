@@ -10,7 +10,7 @@
 #include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
@@ -38,8 +38,7 @@ void DevToolsServiceDelegate::Initialize(mojo::Shell* shell,
   service_.reset(new DevToolsService(shell));
 }
 
-bool DevToolsServiceDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool DevToolsServiceDelegate::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<DevToolsRegistry>(this);
 
   // DevToolsCoordinator is a privileged interface and only allowed for the
@@ -54,13 +53,13 @@ void DevToolsServiceDelegate::Quit() {
 }
 
 void DevToolsServiceDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<DevToolsRegistry> request) {
   service_->registry()->BindToRegistryRequest(std::move(request));
 }
 
 void DevToolsServiceDelegate::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<DevToolsCoordinator> request) {
   service_->BindToCoordinatorRequest(std::move(request));
 }

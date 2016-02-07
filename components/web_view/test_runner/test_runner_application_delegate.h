@@ -17,15 +17,15 @@
 #include "components/web_view/public/interfaces/web_view.mojom.h"
 #include "components/web_view/test_runner/public/interfaces/layout_test_runner.mojom.h"
 #include "mojo/common/weak_binding_set.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 class GURL;
 
 namespace web_view {
 
 class TestRunnerApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mus::WindowTreeDelegate,
       public mojom::WebViewClient,
       public LayoutTestRunner,
@@ -38,11 +38,10 @@ class TestRunnerApplicationDelegate
   void LaunchURL(const GURL& test_url);
   void Terminate();
 
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override;
@@ -65,7 +64,7 @@ class TestRunnerApplicationDelegate
   void TestFinished() override;
 
   // mojo::InterfaceFactory<LayoutTestRunner>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<LayoutTestRunner> request) override;
 
   mojo::Shell* shell_;

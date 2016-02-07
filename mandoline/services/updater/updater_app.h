@@ -6,11 +6,11 @@
 #define MANDOLINE_SERVICES_UPDATER_UPDATER_APP_H_
 
 #include "base/macros.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
-class ApplicationConnection;
+class Connection;
 class Shell;
 }  // namespace mojo
 
@@ -18,20 +18,19 @@ namespace updater {
 
 class Updater;
 
-class UpdaterApp : public mojo::ApplicationDelegate,
+class UpdaterApp : public mojo::ShellClient,
                    public mojo::InterfaceFactory<Updater> {
  public:
   UpdaterApp();
   ~UpdaterApp() override;
 
-  // mojo::ApplicationDelegate:
+  // mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // InterfaceFactory<Updater> implementation.
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<Updater> request) override;
 
  private:

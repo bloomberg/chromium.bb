@@ -11,8 +11,8 @@
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace core_services {
@@ -22,7 +22,7 @@ class ApplicationThread;
 // The CoreServices application is a singleton ServiceProvider. There is one
 // instance of the CoreServices ServiceProvider.
 class CoreServicesApplicationDelegate
-    : public mojo::ApplicationDelegate,
+    : public mojo::ShellClient,
       public mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler>,
       public mojo::shell::mojom::ContentHandler {
  public:
@@ -32,16 +32,15 @@ class CoreServicesApplicationDelegate
   void ApplicationThreadDestroyed(ApplicationThread* thread);
 
  private:
-  // Overridden from mojo::ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
   void Quit() override;
 
   // Overridden from mojo::InterfaceFactory<mojo::shell::mojom::ContentHandler>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
           request) override;
 

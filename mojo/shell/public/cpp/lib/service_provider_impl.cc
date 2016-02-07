@@ -28,7 +28,7 @@ void ServiceProviderImpl::ConnectToService(
     const String& service_name,
     ScopedMessagePipeHandle client_handle) {
   // TODO(beng): perhaps take app connection thru ctor so that we can pass
-  // ApplicationConnection through?
+  // Connection through?
   service_connector_registry_.ConnectToService(nullptr, service_name,
                                                std::move(client_handle));
 }

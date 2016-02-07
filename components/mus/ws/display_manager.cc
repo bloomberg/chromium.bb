@@ -27,7 +27,7 @@
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/converters/transform/transform_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/base/cursor/cursor_loader.h"

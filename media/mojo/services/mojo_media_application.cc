@@ -9,14 +9,14 @@
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/service_factory_impl.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 
 namespace media {
 
 // static
-scoped_ptr<mojo::ApplicationDelegate> MojoMediaApplication::CreateApp() {
-  return scoped_ptr<mojo::ApplicationDelegate>(
+scoped_ptr<mojo::ShellClient> MojoMediaApplication::CreateApp() {
+  return scoped_ptr<mojo::ShellClient>(
       new MojoMediaApplication(MojoMediaClient::Create()));
 }
 
@@ -37,14 +37,13 @@ void MojoMediaApplication::Initialize(mojo::Shell* shell,
   mojo_media_client_->Initialize();
 }
 
-bool MojoMediaApplication::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool MojoMediaApplication::AcceptConnection(mojo::Connection* connection) {
   connection->AddService<interfaces::ServiceFactory>(this);
   return true;
 }
 
 void MojoMediaApplication::Create(
-    mojo::ApplicationConnection* connection,
+    mojo::Connection* connection,
     mojo::InterfaceRequest<interfaces::ServiceFactory> request) {
   // The created object is owned by the pipe.
   new ServiceFactoryImpl(std::move(request), connection->GetServiceProvider(),

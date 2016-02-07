@@ -24,12 +24,12 @@ class LayoutTestHTMLViewer : public HTMLViewer {
  private:
   void TestFinished();
 
-  // Overridden from ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
 
   // Overridden from InterfaceFactory<shell::mojom::ContentHandler>
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler>
                   request) override;
 

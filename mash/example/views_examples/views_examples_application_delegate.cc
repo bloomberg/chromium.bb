@@ -4,7 +4,7 @@
 
 #include "mash/example/views_examples/views_examples_application_delegate.h"
 
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
@@ -29,6 +29,6 @@ void ViewsExamplesApplicationDelegate::Initialize(mojo::Shell* shell,
 }
 
 bool ViewsExamplesApplicationDelegate::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+    mojo::Connection* connection) {
   return false;
 }

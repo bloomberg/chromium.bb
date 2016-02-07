@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 
 namespace mojo {
 

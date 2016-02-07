@@ -391,7 +391,7 @@ void BrowserWindow::Embed(mojo::URLRequestPtr request) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, mojo::InterfaceFactory<ViewEmbedder> implementation:
 
-void BrowserWindow::Create(mojo::ApplicationConnection* connection,
+void BrowserWindow::Create(mojo::Connection* connection,
                            mojo::InterfaceRequest<ViewEmbedder> request) {
   view_embedder_bindings_.AddBinding(this, std::move(request));
 }

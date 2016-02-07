@@ -11,7 +11,7 @@
 #include <string>
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/lib/service_connector_registry.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
@@ -22,7 +22,7 @@ namespace internal {
 // A ServiceRegistry represents each half of a connection between two
 // applications, allowing customization of which services are published to the
 // other.
-class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
+class ServiceRegistry : public ServiceProvider, public Connection {
  public:
   ServiceRegistry();
   // |allowed_interfaces| are the set of interfaces that the shell has allowed
@@ -39,7 +39,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   shell::mojom::Shell::ConnectToApplicationCallback
       GetConnectToApplicationCallback();
 
-  // ApplicationConnection overrides.
+  // Connection overrides.
   void SetServiceConnector(ServiceConnector* service_connector) override;
   bool SetServiceConnectorForName(ServiceConnector* service_connector,
                                   const std::string& interface_name) override;
@@ -52,7 +52,7 @@ class ServiceRegistry : public ServiceProvider, public ApplicationConnection {
   bool GetRemoteApplicationID(uint32_t* remote_id) const override;
   bool GetRemoteContentHandlerID(uint32_t* content_handler_id) const override;
   void AddRemoteIDCallback(const Closure& callback) override;
-  base::WeakPtr<ApplicationConnection> GetWeakPtr() override;
+  base::WeakPtr<Connection> GetWeakPtr() override;
 
   void RemoveServiceConnectorForName(const std::string& interface_name);
 

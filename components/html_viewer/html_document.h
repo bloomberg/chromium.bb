@@ -64,7 +64,7 @@ class HTMLDocument
   // |connection| the specific connection triggering this new instance.
   // |setup| is used to obtain init type state (such as resources).
   HTMLDocument(mojo::Shell* html_document_shell,
-               mojo::ApplicationConnection* connection,
+               mojo::Connection* connection,
                mojo::URLResponsePtr response,
                GlobalState* setup,
                const DeleteCallback& delete_callback,
@@ -119,31 +119,31 @@ class HTMLDocument
   void OnFrameDestroyed() override;
 
   // mojo::InterfaceFactory<mojo::AxProvider>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojo::AxProvider> request) override;
 
   // mojo::InterfaceFactory<web_view::mojom::FrameClient>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<web_view::mojom::FrameClient> request) override;
 
   // mojo::InterfaceFactory<TestHTMLViewer>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<TestHTMLViewer> request) override;
 
   // mojo::InterfaceFactory<devtools_service::DevToolsAgent>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<devtools_service::DevToolsAgent> request) override;
 
   // mojo::InterfaceFactory<mus::WindowTreeClient>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override;
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
   mojo::Shell* html_document_shell_;
-  mojo::ApplicationConnection* connection_;
+  mojo::Connection* connection_;
 
   // HTMLDocument owns these pointers; binding requests after document load.
   std::set<AxProviderImpl*> ax_providers_;

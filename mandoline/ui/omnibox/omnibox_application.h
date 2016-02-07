@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
 class Shell;
@@ -17,21 +17,20 @@ class Shell;
 
 namespace mandoline {
 
-class OmniboxApplication : public mojo::ApplicationDelegate,
+class OmniboxApplication : public mojo::ShellClient,
                            public mojo::InterfaceFactory<Omnibox> {
  public:
   OmniboxApplication();
   ~OmniboxApplication() override;
 
  private:
-  // Overridden from mojo::ApplicationDelegate:
+  // Overridden from mojo::ShellClient:
   void Initialize(mojo::Shell* shell, const std::string& url,
                   uint32_t id) override;
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override;
+  bool AcceptConnection(mojo::Connection* connection) override;
 
   // Overridden from mojo::InterfaceFactory<Omnibox>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<Omnibox> request) override;
 
   mojo::Shell* shell_;

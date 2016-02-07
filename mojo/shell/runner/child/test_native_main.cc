@@ -13,8 +13,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "mojo/message_pump/message_pump_mojo.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/runner_connection.h"
 #include "mojo/shell/runner/init.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
@@ -37,7 +37,7 @@ class ProcessDelegate : public mojo::embedder::ProcessDelegate {
 
 }  // namespace
 
-int TestNativeMain(mojo::ApplicationDelegate* application_delegate) {
+int TestNativeMain(mojo::ShellClient* application_delegate) {
   mojo::shell::WaitForDebuggerIfNecessary();
 
 #if !defined(OFFICIAL_BUILD)

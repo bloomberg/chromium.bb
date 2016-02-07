@@ -9,8 +9,8 @@
 namespace device {
 
 // static
-scoped_ptr<mojo::ApplicationDelegate> DevicesAppFactory::CreateApp() {
-  return scoped_ptr<mojo::ApplicationDelegate>(new DevicesApp());
+scoped_ptr<mojo::ShellClient> DevicesAppFactory::CreateApp() {
+  return scoped_ptr<mojo::ShellClient>(new DevicesApp());
 }
 
 }  // namespace device

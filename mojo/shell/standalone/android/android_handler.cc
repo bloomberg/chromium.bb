@@ -170,7 +170,7 @@ void AndroidHandler::Initialize(Shell* shell,
                                 const std::string& url,
                                 uint32_t id) {}
 
-bool AndroidHandler::AcceptConnection(ApplicationConnection* connection) {
+bool AndroidHandler::AcceptConnection(Connection* connection) {
   connection->AddService(&content_handler_factory_);
   return true;
 }

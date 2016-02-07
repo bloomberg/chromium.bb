@@ -9,8 +9,8 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,15 +29,15 @@ MojoResult RunAllTests(MojoHandle application_request_handle);
 // ApplicationTestBase.
 class TestHelper {
  public:
-  explicit TestHelper(ApplicationDelegate* delegate);
+  explicit TestHelper(ShellClient* client);
   ~TestHelper();
 
   Shell* shell() { return application_impl_.get(); }
   std::string shell_url() { return url_; }
 
  private:
-  // The application delegate used if GetApplicationDelegate is not overridden.
-  ApplicationDelegate default_application_delegate_;
+  // The application delegate used if GetShellClient is not overridden.
+  ShellClient default_shell_client_;
 
   // The application implementation instance, reconstructed for each test.
   scoped_ptr<ApplicationImpl> application_impl_;
@@ -61,8 +61,8 @@ class ApplicationTestBase : public testing::Test {
     return test_helper_ ? test_helper_->shell_url() : std::string();
   }
 
-  // Get the ApplicationDelegate for the application to be tested.
-  virtual ApplicationDelegate* GetApplicationDelegate();
+  // Get the ShellClient for the application to be tested.
+  virtual ShellClient* GetShellClient();
 
   // testing::Test:
   void SetUp() override;

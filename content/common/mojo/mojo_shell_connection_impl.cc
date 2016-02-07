@@ -11,8 +11,8 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "mojo/converters/network/network_type_converters.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/runner/child/runner_connection.h"
 
 namespace content {
@@ -78,8 +78,7 @@ void MojoShellConnectionImpl::Initialize(mojo::Shell* shell,
   initialized_ = true;
 }
 
-bool MojoShellConnectionImpl::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
+bool MojoShellConnectionImpl::AcceptConnection(mojo::Connection* connection) {
   bool found = false;
   for (auto listener : listeners_)
     found |= listener->AcceptConnection(connection);

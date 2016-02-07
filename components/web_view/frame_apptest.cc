@@ -26,10 +26,7 @@
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/test_frame_tree_delegate.h"
-#include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
-#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 using mus::Window;
 using mus::WindowTreeConnection;
@@ -286,7 +283,7 @@ class WindowAndFrame : public mus::WindowTreeDelegate {
 };
 
 class FrameTest : public mojo::test::ApplicationTestBase,
-                  public mojo::ApplicationDelegate,
+                  public mojo::ShellClient,
                   public mus::WindowTreeDelegate,
                   public mojo::InterfaceFactory<mus::mojom::WindowTreeClient>,
                   public mojo::InterfaceFactory<mojom::FrameClient> {
@@ -353,11 +350,10 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
  private:
   // ApplicationTestBase:
-  ApplicationDelegate* GetApplicationDelegate() override { return this; }
+  mojo::ShellClient* GetShellClient() override { return this; }
 
-  // ApplicationDelegate implementation.
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  // mojo::ShellClient implementation.
+  bool AcceptConnection(mojo::Connection* connection) override {
     connection->AddService<mus::mojom::WindowTreeClient>(this);
     connection->AddService<mojom::FrameClient>(this);
     return true;
@@ -406,7 +402,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
 
   // Overridden from mojo::InterfaceFactory<mus::mojom::WindowTreeClient>:
   void Create(
-      mojo::ApplicationConnection* connection,
+      mojo::Connection* connection,
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override {
     if (window_and_frame_) {
       mus::WindowTreeConnection::Create(
@@ -420,7 +416,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   }
 
   // Overridden from mojo::InterfaceFactory<mojom::FrameClient>:
-  void Create(mojo::ApplicationConnection* connection,
+  void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<mojom::FrameClient> request) override {
     ASSERT_TRUE(window_and_frame_);
     window_and_frame_->Bind(std::move(request));

@@ -153,7 +153,7 @@
 #include "content/public/common/web_preferences.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
 #include "gin/v8_initializer.h"
-#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_options.h"

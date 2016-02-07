@@ -5,13 +5,12 @@
 #ifndef MOJO_SHELL_SHELL_APPLICATION_DELEGATE_H_
 #define MOJO_SHELL_SHELL_APPLICATION_DELEGATE_H_
 
-#include "mojo/shell/public/cpp/application_delegate.h"
-
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 namespace mojo {
@@ -19,7 +18,7 @@ namespace shell {
 class ApplicationManager;
 
 class ShellApplicationDelegate
-    : public ApplicationDelegate,
+    : public ShellClient,
       public InterfaceFactory<mojom::ApplicationManager>,
       public mojom::ApplicationManager {
  public:
@@ -27,13 +26,13 @@ class ShellApplicationDelegate
   ~ShellApplicationDelegate() override;
 
  private:
-  // Overridden from ApplicationDelegate:
+  // Overridden from ShellClient:
   void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
-  bool AcceptConnection(ApplicationConnection* connection) override;
+  bool AcceptConnection(Connection* connection) override;
 
   // Overridden from InterfaceFactory<mojom::ApplicationManager>:
   void Create(
-      ApplicationConnection* connection,
+      Connection* connection,
       InterfaceRequest<mojom::ApplicationManager> request) override;
 
   // Overridden from mojom::ApplicationManager:

@@ -6,7 +6,7 @@
 
 // #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/display_finder.h"
 #include "ui/gfx/display_observer.h"
