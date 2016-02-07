@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
@@ -36,7 +35,7 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetMus(
           browser_frame,
-          views::WindowManagerConnection::Get()->app()->shell(),
+          views::WindowManagerConnection::Get()->shell(),
           CreateMusWindow(browser_view),
           mus::mojom::SurfaceType::DEFAULT),
       browser_view_(browser_view) {}

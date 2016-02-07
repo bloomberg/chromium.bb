@@ -24,7 +24,7 @@
 #include "third_party/WebKit/public/platform/WebScrollbarBehavior.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace scheduler {
@@ -40,9 +40,9 @@ class WebCookieJarImpl;
 
 class BlinkPlatformImpl : public blink::Platform {
  public:
-  // |app| may be null in tests.
+  // |shell| may be null in tests.
   BlinkPlatformImpl(GlobalState* global_state,
-                    mojo::ApplicationImpl* app,
+                    mojo::Shell* shell,
                     scheduler::RendererScheduler* renderer_scheduler);
   ~BlinkPlatformImpl() override;
 
@@ -102,7 +102,7 @@ class BlinkPlatformImpl : public blink::Platform {
   static void DestroyCurrentThread(void*);
 
   GlobalState* global_state_;
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_ptr<blink::WebThread> main_thread_;
   base::ThreadLocalStorage::Slot current_thread_slot_;

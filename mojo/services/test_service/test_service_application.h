@@ -23,9 +23,8 @@ class TestServiceApplication : public ApplicationDelegate,
   TestServiceApplication();
   ~TestServiceApplication() override;
 
-  void Initialize(ApplicationImpl* app) override;
-
   // ApplicationDelegate implementation.
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestService> implementation.
@@ -41,7 +40,7 @@ class TestServiceApplication : public ApplicationDelegate,
 
  private:
   int ref_count_;
-  ApplicationImpl* app_impl_;
+  Shell* shell_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestServiceApplication);
 };

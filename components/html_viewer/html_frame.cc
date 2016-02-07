@@ -42,9 +42,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -177,7 +175,7 @@ HTMLFrame::HTMLFrame(CreateParams* params)
       // Collect startup perf data for local main frames in test environments.
       // Child frames aren't tracked, and tracking remote frames is redundant.
       startup_performance_data_collector_ =
-          StatsCollectionController::Install(web_frame_, GetApp());
+          StatsCollectionController::Install(web_frame_, GetShell());
     }
   } else if (!params->is_local_create_child && params->window &&
              id_ == params->window->id()) {
@@ -319,7 +317,7 @@ blink::WebMediaPlayer* HTMLFrame::createMediaPlayer(
     const blink::WebString& sink_id,
     blink::WebMediaSession* media_session) {
   return global_state()->media_factory()->CreateMediaPlayer(
-      frame, url, client, encrypted_client, initial_cdm, GetApp()->shell());
+      frame, url, client, encrypted_client, initial_cdm, GetShell());
 }
 
 blink::WebFrame* HTMLFrame::createChildFrame(
@@ -572,8 +570,8 @@ HTMLFrame* HTMLFrame::GetFirstAncestorWithDelegate() {
   return frame;
 }
 
-mojo::ApplicationImpl* HTMLFrame::GetApp() {
-  return GetFirstAncestorWithDelegate()->delegate_->GetApp();
+mojo::Shell* HTMLFrame::GetShell() {
+  return GetFirstAncestorWithDelegate()->delegate_->GetShell();
 }
 
 web_view::mojom::Frame* HTMLFrame::GetServerFrame() {
@@ -603,7 +601,7 @@ void HTMLFrame::SetWindow(mus::Window* window) {
 void HTMLFrame::CreateRootWebWidget() {
   DCHECK(!html_widget_);
   if (window_) {
-    HTMLWidgetRootLocal::CreateParams create_params(GetApp(), global_state(),
+    HTMLWidgetRootLocal::CreateParams create_params(GetShell(), global_state(),
                                                     window_);
     html_widget_.reset(
         delegate_->GetHTMLFactory()->CreateHTMLWidgetRootLocal(&create_params));
@@ -615,8 +613,8 @@ void HTMLFrame::CreateRootWebWidget() {
 void HTMLFrame::CreateLocalRootWebWidget(blink::WebLocalFrame* local_frame) {
   DCHECK(!html_widget_);
   DCHECK(IsLocal());
-  html_widget_.reset(
-      new HTMLWidgetLocalRoot(GetApp(), global_state(), window_, local_frame));
+  html_widget_.reset(new HTMLWidgetLocalRoot(GetShell(), global_state(),
+                                             window_, local_frame));
 }
 
 void HTMLFrame::UpdateFocus() {

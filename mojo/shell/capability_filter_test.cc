@@ -113,16 +113,16 @@ class ServiceApplication : public ApplicationDelegate,
                            public Safe,
                            public Unsafe {
  public:
-  ServiceApplication() : app_(nullptr) {}
+  ServiceApplication() : shell_(nullptr) {}
   ~ServiceApplication() override {}
 
  private:
   // Overridden from ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {
-    app_ = app;
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
+    shell_ = shell;
     // ServiceApplications have no capability filter and can thus connect
     // directly to the validator application.
-    app_->ConnectToService("test:validator", &validator_);
+    shell_->ConnectToService("test:validator", &validator_);
   }
   bool AcceptConnection(ApplicationConnection* connection) override {
     AddService<Safe>(connection);
@@ -150,7 +150,7 @@ class ServiceApplication : public ApplicationDelegate,
                                  !connection->AddService<Interface>(this));
   }
 
-  ApplicationImpl* app_;
+  Shell* shell_;
   ValidatorPtr validator_;
   WeakBindingSet<Safe> safe_bindings_;
   WeakBindingSet<Unsafe> unsafe_bindings_;
@@ -161,23 +161,25 @@ class ServiceApplication : public ApplicationDelegate,
 ////////////////////////////////////////////////////////////////////////////////
 // TestApplication:
 
-TestApplication::TestApplication() : app_(nullptr) {}
+TestApplication::TestApplication() : shell_(nullptr) {}
 TestApplication::~TestApplication() {}
 
-void TestApplication::Initialize(ApplicationImpl* app) {
-  app_ = app;
+void TestApplication::Initialize(Shell* shell, const std::string& url,
+                                 uint32_t id) {
+  shell_ = shell;
+  url_ = url;
 }
 bool TestApplication::AcceptConnection(
     ApplicationConnection* connection) {
   // TestApplications receive their Validator via the inbound connection.
   connection->ConnectToService(&validator_);
 
-  connection1_ = app_->ConnectToApplication("test:service");
+  connection1_ = shell_->ConnectToApplication("test:service");
   connection1_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service"));
 
-  connection2_ = app_->ConnectToApplication("test:service2");
+  connection2_ = shell_->ConnectToApplication("test:service2");
   connection2_->SetRemoteServiceProviderConnectionErrorHandler(
       base::Bind(&TestApplication::ConnectionClosed,
                   base::Unretained(this), "test:service2"));
@@ -185,7 +187,7 @@ bool TestApplication::AcceptConnection(
 }
 
 void TestApplication::ConnectionClosed(const std::string& service_url) {
-  validator_->ConnectionClosed(app_->url(), service_url);
+  validator_->ConnectionClosed(url_, service_url);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

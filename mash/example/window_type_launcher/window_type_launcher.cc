@@ -9,7 +9,7 @@
 #include "mash/shell/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -164,8 +164,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                public views::MenuDelegate,
                                public views::ContextMenuController {
  public:
-  explicit WindowTypeLauncherView(mojo::ApplicationImpl* app)
-      : app_(app),
+  explicit WindowTypeLauncherView(mojo::Shell* shell)
+      : shell_(shell),
         create_button_(new views::LabelButton(
             this, base::ASCIIToUTF16("Create Window"))),
         panel_button_(new views::LabelButton(
@@ -274,7 +274,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
     else if (sender == lock_button_) {
       mash::shell::mojom::ShellPtr shell;
-      app_->ConnectToService("mojo:mash_shell", &shell);
+      shell_->ConnectToService("mojo:mash_shell", &shell);
       shell->LockScreen();
     }
     else if (sender == widgets_button_) {
@@ -331,7 +331,7 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     }
   }
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   views::LabelButton* create_button_;
   views::LabelButton* panel_button_;
   views::LabelButton* create_nonresizable_button_;
@@ -360,14 +360,15 @@ bool WindowTypeLauncher::AcceptConnection(
   return false;
 }
 
-void WindowTypeLauncher::Initialize(mojo::ApplicationImpl* app) {
-  aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
+void WindowTypeLauncher::Initialize(mojo::Shell* shell, const std::string& url,
+                                    uint32_t id) {
+  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
 
-  views::WindowManagerConnection::Create(app);
+  views::WindowManagerConnection::Create(shell);
 
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = new WindowTypeLauncherView(app);
+  params.delegate = new WindowTypeLauncherView(shell);
   widget->Init(params);
   widget->Show();
 }

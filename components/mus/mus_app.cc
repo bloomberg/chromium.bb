@@ -17,8 +17,7 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/events/event_switches.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_surface.h"
@@ -32,7 +31,6 @@
 #endif
 
 using mojo::ApplicationConnection;
-using mojo::ApplicationImpl;
 using mojo::InterfaceRequest;
 using mus::mojom::WindowTreeHostFactory;
 using mus::mojom::Gpu;
@@ -46,7 +44,7 @@ struct MandolineUIServicesApp::PendingRequest {
 };
 
 MandolineUIServicesApp::MandolineUIServicesApp()
-    : app_impl_(nullptr) {}
+    : shell_(nullptr) {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   if (gpu_state_)
@@ -55,8 +53,10 @@ MandolineUIServicesApp::~MandolineUIServicesApp() {
   connection_manager_.reset();
 }
 
-void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
-  app_impl_ = app;
+void MandolineUIServicesApp::Initialize(mojo::Shell* shell,
+                                        const std::string& url,
+                                        uint32_t id) {
+  shell_ = shell;
   surfaces_state_ = new SurfacesState;
 
 #if defined(USE_X11)
@@ -87,7 +87,7 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
     gpu_state_ = new GpuState(hardware_rendering_available);
   connection_manager_.reset(new ws::ConnectionManager(this, surfaces_state_));
 
-  tracing_.Initialize(app);
+  tracing_.Initialize(shell, url);
 }
 
 bool MandolineUIServicesApp::AcceptConnection(
@@ -112,7 +112,7 @@ void MandolineUIServicesApp::OnFirstRootConnectionCreated() {
 }
 
 void MandolineUIServicesApp::OnNoMoreRootConnections() {
-  app_impl_->Quit();
+  shell_->Quit();
 }
 
 ws::ClientConnection*
@@ -186,7 +186,7 @@ void MandolineUIServicesApp::CreateWindowTreeHost(
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
   ws::WindowTreeHostImpl* host_impl = new ws::WindowTreeHostImpl(
-      connection_manager_.get(), app_impl_, gpu_state_, surfaces_state_);
+      connection_manager_.get(), shell_, gpu_state_, surfaces_state_);
 
   // WindowTreeHostConnection manages its own lifetime.
   host_impl->Init(new ws::WindowTreeHostConnectionImpl(

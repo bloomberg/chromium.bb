@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 using mojo::Array;
 using mojo::Clipboard;
@@ -58,7 +58,7 @@ class ClipboardAppTest : public mojo::test::ApplicationTestBase {
 
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:clipboard", &clipboard_);
+    shell()->ConnectToService("mojo:clipboard", &clipboard_);
   }
 
   uint64_t GetSequenceNumber() {

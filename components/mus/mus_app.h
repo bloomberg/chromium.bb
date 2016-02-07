@@ -24,7 +24,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace ui {
@@ -61,7 +61,8 @@ class MandolineUIServicesApp
   struct PendingRequest;
 
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -103,7 +104,7 @@ class MandolineUIServicesApp
                             mojom::WindowTreeClientPtr tree_client) override;
 
   mojo::WeakBindingSet<mojom::WindowTreeHostFactory> factory_bindings_;
-  mojo::ApplicationImpl* app_impl_;
+  mojo::Shell* shell_;
   scoped_ptr<ws::ConnectionManager> connection_manager_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;

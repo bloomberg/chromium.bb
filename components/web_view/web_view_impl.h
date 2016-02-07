@@ -25,7 +25,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace web_view {
@@ -48,7 +48,7 @@ class WebViewImpl : public mojom::WebView,
                     public NavigationControllerDelegate,
                     public FindControllerDelegate {
  public:
-  WebViewImpl(mojo::ApplicationImpl* app,
+  WebViewImpl(mojo::Shell* shell,
               mojom::WebViewClientPtr client,
               mojo::InterfaceRequest<WebView> request);
   ~WebViewImpl() override;
@@ -116,7 +116,7 @@ class WebViewImpl : public mojom::WebView,
   std::vector<Frame*> GetAllFrames() override;
   mojom::WebViewClient* GetWebViewClient() override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojom::WebViewClientPtr client_;
   mojo::StrongBinding<WebView> binding_;
   mus::Window* root_;

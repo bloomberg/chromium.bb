@@ -20,8 +20,9 @@ LayoutTestHTMLViewer::LayoutTestHTMLViewer() {
 LayoutTestHTMLViewer::~LayoutTestHTMLViewer() {
 }
 
-void LayoutTestHTMLViewer::Initialize(mojo::ApplicationImpl* app) {
-  HTMLViewer::Initialize(app);
+void LayoutTestHTMLViewer::Initialize(mojo::Shell* shell,
+                                      const std::string& url, uint32_t id) {
+  HTMLViewer::Initialize(shell, url, id);
   global_state()->InitIfNecessary(gfx::Size(800, 600), 1.f);
   test_interfaces_.reset(new test_runner::WebTestInterfaces);
   test_interfaces_->ResetAll();
@@ -39,14 +40,14 @@ void LayoutTestHTMLViewer::TestFinished() {
   test_interfaces_->ResetAll();
 
   web_view::LayoutTestRunnerPtr test_runner_ptr;
-  app()->ConnectToService("mojo:web_view_test_runner", &test_runner_ptr);
+  shell()->ConnectToService("mojo:web_view_test_runner", &test_runner_ptr);
   test_runner_ptr->TestFinished();
 }
 
 void LayoutTestHTMLViewer::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
-  new LayoutTestContentHandlerImpl(global_state(), app(), std::move(request),
+  new LayoutTestContentHandlerImpl(global_state(), shell(), std::move(request),
                                    test_interfaces_.get(), &test_delegate_);
 }
 

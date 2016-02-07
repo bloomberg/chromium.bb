@@ -26,7 +26,7 @@ class LayoutTestContentHandlerImpl : public ContentHandlerImpl,
                                      public HTMLFactory {
  public:
   LayoutTestContentHandlerImpl(GlobalState* global_state,
-                               mojo::ApplicationImpl* app,
+                               mojo::Shell* shell,
                                mojo::InterfaceRequest<ContentHandler> request,
                                test_runner::WebTestInterfaces* test_interfaces,
                                WebTestDelegateImpl* test_delegate);

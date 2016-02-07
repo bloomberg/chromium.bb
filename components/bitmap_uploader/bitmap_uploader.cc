@@ -16,10 +16,7 @@
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/public/c/gles2/chromium_extension.h"
 #include "mojo/public/c/gles2/gles2.h"
-#include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace bitmap_uploader {
 namespace {
@@ -29,8 +26,6 @@ const uint32_t g_transparent_color = 0x00000000;
 void LostContext(void*) {
   // TODO(fsamuel): Figure out if there's something useful to do here.
 }
-
-void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
 
 }  // namespace
 
@@ -51,19 +46,11 @@ BitmapUploader::~BitmapUploader() {
   MojoGLES2DestroyContext(gles2_context_);
 }
 
-void BitmapUploader::Init(mojo::shell::mojom::Shell* shell) {
+void BitmapUploader::Init(mojo::Shell* shell) {
   surface_ = window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
 
-  mojo::ServiceProviderPtr gpu_service_provider;
-  mojo::URLRequestPtr request2(mojo::URLRequest::New());
-  request2->url = mojo::String::From("mojo:mus");
-  shell->ConnectToApplication(std::move(request2),
-                              mojo::GetProxy(&gpu_service_provider), nullptr,
-                              mojo::CreatePermissiveCapabilityFilter(),
-                              base::Bind(&OnGotRemoteIDs));
-  ConnectToService(gpu_service_provider.get(), &gpu_service_);
-
+  shell->ConnectToService("mojo:mus", &gpu_service_);
   mus::mojom::CommandBufferPtr gles2_client;
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
   gles2_context_ = MojoGLES2CreateContext(

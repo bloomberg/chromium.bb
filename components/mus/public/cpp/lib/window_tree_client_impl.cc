@@ -19,10 +19,7 @@
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/cpp/service_provider_impl.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -83,10 +80,10 @@ Window* BuildWindowTree(WindowTreeClientImpl* client,
 }
 
 WindowTreeConnection* WindowTreeConnection::Create(WindowTreeDelegate* delegate,
-                                                   mojo::ApplicationImpl* app) {
+                                                   mojo::Shell* shell) {
   WindowTreeClientImpl* client =
       new WindowTreeClientImpl(delegate, nullptr, nullptr);
-  client->ConnectViaWindowTreeFactory(app);
+  client->ConnectViaWindowTreeFactory(shell);
   return client;
 }
 
@@ -161,7 +158,7 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
 }
 
 void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
-    mojo::ApplicationImpl* app) {
+    mojo::Shell* shell) {
   // Clients created with no root shouldn't delete automatically.
   delete_on_no_roots_ = false;
 
@@ -169,7 +166,7 @@ void WindowTreeClientImpl::ConnectViaWindowTreeFactory(
   connection_id_ = 101;
 
   mojom::WindowTreeFactoryPtr factory;
-  app->ConnectToService("mojo:mus", &factory);
+  shell->ConnectToService("mojo:mus", &factory);
   factory->CreateWindowTree(GetProxy(&tree_ptr_),
                             binding_.CreateInterfacePtrAndBind());
   tree_ = tree_ptr_.get();

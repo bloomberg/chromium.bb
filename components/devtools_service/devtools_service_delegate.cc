@@ -11,7 +11,7 @@
 #include "components/devtools_service/devtools_service.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
 namespace devtools_service {
@@ -32,8 +32,10 @@ DevToolsServiceDelegate::DevToolsServiceDelegate() {
 DevToolsServiceDelegate::~DevToolsServiceDelegate() {
 }
 
-void DevToolsServiceDelegate::Initialize(mojo::ApplicationImpl* app) {
-  service_.reset(new DevToolsService(app));
+void DevToolsServiceDelegate::Initialize(mojo::Shell* shell,
+                                         const std::string& url,
+                                         uint32_t id) {
+  service_.reset(new DevToolsService(shell));
 }
 
 bool DevToolsServiceDelegate::AcceptConnection(

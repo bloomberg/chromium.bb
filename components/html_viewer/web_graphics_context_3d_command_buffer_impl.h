@@ -15,7 +15,7 @@
 #include "url/gurl.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace gpu {
@@ -32,7 +32,7 @@ class WebGraphicsContext3DCommandBufferImpl
  public:
   static WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext(
       GlobalState* global_state,
-      mojo::ApplicationImpl* app,
+      mojo::Shell* shell,
       const GURL& active_url,
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context,

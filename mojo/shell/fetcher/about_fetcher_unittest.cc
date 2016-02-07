@@ -42,7 +42,7 @@ class TestContentHandler : public ApplicationDelegate,
 
  private:
   // Overridden from ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {}
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<mojom::ContentHandler>(this);
     return true;

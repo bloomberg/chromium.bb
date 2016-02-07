@@ -14,7 +14,7 @@ class WebFrameWidget;
 }
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mus {
@@ -63,12 +63,12 @@ class HTMLWidgetRootRemote : public HTMLWidget, public blink::WebViewClient {
 class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
  public:
   struct CreateParams {
-    CreateParams(mojo::ApplicationImpl* app,
+    CreateParams(mojo::Shell* shell,
                  GlobalState* global_state,
                  mus::Window* window);
     ~CreateParams();
 
-    mojo::ApplicationImpl* app;
+    mojo::Shell* shell;
     GlobalState* global_state;
     mus::Window* window;
   };
@@ -95,7 +95,7 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
   blink::WebWidget* GetWidget() override;
   void OnWindowBoundsChanged(mus::Window* window) override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   GlobalState* global_state_;
   mus::Window* window_;
   blink::WebView* web_view_;
@@ -108,7 +108,7 @@ class HTMLWidgetRootLocal : public HTMLWidget, public blink::WebViewClient {
 // Used for frames other than the root that are local.
 class HTMLWidgetLocalRoot : public HTMLWidget, public blink::WebWidgetClient {
  public:
-  HTMLWidgetLocalRoot(mojo::ApplicationImpl* app,
+  HTMLWidgetLocalRoot(mojo::Shell* shell,
                       GlobalState* global_state,
                       mus::Window* window,
                       blink::WebLocalFrame* web_local_frame);
@@ -128,7 +128,7 @@ class HTMLWidgetLocalRoot : public HTMLWidget, public blink::WebWidgetClient {
   void didUpdateTextOfFocusedElementByNonUserInput() override;
   void showImeIfNeeded() override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   GlobalState* global_state_;
   blink::WebFrameWidget* web_frame_widget_;
   scoped_ptr<WebLayerTreeViewImpl> web_layer_tree_view_impl_;

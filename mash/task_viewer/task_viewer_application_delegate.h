@@ -31,7 +31,8 @@ class TaskViewerApplicationDelegate : public mojo::ApplicationDelegate {
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
 
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;

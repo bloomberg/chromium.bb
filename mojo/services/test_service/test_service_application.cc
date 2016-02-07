@@ -17,14 +17,15 @@ namespace mojo {
 namespace test {
 
 TestServiceApplication::TestServiceApplication()
-    : ref_count_(0), app_impl_(nullptr) {
+    : ref_count_(0), shell_(nullptr) {
 }
 
 TestServiceApplication::~TestServiceApplication() {
 }
 
-void TestServiceApplication::Initialize(ApplicationImpl* app) {
-  app_impl_ = app;
+void TestServiceApplication::Initialize(Shell* shell, const std::string& url,
+                                        uint32_t id) {
+  shell_ = shell;
 }
 
 bool TestServiceApplication::AcceptConnection(
@@ -36,13 +37,13 @@ bool TestServiceApplication::AcceptConnection(
 
 void TestServiceApplication::Create(ApplicationConnection* connection,
                                     InterfaceRequest<TestService> request) {
-  new TestServiceImpl(app_impl_, this, std::move(request));
+  new TestServiceImpl(shell_, this, std::move(request));
   AddRef();
 }
 
 void TestServiceApplication::Create(ApplicationConnection* connection,
                                     InterfaceRequest<TestTimeService> request) {
-  new TestTimeServiceImpl(app_impl_, std::move(request));
+  new TestTimeServiceImpl(shell_, std::move(request));
 }
 
 void TestServiceApplication::AddRef() {

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mash {
 namespace browser_driver {
@@ -45,13 +45,15 @@ void AssertTrue(bool success) {
 }  // namespace
 
 BrowserDriverApplicationDelegate::BrowserDriverApplicationDelegate()
-    : app_(nullptr),
+    : shell_(nullptr),
       binding_(this) {}
 
 BrowserDriverApplicationDelegate::~BrowserDriverApplicationDelegate() {}
 
-void BrowserDriverApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
+void BrowserDriverApplicationDelegate::Initialize(mojo::Shell* shell,
+                                                  const std::string& url,
+                                                  uint32_t id) {
+  shell_ = shell;
   AddAccelerators();
 }
 
@@ -66,7 +68,7 @@ void BrowserDriverApplicationDelegate::OnAccelerator(
     case Accelerator::NewWindow:
     case Accelerator::NewTab:
     case Accelerator::NewIncognitoWindow:
-      app_->ConnectToApplication("exe:chrome");
+      shell_->ConnectToApplication("exe:chrome");
       // TODO(beng): have Chrome export a service that allows it to be driven by
       //             this driver, e.g. to open new tabs, incognito windows, etc.
       break;
@@ -80,7 +82,7 @@ void BrowserDriverApplicationDelegate::AddAccelerators() {
   // TODO(beng): find some other way to get the window manager. I don't like
   //             having to specify it by URL because it may differ per display.
   mus::mojom::AcceleratorRegistrarPtr registrar;
-  app_->ConnectToService("mojo:desktop_wm", &registrar);
+  shell_->ConnectToService("mojo:desktop_wm", &registrar);
 
   if (binding_.is_bound())
     binding_.Unbind();

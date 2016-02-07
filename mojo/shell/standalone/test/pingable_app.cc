@@ -7,9 +7,9 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/standalone/test/pingable.mojom.h"
 
 namespace mojo {
@@ -44,7 +44,9 @@ class PingableApp : public mojo::ApplicationDelegate,
 
  private:
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* impl) override { app_url_ = impl->url(); }
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {
+    app_url_ = url;
+  }
 
   bool AcceptConnection(mojo::ApplicationConnection* connection) override {
     connection->AddService(this);

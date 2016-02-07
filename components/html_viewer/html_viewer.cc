@@ -12,15 +12,16 @@
 
 namespace html_viewer {
 
-HTMLViewer::HTMLViewer() : app_(nullptr) {
+HTMLViewer::HTMLViewer() : shell_(nullptr) {
 }
 
 HTMLViewer::~HTMLViewer() {
 }
 
-void HTMLViewer::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  global_state_.reset(new GlobalState(app));
+void HTMLViewer::Initialize(mojo::Shell* shell, const std::string& url,
+                            uint32_t id) {
+  shell_ = shell;
+  global_state_.reset(new GlobalState(shell, url));
 }
 
 bool HTMLViewer::AcceptConnection(
@@ -32,7 +33,7 @@ bool HTMLViewer::AcceptConnection(
 void HTMLViewer::Create(
     mojo::ApplicationConnection* connection,
     mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request) {
-  new ContentHandlerImpl(global_state_.get(), app_, std::move(request));
+  new ContentHandlerImpl(global_state_.get(), shell_, std::move(request));
 }
 
 }  // namespace html_viewer

@@ -24,7 +24,9 @@ class MojoMediaApplication
 
  private:
   // mojo::ApplicationDelegate implementation.
-  void Initialize(mojo::ApplicationImpl* app) final;
+  void Initialize(mojo::Shell* shell,
+                  const std::string& url,
+                  uint32_t id) final;
   bool AcceptConnection(mojo::ApplicationConnection* connection) final;
 
   // mojo::InterfaceFactory<interfaces::ServiceFactory> implementation.
@@ -32,7 +34,7 @@ class MojoMediaApplication
               mojo::InterfaceRequest<interfaces::ServiceFactory> request) final;
 
   scoped_ptr<MojoMediaClient> mojo_media_client_;
-  mojo::ApplicationImpl* app_impl_;
+  mojo::Shell* shell_;
   scoped_refptr<MediaLog> media_log_;
 };
 

@@ -16,7 +16,7 @@
 #include "mash/wm/user_window_controller_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/display_converter.h"
@@ -25,7 +25,7 @@ namespace mash {
 namespace wm {
 
 WindowManagerApplication::WindowManagerApplication()
-    : app_(nullptr), window_manager_factory_binding_(this) {}
+    : shell_(nullptr), window_manager_factory_binding_(this) {}
 
 WindowManagerApplication::~WindowManagerApplication() {
   // AcceleratorRegistrarImpl removes an observer in its destructor. Destroy
@@ -56,7 +56,7 @@ void WindowManagerApplication::OnRootWindowControllerGotRoot(
 
   ui_init_.reset(new ui::mojo::UIInit(
       views::GetDisplaysFromWindow(root_controller->root())));
-  aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
+  aura_init_.reset(new views::AuraInit(shell_, "mash_wm_resources.pak"));
 }
 
 void WindowManagerApplication::OnRootWindowControllerDoneInit(
@@ -103,12 +103,14 @@ void WindowManagerApplication::OnAcceleratorRegistrarDestroyed(
   accelerator_registrars_.erase(registrar);
 }
 
-void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  tracing_.Initialize(app);
+void WindowManagerApplication::Initialize(mojo::Shell* shell,
+                                          const std::string& url,
+                                          uint32_t id) {
+  shell_ = shell;
+  tracing_.Initialize(shell, url);
 
   mus::mojom::WindowManagerFactoryServicePtr wm_factory_service;
-  app_->ConnectToService("mojo:mus", &wm_factory_service);
+  shell_->ConnectToService("mojo:mus", &wm_factory_service);
   wm_factory_service->SetWindowManagerFactory(
       window_manager_factory_binding_.CreateInterfacePtrAndBind());
 

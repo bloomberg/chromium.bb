@@ -90,11 +90,9 @@ class ContentWindowLayoutManager : public aura::LayoutManager {
 class WmNativeWidgetMus : public views::NativeWidgetMus {
  public:
   WmNativeWidgetMus(views::internal::NativeWidgetDelegate* delegate,
-                    mojo::shell::mojom::Shell* shell,
+                    mojo::Shell* shell,
                     mus::Window* window)
-      : NativeWidgetMus(delegate,
-                        shell,
-                        window,
+      : NativeWidgetMus(delegate, shell, window,
                         mus::mojom::SurfaceType::UNDERLAY) {}
   ~WmNativeWidgetMus() override {
   }
@@ -168,7 +166,7 @@ class ClientViewMus : public views::ClientView {
 }  // namespace
 
 NonClientFrameController::NonClientFrameController(
-    mojo::shell::mojom::Shell* shell,
+    mojo::Shell* shell,
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {

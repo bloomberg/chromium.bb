@@ -8,8 +8,8 @@
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -28,8 +28,8 @@ namespace quick_launch {
 class QuickLaunchUI : public views::WidgetDelegateView,
                       public views::TextfieldController {
  public:
-  QuickLaunchUI(mojo::ApplicationImpl* app)
-      : app_(app),
+  QuickLaunchUI(mojo::Shell* shell)
+      : shell_(shell),
         prompt_(new views::Textfield) {
     set_background(views::Background::CreateStandardPanelBackground());
     prompt_->set_controller(this);
@@ -62,7 +62,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     if (key_event.key_code() == ui::VKEY_RETURN) {
       std::string url = Canonicalize(prompt_->text());
-      connections_.push_back(app_->ConnectToApplication(url));
+      connections_.push_back(shell_->ConnectToApplication(url));
       prompt_->SetText(base::string16());
     }
     return false;
@@ -77,7 +77,7 @@ class QuickLaunchUI : public views::WidgetDelegateView,
     return base::UTF16ToUTF8(working);
   }
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   views::Textfield* prompt_;
   std::vector<scoped_ptr<mojo::ApplicationConnection>> connections_;
 
@@ -91,14 +91,15 @@ class QuickLaunchApplicationDelegate : public mojo::ApplicationDelegate {
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    tracing_.Initialize(app);
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
+    tracing_.Initialize(shell, url);
 
-    aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
-    views::WindowManagerConnection::Create(app);
+    aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+    views::WindowManagerConnection::Create(shell);
 
     views::Widget* window = views::Widget::CreateWindowWithBounds(
-        new QuickLaunchUI(app), gfx::Rect(10, 640, 0, 0));
+        new QuickLaunchUI(shell), gfx::Rect(10, 640, 0, 0));
     window->Show();
   }
 

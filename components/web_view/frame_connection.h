@@ -18,7 +18,7 @@
 
 namespace mojo {
 class ApplicationConnection;
-class ApplicationImpl;
+class Shell;
 }
 
 namespace web_view {
@@ -37,7 +37,7 @@ class FrameConnection : public FrameUserData {
   // FrameTreeDelegate::CanNavigateFrame(). |callback| is run once the
   // content handler id for the app is determined.
   static void CreateConnectionForCanNavigateFrame(
-      mojo::ApplicationImpl* app,
+      mojo::Shell* shell,
       Frame* frame,
       mojo::URLRequestPtr request,
       const FrameTreeDelegate::CanNavigateFrameCallback& callback);
@@ -45,7 +45,7 @@ class FrameConnection : public FrameUserData {
   // Initializes the FrameConnection with the specified parameters.
   // |on_got_id_callback| is run once the content handler is obtained from
   // the connection.
-  void Init(mojo::ApplicationImpl* app,
+  void Init(mojo::Shell* shell,
             mojo::URLRequestPtr request,
             const base::Closure& on_got_id_callback);
 

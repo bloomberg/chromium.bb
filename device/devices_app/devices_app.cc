@@ -19,7 +19,7 @@
 #include "device/usb/usb_service.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
 namespace device {
@@ -75,14 +75,15 @@ class DevicesApp::USBServiceInitializer {
   DISALLOW_COPY_AND_ASSIGN(USBServiceInitializer);
 };
 
-DevicesApp::DevicesApp()
-    : app_impl_(nullptr), active_device_manager_count_(0) {}
+DevicesApp::DevicesApp() : shell_(nullptr), active_device_manager_count_(0) {}
 
 DevicesApp::~DevicesApp() {
 }
 
-void DevicesApp::Initialize(mojo::ApplicationImpl* app) {
-  app_impl_ = app;
+void DevicesApp::Initialize(mojo::Shell* shell,
+                            const std::string& url,
+                            uint32_t id) {
+  shell_ = shell;
   service_initializer_.reset(new USBServiceInitializer);
   StartIdleTimer();
 }
@@ -94,7 +95,7 @@ bool DevicesApp::AcceptConnection(mojo::ApplicationConnection* connection) {
 
 void DevicesApp::Quit() {
   service_initializer_.reset();
-  app_impl_ = nullptr;
+  shell_ = nullptr;
 }
 
 void DevicesApp::Create(mojo::ApplicationConnection* connection,
@@ -125,11 +126,11 @@ void DevicesApp::OnConnectionError() {
 }
 
 void DevicesApp::StartIdleTimer() {
-  // Passing unretained |app_impl_| is safe here because |app_impl_| is
+  // Passing unretained |shell_| is safe here because |shell_| is
   // guaranteed to outlive |this|, and the callback is canceled if |this| is
   // destroyed.
-  idle_timeout_callback_.Reset(base::Bind(&mojo::ApplicationImpl::Quit,
-                                          base::Unretained(app_impl_)));
+  idle_timeout_callback_.Reset(
+      base::Bind(&mojo::Shell::Quit, base::Unretained(shell_)));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, idle_timeout_callback_.callback(),
       base::TimeDelta::FromSeconds(kIdleTimeoutInSeconds));

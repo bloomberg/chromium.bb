@@ -37,8 +37,8 @@ class WebWidget;
 }
 
 namespace mojo {
-class ApplicationImpl;
 class Rect;
+class Shell;
 }
 
 namespace mus {
@@ -231,8 +231,8 @@ class HTMLFrame : public blink::WebFrameClient,
   // delegate.
   HTMLFrame* GetFirstAncestorWithDelegate();
 
-  // Returns the ApplicationImpl from the first ancestor with a delegate.
-  mojo::ApplicationImpl* GetApp();
+  // Returns the Shell from the first ancestor with a delegate.
+  mojo::Shell* GetShell();
 
   // Gets the server Frame to use for this frame.
   web_view::mojom::Frame* GetServerFrame();

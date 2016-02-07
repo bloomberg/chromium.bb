@@ -21,8 +21,9 @@ ResourceProviderApp::ResourceProviderApp(
 ResourceProviderApp::~ResourceProviderApp() {
 }
 
-void ResourceProviderApp::Initialize(mojo::ApplicationImpl* app) {
-  tracing_.Initialize(app);
+void ResourceProviderApp::Initialize(mojo::Shell* shell, const std::string& url,
+                                     uint32_t id) {
+  tracing_.Initialize(shell, url);
 }
 
 bool ResourceProviderApp::AcceptConnection(

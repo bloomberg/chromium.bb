@@ -11,7 +11,7 @@
 
 namespace mojo {
 class ApplicationConnection;
-class ApplicationImpl;
+class Shell;
 }  // namespace mojo
 
 namespace updater {
@@ -24,9 +24,9 @@ class UpdaterApp : public mojo::ApplicationDelegate,
   UpdaterApp();
   ~UpdaterApp() override;
 
-  void Initialize(mojo::ApplicationImpl* app) override;
-
   // mojo::ApplicationDelegate:
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -35,7 +35,7 @@ class UpdaterApp : public mojo::ApplicationDelegate,
               mojo::InterfaceRequest<Updater> request) override;
 
  private:
-  mojo::ApplicationImpl* app_impl_;
+  mojo::Shell* shell_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdaterApp);
 };

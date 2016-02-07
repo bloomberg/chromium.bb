@@ -14,17 +14,17 @@ class RunLoop;
 }
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace web_view {
 
 class TestFrameTreeDelegate : public FrameTreeDelegate {
  public:
-  explicit TestFrameTreeDelegate(mojo::ApplicationImpl* app);
+  explicit TestFrameTreeDelegate(mojo::Shell* shell);
   ~TestFrameTreeDelegate() override;
 
-  mojo::ApplicationImpl* app() { return app_; }
+  mojo::Shell* shell() { return shell_; }
 
   // Runs a message loop until DidCreateFrame() is called, returning the
   // Frame supplied to DidCreateFrame().
@@ -58,7 +58,7 @@ class TestFrameTreeDelegate : public FrameTreeDelegate {
  private:
   bool is_waiting() const { return run_loop_.get(); }
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   bool waiting_for_create_frame_;
   Frame* waiting_for_destroy_frame_;
   scoped_ptr<base::RunLoop> run_loop_;

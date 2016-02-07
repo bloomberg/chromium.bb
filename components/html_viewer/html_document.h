@@ -60,10 +60,10 @@ class HTMLDocument
   using DeleteCallback = base::Callback<void(HTMLDocument*)>;
 
   // Load a new HTMLDocument with |response|.
-  // |html_document_app| is the application this app was created in, and
+  // |html_document_shell| is the application this app was created in, and
   // |connection| the specific connection triggering this new instance.
   // |setup| is used to obtain init type state (such as resources).
-  HTMLDocument(mojo::ApplicationImpl* html_document_app,
+  HTMLDocument(mojo::Shell* html_document_shell,
                mojo::ApplicationConnection* connection,
                mojo::URLResponsePtr response,
                GlobalState* setup,
@@ -111,7 +111,7 @@ class HTMLDocument
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
   // HTMLFrameDelegate:
-  mojo::ApplicationImpl* GetApp() override;
+  mojo::Shell* GetShell() override;
   HTMLFactory* GetHTMLFactory() override;
   void OnFrameDidFinishLoad() override;
   void OnFrameSwappedToRemote() override;
@@ -142,7 +142,7 @@ class HTMLDocument
       mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) override;
 
   scoped_ptr<mojo::AppRefCount> app_refcount_;
-  mojo::ApplicationImpl* html_document_app_;
+  mojo::Shell* html_document_shell_;
   mojo::ApplicationConnection* connection_;
 
   // HTMLDocument owns these pointers; binding requests after document load.

@@ -17,7 +17,6 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
 using mojo::ApplicationConnection;
@@ -65,7 +64,7 @@ void EmbedCallbackImpl(base::RunLoop* run_loop,
 
 // -----------------------------------------------------------------------------
 
-bool EmbedUrl(mojo::ApplicationImpl* app,
+bool EmbedUrl(mojo::Shell* shell,
               WindowTree* ws,
               const String& url,
               Id root_id) {
@@ -73,7 +72,7 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
   base::RunLoop run_loop;
   {
     mojom::WindowTreeClientPtr client;
-    app->ConnectToService(url.get(), &client);
+    shell->ConnectToService(url.get(), &client);
     ws->Embed(root_id, std::move(client),
               mojom::WindowTree::kAccessPolicyDefault,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
@@ -542,8 +541,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
                                                Id root_id,
                                                uint32_t policy_bitmask,
                                                int* connection_id) {
-    if (!EmbedUrl(application_impl(), owner, application_impl()->url(),
-                  root_id)) {
+    if (!EmbedUrl(shell(), owner, shell_url(), root_id)) {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
@@ -569,7 +567,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
     client_factory_.reset(new WindowTreeClientFactory());
 
     mojom::WindowTreeHostFactoryPtr factory;
-    application_impl()->ConnectToService("mojo:mus", &factory);
+    shell()->ConnectToService("mojo:mus", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     ws_client1_.reset(new TestWindowTreeClientImpl());
@@ -1720,8 +1718,7 @@ TEST_F(WindowTreeAppTest, EmbedFailsFromOtherConnection) {
   // 2 should not be able to embed in window_3_3 as window_3_3 was not created
   // by
   // 2.
-  EXPECT_FALSE(EmbedUrl(application_impl(), ws2(), application_impl()->url(),
-                        window_3_3));
+  EXPECT_FALSE(EmbedUrl(shell(), ws2(), shell_url(), window_3_3));
 }
 
 // Verifies Embed() from window manager on another connections window works.
@@ -1744,8 +1741,7 @@ TEST_F(WindowTreeAppTest, EmbedFromOtherConnection) {
 
 TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
   // Shouldn't be able to embed into the root.
-  ASSERT_FALSE(EmbedUrl(application_impl(), ws1(), application_impl()->url(),
-                        root_window_id()));
+  ASSERT_FALSE(EmbedUrl(shell(), ws1(), shell_url(), root_window_id()));
 
   // Even though the call above failed a WindowTreeClient was obtained. We need
   // to
@@ -1754,7 +1750,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 
   // Don't allow a connection to embed into its own root.
   ASSERT_NO_FATAL_FAILURE(EstablishSecondConnection(true));
-  EXPECT_FALSE(EmbedUrl(application_impl(), ws2(), application_impl()->url(),
+  EXPECT_FALSE(EmbedUrl(shell(), ws2(), shell_url(),
                         BuildWindowId(connection_id_1(), 1)));
 
   // Need to wait for a WindowTreeClient for same reason as above.
@@ -1771,8 +1767,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
 
   // window_1_2 is ws3's root, so even though v3 is an embed root it should not
   // be able to Embed into itself.
-  ASSERT_FALSE(EmbedUrl(application_impl(), ws3(), application_impl()->url(),
-                        window_1_2));
+  ASSERT_FALSE(EmbedUrl(shell(), ws3(), shell_url(), window_1_2));
 }
 
 // Verifies that a transient window tracks its parent's lifetime.

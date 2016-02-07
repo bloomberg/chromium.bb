@@ -11,7 +11,6 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/accelerator_registrar.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
 using mus::mojom::AcceleratorHandler;
@@ -73,7 +72,7 @@ class AcceleratorRegistrarTest : public mojo::test::ApplicationTestBase {
 
  protected:
   void ConnectToRegistrar(AcceleratorRegistrarPtr* registrar) {
-    application_impl()->ConnectToService("mojo:desktop_wm", registrar);
+    shell()->ConnectToService("mojo:desktop_wm", registrar);
   }
 
  private:

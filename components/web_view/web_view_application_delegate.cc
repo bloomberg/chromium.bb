@@ -11,12 +11,14 @@
 
 namespace web_view {
 
-WebViewApplicationDelegate::WebViewApplicationDelegate() : app_(nullptr) {}
+WebViewApplicationDelegate::WebViewApplicationDelegate() : shell_(nullptr) {}
 WebViewApplicationDelegate::~WebViewApplicationDelegate() {}
 
-void WebViewApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  tracing_.Initialize(app);
+void WebViewApplicationDelegate::Initialize(mojo::Shell* shell,
+                                            const std::string& url,
+                                            uint32_t id) {
+  shell_ = shell;
+  tracing_.Initialize(shell, url);
 }
 
 bool WebViewApplicationDelegate::AcceptConnection(
@@ -28,7 +30,7 @@ bool WebViewApplicationDelegate::AcceptConnection(
 void WebViewApplicationDelegate::CreateWebView(
     mojom::WebViewClientPtr client,
     mojo::InterfaceRequest<mojom::WebView> web_view) {
-  new WebViewImpl(app_, std::move(client), std::move(web_view));
+  new WebViewImpl(shell_, std::move(client), std::move(web_view));
 }
 
 void WebViewApplicationDelegate::Create(

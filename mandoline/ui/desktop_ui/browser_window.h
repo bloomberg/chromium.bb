@@ -51,7 +51,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
                       public FindBarDelegate,
                       public mus::WindowManagerDelegate {
  public:
-  BrowserWindow(mojo::ApplicationImpl* app,
+  BrowserWindow(mojo::Shell* shell,
                 mus::mojom::WindowTreeHostFactory* host_factory,
                 BrowserManager* manager);
 
@@ -114,7 +114,7 @@ class BrowserWindow : public mus::WindowTreeDelegate,
 
   void Layout(views::View* host);
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mus::WindowManagerClient* window_manager_client_;
   scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;

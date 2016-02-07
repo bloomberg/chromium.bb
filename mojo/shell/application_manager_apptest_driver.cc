@@ -26,8 +26,8 @@
 #include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/common/switches.h"
@@ -42,13 +42,14 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                                   public mojo::InterfaceFactory<Driver>,
                                   public Driver {
  public:
-  TargetApplicationDelegate() : app_(nullptr), weak_factory_(this) {}
+  TargetApplicationDelegate() : shell_(nullptr), weak_factory_(this) {}
   ~TargetApplicationDelegate() override {}
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    app_ = app;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
+    shell_ = shell;
 
     base::FilePath target_path;
     CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
@@ -109,8 +110,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                                     platform_channel_pair.PassServerHandle());
   }
 
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
+  bool AcceptConnection(mojo::ApplicationConnection* connection) override {
     connection->AddService<Driver>(this);
     return true;
   }
@@ -124,7 +124,7 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
   // Driver:
   void QuitDriver() override {
     target_.Terminate(0, false);
-    app_->Quit();
+    shell_->Quit();
   }
 
   static void OnMessagePipeCreated(
@@ -150,14 +150,14 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate,
                           std::move(test_interfaces));
 
     mojo::shell::mojom::ApplicationManagerPtr application_manager;
-    app_->ConnectToService("mojo:shell", &application_manager);
+    shell_->ConnectToService("mojo:shell", &application_manager);
     application_manager->CreateInstanceForHandle(
         mojo::ScopedHandle(mojo::Handle(pipe.release().value())),
         "exe:application_manager_apptest_target", std::move(filter),
         std::move(request));
   }
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   base::Process target_;
   mojo::WeakBindingSet<Driver> bindings_;
   base::WeakPtrFactory<TargetApplicationDelegate> weak_factory_;

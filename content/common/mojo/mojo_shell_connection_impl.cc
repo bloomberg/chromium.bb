@@ -72,7 +72,9 @@ void MojoShellConnectionImpl::WaitForShell(
   application_impl_->WaitForInitialize();
 }
 
-void MojoShellConnectionImpl::Initialize(mojo::ApplicationImpl* application) {
+void MojoShellConnectionImpl::Initialize(mojo::Shell* shell,
+                                         const std::string& url,
+                                         uint32_t id) {
   initialized_ = true;
 }
 
@@ -84,7 +86,7 @@ bool MojoShellConnectionImpl::AcceptConnection(
   return found;
 }
 
-mojo::ApplicationImpl* MojoShellConnectionImpl::GetApplication() {
+mojo::Shell* MojoShellConnectionImpl::GetShell() {
   DCHECK(initialized_);
   return application_impl_.get();
 }

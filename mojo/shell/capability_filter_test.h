@@ -28,12 +28,13 @@ class TestApplication : public ApplicationDelegate {
 
  private:
   // Overridden from ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override;
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(ApplicationConnection* connection) override;
 
   void ConnectionClosed(const std::string& service_url);
 
-  ApplicationImpl* app_;
+  Shell* shell_;
+  std::string url_;
   ValidatorPtr validator_;
   scoped_ptr<ApplicationConnection> connection1_;
   scoped_ptr<ApplicationConnection> connection2_;

@@ -116,7 +116,8 @@ MojoResult RunAllTests(MojoHandle application_request_handle) {
 TestHelper::TestHelper(ApplicationDelegate* delegate)
     : application_impl_(new ApplicationImpl(
           delegate == nullptr ? &default_application_delegate_ : delegate,
-          std::move(g_application_request))) {
+          std::move(g_application_request))),
+      url_(g_url) {
   // Fake application initialization.
   shell::mojom::Application* application = application_impl_.get();
   application->Initialize(std::move(g_shell), g_url, g_id);

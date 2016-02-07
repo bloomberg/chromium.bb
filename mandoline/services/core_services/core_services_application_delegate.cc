@@ -20,7 +20,6 @@
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/tracing_app.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "url/gurl.h"
 
@@ -29,12 +28,13 @@ namespace core_services {
 // A helper class for hosting a mojo::ApplicationImpl on its own thread.
 class ApplicationThread : public base::SimpleThread {
  public:
-  ApplicationThread(const base::WeakPtr<CoreServicesApplicationDelegate>
-                        core_services_application,
-                    const std::string& url,
-                    scoped_ptr<mojo::ApplicationDelegate> delegate,
-                    mojo::ApplicationRequest request,
-                    const mojo::Callback<void()>& destruct_callback)
+  ApplicationThread(
+      const base::WeakPtr<CoreServicesApplicationDelegate>
+          core_services_application,
+      const std::string& url,
+      scoped_ptr<mojo::ApplicationDelegate> delegate,
+      mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
+      const mojo::Callback<void()>& destruct_callback)
       : base::SimpleThread(url),
         core_services_application_(core_services_application),
         core_services_application_task_runner_(base::MessageLoop::current()
@@ -73,7 +73,7 @@ class ApplicationThread : public base::SimpleThread {
       core_services_application_task_runner_;
   std::string url_;
   scoped_ptr<mojo::ApplicationDelegate> delegate_;
-  mojo::ApplicationRequest request_;
+  mojo::InterfaceRequest<mojo::shell::mojom::Application> request_;
   mojo::Callback<void()> destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationThread);
@@ -97,9 +97,11 @@ void CoreServicesApplicationDelegate::ApplicationThreadDestroyed(
   application_threads_.erase(iter);
 }
 
-void CoreServicesApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+void CoreServicesApplicationDelegate::Initialize(mojo::Shell* shell,
+                                                 const std::string& url,
+                                                 uint32_t id) {
   mojo::InitLogging();
-  tracing_.Initialize(app);
+  tracing_.Initialize(shell, url);
 }
 
 bool CoreServicesApplicationDelegate::AcceptConnection(
@@ -122,7 +124,7 @@ void CoreServicesApplicationDelegate::Create(
 }
 
 void CoreServicesApplicationDelegate::StartApplication(
-    mojo::ApplicationRequest request,
+    mojo::InterfaceRequest<mojo::shell::mojom::Application> request,
     mojo::URLResponsePtr response,
     const mojo::Callback<void()>& destruct_callback) {
   const std::string url = response->url;

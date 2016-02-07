@@ -27,7 +27,6 @@
 #include "components/mus/ws/window_tree_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -347,7 +346,7 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
       : cursor_id_storage_(cursor_id_storage) {}
   ~TestDisplayManagerFactory() {}
   DisplayManager* CreateDisplayManager(
-      mojo::ApplicationImpl* app_impl,
+      mojo::Shell* shell,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<mus::SurfacesState>& surfaces_state) override {
     return new TestDisplayManager(cursor_id_storage_);

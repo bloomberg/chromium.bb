@@ -9,7 +9,7 @@
 
 namespace mojo {
 class ApplicationConnection;
-class ApplicationImpl;
+class Shell;
 }
 
 namespace content {
@@ -41,8 +41,8 @@ class CONTENT_EXPORT MojoShellConnection {
   // created on.
   static void Destroy();
 
-  // Returns an Initialized() ApplicationImpl.
-  virtual mojo::ApplicationImpl* GetApplication() = 0;
+  // Returns an Initialized() Shell.
+  virtual mojo::Shell* GetShell() = 0;
 
   // [De]Register an impl of Listener that will be consulted when the wrapped
   // ApplicationImpl exposes services to inbound connections.

@@ -6,7 +6,7 @@
 #define COMPONENTS_HTML_VIEWER_HTML_FRAME_DELEGATE_H_
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace html_viewer {
@@ -16,8 +16,8 @@ class HTMLFrame;
 
 class HTMLFrameDelegate {
  public:
-  // Returns the ApplicationImpl for the frame.
-  virtual mojo::ApplicationImpl* GetApp() = 0;
+  // Returns the Shell for the frame.
+  virtual mojo::Shell* GetShell() = 0;
 
   // Returns the factory for creating various classes.
   virtual HTMLFactory* GetHTMLFactory() = 0;

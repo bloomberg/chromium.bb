@@ -13,7 +13,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
@@ -31,9 +31,9 @@ base::LazyInstance<WindowManagerConnectionPtr>::Leaky lazy_tls_ptr =
 }  // namespace
 
 // static
-void WindowManagerConnection::Create(mojo::ApplicationImpl* app) {
+void WindowManagerConnection::Create(mojo::Shell* shell) {
   DCHECK(!lazy_tls_ptr.Pointer()->Get());
-  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(app));
+  lazy_tls_ptr.Pointer()->Set(new WindowManagerConnection(shell));
 }
 
 // static
@@ -48,12 +48,13 @@ mus::Window* WindowManagerConnection::NewWindow(
   return window_tree_connection_->NewTopLevelWindow(&properties);
 }
 
-WindowManagerConnection::WindowManagerConnection(mojo::ApplicationImpl* app)
-    : app_(app), window_tree_connection_(nullptr) {
-  window_tree_connection_.reset(mus::WindowTreeConnection::Create(this, app_));
+WindowManagerConnection::WindowManagerConnection(mojo::Shell* shell)
+    : shell_(shell), window_tree_connection_(nullptr) {
+  window_tree_connection_.reset(
+      mus::WindowTreeConnection::Create(this, shell_));
 
   screen_.reset(new ScreenMus(this));
-  screen_->Init(app);
+  screen_->Init(shell);
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(
       base::Bind(&WindowManagerConnection::CreateNativeWidget,
@@ -81,7 +82,7 @@ NativeWidget* WindowManagerConnection::CreateNativeWidget(
     internal::NativeWidgetDelegate* delegate) {
   std::map<std::string, std::vector<uint8_t>> properties;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
-  return new NativeWidgetMus(delegate, app_->shell(), NewWindow(properties),
+  return new NativeWidgetMus(delegate, shell_, NewWindow(properties),
                              mus::mojom::SurfaceType::DEFAULT);
 }
 

@@ -16,7 +16,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace resource_provider {
@@ -29,7 +29,8 @@ class ResourceProviderApp : public mojo::ApplicationDelegate,
 
  private:
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 

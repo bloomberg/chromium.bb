@@ -15,8 +15,8 @@
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace sql {
 class ScopedMojoFilesystemVFS;
@@ -44,7 +44,7 @@ class NetworkServiceDelegate : public ApplicationDelegate,
   void EnsureIOThreadShutdown();
 
   // ApplicationDelegate implementation.
-  void Initialize(ApplicationImpl* app) override;
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(ApplicationConnection* connection) override;
   bool ShellConnectionLost() override;
   void Quit() override;
@@ -69,7 +69,7 @@ class NetworkServiceDelegate : public ApplicationDelegate,
   void OnFileSystemShutdown() override;
 
  private:
-  ApplicationImpl* app_;
+  Shell* shell_;
   mojo::TracingImpl tracing_;
 
   // Observers that want notifications that our worker thread is going away.

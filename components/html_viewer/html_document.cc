@@ -94,15 +94,14 @@ void HTMLDocument::TransferableState::Move(TransferableState* other) {
   other->owns_window_tree_connection = false;
 }
 
-HTMLDocument::HTMLDocument(mojo::ApplicationImpl* html_document_app,
+HTMLDocument::HTMLDocument(mojo::Shell* html_document_shell,
                            mojo::ApplicationConnection* connection,
                            mojo::URLResponsePtr response,
                            GlobalState* global_state,
                            const DeleteCallback& delete_callback,
                            HTMLFactory* factory)
-    : app_refcount_(html_document_app->app_lifetime_helper()
-                        ->CreateAppRefCount()),
-      html_document_app_(html_document_app),
+    : app_refcount_(html_document_shell->CreateAppRefCount()),
+      html_document_shell_(html_document_shell),
       connection_(connection),
       global_state_(global_state),
       frame_(nullptr),
@@ -231,8 +230,8 @@ void HTMLDocument::OnFrameDidFinishLoad() {
   }
 }
 
-mojo::ApplicationImpl* HTMLDocument::GetApp() {
-  return html_document_app_;
+mojo::Shell* HTMLDocument::GetShell() {
+  return html_document_shell_;
 }
 
 HTMLFactory* HTMLDocument::GetHTMLFactory() {

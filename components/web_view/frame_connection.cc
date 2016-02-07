@@ -23,7 +23,7 @@
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/interfaces/font_service.mojom.h"
@@ -58,18 +58,18 @@ FrameConnection::~FrameConnection() {
 
 // static
 void FrameConnection::CreateConnectionForCanNavigateFrame(
-    mojo::ApplicationImpl* app,
+    mojo::Shell* shell,
     Frame* frame,
     mojo::URLRequestPtr request,
     const FrameTreeDelegate::CanNavigateFrameCallback& callback) {
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
   FrameConnection* connection = frame_connection.get();
-  connection->Init(app, std::move(request),
+  connection->Init(shell, std::move(request),
                    base::Bind(&OnGotContentHandlerForFrame, frame->app_id(),
                               callback, base::Passed(&frame_connection)));
 }
 
-void FrameConnection::Init(mojo::ApplicationImpl* app,
+void FrameConnection::Init(mojo::Shell* shell,
                            mojo::URLRequestPtr request,
                            const base::Closure& on_got_id_callback) {
   DCHECK(!application_connection_);
@@ -117,9 +117,9 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
                         std::move(font_service_interfaces));
 #endif
 
-  mojo::ApplicationImpl::ConnectParams params(std::move(request));
+  mojo::Shell::ConnectParams params(std::move(request));
   params.set_filter(std::move(filter));
-  application_connection_ = app->ConnectToApplication(&params);
+  application_connection_ = shell->ConnectToApplication(&params);
   application_connection_->ConnectToService(&frame_client_);
   application_connection_->AddRemoteIDCallback(on_got_id_callback);
 }

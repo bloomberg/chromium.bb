@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace html_viewer {
@@ -18,13 +18,13 @@ class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
  public:
   ContentHandlerImpl(
       GlobalState* global_state,
-      mojo::ApplicationImpl* app,
+      mojo::Shell* shell,
       mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request);
   ~ContentHandlerImpl() override;
 
  protected:
   GlobalState* global_state() const { return global_state_; }
-  mojo::ApplicationImpl* app() const { return app_; }
+  mojo::Shell* shell() const { return shell_; }
 
  private:
   // Overridden from shell::mojom::ContentHandler:
@@ -34,7 +34,7 @@ class ContentHandlerImpl : public mojo::shell::mojom::ContentHandler {
       const mojo::Callback<void()>& destruct_callback) override;
 
   GlobalState* global_state_;
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojo::StrongBinding<mojo::shell::mojom::ContentHandler> binding_;
   scoped_ptr<mojo::AppRefCount> app_refcount_;
 

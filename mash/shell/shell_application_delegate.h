@@ -33,7 +33,8 @@ class ShellApplicationDelegate
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -61,7 +62,7 @@ class ShellApplicationDelegate
   void StartRestartableService(const std::string& url,
                                const base::Closure& restart_callback);
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   std::map<std::string, scoped_ptr<mojo::ApplicationConnection>> connections_;
   bool screen_locked_;
   mojo::WeakBindingSet<mash::shell::mojom::Shell> bindings_;

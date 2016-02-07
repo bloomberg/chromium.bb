@@ -11,8 +11,7 @@
 #include "base/files/file.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
@@ -27,10 +26,10 @@ base::File GetFileFromHandle(mojo::ScopedHandle handle) {
 }
 }
 
-ResourceLoader::ResourceLoader(mojo::ApplicationImpl* app,
+ResourceLoader::ResourceLoader(mojo::Shell* shell,
                                const std::set<std::string>& paths)
     : loaded_(false), did_block_(false) {
-  app->ConnectToService("mojo:resource_provider", &resource_provider_);
+  shell->ConnectToService("mojo:resource_provider", &resource_provider_);
   std::vector<std::string> paths_vector(paths.begin(), paths.end());
   resource_provider_->GetResources(
       mojo::Array<mojo::String>::From(paths_vector),

@@ -15,7 +15,7 @@
 #include "ui/views/mus/mus_export.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace views {
@@ -30,7 +30,7 @@ class VIEWS_MUS_EXPORT ScreenMus
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
-  void Init(mojo::ApplicationImpl* app);
+  void Init(mojo::Shell* shell);
 
  private:
   int FindDisplayIndexById(int64_t id) const;

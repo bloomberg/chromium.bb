@@ -24,7 +24,8 @@ class WebViewApplicationDelegate
 
  private:
   // Overridden from mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -36,7 +37,7 @@ class WebViewApplicationDelegate
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojom::WebViewFactory> request) override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
 
   mojo::WeakBindingSet<WebViewFactory> factory_bindings_;

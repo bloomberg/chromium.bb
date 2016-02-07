@@ -15,8 +15,10 @@ ClipboardApplicationDelegate::ClipboardApplicationDelegate() {}
 
 ClipboardApplicationDelegate::~ClipboardApplicationDelegate() {}
 
-void ClipboardApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  tracing_.Initialize(app);
+void ClipboardApplicationDelegate::Initialize(mojo::Shell* shell,
+                                              const std::string& url,
+                                              uint32_t id) {
+  tracing_.Initialize(shell, url);
 }
 
 bool ClipboardApplicationDelegate::AcceptConnection(

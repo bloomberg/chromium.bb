@@ -27,7 +27,8 @@ class TestMojoApp : public mojo::ApplicationDelegate,
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -42,7 +43,7 @@ class TestMojoApp : public mojo::ApplicationDelegate,
   mojo::Binding<TestMojoService> service_binding_;
 
   // Not owned.
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   // The URL of the app connecting to us.
   GURL requestor_url_;

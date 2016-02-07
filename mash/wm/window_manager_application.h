@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/interface_factory_impl.h"
 
 namespace ui {
 namespace mojo {
@@ -51,7 +50,7 @@ class WindowManagerApplication
   WindowManagerApplication();
   ~WindowManagerApplication() override;
 
-  mojo::ApplicationImpl* app() { return app_; }
+  mojo::Shell* shell() { return shell_; }
 
   // Returns the RootWindowControllers that have valid roots.
   //
@@ -79,7 +78,8 @@ class WindowManagerApplication
   void OnAcceleratorRegistrarDestroyed(AcceleratorRegistrarImpl* registrar);
 
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -98,7 +98,7 @@ class WindowManagerApplication
                            mojo::InterfaceRequest<mus::mojom::WindowTreeClient>
                                client_request) override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   mojo::TracingImpl tracing_;
 

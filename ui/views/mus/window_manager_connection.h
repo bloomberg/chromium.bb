@@ -15,7 +15,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace views {
@@ -37,16 +37,16 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
     : public NON_EXPORTED_BASE(mus::WindowTreeDelegate),
       public ScreenMusDelegate {
  public:
-  static void Create(mojo::ApplicationImpl* app);
+  static void Create(mojo::Shell* shell);
   static WindowManagerConnection* Get();
 
-  mojo::ApplicationImpl* app() { return app_; }
+  mojo::Shell* shell() { return shell_; }
 
   mus::Window* NewWindow(const std::map<std::string,
                          std::vector<uint8_t>>& properties);
 
  private:
-  explicit WindowManagerConnection(mojo::ApplicationImpl* app);
+  explicit WindowManagerConnection(mojo::Shell* shell);
   ~WindowManagerConnection() override;
 
   // mus::WindowTreeDelegate:
@@ -59,7 +59,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   scoped_ptr<ScreenMus> screen_;
   scoped_ptr<mus::WindowTreeConnection> window_tree_connection_;
 

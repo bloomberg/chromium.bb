@@ -12,13 +12,11 @@
 
 namespace updater {
 
-class ApplicationImpl;
 class UpdaterApp;
 
 class UpdaterImpl : public Updater {
  public:
-  UpdaterImpl(mojo::ApplicationImpl* app_impl,
-              UpdaterApp* application,
+  UpdaterImpl(UpdaterApp* application,
               mojo::InterfaceRequest<Updater> request);
   ~UpdaterImpl() override;
 
@@ -28,7 +26,6 @@ class UpdaterImpl : public Updater {
 
  private:
   UpdaterApp* const application_;
-  mojo::ApplicationImpl* const app_impl_;
   mojo::StrongBinding<Updater> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdaterImpl);

@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mus {
@@ -25,7 +25,7 @@ class WebView {
   explicit WebView(mojom::WebViewClient* client);
   ~WebView();
 
-  void Init(mojo::ApplicationImpl* app, mus::Window* window);
+  void Init(mojo::Shell* shell, mus::Window* window);
 
   mojom::WebView* web_view() { return web_view_.get(); }
 

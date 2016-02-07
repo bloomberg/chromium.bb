@@ -17,7 +17,6 @@
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/mojo/geometry/geometry_util.h"
@@ -278,7 +277,7 @@ class WindowServerTest : public WindowServerTestBase {
   mus::mojom::WindowTreeClientPtr
   ConnectToApplicationAndGetWindowServerClient() {
     mus::mojom::WindowTreeClientPtr client;
-    application_impl()->ConnectToService(application_impl()->url(), &client);
+    shell()->ConnectToService(shell_url(), &client);
     return client;
   }
 
@@ -1156,7 +1155,7 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   EstablishConnectionViaFactoryDelegate delegate(window_manager());
   set_window_manager_delegate(&delegate);
   scoped_ptr<WindowTreeConnection> second_connection(
-      WindowTreeConnection::Create(this, application_impl()));
+      WindowTreeConnection::Create(this, shell()));
   Window* window_in_second_connection =
       second_connection->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(window_in_second_connection);

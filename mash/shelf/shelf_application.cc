@@ -9,7 +9,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/shelf/shelf_view.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -21,11 +21,13 @@ ShelfApplication::ShelfApplication() {}
 
 ShelfApplication::~ShelfApplication() {}
 
-void ShelfApplication::Initialize(mojo::ApplicationImpl* app) {
-  tracing_.Initialize(app);
+void ShelfApplication::Initialize(mojo::Shell* shell,
+                                  const std::string& url,
+                                  uint32_t id) {
+  tracing_.Initialize(shell, url);
 
-  aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(app);
+  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(shell);
 
   // Construct the shelf using a container tagged for positioning by the WM.
   views::Widget* widget = new views::Widget;
@@ -38,17 +40,12 @@ void ShelfApplication::Initialize(mojo::ApplicationImpl* app) {
   mus::Window* window =
       views::WindowManagerConnection::Get()->NewWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
-      widget, app->shell(), window, mus::mojom::SurfaceType::DEFAULT);
+      widget, shell, window, mus::mojom::SurfaceType::DEFAULT);
   widget->Init(params);
-  widget->SetContentsView(new ShelfView(app));
+  widget->SetContentsView(new ShelfView(shell));
   // Call CenterWindow to mimic Widget::Init's placement with a widget delegate.
   widget->CenterWindow(widget->GetContentsView()->GetPreferredSize());
   widget->Show();
-}
-
-bool ShelfApplication::AcceptConnection(
-    mojo::ApplicationConnection* connection) {
-  return true;
 }
 
 }  // namespace shelf

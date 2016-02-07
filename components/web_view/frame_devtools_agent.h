@@ -21,7 +21,7 @@ class DictionaryValue;
 }
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace web_view {
@@ -34,8 +34,7 @@ class FrameDevToolsAgentDelegate;
 // "Page.navigate" requests.
 class FrameDevToolsAgent : public devtools_service::DevToolsAgent {
  public:
-  FrameDevToolsAgent(mojo::ApplicationImpl* app,
-                     FrameDevToolsAgentDelegate* delegate);
+  FrameDevToolsAgent(mojo::Shell* shell, FrameDevToolsAgentDelegate* delegate);
   ~FrameDevToolsAgent() override;
 
   // Attaches this agent to a new frame. |forward_agent| is the DevToolsAgent
@@ -62,7 +61,7 @@ class FrameDevToolsAgent : public devtools_service::DevToolsAgent {
                                const mojo::String& state);
   void OnForwardClientClosed();
 
-  mojo::ApplicationImpl* const app_;
+  mojo::Shell* const shell_;
   FrameDevToolsAgentDelegate* const delegate_;
 
   const std::string id_;

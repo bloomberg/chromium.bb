@@ -14,7 +14,7 @@ class WebFrame;
 }
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace html_viewer {
@@ -32,12 +32,12 @@ class StatsCollectionController
   // This bails and returns a null pointer without the stats command line flag.
   static tracing::StartupPerformanceDataCollectorPtr Install(
       blink::WebFrame* frame,
-      mojo::ApplicationImpl* app);
+      mojo::Shell* shell);
 
   // Return a mojo:metrics InterfacePtr for stats reporting.
   // This bails and returns a null pointer without the stats command line flag.
   static tracing::StartupPerformanceDataCollectorPtr ConnectToDataCollector(
-      mojo::ApplicationImpl* app);
+      mojo::Shell* shell);
 
  private:
   explicit StatsCollectionController(

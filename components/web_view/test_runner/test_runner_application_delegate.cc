@@ -25,7 +25,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
@@ -38,7 +38,7 @@
 namespace web_view {
 
 TestRunnerApplicationDelegate::TestRunnerApplicationDelegate()
-    : app_(nullptr), root_(nullptr), content_(nullptr) {}
+    : shell_(nullptr), root_(nullptr), content_(nullptr) {}
 
 TestRunnerApplicationDelegate::~TestRunnerApplicationDelegate() {
   if (root_)
@@ -48,7 +48,7 @@ TestRunnerApplicationDelegate::~TestRunnerApplicationDelegate() {
 void TestRunnerApplicationDelegate::LaunchURL(const GURL& test_url) {
   if (!web_view_) {
     web_view_.reset(new WebView(this));
-    web_view_->Init(app_, content_);
+    web_view_->Init(shell_, content_);
   }
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = test_url.spec();
@@ -63,12 +63,14 @@ void TestRunnerApplicationDelegate::Terminate() {
 ////////////////////////////////////////////////////////////////////////////////
 // mojo::ApplicationDelegate implementation:
 
-void TestRunnerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+void TestRunnerApplicationDelegate::Initialize(mojo::Shell* shell,
+                                               const std::string& url,
+                                               uint32_t id) {
   if (!test_runner::BlinkTestPlatformInitialize()) {
     NOTREACHED() << "Test environment could not be properly set up for blink.";
   }
-  app_ = app;
-  mus::CreateWindowTreeHost(app_, this, &host_, nullptr);
+  shell_ = shell;
+  mus::CreateWindowTreeHost(shell_, this, &host_, nullptr);
 }
 
 bool TestRunnerApplicationDelegate::AcceptConnection(
@@ -115,7 +117,7 @@ void TestRunnerApplicationDelegate::OnEmbed(mus::Window* root) {
 void TestRunnerApplicationDelegate::OnConnectionLost(
     mus::WindowTreeConnection* connection) {
   root_ = nullptr;
-  app_->Quit();
+  shell_->Quit();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

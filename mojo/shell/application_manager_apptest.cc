@@ -14,9 +14,9 @@
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTest;
@@ -39,7 +39,7 @@ class ApplicationManagerAppTestDelegate
 
  private:
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {}
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<CreateInstanceForHandleTest>(this);
     return true;
@@ -92,7 +92,7 @@ class ApplicationManagerAppTest : public mojo::test::ApplicationTestBase,
 
   void AddListenerAndWaitForApplications() {
     mojom::ApplicationManagerPtr application_manager;
-    application_impl()->ConnectToService("mojo:shell", &application_manager);
+    shell()->ConnectToService("mojo:shell", &application_manager);
 
     application_manager->AddListener(binding_.CreateInterfacePtrAndBind());
     binding_.WaitForIncomingMethodCall();
@@ -175,8 +175,7 @@ TEST_F(ApplicationManagerAppTest, CreateInstanceForHandle) {
   //    launches a process. #becauselinkerrors).
   mojo::shell::test::mojom::DriverPtr driver;
   scoped_ptr<ApplicationConnection> connection =
-      application_impl()->ConnectToApplication(
-          "exe:application_manager_apptest_driver");
+      shell()->ConnectToApplication("exe:application_manager_apptest_driver");
   connection->ConnectToService(&driver);
 
   // 2. Wait for the target to connect to us. (via

@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mash {
@@ -29,7 +29,7 @@ class ShelfModel : public mash::wm::mojom::UserWindowObserver {
     STATUS_LOADING,
   };
 
-  explicit ShelfModel(mojo::ApplicationImpl* app);
+  explicit ShelfModel(mojo::Shell* shell);
   ~ShelfModel() override;
 
   // Adds a new item to the model. Returns the resulting index.

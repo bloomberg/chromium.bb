@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mus {
@@ -20,13 +20,13 @@ class WindowManagerDelegate;
 class WindowTreeDelegate;
 
 // The following create a new window tree host. Supply a |factory| if you have
-// already connected to mus, otherwise supply |app|, which contacts mus and
+// already connected to mus, otherwise supply |shell|, which contacts mus and
 // obtains a WindowTreeHostFactory.
 void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate);
-void CreateWindowTreeHost(mojo::ApplicationImpl* app,
+void CreateWindowTreeHost(mojo::Shell* shell,
                           WindowTreeDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate);

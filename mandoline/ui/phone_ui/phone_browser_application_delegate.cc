@@ -11,7 +11,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -21,7 +21,7 @@ namespace mandoline {
 // PhoneBrowserApplicationDelegate, public:
 
 PhoneBrowserApplicationDelegate::PhoneBrowserApplicationDelegate()
-    : app_(nullptr),
+    : shell_(nullptr),
       root_(nullptr),
       content_(nullptr),
       web_view_(this),
@@ -36,8 +36,10 @@ PhoneBrowserApplicationDelegate::~PhoneBrowserApplicationDelegate() {
 ////////////////////////////////////////////////////////////////////////////////
 // PhoneBrowserApplicationDelegate, mojo::ApplicationDelegate implementation:
 
-void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
+void PhoneBrowserApplicationDelegate::Initialize(mojo::Shell* shell,
+                                                 const std::string& url,
+                                                 uint32_t id) {
+  shell_ = shell;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   for (const auto& arg : command_line->GetArgs()) {
@@ -47,7 +49,7 @@ void PhoneBrowserApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
       break;
     }
   }
-  mus::CreateWindowTreeHost(app_, this, &host_, nullptr, nullptr);
+  mus::CreateWindowTreeHost(shell_, this, &host_, nullptr, nullptr);
 }
 
 bool PhoneBrowserApplicationDelegate::AcceptConnection(
@@ -78,7 +80,7 @@ void PhoneBrowserApplicationDelegate::OnEmbed(mus::Window* root) {
   root->AddObserver(this);
 
   host_->SetSize(mojo::Size::From(gfx::Size(320, 640)));
-  web_view_.Init(app_, content_);
+  web_view_.Init(shell_, content_);
   LaunchURL(default_url_);
 }
 

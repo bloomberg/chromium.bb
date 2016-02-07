@@ -20,7 +20,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace content {
 
@@ -49,8 +49,8 @@ scoped_ptr<cc::OutputSurface> RenderWidgetMusConnection::CreateOutputSurface() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_surface_binding_);
   mus::mojom::GpuPtr gpu_service;
-  MojoShellConnection::Get()->GetApplication()->ConnectToService("mojo:mus",
-                                                                 &gpu_service);
+  MojoShellConnection::Get()->GetShell()->ConnectToService("mojo:mus",
+                                                           &gpu_service);
   mus::mojom::CommandBufferPtr cb;
   gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
   scoped_refptr<cc::ContextProvider> context_provider(

@@ -13,7 +13,6 @@
 #include "base/threading/simple_thread.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/shell/application_package_apptest.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
@@ -52,7 +51,7 @@ class ProvidedApplicationDelegate
 
  private:
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {}
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
     return true;
@@ -98,7 +97,7 @@ class ApplicationPackageApptestDelegate
 
  private:
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {}
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<ContentHandler>(this);
     connection->AddService<test::mojom::ApplicationPackageApptestService>(this);
@@ -175,8 +174,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
     // We need to do this to force the shell to read the test app's manifest and
     // register aliases.
     test::mojom::ApplicationPackageApptestServicePtr root_service;
-    application_impl()->ConnectToService("mojo:mojo_shell_apptests",
-                                         &root_service);
+    shell()->ConnectToService("mojo:mojo_shell_apptests", &root_service);
     base::RunLoop run_loop;
     std::string root_name;
     root_service->GetName(base::Bind(&ReceiveName, &root_name, &run_loop));
@@ -187,7 +185,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
     // Now subsequent connects to applications provided by the root app will be
     // resolved correctly.
     test::mojom::ApplicationPackageApptestServicePtr service_a;
-    application_impl()->ConnectToService("mojo:package_test_a", &service_a);
+    shell()->ConnectToService("mojo:package_test_a", &service_a);
     base::RunLoop run_loop;
     std::string a_name;
     service_a->GetName(base::Bind(&ReceiveName, &a_name, &run_loop));
@@ -197,7 +195,7 @@ TEST_F(ApplicationPackageApptest, Basic) {
 
   {
     test::mojom::ApplicationPackageApptestServicePtr service_b;
-    application_impl()->ConnectToService("mojo:package_test_b", &service_b);
+    shell()->ConnectToService("mojo:package_test_b", &service_b);
     base::RunLoop run_loop;
     std::string b_name;
     service_b->GetName(base::Bind(&ReceiveName, &b_name, &run_loop));

@@ -18,12 +18,7 @@
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 
 namespace mojo {
-class ApplicationImpl;
-namespace shell {
-namespace mojom {
 class Shell;
-}
-}
 }
 
 namespace font_service {
@@ -40,8 +35,7 @@ class FontServiceThread;
 class FontLoader : public SkFontConfigInterface,
                    public internal::MappedFontFile::Observer {
  public:
-  explicit FontLoader(mojo::shell::mojom::Shell* shell);
-  explicit FontLoader(mojo::ApplicationImpl* application_impl);
+  explicit FontLoader(mojo::Shell* shell);
   ~FontLoader() override;
 
   // Shuts down the background thread.

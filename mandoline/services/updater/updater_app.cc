@@ -10,19 +10,20 @@
 #include "mandoline/services/updater/updater_impl.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace updater {
 
-UpdaterApp::UpdaterApp() : app_impl_(nullptr) {
+UpdaterApp::UpdaterApp() : shell_(nullptr) {
 }
 
 UpdaterApp::~UpdaterApp() {
 }
 
-void UpdaterApp::Initialize(mojo::ApplicationImpl* app) {
-  app_impl_ = app;
+void UpdaterApp::Initialize(mojo::Shell* shell, const std::string& url,
+                            uint32_t id) {
+  shell_ = shell;
 }
 
 bool UpdaterApp::AcceptConnection(
@@ -33,7 +34,7 @@ bool UpdaterApp::AcceptConnection(
 
 void UpdaterApp::Create(mojo::ApplicationConnection* connection,
                         mojo::InterfaceRequest<Updater> request) {
-  new UpdaterImpl(app_impl_, this, std::move(request));
+  new UpdaterImpl(this, std::move(request));
 }
 
 }  // namespace updater

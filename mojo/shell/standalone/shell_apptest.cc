@@ -18,8 +18,8 @@
 #include "mojo/services/http_server/public/interfaces/http_server.mojom.h"
 #include "mojo/services/http_server/public/interfaces/http_server_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/standalone/kPingable.h"
 #include "mojo/shell/standalone/test/pingable.mojom.h"
 
@@ -77,8 +77,7 @@ class ShellHTTPAppTest : public test::ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    application_impl()->ConnectToService("mojo:http_server",
-                                         &http_server_factory_);
+    shell()->ConnectToService("mojo:http_server", &http_server_factory_);
 
     NetAddressPtr local_address(NetAddress::New());
     local_address->family = NET_ADDRESS_FAMILY_IPV4;
@@ -118,7 +117,7 @@ class ShellHTTPAppTest : public test::ApplicationTestBase {
 // Test that we can load apps over http.
 TEST_F(ShellHTTPAppTest, Http) {
   InterfacePtr<Pingable> pingable;
-  application_impl()->ConnectToService(GetURL("app"), &pingable);
+  shell()->ConnectToService(GetURL("app"), &pingable);
   pingable->Ping("hello",
                  [this](const String& app_url, const String& connection_url,
                         const String& message) {
@@ -134,7 +133,7 @@ TEST_F(ShellHTTPAppTest, Http) {
 // TODO(aa): Test that apps receive the correct URL parameters.
 TEST_F(ShellHTTPAppTest, Redirect) {
   InterfacePtr<Pingable> pingable;
-  application_impl()->ConnectToService(GetURL("redirect"), &pingable);
+  shell()->ConnectToService(GetURL("redirect"), &pingable);
   pingable->Ping("hello",
                  [this](const String& app_url, const String& connection_url,
                         const String& message) {
@@ -156,8 +155,8 @@ TEST_F(ShellHTTPAppTest, Redirect) {
 TEST_F(ShellHTTPAppTest, MAYBE_QueryHandling) {
   InterfacePtr<Pingable> pingable1;
   InterfacePtr<Pingable> pingable2;
-  application_impl()->ConnectToService(GetURL("app?foo"), &pingable1);
-  application_impl()->ConnectToService(GetURL("app?bar"), &pingable2);
+  shell()->ConnectToService(GetURL("app?foo"), &pingable1);
+  shell()->ConnectToService(GetURL("app?bar"), &pingable2);
 
   int num_responses = 0;
   auto callback = [this, &num_responses](const String& app_url,
@@ -183,7 +182,7 @@ TEST_F(ShellHTTPAppTest, MAYBE_QueryHandling) {
 // mojo: URLs can have querystrings too
 TEST_F(ShellAppTest, MojoURLQueryHandling) {
   InterfacePtr<Pingable> pingable;
-  application_impl()->ConnectToService("mojo:pingable_app?foo", &pingable);
+  shell()->ConnectToService("mojo:pingable_app?foo", &pingable);
   auto callback = [this](const String& app_url, const String& connection_url,
                          const String& message) {
     EXPECT_TRUE(base::EndsWith(app_url, "/pingable_app.mojo",

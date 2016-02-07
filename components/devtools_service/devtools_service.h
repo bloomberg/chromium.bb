@@ -14,7 +14,7 @@
 #include "mojo/common/weak_binding_set.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace devtools_service {
@@ -27,13 +27,13 @@ class DevToolsHttpServer;
 class DevToolsService : public DevToolsCoordinator {
  public:
   // Doesn't take ownership of |application|, which must outlive this object.
-  explicit DevToolsService(mojo::ApplicationImpl* application);
+  explicit DevToolsService(mojo::Shell* shell);
   ~DevToolsService() override;
 
   void BindToCoordinatorRequest(
       mojo::InterfaceRequest<DevToolsCoordinator> request);
 
-  mojo::ApplicationImpl* application() { return application_; }
+  mojo::Shell* shell() { return shell_; }
 
   DevToolsRegistryImpl* registry() { return &registry_; }
 
@@ -42,7 +42,7 @@ class DevToolsService : public DevToolsCoordinator {
   void Initialize(uint16_t remote_debugging_port) override;
 
   // Not owned by this object.
-  mojo::ApplicationImpl* const application_;
+  mojo::Shell* const shell_;
 
   mojo::WeakBindingSet<DevToolsCoordinator> coordinator_bindings_;
 

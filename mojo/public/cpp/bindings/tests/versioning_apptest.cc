@@ -7,8 +7,8 @@
 
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/bindings/tests/versioning_test_client.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mojo {
 namespace test {
@@ -24,8 +24,7 @@ class VersioningApplicationTest : public ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    application_impl()->ConnectToService("mojo:versioning_test_service",
-                                         &database_);
+    shell()->ConnectToService("mojo:versioning_test_service", &database_);
   }
 
   HumanResourceDatabasePtr database_;

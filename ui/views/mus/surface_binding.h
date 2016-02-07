@@ -16,11 +16,7 @@ class OutputSurface;
 }
 
 namespace mojo {
-namespace shell {
-namespace mojom {
 class Shell;
-}
-}
 }
 
 namespace mus {
@@ -36,7 +32,7 @@ namespace views {
 // connection.
 class VIEWS_MUS_EXPORT SurfaceBinding {
  public:
-  SurfaceBinding(mojo::shell::mojom::Shell* shell,
+  SurfaceBinding(mojo::Shell* shell,
                  mus::Window* window,
                  mus::mojom::SurfaceType surface_type);
   ~SurfaceBinding();

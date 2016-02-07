@@ -10,8 +10,8 @@
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/child/test_native_service.mojom.h"
 #include "mojo/shell/runner/init.h"
@@ -28,7 +28,8 @@ class TargetApplicationDelegate
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {}
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {}
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override {
     connection->AddService<mojo::shell::test::TestNativeService>(this);

@@ -21,7 +21,7 @@
 #include "gin/v8_initializer.h"
 #include "mojo/logging/init_logging.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -76,15 +76,15 @@ std::vector<gfx::Display> DisplaysFromSizeAndScale(
 
 }  // namespace
 
-GlobalState::GlobalState(mojo::ApplicationImpl* app)
-    : app_(app),
-      resource_loader_(app, GetResourcePaths()),
+GlobalState::GlobalState(mojo::Shell* shell, const std::string& url)
+    : shell_(shell),
+      resource_loader_(shell, GetResourcePaths()),
       did_init_(false),
       device_pixel_ratio_(1.f),
       discardable_memory_allocator_(kDesiredMaxMemory),
       compositor_thread_("compositor thread"),
       blink_settings_(new BlinkSettingsImpl()) {
-  tracing_.Initialize(app);
+  tracing_.Initialize(shell, url);
 }
 
 GlobalState::~GlobalState() {
@@ -116,12 +116,12 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
   if (!resource_loader_.BlockUntilLoaded()) {
     // Assume on error we're being shut down.
-    app_->Quit();
+    shell_->Quit();
     return;
   }
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
-  font_loader_ = skia::AdoptRef(new font_service::FontLoader(app_));
+  font_loader_ = skia::AdoptRef(new font_service::FontLoader(shell_));
   SkFontConfigInterface::SetGlobal(font_loader_.get());
 #endif
 
@@ -129,7 +129,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
       DisplaysFromSizeAndScale(screen_size_in_pixels_, device_pixel_ratio_)));
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 
-  app_->ConnectToService("mojo:mus", &gpu_service_);
+  shell_->ConnectToService("mojo:mus", &gpu_service_);
   gpu_service_->GetGpuInfo(base::Bind(&GlobalState::GetGpuInfoCallback,
                                       base::Unretained(this)));
 
@@ -141,7 +141,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
 
   renderer_scheduler_ = scheduler::RendererScheduler::Create();
   blink_platform_.reset(
-      new BlinkPlatformImpl(this, app_, renderer_scheduler_.get()));
+      new BlinkPlatformImpl(this, shell_, renderer_scheduler_.get()));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8SnapshotFromFD(
       resource_loader_.ReleaseFile(kResourceSnapshotBlob).TakePlatformFile(),
@@ -180,7 +180,7 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
   compositor_thread_.Start();
 
   media_factory_.reset(
-      new MediaFactory(compositor_thread_.task_runner(), app_->shell()));
+      new MediaFactory(compositor_thread_.task_runner(), shell_));
 
   if (command_line->HasSwitch(kJavaScriptFlags)) {
     std::string flags(command_line->GetSwitchValueASCII(kJavaScriptFlags));

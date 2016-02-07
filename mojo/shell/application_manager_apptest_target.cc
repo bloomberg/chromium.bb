@@ -8,7 +8,7 @@
 #include "mojo/shell/application_manager_apptests.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/runner/child/test_native_main.h"
 #include "mojo/shell/runner/init.h"
 
@@ -23,14 +23,11 @@ class TargetApplicationDelegate : public mojo::ApplicationDelegate {
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
     CreateInstanceForHandleTestPtr service;
-    app->ConnectToService("mojo:mojo_shell_apptests", &service);
-    service->SetTargetID(app->id());
-  }
-  bool AcceptConnection(
-      mojo::ApplicationConnection* connection) override {
-    return true;
+    shell->ConnectToService("mojo:mojo_shell_apptests", &service);
+    service->SetTargetID(id);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TargetApplicationDelegate);

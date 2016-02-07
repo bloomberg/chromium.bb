@@ -15,7 +15,7 @@
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace html_viewer {
 
@@ -23,7 +23,7 @@ namespace html_viewer {
 WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     GlobalState* global_state,
-    mojo::ApplicationImpl* app,
+    mojo::Shell* shell,
     const GURL& active_url,
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
@@ -37,7 +37,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
   gl_info->driverVersion = gpu_info->driver_version.To<blink::WebString>();
 
   mus::mojom::GpuPtr gpu_service;
-  app->ConnectToService("mojo:mus", &gpu_service);
+  shell->ConnectToService("mojo:mus", &gpu_service);
   mus::mojom::CommandBufferPtr cb;
   gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
   return new WebGraphicsContext3DCommandBufferImpl(

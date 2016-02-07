@@ -48,15 +48,15 @@ class TestHTMLFrame : public HTMLFrame {
 
 LayoutTestContentHandlerImpl::LayoutTestContentHandlerImpl(
     GlobalState* global_state,
-    mojo::ApplicationImpl* app,
+    mojo::Shell* shell,
     mojo::InterfaceRequest<mojo::shell::mojom::ContentHandler> request,
     test_runner::WebTestInterfaces* test_interfaces,
     WebTestDelegateImpl* test_delegate)
-    : ContentHandlerImpl(global_state, app, std::move(request)),
+    : ContentHandlerImpl(global_state, shell, std::move(request)),
       test_interfaces_(test_interfaces),
       test_delegate_(test_delegate),
       web_widget_proxy_(nullptr),
-      app_refcount_(app->app_lifetime_helper()->CreateAppRefCount()) {}
+      app_refcount_(shell->CreateAppRefCount()) {}
 
 LayoutTestContentHandlerImpl::~LayoutTestContentHandlerImpl() {
 }
@@ -72,7 +72,7 @@ void LayoutTestContentHandlerImpl::StartApplication(
   HTMLDocumentApplicationDelegate* delegate =
       new HTMLDocumentApplicationDelegate(
           std::move(request), std::move(response), global_state(),
-          app()->app_lifetime_helper()->CreateAppRefCount(), destruct_callback);
+          shell()->CreateAppRefCount(), destruct_callback);
 
   delegate->set_html_factory(this);
 }

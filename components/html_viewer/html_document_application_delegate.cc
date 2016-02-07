@@ -93,7 +93,9 @@ void HTMLDocumentApplicationDelegate::OnTerminate() {
 }
 
 // ApplicationDelegate;
-void HTMLDocumentApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
+void HTMLDocumentApplicationDelegate::Initialize(mojo::Shell* shell,
+                                                 const std::string& url,
+                                                 uint32_t id) {
   app_.ConnectToService("mojo:network_service", &url_loader_factory_);
 }
 
@@ -135,8 +137,7 @@ bool HTMLDocumentApplicationDelegate::AcceptConnection(
     mojo::URLLoader* raw_loader = loader.get();
     // The app needs to stay alive while waiting for the response to be
     // available.
-    scoped_ptr<mojo::AppRefCount> app_retainer(
-        app_.app_lifetime_helper()->CreateAppRefCount());
+    scoped_ptr<mojo::AppRefCount> app_retainer(app_.CreateAppRefCount());
     raw_loader->Start(
         std::move(request),
         base::Bind(&HTMLDocumentApplicationDelegate::OnResponseReceived,

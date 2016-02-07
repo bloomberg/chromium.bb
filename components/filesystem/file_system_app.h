@@ -14,7 +14,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace filesystem {
@@ -35,7 +35,8 @@ class FileSystemApp : public mojo::ApplicationDelegate,
   void OnDirectoryConnectionError(DirectoryImpl* directory);
 
   // |ApplicationDelegate| override:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
   bool ShellConnectionLost() override;
@@ -59,7 +60,7 @@ class FileSystemApp : public mojo::ApplicationDelegate,
   };
   std::vector<Client> client_mapping_;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
 
   // Set to true when our shell connection is closed. On connection error, we

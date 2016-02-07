@@ -16,7 +16,7 @@
 namespace mojo {
 
 class ApplicationConnection;
-class ApplicationImpl;
+class Shell;
 
 namespace test {
 
@@ -24,8 +24,7 @@ class TrackedService;
 
 class TestTimeServiceImpl : public TestTimeService {
  public:
-  TestTimeServiceImpl(ApplicationImpl* app_impl,
-                      InterfaceRequest<TestTimeService> request);
+  TestTimeServiceImpl(Shell* shell, InterfaceRequest<TestTimeService> request);
   ~TestTimeServiceImpl() override;
 
   // |TestTimeService| methods:
@@ -34,7 +33,7 @@ class TestTimeServiceImpl : public TestTimeService {
   void StartTrackingRequests(const mojo::Callback<void()>& callback) override;
 
  private:
-  ApplicationImpl* app_impl_;
+  Shell* shell_;
   scoped_ptr<TrackedService> tracking_;
   StrongBinding<TestTimeService> binding_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestTimeServiceImpl);

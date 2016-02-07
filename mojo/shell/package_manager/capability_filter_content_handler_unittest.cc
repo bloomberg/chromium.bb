@@ -81,14 +81,12 @@ class TestContentHandler : public ApplicationDelegate,
                            public InterfaceFactory<mojom::ContentHandler>,
                            public mojom::ContentHandler {
  public:
-  TestContentHandler() : app_(nullptr) {}
+  TestContentHandler() {}
   ~TestContentHandler() override {}
 
  private:
   // Overridden from ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override {
-    app_ = app;
-  }
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override {}
   bool AcceptConnection(ApplicationConnection* connection) override {
     connection->AddService<mojom::ContentHandler>(this);
     return true;
@@ -112,7 +110,6 @@ class TestContentHandler : public ApplicationDelegate,
     destruct_callback.Run();
   }
 
-  ApplicationImpl* app_;
   WeakBindingSet<mojom::ContentHandler> bindings_;
   ScopedVector<ApplicationDelegate> embedded_app_delegates_;
   ScopedVector<ApplicationImpl> embedded_apps_;

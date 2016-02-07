@@ -48,7 +48,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // DisplayManagers. We should probably just store these common parameters
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
   WindowTreeHostImpl(ConnectionManager* connection_manager,
-                     mojo::ApplicationImpl* app_impl,
+                     mojo::Shell* shell,
                      const scoped_refptr<GpuState>& gpu_state,
                      const scoped_refptr<SurfacesState>& surfaces_state);
   ~WindowTreeHostImpl() override;

@@ -12,7 +12,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/value_map_pref_store.h"
 #include "components/prefs/writeable_pref_store.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace filesystem {
 
@@ -23,10 +23,10 @@ void DoNothingHandleReadError(PersistentPrefStore::PrefReadError error) {}
 
 }  // namespace
 
-scoped_ptr<PrefService> CreatePrefService(mojo::ApplicationImpl* application,
+scoped_ptr<PrefService> CreatePrefService(mojo::Shell* shell,
                                           PrefRegistry* pref_registry) {
   filesystem::FileSystemPtr filesystem;
-  application->ConnectToService("mojo:filesystem", &filesystem);
+  shell->ConnectToService("mojo:filesystem", &filesystem);
 
   scoped_refptr<FilesystemJsonPrefStore> user_prefs =
       new FilesystemJsonPrefStore("preferences.json", std::move(filesystem),

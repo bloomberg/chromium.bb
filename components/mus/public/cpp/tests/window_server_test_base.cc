@@ -11,7 +11,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mus {
 namespace {
@@ -65,7 +65,7 @@ bool WindowServerTestBase::QuitRunLoop() {
 void WindowServerTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  CreateWindowTreeHost(application_impl(), this, &host_, this);
+  CreateWindowTreeHost(shell(), this, &host_, this);
 
   ASSERT_TRUE(DoRunLoopWithTimeout());  // RunLoop should be quit by OnEmbed().
   std::swap(window_manager_, most_recent_connection_);

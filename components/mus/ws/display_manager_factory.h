@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/callback.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mus {
@@ -23,7 +23,7 @@ class DisplayManager;
 class DisplayManagerFactory {
  public:
   virtual DisplayManager* CreateDisplayManager(
-      mojo::ApplicationImpl* app_impl,
+      mojo::Shell* shell,
       const scoped_refptr<mus::GpuState>& gpu_state,
       const scoped_refptr<mus::SurfacesState>& surfaces_state) = 0;
 };

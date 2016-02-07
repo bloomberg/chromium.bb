@@ -230,9 +230,9 @@ class ShelfView::StartFadeAnimationDelegate : public gfx::AnimationDelegate {
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-ShelfView::ShelfView(mojo::ApplicationImpl* app)
-    : app_(app),
-      model_(app),
+ShelfView::ShelfView(mojo::Shell* shell)
+    : shell_(shell),
+      model_(shell),
       alignment_(SHELF_ALIGNMENT_BOTTOM),
       first_visible_index_(0),
       last_visible_index_(-1),

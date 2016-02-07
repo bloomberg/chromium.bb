@@ -6,18 +6,20 @@
 
 #include "base/bind.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mash {
 namespace shell {
 
 ShellApplicationDelegate::ShellApplicationDelegate()
-    : app_(nullptr), screen_locked_(false) {}
+    : shell_(nullptr), screen_locked_(false) {}
 
 ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
-void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
+void ShellApplicationDelegate::Initialize(mojo::Shell* shell,
+                                          const std::string& url,
+                                          uint32_t id) {
+  shell_ = shell;
   StartBrowserDriver();
   StartWindowManager();
   StartWallpaper();
@@ -116,7 +118,7 @@ void ShellApplicationDelegate::StartRestartableService(
   // TODO(beng): This would be the place to insert logic that counted restarts
   //             to avoid infinite crash-restart loops.
   scoped_ptr<mojo::ApplicationConnection> connection =
-      app_->ConnectToApplication(url);
+      shell_->ConnectToApplication(url);
   connection->SetRemoteServiceProviderConnectionErrorHandler(restart_callback);
   connections_[url] = std::move(connection);
 }

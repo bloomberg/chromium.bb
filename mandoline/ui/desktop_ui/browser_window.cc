@@ -26,6 +26,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/background.h"
@@ -104,10 +105,10 @@ class BrowserWindow::LayoutManagerImpl : public views::LayoutManager {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, public:
 
-BrowserWindow::BrowserWindow(mojo::ApplicationImpl* app,
+BrowserWindow::BrowserWindow(mojo::Shell* shell,
                              mus::mojom::WindowTreeHostFactory* host_factory,
                              BrowserManager* manager)
-    : app_(app),
+    : shell_(shell),
       window_manager_client_(nullptr),
       manager_(manager),
       toolbar_view_(nullptr),
@@ -150,7 +151,7 @@ void BrowserWindow::Close() {
 void BrowserWindow::ShowOmnibox() {
   TRACE_EVENT0("desktop_ui", "BrowserWindow::ShowOmnibox");
   if (!omnibox_.get()) {
-    omnibox_connection_ = app_->ConnectToApplication("mojo:omnibox");
+    omnibox_connection_ = shell_->ConnectToApplication("mojo:omnibox");
     omnibox_connection_->AddService<ViewEmbedder>(this);
     omnibox_connection_->ConnectToService(&omnibox_);
     omnibox_connection_->SetRemoteServiceProviderConnectionErrorHandler(
@@ -212,7 +213,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
   window_manager_client_->AddActivationParent(root_);
   content_->SetVisible(true);
 
-  web_view_.Init(app_, content_);
+  web_view_.Init(shell_, content_);
 
   const base::Callback<void(bool)> add_accelerator_callback =
       base::Bind(&OnAcceleratorAdded);
@@ -261,7 +262,7 @@ void BrowserWindow::OnEmbed(mus::Window* root) {
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     tracing::StartupPerformanceDataCollectorPtr collector;
-    app_->ConnectToService("mojo:tracing", &collector);
+    shell_->ConnectToService("mojo:tracing", &collector);
     collector->SetBrowserWindowDisplayTicks(display_ticks.ToInternalValue());
     collector->SetBrowserOpenTabsTimeDelta(open_tabs_delta.ToInternalValue());
     collector->SetBrowserMessageLoopStartTicks(
@@ -415,7 +416,7 @@ void BrowserWindow::Init(mus::Window* root) {
   DCHECK_GT(root->viewport_metrics().device_pixel_ratio, 0);
   if (!aura_init_) {
     ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root)));
-    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak"));
+    aura_init_.reset(new views::AuraInit(shell_, "mandoline_ui.pak"));
   }
 
   root_ = root;
@@ -439,7 +440,7 @@ void BrowserWindow::Init(mus::Window* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget = new views::NativeWidgetMus(
-      widget, app_->shell(), root, mus::mojom::SurfaceType::DEFAULT);
+      widget, shell_, root, mus::mojom::SurfaceType::DEFAULT);
   params.delegate = widget_delegate;
   params.bounds = root_->bounds();
   widget->Init(params);

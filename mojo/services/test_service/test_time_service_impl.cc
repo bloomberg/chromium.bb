@@ -11,15 +11,15 @@
 #include "base/time/time.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
 #include "mojo/services/test_service/tracked_service.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mojo {
 namespace test {
 
 TestTimeServiceImpl::TestTimeServiceImpl(
-    ApplicationImpl* app_impl,
-    InterfaceRequest<TestTimeService> request)
-    : app_impl_(app_impl), binding_(this, std::move(request)) {}
+      Shell* shell,
+      InterfaceRequest<TestTimeService> request)
+    : shell_(shell), binding_(this, std::move(request)) {}
 
 TestTimeServiceImpl::~TestTimeServiceImpl() {
 }
@@ -27,7 +27,7 @@ TestTimeServiceImpl::~TestTimeServiceImpl() {
 void TestTimeServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  app_impl_->ConnectToService("mojo:test_request_tracker_app", &tracker);
+  shell_->ConnectToService("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(new TrackedService(std::move(tracker), Name_, callback));
 }
 

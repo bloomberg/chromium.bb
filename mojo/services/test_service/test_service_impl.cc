@@ -14,16 +14,16 @@
 #include "mojo/services/test_service/test_service_application.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
 #include "mojo/services/test_service/tracked_service.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mojo {
 namespace test {
 
-TestServiceImpl::TestServiceImpl(ApplicationImpl* app_impl,
+TestServiceImpl::TestServiceImpl(Shell* shell,
                                  TestServiceApplication* application,
                                  InterfaceRequest<TestService> request)
     : application_(application),
-      app_impl_(app_impl),
+      shell_(shell),
       binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
       [this]() { application_->ReleaseRef(); });
@@ -47,7 +47,7 @@ void SendTimeResponse(
 void TestServiceImpl::ConnectToAppAndGetTime(
     const mojo::String& app_url,
     const mojo::Callback<void(int64_t)>& callback) {
-  app_impl_->ConnectToService(app_url.get(), &time_service_);
+  shell_->ConnectToService(app_url.get(), &time_service_);
   if (tracking_) {
     tracking_->RecordNewRequest();
     time_service_->StartTrackingRequests(mojo::Callback<void()>());
@@ -58,7 +58,7 @@ void TestServiceImpl::ConnectToAppAndGetTime(
 void TestServiceImpl::StartTrackingRequests(
     const mojo::Callback<void()>& callback) {
   TestRequestTrackerPtr tracker;
-  app_impl_->ConnectToService("mojo:test_request_tracker_app", &tracker);
+  shell_->ConnectToService("mojo:test_request_tracker_app", &tracker);
   tracking_.reset(new TrackedService(std::move(tracker), Name_, callback));
 }
 

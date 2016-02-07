@@ -15,7 +15,7 @@
 #include "components/url_formatter/url_fixer.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/mojo/init/ui_init.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -36,7 +36,7 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
                     public views::TextfieldController,
                     public Omnibox {
  public:
-  OmniboxImpl(mojo::ApplicationImpl* app,
+  OmniboxImpl(mojo::Shell* shell,
               mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<Omnibox> request);
   ~OmniboxImpl() override;
@@ -64,7 +64,7 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
 
   scoped_ptr<ui::mojo::UIInit> ui_init_;
   scoped_ptr<views::AuraInit> aura_init_;
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mus::Window* root_;
   mojo::String url_;
   views::Textfield* edit_;
@@ -77,15 +77,16 @@ class OmniboxImpl : public mus::WindowTreeDelegate,
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxApplication, public:
 
-OmniboxApplication::OmniboxApplication() : app_(nullptr) {}
+OmniboxApplication::OmniboxApplication() : shell_(nullptr) {}
 OmniboxApplication::~OmniboxApplication() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxApplication, mojo::ApplicationDelegate implementation:
 
-void OmniboxApplication::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  tracing_.Initialize(app);
+void OmniboxApplication::Initialize(mojo::Shell* shell, const std::string& url,
+                                    uint32_t id) {
+  shell_ = shell;
+  tracing_.Initialize(shell, url);
 }
 
 bool OmniboxApplication::AcceptConnection(
@@ -99,16 +100,16 @@ bool OmniboxApplication::AcceptConnection(
 
 void OmniboxApplication::Create(mojo::ApplicationConnection* connection,
                                 mojo::InterfaceRequest<Omnibox> request) {
-  new OmniboxImpl(app_, connection, std::move(request));
+  new OmniboxImpl(shell_, connection, std::move(request));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImpl, public:
 
-OmniboxImpl::OmniboxImpl(mojo::ApplicationImpl* app,
+OmniboxImpl::OmniboxImpl(mojo::Shell* shell,
                          mojo::ApplicationConnection* connection,
                          mojo::InterfaceRequest<Omnibox> request)
-    : app_(app),
+    : shell_(shell),
       root_(nullptr),
       edit_(nullptr),
       binding_(this, std::move(request)) {
@@ -124,7 +125,7 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
 
   if (!aura_init_.get()) {
     ui_init_.reset(new ui::mojo::UIInit(views::GetDisplaysFromWindow(root_)));
-    aura_init_.reset(new views::AuraInit(app_, "mandoline_ui.pak"));
+    aura_init_.reset(new views::AuraInit(shell_, "mandoline_ui.pak"));
     edit_ = new views::Textfield;
     edit_->set_controller(this);
     edit_->SetTextInputType(ui::TEXT_INPUT_TYPE_URL);
@@ -144,7 +145,7 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget = new views::NativeWidgetMus(
-      widget, app_->shell(), root, mus::mojom::SurfaceType::DEFAULT);
+      widget, shell_, root, mus::mojom::SurfaceType::DEFAULT);
   params.delegate = widget_delegate;
   params.bounds = root->bounds();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;

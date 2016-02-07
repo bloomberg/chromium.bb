@@ -16,7 +16,6 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/service_provider_impl.h"
 
@@ -58,7 +57,7 @@ class ResourceProviderApplicationTest : public mojo::test::ApplicationTestBase {
   // resources are returned. The return map maps from the path to the contents
   // of the file at the specified path.
   ResourceContentsMap GetResources(const std::set<std::string>& paths) {
-    ResourceLoader loader(application_impl(), paths);
+    ResourceLoader loader(shell(), paths);
     loader.BlockUntilLoaded();
 
     // Load the contents of each of the handles.

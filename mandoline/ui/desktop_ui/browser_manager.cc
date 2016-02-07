@@ -10,6 +10,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "mandoline/ui/desktop_ui/browser_window.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace mandoline {
 
@@ -20,7 +21,7 @@ const char kGoogleURL[] = "http://www.google.com";
 }  // namespace
 
 BrowserManager::BrowserManager()
-    : app_(nullptr), startup_ticks_(base::TimeTicks::Now()) {}
+    : shell_(nullptr), startup_ticks_(base::TimeTicks::Now()) {}
 
 BrowserManager::~BrowserManager() {
   while (!browsers_.empty())
@@ -29,7 +30,7 @@ BrowserManager::~BrowserManager() {
 }
 
 BrowserWindow* BrowserManager::CreateBrowser(const GURL& default_url) {
-  BrowserWindow* browser = new BrowserWindow(app_, host_factory_.get(), this);
+  BrowserWindow* browser = new BrowserWindow(shell_, host_factory_.get(), this);
   browsers_.insert(browser);
   browser->LoadURL(default_url);
   return browser;
@@ -39,7 +40,7 @@ void BrowserManager::BrowserWindowClosed(BrowserWindow* browser) {
   DCHECK_GT(browsers_.count(browser), 0u);
   browsers_.erase(browser);
   if (browsers_.empty())
-    app_->Quit();
+    shell_->Quit();
 }
 
 void BrowserManager::LaunchURL(const mojo::String& url) {
@@ -49,11 +50,12 @@ void BrowserManager::LaunchURL(const mojo::String& url) {
   (*browsers_.begin())->LoadURL(GURL(url.get()));
 }
 
-void BrowserManager::Initialize(mojo::ApplicationImpl* app) {
-  app_ = app;
-  tracing_.Initialize(app);
+void BrowserManager::Initialize(mojo::Shell* shell, const std::string& url,
+                                uint32_t id) {
+  shell_ = shell;
+  tracing_.Initialize(shell, url);
 
-  app_->ConnectToService("mojo:mus", &host_factory_);
+  shell_->ConnectToService("mojo:mus", &host_factory_);
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Create a Browser for each valid URL in the command line.

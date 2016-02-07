@@ -24,7 +24,7 @@
 #include "ui/views/view_model.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace ui {
@@ -60,10 +60,10 @@ class ShelfView : public views::View,
                   public views::FocusTraversable,
                   public views::BoundsAnimatorObserver {
  public:
-  explicit ShelfView(mojo::ApplicationImpl* app);
+  explicit ShelfView(mojo::Shell* shell);
   ~ShelfView() override;
 
-  mojo::ApplicationImpl* app() const { return app_; }
+  mojo::Shell* shell() const { return shell_; }
 
   void SetAlignment(ShelfAlignment alignment);
 
@@ -312,7 +312,7 @@ class ShelfView : public views::View,
   int CalculateShelfDistance(const gfx::Point& coordinate) const;
 
   // The shelf application instance.
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   // The shelf model.
   ShelfModel model_;

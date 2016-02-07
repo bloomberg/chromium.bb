@@ -25,9 +25,8 @@ class TestRequestTrackerApplication
   TestRequestTrackerApplication();
   ~TestRequestTrackerApplication() override;
 
-  void Initialize(ApplicationImpl* app) override;
-
   // ApplicationDelegate methods:
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(ApplicationConnection* connection) override;
 
   // InterfaceFactory<TestTimeService> methods:
@@ -43,7 +42,7 @@ class TestRequestTrackerApplication
               InterfaceRequest<TestTrackedRequestService> request) override;
 
  private:
-  ApplicationImpl* app_impl_;
+  Shell* shell_;
   TrackingContext context_;
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestRequestTrackerApplication);
 };

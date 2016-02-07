@@ -33,7 +33,8 @@ class CoreServicesApplicationDelegate
 
  private:
   // Overridden from mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
   void Quit() override;

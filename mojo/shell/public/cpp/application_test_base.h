@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +32,8 @@ class TestHelper {
   explicit TestHelper(ApplicationDelegate* delegate);
   ~TestHelper();
 
-  ApplicationImpl* application_impl() { return application_impl_.get(); }
+  Shell* shell() { return application_impl_.get(); }
+  std::string shell_url() { return url_; }
 
  private:
   // The application delegate used if GetApplicationDelegate is not overridden.
@@ -39,6 +41,8 @@ class TestHelper {
 
   // The application implementation instance, reconstructed for each test.
   scoped_ptr<ApplicationImpl> application_impl_;
+
+  std::string url_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestHelper);
 };
@@ -50,8 +54,11 @@ class ApplicationTestBase : public testing::Test {
   ~ApplicationTestBase() override;
 
  protected:
-  ApplicationImpl* application_impl() {
-    return test_helper_ ? test_helper_->application_impl() : nullptr;
+  Shell* shell() {
+    return test_helper_ ? test_helper_->shell() : nullptr;
+  }
+  std::string shell_url() const {
+    return test_helper_ ? test_helper_->shell_url() : std::string();
   }
 
   // Get the ApplicationDelegate for the application to be tested.

@@ -27,7 +27,6 @@
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -559,7 +558,7 @@ class HttpServerAppTest : public test::ApplicationTestBase {
     ApplicationTestBase::SetUp();
 
     scoped_ptr<ApplicationConnection> connection =
-        application_impl()->ConnectToApplication("mojo:network_service");
+        shell()->ConnectToApplication("mojo:network_service");
     connection->ConnectToService(&network_service_);
     connection->ConnectToService(&web_socket_factory_);
   }

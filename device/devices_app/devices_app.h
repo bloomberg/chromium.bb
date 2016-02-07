@@ -15,7 +15,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace device {
@@ -34,7 +34,9 @@ class DevicesApp : public mojo::ApplicationDelegate,
   class USBServiceInitializer;
 
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell,
+                  const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(mojo::ApplicationConnection* connection) override;
   void Quit() override;
 
@@ -50,7 +52,7 @@ class DevicesApp : public mojo::ApplicationDelegate,
   // it's canceled.
   void StartIdleTimer();
 
-  mojo::ApplicationImpl* app_impl_;
+  mojo::Shell* shell_;
   scoped_ptr<USBServiceInitializer> service_initializer_;
   size_t active_device_manager_count_;
 

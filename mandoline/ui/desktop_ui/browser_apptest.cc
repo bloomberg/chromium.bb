@@ -4,7 +4,6 @@
 
 #include "base/macros.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace mandoline {
@@ -17,7 +16,7 @@ class BrowserTest : public mojo::test::ApplicationTestBase {
   // mojo::test::ApplicationTestBase:
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:desktop_ui", &launch_handler_);
+    shell()->ConnectToService("mojo:desktop_ui", &launch_handler_);
     ASSERT_TRUE(launch_handler_.is_bound());
   }
 

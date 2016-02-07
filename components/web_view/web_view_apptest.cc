@@ -97,9 +97,10 @@ class WebViewTest : public mus::WindowServerTestBase,
   }
 
   // Overridden from ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    WindowServerTestBase::Initialize(app);
-    app_ = app;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
+    WindowServerTestBase::Initialize(shell, url, id);
+    shell_ = shell;
   }
 
   // Overridden from WindowTreeDelegate:
@@ -109,7 +110,7 @@ class WebViewTest : public mus::WindowServerTestBase,
     root->AddChild(content_);
     content_->SetVisible(true);
 
-    web_view_.Init(app_, content_);
+    web_view_.Init(shell_, content_);
 
     WindowServerTestBase::OnEmbed(root);
   }
@@ -152,7 +153,7 @@ class WebViewTest : public mus::WindowServerTestBase,
       QuitNestedRunLoop();
   }
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   mus::Window* content_;
 

@@ -13,11 +13,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mojo {
-namespace shell {
-namespace mojom {
 class Shell;
-}
-}
 }
 
 namespace mus {
@@ -52,7 +48,7 @@ class RootWindowController : public mus::WindowObserver,
   // Deletes this.
   void Destroy();
 
-  mojo::shell::mojom::Shell* GetShell();
+  mojo::Shell* GetShell();
 
   mus::Window* root() { return root_; }
 

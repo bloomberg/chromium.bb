@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace html_viewer {
@@ -24,10 +24,11 @@ class HTMLViewer
 
  protected:
   GlobalState* global_state() const { return global_state_.get(); }
-  mojo::ApplicationImpl* app() const { return app_; }
+  mojo::Shell* shell() const { return shell_; }
 
   // Overridden from ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
 
  private:
   // Overridden from ApplicationDelegate:
@@ -40,7 +41,7 @@ class HTMLViewer
                   request) override;
 
   scoped_ptr<GlobalState> global_state_;
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   DISALLOW_COPY_AND_ASSIGN(HTMLViewer);
 };

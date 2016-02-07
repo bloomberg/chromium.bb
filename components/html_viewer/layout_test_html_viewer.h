@@ -25,7 +25,8 @@ class LayoutTestHTMLViewer : public HTMLViewer {
   void TestFinished();
 
   // Overridden from ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
 
   // Overridden from InterfaceFactory<shell::mojom::ContentHandler>
   void Create(mojo::ApplicationConnection* connection,

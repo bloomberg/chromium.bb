@@ -16,7 +16,7 @@
 #include "jni/AndroidHandler_jni.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/c/system/main.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/runner/host/native_application_support.h"
 #include "mojo/shell/standalone/android/run_android_application_function.h"
 #include "mojo/util/filename_util.h"
@@ -166,7 +166,9 @@ void AndroidHandler::RunApplication(
       reinterpret_cast<jlong>(run_android_application_fn));
 }
 
-void AndroidHandler::Initialize(ApplicationImpl* app) {}
+void AndroidHandler::Initialize(Shell* shell,
+                                const std::string& url,
+                                uint32_t id) {}
 
 bool AndroidHandler::AcceptConnection(ApplicationConnection* connection) {
   connection->AddService(&content_handler_factory_);

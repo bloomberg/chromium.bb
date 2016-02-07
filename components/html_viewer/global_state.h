@@ -24,12 +24,7 @@ class FontLoader;
 }
 
 namespace mojo {
-class ApplicationImpl;
-namespace shell {
-namespace mojom {
 class Shell;
-}
-}
 }
 
 namespace ui {
@@ -57,7 +52,7 @@ class MediaFactory;
 // . with a ui: this is done via InitIfNecessary().
 class GlobalState {
  public:
-  explicit GlobalState(mojo::ApplicationImpl* app);
+  GlobalState(mojo::Shell* shell, const std::string& url);
   ~GlobalState();
 
   // Inits with the specified screen size and device pixel ratio.
@@ -102,7 +97,7 @@ class GlobalState {
   // App for HTMLViewer, not the document's app.
   // WARNING: do not expose this. It's too easy to use the wrong one.
   // HTMLDocument should be using the application it creates, not this one.
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
 
   resource_provider::ResourceLoader resource_loader_;
 

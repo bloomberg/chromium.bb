@@ -18,14 +18,11 @@
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/lib/service_registry.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace mojo {
-
-shell::mojom::CapabilityFilterPtr CreatePermissiveCapabilityFilter();
-
-using ApplicationRequest = InterfaceRequest<shell::mojom::Application>;
 
 // TODO(beng): This comment is hilariously out of date.
 // Utility class for communicating with the Shell, and providing Services
@@ -61,29 +58,8 @@ using ApplicationRequest = InterfaceRequest<shell::mojom::Application>;
 // app.AddService<BarImpl>(&context);
 //
 //
-class ApplicationImpl : public shell::mojom::Application {
+class ApplicationImpl : public Shell, public shell::mojom::Application {
  public:
-  class ConnectParams {
-   public:
-    explicit ConnectParams(const std::string& url);
-    explicit ConnectParams(URLRequestPtr request);
-    ~ConnectParams();
-
-    URLRequestPtr TakeRequest() { return std::move(request_); }
-    shell::mojom::CapabilityFilterPtr TakeFilter() {
-      return std::move(filter_);
-    }
-    void set_filter(shell::mojom::CapabilityFilterPtr filter) {
-      filter_ = std::move(filter);
-    }
-
-   private:
-    URLRequestPtr request_;
-    shell::mojom::CapabilityFilterPtr filter_;
-
-    DISALLOW_COPY_AND_ASSIGN(ConnectParams);
-  };
-
   class TestApi {
    public:
     explicit TestApi(ApplicationImpl* application)
@@ -116,41 +92,17 @@ class ApplicationImpl : public shell::mojom::Application {
   // the ApplicationImpl is destroyed.
   shell::mojom::Shell* shell() const { return shell_.get(); }
 
-  const std::string& url() const { return url_; }
-  uint32_t id() const { return id_; }
-
-  AppLifetimeHelper* app_lifetime_helper() { return &app_lifetime_helper_; }
-
-  // Requests a new connection to an application. Returns a pointer to the
-  // connection if the connection is permitted by this application's delegate,
-  // or nullptr otherwise. Caller takes ownership.
-  scoped_ptr<ApplicationConnection> ConnectToApplication(
-      const std::string& url);
-  scoped_ptr<ApplicationConnection> ConnectToApplication(ConnectParams* params);
-
-  // Connect to application identified by |request->url| and connect to the
-  // service implementation of the interface identified by |Interface|.
-  template <typename Interface>
-  void ConnectToService(ConnectParams* params, InterfacePtr<Interface>* ptr) {
-    scoped_ptr<ApplicationConnection> connection = ConnectToApplication(params);
-    if (!connection.get())
-      return;
-    connection->ConnectToService(ptr);
-  }
-  template <typename Interface>
-  void ConnectToService(const std::string& url, InterfacePtr<Interface>* ptr) {
-    ConnectParams params(url);
-    params.set_filter(CreatePermissiveCapabilityFilter());
-    return ConnectToService(&params, ptr);
-  }
-
   // Block the calling thread until the Initialize() method is called by the
   // shell.
   void WaitForInitialize();
 
-  // Initiate shutdown of this application. This may involve a round trip to the
-  // Shell to ensure there are no inbound service requests.
-  void Quit();
+  // Shell.
+  scoped_ptr<ApplicationConnection> ConnectToApplication(
+      const std::string& url) override;
+  scoped_ptr<ApplicationConnection> ConnectToApplication(
+      ConnectParams* params) override;
+  void Quit() override;
+  scoped_ptr<AppRefCount> CreateAppRefCount() override;
 
  private:
   // shell::mojom::Application implementation.
@@ -184,8 +136,6 @@ class ApplicationImpl : public shell::mojom::Application {
   ApplicationDelegate* delegate_;
   Binding<shell::mojom::Application> binding_;
   shell::mojom::ShellPtr shell_;
-  std::string url_;
-  uint32_t id_;
   Closure termination_closure_;
   AppLifetimeHelper app_lifetime_helper_;
   bool quit_requested_;

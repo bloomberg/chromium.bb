@@ -15,7 +15,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -66,9 +66,9 @@ gin::WrapperInfo StatsCollectionController::kWrapperInfo = {
 // static
 tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
     blink::WebFrame* frame,
-    mojo::ApplicationImpl* app) {
+    mojo::Shell* shell) {
   // Only make startup tracing available when running in the context of a test.
-  if (!app ||
+  if (!shell ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     return nullptr;
@@ -83,7 +83,7 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
   v8::Context::Scope context_scope(context);
 
   scoped_ptr<mojo::ApplicationConnection> connection =
-      app->ConnectToApplication("mojo:tracing");
+      shell->ConnectToApplication("mojo:tracing");
   if (!connection)
     return nullptr;
   tracing::StartupPerformanceDataCollectorPtr collector_for_controller;
@@ -103,16 +103,16 @@ tracing::StartupPerformanceDataCollectorPtr StatsCollectionController::Install(
 
 // static
 tracing::StartupPerformanceDataCollectorPtr
-StatsCollectionController::ConnectToDataCollector(mojo::ApplicationImpl* app) {
+StatsCollectionController::ConnectToDataCollector(mojo::Shell* shell) {
   // Only make startup tracing available when running in the context of a test.
-  if (!app ||
+  if (!shell ||
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           tracing::kEnableStatsCollectionBindings)) {
     return nullptr;
   }
 
   tracing::StartupPerformanceDataCollectorPtr collector;
-  app->ConnectToService("mojo:tracing", &collector);
+  shell->ConnectToService("mojo:tracing", &collector);
   return collector;
 }
 

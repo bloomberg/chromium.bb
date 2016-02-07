@@ -16,7 +16,7 @@
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/mus/public/cpp/window.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -34,12 +34,12 @@ scoped_ptr<WebLayerTreeViewImpl> CreateWebLayerTreeView(
 }
 
 void InitializeWebLayerTreeView(WebLayerTreeViewImpl* web_layer_tree_view,
-                                mojo::ApplicationImpl* app,
+                                mojo::Shell* shell,
                                 mus::Window* window,
                                 blink::WebWidget* widget) {
   DCHECK(window);
   mus::mojom::GpuPtr gpu_service;
-  app->ConnectToService("mojo:mus", &gpu_service);
+  shell->ConnectToService("mojo:mus", &gpu_service);
   web_layer_tree_view->Initialize(std::move(gpu_service), window, widget);
 }
 
@@ -82,15 +82,15 @@ void HTMLWidgetRootRemote::OnWindowBoundsChanged(mus::Window* window) {}
 
 // HTMLWidgetRootLocal --------------------------------------------------------
 
-HTMLWidgetRootLocal::CreateParams::CreateParams(mojo::ApplicationImpl* app,
+HTMLWidgetRootLocal::CreateParams::CreateParams(mojo::Shell* shell,
                                                 GlobalState* global_state,
                                                 mus::Window* window)
-    : app(app), global_state(global_state), window(window) {}
+    : shell(shell), global_state(global_state), window(window) {}
 
 HTMLWidgetRootLocal::CreateParams::~CreateParams() {}
 
 HTMLWidgetRootLocal::HTMLWidgetRootLocal(CreateParams* create_params)
-    : app_(create_params->app),
+    : shell_(create_params->shell),
       global_state_(create_params->global_state),
       window_(create_params->window),
       web_view_(nullptr) {
@@ -100,7 +100,7 @@ HTMLWidgetRootLocal::HTMLWidgetRootLocal(CreateParams* create_params)
   // |web_layer_tree_view_impl_|. As we haven't yet assigned the |web_view_|
   // we have to set it here.
   if (web_layer_tree_view_impl_) {
-    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), app_, window_,
+    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), shell_, window_,
                                web_view_);
     UpdateWebViewSizeFromViewSize(window_, web_view_,
                                   web_layer_tree_view_impl_.get());
@@ -129,7 +129,7 @@ void HTMLWidgetRootLocal::didMeaningfulLayout(
   if (!called && layout_type == blink::WebMeaningfulLayout::VisuallyNonEmpty) {
     const int64_t ticks = base::TimeTicks::Now().ToInternalValue();
     tracing::StartupPerformanceDataCollectorPtr collector =
-        StatsCollectionController::ConnectToDataCollector(app_);
+        StatsCollectionController::ConnectToDataCollector(shell_);
     if (collector)
       collector->SetFirstVisuallyNonEmptyLayoutTicks(ticks);
     called = true;
@@ -165,11 +165,11 @@ void HTMLWidgetRootLocal::OnWindowBoundsChanged(mus::Window* window) {
 
 // HTMLWidgetLocalRoot --------------------------------------------------------
 
-HTMLWidgetLocalRoot::HTMLWidgetLocalRoot(mojo::ApplicationImpl* app,
+HTMLWidgetLocalRoot::HTMLWidgetLocalRoot(mojo::Shell* shell,
                                          GlobalState* global_state,
                                          mus::Window* window,
                                          blink::WebLocalFrame* web_local_frame)
-    : app_(app), global_state_(global_state), web_frame_widget_(nullptr) {
+    : shell_(shell), global_state_(global_state), web_frame_widget_(nullptr) {
   web_frame_widget_ = blink::WebFrameWidget::create(this, web_local_frame);
   ime_controller_.reset(new ImeController(window, web_frame_widget_));
   // Creating the widget calls initializeLayerTreeView() to create the
@@ -177,7 +177,7 @@ HTMLWidgetLocalRoot::HTMLWidgetLocalRoot(mojo::ApplicationImpl* app,
   // |web_frame_widget_|
   // we have to set it here.
   if (web_layer_tree_view_impl_) {
-    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), app_, window,
+    InitializeWebLayerTreeView(web_layer_tree_view_impl_.get(), shell_, window,
                                web_frame_widget_);
     UpdateWebViewSizeFromViewSize(window, web_frame_widget_,
                                   web_layer_tree_view_impl_.get());

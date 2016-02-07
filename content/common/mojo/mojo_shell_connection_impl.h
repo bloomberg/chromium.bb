@@ -50,12 +50,13 @@ class MojoShellConnectionImpl : public MojoShellConnection,
   ~MojoShellConnectionImpl() override;
 
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* application) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
   // MojoShellConnection:
-  mojo::ApplicationImpl* GetApplication() override;
+  mojo::Shell* GetShell() override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
 

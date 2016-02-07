@@ -14,11 +14,9 @@
 
 namespace updater {
 
-UpdaterImpl::UpdaterImpl(mojo::ApplicationImpl* app_impl,
-                         UpdaterApp* application,
+UpdaterImpl::UpdaterImpl(UpdaterApp* application,
                          mojo::InterfaceRequest<Updater> request)
     : application_(application),
-      app_impl_(app_impl),
       binding_(this, std::move(request)) {}
 
 UpdaterImpl::~UpdaterImpl() {

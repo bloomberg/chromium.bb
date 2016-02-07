@@ -35,7 +35,6 @@
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/connect.h"
 
@@ -678,7 +677,7 @@ class PipelineIntegrationTestHost : public mojo::test::ApplicationTestBase,
 
  protected:
   scoped_ptr<Renderer> CreateRenderer() override {
-    application_impl()->ConnectToService("mojo:media", &media_service_factory_);
+    shell()->ConnectToService("mojo:media", &media_service_factory_);
 
     interfaces::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(mojo::GetProxy(&mojo_renderer));

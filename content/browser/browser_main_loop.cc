@@ -179,7 +179,7 @@
 #if defined(MOJO_SHELL_CLIENT)
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "mojo/converters/network/network_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "ui/views/mus/window_manager_connection.h"
 #endif
@@ -921,7 +921,7 @@ int BrowserMainLoop::PreMainMessageLoopRun() {
     MojoShellConnectionImpl::Get()->BindToCommandLinePlatformChannel();
 #if defined(USE_AURA)
     views::WindowManagerConnection::Create(
-        MojoShellConnection::Get()->GetApplication());
+        MojoShellConnection::Get()->GetShell());
 #endif
   }
 #endif

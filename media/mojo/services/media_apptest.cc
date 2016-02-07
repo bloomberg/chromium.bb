@@ -21,7 +21,6 @@
 #include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -61,7 +60,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    connection_ = application_impl()->ConnectToApplication("mojo:media");
+    connection_ = shell()->ConnectToApplication("mojo:media");
     connection_->SetRemoteServiceProviderConnectionErrorHandler(
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 

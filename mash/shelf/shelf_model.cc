@@ -8,7 +8,7 @@
 
 #include "mash/shelf/shelf_model_observer.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 
@@ -49,9 +49,9 @@ bool CompareByWeight(const ShelfItem& a, const ShelfItem& b) {
 
 }  // namespace
 
-ShelfModel::ShelfModel(mojo::ApplicationImpl* app)
+ShelfModel::ShelfModel(mojo::Shell* shell)
     : next_id_(1), status_(STATUS_NORMAL), binding_(this) {
-  app->ConnectToService("mojo:desktop_wm", &user_window_controller_);
+  shell->ConnectToService("mojo:desktop_wm", &user_window_controller_);
   user_window_controller_->AddUserWindowObserver(
       binding_.CreateInterfacePtrAndBind());
 }

@@ -24,7 +24,7 @@ void PendingWebViewLoad::Init(mojo::URLRequestPtr request) {
   navigation_start_time_ =
       base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   frame_connection_.reset(new FrameConnection);
-  frame_connection_->Init(web_view_->app_, std::move(request),
+  frame_connection_->Init(web_view_->shell_, std::move(request),
                           base::Bind(&PendingWebViewLoad::OnGotContentHandlerID,
                                      base::Unretained(this)));
 }

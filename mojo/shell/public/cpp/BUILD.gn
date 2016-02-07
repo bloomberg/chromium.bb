@@ -41,6 +41,7 @@ source_set("sources") {
     "lib/service_registry.h",
     "service_connector.h",
     "service_provider_impl.h",
+    "shell.h",
   ]
 
   deps = [

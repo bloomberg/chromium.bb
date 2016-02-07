@@ -21,7 +21,8 @@ ShellApplicationDelegate::ShellApplicationDelegate(
     : manager_(manager) {}
 ShellApplicationDelegate::~ShellApplicationDelegate() {}
 
-void ShellApplicationDelegate::Initialize(ApplicationImpl* app) {}
+void ShellApplicationDelegate::Initialize(Shell* shell, const std::string& url,
+                                          uint32_t id) {}
 bool ShellApplicationDelegate::AcceptConnection(
     ApplicationConnection* connection) {
   connection->AddService<mojom::ApplicationManager>(this);

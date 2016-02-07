@@ -244,6 +244,7 @@
         'shell/public/cpp/lib/service_provider_impl.cc',
         'shell/public/cpp/lib/service_registry.cc',
         'shell/public/cpp/lib/service_registry.h',
+        'shell/public/cpp/shell.h',
         'shell/public/cpp/service_connector.h',
         'shell/public/cpp/service_provider_impl.h',
       ],

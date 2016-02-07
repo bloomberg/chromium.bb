@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/background.h"
@@ -235,21 +235,23 @@ TaskViewerApplicationDelegate::TaskViewerApplicationDelegate() {}
 
 TaskViewerApplicationDelegate::~TaskViewerApplicationDelegate() {}
 
-void TaskViewerApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
-  tracing_.Initialize(app);
+void TaskViewerApplicationDelegate::Initialize(mojo::Shell* shell,
+                                               const std::string& url,
+                                               uint32_t id) {
+  tracing_.Initialize(shell, url);
 
-  aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
-  views::WindowManagerConnection::Create(app);
+  aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+  views::WindowManagerConnection::Create(shell);
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  app->ConnectToService("mojo:shell", &application_manager);
+  shell->ConnectToService("mojo:shell", &application_manager);
 
   mojo::shell::mojom::ApplicationManagerListenerPtr listener;
   ListenerRequest request = GetProxy(&listener);
   application_manager->AddListener(std::move(listener));
 
   TaskViewer* task_viewer = new TaskViewer(
-      std::move(request), app->app_lifetime_helper()->CreateAppRefCount());
+      std::move(request), shell->CreateAppRefCount());
   views::Widget* window = views::Widget::CreateWindowWithBounds(
       task_viewer, gfx::Rect(10, 10, 500, 500));
   window->Show();

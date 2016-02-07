@@ -13,8 +13,8 @@
 
 namespace web_view {
 
-TestFrameTreeDelegate::TestFrameTreeDelegate(mojo::ApplicationImpl* app)
-    : app_(app),
+TestFrameTreeDelegate::TestFrameTreeDelegate(mojo::Shell* shell)
+    : shell_(shell),
       waiting_for_create_frame_(false),
       waiting_for_destroy_frame_(nullptr),
       most_recent_frame_(nullptr),
@@ -76,7 +76,7 @@ void TestFrameTreeDelegate::CanNavigateFrame(
     mojo::URLRequestPtr request,
     const CanNavigateFrameCallback& callback) {
   FrameConnection::CreateConnectionForCanNavigateFrame(
-      app_, target, std::move(request), callback);
+      shell_, target, std::move(request), callback);
 }
 
 void TestFrameTreeDelegate::DidStartNavigation(Frame* frame) {}

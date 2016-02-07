@@ -15,6 +15,7 @@
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace html_viewer {
 
@@ -47,7 +48,8 @@ class HTMLDocumentApplicationDelegate : public mojo::ApplicationDelegate,
   void OnTerminate();
 
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 

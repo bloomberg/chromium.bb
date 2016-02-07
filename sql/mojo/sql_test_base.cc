@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 #include "sql/test/test_helpers.h"
@@ -137,7 +137,7 @@ void SQLTestBase::TruncateDatabase() {
 void SQLTestBase::SetUp() {
   ApplicationTestBase::SetUp();
 
-  application_impl()->ConnectToService("mojo:filesystem", &files_);
+  shell()->ConnectToService("mojo:filesystem", &files_);
 
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;

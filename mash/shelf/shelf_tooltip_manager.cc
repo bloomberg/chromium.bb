@@ -11,7 +11,6 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/shelf/shelf_view.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -124,7 +123,7 @@ void ShelfTooltipManager::ShelfTooltipBubble::OnBeforeBubbleWidgetInit(
   mus::Window* window =
       views::WindowManagerConnection::Get()->NewWindow(properties);
   params->native_widget = new views::NativeWidgetMus(
-      widget, host_->shelf_view()->app()->shell(), window,
+      widget, host_->shelf_view()->shell(), window,
       mus::mojom::SurfaceType::DEFAULT);
 }
 

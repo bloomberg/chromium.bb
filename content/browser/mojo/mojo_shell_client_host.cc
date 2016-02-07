@@ -21,7 +21,7 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 namespace content {
@@ -119,7 +119,7 @@ void ConnectChildToShell(
     return;
 
   mojo::shell::mojom::ApplicationManagerPtr application_manager;
-  MojoShellConnection::Get()->GetApplication()->ConnectToService(
+  MojoShellConnection::Get()->GetShell()->ConnectToService(
       "mojo:shell", &application_manager);
 
   // The content of the URL/qualifier we pass is actually meaningless, it's only

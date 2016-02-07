@@ -175,7 +175,7 @@ int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
 // NativeWidgetMus, public:
 
 NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
-                                 mojo::shell::mojom::Shell* shell,
+                                 mojo::Shell* shell,
                                  mus::Window* window,
                                  mus::mojom::SurfaceType surface_type)
     : window_(window),

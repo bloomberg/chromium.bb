@@ -69,7 +69,7 @@ class SQLThread : public base::Thread {
 namespace mojo {
 
 NetworkServiceDelegate::NetworkServiceDelegate()
-    : app_(nullptr),
+    : shell_(nullptr),
       binding_(this) {
 }
 
@@ -86,8 +86,9 @@ void NetworkServiceDelegate::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
-  app_ = app;
+void NetworkServiceDelegate::Initialize(Shell* shell, const std::string& url,
+                                        uint32_t id) {
+  shell_ = shell;
 
 #if !defined(OS_ANDROID)
   // TODO(erg): The following doesn't work when running the android
@@ -96,7 +97,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   // to OpenFileSystem, the entire mojo system hangs to the point where writes
   // to stderr that previously would have printed to our console aren't. The
   // apptests are also fairly resistant to being run under gdb on android.
-  app_->ConnectToService("mojo:filesystem", &files_);
+  shell_->ConnectToService("mojo:filesystem", &files_);
 
   filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;
@@ -127,7 +128,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   worker_thread = io_worker_thread_->task_runner();
 #endif
   context_.reset(new NetworkContext(base_path, worker_thread, this));
-  tracing_.Initialize(app);
+  tracing_.Initialize(shell_, url);
 }
 
 bool NetworkServiceDelegate::AcceptConnection(
@@ -156,30 +157,27 @@ void NetworkServiceDelegate::Quit() {
 
 void NetworkServiceDelegate::Create(ApplicationConnection* connection,
                                     InterfaceRequest<NetworkService> request) {
-  new NetworkServiceImpl(app_->app_lifetime_helper()->CreateAppRefCount(),
-                         std::move(request));
+  new NetworkServiceImpl(shell_->CreateAppRefCount(), std::move(request));
 }
 
 void NetworkServiceDelegate::Create(ApplicationConnection* connection,
                                     InterfaceRequest<CookieStore> request) {
   new CookieStoreImpl(
       context_.get(), GURL(connection->GetRemoteApplicationURL()).GetOrigin(),
-      app_->app_lifetime_helper()->CreateAppRefCount(), std::move(request));
+      shell_->CreateAppRefCount(), std::move(request));
 }
 
 void NetworkServiceDelegate::Create(
     ApplicationConnection* connection,
     InterfaceRequest<WebSocketFactory> request) {
-  new WebSocketFactoryImpl(context_.get(),
-                           app_->app_lifetime_helper()->CreateAppRefCount(),
+  new WebSocketFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
                            std::move(request));
 }
 
 void NetworkServiceDelegate::Create(
     ApplicationConnection* connection,
     InterfaceRequest<URLLoaderFactory> request) {
-  new URLLoaderFactoryImpl(context_.get(),
-                           app_->app_lifetime_helper()->CreateAppRefCount(),
+  new URLLoaderFactoryImpl(context_.get(), shell_->CreateAppRefCount(),
                            std::move(request));
 }
 

@@ -12,7 +12,7 @@
 #include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
-class ApplicationImpl;
+class Shell;
 }
 
 namespace mandoline {
@@ -25,7 +25,8 @@ class OmniboxApplication : public mojo::ApplicationDelegate,
 
  private:
   // Overridden from mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -33,7 +34,7 @@ class OmniboxApplication : public mojo::ApplicationDelegate,
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<Omnibox> request) override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojo::TracingImpl tracing_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxApplication);

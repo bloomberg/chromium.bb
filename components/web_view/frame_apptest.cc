@@ -28,7 +28,6 @@
 #include "components/web_view/test_frame_tree_delegate.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/service_provider_impl.h"
 
@@ -76,12 +75,13 @@ void OnGotIdCallback(base::RunLoop* run_loop) {
 
 // Creates a new FrameConnection. This runs a nested message loop until the
 // content handler id is obtained.
-scoped_ptr<FrameConnection> CreateFrameConnection(mojo::ApplicationImpl* app) {
+scoped_ptr<FrameConnection> CreateFrameConnection(mojo::Shell* shell,
+                                                  const std::string& url) {
   scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
   mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From(app->url());
+  request->url = mojo::String::From(url);
   base::RunLoop run_loop;
-  frame_connection->Init(app, std::move(request),
+  frame_connection->Init(shell, std::move(request),
                          base::Bind(&OnGotIdCallback, &run_loop));
   run_loop.Run();
   return frame_connection;
@@ -311,7 +311,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
       WindowAndFrame* window_and_frame,
       base::TimeTicks navigation_start_time) {
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From(application_impl()->url());
+    request->url = mojo::String::From(shell_url());
     request->originating_time_ticks = navigation_start_time.ToInternalValue();
     window_and_frame->server_frame()->RequestNavigate(
         mojom::NavigationTargetType::EXISTING_FRAME,
@@ -374,16 +374,16 @@ class FrameTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     ApplicationTestBase::SetUp();
 
-    mus::CreateWindowTreeHost(application_impl(), this, &host_, nullptr);
+    mus::CreateWindowTreeHost(shell(), this, &host_, nullptr);
 
     ASSERT_TRUE(DoRunLoopWithTimeout());
     std::swap(window_manager_, most_recent_connection_);
 
     // Creates a FrameTree, which creates a single frame. Wait for the
     // FrameClient to be connected to.
-    frame_tree_delegate_.reset(new TestFrameTreeDelegate(application_impl()));
+    frame_tree_delegate_.reset(new TestFrameTreeDelegate(shell()));
     scoped_ptr<FrameConnection> frame_connection =
-        CreateFrameConnection(application_impl());
+        CreateFrameConnection(shell(), shell_url());
     mojom::FrameClient* frame_client = frame_connection->frame_client();
     mus::mojom::WindowTreeClientPtr window_tree_client =
         frame_connection->GetWindowTreeClient();

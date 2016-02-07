@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "components/mus/public/cpp/window.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace web_view {
 namespace {
@@ -23,9 +23,9 @@ void OnEmbed(bool success, uint16_t connection_id) {
 WebView::WebView(mojom::WebViewClient* client) : binding_(client) {}
 WebView::~WebView() {}
 
-void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
+void WebView::Init(mojo::Shell* shell, mus::Window* window) {
   mojom::WebViewFactoryPtr factory;
-  app->ConnectToService("mojo:web_view", &factory);
+  shell->ConnectToService("mojo:web_view", &factory);
   factory->CreateWebView(binding_.CreateInterfacePtrAndBind(),
                          GetProxy(&web_view_));
 

@@ -19,7 +19,6 @@
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mash {
 namespace wm {

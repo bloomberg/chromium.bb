@@ -5,8 +5,8 @@
 #include "ui/views/test/platform_test_helper.h"
 
 #include "base/path_service.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -31,9 +31,8 @@ class PlatformTestHelperMus : public PlatformTestHelper {
     mojo_test_helper_.reset(new mojo::test::TestHelper(nullptr));
     // ui/views/mus requires a WindowManager running, for now use the desktop
     // one.
-    mojo_test_helper_->application_impl()->ConnectToApplication(
-        "mojo:desktop_wm");
-    WindowManagerConnection::Create(mojo_test_helper_->application_impl());
+    mojo_test_helper_->shell()->ConnectToApplication("mojo:desktop_wm");
+    WindowManagerConnection::Create(mojo_test_helper_->shell());
   }
 
   ~PlatformTestHelperMus() override {

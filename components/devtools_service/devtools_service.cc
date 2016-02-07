@@ -8,13 +8,13 @@
 
 #include "base/logging.h"
 #include "components/devtools_service/devtools_http_server.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace devtools_service {
 
-DevToolsService::DevToolsService(mojo::ApplicationImpl* application)
-    : application_(application), registry_(this) {
-  DCHECK(application_);
+DevToolsService::DevToolsService(mojo::Shell* shell)
+    : shell_(shell), registry_(this) {
+  DCHECK(shell_);
 }
 
 DevToolsService::~DevToolsService() {

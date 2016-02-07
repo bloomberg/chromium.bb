@@ -28,7 +28,6 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/test_frame_tree_delegate.h"
 #include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using mus::mojom::WindowTreeClientPtr;
@@ -89,8 +88,8 @@ scoped_ptr<base::Value> ExecuteScript(ApplicationConnection* connection,
 // FrameTreeDelegate that can block waiting for navigation to start.
 class TestFrameTreeDelegateImpl : public web_view::TestFrameTreeDelegate {
  public:
-  explicit TestFrameTreeDelegateImpl(mojo::ApplicationImpl* app)
-      : TestFrameTreeDelegate(app), frame_tree_(nullptr) {}
+  explicit TestFrameTreeDelegateImpl(mojo::Shell* shell)
+      : TestFrameTreeDelegate(shell), frame_tree_(nullptr) {}
   ~TestFrameTreeDelegateImpl() override {}
 
   void set_frame_tree(FrameTree* frame_tree) { frame_tree_ = frame_tree; }
@@ -176,8 +175,7 @@ class HTMLFrameTest : public WindowServerTestBase {
   // script) a frame showing the same empty page.
   Frame* LoadEmptyPageAndCreateFrame() {
     mus::Window* embed_window = window_manager()->NewWindow();
-    frame_tree_delegate_.reset(
-        new TestFrameTreeDelegateImpl(application_impl()));
+    frame_tree_delegate_.reset(new TestFrameTreeDelegateImpl(shell()));
     FrameConnection* root_connection = InitFrameTree(
         embed_window, "http://127.0.0.1:%u/empty_page2.html");
     if (!root_connection) {
@@ -221,12 +219,11 @@ class HTMLFrameTest : public WindowServerTestBase {
 
   FrameConnection* InitFrameTree(mus::Window* view,
                                  const std::string& url_string) {
-    frame_tree_delegate_.reset(
-        new TestFrameTreeDelegateImpl(application_impl()));
+    frame_tree_delegate_.reset(new TestFrameTreeDelegateImpl(shell()));
     scoped_ptr<FrameConnection> frame_connection(new FrameConnection);
     bool got_callback = false;
     frame_connection->Init(
-        application_impl(), BuildRequestForURL(url_string),
+        shell(), BuildRequestForURL(url_string),
         base::Bind(&OnGotContentHandlerForRoot, &got_callback));
     ignore_result(WindowServerTestBase::DoRunLoopWithTimeout());
     if (!got_callback)

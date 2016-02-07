@@ -21,7 +21,7 @@
 #include "components/web_view/pending_web_view_load.h"
 #include "components/web_view/url_request_cloneable.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
 namespace web_view {
@@ -31,17 +31,17 @@ using web_view::mojom::ButtonState;
 ////////////////////////////////////////////////////////////////////////////////
 // WebViewImpl, public:
 
-WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
+WebViewImpl::WebViewImpl(mojo::Shell* shell,
                          mojom::WebViewClientPtr client,
                          mojo::InterfaceRequest<mojom::WebView> request)
-    : app_(app),
+    : shell_(shell),
       client_(std::move(client)),
       binding_(this, std::move(request)),
       root_(nullptr),
       content_(nullptr),
       find_controller_(this),
       navigation_controller_(this) {
-  devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
+  devtools_agent_.reset(new FrameDevToolsAgent(shell_, this));
   OnDidNavigate();
 }
 
@@ -202,7 +202,7 @@ void WebViewImpl::CanNavigateFrame(Frame* target,
                                    mojo::URLRequestPtr request,
                                    const CanNavigateFrameCallback& callback) {
   FrameConnection::CreateConnectionForCanNavigateFrame(
-      app_, target, std::move(request), callback);
+      shell_, target, std::move(request), callback);
 }
 
 void WebViewImpl::DidStartNavigation(Frame* frame) {}

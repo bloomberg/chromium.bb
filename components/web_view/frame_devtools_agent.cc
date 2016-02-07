@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "components/web_view/frame_devtools_agent_delegate.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "url/gurl.h"
 
 namespace web_view {
@@ -86,13 +86,13 @@ class FrameDevToolsAgent::FrameDevToolsAgentClient
   DISALLOW_COPY_AND_ASSIGN(FrameDevToolsAgentClient);
 };
 
-FrameDevToolsAgent::FrameDevToolsAgent(mojo::ApplicationImpl* app,
+FrameDevToolsAgent::FrameDevToolsAgent(mojo::Shell* shell,
                                        FrameDevToolsAgentDelegate* delegate)
-    : app_(app),
+    : shell_(shell),
       delegate_(delegate),
       id_(base::GenerateGUID()),
       binding_(this) {
-  DCHECK(app_);
+  DCHECK(shell_);
   DCHECK(delegate_);
 }
 
@@ -122,7 +122,7 @@ void FrameDevToolsAgent::RegisterAgentIfNecessary() {
     return;
 
   DevToolsRegistryPtr devtools_registry;
-  app_->ConnectToService("mojo:devtools_service", &devtools_registry);
+  shell_->ConnectToService("mojo:devtools_service", &devtools_registry);
 
   devtools_registry->RegisterAgent(id_, binding_.CreateInterfacePtrAndBind());
 }

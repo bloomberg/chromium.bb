@@ -8,8 +8,8 @@
 
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,7 @@ class VFSTest : public mojo::test::ApplicationTestBase,
   void SetUp() override {
     mojo::test::ApplicationTestBase::SetUp();
 
-    application_impl()->ConnectToService("mojo:filesystem", &files_);
+    shell()->ConnectToService("mojo:filesystem", &files_);
 
     filesystem::FileError error = filesystem::FileError::FAILED;
     filesystem::DirectoryPtr directory;

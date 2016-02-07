@@ -31,7 +31,8 @@ class BrowserDriverApplicationDelegate : public mojo::ApplicationDelegate,
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -40,7 +41,7 @@ class BrowserDriverApplicationDelegate : public mojo::ApplicationDelegate,
 
   void AddAccelerators();
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mojo::Binding<mus::mojom::AcceleratorHandler> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserDriverApplicationDelegate);

@@ -19,7 +19,6 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,8 +83,7 @@ TEST_F(AXProviderTest, HelloWorld) {
 
   // Connect to the URL through the mojo:html_viewer content handler.
   scoped_ptr<ApplicationConnection> connection =
-      application_impl()->ConnectToApplication(
-          server.GetURL("/test.html").spec());
+      shell()->ConnectToApplication(server.GetURL("/test.html").spec());
 
   // Embed the html_viewer in a Window.
   mus::mojom::WindowTreeClientPtr tree_client;

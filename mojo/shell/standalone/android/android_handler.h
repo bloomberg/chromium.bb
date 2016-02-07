@@ -27,7 +27,7 @@ class AndroidHandler : public ApplicationDelegate,
 
  private:
   // ApplicationDelegate:
-  void Initialize(ApplicationImpl* app) override;
+  void Initialize(Shell* shell, const std::string& url, uint32_t id) override;
   bool AcceptConnection(ApplicationConnection* connection) override;
 
   // ContentHandlerFactory::Delegate:

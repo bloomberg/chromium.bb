@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "device/devices_app/devices_app.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace device {
@@ -23,7 +22,7 @@ class DevicesAppTest : public mojo::test::ApplicationTestBase {
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:devices", &usb_device_manager_);
+    shell()->ConnectToService("mojo:devices", &usb_device_manager_);
   }
 
   usb::DeviceManager* usb_device_manager() { return usb_device_manager_.get(); }

@@ -11,8 +11,8 @@
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_connection.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
@@ -50,15 +50,16 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
 
  private:
   // mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    tracing_.Initialize(app);
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
+    tracing_.Initialize(shell, url);
 
-    aura_init_.reset(new views::AuraInit(app, "views_mus_resources.pak"));
-    views::WindowManagerConnection::Create(app);
+    aura_init_.reset(new views::AuraInit(shell, "views_mus_resources.pak"));
+    views::WindowManagerConnection::Create(shell);
 
     scoped_refptr<PrefRegistrySimple> registry = new PrefRegistrySimple;
     registry->RegisterStringPref("filename", "", 0);
-    pref_service_ = filesystem::CreatePrefService(app, registry.get());
+    pref_service_ = filesystem::CreatePrefService(shell, registry.get());
     pref_service_->AddPrefInitObserver(base::Bind(
         &WallpaperApplicationDelegate::OnLoaded, base::Unretained(this)));
 
@@ -74,7 +75,7 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
     mus::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget, app->shell(), window, mus::mojom::SurfaceType::DEFAULT);
+        widget, shell, window, mus::mojom::SurfaceType::DEFAULT);
     widget->Init(params);
     widget->Show();
   }

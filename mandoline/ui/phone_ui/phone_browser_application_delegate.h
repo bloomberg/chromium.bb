@@ -39,7 +39,8 @@ class PhoneBrowserApplicationDelegate
 
  private:
   // Overridden from mojo::ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 
@@ -72,7 +73,7 @@ class PhoneBrowserApplicationDelegate
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<LaunchHandler> request) override;
 
-  mojo::ApplicationImpl* app_;
+  mojo::Shell* shell_;
   mus::mojom::WindowTreeHostPtr host_;
 
   mus::Window* root_;

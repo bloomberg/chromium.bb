@@ -15,7 +15,6 @@
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/udp_socket.mojom.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -326,8 +325,7 @@ class UDPSocketAppTest : public test::ApplicationTestBase {
 
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    application_impl()->ConnectToService("mojo:network_service",
-                                         &network_service_);
+    shell()->ConnectToService("mojo:network_service", &network_service_);
     network_service_->CreateUDPSocket(GetProxy(&socket_));
   }
 

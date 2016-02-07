@@ -48,7 +48,6 @@ ApplicationImpl::ApplicationImpl(
     const Closure& termination_closure)
     : delegate_(delegate),
       binding_(this, std::move(request)),
-      id_(shell::mojom::Shell::kInvalidApplicationID),
       termination_closure_(termination_closure),
       app_lifetime_helper_(this),
       quit_requested_(false),
@@ -56,6 +55,11 @@ ApplicationImpl::ApplicationImpl(
 
 ApplicationImpl::~ApplicationImpl() {
   app_lifetime_helper_.OnQuit();
+}
+
+void ApplicationImpl::WaitForInitialize() {
+  DCHECK(!shell_.is_bound());
+  binding_.WaitForIncomingMethodCall();
 }
 
 scoped_ptr<ApplicationConnection> ApplicationImpl::ConnectToApplication(
@@ -94,11 +98,6 @@ scoped_ptr<ApplicationConnection>
   return std::move(registry);
 }
 
-void ApplicationImpl::WaitForInitialize() {
-  DCHECK(!shell_.is_bound());
-  binding_.WaitForIncomingMethodCall();
-}
-
 void ApplicationImpl::Quit() {
   // We can't quit immediately, since there could be in-flight requests from the
   // shell. So check with it first.
@@ -110,14 +109,16 @@ void ApplicationImpl::Quit() {
   }
 }
 
+scoped_ptr<AppRefCount> ApplicationImpl::CreateAppRefCount() {
+  return app_lifetime_helper_.CreateAppRefCount();
+}
+
 void ApplicationImpl::Initialize(shell::mojom::ShellPtr shell,
                                  const mojo::String& url,
                                  uint32_t id) {
   shell_ = std::move(shell);
   shell_.set_connection_error_handler([this]() { OnConnectionError(); });
-  url_ = url;
-  id_ = id;
-  delegate_->Initialize(this);
+  delegate_->Initialize(this, url, id);
 }
 
 void ApplicationImpl::AcceptConnection(

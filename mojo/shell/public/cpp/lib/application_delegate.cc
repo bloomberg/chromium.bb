@@ -11,7 +11,8 @@ ApplicationDelegate::ApplicationDelegate() {
 ApplicationDelegate::~ApplicationDelegate() {
 }
 
-void ApplicationDelegate::Initialize(ApplicationImpl* app) {
+void ApplicationDelegate::Initialize(Shell* app, const std::string& url,
+                                     uint32_t id) {
 }
 
 bool ApplicationDelegate::AcceptConnection(ApplicationConnection* connection) {

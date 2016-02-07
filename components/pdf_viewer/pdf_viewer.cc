@@ -54,15 +54,15 @@ class PDFView : public mus::WindowTreeDelegate,
  public:
   using DeleteCallback = base::Callback<void(PDFView*)>;
 
-  PDFView(mojo::ApplicationImpl* app,
+  PDFView(mojo::Shell* shell,
           mojo::ApplicationConnection* connection,
           FPDF_DOCUMENT doc,
           const DeleteCallback& delete_callback)
-      : app_ref_(app->app_lifetime_helper()->CreateAppRefCount()),
+      : app_ref_(shell->CreateAppRefCount()),
         doc_(doc),
         current_page_(0),
         page_count_(FPDF_GetPageCount(doc_)),
-        shell_(app->shell()),
+        shell_(shell),
         root_(nullptr),
         frame_client_binding_(this),
         delete_callback_(delete_callback) {
@@ -228,7 +228,7 @@ class PDFView : public mus::WindowTreeDelegate,
 
   scoped_ptr<bitmap_uploader::BitmapUploader> bitmap_uploader_;
 
-  mojo::shell::mojom::Shell* shell_;
+  mojo::Shell* shell_;
   mus::Window* root_;
 
   web_view::mojom::FramePtr frame_;
@@ -353,8 +353,9 @@ class PDFViewer
 
  private:
   // ApplicationDelegate:
-  void Initialize(mojo::ApplicationImpl* app) override {
-    tracing_.Initialize(app);
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override {
+    tracing_.Initialize(shell, url);
   }
 
   bool AcceptConnection(

@@ -11,7 +11,6 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace mash {
@@ -40,13 +39,12 @@ TEST_F(WindowManagerAppTest, OpenWindow) {
   WindowTreeDelegateImpl window_tree_delegate;
 
   // Bring up the the desktop_wm.
-  application_impl()->ConnectToApplication("mojo:desktop_wm");
+  shell()->ConnectToApplication("mojo:desktop_wm");
 
   // Connect to mus and create a new top level window. The request goes to
   // the |desktop_wm|, but is async.
   scoped_ptr<mus::WindowTreeConnection> connection(
-      mus::WindowTreeConnection::Create(&window_tree_delegate,
-                                        application_impl()));
+      mus::WindowTreeConnection::Create(&window_tree_delegate, shell()));
   mus::Window* top_level_window = connection->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(top_level_window);
   mus::Window* child_window = connection->NewWindow();

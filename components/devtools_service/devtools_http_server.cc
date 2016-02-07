@@ -25,7 +25,7 @@
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 
 namespace devtools_service {
 
@@ -337,8 +337,7 @@ DevToolsHttpServer::DevToolsHttpServer(DevToolsService* service,
   VLOG(1) << "Remote debugging HTTP server is started on port "
           << remote_debugging_port << ".";
   mojo::NetworkServicePtr network_service;
-  service_->application()->ConnectToService("mojo:network_service",
-                                            &network_service);
+  service_->shell()->ConnectToService("mojo:network_service", &network_service);
 
   mojo::NetAddressPtr local_address(mojo::NetAddress::New());
   local_address->family = mojo::NetAddressFamily::IPV4;

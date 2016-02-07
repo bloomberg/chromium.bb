@@ -29,8 +29,7 @@
 #include "media/mojo/services/mojo_renderer_factory.h"
 #include "media/renderers/default_renderer_factory.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
-#include "mojo/shell/public/cpp/connect.h"
-#include "mojo/shell/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "v8/include/v8.h"
@@ -50,13 +49,11 @@ bool AreSecureCodecsSupported() {
   return false;
 }
 
-void OnGotRemoteIDs(uint32_t remote_id, uint32_t content_handler_id) {}
-
 }  // namespace
 
 MediaFactory::MediaFactory(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner,
-    mojo::shell::mojom::Shell* shell)
+    mojo::Shell* shell)
     :
 #if !defined(OS_ANDROID)
       media_thread_("Media"),
@@ -82,7 +79,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
     blink::WebMediaPlayerClient* client,
     blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
     blink::WebContentDecryptionModule* initial_cdm,
-    mojo::shell::mojom::Shell* shell) {
+    mojo::Shell* shell) {
 #if defined(OS_ANDROID)
   // TODO(xhwang): Get CreateMediaPlayer working on android.
   return nullptr;
@@ -129,16 +126,8 @@ blink::WebEncryptedMediaClient* MediaFactory::GetEncryptedMediaClient() {
 }
 
 media::interfaces::ServiceFactory* MediaFactory::GetMediaServiceFactory() {
-  if (!media_service_factory_) {
-    mojo::ServiceProviderPtr service_provider;
-    mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::String::From("mojo:media");
-    shell_->ConnectToApplication(std::move(request),
-                                 GetProxy(&service_provider), nullptr, nullptr,
-                                 base::Bind(&OnGotRemoteIDs));
-    mojo::ConnectToService(service_provider.get(), &media_service_factory_);
-  }
-
+  if (!media_service_factory_)
+    shell_->ConnectToService("mojo:media", &media_service_factory_);
   return media_service_factory_.get();
 }
 

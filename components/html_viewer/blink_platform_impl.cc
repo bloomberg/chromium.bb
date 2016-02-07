@@ -28,8 +28,7 @@
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 #include "mojo/common/user_agent.h"
-#include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "net/base/data_url.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
@@ -72,15 +71,15 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 
 BlinkPlatformImpl::BlinkPlatformImpl(
     GlobalState* global_state,
-    mojo::ApplicationImpl* app,
+    mojo::Shell* shell,
     scheduler::RendererScheduler* renderer_scheduler)
     : global_state_(global_state),
-      app_(app),
+      shell_(shell),
       main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(renderer_scheduler->CreateMainThread()) {
-  if (app) {
+  if (shell) {
     scoped_ptr<mojo::ApplicationConnection> connection =
-        app->ConnectToApplication("mojo:network_service");
+        shell->ConnectToApplication("mojo:network_service");
     connection->ConnectToService(&web_socket_factory_);
     connection->ConnectToService(&url_loader_factory_);
 
@@ -89,7 +88,7 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     cookie_jar_.reset(new WebCookieJarImpl(std::move(cookie_store)));
 
     mojo::ClipboardPtr clipboard;
-    app->ConnectToService("mojo:clipboard", &clipboard);
+    shell->ConnectToService("mojo:clipboard", &clipboard);
     clipboard_.reset(new WebClipboardImpl(std::move(clipboard)));
   }
 }
@@ -167,9 +166,9 @@ BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
     blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
-  // TODO(penghuang): Use the app from the right HTMLDocument.
+  // TODO(penghuang): Use the shell from the right HTMLDocument.
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-      global_state_, app_, blink::WebStringToGURL(attributes.topDocumentURL),
+      global_state_, shell_, blink::WebStringToGURL(attributes.topDocumentURL),
       attributes, share_context, gl_info);
 }
 

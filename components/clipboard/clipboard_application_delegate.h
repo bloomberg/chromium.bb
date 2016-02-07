@@ -25,7 +25,8 @@ class ClipboardApplicationDelegate
   ~ClipboardApplicationDelegate() override;
 
   // mojo::ApplicationDelegate implementation.
-  void Initialize(mojo::ApplicationImpl* app) override;
+  void Initialize(mojo::Shell* shell, const std::string& url,
+                  uint32_t id) override;
   bool AcceptConnection(
       mojo::ApplicationConnection* connection) override;
 

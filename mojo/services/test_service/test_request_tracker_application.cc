@@ -16,14 +16,13 @@ namespace mojo {
 namespace test {
 
 TestRequestTrackerApplication::TestRequestTrackerApplication()
-    : app_impl_(nullptr) {
-}
+    : shell_(nullptr) {}
+TestRequestTrackerApplication::~TestRequestTrackerApplication() {}
 
-TestRequestTrackerApplication::~TestRequestTrackerApplication() {
-}
-
-void TestRequestTrackerApplication::Initialize(ApplicationImpl* app) {
-  app_impl_ = app;
+void TestRequestTrackerApplication::Initialize(Shell* shell,
+                                               const std::string& url,
+                                               uint32_t id) {
+  shell_ = shell;
 }
 
 bool TestRequestTrackerApplication::AcceptConnection(
@@ -39,7 +38,7 @@ bool TestRequestTrackerApplication::AcceptConnection(
 void TestRequestTrackerApplication::Create(
     ApplicationConnection* connection,
     InterfaceRequest<TestTimeService> request) {
-  new TestTimeServiceImpl(app_impl_, std::move(request));
+  new TestTimeServiceImpl(shell_, std::move(request));
 }
 
 void TestRequestTrackerApplication::Create(

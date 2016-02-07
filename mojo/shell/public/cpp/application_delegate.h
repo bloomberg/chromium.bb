@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_DELEGATE_H_
 #define MOJO_SHELL_PUBLIC_CPP_APPLICATION_DELEGATE_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "mojo/public/cpp/system/macros.h"
@@ -13,6 +14,7 @@ namespace mojo {
 
 class ApplicationConnection;
 class ApplicationImpl;
+class Shell;
 
 // An abstract class that the application may subclass to control various
 // behaviors of ApplicationImpl.
@@ -22,7 +24,7 @@ class ApplicationDelegate {
   virtual ~ApplicationDelegate();
 
   // Called exactly once before any other method.
-  virtual void Initialize(ApplicationImpl* app);
+  virtual void Initialize(Shell* app, const std::string& url, uint32_t id);
 
   // Override this method to configure what services a connection supports when
   // being connected to from an app.

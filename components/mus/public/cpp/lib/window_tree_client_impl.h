@@ -45,7 +45,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   ~WindowTreeClientImpl() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
-  void ConnectViaWindowTreeFactory(mojo::ApplicationImpl* app);
+  void ConnectViaWindowTreeFactory(mojo::Shell* shell);
 
   // Wait for OnEmbed(), returning when done.
   void WaitForEmbed();

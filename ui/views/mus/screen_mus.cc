@@ -7,7 +7,7 @@
 // #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/shell/public/cpp/application_connection.h"
-#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/shell.h"
 #include "ui/gfx/display_finder.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -75,10 +75,10 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
 
 ScreenMus::~ScreenMus() {}
 
-void ScreenMus::Init(mojo::ApplicationImpl* app) {
+void ScreenMus::Init(mojo::Shell* shell) {
   gfx::Screen::SetScreenInstance(this);
 
-  app->ConnectToService("mojo:mus", &display_manager_);
+  shell->ConnectToService("mojo:mus", &display_manager_);
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());
