@@ -27,14 +27,4 @@
   [super updateSheetPosition];
 }
 
-- (void)resizeWithNewSize:(NSSize)size {
-  [customWindow_ setContentSize:size];
-
-  // self's updateSheetPosition() sets |customWindow_|'s contentSize to a
-  // fixed dialog size. Here, we want to resize to |size| instead. Use
-  // super rather than self to bypass the setContentSize() call for the fixed
-  // size.
-  [super updateSheetPosition];
-}
-
 @end

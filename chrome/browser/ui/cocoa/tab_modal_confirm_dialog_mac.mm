@@ -94,7 +94,7 @@ TabModalConfirmDialogMac::TabModalConfirmDialogMac(
   base::scoped_nsobject<CustomConstrainedWindowSheet> sheet(
       [[CustomConstrainedWindowSheet alloc]
           initWithCustomWindow:[alert_ window]]);
-  window_ = CreateAndShowWebModalDialogMac(this, web_contents, sheet);
+  window_.reset(new ConstrainedWindowMac(this, web_contents, sheet));
   delegate_->set_close_delegate(this);
 }
 

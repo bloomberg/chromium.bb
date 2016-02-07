@@ -70,7 +70,7 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   CGFloat CreateCheckboxSeparator(CGFloat y_pos, NSString* header);
 
   MediaGalleriesDialogController* controller_;  // weak
-  std::unique_ptr<ConstrainedWindowMac> window_;
+  scoped_ptr<ConstrainedWindowMac> window_;
 
   // The alert that the dialog is being displayed as.
   base::scoped_nsobject<ConstrainedWindowAlert> alert_;

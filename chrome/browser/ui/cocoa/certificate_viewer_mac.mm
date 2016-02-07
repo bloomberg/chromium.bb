@@ -134,8 +134,8 @@ void ShowCertificateViewer(content::WebContents* web_contents,
   panel_.reset([[SFCertificatePanel alloc] init]);
   [panel_ setPolicies:(id) policies.get()];
 
-  constrainedWindow_ =
-      CreateAndShowWebModalDialogMac(observer_.get(), webContents, self);
+  constrainedWindow_.reset(
+      new ConstrainedWindowMac(observer_.get(), webContents, self));
 }
 
 - (NSWindow*)overlayWindow {
@@ -186,10 +186,6 @@ void ShowCertificateViewer(content::WebContents* web_contents,
 }
 
 - (void)updateSheetPosition {
-  // NOOP
-}
-
-- (void)resizeWithNewSize:(NSSize)preferredSize {
   // NOOP
 }
 

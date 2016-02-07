@@ -179,8 +179,8 @@ void ShowSSLClientCertificateSelector(
     CFRelease(sslPolicy);
   }
 
-  constrainedWindow_ =
-      CreateAndShowWebModalDialogMac(observer_.get(), webContents, self);
+  constrainedWindow_.reset(
+      new ConstrainedWindowMac(observer_.get(), webContents, self));
   observer_->StartObserving();
 }
 
@@ -257,10 +257,6 @@ void ShowSSLClientCertificateSelector(
 }
 
 - (void)updateSheetPosition {
-  // NOOP
-}
-
-- (void)resizeWithNewSize:(NSSize)size {
   // NOOP
 }
 

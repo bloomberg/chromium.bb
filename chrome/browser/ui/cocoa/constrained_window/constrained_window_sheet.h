@@ -24,8 +24,6 @@
 
 - (void)updateSheetPosition;
 
-- (void)resizeWithNewSize:(NSSize)size;
-
 @property(readonly, nonatomic) NSWindow* sheetWindow;
 
 @end

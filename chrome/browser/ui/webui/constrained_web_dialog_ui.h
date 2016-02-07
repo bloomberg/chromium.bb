@@ -51,8 +51,6 @@ class ConstrainedWebDialogDelegate {
   // Returns the maximum size for the dialog.
   virtual gfx::Size GetMaximumSize() const = 0;
 
-  // Returns the preferred size for the dialog, or an empty size if
-  // the dialog has been closed.
   virtual gfx::Size GetPreferredSize() const = 0;
 
  protected:
