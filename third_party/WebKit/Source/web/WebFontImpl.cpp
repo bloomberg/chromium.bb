@@ -55,10 +55,10 @@ WebFontImpl::WebFontImpl(const FontDescription& desc)
     m_font.update(nullptr);
 }
 
-IntRect WebFontImpl::visualRect() const
+LayoutRect WebFontImpl::visualRect() const
 {
     // TODO(chrishtr): fix this.
-    return IntRect();
+    return LayoutRect();
 }
 
 WebFontDescription WebFontImpl::fontDescription() const

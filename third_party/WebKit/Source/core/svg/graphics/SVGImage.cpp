@@ -78,10 +78,10 @@ SVGImage::~SVGImage()
     ASSERT(!m_chromeClient || !m_chromeClient->image());
 }
 
-IntRect SVGImage::visualRect() const
+LayoutRect SVGImage::visualRect() const
 {
     // TODO(chrishtr): fix this.
-    return IntRect();
+    return LayoutRect();
 }
 
 bool SVGImage::isInSVGImage(const Node* node)

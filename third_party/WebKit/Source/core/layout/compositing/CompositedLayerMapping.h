@@ -158,6 +158,7 @@ public:
     void notifyFirstImagePaint() override;
 
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect& previousInterestRect) const override;
+    LayoutSize subpixelAccumulation() const final;
     bool needsRepaint() const override;
     void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& interestRect) const override;
 

@@ -60,7 +60,7 @@ public:
         int height, int from = 0, int to = -1) const override;
 
     String debugName() const final { return "WebFontImpl"; }
-    IntRect visualRect() const override;
+    LayoutRect visualRect() const override;
 
 private:
     Font m_font;

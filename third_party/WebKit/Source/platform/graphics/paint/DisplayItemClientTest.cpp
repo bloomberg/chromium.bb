@@ -14,7 +14,7 @@ namespace {
 class TestDisplayItemClient : public DisplayItemClient {
 public:
     String debugName() const final { return "TestDisplayItemClient"; }
-    IntRect visualRect() const final { return IntRect(); }
+    LayoutRect visualRect() const final { return LayoutRect(); }
 };
 
 TEST(DisplayItemClientTest, IsAlive)

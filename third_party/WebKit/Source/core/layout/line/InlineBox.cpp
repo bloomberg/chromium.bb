@@ -93,7 +93,7 @@ String InlineBox::debugName() const
     return boxName();
 }
 
-IntRect InlineBox::visualRect() const
+LayoutRect InlineBox::visualRect() const
 {
     // TODO(chrishtr): tighten these bounds.
     return layoutObject().visualRect();

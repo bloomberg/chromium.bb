@@ -6,6 +6,7 @@
 
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "third_party/skia/include/core/SkRegion.h"
 
@@ -90,14 +91,17 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const
         displayItem.replay(graphicsContext);
 }
 
-void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
+void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list, const GraphicsLayer* graphicsLayer) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
 #if ENABLE(ASSERT)
     m_displayItemList.assertDisplayItemClientsAreAlive();
 #endif
-    for (const DisplayItem& displayItem : m_displayItemList)
-        displayItem.appendToWebDisplayItemList(displayItem.client().visualRect(), list);
+    for (const DisplayItem& displayItem : m_displayItemList) {
+        LayoutRect visualRect = displayItem.client().visualRect();
+        visualRect.move(-graphicsLayer->offsetFromLayoutObjectWithSubpixelAccumulation());
+        displayItem.appendToWebDisplayItemList(enclosingIntRect(visualRect), list);
+    }
 }
 
 } // namespace blink

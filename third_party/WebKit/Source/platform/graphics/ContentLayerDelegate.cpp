@@ -49,7 +49,8 @@ ContentLayerDelegate::~ContentLayerDelegate()
 {
 }
 
-static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const PaintArtifact& artifact, const gfx::Rect& bounds)
+static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const GraphicsLayer* graphicsLayer,
+    const PaintArtifact& artifact, const gfx::Rect& bounds)
 {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         // This is a temporary path to paint the artifact using the paint chunk
@@ -61,7 +62,7 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
         list->appendDrawingItem(WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()), picture.get());
         return;
     }
-    artifact.appendToWebDisplayItemList(list);
+    artifact.appendToWebDisplayItemList(list, graphicsLayer);
 }
 
 gfx::Rect ContentLayerDelegate::paintableRegion()
@@ -93,7 +94,7 @@ void ContentLayerDelegate::paintContents(
         disabledMode = GraphicsContext::FullyDisabled;
 
     m_graphicsLayer->paint(nullptr, disabledMode);
-    paintArtifactToWebDisplayItemList(webDisplayItemList, paintController.paintArtifact(), paintableRegion());
+    paintArtifactToWebDisplayItemList(webDisplayItemList, m_graphicsLayer, paintController.paintArtifact(), paintableRegion());
     paintController.setDisplayItemConstructionIsDisabled(false);
     paintController.setSubsequenceCachingIsDisabled(false);
 }

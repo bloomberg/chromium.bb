@@ -83,7 +83,7 @@ public:
     // DisplayItemClient methods.
     String debugName() const final;
     // TODO(chrishtr): fix this.
-    IntRect visualRect() const override { return IntRect(); }
+    LayoutRect visualRect() const override { return LayoutRect(); }
 
 private:
     WebScrollbar& m_scrollbar;

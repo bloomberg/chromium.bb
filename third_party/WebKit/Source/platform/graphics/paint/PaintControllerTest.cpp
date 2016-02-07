@@ -46,7 +46,7 @@ public:
     { }
 
     String debugName() const final { return m_name; }
-    IntRect visualRect() const override { return IntRect(); }
+    LayoutRect visualRect() const override { return LayoutRect(); }
 
 private:
     String m_name;

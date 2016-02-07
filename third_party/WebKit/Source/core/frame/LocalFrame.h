@@ -177,7 +177,7 @@ public:
     // DisplayItemClient methods
     String debugName() const final { return "LocalFrame"; }
     // TODO(chrishtr): fix this.
-    IntRect visualRect() const override { return IntRect(); }
+    LayoutRect visualRect() const override { return LayoutRect(); }
 
     bool shouldThrottleRendering() const;
 

@@ -156,9 +156,11 @@ GraphicsLayer::~GraphicsLayer()
     ASSERT(!m_parent);
 }
 
-IntRect GraphicsLayer::visualRect() const
+LayoutRect GraphicsLayer::visualRect() const
 {
-    return enclosingIntRect(FloatRect(FloatPoint(0, 0), size()));
+    LayoutRect bounds = LayoutRect(FloatPoint(), size());
+    bounds.move(offsetFromLayoutObjectWithSubpixelAccumulation());
+    return bounds;
 }
 
 void GraphicsLayer::setDrawDebugRedFillForTesting(bool enabled)
@@ -297,6 +299,11 @@ void GraphicsLayer::setOffsetDoubleFromLayoutObject(const DoubleSize& offset, Sh
     // If the compositing layer offset changes, we need to repaint.
     if (shouldSetNeedsDisplay == SetNeedsDisplay)
         setNeedsDisplay();
+}
+
+LayoutSize GraphicsLayer::offsetFromLayoutObjectWithSubpixelAccumulation() const
+{
+    return LayoutSize(offsetFromLayoutObject()) + client()->subpixelAccumulation();
 }
 
 IntRect GraphicsLayer::interestRect()

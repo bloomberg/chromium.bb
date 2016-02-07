@@ -2294,6 +2294,11 @@ IntRect CompositedLayerMapping::computeInterestRect(const GraphicsLayer* graphic
     return previousInterestRect;
 }
 
+LayoutSize CompositedLayerMapping::subpixelAccumulation() const
+{
+    return m_owningLayer.subpixelAccumulation();
+}
+
 bool CompositedLayerMapping::needsRepaint() const
 {
     return m_owningLayer.needsRepaint();

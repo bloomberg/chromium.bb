@@ -6,7 +6,7 @@
 #define DisplayItemClient_h
 
 #include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -27,8 +27,9 @@ public:
 
     virtual String debugName() const = 0;
 
-    // The visual rect of this DisplayItemClient, in the space of its containing GraphicsLayer.
-    virtual IntRect visualRect() const = 0;
+    // The visual rect of this DisplayItemClient, in object space of the object that owns the GraphicsLayer, i.e.
+    // offset by offsetFromLayoutObjectPlusSubpixelAccumulation().
+    virtual LayoutRect visualRect() const = 0;
 
 #if ENABLE(ASSERT)
     // Tests if a DisplayItemClient object has been created and has not been deleted yet.

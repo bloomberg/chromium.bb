@@ -123,6 +123,7 @@ public:
     // Offset is origin of the layoutObject minus origin of the graphics layer (so either zero or negative).
     IntSize offsetFromLayoutObject() const { return flooredIntSize(m_offsetFromLayoutObject); }
     void setOffsetFromLayoutObject(const IntSize&, ShouldSetNeedsDisplay = SetNeedsDisplay);
+    LayoutSize offsetFromLayoutObjectWithSubpixelAccumulation() const;
 
     // The double version is only used in |updateScrollingLayerGeometry()| for detecting
     // scroll offset change at floating point precision.
@@ -264,7 +265,7 @@ public:
 
     // DisplayItemClient methods
     String debugName() const final { return m_client->debugName(this); }
-    IntRect visualRect() const override;
+    LayoutRect visualRect() const override;
 
 protected:
     String debugName(cc::Layer*) const;

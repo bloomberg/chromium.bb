@@ -218,7 +218,7 @@ String PaintLayer::debugName() const
     return layoutObject()->debugName();
 }
 
-IntRect PaintLayer::visualRect() const
+LayoutRect PaintLayer::visualRect() const
 {
     return m_layoutObject->visualRect();
 }

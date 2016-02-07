@@ -1138,9 +1138,9 @@ String LayoutObject::debugName() const
     return name.toString();
 }
 
-IntRect LayoutObject::visualRect() const
+LayoutRect LayoutObject::visualRect() const
 {
-    return enclosingIntRect(previousPaintInvalidationRect());
+    return previousPaintInvalidationRect();
 }
 
 bool LayoutObject::isPaintInvalidationContainer() const

@@ -221,7 +221,7 @@ public:
     String decoratedName() const;
 
     // DisplayItemClient methods.
-    IntRect visualRect() const override;
+    LayoutRect visualRect() const override;
     String debugName() const final;
 
     LayoutObject* parent() const { return m_parent; }

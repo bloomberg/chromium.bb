@@ -207,7 +207,7 @@ public:
 
     // DisplayItemClient methods
     String debugName() const final;
-    IntRect visualRect() const final;
+    LayoutRect visualRect() const final;
 
     LayoutBoxModelObject* layoutObject() const { return m_layoutObject; }
     LayoutBox* layoutBox() const { return m_layoutObject && m_layoutObject->isBox() ? toLayoutBox(m_layoutObject) : 0; }

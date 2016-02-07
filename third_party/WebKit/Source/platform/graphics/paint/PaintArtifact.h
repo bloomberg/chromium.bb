@@ -15,6 +15,7 @@
 namespace blink {
 
 class GraphicsContext;
+class GraphicsLayer;
 class WebDisplayItemList;
 
 // The output of painting, consisting of a series of drawings in paint order,
@@ -59,7 +60,7 @@ public:
     void replay(GraphicsContext&) const;
 
     // Writes the paint artifact into a WebDisplayItemList.
-    void appendToWebDisplayItemList(WebDisplayItemList*) const;
+    void appendToWebDisplayItemList(WebDisplayItemList*, const GraphicsLayer*) const;
 
 private:
     DisplayItemList m_displayItemList;

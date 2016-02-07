@@ -106,7 +106,7 @@ public:
 
     // DisplayItemClient methods
     String debugName() const override;
-    IntRect visualRect() const override;
+    LayoutRect visualRect() const override;
 
     bool isText() const { return m_bitfields.isText(); }
     void setIsText(bool isText) { m_bitfields.setIsText(isText); }
