@@ -339,6 +339,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/copy-texture-image.html',
         ['mac'], bug=577144)
+    # The following failure is 10.10 only, but we don't have a keyword yet.
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['mac'], bug=584994)
 
     # Mac Retina NVIDIA
     self.Fail('conformance2/rendering/draw-buffers.html',
