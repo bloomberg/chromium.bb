@@ -31,9 +31,11 @@
 }
 
 #route-information {
+  -webkit-padding-end: 26px;
   -webkit-padding-start: 44px;
   background-color: white;
   font-size: 1.2em;
+  line-height: 1.5em;
   margin-top: 16px;
   overflow: hidden;
 }
