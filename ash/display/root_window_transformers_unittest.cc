@@ -59,8 +59,8 @@ class TestEventHandler : public ui::EventHandler {
     // entire root window.
     if (target->name() != kDesktopBackgroundView)
       return;
-    touch_radius_x_ = event->pointer_details().radius_x();
-    touch_radius_y_ = event->pointer_details().radius_y();
+    touch_radius_x_ = event->pointer_details().radius_x;
+    touch_radius_y_ = event->pointer_details().radius_y;
     event->StopPropagation();
   }
 

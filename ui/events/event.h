@@ -327,57 +327,44 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
 // Structure for handling common fields between touch and mouse to support
 // PointerEvents API.
-class EVENTS_EXPORT PointerDetails {
+struct EVENTS_EXPORT PointerDetails {
  public:
   PointerDetails() {}
   explicit PointerDetails(EventPointerType pointer_type)
-      : pointer_type_(pointer_type),
-        force_(std::numeric_limits<float>::quiet_NaN()) {}
+      : pointer_type(pointer_type),
+        force(std::numeric_limits<float>::quiet_NaN()) {}
   PointerDetails(EventPointerType pointer_type,
                  float radius_x,
                  float radius_y,
                  float force,
                  float tilt_x,
                  float tilt_y)
-      : pointer_type_(pointer_type),
-        radius_x_(radius_x),
-        radius_y_(radius_y),
-        force_(force),
-        tilt_x_(tilt_x),
-        tilt_y_(tilt_y) {}
-
-  EventPointerType pointer_type() const { return pointer_type_; };
-
-  // If we aren't provided with a radius on one axis, use the
-  // information from the other axis.
-  float radius_x() const { return radius_x_ > 0 ? radius_x_ : radius_y_; }
-  float radius_y() const { return radius_y_ > 0 ? radius_y_ : radius_x_; }
-  float force() const { return force_; }
-  float tilt_x() const { return tilt_x_; }
-  float tilt_y() const { return tilt_y_; }
-
- private:
-  // For the mutators of the members on this class.
-  friend class TouchEvent;
-  friend class MouseEvent;
+      : pointer_type(pointer_type),
+        // If we aren't provided with a radius on one axis, use the
+        // information from the other axis.
+        radius_x(radius_x > 0 ? radius_x : radius_y),
+        radius_y(radius_y > 0 ? radius_y : radius_x),
+        force(force),
+        tilt_x(tilt_x),
+        tilt_y(tilt_y) {}
 
   // The type of pointer device.
-  EventPointerType pointer_type_ = EventPointerType::POINTER_TYPE_UNKNOWN;
+  EventPointerType pointer_type = EventPointerType::POINTER_TYPE_UNKNOWN;
 
   // Radius of the X (major) axis of the touch ellipse. 0.0 if unknown.
-  float radius_x_ = 0.0;
+  float radius_x = 0.0;
 
   // Radius of the Y (minor) axis of the touch ellipse. 0.0 if unknown.
-  float radius_y_ = 0.0;
+  float radius_y = 0.0;
 
   // Force (pressure) of the touch. Normalized to be [0, 1]. Default to be 0.0.
-  float force_ = 0.0;
+  float force = 0.0;
 
   // Angle of tilt of the X (major) axis. 0.0 if unknown.
-  float tilt_x_ = 0.0;
+  float tilt_x = 0.0;
 
   // Angle of tilt of the Y (minor) axis. 0.0 if unknown.
-  float tilt_y_ = 0.0;
+  float tilt_y = 0.0;
 };
 
 class EVENTS_EXPORT MouseEvent : public LocatedEvent {
@@ -590,8 +577,8 @@ class EVENTS_EXPORT TouchEvent : public LocatedEvent {
 
   // TODO(robert.bradford): ozone_platform_egltest.cc could use
   // UpdateForRootTransform() instead: crbug.com/519337
-  void set_radius_x(const float r) { pointer_details_.radius_x_ = r; }
-  void set_radius_y(const float r) { pointer_details_.radius_y_ = r; }
+  void set_radius_x(const float r) { pointer_details_.radius_x = r; }
+  void set_radius_y(const float r) { pointer_details_.radius_y = r; }
 
   void set_should_remove_native_touch_id_mapping(
       bool should_remove_native_touch_id_mapping) {

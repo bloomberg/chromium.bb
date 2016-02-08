@@ -93,9 +93,9 @@ struct TouchPointLog {
         type(touch.type()),
         location(touch.root_location()),
         timestamp(touch.time_stamp().InMillisecondsF()),
-        radius_x(touch.pointer_details().radius_x()),
-        radius_y(touch.pointer_details().radius_y()),
-        pressure(touch.pointer_details().force()),
+        radius_x(touch.pointer_details().radius_x),
+        radius_y(touch.pointer_details().radius_y),
+        pressure(touch.pointer_details().force),
         tracking_id(GetTrackingId(touch)),
         source_device(touch.source_device_id()) {}
 

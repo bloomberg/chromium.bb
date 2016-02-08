@@ -70,8 +70,8 @@ void ScaleTouchEvent(TouchEvent* event, const gfx::SizeF& size) {
       double ratio = std::sqrt(size.GetArea() / touchscreen_size.GetArea());
 
       event->set_location_f(location);
-      event->set_radius_x(event->pointer_details().radius_x() * ratio);
-      event->set_radius_y(event->pointer_details().radius_y() * ratio);
+      event->set_radius_x(event->pointer_details().radius_x * ratio);
+      event->set_radius_y(event->pointer_details().radius_y * ratio);
       return;
     }
   }

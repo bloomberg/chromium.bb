@@ -399,11 +399,11 @@ blink::WebMouseEvent MakeWebMouseEventFromAuraEvent(
       break;
   }
 
-  webkit_event.tiltX = roundf(event.pointer_details().tilt_x());
-  webkit_event.tiltY = roundf(event.pointer_details().tilt_y());
-  webkit_event.force = event.pointer_details().force();
+  webkit_event.tiltX = roundf(event.pointer_details().tilt_x);
+  webkit_event.tiltY = roundf(event.pointer_details().tilt_y);
+  webkit_event.force = event.pointer_details().force;
   webkit_event.pointerType =
-      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type());
+      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type);
 
   return webkit_event;
 }
@@ -428,11 +428,11 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromAuraEvent(
   webkit_event.wheelTicksX = webkit_event.deltaX / kPixelsPerTick;
   webkit_event.wheelTicksY = webkit_event.deltaY / kPixelsPerTick;
 
-  webkit_event.tiltX = roundf(event.pointer_details().tilt_x());
-  webkit_event.tiltY = roundf(event.pointer_details().tilt_y());
-  webkit_event.force = event.pointer_details().force();
+  webkit_event.tiltX = roundf(event.pointer_details().tilt_x);
+  webkit_event.tiltY = roundf(event.pointer_details().tilt_y);
+  webkit_event.force = event.pointer_details().force;
   webkit_event.pointerType =
-      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type());
+      EventPointerTypeToWebPointerType(event.pointer_details().pointer_type);
 
   return webkit_event;
 }

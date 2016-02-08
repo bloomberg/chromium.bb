@@ -613,9 +613,9 @@ void TouchEvent::UpdateForRootTransform(
   bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
   DCHECK(success);
   if (decomp.scale[0])
-    pointer_details_.radius_x_ *= decomp.scale[0];
+    pointer_details_.radius_x *= decomp.scale[0];
   if (decomp.scale[1])
-    pointer_details_.radius_y_ *= decomp.scale[1];
+    pointer_details_.radius_y *= decomp.scale[1];
 }
 
 void TouchEvent::DisableSynchronousHandling() {

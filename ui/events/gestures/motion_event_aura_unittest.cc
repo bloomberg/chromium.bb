@@ -432,7 +432,7 @@ TEST(MotionEventAuraTest, ToolType) {
   EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
 
   // TODO(robert.bradford): crbug.com/575162: Test TOOL_TYPE_PEN when
-  // TouchEvents can have their PointerDetails::pointer_type() something other
+  // TouchEvents can have their PointerDetails::pointer_type something other
   // than POINTER_TYPE_TOUCH
 }
 

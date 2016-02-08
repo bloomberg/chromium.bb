@@ -200,11 +200,11 @@ void ArcInputBridge::SendTouchEvent(ui::TouchEvent* event) {
     SendKernelEvent(touchscreen_fd_, time_stamp, EV_ABS, ABS_MT_POSITION_Y,
                     event->y());
     SendKernelEvent(touchscreen_fd_, time_stamp, EV_ABS, ABS_MT_TOUCH_MAJOR,
-                    details.radius_x());
+                    details.radius_x);
     SendKernelEvent(touchscreen_fd_, time_stamp, EV_ABS, ABS_MT_TOUCH_MINOR,
-                    details.radius_y());
+                    details.radius_y);
     SendKernelEvent(touchscreen_fd_, time_stamp, EV_ABS, ABS_MT_PRESSURE,
-                    details.force() * kMaxPressure);
+                    details.force * kMaxPressure);
   }
   SendSynReport(touchscreen_fd_, time_stamp);
 }
