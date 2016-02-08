@@ -563,30 +563,6 @@ final class JavaUrlRequest implements UrlRequest {
         }));
     }
 
-    @Override
-    public void read(final ByteBuffer buffer) {
-        Preconditions.checkDirect(buffer);
-        if (!(buffer.capacity() - buffer.position() > 0)) {
-            throw new IllegalArgumentException("ByteBuffer is already full.");
-        }
-        transitionStates(State.AWAITING_READ, State.READING, new Runnable() {
-            @Override
-            public void run() {
-                mExecutor.execute(errorSetting(State.READING, new CheckedRunnable() {
-                    @Override
-                    public void run() throws IOException {
-                        int oldPosition = buffer.position();
-                        buffer.limit(buffer.capacity());
-                        int read = mResponseChannel.read(buffer);
-                        buffer.limit(buffer.position());
-                        buffer.position(oldPosition);
-                        processReadResult(read, buffer);
-                    }
-                }));
-            }
-        });
-    }
-
     private Runnable errorSetting(final State expectedState, final CheckedRunnable delegate) {
         return new Runnable() {
             @Override

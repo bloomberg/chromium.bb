@@ -40,11 +40,6 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     public int mHttpResponseDataLength = 0;
     public String mResponseAsString = "";
 
-    // Expect legacy read() API to be used on UrlRequest.
-    // TODO(pauljensen): Remove when all callers of UrlRequest.read() are
-    // transitioned to UrlRequest.readNew();
-    public boolean mLegacyReadByteBufferAdjustment = false;
-
     private static final int READ_BUFFER_SIZE = 32 * 1024;
 
     // When false, the consumer is responsible for all calls into the request
@@ -181,23 +176,14 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         mResponseStep = ResponseStep.ON_READ_COMPLETED;
 
         final byte[] lastDataReceivedAsBytes;
-        if (mLegacyReadByteBufferAdjustment) {
-            // Make a slice of ByteBuffer, so can read from it without affecting
-            // position, which allows tests to check the state of the buffer.
-            ByteBuffer slice = byteBuffer.slice();
-            mHttpResponseDataLength += slice.remaining();
-            lastDataReceivedAsBytes = new byte[slice.remaining()];
-            slice.get(lastDataReceivedAsBytes);
-        } else {
-            final int bytesRead = byteBuffer.position() - mBufferPositionBeforeRead;
-            mHttpResponseDataLength += bytesRead;
-            lastDataReceivedAsBytes = new byte[bytesRead];
-            // Rewind |byteBuffer.position()| to pre-read() position.
-            byteBuffer.position(mBufferPositionBeforeRead);
-            // This restores |byteBuffer.position()| to its value on entrance to
-            // this function.
-            byteBuffer.get(lastDataReceivedAsBytes);
-        }
+        final int bytesRead = byteBuffer.position() - mBufferPositionBeforeRead;
+        mHttpResponseDataLength += bytesRead;
+        lastDataReceivedAsBytes = new byte[bytesRead];
+        // Rewind |byteBuffer.position()| to pre-read() position.
+        byteBuffer.position(mBufferPositionBeforeRead);
+        // This restores |byteBuffer.position()| to its value on entrance to
+        // this function.
+        byteBuffer.get(lastDataReceivedAsBytes);
         mResponseAsString += new String(lastDataReceivedAsBytes);
 
         if (maybeThrowCancelOrPause(request)) {

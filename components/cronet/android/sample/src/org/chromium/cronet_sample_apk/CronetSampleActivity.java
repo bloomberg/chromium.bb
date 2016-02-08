@@ -58,12 +58,13 @@ public class CronetSampleActivity extends Activity {
             Log.i(TAG, "****** Response Started ******");
             Log.i(TAG, "*** Headers Are *** %s", info.getAllHeaders());
 
-            request.read(ByteBuffer.allocateDirect(32 * 1024));
+            request.readNew(ByteBuffer.allocateDirect(32 * 1024));
         }
 
         @Override
         public void onReadCompleted(
                 UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
+            byteBuffer.flip();
             Log.i(TAG, "****** onReadCompleted ******%s", byteBuffer);
 
             try {
@@ -71,8 +72,8 @@ public class CronetSampleActivity extends Activity {
             } catch (IOException e) {
                 Log.i(TAG, "IOException during ByteBuffer read. Details: ", e);
             }
-            byteBuffer.position(0);
-            request.read(byteBuffer);
+            byteBuffer.clear();
+            request.readNew(byteBuffer);
         }
 
         @Override
