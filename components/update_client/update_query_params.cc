@@ -4,7 +4,6 @@
 
 #include "components/update_client/update_query_params.h"
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
