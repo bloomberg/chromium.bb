@@ -41,7 +41,7 @@ public class GoogleApiClientHelperTest {
     @After
     public void tearDown() {
         ApplicationStatus.destroyForJUnitTests();
-        GoogleApiClientHelper.resetLifecycleHookForJUnitTests();
+        LifecycleHook.destroyInstanceForJUnitTests();
     }
 
     /** Tests that connection attempts are delayed. */

@@ -15,10 +15,6 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ApplicationStateListener;
 import org.chromium.base.Log;
-import org.chromium.base.ThreadUtils;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Helps managing connections when using {@link GoogleApiClient}.
@@ -72,40 +68,7 @@ import java.util.Set;
  */
 public class GoogleApiClientHelper
         implements OnConnectionFailedListener, ConnectionCallbacks {
-    private static final String TAG = "gcore";
-
-    /**
-     * Listens to application state changes. It is created lazily when we want to register a client.
-     * Must be interacted with on the Chrome UI Thread.
-     */
-    private static LifecycleHook sHook;
-
-    private static class LifecycleHook implements ApplicationStateListener {
-
-        private final Set<GoogleApiClientHelper> mClientHelpers = new HashSet<>();
-        private boolean mIsApplicationVisible = ApplicationStatus.hasVisibleActivities();
-
-        public LifecycleHook() {
-            ApplicationStatus.registerApplicationStateListener(this);
-            Log.v(TAG, "lifecycle hook registered.");
-        }
-
-        @Override
-        public void onApplicationStateChange(int newState) {
-            Log.v(TAG, "onApplicationStateChange");
-            boolean newVisibility = ApplicationStatus.hasVisibleActivities();
-            if (mIsApplicationVisible == newVisibility) return;
-
-            Log.v(TAG, "Application visibilty changed to %s. Updating state of %d clients.",
-                    mIsApplicationVisible, mClientHelpers.size());
-
-            mIsApplicationVisible = newVisibility;
-            for (GoogleApiClientHelper clientHelper : mClientHelpers) {
-                if (mIsApplicationVisible) clientHelper.restoreConnectedState();
-                else clientHelper.disconnectWithDelay();
-            }
-        }
-    }
+    private static final String TAG = "GCore";
 
     private int mResolutionAttempts = 0;
     private boolean mWasConnectedBefore = false;
@@ -133,17 +96,11 @@ public class GoogleApiClientHelper
      * Enabling or disabling it while it is already enabled or disabled has no effect.
      */
     public void enableLifecycleManagement(final boolean enabled) {
-        Log.v(TAG, "enableLifecycleManagement");
-        ThreadUtils.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (sHook == null) sHook = new LifecycleHook();
+        Log.d(TAG, "enableLifecycleManagement(%s)", enabled);
+        LifecycleHook hook = LifecycleHook.getInstance();
 
-                if (enabled) sHook.mClientHelpers.add(GoogleApiClientHelper.this);
-                else sHook.mClientHelpers.remove(GoogleApiClientHelper.this);
-            }
-
-        });
+        if (enabled) hook.registerClientHelper(GoogleApiClientHelper.this);
+        else hook.unregisterClientHelper(GoogleApiClientHelper.this);
     }
 
     /**
@@ -183,20 +140,20 @@ public class GoogleApiClientHelper
         setDisconnectionDelay(0);
     }
 
-    private void restoreConnectedState() {
+    void restoreConnectedState() {
         if (mWasConnectedBefore) {
             mClient.connect();
         }
     }
 
-    private void disconnectWithDelay() {
+    void disconnectWithDelay() {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 // Double check that Chrome is still in the background
                 boolean skipDisconnect = ApplicationStatus.hasVisibleActivities();
 
-                Log.v(TAG, "Disconnect delay expired. skipDisconnect=%s", skipDisconnect);
+                Log.d(TAG, "Disconnect delay expired. skipDisconnect=%s", skipDisconnect);
                 if (!skipDisconnect) disconnect();
             }
         }, mDisconnectionDelayMs);
@@ -251,21 +208,5 @@ public class GoogleApiClientHelper
         return errorCode == ConnectionResult.INTERNAL_ERROR
                 || errorCode == ConnectionResult.NETWORK_ERROR
                 || errorCode == ConnectionResult.SERVICE_UPDATING;
-    }
-
-    /**
-     * Reset static singletons.
-     * This is needed for JUnit tests as statics are not reset between runs and previous states can
-     * make other tests fail. It is not needed in instrumentation tests (and will be removed by
-     * Proguard in release builds) since the application lifecycle will naturally do the work.
-     * Must be called on the main/UI thread.
-     */
-    static void resetLifecycleHookForJUnitTests() {
-        ThreadUtils.assertOnUiThread();
-
-        if (sHook == null) return;
-
-        ApplicationStatus.unregisterApplicationStateListener(sHook);
-        sHook = null;
     }
 }
