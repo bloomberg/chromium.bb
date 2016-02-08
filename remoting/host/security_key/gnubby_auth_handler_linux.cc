@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/gnubby_auth_handler_posix.h"
+#include "remoting/host/security_key/gnubby_auth_handler_linux.h"
 
 #include <stdint.h>
 #include <unistd.h>
@@ -20,7 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
 #include "remoting/base/logging.h"
-#include "remoting/host/gnubby_socket.h"
+#include "remoting/host/security_key/gnubby_socket.h"
 #include "remoting/proto/control.pb.h"
 #include "remoting/protocol/client_stub.h"
 
@@ -79,7 +79,7 @@ bool ConvertListValueToString(base::ListValue* bytes, std::string* out) {
 
 }  // namespace
 
-GnubbyAuthHandlerPosix::GnubbyAuthHandlerPosix(
+GnubbyAuthHandlerLinux::GnubbyAuthHandlerLinux(
     protocol::ClientStub* client_stub)
     : client_stub_(client_stub),
       last_connection_id_(0),
@@ -88,14 +88,14 @@ GnubbyAuthHandlerPosix::GnubbyAuthHandlerPosix(
   DCHECK(client_stub_);
 }
 
-GnubbyAuthHandlerPosix::~GnubbyAuthHandlerPosix() {
+GnubbyAuthHandlerLinux::~GnubbyAuthHandlerLinux() {
   STLDeleteValues(&active_sockets_);
 }
 
 // static
 scoped_ptr<GnubbyAuthHandler> GnubbyAuthHandler::Create(
     protocol::ClientStub* client_stub) {
-  return make_scoped_ptr(new GnubbyAuthHandlerPosix(client_stub));
+  return make_scoped_ptr(new GnubbyAuthHandlerLinux(client_stub));
 }
 
 // static
@@ -104,7 +104,7 @@ void GnubbyAuthHandler::SetGnubbySocketName(
   g_gnubby_socket_name.Get() = gnubby_socket_name;
 }
 
-void GnubbyAuthHandlerPosix::DeliverClientMessage(const std::string& message) {
+void GnubbyAuthHandlerLinux::DeliverClientMessage(const std::string& message) {
   DCHECK(CalledOnValidThread());
 
   scoped_ptr<base::Value> value = base::JSONReader::Read(message);
@@ -154,7 +154,7 @@ void GnubbyAuthHandlerPosix::DeliverClientMessage(const std::string& message) {
   }
 }
 
-void GnubbyAuthHandlerPosix::DeliverHostDataMessage(
+void GnubbyAuthHandlerLinux::DeliverHostDataMessage(
     int connection_id,
     const std::string& data) const {
   DCHECK(CalledOnValidThread());
@@ -182,24 +182,24 @@ void GnubbyAuthHandlerPosix::DeliverHostDataMessage(
   client_stub_->DeliverHostMessage(message);
 }
 
-size_t GnubbyAuthHandlerPosix::GetActiveSocketsMapSizeForTest() const {
+size_t GnubbyAuthHandlerLinux::GetActiveSocketsMapSizeForTest() const {
   return active_sockets_.size();
 }
 
-void GnubbyAuthHandlerPosix::SetRequestTimeoutForTest(
+void GnubbyAuthHandlerLinux::SetRequestTimeoutForTest(
     const base::TimeDelta& timeout) {
   request_timeout_ = timeout;
 }
 
-void GnubbyAuthHandlerPosix::DoAccept() {
+void GnubbyAuthHandlerLinux::DoAccept() {
   int result = auth_socket_->Accept(
       &accept_socket_,
-      base::Bind(&GnubbyAuthHandlerPosix::OnAccepted, base::Unretained(this)));
+      base::Bind(&GnubbyAuthHandlerLinux::OnAccepted, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING)
     OnAccepted(result);
 }
 
-void GnubbyAuthHandlerPosix::OnAccepted(int result) {
+void GnubbyAuthHandlerLinux::OnAccepted(int result) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(net::ERR_IO_PENDING, result);
 
@@ -211,18 +211,18 @@ void GnubbyAuthHandlerPosix::OnAccepted(int result) {
   int connection_id = ++last_connection_id_;
   GnubbySocket* socket =
       new GnubbySocket(std::move(accept_socket_), request_timeout_,
-                       base::Bind(&GnubbyAuthHandlerPosix::RequestTimedOut,
+                       base::Bind(&GnubbyAuthHandlerLinux::RequestTimedOut,
                                   base::Unretained(this), connection_id));
   active_sockets_[connection_id] = socket;
   socket->StartReadingRequest(
-      base::Bind(&GnubbyAuthHandlerPosix::OnReadComplete,
+      base::Bind(&GnubbyAuthHandlerLinux::OnReadComplete,
                  base::Unretained(this), connection_id));
 
   // Continue accepting new connections.
   DoAccept();
 }
 
-void GnubbyAuthHandlerPosix::OnReadComplete(int connection_id) {
+void GnubbyAuthHandlerLinux::OnReadComplete(int connection_id) {
   DCHECK(CalledOnValidThread());
 
   ActiveSockets::iterator iter = active_sockets_.find(connection_id);
@@ -234,11 +234,11 @@ void GnubbyAuthHandlerPosix::OnReadComplete(int connection_id) {
   }
   ProcessGnubbyRequest(connection_id, request_data);
   iter->second->StartReadingRequest(
-      base::Bind(&GnubbyAuthHandlerPosix::OnReadComplete,
+      base::Bind(&GnubbyAuthHandlerLinux::OnReadComplete,
                  base::Unretained(this), connection_id));
 }
 
-void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
+void GnubbyAuthHandlerLinux::CreateAuthorizationSocket() {
   DCHECK(CalledOnValidThread());
 
   if (!g_gnubby_socket_name.Get().empty()) {
@@ -269,15 +269,15 @@ void GnubbyAuthHandlerPosix::CreateAuthorizationSocket() {
   }
 }
 
-void GnubbyAuthHandlerPosix::ProcessGnubbyRequest(
+void GnubbyAuthHandlerLinux::ProcessGnubbyRequest(
     int connection_id,
     const std::string& request_data) {
   HOST_LOG << "Received gnubby request: " << GetCommandCode(request_data);
   DeliverHostDataMessage(connection_id, request_data);
 }
 
-GnubbyAuthHandlerPosix::ActiveSockets::iterator
-GnubbyAuthHandlerPosix::GetSocketForMessage(base::DictionaryValue* message) {
+GnubbyAuthHandlerLinux::ActiveSockets::iterator
+GnubbyAuthHandlerLinux::GetSocketForMessage(base::DictionaryValue* message) {
   int connection_id;
   if (message->GetInteger(kConnectionId, &connection_id)) {
     return active_sockets_.find(connection_id);
@@ -285,14 +285,14 @@ GnubbyAuthHandlerPosix::GetSocketForMessage(base::DictionaryValue* message) {
   return active_sockets_.end();
 }
 
-void GnubbyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
+void GnubbyAuthHandlerLinux::SendErrorAndCloseActiveSocket(
     const ActiveSockets::iterator& iter) {
   iter->second->SendSshError();
   delete iter->second;
   active_sockets_.erase(iter);
 }
 
-void GnubbyAuthHandlerPosix::RequestTimedOut(int connection_id) {
+void GnubbyAuthHandlerLinux::RequestTimedOut(int connection_id) {
   HOST_LOG << "Gnubby request timed out";
   ActiveSockets::iterator iter = active_sockets_.find(connection_id);
   if (iter != active_sockets_.end())

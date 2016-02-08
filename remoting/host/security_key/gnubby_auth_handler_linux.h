@@ -1,9 +1,9 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_HOST_GNUBBY_AUTH_HANDLER_POSIX_H_
-#define REMOTING_HOST_GNUBBY_AUTH_HANDLER_POSIX_H_
+#ifndef REMOTING_HOST_SECURITY_KEY_GNUBBY_AUTH_HANDLER_LINUX_H_
+#define REMOTING_HOST_SECURITY_KEY_GNUBBY_AUTH_HANDLER_LINUX_H_
 
 #include <stddef.h>
 
@@ -15,7 +15,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "net/base/completion_callback.h"
 #include "net/socket/stream_socket.h"
-#include "remoting/host/gnubby_auth_handler.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
 
 namespace base {
 class DictionaryValue;
@@ -33,11 +33,11 @@ class ClientStub;
 
 class GnubbySocket;
 
-class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
+class GnubbyAuthHandlerLinux : public GnubbyAuthHandler,
                                public base::NonThreadSafe {
  public:
-  explicit GnubbyAuthHandlerPosix(protocol::ClientStub* client_stub);
-  ~GnubbyAuthHandlerPosix() override;
+  explicit GnubbyAuthHandlerLinux(protocol::ClientStub* client_stub);
+  ~GnubbyAuthHandlerLinux() override;
 
   size_t GetActiveSocketsMapSizeForTest() const;
 
@@ -93,9 +93,9 @@ class GnubbyAuthHandlerPosix : public GnubbyAuthHandler,
   // Timeout used for a request.
   base::TimeDelta request_timeout_;
 
-  DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerPosix);
+  DISALLOW_COPY_AND_ASSIGN(GnubbyAuthHandlerLinux);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_HOST_GNUBBY_AUTH_HANDLER_POSIX_H_
+#endif  // REMOTING_HOST_SECURITY_KEY_GNUBBY_AUTH_HANDLER_LINUX_H_

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "remoting/host/audio_capturer.h"
-#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
 

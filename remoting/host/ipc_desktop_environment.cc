@@ -17,9 +17,9 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/desktop_session_proxy.h"
-#include "remoting/host/gnubby_auth_handler.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
+#include "remoting/host/security_key/gnubby_auth_handler.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 

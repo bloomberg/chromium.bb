@@ -177,7 +177,8 @@ _BANNED_CPP_FUNCTIONS = (
             r"simple_platform_shared_buffer_posix\.cc$",
         r"^net[\\\/]disk_cache[\\\/]cache_util\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
-        r"^remoting[\\\/]host[\\\/]gnubby_auth_handler_posix\.cc$",
+        r"^remoting[\\\/]host[\\\/]security_key[\\\/]"
+            "gnubby_auth_handler_linux\.cc$",
         r"^ui[\\\/]ozone[\\\/]platform[\\\/]drm[\\\/]host[\\\/]"
             "drm_display_host_manager\.cc$",
       ),

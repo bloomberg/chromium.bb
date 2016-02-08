@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,8 +17,8 @@
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/socket/unix_domain_client_socket_posix.h"
-#include "remoting/host/gnubby_auth_handler_posix.h"
-#include "remoting/host/gnubby_socket.h"
+#include "remoting/host/security_key/gnubby_auth_handler_linux.h"
+#include "remoting/host/security_key/gnubby_socket.h"
 #include "remoting/proto/internal.pb.h"
 #include "remoting/protocol/client_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,12 +93,12 @@ class TestClientStub : public protocol::ClientStub {
   DISALLOW_COPY_AND_ASSIGN(TestClientStub);
 };
 
-class GnubbyAuthHandlerPosixTest : public testing::Test {
+class GnubbyAuthHandlerLinuxTest : public testing::Test {
  public:
-  GnubbyAuthHandlerPosixTest() {
+  GnubbyAuthHandlerLinuxTest() {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.path().Append(kSocketFilename);
-    auth_handler_posix_.reset(new GnubbyAuthHandlerPosix(&client_stub_));
+    auth_handler_posix_.reset(new GnubbyAuthHandlerLinux(&client_stub_));
     auth_handler_ = auth_handler_posix_.get();
     auth_handler_->SetGnubbySocketName(socket_path_);
   }
@@ -140,7 +140,7 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
 
  protected:
   // Object under test.
-  scoped_ptr<GnubbyAuthHandlerPosix> auth_handler_posix_;
+  scoped_ptr<GnubbyAuthHandlerLinux> auth_handler_posix_;
 
   // GnubbyAuthHandler interface for |auth_handler_posix_|.
   GnubbyAuthHandler* auth_handler_;
@@ -152,14 +152,14 @@ class GnubbyAuthHandlerPosixTest : public testing::Test {
   base::Closure accept_callback_;
 };
 
-TEST_F(GnubbyAuthHandlerPosixTest, HostDataMessageDelivered) {
+TEST_F(GnubbyAuthHandlerLinuxTest, HostDataMessageDelivered) {
   auth_handler_->DeliverHostDataMessage(42, "test_msg");
   client_stub_.WaitForDeliverHostMessage();
   // Expects a JSON array of the ASCII character codes for "test_msg".
   client_stub_.CheckHostDataMessage(42, "[116,101,115,116,95,109,115,103]");
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, NotClosedAfterRequest) {
+TEST_F(GnubbyAuthHandlerLinuxTest, NotClosedAfterRequest) {
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 
   const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
@@ -179,7 +179,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, NotClosedAfterRequest) {
   ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, HandleTwoRequests) {
+TEST_F(GnubbyAuthHandlerLinuxTest, HandleTwoRequests) {
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 
   const char message_json[] = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
@@ -203,7 +203,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, HandleTwoRequests) {
   ASSERT_EQ(1u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
+TEST_F(GnubbyAuthHandlerLinuxTest, DidReadTimeout) {
   std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
 
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
@@ -216,7 +216,7 @@ TEST_F(GnubbyAuthHandlerPosixTest, DidReadTimeout) {
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
 }
 
-TEST_F(GnubbyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
+TEST_F(GnubbyAuthHandlerLinuxTest, ClientErrorMessageDelivered) {
   std::string message_json = "{\"type\":\"control\",\"option\":\"auth-v1\"}";
 
   ASSERT_EQ(0u, auth_handler_posix_->GetActiveSocketsMapSizeForTest());
