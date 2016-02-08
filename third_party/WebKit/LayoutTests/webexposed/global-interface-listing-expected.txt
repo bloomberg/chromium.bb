@@ -1614,6 +1614,7 @@ interface HTMLAreaElement : HTMLElement
     getter ping
     getter port
     getter protocol
+    getter referrerpolicy
     getter search
     getter shape
     getter target
@@ -1632,6 +1633,7 @@ interface HTMLAreaElement : HTMLElement
     setter ping
     setter port
     setter protocol
+    setter referrerpolicy
     setter search
     setter shape
     setter target

@@ -270,6 +270,7 @@ html element area
     property ping
     property port
     property protocol
+    property referrerpolicy
     property search
     property shape
     property target
