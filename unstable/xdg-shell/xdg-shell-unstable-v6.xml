@@ -40,6 +40,7 @@
       <entry name="defunct_surfaces" value="1" summary="xdg_shell was destroyed before children"/>
       <entry name="not_the_topmost_popup" value="2" summary="the client tried to map or destroy a non-topmost popup"/>
       <entry name="invalid_popup_parent" value="3" summary="the client specified an invalid popup parent surface"/>
+      <entry name="invalid_surface_state" value="4" summary="the client provided an invalid surface state"/>
     </enum>
 
     <request name="destroy" type="destructor">
@@ -133,6 +134,7 @@
     <enum name="error">
       <entry name="not_constructed" value="1"/>
       <entry name="already_constructed" value="2"/>
+      <entry name="unconfigured_buffer" value="3"/>
     </enum>
 
     <request name="destroy" type="destructor">
