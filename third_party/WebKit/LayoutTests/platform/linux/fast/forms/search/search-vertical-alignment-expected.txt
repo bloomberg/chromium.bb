@@ -12,9 +12,9 @@ layer at (0,0) size 800x600
           text run at (364,20) width 115: "same in both fields."
       LayoutBlockFlow {P} at (0,56) size 784x45
         LayoutTextControl {INPUT} at (0,0) size 156x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 150x39
-            LayoutBlockFlow {DIV} at (2,13) size 13x13
-            LayoutBlockFlow {DIV} at (18,11.50) size 119x16
+          LayoutFlexibleBox {DIV} at (3,14.50) size 150x16
+            LayoutBlockFlow {DIV} at (2,1.50) size 13x13
+            LayoutBlockFlow {DIV} at (18,0) size 119x16
         LayoutText {#text} at (156,12) size 4x19
           text run at (156,12) width 4: " "
         LayoutTextControl {INPUT} at (160,0) size 154x45 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -30,9 +30,9 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,153) size 784x20
         LayoutTextControl {INPUT} at (0,4) size 156x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,0) size 150x12
-            LayoutBlockFlow {DIV} at (2,0) size 13x13
-            LayoutBlockFlow {DIV} at (18,-2) size 119x16
+          LayoutFlexibleBox {DIV} at (3,-2) size 150x16
+            LayoutBlockFlow {DIV} at (2,1.50) size 13x13
+            LayoutBlockFlow {DIV} at (18,0) size 119x16
         LayoutText {#text} at (156,0) size 4x19
           text run at (156,0) width 4: " "
         LayoutTextControl {INPUT} at (160,4) size 154x12 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
@@ -62,8 +62,8 @@ layer at (170,163) size 150x16
     LayoutText {#text} at (0,0) size 24x16
       text run at (0,0) width 24: "Text"
 layer at (149,82) size 9x9 transparent
-  LayoutBlockFlow {DIV} at (138,15) size 9x9
+  LayoutBlockFlow {DIV} at (138,3.50) size 9x9
 layer at (149,131) size 9x9 transparent
   LayoutBlockFlow {DIV} at (138,3.50) size 9x9
 layer at (149,167) size 9x9 transparent
-  LayoutBlockFlow {DIV} at (138,1.50) size 9x9
+  LayoutBlockFlow {DIV} at (138,3.50) size 9x9

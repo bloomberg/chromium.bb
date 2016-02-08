@@ -5,46 +5,46 @@ layer at (0,0) size 800x296
     LayoutBlockFlow {BODY} at (8,16) size 784x264
       LayoutBlockFlow {P} at (0,0) size 784x19
         LayoutTextControl {INPUT} at (661,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,35) size 784x19
         LayoutTextControl {INPUT} at (661,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,70) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,105) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
-            LayoutBlockFlow {DIV} at (0,-1) size 13x15
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
+            LayoutBlockFlow {DIV} at (0,0) size 13x15
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,140) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (0,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (0,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,175) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (0,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (0,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,210) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,245) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 123x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
-          LayoutFlexibleBox {DIV} at (3,3) size 117x13
-            LayoutBlockFlow {DIV} at (13,0) size 104x13
+          LayoutFlexibleBox {DIV} at (3,2) size 117x15
+            LayoutBlockFlow {DIV} at (13,1) size 104x13
         LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (685,19) size 104x13
@@ -80,17 +80,17 @@ layer at (24,264) size 104x13
     LayoutText {#text} at (97,0) size 7x13
       text run at (97,0) width 7: "8"
 layer at (672,18) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (0,-1) size 13x15
+  LayoutBlockFlow {DIV} at (0,0) size 13x15
 layer at (672,53) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (0,-1) size 13x15
+  LayoutBlockFlow {DIV} at (0,0) size 13x15
 layer at (11,88) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (0,-1) size 13x15
+  LayoutBlockFlow {DIV} at (0,0) size 13x15
 layer at (115,158) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (104,-1) size 13x15
+  LayoutBlockFlow {DIV} at (104,0) size 13x15
 layer at (115,193) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (104,-1) size 13x15
+  LayoutBlockFlow {DIV} at (104,0) size 13x15
 layer at (11,228) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (0,-1) size 13x15
+  LayoutBlockFlow {DIV} at (0,0) size 13x15
 layer at (11,263) size 13x15 transparent
-  LayoutBlockFlow {DIV} at (0,-1) size 13x15
+  LayoutBlockFlow {DIV} at (0,0) size 13x15
 caret: position 4 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 0 {DIV} of {#document-fragment} of child 0 {INPUT} of child 6 {P} of body

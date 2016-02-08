@@ -146,11 +146,6 @@ crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickm
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-external-font-face-01.html [ Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-01.html [ Failure ]
 crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Failure ]
-crbug.com/461117 fast/forms/number/number-appearance-datalist.html [ NeedsRebaseline ]
-crbug.com/461117 fast/forms/number/number-appearance-rtl.html [ NeedsRebaseline ]
-crbug.com/461117 fast/forms/number/number-appearance-spinbutton-layer.html [ NeedsRebaseline ]
-crbug.com/461117 fast/forms/search/search-vertical-alignment.html [ NeedsRebaseline ]
-crbug.com/461117 fast/forms/search/searchfield-heights.html [ NeedsRebaseline ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
