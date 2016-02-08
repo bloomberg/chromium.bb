@@ -92,28 +92,10 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
     }
 }
 
-LayoutUnit LayoutTextControlSingleLine::computeLogicalHeightLimit() const
-{
-    return containerElement() ? contentLogicalHeight() : logicalHeight();
-}
-
 void LayoutTextControlSingleLine::layout()
 {
     LayoutAnalyzer::Scope analyzer(*this);
     SubtreeLayoutScope layoutScope(*this);
-
-    // FIXME: This code is madness (https://crbug.com/461117)
-    // FIXME: We should remove the height-related hacks in layout() and
-    // styleDidChange(). We need them because
-    // - Center the inner elements vertically if the input height is taller than
-    //   the intrinsic height of the inner elements.
-    // - Shrink the inner elment heights if the input height is samller than the
-    //   intrinsic heights of the inner elements.
-    // The hack was removed for the inner-editor element.  We should remove it
-    // for containerElement() too.
-
-    // We don't honor paddings and borders for type=search if the text height is
-    // taller than the contentHeight() because of compatibility.
 
     LayoutBox* innerEditorLayoutObject = innerEditorElement()->layoutBox();
     bool innerEditorLayoutObjectHadLayout = innerEditorLayoutObject && innerEditorLayoutObject->needsLayout();
@@ -124,22 +106,6 @@ void LayoutTextControlSingleLine::layout()
 
     Element* container = containerElement();
     LayoutBox* containerLayoutObject = container ? container->layoutBox() : 0;
-
-    LayoutUnit logicalHeightLimit = computeLogicalHeightLimit();
-    // The container might be taller because of decoration elements.
-    if (containerLayoutObject) {
-        containerLayoutObject->layoutIfNeeded();
-        LayoutUnit containerLogicalHeight = containerLayoutObject->logicalHeight();
-        if (containerLogicalHeight > logicalHeightLimit) {
-            containerLayoutObject->mutableStyleRef().setLogicalHeight(Length(logicalHeightLimit, Fixed));
-            layoutScope.setNeedsLayout(this, LayoutInvalidationReason::TextControlChanged);
-        } else if (containerLayoutObject->logicalHeight() < contentLogicalHeight()) {
-            containerLayoutObject->mutableStyleRef().setLogicalHeight(Length(contentLogicalHeight(), Fixed));
-            layoutScope.setNeedsLayout(this, LayoutInvalidationReason::TextControlChanged);
-        } else {
-            containerLayoutObject->mutableStyleRef().setLogicalHeight(Length(containerLogicalHeight, Fixed));
-        }
-    }
 
     // We ensure that the inner editor layoutObject is laid out at least once. This is
     // required as the logic below assumes that we don't carry over previous layout values.
@@ -154,8 +120,9 @@ void LayoutTextControlSingleLine::layout()
     if (!container && innerEditorLayoutObject && innerEditorLayoutObject->size().height() != contentLogicalHeight()) {
         LayoutUnit logicalHeightDiff = innerEditorLayoutObject->logicalHeight() - contentLogicalHeight();
         innerEditorLayoutObject->setLogicalTop(innerEditorLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
-    } else {
-        centerContainerIfNeeded(containerLayoutObject);
+    } else if (container && containerLayoutObject && containerLayoutObject->size().height() != contentLogicalHeight()) {
+        LayoutUnit logicalHeightDiff = containerLayoutObject->logicalHeight() - contentLogicalHeight();
+        containerLayoutObject->setLogicalTop(containerLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
     }
 
     HTMLElement* placeholderElement = inputElement()->placeholderElement();
@@ -219,14 +186,6 @@ bool LayoutTextControlSingleLine::nodeAtPoint(HitTestResult& result, const HitTe
 void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
     LayoutTextControl::styleDidChange(diff, oldStyle);
-
-    // We may have set the width and the height in the old style in layout().
-    // Reset them now to avoid getting a spurious layout hint.
-    Element* container = containerElement();
-    if (LayoutObject* containerLayoutObject = container ? container->layoutObject() : 0) {
-        containerLayoutObject->mutableStyleRef().setHeight(Length());
-        containerLayoutObject->mutableStyleRef().setWidth(Length());
-    }
     if (HTMLElement* placeholder = inputElement()->placeholderElement())
         placeholder->setInlineStyleProperty(CSSPropertyTextOverflow, textShouldBeTruncated() ? CSSValueEllipsis : CSSValueClip);
     setHasOverflowClip(false);

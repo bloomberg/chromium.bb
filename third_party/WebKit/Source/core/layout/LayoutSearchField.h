@@ -35,9 +35,7 @@ public:
     ~LayoutSearchField() override;
 
 private:
-    void centerContainerIfNeeded(LayoutBox*) const override;
     LayoutUnit computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const override;
-    LayoutUnit computeLogicalHeightLimit() const override;
 
     Element* searchDecorationElement() const;
     Element* cancelButtonElement() const;

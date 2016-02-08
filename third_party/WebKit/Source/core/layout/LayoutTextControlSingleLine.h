@@ -40,8 +40,6 @@ public:
     void capsLockStateMayHaveChanged();
 
 protected:
-    virtual void centerContainerIfNeeded(LayoutBox*) const { }
-    virtual LayoutUnit computeLogicalHeightLimit() const;
     Element* containerElement() const;
     Element* editingViewPortElement() const;
     HTMLInputElement* inputElement() const;

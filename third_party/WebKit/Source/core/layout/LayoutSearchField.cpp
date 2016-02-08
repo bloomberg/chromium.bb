@@ -72,23 +72,4 @@ LayoutUnit LayoutSearchField::computeControlLogicalHeight(LayoutUnit lineHeight,
     return lineHeight + nonContentHeight;
 }
 
-LayoutUnit LayoutSearchField::computeLogicalHeightLimit() const
-{
-    return logicalHeight();
-}
-
-void LayoutSearchField::centerContainerIfNeeded(LayoutBox* containerLayoutObject) const
-{
-    if (!containerLayoutObject)
-        return;
-
-    if (containerLayoutObject->logicalHeight() <= contentLogicalHeight())
-        return;
-
-    // A quirk for find-in-page box on Safari Windows.
-    // http://webkit.org/b/63157
-    LayoutUnit logicalHeightDiff = containerLayoutObject->logicalHeight() - contentLogicalHeight();
-    containerLayoutObject->setLogicalTop(containerLayoutObject->logicalTop() - (logicalHeightDiff / 2 + layoutMod(logicalHeightDiff, 2)));
-}
-
 } // namespace blink
