@@ -22,9 +22,16 @@
 #include "grit/components_strings.h"
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/font_list.h"
 
 namespace app_modal {
 namespace {
+
+#if !defined(OS_ANDROID)
+// Keep in sync with kDefaultMessageWidth, but allow some space for the rest of
+// the text.
+const int kUrlElideWidth = 350;
+#endif
 
 class DefaultExtensionsClient : public JavaScriptDialogExtensionsClient {
  public:
@@ -208,9 +215,14 @@ base::string16 JavaScriptDialogManager::GetTitle(
       (web_contents->GetURL().GetOrigin() == origin_url.GetOrigin());
   if (origin_url.IsStandard() && !origin_url.SchemeIsFile() &&
       !origin_url.SchemeIsFileSystem()) {
+#if !defined(OS_ANDROID)
+    base::string16 url_string =
+        url_formatter::ElideHost(origin_url, gfx::FontList(), kUrlElideWidth);
+#else
     base::string16 url_string =
         url_formatter::FormatUrlForSecurityDisplayOmitScheme(origin_url,
                                                              accept_lang);
+#endif
     return l10n_util::GetStringFUTF16(
         is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
                                      : IDS_JAVASCRIPT_MESSAGEBOX_TITLE_IFRAME,
