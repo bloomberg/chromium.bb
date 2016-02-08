@@ -630,15 +630,18 @@ def RunStackToolSteps(options):
   Stack tool is run for logcat dump, optionally for ASAN.
   """
   bb_annotations.PrintNamedStep('Run stack tool with logcat dump')
-  logcat_file = os.path.join(CHROME_OUT_DIR, options.target, 'full_log.txt')
+  build_dir = os.path.join(CHROME_OUT_DIR, options.target)
+  logcat_file = os.path.join(build_dir, 'full_log.txt')
   RunCmd([os.path.join(CHROME_SRC_DIR, 'third_party', 'android_platform',
           'development', 'scripts', 'stack'),
-          '--more-info', logcat_file])
+          '--more-info', logcat_file,
+          '--output-directory', build_dir])
   if options.asan_symbolize:
     bb_annotations.PrintNamedStep('Run stack tool for ASAN')
     RunCmd([
         os.path.join(CHROME_SRC_DIR, 'build', 'android', 'asan_symbolize.py'),
-        '-l', logcat_file])
+        '-l', logcat_file,
+        '--output-directory', build_dir])
 
 
 def GenerateTestReport(options):
