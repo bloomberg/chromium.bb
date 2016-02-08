@@ -4,6 +4,7 @@
 
 // This fuzzer is simplified & cleaned up pdfium/samples/pdfium_test.cc
 
+#include <assert.h>
 #include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
