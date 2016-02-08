@@ -26,6 +26,7 @@ public:
         ASSERT(isUnused());
     }
 
+#if ENABLE(ASSERT)
     ~PersistentNode()
     {
         // If you hit this assert, it means that the thread finished
@@ -34,8 +35,9 @@ public:
         // main thread finishes without clearing all persistent handles.
         ASSERT(isMainThread() || isUnused());
     }
+#endif
 
-    // It is dangrous to copy the PersistentNode because it breaks the
+    // It is dangerous to copy the PersistentNode because it breaks the
     // free list.
     PersistentNode& operator=(const PersistentNode& otherref) = delete;
 
