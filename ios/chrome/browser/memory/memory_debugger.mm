@@ -591,12 +591,17 @@ const CGFloat kPadding = 10;
 
 // Shows an alert with the given |errorMessage|.
 - (void)alert:(NSString*)errorMessage {
-  UIAlertView* alert = [[UIAlertView alloc] initWithTitle:@"Error"
-                                                  message:errorMessage
-                                                 delegate:self
-                                        cancelButtonTitle:@"OK"
-                                        otherButtonTitles:nil, nil];
-  [alert show];
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:@"Error"
+                                          message:errorMessage
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  [alert addAction:[UIAlertAction actionWithTitle:@"OK"
+                                            style:UIAlertActionStyleDefault
+                                          handler:nil]];
+  [[[[UIApplication sharedApplication] keyWindow] rootViewController]
+      presentViewController:alert
+                   animated:YES
+                 completion:nil];
 }
 
 @end
