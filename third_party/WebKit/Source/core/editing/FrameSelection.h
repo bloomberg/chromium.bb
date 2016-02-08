@@ -83,7 +83,7 @@ public:
         DoNotSetFocus = 1 << 4,
         DoNotUpdateAppearance = 1 << 5,
         DoNotClearStrategy = 1 << 6,
-        DoNotAdjustInComposedTree = 1 << 7,
+        DoNotAdjustInFlatTree = 1 << 7,
     };
     typedef unsigned SetSelectionOptions; // Union of values in SetSelectionOption and EUserTriggered
     static inline EUserTriggered selectionOptionsToUserTriggered(SetSelectionOptions options)
@@ -109,11 +109,11 @@ public:
 
     const VisibleSelection& selection() const;
     void setSelection(const VisibleSelection&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
-    void setSelection(const VisibleSelectionInComposedTree&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
+    void setSelection(const VisibleSelectionInFlatTree&, SetSelectionOptions = CloseTyping | ClearTypingStyle, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded, TextGranularity = CharacterGranularity);
     // TODO(yosin) We should get rid of two parameters version of
     // |setSelection()| to avoid conflict of four parameters version.
     void setSelection(const VisibleSelection& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
-    void setSelection(const VisibleSelectionInComposedTree& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
+    void setSelection(const VisibleSelectionInFlatTree& selection, TextGranularity granularity) { setSelection(selection, CloseTyping | ClearTypingStyle, CursorAlignOnScroll::IfNeeded, granularity); }
     // TODO(yosin) We should get rid of |Range| version of |setSelectedRagne()|
     // for Oilpan.
     bool setSelectedRange(Range*, TextAffinity, SelectionDirectionalMode = SelectionDirectionalMode::NonDirectional, SetSelectionOptions = CloseTyping | ClearTypingStyle);
@@ -212,7 +212,7 @@ public:
 
     enum EndPointsAdjustmentMode { AdjustEndpointsAtBidiBoundary, DoNotAdjsutEndpoints };
     void setNonDirectionalSelectionIfNeeded(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
-    void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInComposedTree&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
+    void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
     void setFocusedNodeIfNeeded();
     void notifyLayoutObjectOfSelectionChange(EUserTriggered);
 
@@ -249,14 +249,14 @@ private:
 
     explicit FrameSelection(LocalFrame*);
 
-    // Note: We have |selectionInComposedTree()| for unit tests, we should
-    // use |visibleSelection<EditingInComposedTreeStrategy>()|.
-    const VisibleSelectionInComposedTree& selectionInComposedTree() const;
+    // Note: We have |selectionInFlatTree()| for unit tests, we should
+    // use |visibleSelection<EditingInFlatTreeStrategy>()|.
+    const VisibleSelectionInFlatTree& selectionInFlatTree() const;
 
     template <typename Strategy>
     VisiblePositionTemplate<Strategy> originalBase() const;
     void setOriginalBase(const VisiblePosition& newBase) { m_originalBase = newBase; }
-    void setOriginalBase(const VisiblePositionInComposedTree& newBase) { m_originalBaseInComposedTree = newBase; }
+    void setOriginalBase(const VisiblePositionInFlatTree& newBase) { m_originalBaseInFlatTree = newBase; }
 
     template <typename Strategy>
     bool containsAlgorithm(const LayoutPoint&);
@@ -296,7 +296,7 @@ private:
 
     // Used to store base before the adjustment at bidi boundary
     VisiblePosition m_originalBase;
-    VisiblePositionInComposedTree m_originalBaseInComposedTree;
+    VisiblePositionInFlatTree m_originalBaseInFlatTree;
     TextGranularity m_granularity;
 
     RefPtrWillBeMember<Node> m_previousCaretNode; // The last node which painted the caret. Retained for clearing the old caret when it moves.

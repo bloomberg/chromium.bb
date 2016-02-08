@@ -88,8 +88,8 @@ private:
 extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
 using EphemeralRange = EphemeralRangeTemplate<EditingStrategy>;
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
-using EphemeralRangeInComposedTree = EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
+using EphemeralRangeInFlatTree = EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
 
 // Returns a newly created |Range| object from |range| or |nullptr| if
 // |range.isNull()| returns true.

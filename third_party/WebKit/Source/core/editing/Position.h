@@ -172,7 +172,7 @@ public:
     void formatForDebugger(char* buffer, unsigned length) const;
     void showAnchorTypeAndOffset() const;
     void showTreeForThis() const;
-    void showTreeForThisInComposedTree() const;
+    void showTreeForThisInFlatTree() const;
 #endif
 
     DEFINE_INLINE_TRACE()
@@ -195,10 +195,10 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionTemplate<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionTemplate<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT PositionTemplate<EditingInFlatTreeStrategy>;
 
 using Position = PositionTemplate<EditingStrategy>;
-using PositionInComposedTree = PositionTemplate<EditingInComposedTreeStrategy>;
+using PositionInFlatTree = PositionTemplate<EditingInFlatTreeStrategy>;
 
 template <typename Strategy>
 bool operator==(const PositionTemplate<Strategy>& a, const PositionTemplate<Strategy>& b)
@@ -371,9 +371,9 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::lastPositionInOrAfterNode
     return Strategy::editingIgnoresContent(node) ? afterNode(node) : lastPositionInNode(node);
 }
 
-CORE_EXPORT PositionInComposedTree toPositionInComposedTree(const Position&);
+CORE_EXPORT PositionInFlatTree toPositionInFlatTree(const Position&);
 CORE_EXPORT Position toPositionInDOMTree(const Position&);
-CORE_EXPORT Position toPositionInDOMTree(const PositionInComposedTree&);
+CORE_EXPORT Position toPositionInDOMTree(const PositionInFlatTree&);
 
 template <typename Strategy>
 PositionTemplate<Strategy> fromPositionInDOMTree(const Position&);
@@ -385,9 +385,9 @@ inline Position fromPositionInDOMTree<EditingStrategy>(const Position& position)
 }
 
 template <>
-inline PositionInComposedTree fromPositionInDOMTree<EditingInComposedTreeStrategy>(const Position& position)
+inline PositionInFlatTree fromPositionInDOMTree<EditingInFlatTreeStrategy>(const Position& position)
 {
-    return toPositionInComposedTree(position);
+    return toPositionInFlatTree(position);
 }
 
 // These printers are available only for testing in "webkit_unit_tests", and
@@ -397,7 +397,7 @@ std::ostream& operator<<(std::ostream&, const Node*);
 
 std::ostream& operator<<(std::ostream&, PositionAnchorType);
 std::ostream& operator<<(std::ostream&, const Position&);
-std::ostream& operator<<(std::ostream&, const PositionInComposedTree&);
+std::ostream& operator<<(std::ostream&, const PositionInFlatTree&);
 
 } // namespace blink
 

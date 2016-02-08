@@ -104,8 +104,8 @@
 #include "core/dom/XMLDocument.h"
 #include "core/dom/custom/CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/DragCaretController.h"
 #include "core/editing/Editor.h"
@@ -1891,7 +1891,7 @@ void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
 {
     DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
     ASSERT(node);
-    if (!node->canParticipateInComposedTree())
+    if (!node->canParticipateInFlatTree())
         return;
     if (!needsLayoutTreeUpdate())
         return;
@@ -3517,12 +3517,12 @@ void Document::hoveredNodeDetached(Element& element)
         return;
 
     m_hoverNode->updateDistribution();
-    if (element != m_hoverNode && (!m_hoverNode->isTextNode() || element != ComposedTreeTraversal::parent(*m_hoverNode)))
+    if (element != m_hoverNode && (!m_hoverNode->isTextNode() || element != FlatTreeTraversal::parent(*m_hoverNode)))
         return;
 
-    m_hoverNode = ComposedTreeTraversal::parent(element);
+    m_hoverNode = FlatTreeTraversal::parent(element);
     while (m_hoverNode && !m_hoverNode->layoutObject())
-        m_hoverNode = ComposedTreeTraversal::parent(*m_hoverNode);
+        m_hoverNode = FlatTreeTraversal::parent(*m_hoverNode);
 
     // If the mouse cursor is not visible, do not clear existing
     // hover effects on the ancestors of |element| and do not invoke
@@ -3542,9 +3542,9 @@ void Document::activeChainNodeDetached(Element& element)
     if (element != m_activeHoverElement)
         return;
 
-    Node* activeNode = ComposedTreeTraversal::parent(element);
+    Node* activeNode = FlatTreeTraversal::parent(element);
     while (activeNode && activeNode->isElementNode() && !activeNode->layoutObject())
-        activeNode = ComposedTreeTraversal::parent(*activeNode);
+        activeNode = FlatTreeTraversal::parent(*activeNode);
 
     m_activeHoverElement = activeNode && activeNode->isElementNode() ? toElement(activeNode) : 0;
 }
@@ -5496,7 +5496,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
     if (oldActiveElement && !request.active()) {
         // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
         // for instance. We still need to clear the ActiveChain as the mouse is released.
-        for (RefPtrWillBeRawPtr<Node> node = oldActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
+        for (RefPtrWillBeRawPtr<Node> node = oldActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
             ASSERT(!node->isTextNode());
             node->setActive(false);
             m_userActionElements.setInActiveChain(node.get(), false);
@@ -5507,7 +5507,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request, Element* in
         if (!oldActiveElement && newActiveElement && !newActiveElement->isDisabledFormControl() && request.active() && !request.touchMove()) {
             // We are setting the :active chain and freezing it. If future moves happen, they
             // will need to reference this chain.
-            for (Node* node = newActiveElement; node; node = ComposedTreeTraversal::parent(*node)) {
+            for (Node* node = newActiveElement; node; node = FlatTreeTraversal::parent(*node)) {
                 ASSERT(!node->isTextNode());
                 m_userActionElements.setInActiveChain(node, true);
             }

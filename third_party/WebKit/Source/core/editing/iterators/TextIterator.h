@@ -44,7 +44,7 @@ class LayoutTextFragment;
 
 CORE_EXPORT String plainText(const EphemeralRange&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
-String plainText(const EphemeralRangeInComposedTree&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+String plainText(const EphemeralRangeInFlatTree&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
 // Iterates through the DOM range, returning all the text, and 0-length boundaries
 // at points where replaced elements break up the text flow.  The text comes back in
@@ -202,10 +202,10 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 using TextIterator = TextIteratorAlgorithm<EditingStrategy>;
-using TextIteratorInComposedTree = TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+using TextIteratorInFlatTree = TextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink
 

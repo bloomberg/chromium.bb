@@ -113,7 +113,7 @@ function testDistribution()
     selection.empty();
     shouldBeTrue('testRunner.findString("AFTER", [])');
     selection.empty();
-    shouldBeTrue('testRunner.findString("BEFOREDOCUMENTAFTER", [])'); // Visited in composed tree order
+    shouldBeTrue('testRunner.findString("BEFOREDOCUMENTAFTER", [])'); // Visited in flat tree order
     selection.empty();
     shouldBeFalse('testRunner.findString("DOCUMENTBEFORE", [])');
     selection.empty();

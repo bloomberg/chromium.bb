@@ -954,7 +954,7 @@ void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 #endif
 
 template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 } // namespace blink
 
@@ -971,12 +971,12 @@ void showTree(const blink::VisibleSelection* sel)
         sel->showTreeForThis();
 }
 
-void showTree(const blink::VisibleSelectionInComposedTree& sel)
+void showTree(const blink::VisibleSelectionInFlatTree& sel)
 {
     sel.showTreeForThis();
 }
 
-void showTree(const blink::VisibleSelectionInComposedTree* sel)
+void showTree(const blink::VisibleSelectionInFlatTree* sel)
 {
     if (sel)
         sel->showTreeForThis();

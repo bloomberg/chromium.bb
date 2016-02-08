@@ -30,7 +30,7 @@ bool supportsTouchAction(const LayoutObject& object)
 
 const Node* parentNodeAcrossFrames(const Node* curNode)
 {
-    Node* parentNode = ComposedTreeTraversal::parent(*curNode);
+    Node* parentNode = FlatTreeTraversal::parent(*curNode);
     if (parentNode)
         return parentNode;
 

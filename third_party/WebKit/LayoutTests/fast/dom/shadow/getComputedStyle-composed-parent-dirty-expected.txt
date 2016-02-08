@@ -1,4 +1,4 @@
-getComputedStyle should update style if the parent node in the composed tree needs a recalc.
+getComputedStyle should update style if the parent node in the flat tree needs a recalc.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

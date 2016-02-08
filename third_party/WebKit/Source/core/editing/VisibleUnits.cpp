@@ -162,7 +162,7 @@ Position canonicalPositionOf(const Position& position)
     return canonicalPosition(position);
 }
 
-PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& position)
+PositionInFlatTree canonicalPositionOf(const PositionInFlatTree& position)
 {
     return canonicalPosition(position);
 }
@@ -874,9 +874,9 @@ VisiblePosition startOfWord(const VisiblePosition& c, EWordSide side)
     return startOfWordAlgorithm<EditingStrategy>(c, side);
 }
 
-VisiblePositionInComposedTree startOfWord(const VisiblePositionInComposedTree& c, EWordSide side)
+VisiblePositionInFlatTree startOfWord(const VisiblePositionInFlatTree& c, EWordSide side)
 {
-    return startOfWordAlgorithm<EditingInComposedTreeStrategy>(c, side);
+    return startOfWordAlgorithm<EditingInFlatTreeStrategy>(c, side);
 }
 
 static unsigned endWordBoundary(const UChar* characters, unsigned length, unsigned offset, BoundarySearchContextAvailability mayHaveMoreContext, bool& needMoreContext)
@@ -913,9 +913,9 @@ VisiblePosition endOfWord(const VisiblePosition& c, EWordSide side)
     return endOfWordAlgorithm<EditingStrategy>(c, side);
 }
 
-VisiblePositionInComposedTree endOfWord(const VisiblePositionInComposedTree& c, EWordSide side)
+VisiblePositionInFlatTree endOfWord(const VisiblePositionInFlatTree& c, EWordSide side)
 {
-    return endOfWordAlgorithm<EditingInComposedTreeStrategy>(c, side);
+    return endOfWordAlgorithm<EditingInFlatTreeStrategy>(c, side);
 }
 
 static unsigned previousWordPositionBoundary(const UChar* characters, unsigned length, unsigned offset, BoundarySearchContextAvailability mayHaveMoreContext, bool& needMoreContext)
@@ -1009,9 +1009,9 @@ static PositionWithAffinity startOfLine(const PositionWithAffinity& currentPosit
     return startOfLineAlgorithm<EditingStrategy>(currentPosition);
 }
 
-static PositionInComposedTreeWithAffinity startOfLine(const PositionInComposedTreeWithAffinity& currentPosition)
+static PositionInFlatTreeWithAffinity startOfLine(const PositionInFlatTreeWithAffinity& currentPosition)
 {
-    return startOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
+    return startOfLineAlgorithm<EditingInFlatTreeStrategy>(currentPosition);
 }
 
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
@@ -1020,7 +1020,7 @@ VisiblePosition startOfLine(const VisiblePosition& currentPosition)
     return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
 }
 
-VisiblePositionInComposedTree startOfLine(const VisiblePositionInComposedTree& currentPosition)
+VisiblePositionInFlatTree startOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
     return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
 }
@@ -1045,9 +1045,9 @@ VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
     return createVisiblePosition(logicalStartOfLineAlgorithm<EditingStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
-VisiblePositionInComposedTree logicalStartOfLine(const VisiblePositionInComposedTree& currentPosition)
+VisiblePositionInFlatTree logicalStartOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
-    return createVisiblePosition(logicalStartOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition.toPositionWithAffinity()));
+    return createVisiblePosition(logicalStartOfLineAlgorithm<EditingInFlatTreeStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
 template <typename Strategy>
@@ -1137,9 +1137,9 @@ VisiblePosition endOfLine(const VisiblePosition& currentPosition)
     return endOfLineAlgorithm<EditingStrategy>(currentPosition);
 }
 
-VisiblePositionInComposedTree endOfLine(const VisiblePositionInComposedTree& currentPosition)
+VisiblePositionInFlatTree endOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
-    return endOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
+    return endOfLineAlgorithm<EditingInFlatTreeStrategy>(currentPosition);
 }
 
 template <typename Strategy>
@@ -1179,9 +1179,9 @@ VisiblePosition logicalEndOfLine(const VisiblePosition& currentPosition)
     return logicalEndOfLineAlgorithm<EditingStrategy>(currentPosition);
 }
 
-VisiblePositionInComposedTree logicalEndOfLine(const VisiblePositionInComposedTree& currentPosition)
+VisiblePositionInFlatTree logicalEndOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
-    return logicalEndOfLineAlgorithm<EditingInComposedTreeStrategy>(currentPosition);
+    return logicalEndOfLineAlgorithm<EditingInFlatTreeStrategy>(currentPosition);
 }
 
 template <typename Strategy>
@@ -1204,9 +1204,9 @@ bool inSameLine(const PositionWithAffinity& a, const PositionWithAffinity& b)
     return inSameLineAlgorithm<EditingStrategy>(a, b);
 }
 
-bool inSameLine(const PositionInComposedTreeWithAffinity& position1, const PositionInComposedTreeWithAffinity& position2)
+bool inSameLine(const PositionInFlatTreeWithAffinity& position1, const PositionInFlatTreeWithAffinity& position2)
 {
-    return inSameLineAlgorithm<EditingInComposedTreeStrategy>(position1, position2);
+    return inSameLineAlgorithm<EditingInFlatTreeStrategy>(position1, position2);
 }
 
 bool inSameLine(const VisiblePosition& position1, const VisiblePosition& position2)
@@ -1214,7 +1214,7 @@ bool inSameLine(const VisiblePosition& position1, const VisiblePosition& positio
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
-bool inSameLine(const VisiblePositionInComposedTree& position1, const VisiblePositionInComposedTree& position2)
+bool inSameLine(const VisiblePositionInFlatTree& position1, const VisiblePositionInFlatTree& position2)
 {
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
@@ -1230,9 +1230,9 @@ bool isStartOfLine(const VisiblePosition& p)
     return isStartOfLineAlgorithm<EditingStrategy>(p);
 }
 
-bool isStartOfLine(const VisiblePositionInComposedTree& p)
+bool isStartOfLine(const VisiblePositionInFlatTree& p)
 {
-    return isStartOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
+    return isStartOfLineAlgorithm<EditingInFlatTreeStrategy>(p);
 }
 
 template <typename Strategy>
@@ -1246,9 +1246,9 @@ bool isEndOfLine(const VisiblePosition& p)
     return isEndOfLineAlgorithm<EditingStrategy>(p);
 }
 
-bool isEndOfLine(const VisiblePositionInComposedTree& p)
+bool isEndOfLine(const VisiblePositionInFlatTree& p)
 {
-    return isEndOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
+    return isEndOfLineAlgorithm<EditingInFlatTreeStrategy>(p);
 }
 
 template <typename Strategy>
@@ -1262,9 +1262,9 @@ bool isLogicalEndOfLine(const VisiblePosition& p)
     return isLogicalEndOfLineAlgorithm<EditingStrategy>(p);
 }
 
-bool isLogicalEndOfLine(const VisiblePositionInComposedTree& p)
+bool isLogicalEndOfLine(const VisiblePositionInFlatTree& p)
 {
-    return isLogicalEndOfLineAlgorithm<EditingInComposedTreeStrategy>(p);
+    return isLogicalEndOfLineAlgorithm<EditingInFlatTreeStrategy>(p);
 }
 
 static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, LayoutUnit lineDirectionPoint)
@@ -1410,9 +1410,9 @@ VisiblePosition startOfSentence(const VisiblePosition& c)
     return startOfSentenceAlgorithm<EditingStrategy>(c);
 }
 
-VisiblePositionInComposedTree startOfSentence(const VisiblePositionInComposedTree& c)
+VisiblePositionInFlatTree startOfSentence(const VisiblePositionInFlatTree& c)
 {
-    return startOfSentenceAlgorithm<EditingInComposedTreeStrategy>(c);
+    return startOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
 }
 
 static unsigned endSentenceBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)
@@ -1434,9 +1434,9 @@ VisiblePosition endOfSentence(const VisiblePosition& c)
     return endOfSentenceAlgorithm<EditingStrategy>(c);
 }
 
-VisiblePositionInComposedTree endOfSentence(const VisiblePositionInComposedTree& c)
+VisiblePositionInFlatTree endOfSentence(const VisiblePositionInFlatTree& c)
 {
-    return endOfSentenceAlgorithm<EditingInComposedTreeStrategy>(c);
+    return endOfSentenceAlgorithm<EditingInFlatTreeStrategy>(c);
 }
 
 static unsigned previousSentencePositionBoundary(const UChar* characters, unsigned length, unsigned, BoundarySearchContextAvailability, bool&)
@@ -1548,9 +1548,9 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
     return startOfParagraphAlgorithm<EditingStrategy>(c, boundaryCrossingRule);
 }
 
-VisiblePositionInComposedTree startOfParagraph(const VisiblePositionInComposedTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+VisiblePositionInFlatTree startOfParagraph(const VisiblePositionInFlatTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return startOfParagraphAlgorithm<EditingInComposedTreeStrategy>(c, boundaryCrossingRule);
+    return startOfParagraphAlgorithm<EditingInFlatTreeStrategy>(c, boundaryCrossingRule);
 }
 
 template <typename Strategy>
@@ -1635,9 +1635,9 @@ VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossing
     return endOfParagraphAlgorithm<EditingStrategy>(c, boundaryCrossingRule);
 }
 
-VisiblePositionInComposedTree endOfParagraph(const VisiblePositionInComposedTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
+VisiblePositionInFlatTree endOfParagraph(const VisiblePositionInFlatTree& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return endOfParagraphAlgorithm<EditingInComposedTreeStrategy>(c, boundaryCrossingRule);
+    return endOfParagraphAlgorithm<EditingInFlatTreeStrategy>(c, boundaryCrossingRule);
 }
 
 // FIXME: isStartOfParagraph(startOfNextParagraph(pos)) is not always true
@@ -1668,9 +1668,9 @@ bool isStartOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule 
     return isStartOfParagraphAlgorithm<EditingStrategy>(pos, boundaryCrossingRule);
 }
 
-bool isStartOfParagraph(const VisiblePositionInComposedTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+bool isStartOfParagraph(const VisiblePositionInFlatTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return isStartOfParagraphAlgorithm<EditingInComposedTreeStrategy>(pos, boundaryCrossingRule);
+    return isStartOfParagraphAlgorithm<EditingInFlatTreeStrategy>(pos, boundaryCrossingRule);
 }
 
 template <typename Strategy>
@@ -1684,9 +1684,9 @@ bool isEndOfParagraph(const VisiblePosition& pos, EditingBoundaryCrossingRule bo
     return isEndOfParagraphAlgorithm<EditingStrategy>(pos, boundaryCrossingRule);
 }
 
-bool isEndOfParagraph(const VisiblePositionInComposedTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
+bool isEndOfParagraph(const VisiblePositionInFlatTree& pos, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    return isEndOfParagraphAlgorithm<EditingInComposedTreeStrategy>(pos, boundaryCrossingRule);
+    return isEndOfParagraphAlgorithm<EditingInFlatTreeStrategy>(pos, boundaryCrossingRule);
 }
 
 VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x)
@@ -1761,9 +1761,9 @@ VisiblePosition startOfDocument(const VisiblePosition& c)
     return startOfDocumentAlgorithm<EditingStrategy>(c);
 }
 
-VisiblePositionInComposedTree startOfDocument(const VisiblePositionInComposedTree& c)
+VisiblePositionInFlatTree startOfDocument(const VisiblePositionInFlatTree& c)
 {
-    return startOfDocumentAlgorithm<EditingInComposedTreeStrategy>(c);
+    return startOfDocumentAlgorithm<EditingInFlatTreeStrategy>(c);
 }
 
 template <typename Strategy>
@@ -1782,9 +1782,9 @@ VisiblePosition endOfDocument(const VisiblePosition& c)
     return endOfDocumentAlgorithm<EditingStrategy>(c);
 }
 
-VisiblePositionInComposedTree endOfDocument(const VisiblePositionInComposedTree& c)
+VisiblePositionInFlatTree endOfDocument(const VisiblePositionInFlatTree& c)
 {
-    return endOfDocumentAlgorithm<EditingInComposedTreeStrategy>(c);
+    return endOfDocumentAlgorithm<EditingInFlatTreeStrategy>(c);
 }
 
 bool isStartOfDocument(const VisiblePosition& p)
@@ -1824,11 +1824,11 @@ bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)
 
 // TODO(yosin) We should rename |isEndOfEditableOrNonEditableContent()| what
 // this function does, e.g. |isLastVisiblePositionOrEndOfInnerEditor()|.
-bool isEndOfEditableOrNonEditableContent(const VisiblePositionInComposedTree& position)
+bool isEndOfEditableOrNonEditableContent(const VisiblePositionInFlatTree& position)
 {
     if (position.isNull())
         return false;
-    const VisiblePositionInComposedTree nextPosition = nextPositionOf(position);
+    const VisiblePositionInFlatTree nextPosition = nextPositionOf(position);
     if (nextPosition.isNull())
         return true;
     // In DOM version, following condition, the last position of inner editor
@@ -2085,9 +2085,9 @@ InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinit
     return computeInlineBoxPositionTemplate<EditingStrategy>(position, affinity);
 }
 
-InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity)
+InlineBoxPosition computeInlineBoxPosition(const PositionInFlatTree& position, TextAffinity affinity)
 {
-    return computeInlineBoxPositionTemplate<EditingInComposedTreeStrategy>(position, affinity);
+    return computeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(position, affinity);
 }
 
 InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
@@ -2095,7 +2095,7 @@ InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
     return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
 
-InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInComposedTree& position)
+InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInFlatTree& position)
 {
     return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
@@ -2105,9 +2105,9 @@ InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinit
     return computeInlineBoxPositionTemplate<EditingStrategy>(position, affinity, primaryDirection);
 }
 
-InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity, TextDirection primaryDirection)
+InlineBoxPosition computeInlineBoxPosition(const PositionInFlatTree& position, TextAffinity affinity, TextDirection primaryDirection)
 {
-    return computeInlineBoxPositionTemplate<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
+    return computeInlineBoxPositionTemplate<EditingInFlatTreeStrategy>(position, affinity, primaryDirection);
 }
 
 template <typename Strategy>
@@ -2136,9 +2136,9 @@ LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, Layout
     return localCaretRectOfPositionTemplate<EditingStrategy>(position, layoutObject);
 }
 
-LayoutRect localCaretRectOfPosition(const PositionInComposedTreeWithAffinity& position, LayoutObject*& layoutObject)
+LayoutRect localCaretRectOfPosition(const PositionInFlatTreeWithAffinity& position, LayoutObject*& layoutObject)
 {
-    return localCaretRectOfPositionTemplate<EditingInComposedTreeStrategy>(position, layoutObject);
+    return localCaretRectOfPositionTemplate<EditingInFlatTreeStrategy>(position, layoutObject);
 }
 
 static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
@@ -2587,9 +2587,9 @@ Position mostBackwardCaretPosition(const Position& position, EditingBoundaryCros
     return mostBackwardCaretPosition<EditingStrategy>(position, rule);
 }
 
-PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+PositionInFlatTree mostBackwardCaretPosition(const PositionInFlatTree& position, EditingBoundaryCrossingRule rule)
 {
-    return mostBackwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
+    return mostBackwardCaretPosition<EditingInFlatTreeStrategy>(position, rule);
 }
 
 template <typename Strategy>
@@ -2719,9 +2719,9 @@ Position mostForwardCaretPosition(const Position& position, EditingBoundaryCross
     return mostForwardCaretPosition<EditingStrategy>(position, rule);
 }
 
-PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& position, EditingBoundaryCrossingRule rule)
+PositionInFlatTree mostForwardCaretPosition(const PositionInFlatTree& position, EditingBoundaryCrossingRule rule)
 {
-    return mostForwardCaretPosition<EditingInComposedTreeStrategy>(position, rule);
+    return mostForwardCaretPosition<EditingInFlatTreeStrategy>(position, rule);
 }
 
 // Returns true if the visually equivalent positions around have different
@@ -2817,9 +2817,9 @@ bool isVisuallyEquivalentCandidate(const Position& position)
     return isVisuallyEquivalentCandidateAlgorithm<EditingStrategy>(position);
 }
 
-bool isVisuallyEquivalentCandidate(const PositionInComposedTree& position)
+bool isVisuallyEquivalentCandidate(const PositionInFlatTree& position)
 {
-    return isVisuallyEquivalentCandidateAlgorithm<EditingInComposedTreeStrategy>(position);
+    return isVisuallyEquivalentCandidateAlgorithm<EditingInFlatTreeStrategy>(position);
 }
 
 template <typename Strategy>
@@ -2838,9 +2838,9 @@ IntRect absoluteCaretBoundsOf(const VisiblePosition& visiblePosition)
     return absoluteCaretBoundsOfAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree& visiblePosition)
+IntRect absoluteCaretBoundsOf(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return absoluteCaretBoundsOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
+    return absoluteCaretBoundsOfAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>
@@ -2893,9 +2893,9 @@ UChar32 characterAfter(const VisiblePosition& visiblePosition)
     return characterAfterAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-UChar32 characterAfter(const VisiblePositionInComposedTree& visiblePosition)
+UChar32 characterAfter(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return characterAfterAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
+    return characterAfterAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>
@@ -2909,9 +2909,9 @@ UChar32 characterBefore(const VisiblePosition& visiblePosition)
     return characterBeforeAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-UChar32 characterBefore(const VisiblePositionInComposedTree& visiblePosition)
+UChar32 characterBefore(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return characterBeforeAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
+    return characterBeforeAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>
@@ -3085,9 +3085,9 @@ VisiblePosition leftPositionOf(const VisiblePosition& visiblePosition)
     return leftPositionOfAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-VisiblePositionInComposedTree leftPositionOf(const VisiblePositionInComposedTree& visiblePosition)
+VisiblePositionInFlatTree leftPositionOf(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return leftPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
+    return leftPositionOfAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>
@@ -3263,9 +3263,9 @@ VisiblePosition rightPositionOf(const VisiblePosition& visiblePosition)
     return rightPositionOfAlgorithm<EditingStrategy>(visiblePosition);
 }
 
-VisiblePositionInComposedTree rightPositionOf(const VisiblePositionInComposedTree& visiblePosition)
+VisiblePositionInFlatTree rightPositionOf(const VisiblePositionInFlatTree& visiblePosition)
 {
-    return rightPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition);
+    return rightPositionOfAlgorithm<EditingInFlatTreeStrategy>(visiblePosition);
 }
 
 template <typename Strategy>
@@ -3290,9 +3290,9 @@ VisiblePosition nextPositionOf(const VisiblePosition& visiblePosition, EditingBo
     return nextPositionOfAlgorithm<EditingStrategy>(visiblePosition, rule);
 }
 
-VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree& visiblePosition, EditingBoundaryCrossingRule rule)
+VisiblePositionInFlatTree nextPositionOf(const VisiblePositionInFlatTree& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    return nextPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition, rule);
+    return nextPositionOfAlgorithm<EditingInFlatTreeStrategy>(visiblePosition, rule);
 }
 
 template <typename Strategy>
@@ -3353,9 +3353,9 @@ VisiblePosition previousPositionOf(const VisiblePosition& visiblePosition, Editi
     return previousPositionOfAlgorithm<EditingStrategy>(visiblePosition, rule);
 }
 
-VisiblePositionInComposedTree previousPositionOf(const VisiblePositionInComposedTree& visiblePosition, EditingBoundaryCrossingRule rule)
+VisiblePositionInFlatTree previousPositionOf(const VisiblePositionInFlatTree& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    return previousPositionOfAlgorithm<EditingInComposedTreeStrategy>(visiblePosition, rule);
+    return previousPositionOfAlgorithm<EditingInFlatTreeStrategy>(visiblePosition, rule);
 }
 
 } // namespace blink

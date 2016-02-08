@@ -197,6 +197,6 @@ EphemeralRange calculateCharacterSubrange(const EphemeralRange& range, int chara
 }
 
 template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink

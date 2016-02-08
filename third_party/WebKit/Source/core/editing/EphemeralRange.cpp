@@ -145,6 +145,6 @@ PassRefPtrWillBeRawPtr<Range> createRange(const EphemeralRange& range)
 }
 
 template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT EphemeralRangeTemplate<EditingInFlatTreeStrategy>;
 
 } // namespace blink

@@ -1186,7 +1186,7 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame, bool ig
         return WebRect();
 
     // Find the block type node based on the hit node.
-    // FIXME: This wants to walk composed tree with LayoutTreeBuilderTraversal::parent().
+    // FIXME: This wants to walk flat tree with LayoutTreeBuilderTraversal::parent().
     while (node && (!node->layoutObject() || node->layoutObject()->isInline()))
         node = LayoutTreeBuilderTraversal::parent(*node);
 

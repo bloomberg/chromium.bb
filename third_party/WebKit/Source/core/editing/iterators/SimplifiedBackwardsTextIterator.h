@@ -132,7 +132,7 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 using SimplifiedBackwardsTextIterator = SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 

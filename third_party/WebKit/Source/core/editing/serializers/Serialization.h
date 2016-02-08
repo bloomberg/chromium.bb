@@ -68,7 +68,7 @@ void replaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 CORE_EXPORT String createMarkup(const Node*, EChildrenOnly = IncludeNode, EAbsoluteURLs = DoNotResolveURLs);
 
 CORE_EXPORT String createMarkup(const Position& start, const Position& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
-CORE_EXPORT String createMarkup(const PositionInComposedTree& start, const PositionInComposedTree& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+CORE_EXPORT String createMarkup(const PositionInFlatTree& start, const PositionInFlatTree& end, EAnnotateForInterchange = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 
 String urlToMarkup(const KURL&, const String& title);
 void mergeWithNextTextNode(Text*, ExceptionState&);

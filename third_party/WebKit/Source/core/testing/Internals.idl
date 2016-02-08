@@ -83,11 +83,11 @@
     // animation update for CSS and advance the SMIL timeline by one frame.
     [RaisesException] void advanceImageAnimation(Element image);
 
-    [RaisesException] Node nextSiblingInComposedTree(Node node);
-    [RaisesException] Node firstChildInComposedTree(Node node);
-    [RaisesException] Node lastChildInComposedTree(Node node);
-    [RaisesException] Node nextInComposedTree(Node node);
-    [RaisesException] Node previousInComposedTree(Node node);
+    [RaisesException] Node nextSiblingInFlatTree(Node node);
+    [RaisesException] Node firstChildInFlatTree(Node node);
+    [RaisesException] Node lastChildInFlatTree(Node node);
+    [RaisesException] Node nextInFlatTree(Node node);
+    [RaisesException] Node previousInFlatTree(Node node);
 
     DOMString visiblePlaceholder(Element element);
 

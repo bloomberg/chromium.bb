@@ -71,7 +71,7 @@ RenderedPosition::RenderedPosition(const VisiblePosition& position)
 {
 }
 
-RenderedPosition::RenderedPosition(const VisiblePositionInComposedTree& position)
+RenderedPosition::RenderedPosition(const VisiblePositionInFlatTree& position)
     : RenderedPosition(position.deepEquivalent(), position.affinity())
 {
 }
@@ -94,7 +94,7 @@ RenderedPosition::RenderedPosition(const Position& position, TextAffinity affini
         m_layoutObject = layoutObjectFromPosition(position);
 }
 
-RenderedPosition::RenderedPosition(const PositionInComposedTree& position, TextAffinity affinity)
+RenderedPosition::RenderedPosition(const PositionInFlatTree& position, TextAffinity affinity)
     : RenderedPosition(toPositionInDOMTree(position), affinity)
 {
 }

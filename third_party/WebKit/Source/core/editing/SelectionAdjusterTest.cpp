@@ -33,21 +33,21 @@ private:
 class SelectionAdjusterTest : public EditingTestBase  {
 };
 
-TEST_F(SelectionAdjusterTest, adjustSelectionInComposedTree)
+TEST_F(SelectionAdjusterTest, adjustSelectionInFlatTree)
 {
     setBodyContent("<div id=sample>foo</div>");
     MockVisibleSelectionChangeObserver selectionObserver;
-    VisibleSelectionInComposedTree selectionInComposedTree;
-    selectionInComposedTree.setChangeObserver(selectionObserver);
+    VisibleSelectionInFlatTree selectionInFlatTree;
+    selectionInFlatTree.setChangeObserver(selectionObserver);
 
     Node* const sample = document().getElementById("sample");
     Node* const foo = sample->firstChild();
     // Select "foo"
     VisibleSelection selection(Position(foo, 0), Position(foo, 3));
-    SelectionAdjuster::adjustSelectionInComposedTree(&selectionInComposedTree, selection);
-    EXPECT_EQ(PositionInComposedTree(foo, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(foo, 3), selectionInComposedTree.end());
-    EXPECT_EQ(1, selectionObserver.callCounter()) << "adjustSelectionInComposedTree() should call didChangeVisibleSelection()";
+    SelectionAdjuster::adjustSelectionInFlatTree(&selectionInFlatTree, selection);
+    EXPECT_EQ(PositionInFlatTree(foo, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(foo, 3), selectionInFlatTree.end());
+    EXPECT_EQ(1, selectionObserver.callCounter()) << "adjustSelectionInFlatTree() should call didChangeVisibleSelection()";
 }
 
 TEST_F(SelectionAdjusterTest, adjustSelectionInDOMTree)
@@ -60,10 +60,10 @@ TEST_F(SelectionAdjusterTest, adjustSelectionInDOMTree)
     Node* const sample = document().getElementById("sample");
     Node* const foo = sample->firstChild();
     // Select "foo"
-    VisibleSelectionInComposedTree selectionInComposedTree(
-        PositionInComposedTree(foo, 0),
-        PositionInComposedTree(foo, 3));
-    SelectionAdjuster::adjustSelectionInDOMTree(&selection, selectionInComposedTree);
+    VisibleSelectionInFlatTree selectionInFlatTree(
+        PositionInFlatTree(foo, 0),
+        PositionInFlatTree(foo, 3));
+    SelectionAdjuster::adjustSelectionInDOMTree(&selection, selectionInFlatTree);
     EXPECT_EQ(Position(foo, 0), selection.start());
     EXPECT_EQ(Position(foo, 3), selection.end());
     EXPECT_EQ(1, selectionObserver.callCounter()) << "adjustSelectionInDOMTree() should call didChangeVisibleSelection()";

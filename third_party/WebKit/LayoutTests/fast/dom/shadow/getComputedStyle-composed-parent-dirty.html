@@ -7,7 +7,7 @@
 </div>
 
 <script>
-description("getComputedStyle should update style if the parent node in the composed tree needs a recalc.");
+description("getComputedStyle should update style if the parent node in the flat tree needs a recalc.");
 
 var root = document.getElementById("host").createShadowRoot();
 var wrapper = root.appendChild(document.createElement("div"));

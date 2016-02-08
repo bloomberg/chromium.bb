@@ -177,7 +177,7 @@ sandbox.appendChild(
 backgroundColorShouldBe('host1', 'rgba(0, 0, 0, 0)');
 backgroundColorShouldBe('host1/host2', 'rgb(0, 128, 0)');
 
-debug(':host-context matches based on a composed tree.');
+debug(':host-context matches based on a flat tree.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost'},
@@ -195,7 +195,7 @@ backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 
-debug(':host-context matches based on a composed tree when having multiple shadow roots.');
+debug(':host-context matches based on a flat tree when having multiple shadow roots.');
 
 sandbox.appendChild(
     createDOM('div', {'id': 'parentOfHost'},

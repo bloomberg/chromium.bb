@@ -198,7 +198,7 @@ TEST_F(TextFinderTest, FindTextInShadowDOM)
     bool wrapWithinFrame = true;
     WebRect* selectionRect = nullptr;
 
-    // TextIterator currently returns the matches in the composed treeorder, so
+    // TextIterator currently returns the matches in the flat treeorder, so
     // in this case the matches will be returned in the order of
     // <i> -> <u> -> <b>.
     ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions, wrapWithinFrame, selectionRect));
@@ -315,7 +315,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM)
     while (textFinder().scopingInProgress())
         runPendingTasks();
 
-    // TextIterator currently returns the matches in the composed tree order,
+    // TextIterator currently returns the matches in the flat tree order,
     // so in this case the matches will be returned in the order of
     // <i> -> <u> -> <b>.
     EXPECT_EQ(3, textFinder().totalMatchCount());

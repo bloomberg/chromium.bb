@@ -118,9 +118,9 @@ VisiblePosition FrameSelection::originalBase<EditingStrategy>() const
 }
 
 template <>
-VisiblePositionInComposedTree FrameSelection::originalBase<EditingInComposedTreeStrategy>() const
+VisiblePositionInFlatTree FrameSelection::originalBase<EditingInFlatTreeStrategy>() const
 {
-    return m_originalBaseInComposedTree;
+    return m_originalBaseInFlatTree;
 }
 
 // TODO(yosin): To avoid undefined symbols in clang, we explicitly
@@ -133,9 +133,9 @@ const VisibleSelection& FrameSelection::visibleSelection<EditingStrategy>() cons
 }
 
 template <>
-const VisibleSelectionInComposedTree& FrameSelection::visibleSelection<EditingInComposedTreeStrategy>() const
+const VisibleSelectionInFlatTree& FrameSelection::visibleSelection<EditingInFlatTreeStrategy>() const
 {
-    return m_selectionEditor->visibleSelection<EditingInComposedTreeStrategy>();
+    return m_selectionEditor->visibleSelection<EditingInFlatTreeStrategy>();
 }
 
 Element* FrameSelection::rootEditableElementOrDocumentElement() const
@@ -159,9 +159,9 @@ const VisibleSelection& FrameSelection::selection() const
     return visibleSelection<EditingStrategy>();
 }
 
-const VisibleSelectionInComposedTree& FrameSelection::selectionInComposedTree() const
+const VisibleSelectionInFlatTree& FrameSelection::selectionInFlatTree() const
 {
-    return visibleSelection<EditingInComposedTreeStrategy>();
+    return visibleSelection<EditingInFlatTreeStrategy>();
 }
 
 void FrameSelection::moveTo(const VisiblePosition &pos, EUserTriggered userTriggered, CursorAlignOnScroll align)
@@ -259,9 +259,9 @@ void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& 
     setNonDirectionalSelectionIfNeededAlgorithm<EditingStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
-void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInComposedTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
+void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
-    setNonDirectionalSelectionIfNeededAlgorithm<EditingInComposedTreeStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
+    setNonDirectionalSelectionIfNeededAlgorithm<EditingInFlatTreeStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
 }
 
 template <typename Strategy>
@@ -344,10 +344,10 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     // This may dispatch a synchronous focus-related events.
     selectFrameElementInParentIfFullySelected();
     notifyLayoutObjectOfSelectionChange(userTriggered);
-    // If the selections are same in the DOM tree but not in the composed tree,
+    // If the selections are same in the DOM tree but not in the flat tree,
     // don't fire events. For example, if the selection crosses shadow tree
     // boundary, selection for the DOM tree is shrunk while that for the
-    // composed tree is not. Additionally, this case occurs in some edge cases.
+    // flat tree is not. Additionally, this case occurs in some edge cases.
     // See also: editing/pasteboard/4076267-3.html
     if (oldSelection == m_selectionEditor->visibleSelection<Strategy>()) {
         m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
@@ -376,9 +376,9 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     setSelectionAlgorithm<EditingStrategy>(newSelection, options, align, granularity);
 }
 
-void FrameSelection::setSelection(const VisibleSelectionInComposedTree& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
+void FrameSelection::setSelection(const VisibleSelectionInFlatTree& newSelection, SetSelectionOptions options, CursorAlignOnScroll align, TextGranularity granularity)
 {
-    setSelectionAlgorithm<EditingInComposedTreeStrategy>(newSelection, options, align, granularity);
+    setSelectionAlgorithm<EditingInFlatTreeStrategy>(newSelection, options, align, granularity);
 }
 
 static bool removingNodeRemovesPosition(Node& node, const Position& position)
@@ -766,8 +766,8 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
 
 bool FrameSelection::contains(const LayoutPoint& point)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return containsAlgorithm<EditingInComposedTreeStrategy>(point);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return containsAlgorithm<EditingInFlatTreeStrategy>(point);
     return containsAlgorithm<EditingStrategy>(point);
 }
 
@@ -1132,8 +1132,8 @@ String extractSelectedTextAlgorithm(const FrameSelection& selection, TextIterato
 
 static String extractSelectedText(const FrameSelection& selection, TextIteratorBehavior behavior)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return extractSelectedTextAlgorithm<EditingInComposedTreeStrategy>(selection, behavior);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return extractSelectedTextAlgorithm<EditingInFlatTreeStrategy>(selection, behavior);
     return extractSelectedTextAlgorithm<EditingStrategy>(selection, behavior);
 }
 
@@ -1147,9 +1147,9 @@ static String extractSelectedHTMLAlgorithm(const FrameSelection& selection)
 
 String FrameSelection::selectedHTMLForClipboard() const
 {
-    if (!RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
+    if (!RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
         return extractSelectedHTMLAlgorithm<EditingStrategy>(*this);
-    return extractSelectedHTMLAlgorithm<EditingInComposedTreeStrategy>(*this);
+    return extractSelectedHTMLAlgorithm<EditingInFlatTreeStrategy>(*this);
 }
 
 String FrameSelection::selectedText(TextIteratorBehavior behavior) const
@@ -1327,7 +1327,7 @@ DEFINE_TRACE(FrameSelection)
     visitor->trace(m_pendingSelection);
     visitor->trace(m_selectionEditor);
     visitor->trace(m_originalBase);
-    visitor->trace(m_originalBaseInComposedTree);
+    visitor->trace(m_originalBaseInFlatTree);
     visitor->trace(m_previousCaretNode);
     visitor->trace(m_typingStyle);
 }

@@ -86,10 +86,10 @@ private:
 };
 
 extern template class PositionIteratorAlgorithm<EditingStrategy>;
-extern template class PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
+extern template class PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 using PositionIterator = PositionIteratorAlgorithm<EditingStrategy>;
-using PositionIteratorInComposedTree = PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
+using PositionIteratorInFlatTree = PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink
 

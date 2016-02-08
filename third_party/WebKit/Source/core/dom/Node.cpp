@@ -54,8 +54,8 @@
 #include "core/dom/Text.h"
 #include "core/dom/TreeScopeAdopter.h"
 #include "core/dom/UserActionElementSet.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/EditingUtilities.h"
@@ -760,7 +760,7 @@ bool Node::shouldHaveFocusAppearance() const
 bool Node::isInert() const
 {
     const HTMLDialogElement* dialog = document().activeModalDialog();
-    if (dialog && this != document() && (!canParticipateInComposedTree() || !ComposedTreeTraversal::containsIncludingPseudoElement(*dialog, *this)))
+    if (dialog && this != document() && (!canParticipateInFlatTree() || !FlatTreeTraversal::containsIncludingPseudoElement(*dialog, *this)))
         return true;
     return document().ownerElement() && document().ownerElement()->isInert();
 }
@@ -963,11 +963,11 @@ bool Node::canStartSelection() const
         if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)
             return false;
     }
-    ContainerNode* parent = ComposedTreeTraversal::parent(*this);
+    ContainerNode* parent = FlatTreeTraversal::parent(*this);
     return parent ? parent->canStartSelection() : true;
 }
 
-bool Node::canParticipateInComposedTree() const
+bool Node::canParticipateInFlatTree() const
 {
     return !isShadowRoot() && !isSlotOrActiveInsertionPoint();
 }
@@ -1565,9 +1565,9 @@ void Node::showTreeForThis() const
     showTreeAndMark(this, "*");
 }
 
-void Node::showTreeForThisInComposedTree() const
+void Node::showTreeForThisInFlatTree() const
 {
-    showTreeAndMarkInComposedTree(this, "*");
+    showTreeAndMarkInFlatTree(this, "*");
 }
 
 void Node::showNodePathForThis() const
@@ -1659,9 +1659,9 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
     }
 }
 
-static void traverseTreeAndMarkInComposedTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
+static void traverseTreeAndMarkInFlatTree(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
 {
-    for (const Node* node = rootNode; node; node = ComposedTreeTraversal::nextSibling(*node)) {
+    for (const Node* node = rootNode; node; node = FlatTreeTraversal::nextSibling(*node)) {
         StringBuilder indent;
         if (node == markedNode1)
             indent.append(markedLabel1);
@@ -1671,9 +1671,9 @@ static void traverseTreeAndMarkInComposedTree(const String& baseIndent, const No
         node->showNode(indent.toString().utf8().data());
         indent.append('\t');
 
-        Node* child = ComposedTreeTraversal::firstChild(*node);
+        Node* child = FlatTreeTraversal::firstChild(*node);
         if (child)
-            traverseTreeAndMarkInComposedTree(indent.toString(), child, markedNode1, markedLabel1, markedNode2, markedLabel2);
+            traverseTreeAndMarkInFlatTree(indent.toString(), child, markedNode1, markedLabel1, markedNode2, markedLabel2);
     }
 }
 
@@ -1689,7 +1689,7 @@ void Node::showTreeAndMark(const Node* markedNode1, const char* markedLabel1, co
     traverseTreeAndMark(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
 }
 
-void Node::showTreeAndMarkInComposedTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
+void Node::showTreeAndMarkInFlatTree(const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2) const
 {
     const Node* rootNode;
     const Node* node = this;
@@ -1698,7 +1698,7 @@ void Node::showTreeAndMarkInComposedTree(const Node* markedNode1, const char* ma
     rootNode = node;
 
     String startingIndent;
-    traverseTreeAndMarkInComposedTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
+    traverseTreeAndMarkInFlatTree(startingIndent, rootNode, markedNode1, markedLabel1, markedNode2, markedLabel2);
 }
 
 void Node::formatForDebugger(char* buffer, unsigned length) const
@@ -1757,7 +1757,7 @@ void Node::showTreeForThisAcrossFrame() const
 Element* Node::enclosingLinkEventParentOrSelf() const
 {
     const Node* result = nullptr;
-    for (const Node* node = this; node; node = ComposedTreeTraversal::parent(*node)) {
+    for (const Node* node = this; node; node = FlatTreeTraversal::parent(*node)) {
         // For imagemaps, the enclosing link node is the associated area element not the image itself.
         // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
         // for them.

@@ -449,9 +449,9 @@ EphemeralRange findPlainText(const EphemeralRange& inputRange, const String& tar
     return findPlainTextAlgorithm<EditingStrategy>(inputRange, target, options);
 }
 
-EphemeralRangeInComposedTree findPlainText(const EphemeralRangeInComposedTree& inputRange, const String& target, FindOptions options)
+EphemeralRangeInFlatTree findPlainText(const EphemeralRangeInFlatTree& inputRange, const String& target, FindOptions options)
 {
-    return findPlainTextAlgorithm<EditingInComposedTreeStrategy>(inputRange, target, options);
+    return findPlainTextAlgorithm<EditingInFlatTreeStrategy>(inputRange, target, options);
 }
 
 } // namespace blink

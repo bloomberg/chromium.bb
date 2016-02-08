@@ -33,6 +33,6 @@ bool PositionWithAffinityTemplate<Strategy>::operator==(const PositionWithAffini
 }
 
 template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT PositionWithAffinityTemplate<EditingInFlatTreeStrategy>;
 
 } // namespace blink

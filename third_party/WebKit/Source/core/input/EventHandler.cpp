@@ -35,7 +35,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/TouchList.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
@@ -527,7 +527,7 @@ WebInputEventResult EventHandler::handleMouseDraggedEvent(const MouseEventWithHi
 
     LayoutObject* layoutObject = targetNode->layoutObject();
     if (!layoutObject) {
-        Node* parent = ComposedTreeTraversal::parent(*targetNode);
+        Node* parent = FlatTreeTraversal::parent(*targetNode);
         if (!parent)
             return WebInputEventResult::NotHandled;
 
@@ -1054,7 +1054,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
 #endif
 
     m_clickCount = mouseEvent.clickCount();
-    m_clickNode = mev.innerNode()->isTextNode() ?  ComposedTreeTraversal::parent(*mev.innerNode()) : mev.innerNode();
+    m_clickNode = mev.innerNode()->isTextNode() ?  FlatTreeTraversal::parent(*mev.innerNode()) : mev.innerNode();
 
     m_frame->selection().setCaretBlinkingSuspended(true);
 
@@ -1307,7 +1307,7 @@ static ContainerNode* parentForClickEvent(const Node& node)
     if (node.isHTMLElement() && toHTMLElement(node).isInteractiveContent())
         return nullptr;
 
-    return ComposedTreeTraversal::parent(node);
+    return FlatTreeTraversal::parent(node);
 }
 
 WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
@@ -1373,7 +1373,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 #endif
 
     WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
-    if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode && mev.innerNode()->canParticipateInComposedTree() && m_clickNode->canParticipateInComposedTree()) {
+    if (m_clickCount > 0 && !contextMenuEvent && mev.innerNode() && m_clickNode && mev.innerNode()->canParticipateInFlatTree() && m_clickNode->canParticipateInFlatTree()) {
         // Updates distribution because a 'mouseup' event listener can make the
         // tree dirty at dispatchMouseEvent() invocation above.
         // Unless distribution is updated, commonAncestor would hit ASSERT.
@@ -1491,7 +1491,7 @@ WebInputEventResult EventHandler::updateDragAndDrop(const PlatformMouseEvent& ev
     // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
     RefPtrWillBeRawPtr<Node> newTarget = mev.innerNode();
     if (newTarget && newTarget->isTextNode())
-        newTarget = ComposedTreeTraversal::parent(*newTarget);
+        newTarget = FlatTreeTraversal::parent(*newTarget);
 
     if (AutoscrollController* controller = autoscrollController())
         controller->updateDragAndDrop(newTarget.get(), event.position(), event.timestamp());
@@ -1611,7 +1611,7 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
     } else {
         // If the target node is a text node, dispatch on the parent node - rdar://4196646
         if (result && result->isTextNode())
-            result = ComposedTreeTraversal::parent(*result);
+            result = FlatTreeTraversal::parent(*result);
     }
     RefPtrWillBeMember<Node> lastNodeUnderMouse = m_nodeUnderMouse;
     m_nodeUnderMouse = result;
@@ -1691,13 +1691,13 @@ void EventHandler::sendNodeTransitionEvents(Node* exitedNode, Node* enteredNode,
     WillBeHeapVector<RefPtrWillBeMember<Node>, 32> enteredAncestors;
     if (isNodeInDocument(exitedNode)) {
         exitedNode->updateDistribution();
-        for (Node* node = exitedNode; node; node = ComposedTreeTraversal::parent(*node)) {
+        for (Node* node = exitedNode; node; node = FlatTreeTraversal::parent(*node)) {
             exitedAncestors.append(node);
         }
     }
     if (isNodeInDocument(enteredNode)) {
         enteredNode->updateDistribution();
-        for (Node* node = enteredNode; node; node = ComposedTreeTraversal::parent(*node)) {
+        for (Node* node = enteredNode; node; node = FlatTreeTraversal::parent(*node)) {
             enteredAncestors.append(node);
         }
     }
@@ -1976,7 +1976,7 @@ WebInputEventResult EventHandler::handleWheelEvent(const PlatformWheelEvent& eve
     Node* node = result.innerNode();
     // Wheel events should not dispatch to text nodes.
     if (node && node->isTextNode())
-        node = ComposedTreeTraversal::parent(*node);
+        node = FlatTreeTraversal::parent(*node);
 
     if (m_previousWheelScrolledNode)
         m_previousWheelScrolledNode = nullptr;
@@ -2278,7 +2278,7 @@ WebInputEventResult EventHandler::handleGestureTap(const GestureEventWithHitTest
     IntPoint tappedPosition = gestureEvent.position();
 
     if (m_clickNode && m_clickNode->isTextNode())
-        m_clickNode = ComposedTreeTraversal::parent(*m_clickNode);
+        m_clickNode = FlatTreeTraversal::parent(*m_clickNode);
 
     PlatformMouseEvent fakeMouseDown(gestureEvent.position(), gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MousePressed, gestureEvent.tapCount(),
@@ -3979,7 +3979,7 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
 
             // Touch events should not go to text nodes
             if (node->isTextNode())
-                node = ComposedTreeTraversal::parent(*node);
+                node = FlatTreeTraversal::parent(*node);
 
             if (!m_touchSequenceDocument) {
                 // Keep track of which document should receive all touch events

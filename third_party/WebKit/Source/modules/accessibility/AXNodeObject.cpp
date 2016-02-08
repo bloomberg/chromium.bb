@@ -32,7 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -332,7 +332,7 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
         return DetailsRole;
 
     if (isHTMLSummaryElement(*node())) {
-        ContainerNode* parent = ComposedTreeTraversal::parent(*node());
+        ContainerNode* parent = FlatTreeTraversal::parent(*node());
         if (parent && isHTMLDetailsElement(parent))
             return DisclosureTriangleRole;
         return UnknownRole;

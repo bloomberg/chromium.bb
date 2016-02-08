@@ -86,7 +86,7 @@ std::ostream& operator<<(std::ostream& ostream, const Position& position)
     return printPosition(ostream, position);
 }
 
-std::ostream& operator<<(std::ostream& ostream, const PositionInComposedTree& position)
+std::ostream& operator<<(std::ostream& ostream, const PositionInFlatTree& position)
 {
     return printPosition(ostream, position);
 }

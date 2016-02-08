@@ -342,7 +342,7 @@ borderColorShouldNotBe('inner/target', 'rgb(255, 0, 0)');
 
 cleanUp();
 
-// :host /deep/ span is declared in a shadow tree, but the shadow root does not participate in composed tree.
+// :host /deep/ span is declared in a shadow tree, but the shadow root does not participate in flat tree.
 
 sandbox.appendChild(
     createDOM('div', {'id': 'host'},

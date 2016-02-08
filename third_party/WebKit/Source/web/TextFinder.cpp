@@ -399,8 +399,8 @@ void TextFinder::scopeStringMatchesAlgorithm(int identifier, const WebString& se
 
 void TextFinder::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return scopeStringMatchesAlgorithm<EditingInComposedTreeStrategy>(identifier, searchText, options, reset);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return scopeStringMatchesAlgorithm<EditingInFlatTreeStrategy>(identifier, searchText, options, reset);
     scopeStringMatchesAlgorithm<EditingStrategy>(identifier, searchText, options, reset);
 }
 

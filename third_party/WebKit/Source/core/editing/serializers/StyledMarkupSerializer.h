@@ -60,7 +60,7 @@ private:
 };
 
 extern template class StyledMarkupSerializer<EditingStrategy>;
-extern template class StyledMarkupSerializer<EditingInComposedTreeStrategy>;
+extern template class StyledMarkupSerializer<EditingInFlatTreeStrategy>;
 
 } // namespace blink
 

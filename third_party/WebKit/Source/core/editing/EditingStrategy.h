@@ -7,7 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -39,12 +39,12 @@ public:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT EditingAlgorithm<NodeTraversal>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT EditingAlgorithm<ComposedTreeTraversal>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT EditingAlgorithm<FlatTreeTraversal>;
 
 // DOM tree version of editing algorithm
 using EditingStrategy = EditingAlgorithm<NodeTraversal>;
-// Composed tree version of editing algorithm
-using EditingInComposedTreeStrategy = EditingAlgorithm<ComposedTreeTraversal>;
+// Flat tree version of editing algorithm
+using EditingInFlatTreeStrategy = EditingAlgorithm<FlatTreeTraversal>;
 
 } // namespace blink
 

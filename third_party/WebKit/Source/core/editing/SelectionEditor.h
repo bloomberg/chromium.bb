@@ -59,7 +59,7 @@ public:
     template <typename Strategy>
     const VisibleSelectionTemplate<Strategy>& visibleSelection() const;
     void setVisibleSelection(const VisibleSelection&, FrameSelection::SetSelectionOptions);
-    void setVisibleSelection(const VisibleSelectionInComposedTree&, FrameSelection::SetSelectionOptions);
+    void setVisibleSelection(const VisibleSelectionInFlatTree&, FrameSelection::SetSelectionOptions);
 
     void setIsDirectional(bool);
     void setWithoutValidation(const Position& base, const Position& extent);
@@ -76,7 +76,7 @@ public:
     // VisibleSelectionChangeObserver interface.
     void didChangeVisibleSelection() override;
 
-    // Updates |m_selection| and |m_selectionInComposedTree| with up-to-date
+    // Updates |m_selection| and |m_selectionInFlatTree| with up-to-date
     // layout if needed.
     void updateIfNeeded();
 
@@ -90,7 +90,7 @@ private:
 
     LocalFrame* frame() const;
 
-    void adjustVisibleSelectionInComposedTree();
+    void adjustVisibleSelectionInFlatTree();
     void adjustVisibleSelectionInDOMTree();
 
     TextDirection directionOfEnclosingBlock();
@@ -120,7 +120,7 @@ private:
 
     LayoutUnit m_xPosForVerticalArrowNavigation;
     VisibleSelection m_selection;
-    VisibleSelectionInComposedTree m_selectionInComposedTree;
+    VisibleSelectionInFlatTree m_selectionInFlatTree;
     bool m_observingVisibleSelection;
 
     // The range specified by the user, which may not be visually canonicalized

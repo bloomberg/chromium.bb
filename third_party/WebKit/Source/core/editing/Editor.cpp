@@ -1209,8 +1209,8 @@ static PassRefPtrWillBeRawPtr<Range> findStringAndScrollToVisibleAlgorithm(Edito
 
 PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String& target, Range* range, FindOptions options)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return findStringAndScrollToVisibleAlgorithm<EditingInComposedTreeStrategy>(*this, target, EphemeralRangeInComposedTree(range), options);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return findStringAndScrollToVisibleAlgorithm<EditingInFlatTreeStrategy>(*this, target, EphemeralRangeInFlatTree(range), options);
     return findStringAndScrollToVisibleAlgorithm<EditingStrategy>(*this, target, EphemeralRange(range), options);
 }
 
@@ -1303,9 +1303,9 @@ PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, co
     return findRangeOfStringAlgorithm<EditingStrategy>(*frame().document(), target, reference, options);
 }
 
-PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRangeInComposedTree& reference, FindOptions options)
+PassRefPtrWillBeRawPtr<Range> Editor::findRangeOfString(const String& target, const EphemeralRangeInFlatTree& reference, FindOptions options)
 {
-    return findRangeOfStringAlgorithm<EditingInComposedTreeStrategy>(*frame().document(), target, reference, options);
+    return findRangeOfStringAlgorithm<EditingInFlatTreeStrategy>(*frame().document(), target, reference, options);
 }
 
 void Editor::setMarkedTextMatchesAreHighlighted(bool flag)

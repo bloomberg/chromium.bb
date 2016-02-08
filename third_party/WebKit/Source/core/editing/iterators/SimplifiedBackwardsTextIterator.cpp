@@ -447,7 +447,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::copyCodeUnitsTo(Backwar
 }
 
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 
 } // namespace blink

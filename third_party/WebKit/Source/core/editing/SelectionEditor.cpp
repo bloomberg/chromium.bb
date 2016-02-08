@@ -84,27 +84,27 @@ const VisibleSelection& SelectionEditor::visibleSelection<EditingStrategy>() con
 }
 
 template <>
-const VisibleSelectionInComposedTree& SelectionEditor::visibleSelection<EditingInComposedTreeStrategy>() const
+const VisibleSelectionInFlatTree& SelectionEditor::visibleSelection<EditingInFlatTreeStrategy>() const
 {
-    return m_selectionInComposedTree;
+    return m_selectionInFlatTree;
 }
 
 void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions options)
 {
     m_selection = newSelection;
-    if (options & FrameSelection::DoNotAdjustInComposedTree) {
-        m_selectionInComposedTree.setWithoutValidation(toPositionInComposedTree(m_selection.base()), toPositionInComposedTree(m_selection.extent()));
+    if (options & FrameSelection::DoNotAdjustInFlatTree) {
+        m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(m_selection.base()), toPositionInFlatTree(m_selection.extent()));
         return;
     }
 
-    SelectionAdjuster::adjustSelectionInComposedTree(&m_selectionInComposedTree, m_selection);
+    SelectionAdjuster::adjustSelectionInFlatTree(&m_selectionInFlatTree, m_selection);
 }
 
-void SelectionEditor::setVisibleSelection(const VisibleSelectionInComposedTree& newSelection, FrameSelection::SetSelectionOptions options)
+void SelectionEditor::setVisibleSelection(const VisibleSelectionInFlatTree& newSelection, FrameSelection::SetSelectionOptions options)
 {
-    ASSERT(!(options & FrameSelection::DoNotAdjustInComposedTree));
-    m_selectionInComposedTree = newSelection;
-    SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInComposedTree);
+    ASSERT(!(options & FrameSelection::DoNotAdjustInFlatTree));
+    m_selectionInFlatTree = newSelection;
+    SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInFlatTree);
 }
 
 void SelectionEditor::resetXPosForVerticalArrowNavigation()
@@ -115,13 +115,13 @@ void SelectionEditor::resetXPosForVerticalArrowNavigation()
 void SelectionEditor::setIsDirectional(bool isDirectional)
 {
     m_selection.setIsDirectional(isDirectional);
-    m_selectionInComposedTree.setIsDirectional(isDirectional);
+    m_selectionInFlatTree.setIsDirectional(isDirectional);
 }
 
 void SelectionEditor::setWithoutValidation(const Position& base, const Position& extent)
 {
     m_selection.setWithoutValidation(base, extent);
-    m_selectionInComposedTree.setWithoutValidation(toPositionInComposedTree(base), toPositionInComposedTree(extent));
+    m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(base), toPositionInFlatTree(extent));
 }
 
 TextDirection SelectionEditor::directionOfEnclosingBlock()
@@ -895,14 +895,14 @@ void SelectionEditor::stopObservingVisibleSelectionChangeIfNecessary()
 void SelectionEditor::updateIfNeeded()
 {
     m_selection.updateIfNeeded();
-    m_selectionInComposedTree.updateIfNeeded();
+    m_selectionInFlatTree.updateIfNeeded();
 }
 
 DEFINE_TRACE(SelectionEditor)
 {
     visitor->trace(m_frameSelection);
     visitor->trace(m_selection);
-    visitor->trace(m_selectionInComposedTree);
+    visitor->trace(m_selectionInFlatTree);
     visitor->trace(m_logicalRange);
     VisibleSelectionChangeObserver::trace(visitor);
 }

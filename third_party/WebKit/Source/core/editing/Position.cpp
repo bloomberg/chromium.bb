@@ -283,7 +283,7 @@ Node* PositionTemplate<Strategy>::commonAncestorContainer(const PositionTemplate
     return Strategy::commonAncestor(*computeContainerNode(), *other.computeContainerNode());
 }
 
-int comparePositions(const PositionInComposedTree& positionA, const PositionInComposedTree& positionB)
+int comparePositions(const PositionInFlatTree& positionA, const PositionInFlatTree& positionB)
 {
     ASSERT(positionA.isNotNull());
     ASSERT(positionB.isNotNull());
@@ -294,7 +294,7 @@ int comparePositions(const PositionInComposedTree& positionA, const PositionInCo
     Node* containerB = positionB.computeContainerNode();
     int offsetA = positionA.computeOffsetInContainerNode();
     int offsetB = positionB.computeOffsetInContainerNode();
-    return comparePositionsInComposedTree(containerA, offsetA, containerB, offsetB);
+    return comparePositionsInFlatTree(containerA, offsetA, containerB, offsetB);
 }
 
 template <typename Strategy>
@@ -383,40 +383,40 @@ void PositionTemplate<Strategy>::debugPosition(const char* msg) const
     fprintf(stderr, "Position [%s]: %s [%p] %s at %d\n", msg, anchorNode()->nodeName().utf8().data(), anchorNode(), anchorType, m_offset);
 }
 
-PositionInComposedTree toPositionInComposedTree(const Position& pos)
+PositionInFlatTree toPositionInFlatTree(const Position& pos)
 {
     if (pos.isNull())
-        return PositionInComposedTree();
+        return PositionInFlatTree();
 
     if (pos.isOffsetInAnchor()) {
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
-            return PositionInComposedTree(anchor, pos.computeOffsetInContainerNode());
+            return PositionInFlatTree(anchor, pos.computeOffsetInContainerNode());
         ASSERT(!anchor->isSlotOrActiveInsertionPoint());
         int offset = pos.computeOffsetInContainerNode();
         Node* child = NodeTraversal::childAt(*anchor, offset);
         if (!child) {
             if (anchor->isShadowRoot())
-                return PositionInComposedTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
-            return PositionInComposedTree(anchor, PositionAnchorType::AfterChildren);
+                return PositionInFlatTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
+            return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
         }
         child->updateDistribution();
         if (child->isSlotOrActiveInsertionPoint()) {
             if (anchor->isShadowRoot())
-                return PositionInComposedTree(anchor->shadowHost(), offset);
-            return PositionInComposedTree(anchor, offset);
+                return PositionInFlatTree(anchor->shadowHost(), offset);
+            return PositionInFlatTree(anchor, offset);
         }
-        if (Node* parent = ComposedTreeTraversal::parent(*child))
-            return PositionInComposedTree(parent, ComposedTreeTraversal::index(*child));
-        // When |pos| isn't appeared in composed tree, we map |pos| to after
+        if (Node* parent = FlatTreeTraversal::parent(*child))
+            return PositionInFlatTree(parent, FlatTreeTraversal::index(*child));
+        // When |pos| isn't appeared in flat tree, we map |pos| to after
         // children of shadow host.
         // e.g. "foo",0 in <progress>foo</progress>
         if (anchor->isShadowRoot())
-            return PositionInComposedTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
-        return PositionInComposedTree(anchor, PositionAnchorType::AfterChildren);
+            return PositionInFlatTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
+        return PositionInFlatTree(anchor, PositionAnchorType::AfterChildren);
     }
 
-    return PositionInComposedTree(pos.anchorNode(), pos.anchorType());
+    return PositionInFlatTree(pos.anchorNode(), pos.anchorType());
 }
 
 Position toPositionInDOMTree(const Position& position)
@@ -424,7 +424,7 @@ Position toPositionInDOMTree(const Position& position)
     return position;
 }
 
-Position toPositionInDOMTree(const PositionInComposedTree& position)
+Position toPositionInDOMTree(const PositionInFlatTree& position)
 {
     if (position.isNull())
         return Position();
@@ -445,7 +445,7 @@ Position toPositionInDOMTree(const PositionInComposedTree& position)
         int offset = position.offsetInContainerNode();
         if (anchorNode->offsetInCharacters())
             return Position(anchorNode, offset);
-        Node* child = ComposedTreeTraversal::childAt(*anchorNode, offset);
+        Node* child = FlatTreeTraversal::childAt(*anchorNode, offset);
         if (child)
             return Position(child->parentNode(), child->nodeIndex());
         if (!position.offsetInContainerNode())
@@ -515,18 +515,18 @@ void PositionTemplate<Strategy>::showTreeForThis() const
 }
 
 template <typename Strategy>
-void PositionTemplate<Strategy>::showTreeForThisInComposedTree() const
+void PositionTemplate<Strategy>::showTreeForThisInFlatTree() const
 {
     if (!anchorNode())
         return;
-    anchorNode()->showTreeForThisInComposedTree();
+    anchorNode()->showTreeForThisInFlatTree();
     showAnchorTypeAndOffset();
 }
 
 #endif
 
 template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT PositionTemplate<EditingInFlatTreeStrategy>;
 
 } // namespace blink
 

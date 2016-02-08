@@ -111,20 +111,20 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 using VisiblePosition = VisiblePositionTemplate<EditingStrategy>;
-using VisiblePositionInComposedTree = VisiblePositionTemplate<EditingInComposedTreeStrategy>;
+using VisiblePositionInFlatTree = VisiblePositionTemplate<EditingInFlatTreeStrategy>;
 
 CORE_EXPORT VisiblePosition createVisiblePosition(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
 CORE_EXPORT VisiblePosition createVisiblePosition(const PositionWithAffinity&);
-CORE_EXPORT VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
-CORE_EXPORT VisiblePositionInComposedTree createVisiblePosition(const PositionInComposedTreeWithAffinity&);
+CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+CORE_EXPORT VisiblePositionInFlatTree createVisiblePosition(const PositionInFlatTreeWithAffinity&);
 
-// TODO(yosin) Once we have composed tree version of VisibleUnits, we should not
+// TODO(yosin) Once we have flat tree version of VisibleUnits, we should not
 // use |createVisiblePositionInDOMTree()|.
 VisiblePosition createVisiblePositionInDOMTree(const Position&, TextAffinity = VP_DEFAULT_AFFINITY);
-VisiblePosition createVisiblePositionInDOMTree(const PositionInComposedTree&, TextAffinity = VP_DEFAULT_AFFINITY);
+VisiblePosition createVisiblePositionInDOMTree(const PositionInFlatTree&, TextAffinity = VP_DEFAULT_AFFINITY);
 
 } // namespace blink
 

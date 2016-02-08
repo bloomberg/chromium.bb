@@ -14,7 +14,7 @@ class PositionTest : public EditingTestBase {
 TEST_F(PositionTest, NodeAsRangeLastNodeNull)
 {
     EXPECT_EQ(nullptr, Position().nodeAsRangeLastNode());
-    EXPECT_EQ(nullptr, PositionInComposedTree().nodeAsRangeLastNode());
+    EXPECT_EQ(nullptr, PositionInFlatTree().nodeAsRangeLastNode());
 }
 
 TEST_F(PositionTest, editingPositionOfWithEditingIgnoresContent)
@@ -59,13 +59,13 @@ TEST_F(PositionTest, NodeAsRangeLastNode)
     EXPECT_EQ(t3, Position::inParentAfterNode(*p3).nodeAsRangeLastNode());
     EXPECT_EQ(t3, Position::afterNode(p3).nodeAsRangeLastNode());
 
-    EXPECT_EQ(body, PositionInComposedTree::inParentBeforeNode(*p1).nodeAsRangeLastNode());
-    EXPECT_EQ(t1, PositionInComposedTree::inParentBeforeNode(*p2).nodeAsRangeLastNode());
-    EXPECT_EQ(p2, PositionInComposedTree::inParentBeforeNode(*p3).nodeAsRangeLastNode());
-    EXPECT_EQ(t1, PositionInComposedTree::inParentAfterNode(*p1).nodeAsRangeLastNode());
-    EXPECT_EQ(p2, PositionInComposedTree::inParentAfterNode(*p2).nodeAsRangeLastNode());
-    EXPECT_EQ(t3, PositionInComposedTree::inParentAfterNode(*p3).nodeAsRangeLastNode());
-    EXPECT_EQ(t3, PositionInComposedTree::afterNode(p3).nodeAsRangeLastNode());
+    EXPECT_EQ(body, PositionInFlatTree::inParentBeforeNode(*p1).nodeAsRangeLastNode());
+    EXPECT_EQ(t1, PositionInFlatTree::inParentBeforeNode(*p2).nodeAsRangeLastNode());
+    EXPECT_EQ(p2, PositionInFlatTree::inParentBeforeNode(*p3).nodeAsRangeLastNode());
+    EXPECT_EQ(t1, PositionInFlatTree::inParentAfterNode(*p1).nodeAsRangeLastNode());
+    EXPECT_EQ(p2, PositionInFlatTree::inParentAfterNode(*p2).nodeAsRangeLastNode());
+    EXPECT_EQ(t3, PositionInFlatTree::inParentAfterNode(*p3).nodeAsRangeLastNode());
+    EXPECT_EQ(t3, PositionInFlatTree::afterNode(p3).nodeAsRangeLastNode());
 }
 
 TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
@@ -90,14 +90,14 @@ TEST_F(PositionTest, NodeAsRangeLastNodeShadow)
     EXPECT_EQ(t2, Position::inParentAfterNode(*n2).nodeAsRangeLastNode());
     EXPECT_EQ(t3, Position::afterNode(host).nodeAsRangeLastNode());
 
-    EXPECT_EQ(t2, PositionInComposedTree::inParentBeforeNode(*n1).nodeAsRangeLastNode());
-    EXPECT_EQ(a, PositionInComposedTree::inParentBeforeNode(*n2).nodeAsRangeLastNode());
-    EXPECT_EQ(t1, PositionInComposedTree::inParentAfterNode(*n1).nodeAsRangeLastNode());
-    EXPECT_EQ(t2, PositionInComposedTree::inParentAfterNode(*n2).nodeAsRangeLastNode());
-    EXPECT_EQ(t1, PositionInComposedTree::afterNode(host).nodeAsRangeLastNode());
+    EXPECT_EQ(t2, PositionInFlatTree::inParentBeforeNode(*n1).nodeAsRangeLastNode());
+    EXPECT_EQ(a, PositionInFlatTree::inParentBeforeNode(*n2).nodeAsRangeLastNode());
+    EXPECT_EQ(t1, PositionInFlatTree::inParentAfterNode(*n1).nodeAsRangeLastNode());
+    EXPECT_EQ(t2, PositionInFlatTree::inParentAfterNode(*n2).nodeAsRangeLastNode());
+    EXPECT_EQ(t1, PositionInFlatTree::afterNode(host).nodeAsRangeLastNode());
 }
 
-TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
+TEST_F(PositionTest, ToPositionInFlatTreeWithActiveInsertionPoint)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<a id='a'><content select=#one id='content'></content><content></content></a>";
@@ -105,31 +105,31 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithActiveInsertionPoint)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     RefPtrWillBeRawPtr<Element> anchor = shadowRoot->getElementById("a");
 
-    EXPECT_EQ(PositionInComposedTree(anchor.get(), 0), toPositionInComposedTree(Position(anchor.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(anchor.get(), 1), toPositionInComposedTree(Position(anchor.get(), 1)));
-    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(anchor.get(), 2)));
+    EXPECT_EQ(PositionInFlatTree(anchor.get(), 0), toPositionInFlatTree(Position(anchor.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(anchor.get(), 1), toPositionInFlatTree(Position(anchor.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor.get(), 2)));
 }
 
-TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
+TEST_F(PositionTest, ToPositionInFlatTreeWithInactiveInsertionPoint)
 {
     const char* bodyContent = "<p id='p'><content></content></p>";
     setBodyContent(bodyContent);
     RefPtrWillBeRawPtr<Element> anchor = document().getElementById("p");
 
-    EXPECT_EQ(PositionInComposedTree(anchor.get(), 0), toPositionInComposedTree(Position(anchor.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(anchor.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(anchor.get(), 0), toPositionInFlatTree(Position(anchor.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(anchor, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(anchor.get(), 1)));
 }
 
 // This test comes from "editing/style/block-style-progress-crash.html".
-TEST_F(PositionTest, ToPositionInComposedTreeWithNotDistributed)
+TEST_F(PositionTest, ToPositionInFlatTreeWithNotDistributed)
 {
     setBodyContent("<progress id=sample>foo</progress>");
     Element* sample = document().getElementById("sample");
 
-    EXPECT_EQ(PositionInComposedTree(sample, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(sample, 0)));
+    EXPECT_EQ(PositionInFlatTree(sample, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(sample, 0)));
 }
 
-TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
+TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRoot)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<a><content select=#one></content></a>";
@@ -137,11 +137,11 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInComposedTree(host.get(), 0), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(host.get(), PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(host.get(), 0), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(host.get(), PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 1)));
 }
 
-TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRootContainingSingleContent)
+TEST_F(PositionTest, ToPositionInFlatTreeWithShadowRootContainingSingleContent)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "<content select=#one></content>";
@@ -149,11 +149,11 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRootContainingSingleConte
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInComposedTree(host.get(), 0), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(host.get(), PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 1)));
+    EXPECT_EQ(PositionInFlatTree(host.get(), 0), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(host.get(), PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 1)));
 }
 
-TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
+TEST_F(PositionTest, ToPositionInFlatTreeWithEmptyShadowRoot)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";
     const char* shadowContent = "";
@@ -161,7 +161,7 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithEmptyShadowRoot)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     RefPtrWillBeRawPtr<Element> host = document().getElementById("host");
 
-    EXPECT_EQ(PositionInComposedTree(host, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(shadowRoot.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(host, PositionAnchorType::AfterChildren), toPositionInFlatTree(Position(shadowRoot.get(), 0)));
 }
 
 } // namespace blink

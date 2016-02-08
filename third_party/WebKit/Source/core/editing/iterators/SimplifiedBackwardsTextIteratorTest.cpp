@@ -39,7 +39,7 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, SubrangeWithReplacedElements)
     // general. To record current behavior, we have this test. even if it
     // isn't intuitive.
     EXPECT_EQ("onetwo", extractString<EditingStrategy>(*host));
-    EXPECT_EQ("three two one zero", extractString<EditingInComposedTreeStrategy>(*host));
+    EXPECT_EQ("three two one zero", extractString<EditingInFlatTreeStrategy>(*host));
 }
 
 TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt)
@@ -63,8 +63,8 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, characterAt)
     EXPECT_EQ('n', backIter1.characterAt(1)) << message1;
     EXPECT_EQ('o', backIter1.characterAt(2)) << message1;
 
-    EphemeralRangeTemplate<EditingInComposedTreeStrategy> range2(EphemeralRangeTemplate<EditingInComposedTreeStrategy>::rangeOfContents(*host));
-    SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy> backIter2(range2.startPosition(), range2.endPosition());
+    EphemeralRangeTemplate<EditingInFlatTreeStrategy> range2(EphemeralRangeTemplate<EditingInFlatTreeStrategy>::rangeOfContents(*host));
+    SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy> backIter2(range2.startPosition(), range2.endPosition());
     const char* message2 = "|backIter2| should emit 'three ', 'two', ' ', 'one' and ' zero' in reverse order.";
     EXPECT_EQ('o', backIter2.characterAt(0)) << message2;
     EXPECT_EQ('r', backIter2.characterAt(1)) << message2;
@@ -114,8 +114,8 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo)
     backIter1.copyTextTo(&output1, 1, 2);
     EXPECT_EQ("onetwo", String(output1.data(), output1.size())) << String::format(message, 1, "onetwo").utf8().data();
 
-    EphemeralRangeTemplate<EditingInComposedTreeStrategy> range2(EphemeralRangeTemplate<EditingInComposedTreeStrategy>::rangeOfContents(*host));
-    SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy> backIter2(range2.startPosition(), range2.endPosition());
+    EphemeralRangeTemplate<EditingInFlatTreeStrategy> range2(EphemeralRangeTemplate<EditingInFlatTreeStrategy>::rangeOfContents(*host));
+    SimplifiedBackwardsTextIteratorAlgorithm<EditingInFlatTreeStrategy> backIter2(range2.startPosition(), range2.endPosition());
     BackwardsTextBuffer output2;
     backIter2.copyTextTo(&output2, 0, 2);
     EXPECT_EQ("ro", String(output2.data(), output2.size())) << String::format(message, 2, "ro").utf8().data();

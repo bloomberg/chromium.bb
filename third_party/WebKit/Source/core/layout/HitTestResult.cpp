@@ -23,7 +23,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleUnits.h"
@@ -275,7 +275,7 @@ String HitTestResult::title(TextDirection& dir) const
     // For <area> tags in image maps, walk the tree for the <area>, not the <img> using it.
     if (m_innerNode.get())
         m_innerNode->updateDistribution();
-    for (Node* titleNode = m_innerNode.get(); titleNode; titleNode = ComposedTreeTraversal::parent(*titleNode)) {
+    for (Node* titleNode = m_innerNode.get(); titleNode; titleNode = FlatTreeTraversal::parent(*titleNode)) {
         if (titleNode->isElementNode()) {
             String title = toElement(titleNode)->title();
             if (!title.isNull()) {
@@ -522,7 +522,7 @@ void HitTestResult::resolveRectBasedTest(Node* resolvedInnerNode, const LayoutPo
 
 Element* HitTestResult::innerElement() const
 {
-    for (Node* node = m_innerNode.get(); node; node = ComposedTreeTraversal::parent(*node)) {
+    for (Node* node = m_innerNode.get(); node; node = FlatTreeTraversal::parent(*node)) {
         if (node->isElementNode())
             return toElement(node);
     }

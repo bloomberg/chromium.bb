@@ -69,7 +69,7 @@ bool handleSelectionBoundary<EditingStrategy>(const Node&)
 }
 
 template<>
-bool handleSelectionBoundary<EditingInComposedTreeStrategy>(const Node& node)
+bool handleSelectionBoundary<EditingInFlatTreeStrategy>(const Node& node)
 {
     if (!node.isElementNode())
         return false;
@@ -285,10 +285,10 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode, Node* pastEnd)
     Node* lastClosed = nullptr;
     for (Node* n = startNode; n && n != pastEnd; n = next) {
         // If |n| is a selection boundary such as <input>, traverse the child
-        // nodes in the DOM tree instead of the composed tree.
+        // nodes in the DOM tree instead of the flat tree.
         if (handleSelectionBoundary<Strategy>(*n)) {
             lastClosed = StyledMarkupTraverser<EditingStrategy>(m_accumulator, m_lastClosed.get()).traverse(n, EditingStrategy::nextSkippingChildren(*n));
-            next = EditingInComposedTreeStrategy::nextSkippingChildren(*n);
+            next = EditingInFlatTreeStrategy::nextSkippingChildren(*n);
         } else {
             next = Strategy::next(*n);
             if (isEnclosingBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd) {
@@ -478,6 +478,6 @@ RefPtrWillBeRawPtr<EditingStyle> StyledMarkupTraverser<Strategy>::createInlineSt
 }
 
 template class StyledMarkupSerializer<EditingStrategy>;
-template class StyledMarkupSerializer<EditingInComposedTreeStrategy>;
+template class StyledMarkupSerializer<EditingInFlatTreeStrategy>;
 
 } // namespace blink

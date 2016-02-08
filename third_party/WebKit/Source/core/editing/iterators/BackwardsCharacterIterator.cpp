@@ -93,6 +93,6 @@ void BackwardsCharacterIteratorAlgorithm<Strategy>::advance(int count)
 }
 
 template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT BackwardsCharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink

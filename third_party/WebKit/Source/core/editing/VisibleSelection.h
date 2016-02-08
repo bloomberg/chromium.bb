@@ -207,10 +207,10 @@ private:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
-using VisibleSelectionInComposedTree = VisibleSelectionTemplate<EditingInComposedTreeStrategy>;
+using VisibleSelectionInFlatTree = VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
 
 // TODO(yosin): We should use |operator==()| instead of
 // |equalSelectionsInDOMTree()|.
@@ -229,8 +229,8 @@ CORE_EXPORT PassRefPtrWillBeRawPtr<Range> firstRangeOf(const VisibleSelection&);
 // Outside the WebCore namespace for ease of invocation from gdb.
 void showTree(const blink::VisibleSelection&);
 void showTree(const blink::VisibleSelection*);
-void showTree(const blink::VisibleSelectionInComposedTree&);
-void showTree(const blink::VisibleSelectionInComposedTree*);
+void showTree(const blink::VisibleSelectionInFlatTree&);
+void showTree(const blink::VisibleSelectionInFlatTree*);
 #endif
 
 #endif // VisibleSelection_h

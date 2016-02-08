@@ -28,7 +28,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/PseudoElement.h"
-#include "core/dom/shadow/ComposedTreeTraversal.h"
+#include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/layout/LayoutObject.h"
 
 namespace blink {
@@ -55,22 +55,22 @@ ContainerNode* parent(const Node& node, ParentDetails* details)
 {
     // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node in a document.
     // ASSERT(node.inDocument());
-    return ComposedTreeTraversal::parent(node, details);
+    return FlatTreeTraversal::parent(node, details);
 }
 
 Node* nextSibling(const Node& node)
 {
     if (node.isBeforePseudoElement()) {
-        if (Node* next = ComposedTreeTraversal::firstChild(*ComposedTreeTraversal::parent(node)))
+        if (Node* next = FlatTreeTraversal::firstChild(*FlatTreeTraversal::parent(node)))
             return next;
     } else {
-        if (Node* next = ComposedTreeTraversal::nextSibling(node))
+        if (Node* next = FlatTreeTraversal::nextSibling(node))
             return next;
         if (node.isAfterPseudoElement())
             return 0;
     }
 
-    Node* parent = ComposedTreeTraversal::parent(node);
+    Node* parent = FlatTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(AFTER);
 
@@ -80,16 +80,16 @@ Node* nextSibling(const Node& node)
 Node* previousSibling(const Node& node)
 {
     if (node.isAfterPseudoElement()) {
-        if (Node* previous = ComposedTreeTraversal::lastChild(*ComposedTreeTraversal::parent(node)))
+        if (Node* previous = FlatTreeTraversal::lastChild(*FlatTreeTraversal::parent(node)))
             return previous;
     } else {
-        if (Node* previous = ComposedTreeTraversal::previousSibling(node))
+        if (Node* previous = FlatTreeTraversal::previousSibling(node))
             return previous;
         if (node.isBeforePseudoElement())
             return 0;
     }
 
-    Node* parent = ComposedTreeTraversal::parent(node);
+    Node* parent = FlatTreeTraversal::parent(node);
     if (parent && parent->isElementNode())
         return toElement(parent)->pseudoElement(BEFORE);
 
@@ -98,7 +98,7 @@ Node* previousSibling(const Node& node)
 
 static Node* lastChild(const Node& node)
 {
-    return ComposedTreeTraversal::lastChild(node);
+    return FlatTreeTraversal::lastChild(node);
 }
 
 static Node* pseudoAwarePreviousSibling(const Node& node)
@@ -149,7 +149,7 @@ Node* previous(const Node& node, const Node* stayWithin)
 
 Node* firstChild(const Node& node)
 {
-    return ComposedTreeTraversal::firstChild(node);
+    return FlatTreeTraversal::firstChild(node);
 }
 
 static Node* pseudoAwareNextSibling(const Node& node)

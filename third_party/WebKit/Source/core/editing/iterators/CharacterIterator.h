@@ -81,7 +81,7 @@ private:
 extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingStrategy>;
 using CharacterIterator = CharacterIteratorAlgorithm<EditingStrategy>;
 
-extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT CharacterIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 CORE_EXPORT EphemeralRange calculateCharacterSubrange(const EphemeralRange&, int characterOffset, int characterCount);
 

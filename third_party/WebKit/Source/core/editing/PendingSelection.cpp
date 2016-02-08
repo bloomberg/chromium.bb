@@ -139,8 +139,8 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
 
 void PendingSelection::commit(LayoutView& layoutView)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return commitAlgorithm<EditingInComposedTreeStrategy>(layoutView);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return commitAlgorithm<EditingInFlatTreeStrategy>(layoutView);
     commitAlgorithm<EditingStrategy>(layoutView);
 }
 

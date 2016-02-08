@@ -30,10 +30,10 @@ TEST_F(VisiblePositionTest, ShadowV0DistributedNodes)
     EXPECT_EQ(Position(one->firstChild(), 2), canonicalPositionOf(Position(two.get(), 0)));
     EXPECT_EQ(Position(one->firstChild(), 2), createVisiblePosition(Position(two.get(), 0)).deepEquivalent());
 
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(one.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), createVisiblePosition(PositionInComposedTree(one.get(), 0)).deepEquivalent());
-    EXPECT_EQ(PositionInComposedTree(four->firstChild(), 2), canonicalPositionOf(PositionInComposedTree(two.get(), 0)));
-    EXPECT_EQ(PositionInComposedTree(four->firstChild(), 2), createVisiblePosition(PositionInComposedTree(two.get(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), canonicalPositionOf(PositionInFlatTree(one.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), createVisiblePosition(PositionInFlatTree(one.get(), 0)).deepEquivalent());
+    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), canonicalPositionOf(PositionInFlatTree(two.get(), 0)));
+    EXPECT_EQ(PositionInFlatTree(four->firstChild(), 2), createVisiblePosition(PositionInFlatTree(two.get(), 0)).deepEquivalent());
 }
 
 } // namespace blink

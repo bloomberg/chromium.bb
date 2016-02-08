@@ -329,6 +329,6 @@ bool PositionIteratorAlgorithm<Strategy>::atEndOfNode() const
 }
 
 template class PositionIteratorAlgorithm<EditingStrategy>;
-template class PositionIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class PositionIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink

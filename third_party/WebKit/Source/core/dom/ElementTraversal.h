@@ -66,7 +66,7 @@ private:
 // Note that these functions do not traverse into child shadow trees of any
 // shadow hosts they encounter. If you need to traverse the shadow DOM, you can
 // manually traverse the shadow trees using a second Traversal, or use
-// ComposedTreeTraversal.
+// FlatTreeTraversal.
 //
 // ElementTraversal is a specialized version of Traversal<Element>.
 template <class ElementType>

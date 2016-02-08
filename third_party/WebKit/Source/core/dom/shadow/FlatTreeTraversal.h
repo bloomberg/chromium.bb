@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ComposedTreeTraversal_h
-#define ComposedTreeTraversal_h
+#ifndef FlatTreeTraversal_h
+#define FlatTreeTraversal_h
 
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
@@ -40,18 +40,18 @@ class ContainerNode;
 class HTMLSlotElement;
 class Node;
 
-// Composed tree version of |NodeTraversal|.
+// Flat tree version of |NodeTraversal|.
 //
 // None of member functions takes a |ShadowRoot| or an active insertion point,
 // e.g. roughly speaking <content> and <shadow> in the shadow tree, see
 // |InsertionPoint::isActive()| for details of active insertion points, since
-// they aren't appeared in the composed tree. |assertPrecondition()| and
+// they aren't appeared in the flat tree. |assertPrecondition()| and
 // |assertPostCondition()| check this condition.
 //
 // FIXME: Make some functions inline to optimise the performance.
 // https://bugs.webkit.org/show_bug.cgi?id=82702
-class CORE_EXPORT ComposedTreeTraversal {
-    STATIC_ONLY(ComposedTreeTraversal);
+class CORE_EXPORT FlatTreeTraversal {
+    STATIC_ONLY(FlatTreeTraversal);
 public:
     typedef LayoutTreeBuilderTraversal::ParentDetails ParentTraversalDetails;
 
@@ -73,20 +73,20 @@ public:
     // the children, this function returns |nullptr|.
     static Node* childAt(const Node&, unsigned index);
 
-    // Composed tree version of |NodeTraversal::nextSkippingChildren()|. This
+    // Flat tree version of |NodeTraversal::nextSkippingChildren()|. This
     // function is similar to |next()| but skips child nodes of a specified
     // node.
     static Node* nextSkippingChildren(const Node&);
     static Node* nextSkippingChildren(const Node&, const Node* stayWithin);
 
-    // Composed tree version of |NodeTraversal::previousSkippingChildren()|
+    // Flat tree version of |NodeTraversal::previousSkippingChildren()|
     // similar to |previous()| but skipping child nodes of the specified node.
     static Node* previousSkippingChildren(const Node&);
 
     // Like previous, but visits parents before their children.
     static Node* previousPostOrder(const Node&, const Node* stayWithin = nullptr);
 
-    // Composed tree version of |Node::isDescendantOf(other)|. This function
+    // Flat tree version of |Node::isDescendantOf(other)|. This function
     // returns true if |other| contains |node|, otherwise returns
     // false. If |other| is |node|, this function returns false.
     static bool isDescendantOf(const Node& /*node*/, const Node& other);
@@ -104,14 +104,14 @@ public:
     // returns |nullptr|.
     static Node* commonAncestor(const Node& nodeA, const Node& nodeB);
 
-    // Composed tree version of |Node::nodeIndex()|. This function returns a
+    // Flat tree version of |Node::nodeIndex()|. This function returns a
     // zero base position number of the specified node in child nodes list, or
     // zero if the specified node has no parent.
     static unsigned index(const Node&);
 
-    // Composed tree version of |ContainerNode::countChildren()|. This function
+    // Flat tree version of |ContainerNode::countChildren()|. This function
     // returns the number of the child nodes of the specified node in the
-    // composed tree.
+    // flat tree.
     static unsigned countChildren(const Node&);
 
     static Node* lastWithin(const Node&);
@@ -127,7 +127,7 @@ private:
     {
 #if ENABLE(ASSERT)
         ASSERT(!node.needsDistributionRecalc());
-        ASSERT(node.canParticipateInComposedTree());
+        ASSERT(node.canParticipateInFlatTree());
 #endif
     }
 
@@ -167,7 +167,7 @@ private:
     static Node* traversePreviousAncestorSibling(const Node&);
 };
 
-inline ContainerNode* ComposedTreeTraversal::parent(const Node& node, ParentTraversalDetails* details)
+inline ContainerNode* FlatTreeTraversal::parent(const Node& node, ParentTraversalDetails* details)
 {
     assertPrecondition(node);
     ContainerNode* result = traverseParent(node, details);
@@ -175,13 +175,13 @@ inline ContainerNode* ComposedTreeTraversal::parent(const Node& node, ParentTrav
     return result;
 }
 
-inline Element* ComposedTreeTraversal::parentElement(const Node& node)
+inline Element* FlatTreeTraversal::parentElement(const Node& node)
 {
-    ContainerNode* parent = ComposedTreeTraversal::parent(node);
+    ContainerNode* parent = FlatTreeTraversal::parent(node);
     return parent && parent->isElementNode() ? toElement(parent) : nullptr;
 }
 
-inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
+inline Node* FlatTreeTraversal::nextSibling(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseSiblings(node, TraversalDirectionForward);
@@ -189,7 +189,7 @@ inline Node* ComposedTreeTraversal::nextSibling(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeTraversal::previousSibling(const Node& node)
+inline Node* FlatTreeTraversal::previousSibling(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseSiblings(node, TraversalDirectionBackward);
@@ -197,7 +197,7 @@ inline Node* ComposedTreeTraversal::previousSibling(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeTraversal::next(const Node& node)
+inline Node* FlatTreeTraversal::next(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseNext(node);
@@ -205,7 +205,7 @@ inline Node* ComposedTreeTraversal::next(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeTraversal::next(const Node& node, const Node* stayWithin)
+inline Node* FlatTreeTraversal::next(const Node& node, const Node* stayWithin)
 {
     assertPrecondition(node);
     Node* result = traverseNext(node, stayWithin);
@@ -213,7 +213,7 @@ inline Node* ComposedTreeTraversal::next(const Node& node, const Node* stayWithi
     return result;
 }
 
-inline Node* ComposedTreeTraversal::nextSkippingChildren(const Node& node, const Node* stayWithin)
+inline Node* FlatTreeTraversal::nextSkippingChildren(const Node& node, const Node* stayWithin)
 {
     assertPrecondition(node);
     Node* result = traverseNextSkippingChildren(node, stayWithin);
@@ -221,7 +221,7 @@ inline Node* ComposedTreeTraversal::nextSkippingChildren(const Node& node, const
     return result;
 }
 
-inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
+inline Node* FlatTreeTraversal::traverseNext(const Node& node)
 {
     if (Node* next = traverseFirstChild(node))
         return next;
@@ -232,14 +232,14 @@ inline Node* ComposedTreeTraversal::traverseNext(const Node& node)
     return nullptr;
 }
 
-inline Node* ComposedTreeTraversal::traverseNext(const Node& node, const Node* stayWithin)
+inline Node* FlatTreeTraversal::traverseNext(const Node& node, const Node* stayWithin)
 {
     if (Node* next = traverseFirstChild(node))
         return next;
     return traverseNextSkippingChildren(node, stayWithin);
 }
 
-inline Node* ComposedTreeTraversal::traverseNextSkippingChildren(const Node& node, const Node* stayWithin)
+inline Node* FlatTreeTraversal::traverseNextSkippingChildren(const Node& node, const Node* stayWithin)
 {
     for (const Node* next = &node; next; next = traverseParent(*next)) {
         if (next == stayWithin)
@@ -250,7 +250,7 @@ inline Node* ComposedTreeTraversal::traverseNextSkippingChildren(const Node& nod
     return nullptr;
 }
 
-inline Node* ComposedTreeTraversal::previous(const Node& node)
+inline Node* FlatTreeTraversal::previous(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traversePrevious(node);
@@ -258,7 +258,7 @@ inline Node* ComposedTreeTraversal::previous(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeTraversal::traversePrevious(const Node& node)
+inline Node* FlatTreeTraversal::traversePrevious(const Node& node)
 {
     if (Node* previous = traversePreviousSibling(node)) {
         while (Node* child = traverseLastChild(*previous))
@@ -268,7 +268,7 @@ inline Node* ComposedTreeTraversal::traversePrevious(const Node& node)
     return traverseParent(node);
 }
 
-inline Node* ComposedTreeTraversal::firstChild(const Node& node)
+inline Node* FlatTreeTraversal::firstChild(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseChild(node, TraversalDirectionForward);
@@ -276,7 +276,7 @@ inline Node* ComposedTreeTraversal::firstChild(const Node& node)
     return result;
 }
 
-inline Node* ComposedTreeTraversal::lastChild(const Node& node)
+inline Node* FlatTreeTraversal::lastChild(const Node& node)
 {
     assertPrecondition(node);
     Node* result = traverseLastChild(node);
@@ -284,27 +284,27 @@ inline Node* ComposedTreeTraversal::lastChild(const Node& node)
     return result;
 }
 
-inline bool ComposedTreeTraversal::hasChildren(const Node& node)
+inline bool FlatTreeTraversal::hasChildren(const Node& node)
 {
     return firstChild(node);
 }
 
-inline Node* ComposedTreeTraversal::traverseNextSibling(const Node& node)
+inline Node* FlatTreeTraversal::traverseNextSibling(const Node& node)
 {
     return traverseSiblings(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedTreeTraversal::traversePreviousSibling(const Node& node)
+inline Node* FlatTreeTraversal::traversePreviousSibling(const Node& node)
 {
     return traverseSiblings(node, TraversalDirectionBackward);
 }
 
-inline Node* ComposedTreeTraversal::traverseFirstChild(const Node& node)
+inline Node* FlatTreeTraversal::traverseFirstChild(const Node& node)
 {
     return traverseChild(node, TraversalDirectionForward);
 }
 
-inline Node* ComposedTreeTraversal::traverseLastChild(const Node& node)
+inline Node* FlatTreeTraversal::traverseLastChild(const Node& node)
 {
     return traverseChild(node, TraversalDirectionBackward);
 }

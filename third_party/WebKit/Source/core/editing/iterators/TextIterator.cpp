@@ -75,7 +75,7 @@ TextIteratorBehaviorFlags adjustBehaviorFlags<EditingStrategy>(TextIteratorBehav
 }
 
 template <>
-TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInComposedTreeStrategy>(TextIteratorBehaviorFlags flags)
+TextIteratorBehaviorFlags adjustBehaviorFlags<EditingInFlatTreeStrategy>(TextIteratorBehaviorFlags flags)
 {
     if (flags & TextIteratorForSelectionToString)
         flags |= TextIteratorExcludeAutofilledValue;
@@ -115,7 +115,7 @@ int shadowDepthOf<EditingStrategy>(const Node& startContainer, const Node& endCo
 }
 
 template <>
-int shadowDepthOf<EditingInComposedTreeStrategy>(const Node& startContainer, const Node& endContainer)
+int shadowDepthOf<EditingInFlatTreeStrategy>(const Node& startContainer, const Node& endContainer)
 {
     return 0;
 }
@@ -339,7 +339,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
         //
         // 1. Iterate over child nodes, if we haven't done yet.
         // To support |TextIteratorEmitsImageAltText|, we don't traversal child
-        // nodes, in composed tree.
+        // nodes, in flat tree.
         Node* next = m_iterationProgress < HandledChildren && !isHTMLImageElement(*m_node) ? Strategy::firstChild(*m_node) : nullptr;
         m_offset = 0;
         if (!next) {
@@ -1165,12 +1165,12 @@ String plainText(const EphemeralRange& range, TextIteratorBehaviorFlags behavior
     return createPlainText<EditingStrategy>(range, behavior);
 }
 
-String plainText(const EphemeralRangeInComposedTree& range, TextIteratorBehaviorFlags behavior)
+String plainText(const EphemeralRangeInFlatTree& range, TextIteratorBehaviorFlags behavior)
 {
-    return createPlainText<EditingInComposedTreeStrategy>(range, behavior);
+    return createPlainText<EditingInFlatTreeStrategy>(range, behavior);
 }
 
 template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT TextIteratorAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink

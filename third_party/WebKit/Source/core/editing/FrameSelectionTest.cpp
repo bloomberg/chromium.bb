@@ -30,7 +30,7 @@ protected:
     void setSelection(const VisibleSelection&);
     FrameSelection& selection() const;
     const VisibleSelection& visibleSelectionInDOMTree() const { return selection().selection(); }
-    const VisibleSelectionInComposedTree& visibleSelectionInComposedTree() const { return selection().selectionInComposedTree(); }
+    const VisibleSelectionInFlatTree& visibleSelectionInFlatTree() const { return selection().selectionInFlatTree(); }
 
     PassRefPtrWillBeRawPtr<Text> appendTextNode(const String& data);
     int layoutCount() const { return dummyPageHolder().frameView().layoutCount(); }
@@ -190,28 +190,28 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     Node* host = document().getElementById("host");
 
     // top to bottom
-    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInComposedTree(PositionInComposedTree(top, 1), PositionInComposedTree(bottom, 3)), CharacterGranularity);
+    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInFlatTree(PositionInFlatTree(top, 1), PositionInFlatTree(bottom, 3)), CharacterGranularity);
     EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().base());
     EXPECT_EQ(Position::beforeNode(host), visibleSelectionInDOMTree().extent());
     EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().start());
     EXPECT_EQ(Position(top, 3), visibleSelectionInDOMTree().end());
 
-    EXPECT_EQ(PositionInComposedTree(top, 1), visibleSelectionInComposedTree().base());
-    EXPECT_EQ(PositionInComposedTree(bottom, 3), visibleSelectionInComposedTree().extent());
-    EXPECT_EQ(PositionInComposedTree(top, 1), visibleSelectionInComposedTree().start());
-    EXPECT_EQ(PositionInComposedTree(bottom, 3), visibleSelectionInComposedTree().end());
+    EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().base());
+    EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().extent());
+    EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().start());
+    EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
 
     // bottom to top
-    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInComposedTree(PositionInComposedTree(bottom, 3), PositionInComposedTree(top, 1)), CharacterGranularity);
+    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInFlatTree(PositionInFlatTree(bottom, 3), PositionInFlatTree(top, 1)), CharacterGranularity);
     EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().base());
     EXPECT_EQ(Position::beforeNode(bottom->parentNode()), visibleSelectionInDOMTree().extent());
     EXPECT_EQ(Position(bottom, 0), visibleSelectionInDOMTree().start());
     EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().end());
 
-    EXPECT_EQ(PositionInComposedTree(bottom, 3), visibleSelectionInComposedTree().base());
-    EXPECT_EQ(PositionInComposedTree(top, 1), visibleSelectionInComposedTree().extent());
-    EXPECT_EQ(PositionInComposedTree(top, 1), visibleSelectionInComposedTree().start());
-    EXPECT_EQ(PositionInComposedTree(bottom, 3), visibleSelectionInComposedTree().end());
+    EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().base());
+    EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().extent());
+    EXPECT_EQ(PositionInFlatTree(top, 1), visibleSelectionInFlatTree().start());
+    EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
 }
 
 TEST_F(FrameSelectionTest, SelectAllWithUnselectableRoot)

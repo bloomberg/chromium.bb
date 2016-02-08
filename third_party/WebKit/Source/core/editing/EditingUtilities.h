@@ -69,7 +69,7 @@ class Range;
 // defiance of editing boundaries. This returns a Document if designMode="on"
 // and the specified Position is not in the <body>.
 CORE_EXPORT ContainerNode* highestEditableRoot(const Position&, EditableType = ContentIsEditable);
-ContainerNode* highestEditableRoot(const PositionInComposedTree&, EditableType = ContentIsEditable);
+ContainerNode* highestEditableRoot(const PositionInFlatTree&, EditableType = ContentIsEditable);
 
 Node* highestEnclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*),
     EditingBoundaryCrossingRule = CannotCrossEditingBoundary, Node* stayWithin = nullptr);
@@ -77,7 +77,7 @@ Node* highestNodeToRemoveInPruning(Node*, Node* excludeNode = nullptr);
 
 Element* enclosingBlock(Node*, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 CORE_EXPORT Element* enclosingBlock(const Position&, EditingBoundaryCrossingRule);
-CORE_EXPORT Element* enclosingBlock(const PositionInComposedTree&, EditingBoundaryCrossingRule);
+CORE_EXPORT Element* enclosingBlock(const PositionInFlatTree&, EditingBoundaryCrossingRule);
 Element* enclosingBlockFlowElement(Node&); // Deprecated, use enclosingBlock instead.
 bool inSameContainingBlockFlowElement(Node*, Node*);
 Element* enclosingTableCell(const Position&);
@@ -89,12 +89,12 @@ Element* enclosingAnchorElement(const Position&);
 // Element. Otherwise, editability doesn't matter.
 Element* enclosingElementWithTag(const Position&, const QualifiedName&);
 CORE_EXPORT Node* enclosingNodeOfType(const Position&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
-CORE_EXPORT Node* enclosingNodeOfType(const PositionInComposedTree&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT Node* enclosingNodeOfType(const PositionInFlatTree&, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
 HTMLSpanElement* tabSpanElement(const Node*);
 Element* isLastPositionBeforeTable(const VisiblePosition&);
 CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePosition&);
-CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePositionInComposedTree&);
+CORE_EXPORT Element* isFirstPositionAfterTable(const VisiblePositionInFlatTree&);
 
 // Returns the next leaf node or nullptr if there are no more.
 // Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
@@ -112,9 +112,9 @@ inline ContainerNode* parentCrossingShadowBoundaries<EditingStrategy>(const Node
     return NodeTraversal::parentOrShadowHostNode(node);
 }
 template <>
-inline ContainerNode* parentCrossingShadowBoundaries<EditingInComposedTreeStrategy>(const Node& node)
+inline ContainerNode* parentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(const Node& node)
 {
-    return ComposedTreeTraversal::parent(node);
+    return FlatTreeTraversal::parent(node);
 }
 
 // boolean functions on Node
@@ -156,7 +156,7 @@ bool isBlockFlowElement(const Node&);
 bool nodeIsUserSelectAll(const Node*);
 bool isTextSecurityNode(const Node*);
 CORE_EXPORT TextDirection directionOfEnclosingBlock(const Position&);
-CORE_EXPORT TextDirection directionOfEnclosingBlock(const PositionInComposedTree&);
+CORE_EXPORT TextDirection directionOfEnclosingBlock(const PositionInFlatTree&);
 CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
 
 // -------------------------------------------------------------------------
@@ -166,14 +166,14 @@ CORE_EXPORT TextDirection primaryDirectionOf(const Node&);
 // Functions returning Position
 
 Position nextCandidate(const Position&);
-PositionInComposedTree nextCandidate(const PositionInComposedTree&);
+PositionInFlatTree nextCandidate(const PositionInFlatTree&);
 Position previousCandidate(const Position&);
-PositionInComposedTree previousCandidate(const PositionInComposedTree&);
+PositionInFlatTree previousCandidate(const PositionInFlatTree&);
 
 CORE_EXPORT Position nextVisuallyDistinctCandidate(const Position&);
-CORE_EXPORT PositionInComposedTree nextVisuallyDistinctCandidate(const PositionInComposedTree&);
+CORE_EXPORT PositionInFlatTree nextVisuallyDistinctCandidate(const PositionInFlatTree&);
 Position previousVisuallyDistinctCandidate(const Position&);
-PositionInComposedTree previousVisuallyDistinctCandidate(const PositionInComposedTree&);
+PositionInFlatTree previousVisuallyDistinctCandidate(const PositionInFlatTree&);
 
 Position positionBeforeContainingSpecialElement(const Position&, HTMLElement** containingSpecialElement = nullptr);
 Position positionAfterContainingSpecialElement(const Position&, HTMLElement** containingSpecialElement = nullptr);
@@ -190,8 +190,8 @@ inline Position lastPositionInOrAfterNode(Node* node)
 
 CORE_EXPORT Position firstEditablePositionAfterPositionInRoot(const Position&, Node&);
 CORE_EXPORT Position lastEditablePositionBeforePositionInRoot(const Position&, Node&);
-CORE_EXPORT PositionInComposedTree firstEditablePositionAfterPositionInRoot(const PositionInComposedTree&, Node&);
-CORE_EXPORT PositionInComposedTree lastEditablePositionBeforePositionInRoot(const PositionInComposedTree&, Node&);
+CORE_EXPORT PositionInFlatTree firstEditablePositionAfterPositionInRoot(const PositionInFlatTree&, Node&);
+CORE_EXPORT PositionInFlatTree lastEditablePositionBeforePositionInRoot(const PositionInFlatTree&, Node&);
 
 // Move up or down the DOM by one position.
 // Offsets are computed using layout text for nodes that have layoutObjects -
@@ -199,8 +199,8 @@ CORE_EXPORT PositionInComposedTree lastEditablePositionBeforePositionInRoot(cons
 // a single user-visible character if a ligature is formed.
 CORE_EXPORT Position previousPositionOf(const Position&, PositionMoveType);
 CORE_EXPORT Position nextPositionOf(const Position&, PositionMoveType);
-CORE_EXPORT PositionInComposedTree previousPositionOf(const PositionInComposedTree&, PositionMoveType);
-CORE_EXPORT PositionInComposedTree nextPositionOf(const PositionInComposedTree&, PositionMoveType);
+CORE_EXPORT PositionInFlatTree previousPositionOf(const PositionInFlatTree&, PositionMoveType);
+CORE_EXPORT PositionInFlatTree nextPositionOf(const PositionInFlatTree&, PositionMoveType);
 
 CORE_EXPORT int uncheckedPreviousOffset(const Node*, int current);
 CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
@@ -210,7 +210,7 @@ CORE_EXPORT int uncheckedNextOffset(const Node*, int current);
 // |disconnected| is optional output parameter having true if specified
 // positions don't have common ancestor.
 int comparePositionsInDOMTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
-int comparePositionsInComposedTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
+int comparePositionsInFlatTree(Node* containerA, int offsetA, Node* containerB, int offsetB, bool* disconnected = nullptr);
 int comparePositions(const Position&, const Position&);
 int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 
@@ -222,7 +222,7 @@ enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
 // should make it clear that that is the contract.
 // FIXME: isRichlyEditablePosition should also take EUpdateStyle.
 CORE_EXPORT bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
-bool isEditablePosition(const PositionInComposedTree&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
+bool isEditablePosition(const PositionInFlatTree&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
 bool lineBreakExistsAtPosition(const Position&);
 bool isAtUnsplittableElement(const Position&);
@@ -246,13 +246,13 @@ void updatePositionForNodeRemoval(Position&, Node&);
 // describes what this function returns, since it returns a position before
 // specified position due by canonicalization.
 CORE_EXPORT VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position&, ContainerNode&);
-CORE_EXPORT VisiblePositionInComposedTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInComposedTree&, ContainerNode&);
+CORE_EXPORT VisiblePositionInFlatTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree&, ContainerNode&);
 // TODO(yosin) We should rename
 // |lastEditableVisiblePositionBeforePositionInRoot()| to a better name which
 // describes what this function returns, since it returns a position after
 // specified position due by canonicalization.
 CORE_EXPORT VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position&, ContainerNode&);
-CORE_EXPORT VisiblePositionInComposedTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInComposedTree&, ContainerNode&);
+CORE_EXPORT VisiblePositionInFlatTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree&, ContainerNode&);
 VisiblePosition visiblePositionBeforeNode(Node&);
 VisiblePosition visiblePositionAfterNode(Node&);
 
@@ -263,7 +263,7 @@ int comparePositions(const VisiblePosition&, const VisiblePosition&);
 int indexForVisiblePosition(const VisiblePosition&, RefPtrWillBeRawPtr<ContainerNode>& scope);
 EphemeralRange makeRange(const VisiblePosition&, const VisiblePosition&);
 EphemeralRange normalizeRange(const EphemeralRange&);
-EphemeralRangeInComposedTree normalizeRange(const EphemeralRangeInComposedTree&);
+EphemeralRangeInFlatTree normalizeRange(const EphemeralRangeInFlatTree&);
 VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope);
 
 // -------------------------------------------------------------------------
@@ -289,7 +289,7 @@ PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&, const String& tabText);
 
 Element* rootEditableElementOf(const Position&, EditableType = ContentIsEditable);
-Element* rootEditableElementOf(const PositionInComposedTree&, EditableType = ContentIsEditable);
+Element* rootEditableElementOf(const PositionInFlatTree&, EditableType = ContentIsEditable);
 Element* rootEditableElementOf(const VisiblePosition&);
 Element* unsplittableElementForPosition(const Position&);
 

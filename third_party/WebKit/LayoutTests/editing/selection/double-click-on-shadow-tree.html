@@ -17,12 +17,12 @@ test(function() {
     eventSender.mouseDown();
     eventSender.mouseUp();
 
-    // TODO(yosin) Once Selection API consider about composed tree, we should
+    // TODO(yosin) Once Selection API consider about flat tree, we should
     // use Selection.{anchor,focus}{Node,Offset} to check selection boundary
     // point.
     assert_equals(internals.selectedTextForClipboard(), 'AtwoB');
 
-    // TODO(yosin) Once Selection API supports composed tree, we should change
+    // TODO(yosin) Once Selection API supports flat tree, we should change
     // these values.
     var selection = shadowRoot.getSelection();
     assert_equals(selection.anchorNode(), 'two');

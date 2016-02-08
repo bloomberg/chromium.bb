@@ -36,15 +36,15 @@ protected:
     }
 };
 
-static void testComposedTreePositionsToEqualToDOMTreePositions(const VisibleSelection& selection, const VisibleSelectionInComposedTree& selectionInComposedTree)
+static void testFlatTreePositionsToEqualToDOMTreePositions(const VisibleSelection& selection, const VisibleSelectionInFlatTree& selectionInFlatTree)
 {
-    // Since DOM tree positions can't be map to composed tree version, e.g.
-    // shadow root, not distributed node, we map a position in composed tree
+    // Since DOM tree positions can't be map to flat tree version, e.g.
+    // shadow root, not distributed node, we map a position in flat tree
     // to DOM tree position.
-    EXPECT_EQ(selection.start(), toPositionInDOMTree(selectionInComposedTree.start()));
-    EXPECT_EQ(selection.end(), toPositionInDOMTree(selectionInComposedTree.end()));
-    EXPECT_EQ(selection.base(), toPositionInDOMTree(selectionInComposedTree.base()));
-    EXPECT_EQ(selection.extent(), toPositionInDOMTree(selectionInComposedTree.extent()));
+    EXPECT_EQ(selection.start(), toPositionInDOMTree(selectionInFlatTree.start()));
+    EXPECT_EQ(selection.end(), toPositionInDOMTree(selectionInFlatTree.end()));
+    EXPECT_EQ(selection.base(), toPositionInDOMTree(selectionInFlatTree.base()));
+    EXPECT_EQ(selection.extent(), toPositionInDOMTree(selectionInFlatTree.extent()));
 }
 
 TEST_F(VisibleSelectionTest, expandUsingGranularity)
@@ -62,87 +62,87 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     Node* five = shadowRoot->getElementById("five")->firstChild();
 
     VisibleSelection selection;
-    VisibleSelectionInComposedTree selectionInComposedTree;
+    VisibleSelectionInFlatTree selectionInFlatTree;
 
     // From a position at distributed node
     selection = VisibleSelection(createVisiblePosition(Position(one, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(one, 1)));
-    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(one, 1)));
+    selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(one, 1), selection.base());
     EXPECT_EQ(Position(one, 1), selection.extent());
     EXPECT_EQ(Position(one, 0), selection.start());
     EXPECT_EQ(Position(two, 2), selection.end());
 
-    EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.base());
-    EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.extent());
-    EXPECT_EQ(PositionInComposedTree(one, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(five, 5), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(one, 1), selectionInFlatTree.base());
+    EXPECT_EQ(PositionInFlatTree(one, 1), selectionInFlatTree.extent());
+    EXPECT_EQ(PositionInFlatTree(one, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(five, 5), selectionInFlatTree.end());
 
     // From a position at distributed node
     selection = VisibleSelection(createVisiblePosition(Position(two, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(two, 1)));
-    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(two, 1)));
+    selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(two, 1), selection.base());
     EXPECT_EQ(Position(two, 1), selection.extent());
     EXPECT_EQ(Position(one, 0), selection.start());
     EXPECT_EQ(Position(two, 2), selection.end());
 
-    EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.base());
-    EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.extent());
-    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(two, 1), selectionInFlatTree.base());
+    EXPECT_EQ(PositionInFlatTree(two, 1), selectionInFlatTree.extent());
+    EXPECT_EQ(PositionInFlatTree(three, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
     selection = VisibleSelection(createVisiblePosition(Position(three, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(three, 1)));
-    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(three, 1)));
+    selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(three, 1), selection.base());
     EXPECT_EQ(Position(three, 1), selection.extent());
     EXPECT_EQ(Position(three, 0), selection.start());
     EXPECT_EQ(Position(four, 4), selection.end());
 
-    EXPECT_EQ(PositionInComposedTree(three, 1), selectionInComposedTree.base());
-    EXPECT_EQ(PositionInComposedTree(three, 1), selectionInComposedTree.extent());
-    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(three, 1), selectionInFlatTree.base());
+    EXPECT_EQ(PositionInFlatTree(three, 1), selectionInFlatTree.extent());
+    EXPECT_EQ(PositionInFlatTree(three, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
     selection = VisibleSelection(createVisiblePosition(Position(four, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(four, 1)));
-    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(four, 1)));
+    selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(four, 1), selection.base());
     EXPECT_EQ(Position(four, 1), selection.extent());
     EXPECT_EQ(Position(three, 0), selection.start());
     EXPECT_EQ(Position(four, 4), selection.end());
 
-    EXPECT_EQ(PositionInComposedTree(four, 1), selectionInComposedTree.base());
-    EXPECT_EQ(PositionInComposedTree(four, 1), selectionInComposedTree.extent());
-    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(four, 1), selectionInFlatTree.base());
+    EXPECT_EQ(PositionInFlatTree(four, 1), selectionInFlatTree.extent());
+    EXPECT_EQ(PositionInFlatTree(three, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
     selection = VisibleSelection(createVisiblePosition(Position(five, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(five, 1)));
-    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(five, 1)));
+    selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(five, 1), selection.base());
     EXPECT_EQ(Position(five, 1), selection.extent());
     EXPECT_EQ(Position(five, 0), selection.start());
     EXPECT_EQ(Position(five, 5), selection.end());
 
-    EXPECT_EQ(PositionInComposedTree(five, 1), selectionInComposedTree.base());
-    EXPECT_EQ(PositionInComposedTree(five, 1), selectionInComposedTree.extent());
-    EXPECT_EQ(PositionInComposedTree(one, 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(five, 5), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(five, 1), selectionInFlatTree.base());
+    EXPECT_EQ(PositionInFlatTree(five, 1), selectionInFlatTree.extent());
+    EXPECT_EQ(PositionInFlatTree(one, 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(five, 5), selectionInFlatTree.end());
 }
 
 TEST_F(VisibleSelectionTest, Initialisation)
@@ -150,20 +150,20 @@ TEST_F(VisibleSelectionTest, Initialisation)
     setBodyContent(LOREM_IPSUM);
 
     VisibleSelection selection;
-    VisibleSelectionInComposedTree selectionInComposedTree;
+    VisibleSelectionInFlatTree selectionInFlatTree;
     setSelection(selection, 0);
-    setSelection(selectionInComposedTree, 0);
+    setSelection(selectionInFlatTree, 0);
 
     EXPECT_FALSE(selection.isNone());
-    EXPECT_FALSE(selectionInComposedTree.isNone());
+    EXPECT_FALSE(selectionInFlatTree.isNone());
     EXPECT_TRUE(selection.isCaret());
-    EXPECT_TRUE(selectionInComposedTree.isCaret());
+    EXPECT_TRUE(selectionInFlatTree.isCaret());
 
     RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
     EXPECT_EQ(0, range->startOffset());
     EXPECT_EQ(0, range->endOffset());
     EXPECT_EQ("", range->text());
-    testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+    testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
 }
 
 TEST_F(VisibleSelectionTest, ShadowCrossing)
@@ -179,12 +179,12 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     RefPtrWillBeRawPtr<Element> six = shadowRoot->querySelector("#s6", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::lastPositionInNode(host.get()));
+    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::lastPositionInNode(host.get()));
 
     EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
-    EXPECT_EQ(PositionInComposedTree(one->firstChild(), 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(six->firstChild(), 2), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(one->firstChild(), 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(six->firstChild(), 2), selectionInFlatTree.end());
 }
 
 TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
@@ -200,12 +200,12 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
     RefPtrWillBeRawPtr<Element> five = shadowRoot->querySelector("#s5", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(two.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::lastPositionInNode(two.get()));
+    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::lastPositionInNode(two.get()));
 
     EXPECT_EQ(Position(one->firstChild(), 0), selection.start());
     EXPECT_EQ(Position(two->firstChild(), 2), selection.end());
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 0), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(five->firstChild(), 2), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 0), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(five->firstChild(), 2), selectionInFlatTree.end());
 }
 
 TEST_F(VisibleSelectionTest, ShadowNested)
@@ -217,7 +217,7 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
     RefPtrWillBeRawPtr<ShadowRoot> shadowRoot2 = createShadowRootForElementWithIDAndSetInnerHTML(*shadowRoot, "s5", shadowContent2);
 
-    // Composed tree is something like below:
+    // Flat tree is something like below:
     //  <p id="host">
     //    <span id="s4">44</span>
     //    <b id="two">22</b>
@@ -231,12 +231,12 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     RefPtrWillBeRawPtr<Element> eight = shadowRoot2->querySelector("#s8", ASSERT_NO_EXCEPTION);
 
     VisibleSelection selection(Position::firstPositionInNode(one.get()), Position::lastPositionInNode(shadowRoot2.get()));
-    VisibleSelectionInComposedTree selectionInComposedTree(PositionInComposedTree::firstPositionInNode(one.get()), PositionInComposedTree::afterNode(eight.get()));
+    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one.get()), PositionInFlatTree::afterNode(eight.get()));
 
     EXPECT_EQ(Position(host.get(), PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
-    EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selectionInComposedTree.start());
-    EXPECT_EQ(PositionInComposedTree(eight->firstChild(), 2), selectionInComposedTree.end());
+    EXPECT_EQ(PositionInFlatTree(eight->firstChild(), 2), selectionInFlatTree.start());
+    EXPECT_EQ(PositionInFlatTree(eight->firstChild(), 2), selectionInFlatTree.end());
 }
 
 TEST_F(VisibleSelectionTest, WordGranularity)
@@ -244,35 +244,35 @@ TEST_F(VisibleSelectionTest, WordGranularity)
     setBodyContent(LOREM_IPSUM);
 
     VisibleSelection selection;
-    VisibleSelectionInComposedTree selectionInComposedTree;
+    VisibleSelectionInFlatTree selectionInFlatTree;
 
     // Beginning of a word.
     {
         setSelection(selection, 0);
-        setSelection(selectionInComposedTree, 0);
+        setSelection(selectionInFlatTree, 0);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
 
     }
 
     // Middle of a word.
     {
         setSelection(selection, 8);
-        setSelection(selectionInComposedTree, 8);
+        setSelection(selectionInFlatTree, 8);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(6, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("ipsum", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
 
     }
 
@@ -281,15 +281,15 @@ TEST_F(VisibleSelectionTest, WordGranularity)
     // of the space...
     {
         setSelection(selection, 5);
-        setSelection(selectionInComposedTree, 5);
+        setSelection(selectionInFlatTree, 5);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(5, range->startOffset());
         EXPECT_EQ(6, range->endOffset());
         EXPECT_EQ(" ", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
 
     // Before comma.
@@ -297,57 +297,57 @@ TEST_F(VisibleSelectionTest, WordGranularity)
     // of the comma.
     {
         setSelection(selection, 26);
-        setSelection(selectionInComposedTree, 26);
+        setSelection(selectionInFlatTree, 26);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(26, range->startOffset());
         EXPECT_EQ(27, range->endOffset());
         EXPECT_EQ(",", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
 
     // After comma.
     {
         setSelection(selection, 27);
-        setSelection(selectionInComposedTree, 27);
+        setSelection(selectionInFlatTree, 27);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(27, range->startOffset());
         EXPECT_EQ(28, range->endOffset());
         EXPECT_EQ(" ", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
 
     // When selecting part of a word.
     {
         setSelection(selection, 0, 1);
-        setSelection(selectionInComposedTree, 0, 1);
+        setSelection(selectionInFlatTree, 0, 1);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(5, range->endOffset());
         EXPECT_EQ("Lorem", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
 
     // When selecting part of two words.
     {
         setSelection(selection, 2, 8);
-        setSelection(selectionInComposedTree, 2, 8);
+        setSelection(selectionInFlatTree, 2, 8);
         selection.expandUsingGranularity(WordGranularity);
-        selectionInComposedTree.expandUsingGranularity(WordGranularity);
+        selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
         RefPtrWillBeRawPtr<Range> range = firstRangeOf(selection);
         EXPECT_EQ(0, range->startOffset());
         EXPECT_EQ(11, range->endOffset());
         EXPECT_EQ("Lorem ipsum", range->text());
-        testComposedTreePositionsToEqualToDOMTreePositions(selection, selectionInComposedTree);
+        testFlatTreePositionsToEqualToDOMTreePositions(selection, selectionInFlatTree);
     }
 }
 

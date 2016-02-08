@@ -87,7 +87,7 @@ public:
     static Node* childAt(const Node& parent, unsigned index) { return childAtTemplate(parent, index); }
     static Node* childAt(const ContainerNode& parent, unsigned index) { return childAtTemplate(parent, index); }
 
-    // These functions are provided for matching with |ComposedTreeTraversal|.
+    // These functions are provided for matching with |FlatTreeTraversal|.
     static bool hasChildren(const Node& parent) { return firstChild(parent); }
     static bool isDescendantOf(const Node& node, const Node& other) { return node.isDescendantOf(&other); }
     static Node* firstChild(const Node& parent) { return parent.firstChild(); }

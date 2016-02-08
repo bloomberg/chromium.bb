@@ -23,7 +23,7 @@ public:
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingStrategy>;
-extern template class CORE_EXTERN_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingInFlatTreeStrategy>;
 
 using FullyClippedStateStack = FullyClippedStateStackAlgorithm<EditingStrategy>;
 

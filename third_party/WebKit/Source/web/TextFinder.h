@@ -132,7 +132,7 @@ private:
     int nearestFindMatch(const FloatPoint&, float& distanceSquared);
 
     // TODO(yosin) Templataization of |scopeStringMatchesAlgorithm| will be
-    // gone once |RuntimeEnabledFeatures::selectionForComposedTreeEnabled| is
+    // gone once |RuntimeEnabledFeatures::selectionForFlatTreeEnabled| is
     // removed.
     template <typename Strategy>
     void scopeStringMatchesAlgorithm(

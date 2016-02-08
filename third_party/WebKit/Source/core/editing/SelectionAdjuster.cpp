@@ -33,21 +33,21 @@ namespace {
 
 Node* enclosingShadowHost(Node* node)
 {
-    for (Node* runner = node; runner; runner = ComposedTreeTraversal::parent(*runner)) {
+    for (Node* runner = node; runner; runner = FlatTreeTraversal::parent(*runner)) {
         if (isShadowHost(runner))
             return runner;
     }
     return nullptr;
 }
 
-bool isEnclosedBy(const PositionInComposedTree& position, const Node& node)
+bool isEnclosedBy(const PositionInFlatTree& position, const Node& node)
 {
     ASSERT(position.isNotNull());
     Node* anchorNode = position.anchorNode();
     if (anchorNode == node)
         return !position.isAfterAnchor() && !position.isBeforeAnchor();
 
-    return ComposedTreeTraversal::isDescendantOf(*anchorNode, node);
+    return FlatTreeTraversal::isDescendantOf(*anchorNode, node);
 }
 
 bool isSelectionBoundary(const Node& node)
@@ -55,7 +55,7 @@ bool isSelectionBoundary(const Node& node)
     return isHTMLTextAreaElement(node) || isHTMLInputElement(node) || isHTMLSelectElement(node);
 }
 
-Node* enclosingShadowHostForStart(const PositionInComposedTree& position)
+Node* enclosingShadowHostForStart(const PositionInFlatTree& position)
 {
     Node* node = position.nodeAsRangeFirstNode();
     if (!node)
@@ -68,7 +68,7 @@ Node* enclosingShadowHostForStart(const PositionInComposedTree& position)
     return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
 }
 
-Node* enclosingShadowHostForEnd(const PositionInComposedTree& position)
+Node* enclosingShadowHostForEnd(const PositionInFlatTree& position)
 {
     Node* node = position.nodeAsRangeLastNode();
     if (!node)
@@ -81,20 +81,20 @@ Node* enclosingShadowHostForEnd(const PositionInComposedTree& position)
     return isSelectionBoundary(*shadowHost) ? shadowHost : nullptr;
 }
 
-PositionInComposedTree adjustPositionInComposedTreeForStart(const PositionInComposedTree& position, Node* shadowHost)
+PositionInFlatTree adjustPositionInFlatTreeForStart(const PositionInFlatTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
         if (position.isBeforeChildren())
-            return PositionInComposedTree::beforeNode(shadowHost);
-        return PositionInComposedTree::afterNode(shadowHost);
+            return PositionInFlatTree::beforeNode(shadowHost);
+        return PositionInFlatTree::afterNode(shadowHost);
     }
 
     // We use |firstChild|'s after instead of beforeAllChildren for backward
     // compatibility. The positions are same but the anchors would be different,
     // and selection painting uses anchor nodes.
-    if (Node* firstChild = ComposedTreeTraversal::firstChild(*shadowHost))
-        return PositionInComposedTree::beforeNode(firstChild);
-    return PositionInComposedTree();
+    if (Node* firstChild = FlatTreeTraversal::firstChild(*shadowHost))
+        return PositionInFlatTree::beforeNode(firstChild);
+    return PositionInFlatTree();
 }
 
 Position adjustPositionForEnd(const Position& currentPosition, Node* startContainerNode)
@@ -115,20 +115,20 @@ Position adjustPositionForEnd(const Position& currentPosition, Node* startContai
     return Position();
 }
 
-PositionInComposedTree adjustPositionInComposedTreeForEnd(const PositionInComposedTree& position, Node* shadowHost)
+PositionInFlatTree adjustPositionInFlatTreeForEnd(const PositionInFlatTree& position, Node* shadowHost)
 {
     if (isEnclosedBy(position, *shadowHost)) {
         if (position.isAfterChildren())
-            return PositionInComposedTree::afterNode(shadowHost);
-        return PositionInComposedTree::beforeNode(shadowHost);
+            return PositionInFlatTree::afterNode(shadowHost);
+        return PositionInFlatTree::beforeNode(shadowHost);
     }
 
     // We use |lastChild|'s after instead of afterAllChildren for backward
     // compatibility. The positions are same but the anchors would be different,
     // and selection painting uses anchor nodes.
-    if (Node* lastChild = ComposedTreeTraversal::lastChild(*shadowHost))
-        return PositionInComposedTree::afterNode(lastChild);
-    return PositionInComposedTree();
+    if (Node* lastChild = FlatTreeTraversal::lastChild(*shadowHost))
+        return PositionInFlatTree::afterNode(lastChild);
+    return PositionInFlatTree();
 }
 
 Position adjustPositionForStart(const Position& currentPosition, Node* endContainerNode)
@@ -151,39 +151,39 @@ Position adjustPositionForStart(const Position& currentPosition, Node* endContai
 
 } // namespace
 
-// Updates |selectionInComposedTree| to match with |selection|.
-void SelectionAdjuster::adjustSelectionInComposedTree(VisibleSelectionInComposedTree* selectionInComposedTree, const VisibleSelection& selection)
+// Updates |selectionInFlatTree| to match with |selection|.
+void SelectionAdjuster::adjustSelectionInFlatTree(VisibleSelectionInFlatTree* selectionInFlatTree, const VisibleSelection& selection)
 {
     if (selection.isNone()) {
-        *selectionInComposedTree = VisibleSelectionInComposedTree();
+        *selectionInFlatTree = VisibleSelectionInFlatTree();
         return;
     }
 
-    const PositionInComposedTree& base = toPositionInComposedTree(selection.base());
-    const PositionInComposedTree& extent = toPositionInComposedTree(selection.extent());
-    const PositionInComposedTree& position1 = toPositionInComposedTree(selection.start());
-    const PositionInComposedTree& position2 = toPositionInComposedTree(selection.end());
+    const PositionInFlatTree& base = toPositionInFlatTree(selection.base());
+    const PositionInFlatTree& extent = toPositionInFlatTree(selection.extent());
+    const PositionInFlatTree& position1 = toPositionInFlatTree(selection.start());
+    const PositionInFlatTree& position2 = toPositionInFlatTree(selection.end());
     position1.anchorNode()->updateDistribution();
     position2.anchorNode()->updateDistribution();
-    selectionInComposedTree->m_base = base;
-    selectionInComposedTree->m_extent = extent;
-    selectionInComposedTree->m_affinity = selection.m_affinity;
-    selectionInComposedTree->m_isDirectional = selection.m_isDirectional;
-    selectionInComposedTree->m_granularity = selection.m_granularity;
-    selectionInComposedTree->m_hasTrailingWhitespace = selection.m_hasTrailingWhitespace;
-    selectionInComposedTree->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
+    selectionInFlatTree->m_base = base;
+    selectionInFlatTree->m_extent = extent;
+    selectionInFlatTree->m_affinity = selection.m_affinity;
+    selectionInFlatTree->m_isDirectional = selection.m_isDirectional;
+    selectionInFlatTree->m_granularity = selection.m_granularity;
+    selectionInFlatTree->m_hasTrailingWhitespace = selection.m_hasTrailingWhitespace;
+    selectionInFlatTree->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
     if (position1.compareTo(position2) <= 0) {
-        selectionInComposedTree->m_start = position1;
-        selectionInComposedTree->m_end = position2;
+        selectionInFlatTree->m_start = position1;
+        selectionInFlatTree->m_end = position2;
     } else {
-        selectionInComposedTree->m_start = position2;
-        selectionInComposedTree->m_end = position1;
+        selectionInFlatTree->m_start = position2;
+        selectionInFlatTree->m_end = position1;
     }
-    selectionInComposedTree->updateSelectionType();
-    selectionInComposedTree->didChange();
+    selectionInFlatTree->updateSelectionType();
+    selectionInFlatTree->didChange();
 }
 
-static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& selection)
+static bool isCrossingShadowBoundaries(const VisibleSelectionInFlatTree& selection)
 {
     if (!selection.isRange())
         return false;
@@ -193,29 +193,29 @@ static bool isCrossingShadowBoundaries(const VisibleSelectionInComposedTree& sel
         || selection.end().anchorNode()->treeScope() != treeScope;
 }
 
-void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, const VisibleSelectionInComposedTree& selectionInComposedTree)
+void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, const VisibleSelectionInFlatTree& selectionInFlatTree)
 {
-    if (selectionInComposedTree.isNone()) {
+    if (selectionInFlatTree.isNone()) {
         *selection = VisibleSelection();
         return;
     }
 
-    const Position& base = toPositionInDOMTree(selectionInComposedTree.base());
-    const Position& extent = toPositionInDOMTree(selectionInComposedTree.extent());
+    const Position& base = toPositionInDOMTree(selectionInFlatTree.base());
+    const Position& extent = toPositionInDOMTree(selectionInFlatTree.extent());
 
-    if (isCrossingShadowBoundaries(selectionInComposedTree)) {
+    if (isCrossingShadowBoundaries(selectionInFlatTree)) {
         *selection = VisibleSelection(base, extent);
         return;
     }
 
-    const Position& position1 = toPositionInDOMTree(selectionInComposedTree.start());
-    const Position& position2 = toPositionInDOMTree(selectionInComposedTree.end());
+    const Position& position1 = toPositionInDOMTree(selectionInFlatTree.start());
+    const Position& position2 = toPositionInDOMTree(selectionInFlatTree.end());
     selection->m_base = base;
     selection->m_extent = extent;
-    selection->m_affinity = selectionInComposedTree.m_affinity;
-    selection->m_isDirectional = selectionInComposedTree.m_isDirectional;
-    selection->m_granularity = selectionInComposedTree.m_granularity;
-    selection->m_hasTrailingWhitespace = selectionInComposedTree.m_hasTrailingWhitespace;
+    selection->m_affinity = selectionInFlatTree.m_affinity;
+    selection->m_isDirectional = selectionInFlatTree.m_isDirectional;
+    selection->m_granularity = selectionInFlatTree.m_granularity;
+    selection->m_hasTrailingWhitespace = selectionInFlatTree.m_hasTrailingWhitespace;
     selection->m_baseIsFirst = base.isNull() || base.compareTo(extent) <= 0;
     if (position1.compareTo(position2) <= 0) {
         selection->m_start = position1;
@@ -256,7 +256,7 @@ void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSe
 // This function is called twice. The first is called when |m_start| and |m_end|
 // or |m_extent| are same, and the second when |m_start| and |m_end| are changed
 // after downstream/upstream.
-void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelectionInComposedTree* selection)
+void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelectionInFlatTree* selection)
 {
     Node* const shadowHostStart = enclosingShadowHostForStart(selection->start());
     Node* const shadowHostEnd = enclosingShadowHostForEnd(selection->end());
@@ -265,13 +265,13 @@ void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSe
 
     if (selection->isBaseFirst()) {
         Node* const shadowHost = shadowHostStart ? shadowHostStart : shadowHostEnd;
-        const PositionInComposedTree& newEnd = adjustPositionInComposedTreeForEnd(selection->end(), shadowHost);
+        const PositionInFlatTree& newEnd = adjustPositionInFlatTreeForEnd(selection->end(), shadowHost);
         selection->m_extent = newEnd;
         selection->m_end = newEnd;
         return;
     }
     Node* const shadowHost = shadowHostEnd ? shadowHostEnd : shadowHostStart;
-    const PositionInComposedTree& newStart = adjustPositionInComposedTreeForStart(selection->start(), shadowHost);
+    const PositionInFlatTree& newStart = adjustPositionInFlatTreeForStart(selection->start(), shadowHost);
     selection->m_extent = newStart;
     selection->m_start = newStart;
 }

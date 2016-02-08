@@ -267,9 +267,9 @@ String createMarkup(const Position& startPosition, const Position& endPosition, 
     return CreateMarkupAlgorithm<EditingStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
-String createMarkup(const PositionInComposedTree& startPosition, const PositionInComposedTree& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
+String createMarkup(const PositionInFlatTree& startPosition, const PositionInFlatTree& endPosition, EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
-    return CreateMarkupAlgorithm<EditingInComposedTreeStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
+    return CreateMarkupAlgorithm<EditingInFlatTreeStrategy>::createMarkup(startPosition, endPosition, shouldAnnotate, convertBlocksToInlines, shouldResolveURLs, constrainingAncestor);
 }
 
 PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const String& markup, const String& baseURL, ParserContentPolicy parserContentPolicy)
@@ -702,6 +702,6 @@ void mergeWithNextTextNode(Text* textNode, ExceptionState& exceptionState)
 }
 
 template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingStrategy>;
-template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT CreateMarkupAlgorithm<EditingInFlatTreeStrategy>;
 
 } // namespace blink

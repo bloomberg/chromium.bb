@@ -256,39 +256,39 @@ function dumpComposedShadowTree(node, indent)
     indent = indent || "";
     var output = indent + dumpNode(node) + "\n";
     var child;
-    for (child = internals.firstChildInComposedTree(node); child; child = internals.nextSiblingInComposedTree(child))
+    for (child = internals.firstChildInFlatTree(node); child; child = internals.nextSiblingInFlatTree(child))
          output += dumpComposedShadowTree(child, indent + "\t");
     return output;
 }
 
-function lastNodeInComposedTree(root)
+function lastNodeInFlatTree(root)
 {
     var lastNode = root;
-    while (internals.lastChildInComposedTree(lastNode))
-        lastNode = internals.lastChildInComposedTree(lastNode);
+    while (internals.lastChildInFlatTree(lastNode))
+        lastNode = internals.lastChildInFlatTree(lastNode);
     return lastNode;
 }
 
 function showComposedShadowTreeByTraversingInForward(root)
 {
     var node = root;
-    var last = lastNodeInComposedTree(root);
+    var last = lastNodeInFlatTree(root);
     while (node) {
         debug(dumpNode(node));
         if (node == last)
             break;
-        node = internals.nextInComposedTree(node);
+        node = internals.nextInFlatTree(node);
     }
 }
 
 function showComposedShadowTreeByTraversingInBackward(root)
 {
-    var node = lastNodeInComposedTree(root);
+    var node = lastNodeInFlatTree(root);
     while (node) {
         debug(dumpNode(node));
         if (node == root)
             break;
-        node = internals.previousInComposedTree(node);
+        node = internals.previousInFlatTree(node);
     }
 }
 
@@ -308,7 +308,7 @@ function showComposedShadowTree(node)
 
 function showNextNode(node)
 {
-    var next = internals.nextInComposedTree(node);
+    var next = internals.nextInFlatTree(node);
     debug('Next node of [' + dumpNode(node) + '] is [' + dumpNode(next) + ']');
 }
 

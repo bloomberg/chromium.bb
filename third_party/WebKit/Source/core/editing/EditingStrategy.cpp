@@ -27,10 +27,10 @@ int EditingAlgorithm<Traversal>::caretMaxOffset(const Node& node)
 template <typename Traversal>
 bool EditingAlgorithm<Traversal>::isEmptyNonEditableNodeInEditable(const Node* node)
 {
-    // Editability is defined the DOM tree rather than the composed tree. For example:
+    // Editability is defined the DOM tree rather than the flat tree. For example:
     // DOM:
     //   <host><span>unedittable</span><shadowroot><div ce><content /></div></shadowroot></host>
-    // Composed Tree:
+    // Flat Tree:
     //   <host><div ce><span1>unedittable</span></div></host>
     // e.g. editing/shadow/breaking-editing-boundaries.html
     return !Traversal::hasChildren(*node) && !node->hasEditableStyle() && node->parentNode() && node->parentNode()->hasEditableStyle();
@@ -90,6 +90,6 @@ Node* EditingAlgorithm<Strategy>::rootUserSelectAllForNode(Node* node)
 }
 
 template class CORE_TEMPLATE_EXPORT EditingAlgorithm<NodeTraversal>;
-template class CORE_TEMPLATE_EXPORT EditingAlgorithm<ComposedTreeTraversal>;
+template class CORE_TEMPLATE_EXPORT EditingAlgorithm<FlatTreeTraversal>;
 
 } // namespace blink

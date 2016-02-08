@@ -384,7 +384,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
         newSelection.setWithoutValidation(startPosition, endPosition);
     newSelection.setIsDirectional(direction != SelectionHasNoDirection);
 
-    frame->selection().setSelection(newSelection, FrameSelection::DoNotAdjustInComposedTree | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
+    frame->selection().setSelection(newSelection, FrameSelection::DoNotAdjustInFlatTree | FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | (selectionOption == ChangeSelectionAndFocus ? 0 : FrameSelection::DoNotSetFocus));
     if (eventBehaviour == DispatchSelectEvent)
         scheduleSelectEvent();
 }

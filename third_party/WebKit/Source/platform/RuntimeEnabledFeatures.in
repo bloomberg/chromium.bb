@@ -162,7 +162,7 @@ ScrollAnchoring
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
-SelectionForComposedTree status=stable
+SelectionForFlatTree status=stable
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerExtendableMessageEvent status=experimental
 ServiceWorkerPerformanceTimeline status=stable

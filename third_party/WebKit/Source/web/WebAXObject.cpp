@@ -932,7 +932,7 @@ void WebAXObject::showContextMenu() const
         element = toElement(node);
     } else {
         node->updateDistribution();
-        ContainerNode* parent = ComposedTreeTraversal::parent(*node);
+        ContainerNode* parent = FlatTreeTraversal::parent(*node);
         ASSERT_WITH_SECURITY_IMPLICATION(parent->isElementNode());
         element = toElement(parent);
     }

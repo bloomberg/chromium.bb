@@ -27,9 +27,9 @@ PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 :host-context matches a shadow host in just a nested shadow tree, not all enclosing shadow trees.
 PASS backgroundColorOf('host1') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host1/host2') is "rgb(0, 128, 0)"
-:host-context matches based on a composed tree.
+:host-context matches based on a flat tree.
 PASS backgroundColorOf('host/target') is "rgb(0, 128, 0)"
-:host-context matches based on a composed tree when having multiple shadow roots.
+:host-context matches based on a flat tree when having multiple shadow roots.
 PASS backgroundColorOf('host/targetA') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host/targetB') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host/targetC') is "rgb(0, 128, 0)"

@@ -352,8 +352,8 @@ void SelectionController::selectClosestWordFromMouseEvent(const MouseEventWithHi
 
     AppendTrailingWhitespace appendTrailingWhitespace = (result.event().clickCount() == 2 && m_frame->editor().isSelectTrailingWhitespaceEnabled()) ? AppendTrailingWhitespace::ShouldAppend : AppendTrailingWhitespace::DontAppend;
 
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return selectClosestWordFromHitTestResult<EditingInComposedTreeStrategy>(result.hitTestResult(), appendTrailingWhitespace);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return selectClosestWordFromHitTestResult<EditingInFlatTreeStrategy>(result.hitTestResult(), appendTrailingWhitespace);
     selectClosestWordFromHitTestResult<EditingStrategy>(result.hitTestResult(), appendTrailingWhitespace);
 }
 
@@ -438,15 +438,15 @@ bool SelectionController::handleMousePressEventTripleClickAlgorithm(const MouseE
 
 bool SelectionController::handleMousePressEventTripleClick(const MouseEventWithHitTestResults& event)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return handleMousePressEventTripleClickAlgorithm<EditingInComposedTreeStrategy>(event);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return handleMousePressEventTripleClickAlgorithm<EditingInFlatTreeStrategy>(event);
     return handleMousePressEventTripleClickAlgorithm<EditingStrategy>(event);
 }
 
 bool SelectionController::handleMousePressEventSingleClick(const MouseEventWithHitTestResults& event)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return handleMousePressEventSingleClickAlgorithm<EditingInComposedTreeStrategy>(event);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return handleMousePressEventSingleClickAlgorithm<EditingInFlatTreeStrategy>(event);
     return handleMousePressEventSingleClickAlgorithm<EditingStrategy>(event);
 }
 
@@ -490,8 +490,8 @@ void SelectionController::updateSelectionForMouseDrag(Node* mousePressNode, cons
 
 void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTestResult, Node* mousePressNode, const LayoutPoint& dragStartPos, const IntPoint& lastKnownMousePosition)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return updateSelectionForMouseDragAlgorithm<EditingInComposedTreeStrategy>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return updateSelectionForMouseDragAlgorithm<EditingInFlatTreeStrategy>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
     updateSelectionForMouseDragAlgorithm<EditingStrategy>(hitTestResult, mousePressNode, dragStartPos, lastKnownMousePosition);
 }
 
@@ -535,8 +535,8 @@ bool SelectionController::handleMouseReleaseEventAlgorithm(const MouseEventWithH
 
 bool SelectionController::handleMouseReleaseEvent(const MouseEventWithHitTestResults& event, const LayoutPoint& dragStartPos)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return handleMouseReleaseEventAlgorithm<EditingInComposedTreeStrategy>(event, dragStartPos);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return handleMouseReleaseEventAlgorithm<EditingInFlatTreeStrategy>(event, dragStartPos);
     return handleMouseReleaseEventAlgorithm<EditingStrategy>(event, dragStartPos);
 }
 
@@ -592,8 +592,8 @@ bool SelectionController::handleGestureLongPressAlgorithm(const PlatformGestureE
 
 bool SelectionController::handleGestureLongPress(const PlatformGestureEvent& gestureEvent, const HitTestResult& hitTestResult)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return handleGestureLongPressAlgorithm<EditingInComposedTreeStrategy>(gestureEvent, hitTestResult);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return handleGestureLongPressAlgorithm<EditingInFlatTreeStrategy>(gestureEvent, hitTestResult);
     return handleGestureLongPressAlgorithm<EditingStrategy>(gestureEvent, hitTestResult);
 }
 
@@ -610,16 +610,16 @@ void SelectionController::sendContextMenuEvent(const MouseEventWithHitTestResult
     m_mouseDownMayStartSelect = true; // context menu events are always allowed to perform a selection
 
     if (mev.hitTestResult().isMisspelled()) {
-        if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-            return selectClosestMisspellingFromMouseEvent<EditingInComposedTreeStrategy>(mev);
+        if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+            return selectClosestMisspellingFromMouseEvent<EditingInFlatTreeStrategy>(mev);
         return selectClosestMisspellingFromMouseEvent<EditingStrategy>(mev);
     }
 
     if (!m_frame->editor().behavior().shouldSelectOnContextualMenuClick())
         return;
 
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return selectClosestWordOrLinkFromMouseEvent<EditingInComposedTreeStrategy>(mev);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return selectClosestWordOrLinkFromMouseEvent<EditingInFlatTreeStrategy>(mev);
     selectClosestWordOrLinkFromMouseEvent<EditingStrategy>(mev);
 }
 
@@ -642,8 +642,8 @@ void SelectionController::passMousePressEventToSubframeAlgorithm(const MouseEven
 
 void SelectionController::passMousePressEventToSubframe(const MouseEventWithHitTestResults& mev)
 {
-    if (RuntimeEnabledFeatures::selectionForComposedTreeEnabled())
-        return passMousePressEventToSubframeAlgorithm<EditingInComposedTreeStrategy>(mev);
+    if (RuntimeEnabledFeatures::selectionForFlatTreeEnabled())
+        return passMousePressEventToSubframeAlgorithm<EditingInFlatTreeStrategy>(mev);
     passMousePressEventToSubframeAlgorithm<EditingStrategy>(mev);
 }
 
