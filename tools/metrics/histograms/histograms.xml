@@ -32499,6 +32499,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.Events.Provisional" enum="ProvisionalLoadEvent">
   <owner>csharrison@chromium.org</owner>
   <owner>bmcquade@chromium.org</owner>
+  <obsolete>
+    Deprecated Feb 2016 in favor of PageLoad.AbortTiming and
+    PageLoad.Timing2.NavigationToFailedProvisionalLoad. Note that the
+    corresponding background enumerations are no longer being tracked in the
+    timing histograms.
+  </obsolete>
   <summary>
     Captures counts of provisional load events. These include aborted, failed,
     and successful (committed) provisional loads.
@@ -32558,6 +32564,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Measures the time from navigation timing's navigation start to the time the
     DOMContentLoaded event is fired, for main frame documents.
+  </summary>
+</histogram>
+
+<histogram name="PageLoad.Timing2.NavigationToFailedProvisionalLoad" units="ms">
+  <owner>bmcquade@chromium.org</owner>
+  <owner>shivanisha@chromium.org</owner>
+  <summary>
+    Measures the time from navigation timing's navigation start to the time the
+    provisional load failed. Only measures provisional loads that failed in the
+    foreground.
   </summary>
 </histogram>
 

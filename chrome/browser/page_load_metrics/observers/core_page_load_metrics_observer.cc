@@ -85,6 +85,8 @@ const char kHistogramBackgroundBeforePaint[] =
     "PageLoad.Timing2.NavigationToFirstBackground.AfterCommit.BeforePaint";
 const char kHistogramBackgroundBeforeCommit[] =
     "PageLoad.Timing2.NavigationToFirstBackground.BeforeCommit";
+const char kHistogramFailedProvisionalLoad[] =
+    "PageLoad.Timing2.NavigationToFailedProvisionalLoad";
 
 const char kRapporMetricsNameCoarseTiming[] =
     "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
@@ -102,6 +104,24 @@ void CorePageLoadMetricsObserver::OnComplete(
   RecordRappor(timing, info);
 }
 
+void CorePageLoadMetricsObserver::OnFailedProvisionalLoad(
+    content::NavigationHandle* navigation_handle) {
+  // Only handle actual failures; provisional loads that failed due to another
+  // committed load or due to user action are recorded in
+  // AbortsPageLoadMetricsObserver.
+  net::Error error = navigation_handle->GetNetErrorCode();
+  if (error == net::OK || error == net::ERR_ABORTED) {
+    return;
+  }
+
+  // Saving the related timing and other data in this Observer instead of
+  // PageLoadTracker which saves commit and abort times, as it seems
+  // not every observer implementation would be interested in this metric.
+  failed_provisional_load_info_.interval =
+      base::TimeTicks::Now() - navigation_handle->NavigationStart();
+  failed_provisional_load_info_.error = error;
+}
+
 void CorePageLoadMetricsObserver::RecordTimingHistograms(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
@@ -113,6 +133,15 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
     } else {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramBackgroundBeforeCommit,
                           info.first_background_time);
+    }
+  }
+
+  if (failed_provisional_load_info_.error != net::OK) {
+    // Ignores a background failed provisional load.
+    if (EventOccurredInForeground(failed_provisional_load_info_.interval,
+                                  info)) {
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramFailedProvisionalLoad,
+                          failed_provisional_load_info_.interval);
     }
   }
 

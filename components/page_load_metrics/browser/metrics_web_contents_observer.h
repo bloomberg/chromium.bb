@@ -31,40 +31,9 @@ class PageLoadTracker;
 
 namespace internal {
 
-extern const char kProvisionalEvents[];
-extern const char kBackgroundProvisionalEvents[];
 extern const char kErrorEvents[];
 
 }  // namespace internal
-
-// ProvisionalLoadEvents count all main frame navigations before they commit.
-// The events in this enum are all disjoint, and summing them yields the total
-// number of main frame provisional loads.
-//
-// If you add elements from this enum, make sure you update the enum
-// value in histograms.xml. Only add elements to the end to prevent
-// inconsistencies between versions.
-enum ProvisionalLoadEvent {
-  // This case occurs when the NavigationHandle finishes and reports
-  // !HasCommitted(), but reports no net::Error. This should not occur
-  // pre-PlzNavigate, but afterwards it should represent the navigation stopped
-  // by the user before it was ready to commit.
-  PROVISIONAL_LOAD_STOPPED,
-
-  // An aborted provisional load has error net::ERR_ABORTED. Note that this can
-  // come from some non user-initiated errors, such as downloads, or 204
-  // responses. See crbug.com/542369.
-  PROVISIONAL_LOAD_ERR_ABORTED,
-
-  // This event captures all the other ways a provisional load can fail.
-  PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT,
-
-  // Counts the number of successful commits.
-  PROVISIONAL_LOAD_COMMITTED,
-
-  // Add values before this final count.
-  PROVISIONAL_LOAD_LAST_ENTRY
-};
 
 // These errors are internal to the page_load_metrics subsystem and do not
 // reflect actual errors that occur during a page load.
@@ -132,12 +101,12 @@ class PageLoadTracker {
   ~PageLoadTracker();
   void Redirect(content::NavigationHandle* navigation_handle);
   void Commit(content::NavigationHandle* navigation_handle);
+  void FailedProvisionalLoad(content::NavigationHandle* navigation_handle);
   void WebContentsHidden();
   void WebContentsShown();
 
   // Returns true if the timing was successfully updated.
   bool UpdateTiming(const PageLoadTiming& timing);
-  void RecordProvisionalEvent(ProvisionalLoadEvent event);
   bool HasBackgrounded();
 
   void set_renderer_tracked(bool renderer_tracked);
@@ -196,8 +165,9 @@ class PageLoadTracker {
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };
 
-// MetricsWebContentsObserver logs page load UMA metrics based on
-// IPC messages received from a MetricsRenderFrameObserver.
+// MetricsWebContentsObserver tracks page loads and loading metrics
+// related data based on IPC messages received from a
+// MetricsRenderFrameObserver.
 class MetricsWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<MetricsWebContentsObserver> {

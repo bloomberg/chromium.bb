@@ -96,9 +96,6 @@ UserAbortType AbortTypeForPageTransition(ui::PageTransition transition) {
 
 namespace internal {
 
-const char kProvisionalEvents[] = "PageLoad.Events.Provisional";
-const char kBackgroundProvisionalEvents[] =
-    "PageLoad.Events.Provisional.Background";
 const char kErrorEvents[] = "PageLoad.Events.InternalError";
 
 }  // namespace internal
@@ -149,6 +146,13 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   committed_url_ = navigation_handle->GetURL();
   for (const auto& observer : observers_) {
     observer->OnCommit(navigation_handle);
+  }
+}
+
+void PageLoadTracker::FailedProvisionalLoad(
+    content::NavigationHandle* navigation_handle) {
+  for (const auto& observer : observers_) {
+    observer->OnFailedProvisionalLoad(navigation_handle);
   }
 }
 
@@ -255,16 +259,6 @@ void PageLoadTracker::UpdateAbortInternal(UserAbortType abort_type,
   abort_time_ = timestamp;
 }
 
-void PageLoadTracker::RecordProvisionalEvent(ProvisionalLoadEvent event) {
-  if (HasBackgrounded()) {
-    UMA_HISTOGRAM_ENUMERATION(internal::kBackgroundProvisionalEvents, event,
-                              PROVISIONAL_LOAD_LAST_ENTRY);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(internal::kProvisionalEvents, event,
-                              PROVISIONAL_LOAD_LAST_ENTRY);
-  }
-}
-
 // static
 MetricsWebContentsObserver::MetricsWebContentsObserver(
     content::WebContents* web_contents,
@@ -343,27 +337,24 @@ void MetricsWebContentsObserver::DidFinishNavigation(
   // TODO(csharrison): Track changes to NavigationHandle for signals when this
   // is the case (HTTP response headers).
   if (!navigation_handle->HasCommitted()) {
-    const ProvisionalLoadEvent event = [](net::Error error) {
-      switch (error) {
-        case net::OK:
-          // When a finished navigation that didn't commit has a net error code
-          // of OK, it indicates that the provisional load was stopped by the
-          // user.
-          return PROVISIONAL_LOAD_STOPPED;
-        case net::ERR_ABORTED:
-          return PROVISIONAL_LOAD_ERR_ABORTED;
-        default:
-          return PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT;
-      }
-    }(navigation_handle->GetNetErrorCode());
-    finished_nav->RecordProvisionalEvent(event);
-    if (event != PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT) {
+    finished_nav->FailedProvisionalLoad(navigation_handle);
+
+    net::Error error = navigation_handle->GetNetErrorCode();
+
+    // net::OK: This case occurs when the NavigationHandle finishes and reports
+    // !HasCommitted(), but reports no net::Error. This should not occur
+    // pre-PlzNavigate, but afterwards it should represent the navigation
+    // stopped by the user before it was ready to commit.
+    // net::ERR_ABORTED: An aborted provisional load has error net::ERR_ABORTED.
+    // Note that this can come from some non user-initiated errors, such as
+    // downloads, or 204 responses. See crbug.com/542369.
+    if ((error == net::OK) || (error == net::ERR_ABORTED)) {
       finished_nav->NotifyAbort(ABORT_OTHER, base::TimeTicks::Now());
       aborted_provisional_loads_.push_back(std::move(finished_nav));
     }
+
     return;
   }
-  finished_nav->RecordProvisionalEvent(PROVISIONAL_LOAD_COMMITTED);
 
   // Don't treat a same-page nav as a new page load.
   if (navigation_handle->IsSamePage())

@@ -265,6 +265,38 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
   histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
 }
 
+TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
+  GURL url(kDefaultTestUrl);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(url);
+  rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
+  rfh_tester->SimulateNavigationStop();
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramCommit, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFirstTextPaint, 0);
+  histogram_tester().ExpectTotalCount(internal::kHistogramFailedProvisionalLoad,
+                                      1);
+}
+
+TEST_F(CorePageLoadMetricsObserverTest, FailedBackgroundProvisionalLoad) {
+  // Test that failed provisional event does not get logged in the
+  // histogram if it happened in the background
+  GURL url(kDefaultTestUrl);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  rfh_tester->SimulateNavigationStart(url);
+  web_contents()->WasHidden();
+  rfh_tester->SimulateNavigationError(url, net::ERR_TIMED_OUT);
+  rfh_tester->SimulateNavigationStop();
+
+  histogram_tester().ExpectTotalCount(internal::kHistogramFailedProvisionalLoad,
+                                      0);
+}
+
 TEST_F(CorePageLoadMetricsObserverTest, BackgroundBeforePaint) {
   page_load_metrics::PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);

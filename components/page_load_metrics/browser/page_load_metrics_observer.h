@@ -103,7 +103,14 @@ class PageLoadMetricsObserver {
   // first data for the request. The navigation handle holds relevant data for
   // the navigation, but will be destroyed soon after this call. Don't hold a
   // reference to it.
+  // Note that this does not get called for same page navigations.
   virtual void OnCommit(content::NavigationHandle* navigation_handle) {}
+
+  // OnFailedProvisionalLoad is triggered when a provisional load failed and did
+  // not commit. Note that provisional loads that result in downloads or 204s
+  // are aborted by the system, and thus considered failed provisional loads.
+  virtual void OnFailedProvisionalLoad(
+      content::NavigationHandle* navigation_handle) {}
 
   // OnComplete is triggered when we are ready to record metrics for this page
   // load. This will happen some time after commit. The PageLoadTiming struct

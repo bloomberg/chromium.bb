@@ -38,6 +38,7 @@ extern const char kHistogramFirstForeground[];
 
 extern const char kHistogramBackgroundBeforePaint[];
 extern const char kHistogramBackgroundBeforeCommit[];
+extern const char kHistogramFailedProvisionalLoad[];
 
 extern const char kRapporMetricsNameCoarseTiming[];
 
@@ -55,12 +56,25 @@ class CorePageLoadMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFailedProvisionalLoad(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
+  // Information related to failed provisional loads.
+  // Populated in OnFailedProvisionalLoad and accessed in OnComplete.
+  struct FailedProvisionalLoadInfo {
+    base::TimeDelta interval;
+    net::Error error;
+
+    FailedProvisionalLoadInfo() : error(net::OK) {}
+  };
+
   void RecordTimingHistograms(const page_load_metrics::PageLoadTiming& timing,
                               const page_load_metrics::PageLoadExtraInfo& info);
   void RecordRappor(const page_load_metrics::PageLoadTiming& timing,
                     const page_load_metrics::PageLoadExtraInfo& info);
+
+  FailedProvisionalLoadInfo failed_provisional_load_info_;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };

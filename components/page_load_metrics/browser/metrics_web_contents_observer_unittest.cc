@@ -73,10 +73,7 @@ class TestPageLoadMetricsEmbedderInterface
 class MetricsWebContentsObserverTest
     : public content::RenderViewHostTestHarness {
  public:
-  MetricsWebContentsObserverTest()
-      : num_provisional_events_(0),
-      num_provisional_events_bg_(0),
-      num_errors_(0) {}
+  MetricsWebContentsObserverTest() : num_errors_(0) {}
 
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
@@ -90,30 +87,12 @@ class MetricsWebContentsObserverTest
     observer_->WasShown();
   }
 
-  void CheckProvisionalEvent(ProvisionalLoadEvent event,
-                             int count,
-                             bool background) {
-    if (background) {
-      histogram_tester_.ExpectBucketCount(
-          internal::kBackgroundProvisionalEvents, event, count);
-      num_provisional_events_bg_ += count;
-    } else {
-      histogram_tester_.ExpectBucketCount(internal::kProvisionalEvents, event,
-                                          count);
-      num_provisional_events_ += count;
-    }
-  }
-
   void CheckErrorEvent(InternalErrorLoadEvent error, int count) {
     histogram_tester_.ExpectBucketCount(internal::kErrorEvents, error, count);
     num_errors_ += count;
   }
 
   void CheckTotalEvents() {
-    histogram_tester_.ExpectTotalCount(internal::kProvisionalEvents,
-                                       num_provisional_events_);
-    histogram_tester_.ExpectTotalCount(internal::kBackgroundProvisionalEvents,
-                                       num_provisional_events_bg_);
     histogram_tester_.ExpectTotalCount(internal::kErrorEvents, num_errors_);
   }
 
@@ -134,8 +113,6 @@ class MetricsWebContentsObserverTest
   scoped_ptr<MetricsWebContentsObserver> observer_;
 
  private:
-  int num_provisional_events_;
-  int num_provisional_events_bg_;
   int num_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsWebContentsObserverTest);
@@ -207,53 +184,6 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
   AssertNoTimingReported();
 }
 
-TEST_F(MetricsWebContentsObserverTest, FailProvisionalLoad) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl),
-                                      net::ERR_TIMED_OUT);
-  rfh_tester->SimulateNavigationStop();
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT, 1, false);
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_ABORTED, 0, false);
-  CheckTotalEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoad) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT, 0, false);
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_ABORTED, 1, false);
-  CheckTotalEvents();
-}
-
-TEST_F(MetricsWebContentsObserverTest, AbortProvisionalLoadInBackground) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-
-  observer_->WasHidden();
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
-
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_FAILED_NON_ABORT, 0, true);
-  CheckProvisionalEvent(PROVISIONAL_LOAD_ERR_ABORTED, 1, true);
-  CheckTotalEvents();
-}
-
 TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(10);
@@ -270,7 +200,6 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
 
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 2, false);
   CheckErrorEvent(ERR_IPC_FROM_BAD_URL_SCHEME, 1);
   CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
   CheckTotalEvents();
@@ -316,7 +245,6 @@ TEST_F(MetricsWebContentsObserverTest, BadIPC) {
       PageLoadMetricsMsg_TimingUpdated(observer_->routing_id(), timing2),
       main_rfh());
 
-  CheckProvisionalEvent(PROVISIONAL_LOAD_COMMITTED, 1, false);
   CheckErrorEvent(ERR_BAD_TIMING_IPC, 1);
   CheckTotalEvents();
 }
