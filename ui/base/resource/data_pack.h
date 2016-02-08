@@ -20,8 +20,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
+#include "ui/base/resource/data_pack_export.h"
 #include "ui/base/resource/resource_handle.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class FilePath;
@@ -31,7 +31,7 @@ class RefCountedStaticMemory;
 namespace ui {
 enum ScaleFactor : int;
 
-class UI_BASE_EXPORT DataPack : public ResourceHandle {
+class UI_DATA_PACK_EXPORT DataPack : public ResourceHandle {
  public:
   explicit DataPack(ui::ScaleFactor scale_factor);
   ~DataPack() override;

@@ -965,6 +965,7 @@
         '../ui/aura/aura.gyp:aura',
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
+        '../ui/base/ui_base.gyp:ui_data_pack',
         '../ui/compositor/compositor.gyp:compositor',
         '../ui/events/devices/events_devices.gyp:events_devices',
         '../ui/events/events.gyp:events',

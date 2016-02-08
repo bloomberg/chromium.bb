@@ -205,6 +205,7 @@ source_set("browser") {
     "//third_party/zlib:minizip",
     "//third_party/zlib:zip",
     "//ui/base",
+    "//ui/base:ui_data_pack",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

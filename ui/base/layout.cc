@@ -26,11 +26,6 @@ namespace {
 
 std::vector<ScaleFactor>* g_supported_scale_factors = NULL;
 
-const float kScaleFactorScales[] = {1.0f, 1.0f, 1.25f, 1.33f, 1.4f, 1.5f, 1.8f,
-                                    2.0f, 2.5f, 3.0f};
-static_assert(NUM_SCALE_FACTORS == arraysize(kScaleFactorScales),
-              "kScaleFactorScales has incorrect size");
-
 }  // namespace
 
 void SetSupportedScaleFactors(
@@ -50,7 +45,7 @@ void SetSupportedScaleFactors(
   for (std::vector<ScaleFactor>::const_iterator it =
           g_supported_scale_factors->begin();
        it != g_supported_scale_factors->end(); ++it) {
-    scales.push_back(kScaleFactorScales[*it]);
+    scales.push_back(GetScaleForScaleFactor(*it));
   }
   gfx::ImageSkia::SetSupportedScales(scales);
 }
@@ -66,7 +61,7 @@ ScaleFactor GetSupportedScaleFactor(float scale) {
   float smallest_diff =  std::numeric_limits<float>::max();
   for (size_t i = 0; i < g_supported_scale_factors->size(); ++i) {
     ScaleFactor scale_factor = (*g_supported_scale_factors)[i];
-    float diff = std::abs(kScaleFactorScales[scale_factor] - scale);
+    float diff = std::abs(GetScaleForScaleFactor(scale_factor) - scale);
     if (diff < smallest_diff) {
       closest_match = scale_factor;
       smallest_diff = diff;
@@ -76,13 +71,9 @@ ScaleFactor GetSupportedScaleFactor(float scale) {
   return closest_match;
 }
 
-float GetScaleForScaleFactor(ScaleFactor scale_factor) {
-  return kScaleFactorScales[scale_factor];
-}
-
 bool IsSupportedScale(float scale) {
   for (auto scale_factor_idx : *g_supported_scale_factors) {
-    if (kScaleFactorScales[scale_factor_idx] == scale)
+    if (GetScaleForScaleFactor(scale_factor_idx) == scale)
       return true;
   }
   return false;

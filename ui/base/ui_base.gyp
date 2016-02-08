@@ -8,10 +8,45 @@
   },
   'targets': [
     {
+      # GN version: //ui/base:ui_data_pack
+      # As part of building Chrome on iOS, it is necessary to run a tool on
+      # the host to load datapack and generate output in a format defined
+      # by the platform (this is to support notifications).
+      #
+      # Introduce a standalone target that build on both 'host' and 'target'
+      # toolset that just build the support to load datapack. The dependency
+      # should be kept minimal to have to build too many targets with multiple
+      # toolsets.
+      'target_name': 'ui_data_pack',
+      'toolsets': ['host', 'target'],
+      'type': '<(component)',
+      'dependencies': [
+        '../../base/base.gyp:base',
+      ],
+      'sources': [
+        'resource/data_pack.cc',
+        'resource/data_pack.h',
+        'resource/data_pack_export.h',
+        'resource/resource_handle.h',
+        'resource/scale_factor.cc',
+        'resource/scale_factor.h',
+      ],
+      'defines': [
+        'UI_DATA_PACK_IMPLEMENTATION',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          # TODO(jschuh): C4267: http://crbug.com/167187 size_t -> int
+          'msvs_disabled_warnings': [ 4267 ],
+        }],
+    ],
+    },
+    {
       # GN version: //ui/base
       'target_name': 'ui_base',
       'type': '<(component)',
       'dependencies': [
+        'ui_data_pack',
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:base_static',
@@ -262,8 +297,6 @@
         'nine_image_painter_factory.h',
         'page_transition_types.cc',
         'page_transition_types.h',
-        'resource/data_pack.cc',
-        'resource/data_pack.h',
         'resource/resource_bundle.cc',
         'resource/resource_bundle.h',
         'resource/resource_bundle_android.cc',
@@ -274,7 +307,6 @@
         'resource/resource_bundle_win.h',
         'resource/resource_data_dll_win.cc',
         'resource/resource_data_dll_win.h',
-        'resource/resource_handle.h',
         'template_expressions.cc',
         'template_expressions.h',
         'text/bytes_formatting.cc',
@@ -652,6 +684,7 @@
       'target_name': 'ui_base_test_support',
       'type': 'static_library',
       'dependencies': [
+        'ui_data_pack',
         '../../base/base.gyp:base',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',

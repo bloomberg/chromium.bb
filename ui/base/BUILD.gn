@@ -14,6 +14,34 @@ if (is_android) {
 
 build_ime = !is_ios
 
+# As part of building Chrome on iOS, it is necessary to run a tool on
+# the host to load datapack and generate output in a format defined
+# by the platform (this is to support notifications).
+#
+# Introduce a standalone target that build on both 'host' and 'target'
+# toolset that just build the support to load datapack. The dependency
+# should be kept minimal to have to build too many targets with multiple
+# toolsets.
+component("ui_data_pack") {
+  sources = [
+    "resource/data_pack.cc",
+    "resource/data_pack.h",
+    "resource/data_pack_export.h",
+    "resource/resource_handle.h",
+    "resource/scale_factor.cc",
+    "resource/scale_factor.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  defines = [ "UI_DATA_PACK_IMPLEMENTATION" ]
+
+  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+}
+
 component("base") {
   output_name = "ui_base"
 
@@ -180,8 +208,6 @@ component("base") {
     "nine_image_painter_factory.h",
     "page_transition_types.cc",
     "page_transition_types.h",
-    "resource/data_pack.cc",
-    "resource/data_pack.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
@@ -192,7 +218,6 @@ component("base") {
     "resource/resource_bundle_win.h",
     "resource/resource_data_dll_win.cc",
     "resource/resource_data_dll_win.h",
-    "resource/resource_handle.h",
     "template_expressions.cc",
     "template_expressions.h",
     "theme_provider.cc",
@@ -331,6 +356,7 @@ component("base") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//third_party/icu",
+    "//ui/base:ui_data_pack",
     "//ui/events",
     "//ui/events/devices",
     "//ui/resources",
@@ -623,6 +649,7 @@ source_set("test_support") {
     "//base/test:test_config",
     "//skia",
     "//testing/gtest",
+    "//ui/base:ui_data_pack",
     "//ui/events:events_base",
     "//ui/events:test_support",
     "//ui/gfx",
@@ -675,6 +702,7 @@ test("ui_base_unittests") {
     "resource/data_pack_literal.cc",
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
+    "resource/scale_factor_unittest.cc",
     "template_expressions_unittest.cc",
     "test/run_all_unittests.cc",
     "user_activity/user_activity_detector_unittest.cc",
@@ -766,6 +794,7 @@ test("ui_base_unittests") {
     "//third_party/icu",
     "//ui/base",
     "//ui/base:test_support",
+    "//ui/base:ui_data_pack",
     "//ui/events:events_base",
     "//ui/events:test_support",
     "//ui/gfx:test_support",

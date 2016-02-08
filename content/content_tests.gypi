@@ -848,6 +848,7 @@
         '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/base/ui_base.gyp:ui_base_test_support',
+        '../ui/base/ui_base.gyp:ui_data_pack',
         '../ui/events/events.gyp:dom_keycode_converter',
         '../ui/events/events.gyp:events_base',
         '../ui/events/events.gyp:events_test_support',
