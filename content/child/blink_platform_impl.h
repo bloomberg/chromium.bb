@@ -82,10 +82,7 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const blink::WebString& challenge,
       const blink::WebURL& url,
       const blink::WebURL& top_origin) override;
-  size_t memoryUsageMB() override;
   size_t actualMemoryUsageMB() override;
-  size_t physicalMemoryMB() override;
-  size_t virtualMemoryLimitMB() override;
   size_t numberOfProcessors() override;
 
   blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(

@@ -108,54 +108,6 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
   DISALLOW_COPY_AND_ASSIGN(WebWaitableEventImpl);
 };
 
-// A simple class to cache the memory usage for a given amount of time.
-class MemoryUsageCache {
- public:
-  // Retrieves the Singleton.
-  static MemoryUsageCache* GetInstance() {
-    return base::Singleton<MemoryUsageCache>::get();
-  }
-
-  MemoryUsageCache() : memory_value_(0) { Init(); }
-  ~MemoryUsageCache() {}
-
-  void Init() {
-    const unsigned int kCacheSeconds = 1;
-    cache_valid_time_ = base::TimeDelta::FromSeconds(kCacheSeconds);
-  }
-
-  // Returns true if the cached value is fresh.
-  // Returns false if the cached value is stale, or if |cached_value| is NULL.
-  bool IsCachedValueValid(size_t* cached_value) {
-    base::AutoLock scoped_lock(lock_);
-    if (!cached_value)
-      return false;
-    if (base::Time::Now() - last_updated_time_ > cache_valid_time_)
-      return false;
-    *cached_value = memory_value_;
-    return true;
-  };
-
-  // Setter for |memory_value_|, refreshes |last_updated_time_|.
-  void SetMemoryValue(const size_t value) {
-    base::AutoLock scoped_lock(lock_);
-    memory_value_ = value;
-    last_updated_time_ = base::Time::Now();
-  }
-
- private:
-  // The cached memory value.
-  size_t memory_value_;
-
-  // How long the cached value should remain valid.
-  base::TimeDelta cache_valid_time_;
-
-  // The last time the cached value was updated.
-  base::Time last_updated_time_;
-
-  base::Lock lock_;
-};
-
 }  // namespace
 
 static int ToMessageID(WebLocalizedString::Name name) {
@@ -1093,32 +1045,8 @@ blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
   return blink::WebString("");
 }
 
-static size_t getMemoryUsageMB(bool bypass_cache) {
-  size_t current_mem_usage = 0;
-  MemoryUsageCache* mem_usage_cache_singleton = MemoryUsageCache::GetInstance();
-  if (!bypass_cache &&
-      mem_usage_cache_singleton->IsCachedValueValid(&current_mem_usage))
-    return current_mem_usage;
-
-  current_mem_usage = GetMemoryUsageKB() >> 10;
-  mem_usage_cache_singleton->SetMemoryValue(current_mem_usage);
-  return current_mem_usage;
-}
-
-size_t BlinkPlatformImpl::memoryUsageMB() {
-  return getMemoryUsageMB(false);
-}
-
 size_t BlinkPlatformImpl::actualMemoryUsageMB() {
-  return getMemoryUsageMB(true);
-}
-
-size_t BlinkPlatformImpl::physicalMemoryMB() {
-  return static_cast<size_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
-}
-
-size_t BlinkPlatformImpl::virtualMemoryLimitMB() {
-  return static_cast<size_t>(base::SysInfo::AmountOfVirtualMemoryMB());
+  return GetMemoryUsageKB() >> 10;
 }
 
 size_t BlinkPlatformImpl::numberOfProcessors() {
