@@ -16,7 +16,6 @@
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
-#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 namespace mojo {
 namespace shell {
@@ -292,6 +291,31 @@ void CapabilityFilterTest::TearDown() {
   application_manager_.reset();
 }
 
+class ServiceProviderImpl : public ServiceProvider {
+ public:
+  explicit ServiceProviderImpl(
+      InterfaceRequest<ServiceProvider> service_provider,
+      InterfaceFactory<Validator>* factory)
+      : binding_(this, std::move(service_provider)),
+        factory_(factory) {}
+  ~ServiceProviderImpl() override {}
+
+ private:
+  // ServiceProvider method.
+  void ConnectToService(const mojo::String& service_name,
+                        ScopedMessagePipeHandle client_handle) override {
+    if (service_name == Validator::Name_) {
+      factory_->Create(nullptr,
+                       MakeRequest<Validator>(std::move(client_handle)));
+    }
+  }
+
+  Binding<ServiceProvider> binding_;
+  InterfaceFactory<Validator>* factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
+};
+
 void CapabilityFilterTest::RunApplication(const std::string& url,
                                           const CapabilityFilter& filter) {
   ServiceProviderPtr services;
@@ -300,8 +324,7 @@ void CapabilityFilterTest::RunApplication(const std::string& url,
   // because we don't allow the test application to connect to test:validator.
   // Adding it to the CapabilityFilter would interfere with the test.
   ServiceProviderPtr exposed_services;
-  (new ServiceProviderImpl(GetProxy(&exposed_services)))->
-      AddService<Validator>(validator_);
+  new ServiceProviderImpl(GetProxy(&exposed_services), validator_);
   scoped_ptr<ConnectToApplicationParams> params(
       new ConnectToApplicationParams);
   params->SetTarget(Identity(GURL(url), std::string(), filter));

@@ -6,7 +6,7 @@ import("//testing/test.gni")
 
 test("mojo_public_application_unittests") {
   sources = [
-    "service_registry_unittest.cc",
+    "connection_impl_unittest.cc",
   ]
 
   deps = [

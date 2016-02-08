@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/callback.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/shell/public/cpp/app_lifetime_helper.h"
-#include "mojo/shell/public/cpp/lib/service_registry.h"
 #include "mojo/shell/public/cpp/shell.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/interfaces/application.mojom.h"

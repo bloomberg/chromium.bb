@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/environment/logging.h"
 #include "mojo/shell/public/cpp/application_impl.h"
-#include "mojo/shell/public/cpp/lib/service_registry.h"
+#include "mojo/shell/public/cpp/lib/connection_impl.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 
 namespace mojo {
@@ -85,7 +85,7 @@ scoped_ptr<Connection> ApplicationImpl::Connect(ConnectParams* params) {
   allowed.insert("*");
   InterfaceRequest<ServiceProvider> remote_services_proxy =
       GetProxy(&remote_services);
-  scoped_ptr<internal::ServiceRegistry> registry(new internal::ServiceRegistry(
+  scoped_ptr<internal::ConnectionImpl> registry(new internal::ConnectionImpl(
       application_url, application_url,
       shell::mojom::Shell::kInvalidApplicationID, std::move(remote_services),
       std::move(local_request), allowed));
@@ -126,7 +126,7 @@ void ApplicationImpl::AcceptConnection(
     ServiceProviderPtr exposed_services,
     Array<String> allowed_interfaces,
     const String& url) {
-  scoped_ptr<Connection> registry(new internal::ServiceRegistry(
+  scoped_ptr<Connection> registry(new internal::ConnectionImpl(
       url, requestor_url, requestor_id, std::move(exposed_services),
       std::move(services), allowed_interfaces.To<std::set<std::string>>()));
   if (!client_->AcceptConnection(registry.get()))
