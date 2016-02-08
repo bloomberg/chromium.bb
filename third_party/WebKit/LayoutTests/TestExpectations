@@ -907,6 +907,9 @@ crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html 
 
 crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Failure ]
 
+crbug.com/580077 fast/lists/001.html [ NeedsRebaseline ]
+crbug.com/580077 fast/lists/001-vertical.html [ NeedsRebaseline ]
+
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
 crbug.com/402379 [ Win7 Debug ] storage/indexeddb/cursor-continue-validity.html [ Pass ]

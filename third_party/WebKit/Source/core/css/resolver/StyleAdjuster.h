@@ -37,8 +37,7 @@ class ComputedStyle;
 class StyleAdjuster {
     STACK_ALLOCATED();
 public:
-    StyleAdjuster(bool useQuirksModeStyles)
-        : m_useQuirksModeStyles(useQuirksModeStyles)
+    StyleAdjuster()
     { }
 
     void adjustComputedStyle(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, Element*);
@@ -49,8 +48,6 @@ private:
     void adjustStyleForHTMLElement(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle, HTMLElement&);
     void adjustOverflow(ComputedStyle& styleToAdjust);
     void adjustStyleForAlignment(ComputedStyle& styleToAdjust, const ComputedStyle& parentStyle);
-
-    bool m_useQuirksModeStyles;
 };
 
 } // namespace blink

@@ -54,7 +54,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool strictParsing)
+static EDisplay equivalentBlockDisplay(EDisplay display)
 {
     switch (display) {
     case BLOCK:
@@ -62,12 +62,7 @@ static EDisplay equivalentBlockDisplay(EDisplay display, bool isFloating, bool s
     case BOX:
     case FLEX:
     case GRID:
-        return display;
-
     case LIST_ITEM:
-        // It is a WinIE bug that floated list items lose their bullets, so we'll emulate the quirk, but only in quirks mode.
-        if (!strictParsing && isFloating)
-            return BLOCK;
         return display;
     case INLINE_TABLE:
         return TABLE;
@@ -169,7 +164,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
         // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
         if (style.hasOutOfFlowPosition() || style.isFloating() || (element && element->document().documentElement() == element))
-            style.setDisplay(equivalentBlockDisplay(style.display(), style.isFloating(), !m_useQuirksModeStyles));
+            style.setDisplay(equivalentBlockDisplay(style.display()));
 
         // We don't adjust the first letter style earlier because we may change the display setting in
         // adjustStyeForTagName() above.
@@ -457,7 +452,7 @@ void StyleAdjuster::adjustStyleForDisplay(ComputedStyle& style, const ComputedSt
 
     if (parentStyle.isDisplayFlexibleOrGridBox()) {
         style.setFloating(NoFloat);
-        style.setDisplay(equivalentBlockDisplay(style.display(), style.isFloating(), !m_useQuirksModeStyles));
+        style.setDisplay(equivalentBlockDisplay(style.display()));
 
         // We want to count vertical percentage paddings/margins on flex items because our current
         // behavior is different from the spec and we want to gather compatibility data.

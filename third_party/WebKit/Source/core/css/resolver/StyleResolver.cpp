@@ -543,7 +543,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
 
 void StyleResolver::adjustComputedStyle(StyleResolverState& state, Element* element)
 {
-    StyleAdjuster adjuster(document().inQuirksMode());
+    StyleAdjuster adjuster;
     adjuster.adjustComputedStyle(state.mutableStyleRef(), *state.parentStyle(), element);
 }
 
