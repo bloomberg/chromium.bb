@@ -32,6 +32,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
@@ -47,6 +48,7 @@
 
 using blink::WebDataSource;
 using blink::WebElement;
+using blink::WebFrameContentDumper;
 using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebString;
@@ -354,7 +356,10 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
   // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
   // translate helper for language detection and possible translation.
-  base::string16 contents = frame->contentAsText(kMaxIndexChars);
+  // TODO(dglazkov): WebFrameContentDumper should only be used for
+  // testing purposes. See http://crbug.com/585164.
+  base::string16 contents =
+      WebFrameContentDumper::dumpFrameTreeAsText(frame, kMaxIndexChars);
 
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeTicks::Now() - capture_begin_time);

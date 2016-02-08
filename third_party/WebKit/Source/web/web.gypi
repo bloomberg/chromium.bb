@@ -146,6 +146,7 @@
       'WebFormControlElement.cpp',
       'WebFormElement.cpp',
       'WebFrame.cpp',
+      "WebFrameContentDumper.cpp",
       'WebFrameImplBase.cpp',
       'WebFrameImplBase.h',
       'WebFrameSerializer.cpp',

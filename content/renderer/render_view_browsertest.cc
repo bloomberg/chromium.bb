@@ -59,6 +59,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -87,6 +88,7 @@
 #include "url/url_constants.h"
 
 using blink::WebFrame;
+using blink::WebFrameContentDumper;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
 using blink::WebMouseEvent;
@@ -1348,8 +1350,8 @@ TEST_F(RenderViewImplTest, ImeComposition) {
       // Retrieve the content of this page and compare it with the expected
       // result.
       const int kMaxOutputCharacters = 128;
-      base::string16 output =
-          GetMainFrame()->contentAsText(kMaxOutputCharacters);
+      base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
+          GetMainFrame(), kMaxOutputCharacters);
       EXPECT_EQ(base::WideToUTF16(ime_message->result), output);
     }
   }
@@ -1398,7 +1400,8 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
     // Copy the document content to std::wstring and compare with the
     // expected result.
     const int kMaxOutputCharacters = 16;
-    base::string16 output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
+    base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
+        GetMainFrame(), kMaxOutputCharacters);
     EXPECT_EQ(base::WideToUTF16(kTextDirection[i].expected_result), output);
   }
 }
@@ -1538,8 +1541,9 @@ TEST_F(RenderViewImplTest, OnHandleKeyboardEvent) {
         // text created from a virtual-key code, a character code, and the
         // modifier-key status.
         const int kMaxOutputCharacters = 1024;
-        std::string output = base::UTF16ToUTF8(base::StringPiece16(
-            GetMainFrame()->contentAsText(kMaxOutputCharacters)));
+        std::string output = base::UTF16ToUTF8(
+            base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
+                GetMainFrame(), kMaxOutputCharacters)));
         EXPECT_EQ(expected_result, output);
       }
     }
@@ -1770,7 +1774,8 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
     // text created from a virtual-key code, a character code, and the
     // modifier-key status.
     const int kMaxOutputCharacters = 4096;
-    base::string16 output = GetMainFrame()->contentAsText(kMaxOutputCharacters);
+    base::string16 output = WebFrameContentDumper::dumpFrameTreeAsText(
+        GetMainFrame(), kMaxOutputCharacters);
     EXPECT_EQ(base::WideToUTF16(kLayouts[i].expected_result), output);
   }
 #else
@@ -2105,8 +2110,9 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   // Copy the document content to std::wstring and compare with the
   // expected result.
   const int kMaxOutputCharacters = 256;
-  std::string output = base::UTF16ToUTF8(base::StringPiece16(
-      GetMainFrame()->contentAsText(kMaxOutputCharacters)));
+  std::string output = base::UTF16ToUTF8(
+      base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
+          GetMainFrame(), kMaxOutputCharacters)));
   EXPECT_EQ(output, "hello \n\nworld");
 }
 
@@ -2226,8 +2232,9 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
   main_frame->didFailProvisionalLoad(web_frame, error,
                                      blink::WebStandardCommit);
   const int kMaxOutputCharacters = 22;
-  EXPECT_EQ("", base::UTF16ToASCII(
-      base::StringPiece16(web_frame->contentAsText(kMaxOutputCharacters))));
+  EXPECT_EQ("", base::UTF16ToASCII(base::StringPiece16(
+                    WebFrameContentDumper::dumpFrameTreeAsText(
+                        web_frame, kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -2261,8 +2268,9 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(base::StringPiece16(
-                web_frame->contentAsText(kMaxOutputCharacters))));
+            base::UTF16ToASCII(
+                base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
+                    web_frame, kMaxOutputCharacters))));
 }
 
 #if defined(OS_ANDROID)
@@ -2295,8 +2303,9 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   FrameLoadWaiter(main_frame).Wait();
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("A suffusion of yellow.",
-            base::UTF16ToASCII(base::StringPiece16(
-                web_frame->contentAsText(kMaxOutputCharacters))));
+            base::UTF16ToASCII(
+                base::StringPiece16(WebFrameContentDumper::dumpFrameTreeAsText(
+                    web_frame, kMaxOutputCharacters))));
 }
 
 // Ensure the render view sends favicon url update events correctly.

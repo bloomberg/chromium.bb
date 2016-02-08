@@ -399,6 +399,7 @@
       "web/WebFormElement.h",
       "web/WebFrame.h",
       "web/WebFrameClient.h",
+      "web/WebFrameContentDumper.h",
       "web/WebFrameLoadType.h",
       "web/WebFrameOwnerProperties.h",
       "web/WebFrameSerializer.h",

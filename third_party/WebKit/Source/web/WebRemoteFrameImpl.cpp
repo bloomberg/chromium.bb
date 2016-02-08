@@ -589,30 +589,6 @@ void WebRemoteFrameImpl::dispatchMessageEventWithOriginCheck(
     ASSERT_NOT_REACHED();
 }
 
-WebString WebRemoteFrameImpl::contentAsText(size_t maxChars) const
-{
-    ASSERT_NOT_REACHED();
-    return WebString();
-}
-
-WebString WebRemoteFrameImpl::contentAsMarkup() const
-{
-    ASSERT_NOT_REACHED();
-    return WebString();
-}
-
-WebString WebRemoteFrameImpl::layoutTreeAsText(LayoutAsTextControls toShow) const
-{
-    ASSERT_NOT_REACHED();
-    return WebString();
-}
-
-WebString WebRemoteFrameImpl::markerTextForListItem(const WebElement&) const
-{
-    ASSERT_NOT_REACHED();
-    return WebString();
-}
-
 WebRect WebRemoteFrameImpl::selectionBoundsRect() const
 {
     ASSERT_NOT_REACHED();

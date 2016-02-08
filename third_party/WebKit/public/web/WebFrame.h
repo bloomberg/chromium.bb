@@ -99,14 +99,6 @@ template <typename T> class WebVector;
 // getting a frame's parent or its opener.
 class WebFrame {
 public:
-    // Control of layoutTreeAsText output
-    enum LayoutAsTextControl {
-        LayoutAsTextNormal = 0,
-        LayoutAsTextDebug = 1 << 0,
-        LayoutAsTextPrinting = 1 << 1,
-        LayoutAsTextWithLineTrees = 1 << 2
-    };
-    typedef unsigned LayoutAsTextControls;
 
     // FIXME: We already have blink::TextGranularity. For now we support only
     // a part of blink::TextGranularity.
@@ -554,27 +546,6 @@ public:
 
 
     // Utility -------------------------------------------------------------
-
-    // Returns the contents of this frame as a string.  If the text is
-    // longer than maxChars, it will be clipped to that length.  WARNING:
-    // This function may be slow depending on the number of characters
-    // retrieved and page complexity.  For a typically sized page, expect
-    // it to take on the order of milliseconds.
-    //
-    // If there is room, subframe text will be recursively appended. Each
-    // frame will be separated by an empty line.
-    virtual WebString contentAsText(size_t maxChars) const = 0;
-
-    // Returns HTML text for the contents of this frame.  This is generated
-    // from the DOM.
-    virtual WebString contentAsMarkup() const = 0;
-
-    // Returns a text representation of the render tree.  This method is used
-    // to support layout tests.
-    virtual WebString layoutTreeAsText(LayoutAsTextControls toShow = LayoutAsTextNormal) const = 0;
-
-    // Calls markerTextForListItem() defined in core/layout/LayoutTreeAsText.h.
-    virtual WebString markerTextForListItem(const WebElement&) const = 0;
 
     // Prints all of the pages into the canvas, with page boundaries drawn as
     // one pixel wide blue lines. This method exists to support layout tests.

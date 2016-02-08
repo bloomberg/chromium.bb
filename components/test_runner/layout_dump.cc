@@ -11,11 +11,13 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace test_runner {
 
 using blink::WebFrame;
+using blink::WebFrameContentDumper;
 using blink::WebLocalFrame;
 using blink::WebSize;
 
@@ -59,8 +61,9 @@ std::string DumpLayout(WebLocalFrame* frame, const LayoutDumpFlags& flags) {
     case LayoutDumpMode::DUMP_AS_TEXT:
       result = DumpFrameHeaderIfNeeded(frame);
       if (flags.dump_as_printed && frame->document().isHTMLDocument()) {
-        result +=
-            frame->layoutTreeAsText(WebFrame::LayoutAsTextPrinting).utf8();
+        result += WebFrameContentDumper::dumpLayoutTreeAsText(
+                      frame, WebFrameContentDumper::LayoutAsTextPrinting)
+                      .utf8();
       } else {
         result += frame->document().contentAsTextForTesting().utf8();
       }
@@ -69,20 +72,23 @@ std::string DumpLayout(WebLocalFrame* frame, const LayoutDumpFlags& flags) {
     case LayoutDumpMode::DUMP_AS_MARKUP:
       DCHECK(!flags.dump_as_printed);
       result = DumpFrameHeaderIfNeeded(frame);
-      result += frame->contentAsMarkup().utf8();
+      result += WebFrameContentDumper::dumpAsMarkup(frame).utf8();
       result += "\n";
       break;
     case LayoutDumpMode::DUMP_SCROLL_POSITIONS:
       if (frame->parent() == nullptr) {
-        WebFrame::LayoutAsTextControls layout_text_behavior =
-            WebFrame::LayoutAsTextNormal;
+        WebFrameContentDumper::LayoutAsTextControls layout_text_behavior =
+            WebFrameContentDumper::LayoutAsTextNormal;
         if (flags.dump_as_printed)
-          layout_text_behavior |= WebFrame::LayoutAsTextPrinting;
+          layout_text_behavior |= WebFrameContentDumper::LayoutAsTextPrinting;
         if (flags.debug_render_tree)
-          layout_text_behavior |= WebFrame::LayoutAsTextDebug;
+          layout_text_behavior |= WebFrameContentDumper::LayoutAsTextDebug;
         if (flags.dump_line_box_trees)
-          layout_text_behavior |= WebFrame::LayoutAsTextWithLineTrees;
-        result = frame->layoutTreeAsText(layout_text_behavior).utf8();
+          layout_text_behavior |=
+              WebFrameContentDumper::LayoutAsTextWithLineTrees;
+        result = WebFrameContentDumper::dumpLayoutTreeAsText(
+                     frame, layout_text_behavior)
+                     .utf8();
       }
       result += DumpFrameScrollPosition(frame);
       break;

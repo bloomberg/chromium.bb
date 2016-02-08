@@ -201,11 +201,6 @@ public:
         const WebSecurityOrigin& intendedTargetOrigin,
         const WebDOMEvent&) override;
 
-    WebString contentAsText(size_t maxChars) const override;
-    WebString contentAsMarkup() const override;
-    WebString layoutTreeAsText(LayoutAsTextControls toShow = LayoutAsTextNormal) const override;
-
-    WebString markerTextForListItem(const WebElement&) const override;
     WebRect selectionBoundsRect() const override;
 
     bool selectionStartHasSpellingMarkerFor(int from, int length) const override;

@@ -141,6 +141,7 @@
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebFrameContentDumper.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebHitTestResult.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
@@ -220,6 +221,7 @@ using blink::WebFileChooserCompletion;
 using blink::WebFormControlElement;
 using blink::WebFormElement;
 using blink::WebFrame;
+using blink::WebFrameContentDumper;
 using blink::WebGestureEvent;
 using blink::WebHistoryItem;
 using blink::WebHTTPBody;
@@ -1237,13 +1239,23 @@ void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
 void RenderViewImpl::OnGetRenderedText() {
   if (!webview())
     return;
+
+  if (!webview()->mainFrame()->isWebLocalFrame())
+    return;
+
   // Get rendered text from WebLocalFrame.
   // TODO: Currently IPC truncates any data that has a
   // size > kMaximumMessageSize. May be split the text into smaller chunks and
   // send back using multiple IPC. See http://crbug.com/393444.
   static const size_t kMaximumMessageSize = 8 * 1024 * 1024;
-  std::string text = webview()->mainFrame()->contentAsText(
-      kMaximumMessageSize).utf8();
+  // TODO(dglazkov): Using this API is wrong. It's not OOPIF-compatible and
+  // sends text in the wrong order. See http://crbug.com/584798.
+  // TODO(dglazkov): WebFrameContentDumper should only be used for
+  // testing purposes. See http://crbug.com/585164.
+  std::string text =
+      WebFrameContentDumper::dumpFrameTreeAsText(
+          webview()->mainFrame()->toWebLocalFrame(), kMaximumMessageSize)
+          .utf8();
 
   Send(new ViewMsg_GetRenderedTextCompleted(routing_id(), text));
 }
