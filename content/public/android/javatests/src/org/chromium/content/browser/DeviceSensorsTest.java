@@ -528,7 +528,7 @@ public class DeviceSensorsTest extends AndroidTestCase {
         private String mCalls = "";
 
         private DeviceSensorsForTests(Context context) {
-            super(context, true);
+            super(context);
         }
 
         static DeviceSensorsForTests getInstance(Context context) {

@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 
 import org.chromium.base.CollectionUtil;
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
@@ -100,19 +99,12 @@ class DeviceSensors implements SensorEventListener {
     boolean mDeviceOrientationAbsoluteIsActive = false;
     boolean mOrientationNotAvailable = false;
 
-    protected DeviceSensors(Context context, boolean relativeByDefault) {
+    protected DeviceSensors(Context context) {
         mAppContext = context.getApplicationContext();
 
-        // TODO(timvolodine): make the first option the default once support for absolute device
-        // orientation events is implemented see crbug.com/520546.
-        if (relativeByDefault) {
-            mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_A,
-                                                                 DEVICE_ORIENTATION_SENSORS_B,
-                                                                 DEVICE_ORIENTATION_SENSORS_C);
-        } else {
-            mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_B,
-                                                                 DEVICE_ORIENTATION_SENSORS_C);
-        }
+        mOrientationSensorSets = CollectionUtil.newArrayList(DEVICE_ORIENTATION_SENSORS_A,
+                                                             DEVICE_ORIENTATION_SENSORS_B,
+                                                             DEVICE_ORIENTATION_SENSORS_C);
     }
 
     // For orientation we use a 3-way fallback approach where up to 3 different sets of sensors
@@ -612,11 +604,7 @@ class DeviceSensors implements SensorEventListener {
     static DeviceSensors getInstance(Context appContext) {
         synchronized (sSingletonLock) {
             if (sSingleton == null) {
-                // If experimental features are enabled use 'relative' sensor first,
-                // see crbug.com/520546.
-                boolean relativeByDefault =
-                        CommandLine.getInstance().hasSwitch(EXPERIMENTAL_WEB_PLAFTORM_FEATURES);
-                sSingleton = new DeviceSensors(appContext, relativeByDefault);
+                sSingleton = new DeviceSensors(appContext);
             }
             return sSingleton;
         }
