@@ -152,6 +152,9 @@ void AutoSigninFirstRunDialogView::InitWindow() {
   content_label->SetBaseFontList(
       ui::ResourceBundle::GetSharedInstance().GetFontList(
           ui::ResourceBundle::SmallFont));
+  views::StyledLabel::RangeStyleInfo default_style;
+  default_style.color = kAutoSigninTextColor;
+  content_label->SetDefaultStyle(default_style);
   if (!text_content.second.is_empty()) {
     content_label->AddStyleRange(
         text_content.second,
