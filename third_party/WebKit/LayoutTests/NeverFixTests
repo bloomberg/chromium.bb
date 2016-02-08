@@ -180,6 +180,26 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 # See crbug.com/522326
 imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
 
+# Some CSS2.1 tests pass but cause 1px diff due to old font-size guidelines,
+# or render colors differently for text and images on Mac.
+imported/csswg-test/css21/linebox/inline-formatting-context-002.xht [ WontFix ]
+[ Linux Win ] imported/csswg-test/css21/linebox/inline-formatting-context-003.xht [ WontFix ]
+[ Linux Win ] imported/csswg-test/css21/linebox/inline-formatting-context-004.xht [ WontFix ]
+[ Linux Win ] imported/csswg-test/css21/linebox/inline-formatting-context-005.xht [ WontFix ]
+[ Linux Win ] imported/csswg-test/css21/linebox/inline-formatting-context-006.xht [ WontFix ]
+[ Linux Win ] imported/csswg-test/css21/linebox/inline-formatting-context-007.xht [ WontFix ]
+imported/csswg-test/css21/linebox/inline-formatting-context-023.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/line-box-height-002.xht [ WontFix ]
+imported/csswg-test/css21/linebox/line-height-126.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/line-height-129.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/vertical-align-117a.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/vertical-align-118a.xht [ WontFix ]
+[ Mac Win ] imported/csswg-test/css21/linebox/vertical-align-baseline-003.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/vertical-align-baseline-004a.xht [ WontFix ]
+[ Mac ] imported/csswg-test/css21/linebox/vertical-align-baseline-005a.xht [ WontFix ]
+[ Linux ] imported/csswg-test/css21/linebox/vertical-align-sub-001.xht [ WontFix ]
+[ Linux ] imported/csswg-test/css21/linebox/vertical-align-super-001.xht [ WontFix ]
+
 # Ref tests that pass but causes 1px diff on images at direction boundaries.
 [ Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]
