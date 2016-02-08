@@ -547,7 +547,7 @@ void RootInlineBox::ascentAndDescentForBox(InlineBox* box, GlyphOverflowAndFallb
 
     if (box->lineLayoutItem().isAtomicInlineLevel()) {
         ascent = box->baselinePosition(baselineType());
-        descent = box->lineHeight() - ascent;
+        descent = roundToInt(box->lineHeight() - ascent);
 
         // Replaced elements always affect both the ascent and descent.
         affectsAscent = true;
