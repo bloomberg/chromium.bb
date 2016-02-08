@@ -1049,7 +1049,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   DCHECK_GE(PasswordForm::SCHEME_LAST, scheme_int);
   form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
   int type_int = s.ColumnInt(COLUMN_PASSWORD_TYPE);
-  DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_GENERATED);
+  DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_LAST) << type_int;
   form->type = static_cast<PasswordForm::Type>(type_int);
   if (s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES)) {
     base::Pickle pickle(
