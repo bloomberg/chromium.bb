@@ -145,7 +145,7 @@ class SCHEDULER_EXPORT TimeDomain {
 
   std::set<internal::TaskQueueImpl*> registered_task_queues_;
 
-  Observer* observer_;
+  Observer* observer_;  // NOT OWNED.
 
   base::ThreadChecker main_thread_checker_;
 

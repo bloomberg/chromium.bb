@@ -142,39 +142,23 @@ TEST_F(TimeDomainTest, UnregisterQueue) {
 }
 
 TEST_F(TimeDomainTest, UpdateWorkQueues) {
-  scoped_ptr<MockTimeDomain> dummy_delegate(new MockTimeDomain(nullptr));
-  base::SimpleTestTickClock dummy_time_source;
-  scoped_refptr<cc::OrderedSimpleTaskRunner> dummy_task_runner(
-      new cc::OrderedSimpleTaskRunner(&dummy_time_source, false));
-  TaskQueueManager task_queue_manager(
-      TaskQueueManagerDelegateForTest::Create(
-          dummy_task_runner,
-          make_scoped_ptr(new TestTimeSource(&dummy_time_source))),
-      "test.scheduler", "test.scheduler", "scheduler.debug");
-  scoped_refptr<internal::TaskQueueImpl> dummy_queue =
-      task_queue_manager.NewTaskQueue(TaskQueue::Spec("test_queue"));
-
-  // Post a delayed task on |dummy_queue| and advance the queue's clock so that
-  // next time MoveReadyDelayedTasksToDelayedWorkQueue is called, the task will
-  // get moved onto the Incoming queue.
-  base::TimeDelta dummy_delay = base::TimeDelta::FromMilliseconds(10);
-  dummy_queue->PostDelayedTask(FROM_HERE, base::Closure(), dummy_delay);
-  dummy_time_source.Advance(dummy_delay);
-
-  // Now we can test that ScheduleDelayedWork triggers calls to
-  // MoveReadyDelayedTasksToDelayedWorkQueue as expected.
   base::TimeDelta delay = base::TimeDelta::FromMilliseconds(50);
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, delay));
   base::TimeTicks now = time_domain_->Now();
   base::TimeTicks delayed_runtime = now + delay;
-  time_domain_->ScheduleDelayedWork(dummy_queue.get(), delayed_runtime, now);
+  time_domain_->ScheduleDelayedWork(task_queue_.get(), delayed_runtime, now);
+
+  base::TimeTicks next_run_time;
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(0UL, dummy_queue->delayed_work_queue()->Size());
+  ASSERT_TRUE(time_domain_->NextScheduledRunTime(&next_run_time));
+  EXPECT_EQ(delayed_runtime, next_run_time);
 
   time_domain_->SetNow(delayed_runtime);
   time_domain_->UpdateWorkQueues(false, nullptr);
-  EXPECT_EQ(1UL, dummy_queue->delayed_work_queue()->Size());
+  ASSERT_FALSE(time_domain_->NextScheduledRunTime(&next_run_time));
 }
 
 TEST_F(TimeDomainTest, ClearExpiredWakeups) {

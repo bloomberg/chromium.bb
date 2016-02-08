@@ -16,16 +16,21 @@ namespace scheduler {
 TimeDomain::TimeDomain(Observer* observer) : observer_(observer) {}
 
 TimeDomain::~TimeDomain() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   for (internal::TaskQueueImpl* queue : registered_task_queues_) {
     queue->SetTimeDomain(nullptr);
   }
 }
 
 void TimeDomain::RegisterQueue(internal::TaskQueueImpl* queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(queue->GetTimeDomain(), this);
   registered_task_queues_.insert(queue);
 }
 
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(queue->GetTimeDomain(), this);
   registered_task_queues_.erase(queue);
 
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
@@ -50,8 +55,15 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
 
 void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
                               TimeDomain* destination_time_domain) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
+  DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(destination_time_domain);
   registered_task_queues_.erase(queue);
+
+  // NOTE it's the responsibility of the caller to make sure
+  // |queue->GetTimeDomain()| is updated.
+  destination_time_domain->registered_task_queues_.insert(queue);
 
   base::TimeTicks destination_now = destination_time_domain->Now();
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
@@ -74,14 +86,13 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
   // MoveNewlyUpdatableQueuesIntoUpdatableQueueSet to flush it out.
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
   updatable_queue_set_.erase(queue);
-
-  destination_time_domain->RegisterQueue(queue);
 }
 
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
                                      base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
 
   if (delayed_wakeup_multimap_.empty() ||
       delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
@@ -95,6 +106,7 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
 }
 
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
+  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
   {
     base::AutoLock lock(newly_updatable_lock_);
     newly_updatable_.push_back(queue);
@@ -105,6 +117,7 @@ void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
 
 void TimeDomain::UnregisterAsUpdatableTaskQueue(
     internal::TaskQueueImpl* queue) {
+  DCHECK(registered_task_queues_.find(queue) != registered_task_queues_.end());
   DCHECK(main_thread_checker_.CalledOnValidThread());
   MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 #ifndef NDEBUG
@@ -153,6 +166,7 @@ void TimeDomain::WakeupReadyDelayedQueues(
     LazyNow* lazy_now,
     bool should_trigger_wakeup,
     const internal::TaskQueueImpl::Task* previous_task) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   // Wake up any queues with pending delayed work.  Note std::multipmap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
@@ -176,6 +190,7 @@ void TimeDomain::WakeupReadyDelayedQueues(
 }
 
 void TimeDomain::ClearExpiredWakeups() {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   LazyNow lazy_now(CreateLazyNow());
   while (!delayed_wakeup_multimap_.empty()) {
     DelayedWakeupMultimap::iterator next_wakeup =
@@ -187,6 +202,7 @@ void TimeDomain::ClearExpiredWakeups() {
 }
 
 bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (delayed_wakeup_multimap_.empty())
     return false;
 
@@ -195,6 +211,7 @@ bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
 }
 
 bool TimeDomain::NextScheduledTaskQueue(TaskQueue** out_task_queue) const {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
   if (delayed_wakeup_multimap_.empty())
     return false;
 
