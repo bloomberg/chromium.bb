@@ -73,6 +73,23 @@ IPC_MESSAGE_ROUTED4(WebSocketHostMsg_AddChannelRequest,
                     url::Origin /* origin */,
                     int /* render_frame_id */)
 
+// Send a complete binary WebSocket message consisting of the Blob identified by
+// |uuid|. The message will be split into frames as necessary. |expected_size|
+// must match the browser's idea of the size of the Blob to prevent flow control
+// from becoming desynchronised. If it does not match the connection will be
+// terminated with a WebSocketMsg_NotifyFailure message. On success, the browser
+// will have consumed |expected_size| bytes of flow control send quota and the
+// renderer needs to subtract that from its running total of flow control send
+// quota. See the design doc at
+// https://docs.google.com/document/d/1CDiXB9pBumhFVVfmIn1CRI6v6byxyqWu2urEE9xp714/edit
+// SendFrame or SendBlob IPCs must not be sent by the renderer until the
+// BlobSendComplete message has been received from the browser. The renderer
+// should retain a reference to the Blob until either a BlobSendComplete or
+// NotifyFailure IPC is received.
+IPC_MESSAGE_ROUTED2(WebSocketHostMsg_SendBlob,
+                    std::string /* uuid */,
+                    uint64_t /* expected_size */)
+
 // WebSocket messages sent from the browser to the renderer.
 
 // Respond to an AddChannelRequest. |selected_protocol| is the sub-protocol the
@@ -111,6 +128,11 @@ IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyFinishOpeningHandshake,
 IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyFailure,
                     std::string /* message */)
 
+// Indicates tbat the current Blob has finished sending. The renderer can
+// release its reference on the Blob, and may now use SendFrame or SendBlob to
+// send more messages.
+IPC_MESSAGE_ROUTED0(WebSocketMsg_BlobSendComplete);
+
 // WebSocket messages that can be sent in either direction.
 
 // Send a non-control frame to the channel.
@@ -136,6 +158,14 @@ IPC_MESSAGE_ROUTED3(WebSocketMsg_SendFrame,
 // Both sides start a new channel with a quota of 0, and must wait for a
 // FlowControl message before calling SendFrame. The total available quota on
 // one side must never exceed 0x7FFFFFFFFFFFFFFF tokens.
+//
+// During "blob sending mode", ie. between the renderer sending a
+// WebSocketHostMsg_SendBlob IPC and receiving a WebSocketMsg_BlobSendComplete
+// IPC, quota is used up in the browser process to send the blob, but
+// FlowControl IPCs for that quota are still sent to the renderer. The render
+// process needs to take into account that quota equal to the size of the Blob
+// has already been used when calculating how much send quota it has left after
+// receiving BlobSendComplete.
 IPC_MESSAGE_ROUTED1(WebSocketMsg_FlowControl, int64_t /* quota */)
 
 // Drop the channel.

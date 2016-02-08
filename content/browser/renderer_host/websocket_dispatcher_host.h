@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
@@ -23,8 +24,14 @@ namespace net {
 class URLRequestContext;
 }  // namespace net
 
+namespace storage {
+class BlobStorageContext;
+}
+
 namespace content {
 
+class ChromeBlobStorageContext;
+class StoragePartition;
 struct WebSocketHandshakeRequest;
 struct WebSocketHandshakeResponse;
 class WebSocketHost;
@@ -49,9 +56,10 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
     WEBSOCKET_HOST_DELETED
   };
 
-  WebSocketDispatcherHost(
-      int process_id,
-      const GetRequestContextCallback& get_context_callback);
+  WebSocketDispatcherHost(int process_id,
+                          const GetRequestContextCallback& get_context_callback,
+                          ChromeBlobStorageContext* blob_storage_context,
+                          StoragePartition* storage_partition);
 
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -96,6 +104,8 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
       int routing_id,
       const std::string& message) WARN_UNUSED_RESULT;
 
+  WebSocketHostState BlobSendComplete(int routing_id);
+
   // Sends a WebSocketMsg_DropChannel IPC and deletes and unregisters the
   // channel.
   WebSocketHostState DoDropChannel(int routing_id,
@@ -108,6 +118,13 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   bool CanReadRawCookies() const;
 
   int render_process_id() const { return process_id_; }
+
+  // Returns a BlobStorageContext associated with this object's render process.
+  // The pointer will be valid for as long this object is.
+  storage::BlobStorageContext* blob_storage_context() const;
+
+  // Returns the StoragePartition associated with this render process.
+  StoragePartition* storage_partition() const { return storage_partition_; }
 
  protected:
   // For testing. Specify a factory method that creates mock version of
@@ -180,6 +197,12 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   // period.
   int64_t num_current_failed_connections_;
   int64_t num_previous_failed_connections_;
+
+  // Needed to read from blobs for browser-side blob sending.
+  const scoped_refptr<const ChromeBlobStorageContext> blob_storage_context_;
+
+  // Needed to access to the StoragePartition for browser-side blob sending.
+  StoragePartition* const storage_partition_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketDispatcherHost);
 };

@@ -899,10 +899,14 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       base::Bind(&GetContexts, browser_context->GetResourceContext(),
                  request_context, media_request_context));
 
+  // Several filters need the Blob storage context, so fetch it in advance.
+  scoped_refptr<ChromeBlobStorageContext> blob_storage_context =
+      ChromeBlobStorageContext::GetFor(browser_context);
+
   ResourceMessageFilter* resource_message_filter = new ResourceMessageFilter(
       GetID(), PROCESS_TYPE_RENDERER,
       storage_partition_impl_->GetAppCacheService(),
-      ChromeBlobStorageContext::GetFor(browser_context),
+      blob_storage_context.get(),
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
       storage_partition_impl_->GetHostZoomLevelContext(),
@@ -934,7 +938,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new IndexedDBDispatcherHost(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       storage_partition_impl_->GetIndexedDBContext(),
-      ChromeBlobStorageContext::GetFor(browser_context)));
+      blob_storage_context.get()));
 
   gpu_message_filter_ = new GpuMessageFilter(GetID());
   AddFilter(gpu_message_filter_);
@@ -957,8 +961,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new FileAPIMessageFilter(
       GetID(), storage_partition_impl_->GetURLRequestContext(),
       storage_partition_impl_->GetFileSystemContext(),
-      ChromeBlobStorageContext::GetFor(browser_context),
-      StreamContext::GetFor(browser_context)));
+      blob_storage_context.get(), StreamContext::GetFor(browser_context)));
   AddFilter(new FileUtilitiesMessageFilter(GetID()));
   AddFilter(new MimeRegistryMessageFilter());
   AddFilter(
@@ -986,8 +989,9 @@ void RenderProcessHostImpl::CreateMessageFilters() {
           base::Bind(&GetRequestContext, request_context, media_request_context,
                      RESOURCE_TYPE_SUB_RESOURCE));
 
-  AddFilter(
-      new WebSocketDispatcherHost(GetID(), websocket_request_context_callback));
+  AddFilter(new WebSocketDispatcherHost(
+      GetID(), websocket_request_context_callback, blob_storage_context.get(),
+      storage_partition_impl_));
 
   message_port_message_filter_ = new MessagePortMessageFilter(
       base::Bind(&RenderWidgetHelper::GetNextRoutingID,

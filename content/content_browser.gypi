@@ -1327,6 +1327,8 @@
       'browser/renderer_host/web_input_event_aurawin.cc',
       'browser/renderer_host/webmenurunner_mac.h',
       'browser/renderer_host/webmenurunner_mac.mm',
+      'browser/renderer_host/websocket_blob_sender.cc',
+      'browser/renderer_host/websocket_blob_sender.h',
       'browser/renderer_host/websocket_dispatcher_host.cc',
       'browser/renderer_host/websocket_dispatcher_host.h',
       'browser/renderer_host/websocket_host.cc',

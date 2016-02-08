@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -15,6 +16,7 @@
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/renderer_host/websocket_host.h"
 #include "content/common/websocket_messages.h"
 
@@ -35,7 +37,9 @@ const int kMaxPendingWebSocketConnections = 255;
 
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     int process_id,
-    const GetRequestContextCallback& get_context_callback)
+    const GetRequestContextCallback& get_context_callback,
+    ChromeBlobStorageContext* blob_storage_context,
+    StoragePartition* storage_partition)
     : BrowserMessageFilter(WebSocketMsgStart),
       process_id_(process_id),
       get_context_callback_(get_context_callback),
@@ -46,7 +50,9 @@ WebSocketDispatcherHost::WebSocketDispatcherHost(
       num_current_succeeded_connections_(0),
       num_previous_succeeded_connections_(0),
       num_current_failed_connections_(0),
-      num_previous_failed_connections_(0) {}
+      num_previous_failed_connections_(0),
+      blob_storage_context_(blob_storage_context),
+      storage_partition_(storage_partition) {}
 
 WebSocketDispatcherHost::WebSocketDispatcherHost(
     int process_id,
@@ -60,7 +66,8 @@ WebSocketDispatcherHost::WebSocketDispatcherHost(
       num_current_succeeded_connections_(0),
       num_previous_succeeded_connections_(0),
       num_current_failed_connections_(0),
-      num_previous_failed_connections_(0) {}
+      num_previous_failed_connections_(0),
+      storage_partition_(nullptr) {}
 
 WebSocketHost* WebSocketDispatcherHost::CreateWebSocketHost(
     int routing_id,
@@ -72,6 +79,7 @@ WebSocketHost* WebSocketDispatcherHost::CreateWebSocketHost(
 bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   switch (message.type()) {
     case WebSocketHostMsg_AddChannelRequest::ID:
+    case WebSocketHostMsg_SendBlob::ID:
     case WebSocketMsg_SendFrame::ID:
     case WebSocketMsg_FlowControl::ID:
     case WebSocketMsg_DropChannel::ID:
@@ -95,9 +103,10 @@ bool WebSocketDispatcherHost::OnMessageReceived(const IPC::Message& message) {
       return true;  // We handled the message (by ignoring it).
     }
     if (num_pending_connections_ >= kMaxPendingWebSocketConnections) {
-      if(!Send(new WebSocketMsg_NotifyFailure(routing_id,
-          "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES"
-          ))) {
+      if (!Send(new WebSocketMsg_NotifyFailure(
+              routing_id,
+              "Error in connection establishment: "
+              "net::ERR_INSUFFICIENT_RESOURCES"))) {
         DVLOG(1) << "Sending of message type "
                  << "WebSocketMsg_NotifyFailure failed.";
       }
@@ -125,6 +134,12 @@ bool WebSocketDispatcherHost::CanReadRawCookies() const {
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   return policy->CanReadRawCookies(process_id_);
+}
+
+storage::BlobStorageContext* WebSocketDispatcherHost::blob_storage_context()
+    const {
+  DCHECK(blob_storage_context_);
+  return blob_storage_context_->context();
 }
 
 WebSocketHost* WebSocketDispatcherHost::GetHost(int routing_id) const {
@@ -200,6 +215,10 @@ WebSocketHostState WebSocketDispatcherHost::NotifyFailure(
   }
   DeleteWebSocketHost(routing_id);
   return WEBSOCKET_HOST_DELETED;
+}
+
+WebSocketHostState WebSocketDispatcherHost::BlobSendComplete(int routing_id) {
+  return SendOrDrop(new WebSocketMsg_BlobSendComplete(routing_id));
 }
 
 WebSocketHostState WebSocketDispatcherHost::DoDropChannel(

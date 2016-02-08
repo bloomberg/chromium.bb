@@ -574,6 +574,7 @@
       'browser/renderer_host/render_widget_host_view_mac_unittest.mm',
       'browser/renderer_host/text_input_client_mac_unittest.mm',
       'browser/renderer_host/web_input_event_aura_unittest.cc',
+      'browser/renderer_host/websocket_blob_sender_unittest.cc',
       'browser/renderer_host/websocket_dispatcher_host_unittest.cc',
       'browser/resolve_proxy_msg_helper_unittest.cc',
       'browser/service_worker/embedded_worker_instance_unittest.cc',

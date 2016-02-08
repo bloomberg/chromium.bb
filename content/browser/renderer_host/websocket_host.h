@@ -34,6 +34,7 @@ class Message;
 
 namespace content {
 
+class WebSocketBlobSender;
 class WebSocketDispatcherHost;
 
 // Host of net::WebSocketChannel. The lifetime of an instance of this class is
@@ -60,6 +61,8 @@ class CONTENT_EXPORT WebSocketHost {
   void OnHandshakeSucceeded() { handshake_succeeded_ = true; }
 
  private:
+  class WebSocketEventHandler;
+
   // Handlers for each message type, dispatched by OnMessageReceived(), as
   // defined in content/common/websocket_messages.h
 
@@ -73,6 +76,8 @@ class CONTENT_EXPORT WebSocketHost {
                   const url::Origin& origin,
                   int render_frame_id);
 
+  void OnSendBlob(const std::string& uuid, uint64_t expected_size);
+
   void OnSendFrame(bool fin,
                    WebSocketMessageType type,
                    const std::vector<char>& data);
@@ -80,6 +85,11 @@ class CONTENT_EXPORT WebSocketHost {
   void OnFlowControl(int64_t quota);
 
   void OnDropChannel(bool was_clean, uint16_t code, const std::string& reason);
+
+  void BlobSendComplete(int result);
+
+  // non-NULL if and only if this object is currently in "blob sending mode".
+  scoped_ptr<WebSocketBlobSender> blob_sender_;
 
   // The channel we use to send events to the network.
   scoped_ptr<net::WebSocketChannel> channel_;

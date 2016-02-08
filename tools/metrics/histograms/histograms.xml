@@ -58110,6 +58110,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="107" label="RDHI_WRONG_STORAGE_PARTITION"/>
   <int value="108" label="RDH_INVALID_REQUEST_ID"/>
   <int value="109" label="BDH_SERVICE_NOT_ALLOWED_FOR_ORIGIN"/>
+  <int value="110" label="WSH_SEND_BLOB_DURING_BLOB_SEND"/>
+  <int value="111" label="WSH_SEND_FRAME_DURING_BLOB_SEND"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions" type="int">
