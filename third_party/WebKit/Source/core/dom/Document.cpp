@@ -1889,6 +1889,7 @@ void Document::notifyLayoutTreeOfSubtreeChanges()
 
 void Document::updateLayoutTreeForNodeIfNeeded(Node* node)
 {
+    DocumentLifecycle::PreventThrottlingScope preventThrottling(lifecycle());
     ASSERT(node);
     if (!node->canParticipateInComposedTree())
         return;
