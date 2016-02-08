@@ -9,6 +9,7 @@ import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 
@@ -45,7 +46,7 @@ public class BackgroundSyncLauncherServiceTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         mContext = new AdvancedMockContext(getInstrumentation().getTargetContext());
         BackgroundSyncLauncher.setGCMEnabled(false);
-        BackgroundSyncLauncher.setReportingDisabledForTests(true);
+        RecordHistogram.disableForTests();
         mLauncher = BackgroundSyncLauncher.create(mContext);
         mLauncherService = new MockLauncherService();
     }

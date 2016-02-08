@@ -42,8 +42,6 @@ public class ExternalNavigationHandler {
 
     @VisibleForTesting
     public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
-    @VisibleForTesting
-    static boolean sReportingDisabledForTests = false;
 
     private final ExternalNavigationDelegate mDelegate;
 
@@ -108,7 +106,8 @@ public class ExternalNavigationHandler {
         long time = SystemClock.elapsedRealtime();
         OverrideUrlLoadingResult result = shouldOverrideUrlLoadingInternal(
                 params, intent, hasBrowserFallbackUrl, browserFallbackUrl);
-        maybeLogExecutionTime(time);
+        RecordHistogram.recordTimesHistogram("Android.StrictMode.OverrideUrlLoadingTime",
+                SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
 
         if (result == OverrideUrlLoadingResult.NO_OVERRIDE && hasBrowserFallbackUrl
                 && (params.getRedirectHandler() == null
@@ -117,13 +116,6 @@ public class ExternalNavigationHandler {
             return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
         }
         return result;
-    }
-
-    private void maybeLogExecutionTime(long time) {
-        if (!sReportingDisabledForTests) {
-            RecordHistogram.recordTimesHistogram("Android.StrictMode.OverrideUrlLoadingTime",
-                    SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
-        }
     }
 
     private OverrideUrlLoadingResult shouldOverrideUrlLoadingInternal(

@@ -68,9 +68,6 @@ public class TabPersistentStore extends TabPersister {
     /** Prevents two TabPersistentStores from saving the same file simultaneously. */
     private static final Object SAVE_LIST_LOCK = new Object();
 
-    @VisibleForTesting
-    static boolean sReportingDisabledForTests = false;
-
     /**
      * Callback interface to use while reading the persisted TabModelSelector info from disk.
      */
@@ -257,7 +254,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private static void logExecutionTime(String name, long time) {
-        if (!sReportingDisabledForTests && LibraryLoader.isInitialized()) {
+        if (LibraryLoader.isInitialized()) {
             RecordHistogram.recordTimesHistogram("Android.StrictMode.TabPersistentStore." + name,
                     SystemClock.elapsedRealtime() - time, TimeUnit.MILLISECONDS);
         }

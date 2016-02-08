@@ -20,6 +20,7 @@ import android.test.mock.MockPackageManager;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.chrome.browser.tab.Tab;
@@ -93,7 +94,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
         super.setUp();
         mDelegate.setContext(getInstrumentation().getContext());
         CommandLine.init(new String[0]);
-        ExternalNavigationHandler.sReportingDisabledForTests = true;
+        RecordHistogram.disableForTests();
         mDelegate.mQueryIntentOverride = null;
     }
 

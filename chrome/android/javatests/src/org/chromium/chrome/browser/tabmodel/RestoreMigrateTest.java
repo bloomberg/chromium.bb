@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -24,10 +25,6 @@ import java.util.concurrent.ExecutionException;
  * Test that migrating the old tab state folder structure to the new one works.
  */
 public class RestoreMigrateTest extends InstrumentationTestCase {
-
-    private static void disableReporting() {
-        TabPersistentStore.sReportingDisabledForTests = true;
-    }
 
     private void writeStateFile(final TabModelSelector selector, int index) throws IOException {
         byte[] data = ThreadUtils.runOnUiThreadBlockingNoException(
@@ -236,7 +233,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
                 getInstrumentation().getTargetContext(), null, null);
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
-        disableReporting();
+        RecordHistogram.disableForTests();
         assertEquals("Invalid next id", maxId + 1, storeIn.loadStateInternal());
     }
 
@@ -263,7 +260,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         TabPersistentStore storeIn1 = new TabPersistentStore(selectorIn1, 1,
                 getInstrumentation().getTargetContext(), null, null);
 
-        disableReporting();
+        RecordHistogram.disableForTests();
         storeIn0.loadStateInternal();
         storeIn1.loadStateInternal();
 

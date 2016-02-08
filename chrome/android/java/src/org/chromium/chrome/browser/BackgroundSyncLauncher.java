@@ -48,11 +48,6 @@ public class BackgroundSyncLauncher {
     private static boolean sGCMEnabled = true;
 
     /**
-     * Disables automatic reporting of GCM success / failure statistics.
-     */
-    private static boolean sReportingDisabledForTests = false;
-
-    /**
      * Create a BackgroundSyncLauncher object, which is owned by C++.
      * @param context The app context.
      */
@@ -133,14 +128,13 @@ public class BackgroundSyncLauncher {
             protected void onPostExecute(Void params) {
                 if (sGCMEnabled) {
                     if (shouldLaunch) {
-                        boolean scheduleSuccess =
-                                scheduleLaunchTask(context, mScheduler, minDelayMs);
-                        recordBooleanHistogram(
-                                "BackgroundSync.LaunchTask.ScheduleSuccess", scheduleSuccess);
+                        RecordHistogram.recordBooleanHistogram(
+                                "BackgroundSync.LaunchTask.ScheduleSuccess",
+                                scheduleLaunchTask(context, mScheduler, minDelayMs));
                     } else {
-                        boolean cancelSuccess = removeScheduledTasks(mScheduler);
-                        recordBooleanHistogram(
-                                "BackgroundSync.LaunchTask.CancelSuccess", cancelSuccess);
+                        RecordHistogram.recordBooleanHistogram(
+                                "BackgroundSync.LaunchTask.CancelSuccess",
+                                removeScheduledTasks(mScheduler));
                     }
                 }
             }
@@ -179,13 +173,14 @@ public class BackgroundSyncLauncher {
         // This will not automatically set {@link sGCMEnabled} to true, in case it has been
         // disabled in tests.
         if (sGCMEnabled) {
+            boolean isAvailable = true;
             if (!canUseGooglePlayServices(context)) {
                 setGCMEnabled(false);
                 Log.i(TAG, "Disabling Background Sync because Play Services is not up to date.");
-                recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", false);
-            } else {
-                recordBooleanHistogram("BackgroundSync.LaunchTask.PlayServicesAvailable", true);
+                isAvailable = false;
             }
+            RecordHistogram.recordBooleanHistogram(
+                    "BackgroundSync.LaunchTask.PlayServicesAvailable", isAvailable);
         }
         return !sGCMEnabled;
     }
@@ -260,17 +255,5 @@ public class BackgroundSyncLauncher {
     @VisibleForTesting
     static void setGCMEnabled(boolean enabled) {
         sGCMEnabled = enabled;
-    }
-
-    @VisibleForTesting
-    static void setReportingDisabledForTests(boolean disabled) {
-        sReportingDisabledForTests = disabled;
-    }
-
-    private static void recordBooleanHistogram(String name, boolean value) {
-        if (!sReportingDisabledForTests) {
-            // recordBooleanHistogram must only be called when the browser is running.
-            RecordHistogram.recordBooleanHistogram(name, value);
-        }
     }
 }
