@@ -42,11 +42,12 @@ class ScriptSourceCode;
 
 // A container for an external script which may be loaded and executed.
 //
-// A ResourcePtr alone does not prevent the underlying Resource
+// A RefPtr alone does not prevent the underlying Resource
 // from purging its data buffer. This class holds a dummy client open for its
 // lifetime in order to guarantee that the data buffer will not be purged.
 class CORE_EXPORT PendingScript final : public NoBaseWillBeGarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
+    WILL_BE_USING_PRE_FINALIZER(PendingScript, dispose);
 public:
     static PassOwnPtrWillBeRawPtr<PendingScript> create(Element*, ScriptResource*);
     ~PendingScript() override;
@@ -57,7 +58,7 @@ public:
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
 
     void watchForLoad(ScriptResourceClient*);
-    void stopWatchingForLoad(ScriptResourceClient*);
+    void stopWatchingForLoad();
 
     Element* element() const { return m_element.get(); }
     void setElement(Element*);
@@ -74,8 +75,11 @@ public:
     ScriptSourceCode getSource(const KURL& documentURL, bool& errorOccurred) const;
 
     void setStreamer(PassRefPtrWillBeRawPtr<ScriptStreamer>);
+    void streamingFinished();
 
     bool isReady() const;
+
+    void dispose();
 
 private:
     PendingScript(Element*, ScriptResource*);
@@ -86,6 +90,7 @@ private:
     bool m_integrityFailure;
 
     RefPtrWillBeMember<ScriptStreamer> m_streamer;
+    ScriptResourceClient* m_client;
 };
 
 } // namespace blink

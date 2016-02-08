@@ -53,6 +53,7 @@ StyleFetchedImage::~StyleFetchedImage()
 void StyleFetchedImage::dispose()
 {
     m_image->removeClient(this);
+    m_image = nullptr;
 }
 
 WrappedImagePtr StyleFetchedImage::data() const
@@ -144,6 +145,7 @@ bool StyleFetchedImage::knownToBeOpaque(const LayoutObject* layoutObject) const
 
 DEFINE_TRACE(StyleFetchedImage)
 {
+    visitor->trace(m_image);
     visitor->trace(m_document);
     StyleImage::trace(visitor);
 }

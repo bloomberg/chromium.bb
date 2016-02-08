@@ -8,7 +8,6 @@
 
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 
 namespace blink {
 
@@ -19,7 +18,7 @@ class LinkFetchResource final : public Resource {
 public:
     using ClientType = ResourceClient;
 
-    static ResourcePtr<Resource> fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
+    static PassRefPtrWillBeRawPtr<Resource> fetch(Resource::Type, FetchRequest&, ResourceFetcher*);
     ~LinkFetchResource() override;
 
 private:
@@ -28,9 +27,9 @@ private:
         LinkResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        Resource* create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
         {
-            return new LinkFetchResource(request, type());
+            return adoptRefWillBeNoop(new LinkFetchResource(request, type()));
         }
     };
     LinkFetchResource(const ResourceRequest&, Type);

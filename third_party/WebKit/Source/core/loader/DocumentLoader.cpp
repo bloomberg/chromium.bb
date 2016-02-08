@@ -123,7 +123,7 @@ DEFINE_TRACE(DocumentLoader)
 {
     visitor->trace(m_frame);
     visitor->trace(m_fetcher);
-    // TODO(sof): start tracing ResourcePtr<>s (and m_mainResource.)
+    visitor->trace(m_mainResource);
     visitor->trace(m_writer);
     visitor->trace(m_documentLoadTiming);
     visitor->trace(m_applicationCacheHost);
@@ -157,9 +157,9 @@ const KURL& DocumentLoader::url() const
     return m_request.url();
 }
 
-ResourcePtr<Resource> DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
+Resource* DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 {
-    ResourcePtr<Resource> resource;
+    RefPtrWillBeRawPtr<Resource> resource = nullptr;
     switch (type) {
     case Resource::Image:
         resource = ImageResource::fetch(request, fetcher());
@@ -193,7 +193,7 @@ ResourcePtr<Resource> DocumentLoader::startPreload(Resource::Type type, FetchReq
 
     if (resource)
         fetcher()->preloadStarted(resource.get());
-    return resource;
+    return resource.get();
 }
 
 void DocumentLoader::didChangePerformanceTiming()

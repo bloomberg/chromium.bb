@@ -6,7 +6,6 @@
 #define FontLoader_h
 
 #include "core/fetch/ResourceLoader.h"
-#include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -44,7 +43,7 @@ private:
     Timer<FontLoader> m_beginLoadingTimer;
 
     struct FontToLoad;
-    using FontsToLoadVector = Vector<OwnPtr<FontToLoad>>;
+    using FontsToLoadVector = WillBeHeapVector<OwnPtrWillBeMember<FontToLoad>>;
     FontsToLoadVector m_fontsToBeginLoading;
     RawPtrWillBeMember<CSSFontSelector> m_fontSelector;
     RawPtrWillBeWeakMember<Document> m_document;

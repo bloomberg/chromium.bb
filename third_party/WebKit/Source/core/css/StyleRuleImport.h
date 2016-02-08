@@ -23,7 +23,6 @@
 #define StyleRuleImport_h
 
 #include "core/css/StyleRule.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/fetch/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
 
@@ -35,6 +34,7 @@ class StyleSheetContents;
 
 class StyleRuleImport : public StyleRuleBase {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleRuleImport);
+    WILL_BE_USING_PRE_FINALIZER(StyleRuleImport, dispose);
 public:
     static PassRefPtrWillBeRawPtr<StyleRuleImport> create(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet>);
 
@@ -83,13 +83,15 @@ private:
 
     StyleRuleImport(const String& href, PassRefPtrWillBeRawPtr<MediaQuerySet>);
 
+    void dispose();
+
     RawPtrWillBeMember<StyleSheetContents> m_parentStyleSheet;
 
     ImportedStyleSheetClient m_styleSheetClient;
     String m_strHref;
     RefPtrWillBeMember<MediaQuerySet> m_mediaQueries;
     RefPtrWillBeMember<StyleSheetContents> m_styleSheet;
-    ResourcePtr<CSSStyleSheetResource> m_resource;
+    RefPtrWillBeMember<CSSStyleSheetResource> m_resource;
     bool m_loading;
 };
 

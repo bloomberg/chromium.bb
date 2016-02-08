@@ -126,7 +126,7 @@ static bool decodeBuffer(const char* buffer, unsigned size, const String& textEn
 static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
 {
     *hasZeroSize = false;
-    if (!cachedResource || cachedResource->wasPurged())
+    if (!cachedResource)
         return false;
 
     if (cachedResource->dataBufferingPolicy() == DoNotBufferData)

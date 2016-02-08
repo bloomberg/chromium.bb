@@ -42,12 +42,24 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
     : m_watchingForLoad(false)
     , m_element(element)
     , m_integrityFailure(false)
+    , m_client(nullptr)
 {
     setScriptResource(resource);
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 PendingScript::~PendingScript()
 {
+}
+
+void PendingScript::dispose()
+{
+    if (!m_client)
+        return;
+    stopWatchingForLoad();
+    releaseElementAndClear();
 }
 
 PendingScript& PendingScript::operator=(const PendingScript& other)
@@ -67,30 +79,33 @@ PendingScript& PendingScript::operator=(const PendingScript& other)
 void PendingScript::watchForLoad(ScriptResourceClient* client)
 {
     ASSERT(!m_watchingForLoad);
-    // addClient() will call notifyFinished() if the load is complete. Callers
+    // addClient() will call streamingFinished() if the load is complete. Callers
     // who do not expect to be re-entered from this call should not call
     // watchForLoad for a PendingScript which isReady. We also need to set
     // m_watchingForLoad early, since addClient() can result in calling
     // notifyFinished and further stopWatchingForLoad().
     m_watchingForLoad = true;
-    if (m_streamer) {
-        m_streamer->addClient(client);
-    } else {
+    m_client = client;
+    if (!m_streamer)
         resource()->addClient(client);
-    }
 }
 
-void PendingScript::stopWatchingForLoad(ScriptResourceClient* client)
+void PendingScript::stopWatchingForLoad()
 {
     if (!m_watchingForLoad)
         return;
     ASSERT(resource());
-    if (m_streamer) {
-        m_streamer->removeClient(client);
-    } else {
-        resource()->removeClient(client);
-    }
+    if (!m_streamer)
+        resource()->removeClient(m_client);
+    m_client = nullptr;
     m_watchingForLoad = false;
+}
+
+void PendingScript::streamingFinished()
+{
+    ASSERT(resource());
+    if (m_client)
+        m_client->notifyFinished(resource());
 }
 
 void PendingScript::setElement(Element* element)

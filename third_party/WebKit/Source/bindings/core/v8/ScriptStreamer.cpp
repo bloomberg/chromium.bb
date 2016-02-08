@@ -577,11 +577,11 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     notifyFinishedToClient();
 }
 
-ScriptStreamer::ScriptStreamer(ScriptResource* resource, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
-    : m_resource(resource)
+ScriptStreamer::ScriptStreamer(PendingScript* script, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
+    : m_pendingScript(script)
+    , m_resource(script->resource())
     , m_detached(false)
     , m_stream(0)
-    , m_client(0)
     , m_loadingFinished(false)
     , m_parsingFinished(false)
     , m_haveEnoughDataForStreaming(false)
@@ -600,6 +600,7 @@ ScriptStreamer::~ScriptStreamer()
 
 DEFINE_TRACE(ScriptStreamer)
 {
+    visitor->trace(m_pendingScript);
     visitor->trace(m_resource);
 }
 
@@ -642,8 +643,7 @@ void ScriptStreamer::notifyFinishedToClient()
     if (!isFinished())
         return;
 
-    if (m_client)
-        m_client->notifyFinished(m_resource);
+    m_pendingScript->streamingFinished();
 }
 
 bool ScriptStreamer::startStreamingInternal(PendingScript* script, Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
@@ -679,7 +679,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript* script, Type scriptTy
     // The Resource might go out of scope if the script is no longer
     // needed. This makes PendingScript notify the ScriptStreamer when it is
     // destroyed.
-    script->setStreamer(ScriptStreamer::create(resource, scriptType, scriptState, compileOption, loadingTaskRunner));
+    script->setStreamer(ScriptStreamer::create(script, scriptType, scriptState, compileOption, loadingTaskRunner));
 
     return true;
 }

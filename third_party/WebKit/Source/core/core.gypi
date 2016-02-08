@@ -1584,8 +1584,6 @@
             'fetch/ResourceLoaderOptions.h',
             'fetch/ResourceLoaderSet.cpp',
             'fetch/ResourceLoaderSet.h',
-            'fetch/ResourcePtr.cpp',
-            'fetch/ResourcePtr.h',
             'fetch/ScriptResource.cpp',
             'fetch/ScriptResource.h',
             'fetch/SubstituteData.h',

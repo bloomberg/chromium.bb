@@ -27,7 +27,6 @@
 #define StyleFetchedImageSet_h
 
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
 
@@ -83,7 +82,7 @@ private:
 
     String debugName() const override { return "StyleFetchedImageSet"; }
 
-    ResourcePtr<ImageResource> m_bestFitImage;
+    RefPtrWillBeMember<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
 
     RawPtrWillBeMember<CSSImageSetValue> m_imageSetValue; // Not retained; it owns us.

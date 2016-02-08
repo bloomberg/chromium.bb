@@ -31,7 +31,6 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "platform/graphics/Image.h"
 
 namespace blink {
@@ -102,8 +101,8 @@ private:
     RefPtrWillBeMember<CSSValue> m_toValue;
     RefPtrWillBeMember<CSSPrimitiveValue> m_percentageValue;
 
-    ResourcePtr<ImageResource> m_cachedFromImage;
-    ResourcePtr<ImageResource> m_cachedToImage;
+    RefPtrWillBeMember<ImageResource> m_cachedFromImage;
+    RefPtrWillBeMember<ImageResource> m_cachedToImage;
 
     RefPtr<Image> m_generatedImage;
 

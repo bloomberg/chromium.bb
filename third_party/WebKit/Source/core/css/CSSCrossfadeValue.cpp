@@ -125,10 +125,14 @@ CSSCrossfadeValue::~CSSCrossfadeValue()
 
 void CSSCrossfadeValue::dispose()
 {
-    if (m_cachedFromImage)
+    if (m_cachedFromImage) {
         m_cachedFromImage->removeClient(&m_crossfadeSubimageObserver);
-    if (m_cachedToImage)
+        m_cachedFromImage = nullptr;
+    }
+    if (m_cachedToImage) {
         m_cachedToImage->removeClient(&m_crossfadeSubimageObserver);
+        m_cachedToImage = nullptr;
+    }
 }
 
 String CSSCrossfadeValue::customCSSText() const
@@ -190,8 +194,8 @@ bool CSSCrossfadeValue::knownToBeOpaque(const LayoutObject* layoutObject) const
 
 void CSSCrossfadeValue::loadSubimages(Document* document)
 {
-    ResourcePtr<ImageResource> oldCachedFromImage = m_cachedFromImage;
-    ResourcePtr<ImageResource> oldCachedToImage = m_cachedToImage;
+    RefPtrWillBeRawPtr<ImageResource> oldCachedFromImage = m_cachedFromImage;
+    RefPtrWillBeRawPtr<ImageResource> oldCachedToImage = m_cachedToImage;
 
     m_cachedFromImage = cachedImageForCSSValue(m_fromValue.get(), document);
     m_cachedToImage = cachedImageForCSSValue(m_toValue.get(), document);
@@ -273,6 +277,8 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSCrossfadeValue)
     visitor->trace(m_fromValue);
     visitor->trace(m_toValue);
     visitor->trace(m_percentageValue);
+    visitor->trace(m_cachedFromImage);
+    visitor->trace(m_cachedToImage);
     visitor->trace(m_crossfadeSubimageObserver);
     CSSImageGeneratorValue::traceAfterDispatch(visitor);
 }

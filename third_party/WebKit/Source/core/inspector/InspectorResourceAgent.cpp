@@ -558,7 +558,12 @@ void InspectorResourceAgent::didReceiveResourceResponse(LocalFrame* frame, unsig
     if (type == InspectorPageAgent::DocumentResource && loader && loader->substituteData().isValid())
         return;
 
-    if (cachedResource)
+    // It's only safe to reference a Resource in m_resourcesData if it's in the
+    // cache at this point. Resources are added to NetworkResourcesData here
+    // and removed in removedResourceFromMemoryCache(), so if the Resource isn't
+    // in the cache here, NetworkResourceData's strong reference to the
+    // Resource will keep it alive indefinitely.
+    if (cachedResource && memoryCache()->contains(cachedResource))
         m_resourcesData->addResource(requestId, cachedResource);
     String frameId = IdentifiersFactory::frameId(frame);
     String loaderId = loader ? IdentifiersFactory::loaderId(loader) : "";
@@ -742,13 +747,13 @@ void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient*
     m_pendingRequest = nullptr;
 }
 
-void InspectorResourceAgent::willDestroyResource(Resource* cachedResource)
+void InspectorResourceAgent::removedResourceFromMemoryCache(Resource* cachedResource)
 {
     String content;
     bool base64Encoded;
     bool hasContent = InspectorPageAgent::cachedResourceContent(cachedResource, &content, &base64Encoded);
     Vector<String> requestIds = m_resourcesData->removeResource(cachedResource);
-    if (hasContent) {
+    if (hasContent && !isErrorStatusCode(cachedResource->response().httpStatusCode())) {
         for (auto& request : requestIds)
             m_resourcesData->setResourceContent(request, content, base64Encoded);
     }

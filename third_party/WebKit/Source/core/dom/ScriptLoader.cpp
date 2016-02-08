@@ -59,7 +59,6 @@ namespace blink {
 
 ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
     : m_element(element)
-    , m_resource(0)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
     , m_parserInserted(parserInserted)
     , m_isExternalScript(false)
@@ -74,21 +73,16 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     ASSERT(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
         m_startLineNumber = element->document().scriptableDocumentParser()->lineNumber();
-#if ENABLE(OILPAN)
-    ThreadState::current()->registerPreFinalizer(this);
-#endif
 }
 
 ScriptLoader::~ScriptLoader()
 {
-#if !ENABLE(OILPAN)
-    detach();
-#endif
 }
 
 DEFINE_TRACE(ScriptLoader)
 {
     visitor->trace(m_element);
+    visitor->trace(m_resource);
     visitor->trace(m_pendingScript);
 }
 
@@ -121,8 +115,7 @@ void ScriptLoader::detach()
 {
     if (!m_pendingScript)
         return;
-    m_pendingScript->stopWatchingForLoad(this);
-    m_pendingScript->releaseElementAndClear();
+    m_pendingScript->dispose();
     m_pendingScript = nullptr;
 }
 
@@ -454,7 +447,7 @@ void ScriptLoader::execute()
         else
             dispatchErrorEvent();
     }
-    m_resource = 0;
+    m_resource = nullptr;
 }
 
 void ScriptLoader::notifyFinished(Resource* resource)
@@ -481,7 +474,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
         return;
     }
     contextDocument->scriptRunner()->notifyScriptReady(this, runOrder);
-    m_pendingScript->stopWatchingForLoad(this);
+    m_pendingScript->stopWatchingForLoad();
 }
 
 bool ScriptLoader::ignoresLoadRequest() const

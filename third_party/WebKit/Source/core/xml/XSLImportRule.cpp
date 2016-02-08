@@ -100,7 +100,7 @@ void XSLImportRule::loadSheet()
     ResourceLoaderOptions fetchOptions(ResourceFetcher::defaultResourceOptions());
     FetchRequest request(ResourceRequest(ownerDocument->completeURL(absHref)), FetchInitiatorTypeNames::xml, fetchOptions);
     request.setOriginRestriction(FetchRequest::RestrictToSameOrigin);
-    ResourcePtr<XSLStyleSheetResource> resource = XSLStyleSheetResource::fetchSynchronously(request, ownerDocument->fetcher());
+    RefPtrWillBeRawPtr<XSLStyleSheetResource> resource = XSLStyleSheetResource::fetchSynchronously(request, ownerDocument->fetcher());
     if (!resource || !resource->sheet())
         return;
 

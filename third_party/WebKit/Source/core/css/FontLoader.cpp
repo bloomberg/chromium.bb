@@ -12,15 +12,28 @@
 
 namespace blink {
 
-struct FontLoader::FontToLoad {
+struct FontLoader::FontToLoad : public NoBaseWillBeGarbageCollectedFinalized<FontLoader::FontToLoad> {
 public:
-    static PassOwnPtr<FontToLoad> create(FontResource* fontResource, Document& document)
+    static PassOwnPtrWillBeRawPtr<FontToLoad> create(FontResource* fontResource, Document& document)
     {
-        return adoptPtr(new FontToLoad(fontResource, document));
+        return adoptPtrWillBeNoop(new FontToLoad(fontResource, document));
     }
 
-    ResourcePtr<FontResource> fontResource;
+    virtual ~FontToLoad()
+    {
+        ASSERT(!fontResource);
+    }
+
+    RefPtrWillBeMember<FontResource> fontResource;
     OwnPtr<IncrementLoadEventDelayCount> delay;
+
+    void dispose()
+    {
+        fontResource = nullptr;
+        delay.clear();
+    }
+
+    DEFINE_INLINE_TRACE() { visitor->trace(fontResource); }
 
 private:
     FontToLoad(FontResource* resource, Document& document)
@@ -78,6 +91,7 @@ void FontLoader::loadPendingFonts()
             fontToLoad->fontResource->beginLoadIfNeeded(m_document->fetcher());
         else
             fontToLoad->fontResource->error(Resource::LoadError);
+        fontToLoad->dispose();
     }
 
     // When the local fontsToBeginLoading vector goes out of scope it will
@@ -119,13 +133,16 @@ void FontLoader::clearDocumentAndFontSelector()
 
 void FontLoader::clearPendingFonts()
 {
-    for (const auto& fontToLoad : m_fontsToBeginLoading)
+    for (const auto& fontToLoad : m_fontsToBeginLoading) {
         fontToLoad->fontResource->didUnscheduleLoad();
+        fontToLoad->dispose();
+    }
     m_fontsToBeginLoading.clear();
 }
 
 DEFINE_TRACE(FontLoader)
 {
+    visitor->trace(m_fontsToBeginLoading);
     visitor->trace(m_document);
     visitor->trace(m_fontSelector);
 }

@@ -121,7 +121,7 @@ TEST(LinkLoaderTest, Preload)
             dummyPageHolder->document(),
             NetworkHintsMock());
         ASSERT(dummyPageHolder->document().fetcher());
-        WillBeHeapListHashSet<RawPtrWillBeMember<Resource>>* preloads = dummyPageHolder->document().fetcher()->preloads();
+        WillBeHeapListHashSet<RefPtrWillBeMember<Resource>>* preloads = dummyPageHolder->document().fetcher()->preloads();
         if (testCase.shouldLoad)
             ASSERT_NE(nullptr, preloads);
         if (preloads) {

@@ -5,12 +5,11 @@
 #include "core/fetch/MockImageResourceClient.h"
 
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ResourcePtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-MockImageResourceClient::MockImageResourceClient(const ResourcePtr<Resource>& resource)
+MockImageResourceClient::MockImageResourceClient(PassRefPtrWillBeRawPtr<Resource> resource)
     : m_resource(resource.get())
     , m_imageChangedCount(0)
     , m_notifyFinishedCalled(false)

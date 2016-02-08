@@ -70,7 +70,7 @@ static void recordPackageFormatHistogram(FontPackageFormat format)
     packageFormatHistogram.count(format);
 }
 
-ResourcePtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
+PassRefPtrWillBeRawPtr<FontResource> FontResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
     ASSERT(request.resourceRequest().frameType() == WebURLRequest::FrameTypeNone);
     request.mutableResourceRequest().setRequestContext(WebURLRequest::RequestContextFont);

@@ -27,7 +27,6 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
-#include "core/fetch/ResourcePtr.h"
 #include "public/platform/WebMemoryDumpProvider.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
@@ -84,7 +83,7 @@ public:
     DECLARE_TRACE();
     void dispose();
 
-    ResourcePtr<Resource> m_resource;
+    RefPtrWillBeMember<Resource> m_resource;
     bool m_inLiveDecodedResourcesList;
     unsigned m_accessCount;
     MemoryCacheLiveResourcePriority m_liveResourcePriority;
@@ -273,7 +272,7 @@ private:
     void pruneLiveResources(PruneStrategy);
     void pruneNow(double currentTime, PruneStrategy);
 
-    bool evict(MemoryCacheEntry*);
+    void evict(MemoryCacheEntry*);
 
     MemoryCacheEntry* getEntryForResource(const Resource*) const;
 
@@ -310,15 +309,6 @@ private:
     using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
     ResourceMap* ensureResourceMap(const String& cacheIdentifier);
     ResourceMapIndex m_resourceMaps;
-
-#if ENABLE(OILPAN)
-    // Unlike m_allResources, m_liveResources is a set of Resource objects which
-    // should not be deleted. m_allResources only contains on-cache Resource
-    // objects.
-    // FIXME: Can we remove manual lifetime management of Resource and this?
-    HeapHashSet<Member<Resource>> m_liveResources;
-    friend CORE_EXPORT MemoryCache* replaceMemoryCacheForTesting(MemoryCache*);
-#endif
 
     friend class MemoryCacheTest;
 #ifdef MEMORY_CACHE_STATS

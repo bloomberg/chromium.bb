@@ -156,12 +156,12 @@ void HTMLScriptRunner::detach()
     if (!m_document)
         return;
 
-    m_parserBlockingScript->stopWatchingForLoad(this);
+    m_parserBlockingScript->stopWatchingForLoad();
     m_parserBlockingScript->releaseElementAndClear();
 
     while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
         OwnPtrWillBeRawPtr<PendingScript> pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
-        pendingScript->stopWatchingForLoad(this);
+        pendingScript->stopWatchingForLoad();
         pendingScript->releaseElementAndClear();
     }
     m_document = nullptr;
@@ -193,7 +193,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
     ScriptSourceCode sourceCode = pendingScript->getSource(documentURLForScriptExecution(m_document), errorOccurred);
 
     // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
-    pendingScript->stopWatchingForLoad(this);
+    pendingScript->stopWatchingForLoad();
 
     if (!isExecutingScript()) {
         Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
@@ -239,13 +239,13 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript* pendi
 void HTMLScriptRunner::stopWatchingResourceForLoad(Resource* resource)
 {
     if (m_parserBlockingScript->resource() == resource) {
-        m_parserBlockingScript->stopWatchingForLoad(this);
+        m_parserBlockingScript->stopWatchingForLoad();
         m_parserBlockingScript->releaseElementAndClear();
         return;
     }
     for (auto& script : m_scriptsToExecuteAfterParsing) {
         if (script->resource() == resource) {
-            script->stopWatchingForLoad(this);
+            script->stopWatchingForLoad();
             script->releaseElementAndClear();
             return;
         }
@@ -390,7 +390,7 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript* pendingScript, Elemen
     ASSERT(!pendingScript->element());
     pendingScript->setElement(script);
     // This should correctly return 0 for empty or invalid srcValues.
-    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource().get();
+    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource();
     if (!resource) {
         notImplemented(); // Dispatch error event.
         return false;

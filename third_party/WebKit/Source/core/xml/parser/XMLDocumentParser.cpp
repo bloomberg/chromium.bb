@@ -416,6 +416,10 @@ bool XMLDocumentParser::updateLeafTextNode()
 
 void XMLDocumentParser::detach()
 {
+    if (m_pendingScript) {
+        m_pendingScript->removeClient(this);
+        m_pendingScript = nullptr;
+    }
     clearCurrentNodeStack();
     ScriptableDocumentParser::detach();
 }
@@ -486,7 +490,7 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource)
     bool wasCanceled = m_pendingScript->wasCanceled();
 
     m_pendingScript->removeClient(this);
-    m_pendingScript = 0;
+    m_pendingScript = nullptr;
 
     RefPtrWillBeRawPtr<Element> e = m_scriptElement;
     m_scriptElement = nullptr;
@@ -673,7 +677,7 @@ static void* openFunc(const char* uri)
         XMLDocumentParserScope scope(0);
         // FIXME: We should restore the original global error handler as well.
         FetchRequest request(ResourceRequest(url), FetchInitiatorTypeNames::xml, ResourceFetcher::defaultResourceOptions());
-        ResourcePtr<Resource> resource = RawResource::fetchSynchronously(request, document->fetcher());
+        RefPtrWillBeRawPtr<Resource> resource = RawResource::fetchSynchronously(request, document->fetcher());
         if (resource && !resource->errorOccurred()) {
             data = resource->resourceBuffer();
             finalURL = resource->response().url();
@@ -802,7 +806,6 @@ XMLDocumentParser::XMLDocumentParser(Document& document, FrameView* frameView)
     , m_requestingScript(false)
     , m_finishCalled(false)
     , m_xmlErrors(&document)
-    , m_pendingScript(0)
     , m_scriptStartPosition(TextPosition::belowRangePosition())
     , m_parsingFragment(false)
 {
@@ -826,7 +829,6 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment, Element* parent
     , m_requestingScript(false)
     , m_finishCalled(false)
     , m_xmlErrors(&fragment->document())
-    , m_pendingScript(0)
     , m_scriptStartPosition(TextPosition::belowRangePosition())
     , m_parsingFragment(true)
 {
@@ -873,15 +875,12 @@ XMLParserContext::~XMLParserContext()
 
 XMLDocumentParser::~XMLDocumentParser()
 {
+    ASSERT(!m_pendingScript);
 #if !ENABLE(OILPAN)
     // The XMLDocumentParser will always be detached before being destroyed.
     ASSERT(m_currentNodeStack.isEmpty());
     ASSERT(!m_currentNode);
 #endif
-
-    // FIXME: m_pendingScript handling should be moved into XMLDocumentParser.cpp!
-    if (m_pendingScript)
-        m_pendingScript->removeClient(this);
 }
 
 DEFINE_TRACE(XMLDocumentParser)
@@ -892,6 +891,7 @@ DEFINE_TRACE(XMLDocumentParser)
 #endif
     visitor->trace(m_leafTextNode);
     visitor->trace(m_xmlErrors);
+    visitor->trace(m_pendingScript);
     visitor->trace(m_scriptElement);
     ScriptableDocumentParser::trace(visitor);
 }

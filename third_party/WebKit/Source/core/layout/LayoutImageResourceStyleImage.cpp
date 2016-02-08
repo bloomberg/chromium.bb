@@ -41,6 +41,7 @@ LayoutImageResourceStyleImage::LayoutImageResourceStyleImage(StyleImage* styleIm
 
 LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage()
 {
+    ASSERT(!m_cachedImage);
 }
 
 void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject)
@@ -57,7 +58,7 @@ void LayoutImageResourceStyleImage::shutdown()
 {
     ASSERT(m_layoutObject);
     m_styleImage->removeClient(m_layoutObject);
-    m_cachedImage = 0;
+    m_cachedImage = nullptr;
 }
 
 PassRefPtr<Image> LayoutImageResourceStyleImage::image(const IntSize& size, float zoom) const

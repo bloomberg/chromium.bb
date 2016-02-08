@@ -24,7 +24,6 @@
 #include "core/SVGNames.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ImageResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/SVGURIReference.h"
@@ -67,7 +66,7 @@ private:
 
     RefPtrWillBeMember<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 
-    ResourcePtr<ImageResource> m_cachedImage;
+    RefPtrWillBeMember<ImageResource> m_cachedImage;
 };
 
 } // namespace blink
