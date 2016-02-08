@@ -1,6 +1,6 @@
 # Running layout tests on Linux
 
-1.  Build `blink_tests` (see LinuxBuildInstructions)
+1.  Build `blink_tests` (see [Linux-specific build instructions](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md))
 1.  Checkout the layout tests
     *   If you have an entry in your `.gclient` file that includes
         "LayoutTests", you may need to comment it out and sync.

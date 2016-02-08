@@ -31,7 +31,7 @@ namespace content {
 
 
 // FontConfig implementation for Skia that proxies out of process to get out
-// of the sandbox. See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
+// of the sandbox. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 class FontConfigIPC : public SkFontConfigInterface {
  public:
   explicit FontConfigIPC(int fd);

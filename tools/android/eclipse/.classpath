@@ -2,7 +2,7 @@
 <!-- {% block header_message %}
 
 Eclipse classpath. See instructions at
-https://code.google.com/p/chromium/wiki/AndroidEclipseDev for setting up Eclipse
+https://www.chromium.org/developers/android-eclipse-dev for setting up Eclipse
 for Chrome Android development.
 
 Obsolete entries can be found using:

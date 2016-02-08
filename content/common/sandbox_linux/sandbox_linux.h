@@ -42,7 +42,7 @@ namespace content {
 class LinuxSandbox {
  public:
   // This is a list of sandbox IPC methods which the renderer may send to the
-  // sandbox host. See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
+  // sandbox host. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
   // This isn't the full list, values < 32 are reserved for methods called from
   // Skia.
   enum LinuxSandboxIPCMethods {

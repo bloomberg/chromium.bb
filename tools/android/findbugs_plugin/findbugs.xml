@@ -9,7 +9,7 @@
         xsi:noNamespaceSchemaLocation="findbugsplugin.xsd"
         pluginid="SynchronizedThisDetector"
         provider="chromium"
-        website="http://code.google.com/p/chromium/wiki/UseFindBugsForAndroid">
+        website="https://chromium.googlesource.com/chromium/src/+/master/docs/use_find_bugs_for_android.md">
         <Detector class="org.chromium.tools.findbugs.plugin.SynchronizedThisDetector" reports="CHROMIUM_SYNCHRONIZED_THIS" />
         <BugPattern type="CHROMIUM_SYNCHRONIZED_THIS" abbrev="CHROMIUM" category="CORRECTNESS"/>
 

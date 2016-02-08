@@ -46,7 +46,7 @@
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 
-// See http://code.google.com/p/chromium/wiki/LinuxZygote
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
 namespace content {
 
@@ -108,7 +108,7 @@ bool Zygote::ProcessRequests() {
   // A SOCK_SEQPACKET socket is installed in fd 3. We get commands from the
   // browser on it.
   // A SOCK_DGRAM is installed in fd 5. This is the sandbox IPC channel.
-  // See http://code.google.com/p/chromium/wiki/LinuxSandboxIPC
+  // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)

@@ -248,8 +248,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
   if (!backend.get()) {
     LOG(WARNING) << "Using basic (unencrypted) store for password storage. "
-        "See http://code.google.com/p/chromium/wiki/LinuxPasswordStorage for "
-        "more information about password storage options.";
+        "See "
+        "https://chromium.googlesource.com/chromium/src/+/master/docs/linux_password_storage.md"
+        " for more information about password storage options.";
   }
 
   ps = new PasswordStoreX(main_thread_runner, db_thread_runner,

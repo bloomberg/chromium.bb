@@ -41,7 +41,7 @@ struct WebFontRenderStyle;
 
 // Put methods here that are required due to sandbox restrictions.
 // These are currently only implemented only on Linux:
-// https://code.google.com/p/chromium/wiki/LinuxSandboxIPC
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 class WebSandboxSupport {
 public:
     // Get information to instantiate a font which contains glyphs for the given Unicode code-point.

@@ -26,7 +26,7 @@
     'target_name': 'bindings_modules_v8_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
-    # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
+    # https://gyp.gsrc.io/docs/InputFormatReference.md#Linking-Dependencies
     'hard_dependency': 1,
     'dependencies': [
       '../../core/generated.gyp:core_global_constructors_idls',
@@ -172,7 +172,7 @@
     'target_name': 'bindings_modules_v8_generated_partial_individual',
     'type': 'none',
     # The 'partial_binding' rule generates .h files, so mark as hard_dependency, per:
-    # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
+    # https://gyp.gsrc.io/docs/InputFormatReference.md#Linking-Dependencies
     'hard_dependency': 1,
     'dependencies': [
       '../../core/generated.gyp:core_global_constructors_idls',

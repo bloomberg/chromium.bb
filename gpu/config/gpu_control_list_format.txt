@@ -79,4 +79,4 @@
 // INT is very much like FLOAT, except that the values need to be integers.
 //
 // String pattern syntax can be found at
-// https://code.google.com/p/re2/wiki/Syntax.
+// https://github.com/google/re2/blob/master/doc/syntax.txt

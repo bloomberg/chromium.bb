@@ -37,7 +37,7 @@
 //          TODO: "text": {
 //            "type": "array",
 //            "optional": true,
-//            "description": "Matches if all of the regular expressions in the array match text in the page. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+//            "description": "Matches if all of the regular expressions in the array match text in the page. The regular expressions use the <a href=\"https://github.com/google/re2/blob/master/doc/syntax.txt\">RE2 syntax</a>.",
 //            "items": { "type": "string" }
           },
           "isBookmarked": {

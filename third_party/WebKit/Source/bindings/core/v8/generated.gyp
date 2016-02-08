@@ -29,7 +29,7 @@
     'target_name': 'bindings_core_v8_generated_individual',
     'type': 'none',
     # The 'binding' rule generates .h files, so mark as hard_dependency, per:
-    # https://code.google.com/p/gyp/wiki/InputFormatReference#Linking_Dependencies
+    # https://gyp.gsrc.io/docs/InputFormatReference.md#Linking-Dependencies
     'hard_dependency': 1,
     'dependencies': [
       '../../../core/core_generated.gyp:generated_testing_idls',

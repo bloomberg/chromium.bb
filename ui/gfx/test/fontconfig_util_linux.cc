@@ -85,7 +85,7 @@ bool LoadFontIntoFontconfig(const base::FilePath& path) {
   if (!base::PathExists(path)) {
     LOG(ERROR) << "You are missing " << path.value() << ". Try re-running "
                << "build/install-build-deps.sh. Also see "
-               << "http://code.google.com/p/chromium/wiki/LayoutTestsLinux";
+               << "https://chromium.googlesource.com/chromium/src/+/master/docs/layout_tests_linux.md";
     return false;
   }
 

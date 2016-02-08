@@ -6,7 +6,7 @@
 
 # Script to install everything needed to build chromium on android, including
 # items requiring sudo privileges.
-# See http://code.google.com/p/chromium/wiki/AndroidBuildInstructions
+# See https://www.chromium.org/developers/how-tos/android-build-instructions
 
 # This script installs the sun-java6 packages (bin, jre and jdk). Sun requires
 # a license agreement, so upon installation it will prompt the user. To get

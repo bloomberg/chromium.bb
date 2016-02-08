@@ -7,7 +7,7 @@
 void NaClMainPlatformDelegate::EnableSandbox(
     const content::MainFunctionParams& parameters) {
   // The setuid sandbox is started in the zygote process: zygote_main_linux.cc
-  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox.md
   //
   // The seccomp sandbox is started in the renderer.
   // http://code.google.com/p/seccompsandbox/

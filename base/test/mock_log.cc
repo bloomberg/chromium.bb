@@ -56,7 +56,7 @@ bool MockLog::LogMessageHandler(int severity,
                                 size_t message_start,
                                 const std::string& str) {
   // gMock guarantees thread-safety for calling a mocked method
-  // (https://code.google.com/p/googlemock/wiki/CookBook#Using_Google_Mock_and_Threads)
+  // (https://github.com/google/googlemock/blob/master/googlemock/docs/CookBook.md#using-google-mock-and-threads)
   // but we also need to make sure that Start/StopCapturingLogs are synchronized
   // with LogMessageHandler.
   AutoLock scoped_lock(g_lock);

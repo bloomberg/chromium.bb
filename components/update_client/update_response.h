@@ -14,7 +14,7 @@
 namespace update_client {
 
 // Parses responses for the update protocol version 3.
-// (http://code.google.com/p/omaha/wiki/ServerProtocol)
+// (https://github.com/google/omaha/blob/wiki/ServerProtocolV3.md)
 //
 // An update response looks like this:
 //

@@ -52,7 +52,7 @@ class LinuxPort(base.Port):
 
     DEFAULT_BUILD_DIRECTORIES = ('out',)
 
-    BUILD_REQUIREMENTS_URL = 'https://code.google.com/p/chromium/wiki/LinuxBuildInstructions'
+    BUILD_REQUIREMENTS_URL = 'https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md'
 
     @classmethod
     def _determine_driver_path_statically(cls, host, options):
@@ -130,7 +130,7 @@ class LinuxPort(base.Port):
         if result:
             _log.error('For complete Linux build requirements, please see:')
             _log.error('')
-            _log.error('    http://code.google.com/p/chromium/wiki/LinuxBuildInstructions')
+            _log.error('    https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions.md')
         return result
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):

@@ -184,7 +184,7 @@
       },
       {
         "id": "declarativeWebRequest.RedirectByRegEx",
-        "description": "Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+        "description": "Redirects a request by applying a regular expression on the URL. The regular expressions use the <a href=\"https://github.com/google/re2/blob/master/doc/syntax.txt\">RE2 syntax</a>.",
         "type": "object",
         "properties": {
           "instanceType": {

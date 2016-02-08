@@ -34,7 +34,7 @@ declare_args() {
 
   # Enable building with SyzyAsan which can find certain types of memory
   # errors. Only works on Windows. See
-  # https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
+  # https://github.com/google/syzygy/wiki/SyzyASanHowTo
   is_syzyasan = false
 
   # Compile with Control Flow Integrity to protect virtual calls and casts.

@@ -488,7 +488,7 @@
       'use_sanitizer_options%': 0,
 
       # Enable building with SyzyAsan.
-      # See https://code.google.com/p/sawbuck/wiki/SyzyASanHowTo
+      # See https://github.com/google/syzygy/wiki/SyzyASanHowTo
       'syzyasan%': 0,
 
       # Enable crash reporting via Kasko.
@@ -629,14 +629,14 @@
       # This setting will override the default.
       #
       # See
-      # http://code.google.com/p/chromium/wiki/WindowsPrecompiledHeaders
+      # https://chromium.googlesource.com/chromium/src/+/master/docs/windows_precompiled_headers.md
       # for details.
       'chromium_win_pch%': 0,
 
       # Clang stuff.
       'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
       # Set this to true when building with Clang.
-      # See http://code.google.com/p/chromium/wiki/Clang for details.
+      # See https://chromium.googlesource.com/chromium/src/+/master/docs/clang.md for details.
       # If this is set, clang is used as both host and target compiler in
       # cross-compile builds.
       'clang%': 0,

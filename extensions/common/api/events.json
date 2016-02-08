@@ -292,12 +292,12 @@
           },
           "urlMatches": {
             "type": "string",
-            "description": "Matches if the URL (without fragment identifier) matches a specified regular expression. Port numbers are stripped from the URL if they match the default port number. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+            "description": "Matches if the URL (without fragment identifier) matches a specified regular expression. Port numbers are stripped from the URL if they match the default port number. The regular expressions use the <a href=\"https://github.com/google/re2/blob/master/doc/syntax.txt\">RE2 syntax</a>.",
             "optional": true
           },
           "originAndPathMatches": {
             "type": "string",
-            "description": "Matches if the URL without query segment and fragment identifier matches a specified regular expression. Port numbers are stripped from the URL if they match the default port number. The regular expressions use the <a href=\"http://code.google.com/p/re2/wiki/Syntax\">RE2 syntax</a>.",
+            "description": "Matches if the URL without query segment and fragment identifier matches a specified regular expression. Port numbers are stripped from the URL if they match the default port number. The regular expressions use the <a href=\"https://github.com/google/re2/blob/master/doc/syntax.txt\">RE2 syntax</a>.",
             "optional": true
           },
           "urlPrefix": {

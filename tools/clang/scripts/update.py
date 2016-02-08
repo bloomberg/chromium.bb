@@ -24,7 +24,7 @@ import urllib2
 import zipfile
 
 # Do NOT CHANGE this if you don't know what you're doing -- see
-# https://code.google.com/p/chromium/wiki/UpdatingClang
+# https://chromium.googlesource.com/chromium/src/+/master/docs/updating_clang.md
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION = '259396'
 
@@ -374,7 +374,7 @@ def UpdateClang(args):
     print 'Android NDK not found at ' + ANDROID_NDK_DIR
     print 'The Android NDK is needed to build a Clang whose -fsanitize=address'
     print 'works on Android. See '
-    print 'http://code.google.com/p/chromium/wiki/AndroidBuildInstructions'
+    print 'https://www.chromium.org/developers/how-tos/android-build-instructions'
     print 'for how to install the NDK, or pass --without-android.'
     return 1
 

@@ -43,7 +43,7 @@ class IndexedDBTransactionTest : public testing::Test {
   void CreateDB() {
     // DB is created here instead of the constructor to workaround a
     // "peculiarity of C++". More info at
-    // https://code.google.com/p/googletest/wiki/FAQ#My_compiler_complains_that_a_constructor_(or_destructor)_cannot
+    // https://github.com/google/googletest/blob/master/googletest/docs/FAQ.md#my-compiler-complains-that-a-constructor-or-destructor-cannot-return-a-value-whats-going-on
     leveldb::Status s;
     db_ = IndexedDBDatabase::Create(base::ASCIIToUTF16("db"),
                                     backing_store_.get(),

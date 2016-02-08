@@ -148,4 +148,4 @@ Sandboxing can make developing harder, see:
 ## See also
 
 *   [LinuxSandboxIPC](linux_sandbox_ipc.md)
-*   [How Chromium's Linux sandbox affects Native Client](https://code.google.com/p/nativeclient/wiki/LinuxOuterSandbox)
+*   [How Chromium's Linux sandbox affects Native Client](https://chromium.googlesource.com/native_client/src/native_client.git/+/master/docs/linux_outer_sandbox.md)

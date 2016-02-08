@@ -52,7 +52,7 @@ class Value;
 //   if present, "additionalProperties" is to be a schema against which all
 //   additional properties will be validated.
 // - regular expression supports all syntaxes that re2 accepts.
-//   See https://code.google.com/p/re2/wiki/Syntax for details.
+//   See https://github.com/google/re2/blob/master/doc/syntax.txt for details.
 //==============================================================================
 class JSONSchemaValidator {
  public:

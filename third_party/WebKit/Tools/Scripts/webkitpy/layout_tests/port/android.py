@@ -412,7 +412,7 @@ class AndroidPort(base.Port):
     # Android has aac and mp3 codecs built in.
     PORT_HAS_AUDIO_CODECS_BUILT_IN = True
 
-    BUILD_REQUIREMENTS_URL = 'https://code.google.com/p/chromium/wiki/AndroidBuildInstructions'
+    BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
 
     def __init__(self, host, port_name, **kwargs):
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
@@ -516,7 +516,7 @@ class AndroidPort(base.Port):
         if not result:
             _log.error('For complete Android build requirements, please see:')
             _log.error('')
-            _log.error('    http://code.google.com/p/chromium/wiki/AndroidBuildInstructions')
+            _log.error('    https://www.chromium.org/developers/how-tos/android-build-instructions')
             return test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
         return self._check_devices(printer)

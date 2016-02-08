@@ -7,7 +7,7 @@
 // NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.bluetoothPrivate.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://code.google.com/p/chromium/wiki/ClosureCompilation.
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 
 // IMPORTANT:
 // s/chrome.bluetoothPrivate.bluetooth.Device/chrome.bluetooth.Device/

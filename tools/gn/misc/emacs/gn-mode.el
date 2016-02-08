@@ -14,7 +14,7 @@
 
 ;; A major mode for editing GN files. GN stands for Generate Ninja. GN is the
 ;; meta build system used in Chromium. For more information on GN, see the GN
-;; manual: <https://code.google.com/p/chromium/wiki/gn>
+;; manual: <https://chromium.googlesource.com/chromium/src/+/master/tools/gn/README.md>
 
 ;;; To Do:
 

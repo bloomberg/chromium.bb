@@ -84,7 +84,7 @@ void RunTwoClosures(const base::Closure* first, const base::Closure* second) {
 
 }  // namespace
 
-// See http://code.google.com/p/chromium/wiki/LinuxZygote
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
 static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
@@ -148,7 +148,7 @@ static bool g_am_zygote_or_renderer = false;
 //
 // Our replacement functions can check this global and either proxy
 // the call to the browser over the sandbox IPC
-// (http://code.google.com/p/chromium/wiki/LinuxSandboxIPC) or they can use
+// (https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md) or they can use
 // dlsym with RTLD_NEXT to resolve the symbol, ignoring any symbols in the
 // current module.
 //

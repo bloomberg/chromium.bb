@@ -14,7 +14,7 @@ run_tool.py <tool> <path/to/compiledb> --all
 If you only want to run the tool across just chrome/browser and content/browser:
 run_tool.py <tool> <path/to/compiledb> chrome/browser content/browser
 
-Please see https://code.google.com/p/chromium/wiki/ClangToolRefactoring for more
+Please see https://chromium.googlesource.com/chromium/src/+/master/docs/clang_tool_refactoring.md for more
 information, which documents the entire automated refactoring flow in Chromium.
 
 Why use this tool:

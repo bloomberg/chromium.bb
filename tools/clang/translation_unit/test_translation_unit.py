@@ -28,7 +28,7 @@ def _NumberOfTestsToString(tests):
 
 # Before running this test script, please build the translation_unit clang tool
 # first. This is explained here:
-# https://code.google.com/p/chromium/wiki/ClangToolRefactoring
+# https://chromium.googlesource.com/chromium/src/+/master/docs/clang_tool_refactoring.md
 def main():
   tools_clang_directory = os.path.dirname(os.path.dirname(
       os.path.realpath(__file__)))

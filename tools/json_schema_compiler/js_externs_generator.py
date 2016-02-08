@@ -20,7 +20,7 @@ import re
 NOTE = """// NOTE: The format of types has changed. 'FooType' is now
 //   'chrome.%s.FooType'.
 // Please run the closure compiler before committing changes.
-// See https://code.google.com/p/chromium/wiki/ClosureCompilation.
+// See https://chromium.googlesource.com/chromium/src/+/master/docs/closure_compilation.md
 """
 
 class JsExternsGenerator(object):
