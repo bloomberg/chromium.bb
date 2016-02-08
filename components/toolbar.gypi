@@ -13,6 +13,7 @@
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gfx/gfx.gyp:gfx_vector_icons',
         '../url/url.gyp:url_lib',
         'components_resources.gyp:components_resources',
         'components_strings.gyp:components_strings',
@@ -38,9 +39,6 @@
       'target_name': 'toolbar_test_support',
       'type': 'static_library',
       'dependencies': [
-        '../base/base.gyp:base',
-        '../ui/gfx/gfx.gyp:gfx_vector_icons',
-        'components_resources.gyp:components_resources',
         'toolbar',
       ],
       'include_dirs': [
