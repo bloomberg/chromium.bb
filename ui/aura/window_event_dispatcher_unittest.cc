@@ -2633,7 +2633,7 @@ TEST_F(WindowEventDispatcherTest, TouchMovesMarkedWhenCausingScroll) {
       ui::ET_TOUCH_RELEASED, location + gfx::Vector2d(200, 200), 0,
       ui::EventTimeForNow() + base::TimeDelta::FromSeconds(1));
   DispatchEventUsingWindowDispatcher(&release);
-  EXPECT_FALSE(recorder.LastTouchMayCauseScrolling());
+  EXPECT_TRUE(recorder.LastTouchMayCauseScrolling());
   EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_TOUCH_RELEASED));
   EXPECT_TRUE(recorder.HasReceivedEvent(ui::ET_GESTURE_SCROLL_END));
 

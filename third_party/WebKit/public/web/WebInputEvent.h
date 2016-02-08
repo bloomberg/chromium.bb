@@ -582,12 +582,10 @@ public:
     // must wait for an ACK for this event. If false then no ACK IPC is expected.
     bool cancelable;
 
-    // Whether the event will produce scroll-inducing events if uncanceled. This
-    // will be true for touchmove events after the platform slop region has been
-    // exceeded and fling-generating touchend events. Note that this doesn't
-    // necessarily mean content will scroll, only that scroll events will be
-    // generated.
-    bool causesScrollingIfUncanceled;
+    // For a single touch, this is true after the touch-point has moved beyond
+    // the platform slop region. For a multitouch, this is true after any
+    // touch-point has moved (by whatever amount).
+    bool movedBeyondSlopRegion;
 
     // A unique identifier for the touch event.
     uint32_t uniqueTouchEventId;
@@ -596,7 +594,7 @@ public:
         : WebInputEvent(sizeof(WebTouchEvent))
         , touchesLength(0)
         , cancelable(true)
-        , causesScrollingIfUncanceled(false)
+        , movedBeyondSlopRegion(false)
         , uniqueTouchEventId(0)
     {
     }

@@ -250,7 +250,7 @@ void TouchEmulator::HandleEmulatedTouchEvent(blink::WebTouchEvent event) {
   if (is_sequence_start)
     emulated_stream_active_sequence_count_++;
 
-  event.causesScrollingIfUncanceled = result.did_generate_scroll;
+  event.movedBeyondSlopRegion = result.moved_beyond_slop_region;
   client_->ForwardEmulatedTouchEvent(event);
 }
 

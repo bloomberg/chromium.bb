@@ -36,7 +36,7 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   if (!result.succeeded)
     return false;
 
-  event->set_may_cause_scrolling(result.did_generate_scroll);
+  event->set_may_cause_scrolling(result.moved_beyond_slop_region);
   pointer_state_.CleanupRemovedTouchPoints(*event);
   return true;
 }

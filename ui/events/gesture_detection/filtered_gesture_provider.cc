@@ -6,12 +6,13 @@
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace ui {
 
 FilteredGestureProvider::TouchHandlingResult::TouchHandlingResult()
-    : succeeded(false), did_generate_scroll(false) {
+    : succeeded(false), moved_beyond_slop_region(false) {
 }
 
 FilteredGestureProvider::FilteredGestureProvider(
@@ -21,7 +22,7 @@ FilteredGestureProvider::FilteredGestureProvider(
       gesture_provider_(config, this),
       gesture_filter_(this),
       handling_event_(false),
-      last_touch_event_did_generate_scroll_(false) {
+      any_touch_moved_beyond_slop_region_(false) {
 }
 
 FilteredGestureProvider::TouchHandlingResult
@@ -30,7 +31,10 @@ FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
   base::AutoReset<bool> handling_event(&handling_event_, true);
 
   pending_gesture_packet_ = GestureEventDataPacket::FromTouch(event);
-  last_touch_event_did_generate_scroll_ = false;
+
+  if (event.GetAction() == MotionEvent::ACTION_DOWN)
+    any_touch_moved_beyond_slop_region_ = false;
+
   if (!gesture_provider_.OnTouchEvent(event))
     return TouchHandlingResult();
 
@@ -43,7 +47,7 @@ FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
 
   TouchHandlingResult result;
   result.succeeded = true;
-  result.did_generate_scroll = last_touch_event_did_generate_scroll_;
+  result.moved_beyond_slop_region = any_touch_moved_beyond_slop_region_;
   return result;
 }
 
@@ -76,11 +80,9 @@ const ui::MotionEvent* FilteredGestureProvider::GetCurrentDownEvent() const {
 
 void FilteredGestureProvider::OnGestureEvent(const GestureEventData& event) {
   if (handling_event_) {
-    if (event.details.type() == ui::ET_GESTURE_SCROLL_BEGIN ||
-        event.details.type() == ui::ET_GESTURE_SCROLL_UPDATE ||
-        event.details.type() == ui::ET_SCROLL_FLING_START) {
-      last_touch_event_did_generate_scroll_ = true;
-    }
+    if (event.details.type() == ui::ET_GESTURE_SCROLL_BEGIN)
+      any_touch_moved_beyond_slop_region_ = true;
+
     pending_gesture_packet_.Push(event);
     return;
   }

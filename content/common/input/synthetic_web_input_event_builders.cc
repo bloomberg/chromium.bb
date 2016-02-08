@@ -171,7 +171,7 @@ void SyntheticWebTouchEvent::ResetPoints() {
   }
   touchesLength = point;
   type = WebInputEvent::Undefined;
-  causesScrollingIfUncanceled = false;
+  movedBeyondSlopRegion = false;
   uniqueTouchEventId = ui::GetNextTouchEventId();
 }
 
@@ -198,7 +198,7 @@ void SyntheticWebTouchEvent::MovePoint(int index, float x, float y) {
   CHECK_LT(index, touchesLengthCap);
   // Always set this bit to avoid otherwise unexpected touchmove suppression.
   // The caller can opt-out explicitly, if necessary.
-  causesScrollingIfUncanceled = true;
+  movedBeyondSlopRegion = true;
   WebTouchPoint& point = touches[index];
   point.position.x = point.screenPosition.x = x;
   point.position.y = point.screenPosition.y = y;

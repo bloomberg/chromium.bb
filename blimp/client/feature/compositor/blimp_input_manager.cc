@@ -72,7 +72,7 @@ bool BlimpInputManager::OnTouchEvent(const ui::MotionEvent& motion_event) {
 
   blink::WebTouchEvent touch =
       ui::CreateWebTouchEventFromMotionEvent(motion_event,
-                                             result.did_generate_scroll);
+                                             result.moved_beyond_slop_region);
 
   // Touch events are queued in the Gesture Provider until acknowledged to
   // allow them to be consumed by the touch event handlers in blink which can

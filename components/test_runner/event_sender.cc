@@ -2103,7 +2103,7 @@ void EventSender::DoLeapForward(int milliseconds) {
 }
 
 void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
-                                        bool causesScrollingIfUncanceled) {
+                                        bool movedBeyondSlopRegion) {
   DCHECK_GT(static_cast<unsigned>(WebTouchEvent::touchesLengthCap),
             touch_points_.size());
   if (force_layout_on_events_)
@@ -2114,7 +2114,7 @@ void EventSender::SendCurrentTouchEvent(WebInputEvent::Type type,
   touch_event.modifiers = touch_modifiers_;
   touch_event.cancelable = touch_cancelable_;
   touch_event.timeStampSeconds = GetCurrentEventTimeSec();
-  touch_event.causesScrollingIfUncanceled = causesScrollingIfUncanceled;
+  touch_event.movedBeyondSlopRegion = movedBeyondSlopRegion;
   touch_event.touchesLength = touch_points_.size();
   for (size_t i = 0; i < touch_points_.size(); ++i)
     touch_event.touches[i] = touch_points_[i];

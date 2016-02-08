@@ -310,7 +310,7 @@ class TouchEventQueue::TouchMoveSlopSuppressor {
     if (suppressing_touchmoves_) {
       if (event.touchesLength > 1) {
         suppressing_touchmoves_ = false;
-      } else if (event.causesScrollingIfUncanceled) {
+      } else if (event.movedBeyondSlopRegion) {
         suppressing_touchmoves_ = false;
       } else {
         // No sane slop region should be larger than 60 DIPs.

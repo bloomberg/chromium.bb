@@ -179,7 +179,7 @@ WebTouchPoint CreateWebTouchPoint(const MotionEvent& event,
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
-    bool may_cause_scrolling) {
+    bool moved_beyond_slop_region) {
   static_assert(static_cast<int>(MotionEvent::MAX_TOUCH_POINT_COUNT) ==
                     static_cast<int>(blink::WebTouchEvent::touchesLengthCap),
                 "inconsistent maximum number of active touch points");
@@ -189,8 +189,8 @@ blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
   result.type = ToWebInputEventType(event.GetAction());
   result.cancelable = (result.type != WebInputEvent::TouchCancel);
   result.timeStampSeconds =
-      (event.GetEventTime() - base::TimeTicks()).InSecondsF(),
-  result.causesScrollingIfUncanceled = may_cause_scrolling;
+      (event.GetEventTime() - base::TimeTicks()).InSecondsF();
+  result.movedBeyondSlopRegion = moved_beyond_slop_region;
   result.modifiers = EventFlagsToWebEventModifiers(event.GetFlags());
   DCHECK_NE(event.GetUniqueEventId(), 0U);
   result.uniqueTouchEventId = event.GetUniqueEventId();

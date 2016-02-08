@@ -34,11 +34,8 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
     // |event| and cease further propagation.
     bool succeeded;
 
-    // Whether |event| produced scrolling motion, either the start of a scroll,
-    // subsequent scroll movement or a fling event.
-    // TODO(jdduke): Figure out a way to guarantee that this bit propagates with
-    // the processed touch event as it moves downstream.
-    bool did_generate_scroll;
+    // Whether |event| occurred beyond the touch slop region.
+    bool moved_beyond_slop_region;
   };
   TouchHandlingResult OnTouchEvent(const MotionEvent& event) WARN_UNUSED_RESULT;
 
@@ -66,7 +63,7 @@ class GESTURE_DETECTION_EXPORT FilteredGestureProvider
   ui::TouchDispositionGestureFilter gesture_filter_;
 
   bool handling_event_;
-  bool last_touch_event_did_generate_scroll_;
+  bool any_touch_moved_beyond_slop_region_;
   ui::GestureEventDataPacket pending_gesture_packet_;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredGestureProvider);
