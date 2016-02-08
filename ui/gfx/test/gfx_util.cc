@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 
+#include "ui/gfx/display.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -93,6 +94,10 @@ bool FloatAlmostEqual(float a, float b) {
 
 void PrintTo(const BoxF& box, ::std::ostream* os) {
   *os << box.ToString();
+}
+
+void PrintTo(const Display& display, ::std::ostream* os) {
+  *os << display.ToString();
 }
 
 void PrintTo(const Point& point, ::std::ostream* os) {
