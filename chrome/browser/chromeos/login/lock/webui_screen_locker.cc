@@ -244,6 +244,7 @@ void WebUIScreenLocker::MigrateUserData(const std::string& old_password) {
 }
 
 void WebUIScreenLocker::OnSigninScreenReady() {
+  VLOG(2) << "Lock screen signin screen is ready";
 }
 
 void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
@@ -349,6 +350,27 @@ void WebUIScreenLocker::RenderProcessGone(base::TerminationStatus status) {
     LOG(ERROR) << "Renderer crash on lock screen; signing out";
     Signout();
   }
+}
+
+void WebUIScreenLocker::PluginCrashed(const base::FilePath& plugin_path,
+                                      base::ProcessId plugin_pid) {
+  LOG(ERROR) << "Plugin crash on lock screen (plugin_path: "
+             << plugin_path.LossyDisplayName() << " plugin_pid: " << plugin_pid
+             << ")";
+}
+
+void WebUIScreenLocker::PluginHungStatusChanged(
+    int plugin_child_id,
+    const base::FilePath& plugin_path,
+    bool is_hung) {
+  LOG(ERROR) << "Plugin hung status change on lock screen;"
+             << " (plugin_child_id: " << plugin_child_id
+             << " plugin_path: " << plugin_path.LossyDisplayName()
+             << " is_hung: " << is_hung << ")";
+}
+
+void WebUIScreenLocker::WebContentsDestroyed() {
+  VLOG(2) << "Lock screen WebContents instance destroyed";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

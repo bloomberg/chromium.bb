@@ -15,6 +15,13 @@ TestLockStateControllerDelegate::TestLockStateControllerDelegate()
 TestLockStateControllerDelegate::~TestLockStateControllerDelegate() {
 }
 
+bool TestLockStateControllerDelegate::IsLoading() const {
+  // There is no way for to know, since we can't include the
+  // content::WebContents definition (whose instance we can retrieve from
+  // ScreenLocker).
+  return false;
+}
+
 void TestLockStateControllerDelegate::RequestLockScreen() {
   ++num_lock_requests_;
 }

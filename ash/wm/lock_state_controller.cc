@@ -270,7 +270,13 @@ void LockStateController::OnLockFailTimeout() {
                            lock_duration_timer_->Elapsed());
   lock_duration_timer_.reset();
   DCHECK(!system_is_locked_);
-  LOG(FATAL) << "Screen lock took too long; crashing intentionally";
+
+  std::string loading_webpage = "unknown";
+  if (delegate_)
+    loading_webpage = delegate_->IsLoading() ? "true" : "false";
+
+  LOG(FATAL) << "Screen lock took too long; crashing intentionally "
+             << "(loading webpage? " << loading_webpage << ")";
 }
 
 void LockStateController::StartLockToShutdownTimer() {

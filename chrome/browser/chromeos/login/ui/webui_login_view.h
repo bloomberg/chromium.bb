@@ -134,6 +134,18 @@ class WebUILoginView : public views::View,
                                   content::MediaStreamType type) override;
   bool PreHandleGestureEvent(content::WebContents* source,
                              const blink::WebGestureEvent& event) override;
+  // TODO(jdufault): Remove LoadProgressChanged, SwappedOut, BeforeUnloadFired,
+  // RendererUnresponsive, RendererResponsive, DidNavigateMainFramePostCommit
+  // overrides once crbug.com/452599 is resolved.
+  void LoadProgressChanged(content::WebContents* source,
+                           double progress) override;
+  void SwappedOut(content::WebContents* source) override;
+  void BeforeUnloadFired(content::WebContents* tab,
+                         bool proceed,
+                         bool* proceed_to_fire_unload) override;
+  void RendererUnresponsive(content::WebContents* source) override;
+  void RendererResponsive(content::WebContents* source) override;
+  void DidNavigateMainFramePostCommit(content::WebContents* source) override;
 
   // Performs series of actions when login prompt is considered
   // to be ready and visible.

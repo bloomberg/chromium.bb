@@ -19,7 +19,8 @@ class SessionStateControllerDelegateChromeos
   ~SessionStateControllerDelegateChromeos() override;
 
  private:
-  // SessionStateControllerDelegate implementation.
+  // ash::LockStateControllerDelegate implementation.
+  bool IsLoading() const override;
   void RequestLockScreen() override;
   void RequestShutdown() override;
 

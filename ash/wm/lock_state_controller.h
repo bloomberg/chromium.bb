@@ -40,6 +40,12 @@ class ASH_EXPORT LockStateControllerDelegate {
   LockStateControllerDelegate() {}
   virtual ~LockStateControllerDelegate() {}
 
+  // Returns true if the lock screen webpage instance is loading.
+  // TODO(jdufault): Remove this method once crbug.com/452599 is resolved. We
+  // proxy the IsLoading method call into this delegate because ash forbids all
+  // icnludes from content/.
+  virtual bool IsLoading() const = 0;
+
   virtual void RequestLockScreen() = 0;
   virtual void RequestShutdown() = 0;
 

@@ -22,6 +22,7 @@ class TestLockStateControllerDelegate : public LockStateControllerDelegate {
   int num_shutdown_requests() const { return num_shutdown_requests_; }
 
   // LockStateControllerDelegate implementation.
+  bool IsLoading() const override;
   void RequestLockScreen() override;
   void RequestShutdown() override;
 

@@ -114,6 +114,14 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
+  // TODO(jdufault): Remove PluginCrashed, PluginHungStatusChanged,
+  // WebContentsDestroyed overrides once crbug.com/452599 is resolved.
+  void PluginCrashed(const base::FilePath& plugin_path,
+                     base::ProcessId plugin_pid) override;
+  void PluginHungStatusChanged(int plugin_child_id,
+                               const base::FilePath& plugin_path,
+                               bool is_hung) override;
+  void WebContentsDestroyed() override;
 
   // ash::KeyboardStateObserver:
   void OnVirtualKeyboardStateChanged(bool activated) override;

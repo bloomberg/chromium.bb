@@ -456,6 +456,36 @@ bool WebUILoginView::PreHandleGestureEvent(
       event.type == blink::WebGestureEvent::GesturePinchEnd;
 }
 
+void WebUILoginView::LoadProgressChanged(content::WebContents* source,
+                                         double progress) {
+  // TODO(jdufault): Remove once crbug.com/452599 is resolved.
+  LOG(ERROR) << "WebUILoginView loading progress updated to " << progress;
+}
+
+void WebUILoginView::SwappedOut(content::WebContents* source) {
+  LOG(ERROR) << "WebUILoginView got swapped out";
+}
+
+void WebUILoginView::BeforeUnloadFired(content::WebContents* tab,
+                                       bool proceed,
+                                       bool* proceed_to_fire_unload) {
+  LOG(ERROR) << "WebUILoginView is unloading";
+  *proceed_to_fire_unload = true;
+}
+
+void WebUILoginView::RendererUnresponsive(content::WebContents* source) {
+  LOG(ERROR) << "WebUILoginView renderer became unresponsive";
+}
+
+void WebUILoginView::RendererResponsive(content::WebContents* source) {
+  LOG(ERROR) << "WebUILoginView renderer became responsive";
+}
+
+void WebUILoginView::DidNavigateMainFramePostCommit(
+    content::WebContents* source) {
+  LOG(ERROR) << "WebUILoginView navigated";
+}
+
 void WebUILoginView::OnLoginPromptVisible() {
   // If we're hidden than will generate this signal once we're shown.
   if (is_hidden_ || webui_visible_) {

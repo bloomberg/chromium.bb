@@ -5,12 +5,14 @@
 #include "chrome/browser/chromeos/power/session_state_controller_delegate_chromeos.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "content/public/browser/web_contents.h"
 
 namespace chromeos {
 
@@ -20,6 +22,13 @@ SessionStateControllerDelegateChromeos::SessionStateControllerDelegateChromeos()
 
 SessionStateControllerDelegateChromeos::
     ~SessionStateControllerDelegateChromeos() {
+}
+
+bool SessionStateControllerDelegateChromeos::IsLoading() const {
+  return ScreenLocker::default_screen_locker()
+      ->GetAssociatedWebUI()
+      ->GetWebContents()
+      ->IsLoading();
 }
 
 void SessionStateControllerDelegateChromeos::RequestLockScreen() {
