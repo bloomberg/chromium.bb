@@ -16,11 +16,10 @@
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
-@interface OmniboxGeolocationAuthorizationAlert () <UIAlertViewDelegate> {
+@interface OmniboxGeolocationAuthorizationAlert () {
   base::WeakNSProtocol<id<OmniboxGeolocationAuthorizationAlertDelegate>>
       delegate_;
 }
-
 @end
 
 @implementation OmniboxGeolocationAuthorizationAlert
@@ -52,32 +51,44 @@
   NSString* cancel = l10n_util::GetNSString(IDS_IOS_LOCATION_USAGE_CANCEL);
   NSString* ok = l10n_util::GetNSString(IDS_OK);
 
-  // Use a UIAlertView to match the style of the iOS system location alert.
-  base::scoped_nsobject<UIAlertView> alertView(
-      [[UIAlertView alloc] initWithTitle:nil
-                                 message:message
-                                delegate:self
-                       cancelButtonTitle:cancel
-                       otherButtonTitles:ok, nil]);
+  // Use a UIAlertController to match the style of the iOS system location
+  // alert.
+  base::WeakNSObject<OmniboxGeolocationAuthorizationAlert> weakSelf(self);
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:nil
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
 
-  [alertView show];
-}
+  UIAlertAction* defaultAction = [UIAlertAction
+      actionWithTitle:ok
+                style:UIAlertActionStyleDefault
+              handler:^(UIAlertAction* action) {
+                base::scoped_nsobject<OmniboxGeolocationAuthorizationAlert>
+                    strongSelf([weakSelf retain]);
+                if (strongSelf) {
+                  [[strongSelf delegate]
+                      authorizationAlertDidAuthorize:strongSelf];
+                }
+              }];
+  [alert addAction:defaultAction];
 
-#pragma mark - UIAlertViewDelegate
+  UIAlertAction* cancelAction = [UIAlertAction
+      actionWithTitle:cancel
+                style:UIAlertActionStyleCancel
+              handler:^(UIAlertAction* action) {
+                base::scoped_nsobject<OmniboxGeolocationAuthorizationAlert>
+                    strongSelf([weakSelf retain]);
+                if (strongSelf) {
+                  [[strongSelf delegate]
+                      authorizationAlertDidCancel:strongSelf];
+                }
+              }];
+  [alert addAction:cancelAction];
 
-- (void)alertView:(UIAlertView*)alertView
-    clickedButtonAtIndex:(NSInteger)buttonIndex {
-  switch (buttonIndex) {
-    case 0:
-      [delegate_ authorizationAlertDidCancel:self];
-      break;
-    case 1:
-      [delegate_ authorizationAlertDidAuthorize:self];
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+  [[[[UIApplication sharedApplication] keyWindow] rootViewController]
+      presentViewController:alert
+                   animated:YES
+                 completion:nil];
 }
 
 @end
