@@ -302,16 +302,6 @@ times.  Each click executes the <code>insertOrderedList</code> command.</p>
 <p>On every second click, the table will move down.</p>
 
 <h3>
-    <a name="bugfix-overflowFind">bugfix/overflowFind</a>
-    (Shezan Baig)
-    <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FoverflowFind">view changes</a>]</span>
-</h3>
-<p>Open <a href="repros/overflowFind.html">this link</a> in Chrome and search
-for the string "text".  The text will scroll and the "hidden" search result
-will be highlighted.  This branch makes it so that text hidden by ellipsis are
-not included when finding text.</p>
-
-<h3>
     <a name="bugfix-removeSpellingMarker">bugfix/removeSpellingMarker</a>
     (Tianyin Zhang; D38695085)
     <span class="viewchanges">[<a href="http://github.com/bloomberg/chromium.bb/compare/upstream%2Fpatched%2Flatest...bugfix%2FremoveSpellingMarker">view changes</a>]</span>
@@ -598,6 +588,11 @@ cell is selected.</p>
 <div id="retiredblock">
 <h1>Retired Branches</h1>
 
+
+<h2><a name="retired-48.0.2564.103">Retired at 48.0.2564.103</a></h2>
+
+<h3><a name="bugfix-overflowFind">bugfix/overflowFind</a> (Shezan Baig)</h3>
+<p>Retired because the issue is no longer reproducable.</p>
 
 <h2><a name="retired-47.0.2526.111">Retired at 47.0.2526.111</a></h2>
 
